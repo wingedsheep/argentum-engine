@@ -9118,6 +9118,71 @@
     ]
 }
 
+// Hologram Stalker
+{
+    "name": "Hologram Stalker",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Hirogen Warrior",
+    "oracleText": "When this creature enters, return target permanent card from your graveyard to your hand.\nWhenever a card leaves your graveyard, create a 3/3 colorless Illusion artifact creature token. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hologram Stalker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Hologram Stalker:2",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Illusion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/7/d760eee8-e49a-4662-8bfc-fcf8ed2ad2d8.jpg?1793364353",
+                    "artifactToken": true
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Hector Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bd8a87b-ca7a-4a15-b96f-1a673ee44f3e.jpg?1792668500"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Horta
 {
     "name": "Horta",
@@ -9287,6 +9352,82 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// I'm a Doctor, Not a . . .
+{
+    "name": "I'm a Doctor, Not a . . .",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature you control. Untap it. Until end of turn, it gets +1/+1 and becomes a Doctor. (It loses all other creature types.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Doctor"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Joel Chaim Holtzman",
+        "flavorText": "\"Dammit, Jim. We've been over this!\"\n—Dr. Leonard McCoy",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c07979d4-8a58-4cfb-bffa-74e8bd97c7ff.jpg?1785981585"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -9680,6 +9821,170 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c1a2c13-5e36-4707-9d90-18c2e58a2b26.jpg?1793273907"
     },
     "colorIdentityOverride": []
+}
+
+// Jadzia Dax, Living Legacy
+{
+    "name": "Jadzia Dax, Living Legacy",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Creature — Trill Scientist",
+    "oracleText": "At the beginning of your first main phase, put a +1/+1 counter on Jadzia Dax, then add an amount of {G} equal to the number of counters on her.\nTransfer Symbiont — {2}{G}, Discard this card: Put two +1/+1 counters on target creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jadzia Dax, Living Legacy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": null
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jadzia Dax, Living Legacy:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Transfer Symbiont — {2}{G}, Discard this card: Put two +1/+1 counters on target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "MYTHIC",
+        "artist": "John Tyler Christopher",
+        "flavorText": "\"If you want to know who you are, it's important to know who you've been.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd342f8b-9072-487d-8a33-b1bb149f1502.jpg?1793013267"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Jake Sisko, War Correspondent
+{
+    "name": "Jake Sisko, War Correspondent",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Creature — Human Citizen",
+    "oracleText": "Landfall — Whenever a land you control enters, you gain 1 life. If this is the second time this ability has resolved this turn, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jake Sisko, War Correspondent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "AbilityResolutionsThisTurn"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            },
+                            "then": "Investigate"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you gain 1 life. If this is the second time this ability has resolved this turn, investigate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Ariel Orea",
+        "flavorText": "\"The line between courage and cowardice is a lot thinner than most people believe.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e47c6b6-f99b-46be-98a1-92c98416aefe.jpg?1793013276"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Jett Reno, Problem Solver
@@ -10635,6 +10940,55 @@
     ]
 }
 
+// MACO Strike Team
+{
+    "name": "MACO Strike Team",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever a creature you control becomes the target of a spell or ability an opponent controls, create a tapped 1/1 red Officer creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "MACO Strike Team:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:you",
+                    "byOpponent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Officer"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893",
+                    "tapped": true
+                },
+                "descriptionOverride": "Whenever a creature you control becomes the target of a spell or ability an opponent controls, create a tapped 1/1 red Officer creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Aaron J. Riley",
+        "flavorText": "Starfleet represents humanity's open arms. Military Assault Command Operations represents its closed fists.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98a38e3f-e5ff-402f-9bcd-a03edc264688.jpg?1793188018"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Make It So
 {
     "name": "Make It So",
@@ -11102,6 +11456,54 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Neelix, Moral Support
+{
+    "name": "Neelix, Moral Support",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Creature — Talaxian Advisor",
+    "oracleText": "When Neelix enters, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nWhenever you gain life, put a +1/+1 counter on Neelix.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Neelix, Moral Support:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            },
+            {
+                "id": "Neelix, Moral Support:2",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "JB Casacop",
+        "flavorText": "\"I'm just a cook who sometimes imagines himself to be a diplomat.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09c0daa9-9eca-4817-a427-868d1efcfa20.jpg?1793359554"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -12104,6 +12506,65 @@
     ]
 }
 
+// Photosynthetic Physician
+{
+    "name": "Photosynthetic Physician",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Plant Doctor",
+    "oracleText": "Reach\n{G}, Exile this card from your graveyard: Create a 1/1 red Officer creature token. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Photosynthetic Physician:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Officer"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893"
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{G}, Exile this card from your graveyard: Create a 1/1 red Officer creature token. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "artist": "Stella Spente",
+        "flavorText": "Despite the Phylosians' advanced medical knowledge, an invasive bacteria nearly destroyed all life on their homeworld.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88b87ddb-fbf8-4e6e-9895-1b30ae5ad63a.jpg?1793361367"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Picard, Leading by Example
 {
     "name": "Picard, Leading by Example",
@@ -12436,6 +12897,119 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Q Continuum
+{
+    "name": "Q Continuum",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control two or more other lands.\nWhen this land enters untapped, choose one —\n• Target creature gets +1/+1 and gains vigilance until end of turn.\n• Surveil 1.\n{T}: Add {G}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Q Continuum:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "untapped",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "VIGILANCE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature gets +1/+1 and gains vigilance until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 1
+                            },
+                            "description": "Surveil 1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this land enters untapped, choose one — target creature gets +1/+1 and gains vigilance until end of turn; or surveil 1."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Q Continuum:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "290",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd424080-e8ad-4a56-a820-20d8534fba31.jpg?1793447127"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -13056,6 +13630,79 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Rok-Tahk, Budding Scientist
+{
+    "name": "Rok-Tahk, Budding Scientist",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Creature — Brikar Scientist",
+    "oracleText": "Creatures you control have \"{T}: Add {G}{G}.\"\nWhen Rok-Tahk enters, create Murf, a legendary 0/1 green Ooze Slug creature token with indestructible.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rok-Tahk, Budding Scientist:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze",
+                        "Slug"
+                    ],
+                    "keywords": [
+                        "INDESTRUCTIBLE"
+                    ],
+                    "name": "Murf",
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1b52f55-6147-4da6-983c-6ca3e1867723.jpg?1793363930",
+                    "legendary": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Rok-Tahk, Budding Scientist:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "MYTHIC",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "\"You have to expect the unexpected in my field. Because before the right answer, we often find the wrong one. But the wrong one can lead us to entirely new discoveries.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/787bd19b-586e-4451-850b-60e0857bada0.jpg?1793273846"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -13813,6 +14460,120 @@
     ]
 }
 
+// Saru, Unthreatened
+{
+    "name": "Saru, Unthreatened",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Kelpien Officer",
+    "oracleText": "Flash\nWhen Saru enters, another target creature you control gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saru, Unthreatened:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Another target creature you control gains hexproof until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Lemen",
+        "flavorText": "\"We all come from somewhere. We carry that place with us wherever we go.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/445de44d-8af9-4ea3-b165-9e8eb8939820.jpg?1793187139"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Saurian Explorer
+{
+    "name": "Saurian Explorer",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Dinosaur Scout",
+    "oracleText": "Landfall — Whenever a land you control enters, this creature gets +2/+2 until end of turn.\n{6}: Create a tapped Planet land token named New Planet with \"{T}: Add one mana of any color.\" Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saurian Explorer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Saurian Explorer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "New Planet",
+                    "tapped": true
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "artist": "Bartek Fedyczak",
+        "flavorText": "The Voth are one of the Galaxy's oldest spacefaring species.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/197abe5e-cde2-4b29-a10f-d6b789776bfa.jpg?1785981598"
+    }
+}
+
 // Savvy Profiteer
 {
     "name": "Savvy Profiteer",
@@ -14523,6 +15284,35 @@
     }
 }
 
+// Stable Wormhole
+{
+    "name": "Stable Wormhole",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you attack, create a tapped Planet land token named New Planet with \"{T}: Add one mana of any color.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stable Wormhole:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "New Planet",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Bruce Brenneise",
+        "flavorText": "Artificial verteron nodes stabilize the Bajoran wormhole, creating a reliable subspace passage to the Gamma Quadrant, shortcutting a journey of several decades.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6fc3447-55de-4f5d-8d06-8d9e2ff4d5d0.jpg?1793274281"
+    }
+}
+
 // Starfleet Academy
 {
     "name": "Starfleet Academy",
@@ -15049,6 +15839,80 @@
     ]
 }
 
+// Support Mission
+{
+    "name": "Support Mission",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control enters, put a quest counter on this enchantment. Put a +1/+1 counter on that creature. If this enchantment has five or more quest counters on it, instead put two +1/+1 counters on that creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Support Mission:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "Conditional",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "QUEST"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                },
+                                "ifTrue": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "ifFalse": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Nadia Hurianova",
+        "flavorText": "Before the Cardassian occupation, Bajor was a center of culture and learning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e8b404c-6e2a-4966-ac4b-c9981c1c6fee.jpg?1785981605"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Suurok-Class Science Vessel
 {
     "name": "Suurok-Class Science Vessel",
@@ -15219,6 +16083,108 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sylvia Tilly, Joy of Discovery
+{
+    "name": "Sylvia Tilly, Joy of Discovery",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Scientist Artificer",
+    "oracleText": "When Sylvia Tilly enters, surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)\nAt the beginning of combat on your turn, you may pay {1} and exile a card from your graveyard. When you do, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sylvia Tilly, Joy of Discovery:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Sylvia Tilly, Joy of Discovery:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "PayManaCost",
+                                "cost": "{1}"
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectTarget",
+                                        "requirement": {
+                                            "type": "TargetObject",
+                                            "filter": {
+                                                "baseFilter": "own:you",
+                                                "zone": "Graveyard"
+                                            }
+                                        },
+                                        "storeAs": "target0",
+                                        "nonTargeting": true,
+                                        "prompt": "Choose a card in your graveyard to exile"
+                                    },
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "target0"
+                                        },
+                                        "destination": "Exile"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1} and exile a card from your graveyard. When you do, put a +1/+1 counter on target creature."
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may pay {1} and exile a card from your graveyard. When you do, put a +1/+1 counter on target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Lemen",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe6e03b5-cd96-430b-9c74-96eca0212a81.jpg?1792989779"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -15775,6 +16741,110 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Temporal Anomaly
+{
+    "name": "Temporal Anomaly",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{3}{G}, {T}, Sacrifice this land: Mill four cards. You may put a permanent card from among them into your hand. Create a tapped Planet land token named New Planet with \"{T}: Add one mana of any color.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Temporal Anomaly:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Temporal Anomaly:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{G}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "permanent",
+                            "storeSelected": "selected2",
+                            "prompt": "You may put a permanent card into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "New Planet",
+                            "tapped": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "302",
+        "rarity": "UNCOMMON",
+        "artist": "Neil Blevins",
+        "flavorText": "\"Captain, it seems to be a—to be a—to be a...\"\n—Ensign Pavel Chekov",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2000219-0a57-48e6-ab0f-d5ad0fb7bcf6.jpg?1793361445"
+    }
 }
 
 // Tenacious Drone
