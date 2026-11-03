@@ -2077,7 +2077,10 @@
                     "type": "Fixed",
                     "amount": 1
                 },
-                "onlyIfTargetIsSource": true
+                "targeting": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
             }
         ]
     },

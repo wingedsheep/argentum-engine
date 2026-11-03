@@ -8,6 +8,11 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
+import com.wingedsheep.sdk.scripting.CostModification
+import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
+import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.Duration
@@ -1124,7 +1129,25 @@ object CardIntentAnalyzer {
         is GrantKeyword -> keywordTags(static.keyword)
         is CantAttack -> neutralizeTags(static.filter)
         is CantBlock -> neutralizeTags(static.filter)
+        // "Spells your opponents cast that target a Merfolk you control cost {2} more" and its
+        // activated-ability twin are a ward-like tax on answering our permanents (Kopala, Warden
+        // of Waves; Sphinx of New Prahv) — Ward is a [PROTECTIVE_KEYWORDS] member, so the same tag.
+        is ModifySpellCost ->
+            if (static.target is SpellCostTarget.OpponentsCastTargeting && taxes(static.modification)) {
+                setOf(IntentTag.PROTECTION)
+            } else emptySet()
+        is IncreaseActivatedAbilityCost ->
+            if (static.targeting != null && static.reach == ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS) {
+                setOf(IntentTag.PROTECTION)
+            } else emptySet()
         else -> emptySet()
+    }
+
+    private fun taxes(modification: CostModification): Boolean = when (modification) {
+        is CostModification.IncreaseGeneric, is CostModification.IncreaseGenericBy,
+        is CostModification.IncreaseColored, is CostModification.IncreaseColoredPerUnit,
+        is CostModification.IncreaseLife -> true
+        else -> false
     }
 
     /**

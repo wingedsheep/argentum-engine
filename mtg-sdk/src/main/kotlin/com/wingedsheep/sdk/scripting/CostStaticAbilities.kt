@@ -1130,13 +1130,14 @@ enum class SpecialActionKind(val costPhrase: String) {
  * *ability*, not the permanent, so a matching permanent's ordinary activated abilities cost full
  * price while its exhaust ability is discounted.
  *
- * [onlyIfTargetIsSource] narrows it to activations that **target the static's own source** —
- * Bladegraft Aspirant's "Activated abilities of Equipment you control that target this creature
- * cost {1} less to activate." →
- * `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), onlyIfTargetIsSource = true)`.
+ * [targeting] narrows it to activations that **target a permanent the group matches**, read
+ * relative to the static's source — Bladegraft Aspirant's "Activated abilities of Equipment you
+ * control that target this creature cost {1} less to activate." →
+ * `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()), DynamicAmounts.fixed(1), targeting = GroupFilter.source())`.
  * Targets are chosen before the total cost is determined (CR 601.2c before 601.2f, via CR 602.2b),
  * so at payment the reduction is exact; at enumeration (targets not yet chosen) it is offered
- * optimistically for any targeted ability while the source is a creature. The activated-ability
+ * optimistically for any targeted ability. It is the same axis as
+ * [IncreaseActivatedAbilityCost.targeting]. The activated-ability
  * sibling of [ReduceEquipCost.targetFilter], which covers *equip* abilities whatever their
  * source.
  *
@@ -1175,7 +1176,8 @@ enum class SpecialActionKind(val costPhrase: String) {
  * @property amount Dynamic generic-mana reduction applied to each matching ability's cost.
  * @property manaFloor Minimum total mana the cost may be reduced to (default 0).
  * @property onceOnlyKind When set, only abilities of that keyword (`ActivatedAbility.onceOnlyKind`) are reduced.
- * @property onlyIfTargetIsSource When true, only activations that target this static's source are reduced.
+ * @property targeting When set, only activations with a chosen target matching this group (relative
+ *   to the static's source: [GroupFilter.source] is "this creature") are reduced.
  * @property excludeManaAbilities When true, mana abilities (CR 605) are not reduced.
  * @property reach Which activations the reduction sees — see [ActivatedAbilityReach].
  * @property firstEachTurn When true, only the controller's first activation this turn of an ability
@@ -1192,7 +1194,7 @@ data class ReduceActivatedAbilityCost(
     val amount: DynamicAmount,
     val manaFloor: Int = 0,
     val onceOnlyKind: OnceOnlyAbilityKind? = null,
-    val onlyIfTargetIsSource: Boolean = false,
+    val targeting: GroupFilter? = null,
     val excludeManaAbilities: Boolean = false,
     val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS,
     val keyword: com.wingedsheep.sdk.core.Keyword? = null,
@@ -1224,9 +1226,10 @@ data class ReduceActivatedAbilityCost(
                 }
             )
             if (excludeManaAbilities) append(" that aren't mana abilities")
-        } else if (onlyIfTargetIsSource) {
+            if (targeting != null) append(" that target ${targeting.description}")
+        } else if (targeting != null) {
             append(abilities.replaceFirstChar { it.uppercase() })
-            append(" of ${filter.description} that target this permanent")
+            append(" of ${filter.description} that target ${targeting.description}")
         } else {
             append(filter.description.replaceFirstChar { it.uppercase() })
             append("'s $abilities")
@@ -1245,7 +1248,10 @@ data class ReduceActivatedAbilityCost(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         val newAmount = amount.applyTextReplacement(replacer)
-        return if (newFilter !== filter || newAmount !== amount) copy(filter = newFilter, amount = newAmount) else this
+        val newTargeting = targeting?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newAmount !== amount || newTargeting !== targeting) {
+            copy(filter = newFilter, amount = newAmount, targeting = newTargeting)
+        } else this
     }
 }
 
@@ -1315,6 +1321,15 @@ enum class ActivatedAbilityReach(
  *   opponents activate cost {1} more to activate unless they're mana abilities" — every opponent
  *   activation from any zone whose source matches [filter]'s `baseFilter`. Wrap it in a
  *   [ConditionalStaticAbility] for a "during your turn" gate.
+ * @property targeting When set, only activations with a chosen target matching this group (relative
+ *   to the static's source) are taxed — Kopala, Warden of Waves' "Abilities your opponents activate
+ *   that target a Merfolk you control cost {2} more to activate" is
+ *   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(2), reach = ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS, targeting = GroupFilter(GameObjectFilter.Permanent.withSubtype(Subtype.MERFOLK).youControl()))`.
+ *   An ability targeting several matching permanents is taxed once (Kopala's ruling). Targets are
+ *   chosen before the total cost is determined (CR 601.2c before 601.2f, via CR 602.2b), so the tax
+ *   is exact at payment; enumeration, before targets exist, offers the ability untaxed. Triggered
+ *   abilities are never taxed — this prices activations only. The same axis as
+ *   [ReduceActivatedAbilityCost.targeting].
  */
 @SerialName("IncreaseActivatedAbilityCost")
 @Serializable
@@ -1323,7 +1338,8 @@ data class IncreaseActivatedAbilityCost(
     val amount: DynamicAmount,
     val excludeManaAbilities: Boolean = false,
     val loyaltyAbilitiesOnly: Boolean = false,
-    val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS
+    val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS,
+    val targeting: GroupFilter? = null,
 ) : StaticAbility {
     override val description: String = buildString {
         val kind = if (loyaltyAbilitiesOnly) "loyalty" else "activated"
@@ -1333,6 +1349,7 @@ data class IncreaseActivatedAbilityCost(
         } else {
             append(if (loyaltyAbilitiesOnly) "Loyalty abilities ${reach.activatorPhrase}" else "Abilities ${reach.activatorPhrase}")
         }
+        if (targeting != null) append(" that target ${targeting.description}")
         when (amount) {
             is DynamicAmount.Fixed -> append(" cost {${amount.amount}} more to activate")
             else -> append(" cost {X} more to activate, where X is ${amount.description}")
@@ -1343,7 +1360,10 @@ data class IncreaseActivatedAbilityCost(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         val newAmount = amount.applyTextReplacement(replacer)
-        return if (newFilter !== filter || newAmount !== amount) copy(filter = newFilter, amount = newAmount) else this
+        val newTargeting = targeting?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newAmount !== amount || newTargeting !== targeting) {
+            copy(filter = newFilter, amount = newAmount, targeting = newTargeting)
+        } else this
     }
 }
 

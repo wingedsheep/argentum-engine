@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads "spells and abilities your opponents cast or activate that target your permanents cost more" (Kopala, Warden of Waves, Sphinx of New Prahv) as protection, and values those statics in its draft ratings instead of pricing the card as its bare body
 - #4369 Reads life-total exchanges (Psychic Transfer, Mister Negative, Axis of Mortality): aims them at the opponent, picks itself as one side of a two-player swap, and no longer casts a harmful "target player" spell that hexproof has left aimed only at itself
 - #4368 No longer reads a delayed trigger that exiles or sacrifices "those tokens" the same ability made (Tilonalli's Summoner) as removal, so such cards stop counting as answers when it plans its removal
 - #4329 Knows each opponent's registered decklist in live games, samples their hidden cards from it, and holds its removal off a small creature while clearly better creatures it could answer are still in their deck and likely to arrive soon — unless that creature is already hurting it, it is dying, its hand is full or the game has moved on — so its only Refute Destiny no longer goes on a 2/3 mana creature in front of Ruric Thar and two Titanbones

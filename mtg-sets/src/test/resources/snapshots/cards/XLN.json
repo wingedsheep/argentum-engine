@@ -3424,6 +3424,56 @@
     ]
 }
 
+// Kopala, Warden of Waves
+{
+    "name": "Kopala, Warden of Waves",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Merfolk Wizard",
+    "oracleText": "Spells your opponents cast that target a Merfolk you control cost {2} more to cast.\nAbilities your opponents activate that target a Merfolk you control cost {2} more to activate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent Merfolk ctrl:you"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            },
+            {
+                "type": "IncreaseActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": {}
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "reach": "ACTIVATED_BY_OPPONENTS",
+                "targeting": {
+                    "baseFilter": "permanent Merfolk ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"I know these waters better than you know yourselves.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34561f87-09d9-4f23-8a05-907fe1303e70.jpg?1783935779"
+    }
+}
+
 // Legion's Judgment
 {
     "name": "Legion's Judgment",
