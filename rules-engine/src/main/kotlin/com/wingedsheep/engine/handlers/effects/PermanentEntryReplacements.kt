@@ -233,6 +233,24 @@ object PermanentEntryReplacements {
     }
 
     /**
+     * Whether an [EntersAsCopy]'s [EntersAsCopy.condition] (Protean Raider's raid) holds as
+     * [entityId] would enter: evaluated with the entrant as the source and [controllerId] as "you".
+     * A failed condition means no copy choice at all — the permanent enters as its printed self.
+     */
+    fun entersAsCopyConditionHolds(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        effect: EntersAsCopy,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        val condition = effect.condition ?: return true
+        return predicateEvaluator.conditions.evaluate(
+            state, condition, EffectContext(sourceId = entityId, controllerId = controllerId)
+        )
+    }
+
+    /**
      * Copy candidates for an [EntersAsCopy] on a permanent already on the battlefield: land/permanent
      * cards in graveyards ([Zone.GRAVEYARD]) or permanents on the battlefield matching
      * [EntersAsCopy.copyFilter], excluding [entityId] itself. Exposed so callers (e.g.
@@ -245,6 +263,7 @@ object PermanentEntryReplacements {
         effect: EntersAsCopy,
         predicateEvaluator: PredicateEvaluator
     ): List<EntityId> {
+        if (!entersAsCopyConditionHolds(state, entityId, controllerId, effect, predicateEvaluator)) return emptyList()
         val pool = if (effect.copyFromZone == Zone.GRAVEYARD) {
             state.turnOrder.flatMap { state.getGraveyard(it) }
         } else {

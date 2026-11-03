@@ -19919,7 +19919,7 @@ both frozen from the public face-down values; transforming it cannot reveal the 
 adds its upkeep ability to that otherwise anonymous identity. Turning the original face up does
 not update an existing copy.
 
-- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, entersWithCounters, exceptions, duration, copyOf)` —
+- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, entersWithCounters, exceptions, duration, copyOf, condition)` —
   "enter as a copy of …". As the permanent enters, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides
   applied. `copyFromZone` selects the candidate pool: `Zone.BATTLEFIELD` (default — Clone, Clever
@@ -19979,6 +19979,13 @@ not update an existing copy.
   `filterByTotalManaSpent` uses zero on these non-cast entries. Existing entry-pipeline limits such
   as collection `OnEnterRun` choices remain separate; this does not expand those replacement types.
   A copied Aura's attachment choice is covered in the entry above.
+  **`condition: Condition?`** (default null) gates the entrant's own copy choice on a condition
+  checked as the permanent would enter — the entrant is the source and its controller is "you". When it
+  fails there is no choice and no copy rider: the permanent enters as its printed self. Protean Raider:
+  "Raid — If you attacked this turn, you may have this creature enter as a copy of any creature on the
+  battlefield" is `EntersAsCopy(optional = true, condition = Conditions.YouAttackedThisTurn)`. All three
+  self-choice paths (resolving spell, land play, zone-moving effect) read it; it can't combine with
+  `copyOf` (gate the grant instead).
   **`copyOf: EffectTarget?`** (default null — the as-enters choice above) makes the entrant copy *one
   bound object* instead, and makes the replacement apply to **other** objects entering: "the next
   time one or more creatures or planeswalkers enter this turn, they enter as copies of the chosen

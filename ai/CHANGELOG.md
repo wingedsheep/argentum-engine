@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Drafts Clone-style cards (enter as a copy of a creature) above their printed body; a raid-gated copy (Protean Raider) counts half
 - #4374 Reads bans on an opponent's spells (Silence, Sphinx's Decree, Azor, Orim's Chant, Xantid Swarm) as disruption: stops in the opponent's upkeep to cast an instant ban that covers their whole turn, casts a sorcery-speed one like Sphinx's Decree with mana nothing else wants while they hold cards, aims a "target player" ban at the opponent, and rates the effect in draft
 - Reads statics that make its own spells or activated abilities cheaper (Bladegraft Aspirant, Training Grounds, Silver-Fur Master) as cost reducers: values them in draft ratings without mistaking them for mana sources
 - Reads "spells and abilities your opponents cast or activate that target your permanents cost more" (Kopala, Warden of Waves, Sphinx of New Prahv) as protection, and values those statics in its draft ratings instead of pricing the card as its bare body

@@ -3295,6 +3295,49 @@
     ]
 }
 
+// Protean Raider
+{
+    "name": "Protean Raider",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Shapeshifter Pirate",
+    "oracleText": "Raid — If you attacked this turn, you may have this creature enter as a copy of any creature on the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "Imitation is the sincerest form of piracy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41ed9247-16c0-4ca4-9b46-d3da5a375e4c.jpg?1783935271"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Raging Regisaur
 {
     "name": "Raging Regisaur",
