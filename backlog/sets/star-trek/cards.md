@@ -138,7 +138,7 @@
 - [ ] Jadzia Dax, Living Legacy
 - [ ] Jake Sisko, War Correspondent
 - [x] Jett Reno, Problem Solver
-- [ ] Kai Winn, Faithless Leader
+- [x] Kai Winn, Faithless Leader
 - [ ] Khaaaaaaaaaaaannn!
 - [ ] Khan, Despot by Design
 - [x] Khan, Vengeful Heart

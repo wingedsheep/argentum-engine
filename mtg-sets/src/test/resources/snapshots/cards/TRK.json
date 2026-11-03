@@ -7335,6 +7335,79 @@
     ]
 }
 
+// Kai Winn, Faithless Leader
+{
+    "name": "Kai Winn, Faithless Leader",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Bajoran Cleric",
+    "oracleText": "As Kai Winn enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, that player loses 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kai Winn, Faithless Leader:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "NameEqualsChosenComponent"
+                                ]
+                            },
+                            "player": "EachOpponent"
+                        },
+                        {
+                            "type": "AbilityActivatedEvent",
+                            "player": "EachOpponent",
+                            "sourceFilter": {
+                                "cardPredicates": [
+                                    "NameEqualsChosenComponent"
+                                ]
+                            },
+                            "includeManaAbilities": true
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, that player loses 3 life."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "NONLAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Wei Guan",
+        "flavorText": "It took masterful insight to lie with the Prophets' own words.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/973ab6cd-fc23-4816-aa08-f77c93e1b1d6.jpg?1793013575"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Khaaaaaaaaaaaannn!
 {
     "name": "Khaaaaaaaaaaaannn!",
