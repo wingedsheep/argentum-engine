@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -988,7 +989,7 @@ class CardBuilder(private val name: String) {
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
             selfExileTimeCounters = spellBuilder?.exileTimeCounters ?: 0,
-            selfShuffleIntoLibraryOnResolve = spellBuilder?.shufflesIntoLibraryOnResolve ?: false,
+            selfLibraryPlacementOnResolve = spellBuilder?.libraryPlacementOnResolve,
             paradigm = spellBuilder?.isParadigm ?: false,
             returnTransformedFromGraveyardOnResolve = spellBuilder?.returnTransformedFromGraveyardMarker,
             selfAlternativeCost = selfAlternativeCost,
@@ -1119,7 +1120,7 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
     internal val exilesOnResolve: Boolean get() = selfExileOnResolve
     internal val exileTimeCounters: Int get() = selfExileTimeCounters
 
-    private var selfShuffleIntoLibraryOnResolve: Boolean = false
+    private var selfLibraryPlacementOnResolve: ZonePlacement? = null
 
     /**
      * Mark this spell to shuffle itself into its owner's library on resolution instead of going to
@@ -1130,27 +1131,38 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
      *
      * Does not outrank flashback (CR 702.34a) or harmonize (CR 702.180a): those replace "anywhere
      * else any time it would leave the stack" rather than naming the graveyard, so a flashbacked
-     * spell with this clause is exiled. See [com.wingedsheep.sdk.model.CardScript.selfShuffleIntoLibraryOnResolve].
+     * spell with this clause is exiled. See [com.wingedsheep.sdk.model.CardScript.selfLibraryPlacementOnResolve].
      */
     fun selfShuffleIntoLibrary() {
-        selfShuffleIntoLibraryOnResolve = true
+        selfLibraryPlacementOnResolve = ZonePlacement.Shuffled
     }
 
-    internal val shufflesIntoLibraryOnResolve: Boolean get() = selfShuffleIntoLibraryOnResolve
+    /**
+     * Mark this spell to put itself on the bottom of its owner's library on resolution instead of
+     * going to the graveyard, without shuffling. Used for cards that say "Put <card name> on the
+     * bottom of its owner's library." (Sanguine Sacrament). Same seam and precedence as
+     * [selfShuffleIntoLibrary]; see [com.wingedsheep.sdk.model.CardScript.selfLibraryPlacementOnResolve].
+     */
+    fun selfPutOnBottomOfLibrary() {
+        selfLibraryPlacementOnResolve = ZonePlacement.Bottom
+    }
+
+    internal val libraryPlacementOnResolve: ZonePlacement? get() = selfLibraryPlacementOnResolve
 
     /**
-     * A card prints "Exile <card name>." or "Shuffle <card name> into its owner's library.", never
-     * both — they are two spellings of the same slot, the CR 608.2n destination. Setting both is a
+     * A card prints "Exile <card name>." or "Shuffle <card name> into its owner's library." (or "Put
+     * <card name> on the bottom of its owner's library."), never both — they are two spellings of the same slot, the CR 608.2n destination. Setting both is a
      * card-authoring mistake, and without this it resolves silently to whichever clause
      * `StackResolver` happens to check first. Order-independent, so it also catches
-     * [paradigm] (which implies [selfExile]) paired with [selfShuffleIntoLibrary] either way round.
+     * [paradigm] (which implies [selfExile]) paired with [selfShuffleIntoLibrary] / [selfPutOnBottomOfLibrary]
+     * either way round.
      *
      * [com.wingedsheep.sdk.model.CardScript]'s own `init` rejects the same pair; this one runs first
      * for anything built through the DSL, purely so the message can name the offending card.
      */
     internal fun validateResolutionDestination(cardName: String) {
-        require(!(selfExileOnResolve && selfShuffleIntoLibraryOnResolve)) {
-            "$cardName sets both selfExile() and selfShuffleIntoLibrary(); a spell has one " +
+        require(!(selfExileOnResolve && selfLibraryPlacementOnResolve != null)) {
+            "$cardName sets both selfExile() and a self-to-library clause; a spell has one " +
                 "CR 608.2n destination, so pick the clause the card actually prints"
         }
     }
@@ -2322,7 +2334,7 @@ class CardFaceBuilder(private val name: String) {
             replacementEffects = replacementEffects.toList(),
             additionalCosts = additionalCostsList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
-            selfShuffleIntoLibraryOnResolve = spellBuilder?.shufflesIntoLibraryOnResolve ?: false,
+            selfLibraryPlacementOnResolve = spellBuilder?.libraryPlacementOnResolve,
             paradigm = spellBuilder?.isParadigm ?: false,
         )
         return CardFace(

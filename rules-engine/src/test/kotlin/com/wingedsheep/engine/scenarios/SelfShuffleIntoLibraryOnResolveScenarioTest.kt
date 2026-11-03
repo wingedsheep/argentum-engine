@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.throwables.shouldThrow
@@ -509,7 +510,7 @@ class SelfShuffleIntoLibraryOnResolveScenarioTest : FunSpec({
         // The DSL guard above never runs for a script assembled by hand — test fixtures and the
         // Assay compiler both do that — so the type itself has to refuse the pair.
         val ex = shouldThrow<IllegalArgumentException> {
-            CardScript(selfExileOnResolve = true, selfShuffleIntoLibraryOnResolve = true)
+            CardScript(selfExileOnResolve = true, selfLibraryPlacementOnResolve = ZonePlacement.Shuffled)
         }
         ex.message shouldContain "CR 608.2n destination"
     }

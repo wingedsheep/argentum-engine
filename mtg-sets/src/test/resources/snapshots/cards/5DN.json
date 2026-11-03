@@ -195,7 +195,7 @@
                 "id": "t0"
             }
         ],
-        "selfShuffleIntoLibraryOnResolve": true
+        "selfLibraryPlacementOnResolve": "Shuffled"
     },
     "metadata": {
         "collectorNumber": "6",
