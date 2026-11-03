@@ -114,6 +114,7 @@ Action News Crew
 Active Volcano	polarity: MoveToZoneEffect
 Adagia, Windswept Bastion
 Adamant Will
+Adanto Vanguard
 Adaptive Automaton
 Adaptive Gemguard
 Adaptive Shimmerer
@@ -881,6 +882,7 @@ Ashen Powder
 Ashen Rider
 Ashen-Skin Zubera
 Ashenmoor Gouger
+Ashes of the Abhorrent
 Ashes to Ashes
 Ashiok's Erasure	intent: ExileTargetSpellEffect; intent: Pipeline(FromLinkedExile→hand)
 Ashiok's Forerunner	intent: Pipeline(FromMultipleZones→hand)
@@ -1415,6 +1417,7 @@ Belligerent Whiptail	intent: GrantKeywordEffect
 Belligerent Yearling
 Belligerent of the Ball
 Bello, Bard of the Brambles
+Bellowing Aegisaur
 Bellowing Bruiser	intent: ForEach>CantBlockEffect
 Bellowing Crier
 Bellowing Saddlebrute
@@ -1728,6 +1731,7 @@ Blood Seeker
 Blood Servitor
 Blood Spatter Analysis
 Blood Speaker
+Blood Sun
 Blood Vassal
 Blood for Bones
 Blood of the Martyr	intent: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
@@ -2102,6 +2106,7 @@ Briber's Purse	combat: CantBlockEffect; intent: CantAttackEffect; intent: CantBl
 Bride's Gown
 Bridgeworks Battle
 Bridled Bighorn
+Bright Reprisal
 Brightblade Stoat
 Brightcap Badger
 Brightclimb Pathway
@@ -4725,6 +4730,7 @@ Dusk Legion Duelist
 Dusk Legion Zealot
 Dusk Mangler
 Dusk Rose Reliquary
+Duskborne Skymarcher
 Duskdale Wurm
 Duskfang Mentor	intent: AddCountersEffect
 Duskmantle Operative
@@ -8667,6 +8673,7 @@ Ivy Dancer
 Ivy Elemental
 Ivy Lane Denizen
 Ivy, Gleeful Spellthief	intent: CopyForOtherPossibleTargetsEffect
+Ixalan's Binding
 Ixalli's Diviner	intent: ExploreEffect
 Ixalli's Keeper
 Ixalli's Lorekeeper
@@ -9177,6 +9184,7 @@ Kingfisher
 Kingpin's Enforcers
 Kinjalli's Caller
 Kinjalli's Dawnrunner	intent: ExploreEffect
+Kinjalli's Sunwing
 Kinnan, Bonder Prodigy	intent: Pipeline(TopOfLibrary→battlefield|library)
 Kinsbaile Aspirant
 Kinsbaile Balloonist
@@ -9587,6 +9595,7 @@ Leering Onlooker
 Leery Fogbeast
 Legate Lanius, Caesar's Ace
 Legion Angel	intent: Pipeline(sideboard→hand)
+Legion Conquistador
 Legion Extruder
 Legion Guildmage
 Legion Leadership
@@ -12601,6 +12610,7 @@ Priest of Titania
 Priest of Yawgmoth
 Priest of the Blood Rite
 Priest of the Haunted Edge
+Priest of the Wakening Sun
 Primal Adversary	intent: ReflexiveTriggerEffect
 Primal Boost
 Primal Clay
@@ -13058,6 +13068,7 @@ Rally the Ranks
 Rally the Righteous
 Rally the Troops	intent: ForEach>TapUntapEffect
 Rally to Battle
+Rallying Roar
 Ram Through
 Rambling Possum
 Rambunctious Mutt
@@ -13715,6 +13726,7 @@ Rith, Liberated Primeval
 Rith, the Awakener	intent: ChooseColorThenEffect
 Ritual Guardian	intent: GrantKeywordEffect
 Ritual of Hope
+Ritual of Rejuvenation
 Ritual of Restoration
 Ritual of Soot
 Rivaz of the Claw	intent: GrantTriggeredAbilityEffect
@@ -16012,6 +16024,7 @@ Staunch Crewmate
 Staunch Defenders
 Staunch Shieldmate
 Stay Hidden, Stay Silent	polarity: Aura>EmitManifestedDreadEventEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>MoveCollectionEffect; polarity: Aura>MoveToZoneEffect; polarity: Aura>SelectFromCollectionEffect; polarity: Aura>TapUntapEffect
+Steadfast Armasaur
 Steadfast Guard
 Steadfast Paladin
 Steadfast Sentry
@@ -16876,6 +16889,7 @@ Tempest Harvester
 Tempest Hawk
 Tempest of Light
 Temple Acolyte
+Temple Altisaur
 Temple Elder
 Temple Garden
 Temple Thief
@@ -17615,6 +17629,7 @@ Tocasia's Dig Site
 Tocasia's Onulet
 Tocasia's Welcome
 Tocasia, Dig Site Mentor	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Tocatli Honor Guard
 Together as One
 Tokka & Rahzar, Terrible Twos
 Tolaria	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
@@ -18422,6 +18437,7 @@ Vampire Spawn
 Vampire Warlord
 Vampire of the Dire Moon
 Vampire's Kiss
+Vampire's Zeal
 Vampires' Vengeance
 Vampiric Feast
 Vampiric Fury
@@ -18890,6 +18906,7 @@ Wake Thrasher
 Wake the Past
 Wake to Slaughter	intent: GrantKeywordEffect; intent: Pipeline(ChosenTargets→battlefield|hand); polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield|hand)
 Wakedancer
+Wakening Sun's Avatar
 Waker of Waves
 Wakeroot Elemental	intent: BecomeCreatureEffect; intent: TapUntapEffect
 Waking Nightmare

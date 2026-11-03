@@ -333,6 +333,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Play with — AI (starts right away), Friends (an invite link) or Anyone (a public lobby that shows up on everyone’s home screen).',
         'AI opponents — how many AI seats to fill, where the mode allows a choice.',
         'Mode-specific picks — the draft style, Standard or Commander boosters, the set, which deck you bring, or where a multiplayer table’s decks come from (your decks, Jump In, sealed or draft).',
+        'Set — for Draft and Sealed (and a table whose decks come from them), the set the packs are opened from. Pick “Random Set” at the top of the list and the server rolls one when the event starts; nobody sees which until then.',
         'Random deck from — whenever the server rolls your deck (the Random deck mode, or “Random deck” picked as your Constructed deck), optionally pin the set it is built from. Left on “Any set”, the server picks one set for the whole table: an opponent also on “Any set”, or an AI opponent on its default, plays the same set as you.',
       ] },
       { kind: 'p', text: 'Your choices are remembered per mode. The footer says what happens next — one game, or an event with stages — and the button says exactly what it will do: Play, Start draft, Open boosters, Create lobby or Open public lobby.' },

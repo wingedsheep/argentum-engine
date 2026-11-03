@@ -688,6 +688,9 @@ object LimitedCardRater {
         // A turn of no spells from the opponent: real tempo, but it answers nothing already on the
         // board — in Limited a little under a tapper.
         IntentTag.CAST_BAN to 0.3,
+        // A trigger lock shuts off enter triggers on both sides — in Limited, where most decks run
+        // a few, it is a sideboard hoser more than a maindeck card.
+        IntentTag.TRIGGER_LOCK to 0.1,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

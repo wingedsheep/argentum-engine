@@ -120,6 +120,11 @@ describe('playModes', () => {
     expect(recipe.settings.setCodes).toEqual(['BLB'])
   })
 
+  it('passes a deferred Random Set through for the server to roll at start', () => {
+    expect(recipeForOptions({ ...defaultOptions('SEALED', true), setCode: 'RANDOM' }).settings.setCodes).toEqual(['RANDOM'])
+    expect(recipeForOptions({ ...defaultOptions('DRAFT', true), setCode: 'RANDOM' }).settings.setCodes).toEqual(['RANDOM'])
+  })
+
   it('asks about AI assistance only for AI games built from packs, and carries the answer', () => {
     expect(offersAiAssist(defaultOptions('SEALED', true))).toBe(true)
     expect(offersAiAssist(defaultOptions('DRAFT', true))).toBe(true)

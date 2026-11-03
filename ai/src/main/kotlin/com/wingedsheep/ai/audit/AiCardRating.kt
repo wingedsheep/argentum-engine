@@ -217,6 +217,7 @@ object AiCardRating {
         IntentTag.EVASION_GRANT to "Grants evasion",
         IntentTag.SACRIFICE_OUTLET to "Sacrifice outlet",
         IntentTag.CAST_BAN to "Stops opponents casting spells",
+        IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
     )
 
     private val SPEED_LABEL = mapOf(
