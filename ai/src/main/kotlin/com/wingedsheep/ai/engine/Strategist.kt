@@ -1670,11 +1670,17 @@ class Strategist(
      */
     fun wantsWindowForABan(state: GameState, playerId: EntityId): Boolean {
         if (!castBansDenyTheirTurn || state.isActiveTurnFor(playerId)) return false
-        return state.getZone(playerId, Zone.HAND).any { id ->
-            val name = state.getEntity(id)?.get<CardComponent>()?.name ?: return@any false
-            val intent = intents.forName(name) ?: return@any false
+        val bans = state.getZone(playerId, Zone.HAND).filterTo(HashSet()) { id ->
+            val name = state.getEntity(id)?.get<CardComponent>()?.name ?: return@filterTo false
+            val intent = intents.forName(name) ?: return@filterTo false
             IntentTag.CAST_BAN in intent.tags && intent.speed == Speed.INSTANT &&
                 intents.definition(name)?.let { CastBanWindow.deniesATurn(state, playerId, it) } == true
+        }
+        if (bans.isEmpty()) return false
+        // Only a ban we can actually cast: a Silence without a white source must not stop the
+        // server's auto-pass every upkeep just to pass. Rare enough to afford the enumeration.
+        return simulator.getLegalActions(state, playerId).any { action ->
+            action.affordable && (action.action as? CastSpell)?.cardId in bans
         }
     }
 

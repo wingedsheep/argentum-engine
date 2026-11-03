@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
+import com.wingedsheep.ai.engine.knowledge.CastBanWindow
 import com.wingedsheep.ai.engine.knowledge.HoldPolicy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.IntentTag
@@ -39,11 +40,11 @@ class CastBanReadingAiTest : ScenarioTestBase() {
     private fun tags(name: String) = CardIntentAnalyzer.analyze(cardRegistry.getCard(name)!!).tags
 
     /** Silence and a Plains, the opponent holding two cards and the Forests to cast them; [theirUpkeep] or our own precombat main. */
-    private fun silence(theirUpkeep: Boolean) = { s: ScenarioBuilder ->
+    private fun silence(theirUpkeep: Boolean, plains: Int = 1) = { s: ScenarioBuilder ->
         s.withPlayers()
             .withTurnNumber(4)
             .let { if (theirUpkeep) it.withActivePlayer(2).inPhase(Phase.BEGINNING, Step.UPKEEP) else it }
-            .withLandsOnBattlefield(1, "Plains", 1)
+            .withLandsOnBattlefield(1, "Plains", plains)
             .withLandsOnBattlefield(2, "Forest", 3)
             .withCardInHand(1, "Silence")
             .withCardInHand(2, "Grizzly Bears")
@@ -120,6 +121,22 @@ class CastBanReadingAiTest : ScenarioTestBase() {
             }
             val ownMain = silence(theirUpkeep = false)(scenario())
             EngineAiPlayerController(cardRegistry, ownMain.player1Id, { ownMain.state }).wantsPriority(ownMain.state) shouldBe false
+        }
+
+        test("a second ban on an opponent already silenced this turn denies nothing") {
+            val game = silence(theirUpkeep = true)(scenario())
+            val silenceCard = cardRegistry.getCard("Silence")!!
+            CastBanWindow.deniesATurn(game.state, game.player1Id, silenceCard) shouldBe true
+            game.castSpell(1, "Silence").error shouldBe null
+            game.resolveStack()
+            withClue("the opponent is already banned until end of turn") {
+                CastBanWindow.deniesATurn(game.state, game.player1Id, silenceCard) shouldBe false
+            }
+        }
+
+        test("a ban we can't pay for doesn't stop the server's auto-pass") {
+            val game = silence(theirUpkeep = true, plains = 0)(scenario())
+            EngineAiPlayerController(cardRegistry, game.player1Id, { game.state }).wantsPriority(game.state) shouldBe false
         }
 
         test("the AI holds Silence in its own main phase, where it denies only their responses") {

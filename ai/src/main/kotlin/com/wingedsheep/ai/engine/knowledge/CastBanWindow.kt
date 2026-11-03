@@ -1,11 +1,14 @@
 package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 
 /**
@@ -25,9 +28,9 @@ import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
  *  - **"Until your next turn"** (Inventive Iteration's shape): only when cast on our own turn,
  *    which leaves the opponent's next turn inside it.
  *
- * And only while an opponent the ban reaches holds a card: a ban on an empty hand denies nothing
- * the AI can see. A self-binding ban, an untargeted shape it does not know, or a trigger's ban (a
- * creature's entry is priced by its body) declines.
+ * And only while an opponent the ban reaches holds a card and isn't already banned for that window:
+ * a ban on an empty hand, or a second Silence, denies nothing the AI can see. A self-binding ban, a
+ * shape it does not know, or a trigger's ban (a creature's entry is priced by its body) declines.
  */
 object CastBanWindow {
 
@@ -38,7 +41,7 @@ object CastBanWindow {
             .filter { CardIntentAnalyzer.bansAnOpponent(it.target) }
         if (bans.isEmpty()) return false
         val ourTurn = state.isActiveTurnFor(playerId)
-        val covers = bans.any { ban ->
+        val covering = bans.filter { ban ->
             when (ban.duration) {
                 Duration.EndOfTurn -> !ourTurn && state.step in THEIR_BEGINNING_PHASE
                 Duration.DuringAffectedPlayersNextTurn -> true
@@ -46,9 +49,29 @@ object CastBanWindow {
                 else -> false
             }
         }
-        if (!covers) return false
-        return state.turnOrder.any { it != playerId && state.getZone(it, Zone.HAND).isNotEmpty() }
+        if (covering.isEmpty()) return false
+        val lasting = covering.mapTo(HashSet()) { REMOVAL_OF.getValue(it.duration) }
+        return state.turnOrder.any { opponent ->
+            opponent != playerId && state.getZone(opponent, Zone.HAND).isNotEmpty() && !alreadyBanned(state, opponent, lasting)
+        }
     }
+
+    /**
+     * Whether [opponent] already can't cast any spell for a window a ban lasting [lasting] covers —
+     * a second Silence on a player the first one already silenced denies nothing more.
+     */
+    private fun alreadyBanned(state: GameState, opponent: EntityId, lasting: Set<PlayerEffectRemoval>): Boolean =
+        state.getEntity(opponent)?.get<CantCastSpellsComponent>()?.restrictions.orEmpty().any {
+            it.spellFilter == GameObjectFilter.Any && it.activeFromSpellCount == null &&
+                (it.removeOn in lasting || it.removeOn == PlayerEffectRemoval.Permanent)
+        }
+
+    /** How the engine records each duration [deniesATurn] reads (the `CantCastSpells` executor's mapping). */
+    private val REMOVAL_OF = mapOf(
+        Duration.EndOfTurn to PlayerEffectRemoval.EndOfTurn,
+        Duration.DuringAffectedPlayersNextTurn to PlayerEffectRemoval.DuringYourNextTurn,
+        Duration.UntilYourNextTurn to PlayerEffectRemoval.UntilYourNextTurn,
+    )
 
     /** The steps of an opponent's turn before their first main phase. */
     private val THEIR_BEGINNING_PHASE = setOf(Step.UPKEEP, Step.DRAW)
