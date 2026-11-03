@@ -69,7 +69,7 @@ internal class ActivationChoicePauses(
             ?: manaXChoice(state, activation)
             ?: exileXFromGraveyardChoice(state, activation)
             ?: discardXChoice(state, activation)
-            ?: exileFromGraveyardChoice(state, activation)
+            ?: chosenCardExileChoice(state, activation)
             ?: jointSacrificeChoice(state, activation)
             ?: sacrificeChoice(state, activation)
             ?: putOnLibraryChoice(state, activation)
@@ -316,7 +316,7 @@ internal class ActivationChoicePauses(
     }
 
     // -------------------------------------------------------------------
-    // ExileFromGraveyard cost-choice pause (legal-actions submission path).
+    // Chosen-card exile cost pause (graveyard or hand; legal-actions submission path).
     // Also asks for a hand exile cost ("Exile a card from your hand"), same shape.
     //
     // When the cost is `ExileFromGraveyard(count, filter)` (Rust Harvester:
@@ -331,32 +331,32 @@ internal class ActivationChoicePauses(
     // and resumed-replay case) or when candidates <= count (no real
     // choice).
     // -------------------------------------------------------------------
-    private fun exileFromGraveyardChoice(state: GameState, activation: Activation): ExecutionResult? {
+    private fun chosenCardExileChoice(state: GameState, activation: Activation): ExecutionResult? {
         val action = activation.action
         val sourceName = activation.sourceName
-        val exileFromGraveyardCost = activation.effectiveCost.extractChosenCardExileCost()
+        val exileCost = activation.effectiveCost.extractChosenCardExileCost()
         val alreadyExiling = (action.costPayment?.exiledCards?.isNotEmpty() == true)
-        if (exileFromGraveyardCost == null || alreadyExiling) return null
+        if (exileCost == null || alreadyExiling) return null
         // The pool follows the atom's own flags, not "the activator's graveyard": Night Soil
         // exiles "two creature cards from a single graveyard", so every player's graveyard is
         // in the pool, and a graveyard holding fewer than `count` matches is dropped because
         // it can't legally supply the whole payment on its own.
         val exileCandidatesByOwner = costHandler
-            .exileCandidatesByOwner(state, exileFromGraveyardCost, action.playerId, action.sourceId)
+            .exileCandidatesByOwner(state, exileCost, action.playerId, action.sourceId)
             .values
         val exileCandidates =
-            if (exileFromGraveyardCost.singleZone) {
-                exileCandidatesByOwner.filter { it.size >= exileFromGraveyardCost.count }.flatten()
+            if (exileCost.singleZone) {
+                exileCandidatesByOwner.filter { it.size >= exileCost.count }.flatten()
             } else {
                 exileCandidatesByOwner.flatten()
             }
-        if (exileCandidates.size <= exileFromGraveyardCost.count) return null
-        val zoneLabel = if (exileFromGraveyardCost.zone == Zone.HAND) "your hand" else "graveyard"
-        val prompt = "Select ${exileFromGraveyardCost.count} card${if (exileFromGraveyardCost.count > 1) "s" else ""} to exile from $zoneLabel for ${sourceName}"
+        if (exileCandidates.size <= exileCost.count) return null
+        val zoneLabel = if (exileCost.zone == Zone.HAND) "your hand" else "graveyard"
+        val prompt = "Select ${exileCost.count} card${if (exileCost.count > 1) "s" else ""} to exile from $zoneLabel for ${sourceName}"
         val continuation = ActivateAbilityExileFromGraveyardContinuation(
             action = action,
             exileCandidates = exileCandidates,
-            exileCount = exileFromGraveyardCost.count
+            exileCount = exileCost.count
         )
         return state.suspendForDecision(
             question = { decisionId ->
@@ -366,8 +366,8 @@ internal class ActivationChoicePauses(
                     prompt = prompt,
                     context = castingContext(action, sourceName),
                     options = exileCandidates,
-                    minSelections = exileFromGraveyardCost.count,
-                    maxSelections = exileFromGraveyardCost.count
+                    minSelections = exileCost.count,
+                    maxSelections = exileCost.count
                 )
             },
             answer = continuation

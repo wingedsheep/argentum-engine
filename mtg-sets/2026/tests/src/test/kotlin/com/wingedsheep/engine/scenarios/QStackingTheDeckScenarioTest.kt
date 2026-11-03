@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -85,6 +86,11 @@ class QStackingTheDeckScenarioTest : ScenarioTestBase() {
                 withClue("the Swamp in hand paid the cost") {
                     game.isInHand(1, "Swamp") shouldBe false
                     game.isInExile(1, "Swamp") shouldBe true
+                }
+                withClue("the copy's {R} was paid: all five Mountains are tapped (four for Q, one for the copy)") {
+                    game.findPermanents("Mountain").count {
+                        game.state.getEntity(it)?.has<TappedComponent>() == true
+                    } shouldBe 5
                 }
                 withClue("the copy resolved into a Raging Goblin on the battlefield") {
                     game.findPermanent("Raging Goblin") shouldNotBe null
