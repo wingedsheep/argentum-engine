@@ -19828,8 +19828,9 @@ The priority groups are (CR 616.1a–f):
   `TokenCreationReplacementHelper.substituteIfReplaced` — token copies of the source, of a chosen permanent
   (a substitution question re-runs the effect with the chosen permanent remembered) and of the equipped
   creature ("that token gains haste" reaches the substitutes), Aura tokens such as Roles (the substitutes
-  enter unattached and displace no Role), and Momir's `TokenFromDefinition` mints (not yet the copies a
-  Mirrormind-style `ReplaceTokenCreationWithAttachedCopy` makes instead). The substitutes are
+  enter unattached and displace no Role), Momir's `TokenFromDefinition` mints, and the copies an accepted
+  Mirrormind-style `ReplaceTokenCreationWithAttachedCopy` makes instead (CR 616.2; a question re-runs with
+  the accepted offer remembered). The substitutes are
   created without a second doubler pass, but they *are* checked against this family again, minus every
   substitution already applied to the event (CR 616.2 / 614.5) — so substitutions chain without looping:
   Fisher's Talent's level 2 ("if you would create a Fish token, create a 3/3 blue Shark creature token

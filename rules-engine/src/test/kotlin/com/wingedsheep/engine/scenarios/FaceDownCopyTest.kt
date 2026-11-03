@@ -215,7 +215,9 @@ class FaceDownCopyTest : FunSpec({
                 "source" -> com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfSourceExecutor(
                     d.cardRegistry, predicateEvaluator = evaluator).execute(d.state, CreateTokenCopyOfSourceEffect(), context)
                 "chosen" -> com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfChosenPermanentExecutor
-                    .createTokenCopy(d.state, source, d.player1, cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)
+                    .createTokenCopy(d.state, source, d.player1, cardRegistry = d.cardRegistry, predicateEvaluator = evaluator,
+                        effect = com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfChosenPermanentEffect(
+                            com.wingedsheep.sdk.scripting.GameObjectFilter.Permanent), context = context)
                 "equipped" -> {
                     val equipment = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")
                     d.replaceState(d.state.updateEntity(equipment) {
@@ -227,7 +229,8 @@ class FaceDownCopyTest : FunSpec({
                 }
                 else -> com.wingedsheep.engine.handlers.effects.token.TokenCreationReplacementHelper
                     .createAttachedPermanentCopies(d.state, source, d.player1, 1,
-                        cardRegistry = d.cardRegistry, predicateEvaluator = evaluator)
+                        cardRegistry = d.cardRegistry, predicateEvaluator = evaluator,
+                        rootEffect = CreateTokenCopyOfSourceEffect(), context = context)
             }
             d.replaceState(result.state)
             val token = (d.state.getBattlefield().toSet() - before).single { d.state.getEntity(it)!!.has<TokenComponent>() }

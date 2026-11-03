@@ -466,6 +466,9 @@ object TokenCreationReplacementHelper {
 
     private const val SUBSTITUTION_CHOICE_PREFIX = "__tokenSubstitution:"
 
+    /** Records an accepted attached-copy offer across a token-substitution question's re-run. */
+    private const val ATTACHED_COPY_ACCEPTED = "__attachedCopyAccepted"
+
     /** The answer recorded for a declined optional substitution. */
     const val SUBSTITUTION_DECLINED = "declined"
 
@@ -549,9 +552,16 @@ object TokenCreationReplacementHelper {
         ) ?: return null
         val tokenCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "substituted tokens")
         return when (lookup) {
+            // The substitutes replace the accepted attached copies; they mustn't become them again.
             is TokenSubstitution ->
                 CreateTokenExecutor(predicateEvaluator.conditions.amounts, staticAbilityHandler, cardRegistry)
-                    .createSubstituteTokens(state, lookup, context, tokenCount, tokenControllerId, riders, rootEffect)
+                    .createSubstituteTokens(
+                        state, lookup,
+                        context.copy(pipeline = context.pipeline.copy(
+                            chosenValues = context.pipeline.chosenValues - ATTACHED_COPY_ACCEPTED
+                        )),
+                        tokenCount, tokenControllerId, riders, rootEffect
+                    )
             is TokenSubstitutionChoice -> askForSubstitution(pauseState, lookup, rootEffect, context, tokenCount)
         }
     }
@@ -576,6 +586,15 @@ object TokenCreationReplacementHelper {
         if (tokenCount <= 0) return null
 
         val controllerId = tokenControllerId
+
+        // Re-run after a token-substitution question about copies an accepted offer was making:
+        // the offer was already taken (and marked used), so make those copies again.
+        context.pipeline.chosenValues[ATTACHED_COPY_ACCEPTED]?.let { attachedId ->
+            return createAttachedPermanentCopies(
+                state, EntityId(attachedId), controllerId, tokenCount, cardRegistry, staticAbilityHandler,
+                predicateEvaluator = predicateEvaluator, rootEffect = effect, context = context
+            )
+        }
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -631,7 +650,7 @@ object TokenCreationReplacementHelper {
                     return createAttachedPermanentCopies(
                         newState, attachedTo.targetId, controllerId, tokenCount,
                         cardRegistry, staticAbilityHandler,
-                        predicateEvaluator = predicateEvaluator
+                        predicateEvaluator = predicateEvaluator, rootEffect = effect, context = context
                     )
                 }
             }
@@ -657,13 +676,25 @@ object TokenCreationReplacementHelper {
         count: Int,
         cardRegistry: CardRegistry? = null,
         staticAbilityHandler: StaticAbilityHandler? = null,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        rootEffect: Effect,
+        context: EffectContext,
     ): EffectResult {
         val attachedContainer = state.getEntity(attachedPermanentId)
             ?: return EffectResult.success(state)
 
         val attachedCard = attachedContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
+
+        // The copies are still tokens being created: a token substitution (Holo-Engineer) gets a
+        // look at them (CR 616.2). A question re-runs [rootEffect] with the accepted offer remembered.
+        val remembered = context.copy(pipeline = context.pipeline.copy(
+            chosenValues = context.pipeline.chosenValues + (ATTACHED_COPY_ACCEPTED to attachedPermanentId.value)
+        ))
+        substituteIfReplaced(
+            state, attachedCard.copy(ownerId = controllerId, isDoubleFaced = false), controllerId, count,
+            remembered, rootEffect, predicateEvaluator, staticAbilityHandler, cardRegistry,
+        )?.let { return it }
 
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()

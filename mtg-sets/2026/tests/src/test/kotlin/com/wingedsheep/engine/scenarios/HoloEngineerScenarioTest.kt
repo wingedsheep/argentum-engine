@@ -71,6 +71,24 @@ class HoloEngineerScenarioTest : ScenarioTestBase() {
             game.isIllusion(tokens.single()) shouldBe true
         }
 
+        test("two tokens at once become two Illusions") {
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Holo-Engineer")
+                .withCardInHand(1, "Raise the Alarm")
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Raise the Alarm").error shouldBe null
+            game.resolveStack()
+
+            val tokens = game.tokensOf(game.player1Id)
+            tokens.size shouldBe 2
+            tokens.all { game.isIllusion(it) } shouldBe true
+        }
+
         test("an opponent's tokens are not replaced") {
             val game = scenario()
                 .withPlayers()

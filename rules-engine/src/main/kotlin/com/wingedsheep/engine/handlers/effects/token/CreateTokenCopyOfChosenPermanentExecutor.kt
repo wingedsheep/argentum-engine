@@ -121,8 +121,8 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             staticAbilityHandler: StaticAbilityHandler? = null,
             cardRegistry: CardRegistry? = null,
             predicateEvaluator: PredicateEvaluator,
-            effect: CreateTokenCopyOfChosenPermanentEffect? = null,
-            context: EffectContext? = null,
+            effect: CreateTokenCopyOfChosenPermanentEffect,
+            context: EffectContext,
         ): EffectResult {
             val chosenContainer = state.getEntity(chosenId)
                 ?: return EffectResult.success(state)
@@ -134,15 +134,13 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             // a token is not a card (CR 111.1) — see CreateTokenCopyOfTargetExecutor.
             val tokenCard = chosenCard.copy(ownerId = controllerId, isDoubleFaced = false)
 
-            if (effect != null && context != null) {
-                val remembered = context.copy(pipeline = context.pipeline.copy(
-                    chosenValues = context.pipeline.chosenValues + (CHOSEN_PERMANENT_KEY to chosenId.value)
-                ))
-                TokenCreationReplacementHelper.substituteIfReplaced(
-                    state, tokenCard, controllerId, 1, remembered, effect,
-                    predicateEvaluator, staticAbilityHandler, cardRegistry,
-                )?.let { return it }
-            }
+            val remembered = context.copy(pipeline = context.pipeline.copy(
+                chosenValues = context.pipeline.chosenValues + (CHOSEN_PERMANENT_KEY to chosenId.value)
+            ))
+            TokenCreationReplacementHelper.substituteIfReplaced(
+                state, tokenCard, controllerId, 1, remembered, effect,
+                predicateEvaluator, staticAbilityHandler, cardRegistry,
+            )?.let { return it }
 
             val (tokenId, stateWithId) = state.newEntity()
 

@@ -66,7 +66,8 @@ class CreateTokenCopyOfSourceExecutor(
         // "If one or more tokens would be created under your control, that many … are created
         // instead" (Holo-Engineer) replaces token copies too; the copy's characteristics are what
         // its filter reads. The end-step exile rider still applies to the substitutes.
-        sourceCopyCharacteristics(state, effect, context, controllerId)?.let { prospective ->
+        copySource(state, context)?.copiableCardComponent()?.let { sourceCard ->
+            val prospective = sourceCopyCharacteristics(sourceCard, effect, context, controllerId)
             TokenCreationReplacementHelper.substituteIfReplaced(
                 state, prospective, controllerId, count, context, effect,
                 predicateEvaluator, staticAbilityHandler, cardRegistry,
@@ -89,15 +90,13 @@ class CreateTokenCopyOfSourceExecutor(
 
     /** The token copy's characteristics: the source's copiable values plus the "except …" clause. */
     private fun sourceCopyCharacteristics(
-        state: GameState,
+        sourceCard: CardComponent,
         effect: CreateTokenCopyOfSourceEffect,
         context: EffectContext,
         controllerId: EntityId,
-    ): CardComponent? {
-        val sourceCard = copySource(state, context)?.copiableCardComponent() ?: return null
-        return CopyExceptionApplier.apply(sourceCard, effect.copyExceptions, context.resolvingTriggeredAbility)
+    ): CardComponent =
+        CopyExceptionApplier.apply(sourceCard, effect.copyExceptions, context.resolvingTriggeredAbility)
             .copy(ownerId = controllerId, isDoubleFaced = false)
-    }
 
     /**
      * Create [count] token copies of the effect's source. Split out of [execute] so the
@@ -130,8 +129,7 @@ class CreateTokenCopyOfSourceExecutor(
         // Copy the source's CardComponent, re-homing the token to the controller. `isDoubleFaced`
         // is cleared, not inherited: a token is not a card (CR 111.1), so it never answers a
         // "double-faced card" question — see CreateTokenCopyOfTargetExecutor.
-        val tokenCard = CopyExceptionApplier.apply(sourceCard, exceptions, context.resolvingTriggeredAbility)
-            .copy(ownerId = controllerId, isDoubleFaced = false)
+        val tokenCard = sourceCopyCharacteristics(sourceCard, effect, context, controllerId)
 
         val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "source-copy tokens")
         for (index in 0 until cappedCount) {
