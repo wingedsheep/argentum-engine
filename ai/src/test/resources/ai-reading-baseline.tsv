@@ -4612,6 +4612,7 @@ Drudge Sentinel
 Drudge Skeletons
 Druid Class
 Druid Lyrist
+Druid of Horns
 Druid of the Anima
 Druid of the Cowl
 Druid of the Spade
@@ -4619,6 +4620,7 @@ Drumbellower
 Drunau Corpse Trawler	intent: GrantKeywordEffect
 Dry Spell
 Dryad Arbor
+Dryad Greenseeker
 Dryad Militant
 Dryad of the Ilysian Grove
 Dryad's Caress
@@ -4967,6 +4969,7 @@ Elvish Archers
 Elvish Archivist
 Elvish Branchbender	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Elvish Champion
+Elvish Clancaller
 Elvish Doomsayer
 Elvish Eulogist
 Elvish Farmer
@@ -6387,6 +6390,7 @@ Garenbrig Squire
 Gargadon
 Gargantuan Leech
 Gargos, Vicious Watcher
+Gargoyle Sentinel	combat: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Garland, Knight of Cornelia	intent: ReturnSelfFromZoneTransformedEffect
 Garna, Bloodfist of Keld
 Garna, the Bloodflame	intent: ReturnCreaturesPutInGraveyardThisTurnEffect
@@ -6525,6 +6529,7 @@ Ghalta the Immovable
 Ghalta the Unstoppable
 Ghalta, Primal Hunger
 Ghalta, Stampede Tyrant	intent: Pipeline(hand→battlefield)
+Ghastbark Twins
 Ghastly Discovery
 Ghastly Gloomhunter
 Ghastly Remains
@@ -7978,6 +7983,7 @@ Hundred-Battle Veteran
 Hundred-Talon Kami
 Hundroog
 Hunger of the Howlpack
+Hungering Hydra
 Hungering Puppetbeast
 Hungry Flames
 Hungry Ghoul
@@ -9970,6 +9976,7 @@ Magic Damper
 Magic Missile	polarity: DividedDamageEffect
 Magic Pot
 Magical Hack	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
+Magistrate's Scepter	intent: TakeExtraTurnEffect
 Magitek Armor
 Magitek Infantry
 Magitek Scythe	intent: GrantKeywordEffect; intent: MustBeBlockedEffect
@@ -14859,6 +14866,7 @@ Sigil of the New Dawn
 Sigiled Contender
 Sigiled Sentinel
 Sigiled Starfish
+Sigiled Sword of Valeron
 Sign in Blood	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Signature Slam	polarity: ForEachEffect
 Signpost Scarecrow
@@ -14980,6 +14988,7 @@ Sizzling Changeling
 Sizzling Soloist	intent: CantBlockEffect; intent: IncrementAbilityResolutionCountEffect; intent: MarkMustAttackEffect
 Skaab Goliath
 Skaab Wrangler
+Skalla Wolf
 Skarrgan Hellkite	polarity: DividedDamageEffect
 Skateboard
 Skatewing Spy	intent: AdaptEffect
@@ -16254,6 +16263,7 @@ Sure Strike
 Sure-Footed Infiltrator
 Sureshot Sower
 Surge Engine	combat: RemoveKeywordEffect; combat: SetBaseStatsEffect; intent: ChangeColorEffect
+Surge Mare
 Surge of Salvation	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
 Surge of Thoughtweft
 Surge of Zeal	intent: ForEach>GrantKeywordEffect; intent: GrantKeywordEffect; timing: ForEach>GrantKeywordEffect; timing: GrantKeywordEffect
@@ -16793,6 +16803,7 @@ Teysa, Opulent Oligarch
 Teysa, Orzhov Scion
 Tezzeret the Seeker	intent: ForEach>BecomeCreatureEffect; intent: ForEach>TapUntapEffect
 Tezzeret's Gambit
+Tezzeret's Gatebreaker	combat: CantBeBlockedGroupEffect; timing: CantBeBlockedGroupEffect
 Tezzeret's Strider
 Tezzeret, Artifice Master
 Tezzeret, Betrayer of Flesh	intent: AddCardTypeEffect; intent: BecomeCreatureEffect; polarity: AddCardTypeEffect; polarity: BecomeCreatureEffect
@@ -17094,6 +17105,7 @@ Thorin Oakenshield
 Thorin's Last Stand
 Thorin, Mountain-king	polarity: Pipeline(ChosenTargets→?); polarity: ReflexiveTriggerEffect
 Thorn Elemental
+Thorn Lieutenant
 Thorn Mammoth
 Thorn Thallid
 Thorn of Amethyst
@@ -18058,6 +18070,7 @@ Urgoros, the Empty One
 Urn of Godfire
 Uro, Titan of Nature's Wrath
 Ursapine
+Ursine Champion	timing: SetCreatureSubtypesEffect
 Uruk-hai Berserker	intent: TheRingTemptsYouEffect
 Urza Assembles the Titans
 Urza's Avenger
@@ -18459,10 +18472,12 @@ Vivid Marsh
 Vivid Meadow
 Vivid Revival
 Vivien Reid
+Vivien of the Arkbow
 Vivien on the Hunt
 Vivien's Arkbow	intent: Pipeline(TopOfLibrary→battlefield|library)
 Vivien's Crocodile
 Vivien's Grizzly
+Vivien's Invocation
 Vivien's Jaguar
 Vivien, Arkbow Ranger	intent: Pipeline(sideboard→hand)
 Vivien, Champion of the Wilds	intent: GrantKeywordEffect

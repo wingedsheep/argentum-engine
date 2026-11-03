@@ -1065,6 +1065,58 @@
     ]
 }
 
+// Gargoyle Sentinel
+{
+    "name": "Gargoyle Sentinel",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Defender (This creature can't attack.)\n{3}: Until end of turn, this creature loses defender and gains flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gargoyle Sentinel:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "DEFENDER",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Baker",
+        "flavorText": "\"Do not mistake a quiet rampart for one that is unguarded. Some things stir only when they need to.\"\n—Bonovar, siege commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6af328bc-bce5-4024-9da5-853ee16eaa8a.jpg?1783941791"
+    },
+    "colorIdentityOverride": []
+}
+
 // Garruk's Companion
 {
     "name": "Garruk's Companion",

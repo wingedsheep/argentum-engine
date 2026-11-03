@@ -2613,6 +2613,153 @@
     "colorIdentityOverride": []
 }
 
+// Druid of Horns
+{
+    "name": "Druid of Horns",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Whenever you cast an Aura spell that targets this creature, create a 3/3 green Beast creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Druid of Horns:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Aura"
+                            }
+                        ]
+                    },
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/3/832691a5-c638-481b-a413-3fdfc604a132.jpg?1783934466"
+                },
+                "descriptionOverride": "Whenever you cast an Aura spell that targets this creature, create a 3/3 green Beast creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "No welcome for those who trespass. Only fang and horn and claw.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19ca91ea-dffd-44a9-a54a-c664d83c357b.jpg?1783934537",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Druid of Horns's ability resolves before the spell that caused it to trigger. The ability resolves even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Dryad Greenseeker
+{
+    "name": "Dryad Greenseeker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dryad",
+    "oracleText": "{T}: Look at the top card of your library. If it's a land card, you may reveal it and put it into your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dryad Greenseeker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "land",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true,
+                            "revealToSelf": false
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: Look at the top card of your library. If it's a land card, you may reveal it and put it into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"The land already knows its destiny. I simply ask it to share the tale with me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30171803-1e7b-430b-a0de-2dfd2f1115ac.jpg?1783934537",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If the top card of your library isn't a land card, or if you choose not to reveal it, it remains on top of your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dwarven Priest
 {
     "name": "Dwarven Priest",
@@ -2696,6 +2843,98 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Elvish Clancaller
+{
+    "name": "Elvish Clancaller",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Other Elves you control get +1/+1.\n{4}{G}{G}, {T}: Search your library for a card named Elvish Clancaller, put it onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elvish Clancaller:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "name:Elvish Clancaller"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card named Elvish Clancaller to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Elf ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "No single root feeds the forest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4da3b0bc-84da-4b85-992b-d0700c97157c.jpg?1783934537"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3388,6 +3627,42 @@
     ]
 }
 
+// Ghastbark Twins
+{
+    "name": "Ghastbark Twins",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nThis creature can block an additional creature each combat.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "They grow closer with every passing season.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d470e441-3520-4669-aaa5-f0c57829352a.jpg?1783934537"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gigantosaurus
 {
     "name": "Gigantosaurus",
@@ -4045,6 +4320,56 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Hungering Hydra
+{
+    "name": "Hungering Hydra",
+    "manaCost": "{X}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\nThis creature can't be blocked by more than one creature.\nWhenever this creature is dealt damage, put that many +1/+1 counters on it. (It must survive the damage to get the counters.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hungering Hydra:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84127b83-e75a-4f12-92ca-46f50bb89699.jpg?1783934533"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8030,6 +8355,106 @@
     ]
 }
 
+// Sigiled Sword of Valeron
+{
+    "name": "Sigiled Sword of Valeron",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0, has vigilance, and is a Knight in addition to its other types.\nWhenever equipped creature attacks, create a 2/2 white Knight creature token with vigilance that's attacking.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigiled Sword of Valeron:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd8ca5ee-7b93-4248-8f4a-b88261ee1eed.jpg?1783934470",
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sigiled Sword of Valeron:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Knight",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "RARE",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/497d08a8-cffe-4164-a941-d8c8c85644c7.jpg?1783934508",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "You choose which player or planeswalker the token is attacking. It doesn't have to be attacking the same player or planeswalker that the equipped creature is attacking."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Although the token is attacking, it was never declared as an attacking creature (for the purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    }
+}
+
 // Silverbeak Griffin
 {
     "name": "Silverbeak Griffin",
@@ -8051,6 +8476,90 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Skalla Wolf
+{
+    "name": "Skalla Wolf",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Wolf Spirit",
+    "oracleText": "When this creature enters, look at the top five cards of your library. You may reveal a green card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skalla Wolf:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "green",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a green card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "303",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "\"This imprint was the familiar of a friend.\"\n—Vivien Reid",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f320e9f2-963d-468a-bf7a-726ef11e886d.jpg?1783934481"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8758,6 +9267,131 @@
     ]
 }
 
+// Surge Mare
+{
+    "name": "Surge Mare",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Horse Fish",
+    "oracleText": "This creature can't be blocked by green creatures.\nWhenever this creature deals damage to an opponent, you may draw a card. If you do, discard a card.\n{1}{U}: This creature gets +2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Surge Mare:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Surge Mare:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasColor",
+                            "color": "GREEN"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Rowan",
+        "flavorText": "When it passes, waves touch the sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9002d0f1-ff2c-4d1c-a7db-3252ef6bebbd.jpg?1783934580"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Suspicious Bookcase
 {
     "name": "Suspicious Bookcase",
@@ -8905,6 +9539,118 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Tezzeret's Gatebreaker
+{
+    "name": "Tezzeret's Gatebreaker",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, look at the top five cards of your library. You may reveal a blue or artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.\n{5}{U}, {T}, Sacrifice this artifact: Creatures you control can't be blocked this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tezzeret's Gatebreaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "blue|artifact",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a blue or artifact card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tezzeret's Gatebreaker:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{U}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CantBeBlockedGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "descriptionOverride": "{5}{U}, {T}, Sacrifice this artifact: Creatures you control can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "289",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/584e0528-01c2-49fb-aa4a-098172bb17a7.jpg?1783934487",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Because the last ability of Tezzeret's Gatebreaker doesn't change the characteristics of any permanents, the set of creatures affected by it is constantly updated. Creatures that come under your control later in the turn can't be blocked."
+            }
+        ],
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9233,6 +9979,83 @@
     ]
 }
 
+// Thorn Lieutenant
+{
+    "name": "Thorn Lieutenant",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Whenever this creature becomes the target of a spell or ability an opponent controls, create a 1/1 green Elf Warrior creature token.\n{5}{G}: This creature gets +4/+4 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thorn Lieutenant:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "byOpponent": true
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/0/808b9201-6fc5-4613-85d6-6e66c6e36a8e.jpg?1783934463"
+                },
+                "descriptionOverride": "Whenever this creature becomes the target of a spell or ability an opponent controls, create a 1/1 green Elf Warrior creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Thorn Lieutenant:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature gets +4/+4 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0812e942-eb78-48c8-857e-5f0ff1bd777b.jpg?1783934528",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Thorn Lieutenant's triggered ability resolves before the spell or ability that caused it to trigger. It resolves even if that spell or ability is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thud
 {
     "name": "Thud",
@@ -9500,6 +10323,70 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ursine Champion
+{
+    "name": "Ursine Champion",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "{5}{G}: This creature gets +3/+3 and becomes a Bear Berserker until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ursine Champion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Bear",
+                                "Berserker"
+                            ],
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "This creature gets +3/+3 and becomes a Bear Berserker until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "304",
+        "artist": "Alex Konstad",
+        "flavorText": "\"Would you rather feel the edge of my blade or the sharpness of my fangs?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e60b6c02-c1f1-4ab9-bd62-ae3b447a898f.jpg?1783934479"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10087,6 +10974,277 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/8/681fbd66-b622-4f20-a860-f101aff21109.jpg?1562302655"
     },
     "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vivien of the Arkbow
+{
+    "name": "Vivien of the Arkbow",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Vivien",
+    "oracleText": "+2: Put two +1/+1 counters on up to one target creature.\n−3: Target creature you control deals damage equal to its power to target creature you don't control.\n−9: Creatures you control get +4/+4 and gain trample until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vivien of the Arkbow:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vivien of the Arkbow:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vivien of the Arkbow:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "301",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c185555-acd4-461a-821a-b21b7b0914a5.jpg?1783934487",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If either creature is an illegal target as Vivien's second ability tries to resolve, the creature you control won't deal damage."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Vivien's last ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +4/+4 or gain trample."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Vivien's Invocation
+{
+    "name": "Vivien's Invocation",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top seven cards of your library. You may put a creature card from among them onto the battlefield. Put the rest on the bottom of your library in a random order. When a creature is put onto the battlefield this way, it deals damage equal to its power to target creature an opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may put a creature card from among them onto the battlefield",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "vivienInvoked"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "vivienInvoked"
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "vivienInvoked"
+                                },
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "damageSource": {
+                                "type": "PipelineTarget",
+                                "collectionName": "vivienInvoked"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "It deals damage equal to its power to target creature an opponent controls."
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/784c4711-223d-4b95-a163-87e57f87b8db.jpg?1783934524",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "You don't choose any targets as you cast Vivien's Invocation. While that spell is resolving, you may put a creature card from among the cards you look at onto the battlefield. If you do, a separate ability triggers and you pick a target creature an opponent controls to be dealt damage."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the creature you put onto the battlefield leaves the battlefield before damage is dealt, its last known existence on the battlefield is used to determine how much damage it deals to the target creature."
+            }
+        ]
+    },
     "colorIdentityOverride": [
         "GREEN"
     ]

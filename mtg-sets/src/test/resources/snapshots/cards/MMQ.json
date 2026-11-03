@@ -3523,6 +3523,75 @@
     ]
 }
 
+// Magistrate's Scepter
+{
+    "name": "Magistrate's Scepter",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}: Put a charge counter on this artifact.\n{T}, Remove three charge counters from this artifact: Take an extra turn after this one.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Magistrate's Scepter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Magistrate's Scepter:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": "TakeExtraTurn",
+                "descriptionOverride": "Take an extra turn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "304",
+        "rarity": "RARE",
+        "artist": "Adam Rex",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4785ed7-c948-4ad2-b24d-2f45806d9fcc.jpg?1783945912",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If multiple extra turns would be taken after this one, perhaps because more than one player has activated the last ability of their Magistrate's Scepter, the most recently created one is taken first."
+            }
+        ]
+    }
+}
+
 // Misdirection
 {
     "name": "Misdirection",
