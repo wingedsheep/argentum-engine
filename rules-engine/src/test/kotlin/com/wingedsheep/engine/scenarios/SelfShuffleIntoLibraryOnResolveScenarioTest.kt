@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.throwables.shouldThrow
@@ -54,7 +55,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * [AfterResolveDestinationScenarioTest]), this clause is part of the spell's *effect*, so a spell
  * that never resolves never performs it:
  *
- * - **Countered** (CR 701.5a) — the spell is put into its owner's graveyard, and no part of its
+ * - **Countered** (CR 701.6a) — the spell is put into its owner's graveyard, and no part of its
  *   effect happens. Graveyard, not library.
  * - **Fizzled** (CR 608.2b) — a spell whose every target is illegal doesn't resolve. Same answer.
  *
@@ -303,7 +304,7 @@ class SelfShuffleIntoLibraryOnResolveScenarioTest : FunSpec({
         }
     }
 
-    test("a countered spell goes to the graveyard — CR 701.5a, the effect never happened") {
+    test("a countered spell goes to the graveyard — CR 701.6a, the effect never happened") {
         val driver = newDriver()
         val you = driver.player1
         val opponent = driver.getOpponent(you)
@@ -509,7 +510,7 @@ class SelfShuffleIntoLibraryOnResolveScenarioTest : FunSpec({
         // The DSL guard above never runs for a script assembled by hand — test fixtures and the
         // Assay compiler both do that — so the type itself has to refuse the pair.
         val ex = shouldThrow<IllegalArgumentException> {
-            CardScript(selfExileOnResolve = true, selfShuffleIntoLibraryOnResolve = true)
+            CardScript(selfExileOnResolve = true, selfLibraryPlacementOnResolve = ZonePlacement.Shuffled)
         }
         ex.message shouldContain "CR 608.2n destination"
     }

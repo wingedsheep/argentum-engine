@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.*
 
 /**
@@ -477,6 +478,7 @@ internal class NonPermanentSpellResolver(
         val exileAfterResolveComp: AfterResolveDestinationComponent?,
         val adventureFaceExile: Boolean,
         val omenFaceShuffle: Boolean,
+        /** The card's own "into its owner's library" clause is the shuffling one (not "on the bottom"). */
         val selfShuffleIntoLibrary: Boolean,
         val reboundExile: Boolean,
         /** Time counters the card's own "exile with N time counters" clause puts on it (0 = none). */
@@ -532,10 +534,14 @@ internal class NonPermanentSpellResolver(
         // library instead of putting it in the graveyard. No cast-from-exile linkage.
         val omenFaceShuffle = cardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
             spellComponent.faceIndex != null
-        // "Shuffle <name> into its owner's library." printed on the card itself (the Mirrodin
-        // Besieged Zenith cycle). Same seam as selfExile — it replaces the CR 608.2n destination —
-        // but lands in the library shuffled rather than in exile.
-        val selfShuffleIntoLibrary = resolvedScript?.selfShuffleIntoLibraryOnResolve == true
+        // "Shuffle <name> into its owner's library." (the Mirrodin Besieged Zenith cycle) or "Put
+        // <name> on the bottom of its owner's library." (Sanguine Sacrament) printed on the card
+        // itself. Same seam as selfExile — it replaces the CR 608.2n destination — but lands in the
+        // library rather than in exile. The card is added to the bottom; only the shuffle clause
+        // then shuffles.
+        val selfLibraryPlacement = resolvedScript?.selfLibraryPlacementOnResolve
+        val selfToLibrary = selfLibraryPlacement != null
+        val selfShuffleIntoLibrary = selfLibraryPlacement == ZonePlacement.Shuffled
         // Rebound (CR 702.88): a spell cast from hand that has rebound (printed or granted) exiles
         // on resolution instead of going to the graveyard, and arms a next-upkeep free recast.
         // Rebound replaces "put it into its owner's graveyard" too, so a spell that exiles itself
@@ -562,7 +568,7 @@ internal class NonPermanentSpellResolver(
         // (a rare pairing — e.g. a buyback spell cast through Kylox's Voltstrider). Flashback's "anywhere else" still applies
         // after buyback has, so a flashed-back spell is exiled either way.
         val boughtBack = spellComponent.declaredCostSlot == ChoiceSlot.BOUGHT_BACK && !flashbackExile &&
-            !cipherExile && !selfExile && !selfShuffleIntoLibrary
+            !cipherExile && !selfExile && !selfToLibrary
         val intendedDestination = when {
             cipherExile -> Zone.EXILE
             boughtBack -> Zone.HAND
@@ -570,12 +576,12 @@ internal class NonPermanentSpellResolver(
             // card-intrinsic exile reasons below rather than being OR'd into them — it is the only
             // one that can send the card somewhere other than exile (Kylox's Voltstrider — "put it
             // on the bottom of its owner's library instead"). The guard is the graveyard wording.
-            exileAfterResolveComp != null && !selfShuffleIntoLibrary -> exileAfterResolveComp.zone
+            exileAfterResolveComp != null && !selfToLibrary -> exileAfterResolveComp.zone
             // Flashback (CR 702.34a) / harmonize (CR 702.180a) — "anywhere else". Above the printed
             // clause, below the rider, which leaves the pre-existing rider-vs-flashback precedence
             // exactly as it was.
             flashbackExile -> Zone.EXILE
-            selfShuffleIntoLibrary -> Zone.LIBRARY
+            selfToLibrary -> Zone.LIBRARY
             selfExile || adventureFaceExile || reboundExile -> Zone.EXILE
             omenFaceShuffle -> Zone.LIBRARY
             else -> Zone.GRAVEYARD
@@ -588,7 +594,7 @@ internal class NonPermanentSpellResolver(
             selfShuffleIntoLibrary = selfShuffleIntoLibrary,
             reboundExile = reboundExile,
             selfSuspendCounters = if (intendedDestination == Zone.EXILE && !cipherExile) selfSuspendCounters else 0,
-            exiledRiderFollows = exileAfterResolveComp != null && !selfExile && !selfShuffleIntoLibrary,
+            exiledRiderFollows = exileAfterResolveComp != null && !selfExile && !selfToLibrary,
         )
     }
 
@@ -673,6 +679,8 @@ internal class NonPermanentSpellResolver(
 
         // Omen (Tarkir: Dragonstorm), and the Zenith cycle's printed "Shuffle <name> into its
         // owner's library.": the card was just added to the bottom of its owner's library above —
+        // which is all "Put <name> on the bottom of its owner's library." asks for, so that clause
+        // stops there —
         // now shuffle that library and announce it. Gated on the *final* destination so a
         // RedirectZoneChange that sent the card elsewhere doesn't shuffle for nothing, and so
         // AfterResolveDestination.BOTTOM_OF_LIBRARY (which also lands in Zone.LIBRARY, but must

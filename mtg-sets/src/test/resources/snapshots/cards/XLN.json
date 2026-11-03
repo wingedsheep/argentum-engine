@@ -5340,6 +5340,35 @@
     ]
 }
 
+// Sanguine Sacrament
+{
+    "name": "Sanguine Sacrament",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain twice X life. Put Sanguine Sacrament on the bottom of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Multiply",
+                "amount": "XValue",
+                "multiplier": 2
+            }
+        },
+        "selfLibraryPlacementOnResolve": "Bottom"
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"As the sun sets to make way for dawn, so we turn to darkness to bring about the coming salvation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9fae153-d86a-42b5-9c1c-6dbd56118ecb.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Seekers' Squire
 {
     "name": "Seekers' Squire",

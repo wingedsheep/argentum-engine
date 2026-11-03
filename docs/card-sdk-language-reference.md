@@ -15733,7 +15733,7 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
     trip this gate.
 - `selfShuffleIntoLibrary()` — `spell { effect = …; selfShuffleIntoLibrary() }` for a card that prints
   "Shuffle <card name> into its owner's library." (the Mirrodin Besieged Zenith cycle: Green Sun's Zenith,
-  Blue/White/Black/Red Sun's Zenith). Sets `CardScript.selfShuffleIntoLibraryOnResolve`, the sibling of
+  Blue/White/Black/Red Sun's Zenith). Sets `CardScript.selfLibraryPlacementOnResolve = ZonePlacement.Shuffled`, the sibling of
   `selfExileOnResolve`: both replace the destination of **CR 608.2n** ("as the final part of an instant or
   sorcery spell's resolution, the spell is put into its owner's graveyard"), and `StackResolver` reads them
   at the same seam on both the full-resolve and paused-resolve paths. The card is added to its owner's
@@ -15754,6 +15754,14 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   owner's *graveyard*", which is why the printed clause beats them; those two are worded "exile this card
   instead of putting it *anywhere else* any time it would leave the stack", which covers the library move,
   so they still apply. A Blue Sun's Zenith flashbacked off Snapcaster Mage is exiled, not shuffled in.
+- `selfPutOnBottomOfLibrary()` — `spell { effect = …; selfPutOnBottomOfLibrary() }` for a card that prints
+  "Put <card name> on the bottom of its owner's library." (**Sanguine Sacrament**). The other value of the same
+  axis: `CardScript.selfLibraryPlacementOnResolve = ZonePlacement.Bottom` (only `Shuffled` and `Bottom` are
+  accepted; `CardScript`'s `init` rejects any other placement). Identical seam, precedence and countered/fizzled
+  behaviour as `selfShuffleIntoLibrary()` above — it outranks the cast-this-way rider, loses to flashback and
+  harmonize, and is rejected alongside `selfExile()` — except that the card is left on the bottom and the library
+  is **not** shuffled (no `LibraryShuffledEvent`). Where `AfterResolveDestination.BOTTOM_OF_LIBRARY` is a rider
+  another effect stamps on a spell it casts, this is the card's own printed instruction.
 - `Paradigm` (Secrets of Strixhaven) — `spell { effect = …; paradigm() }` on a Lesson spell. An **exile-zone
   recurrence** mechanic, modelled exactly like Suspend (a marker the engine reads off an exiled card), differing
   only in that it casts a **copy** rather than the card itself, so the original recurs forever. Oracle: "[effect]

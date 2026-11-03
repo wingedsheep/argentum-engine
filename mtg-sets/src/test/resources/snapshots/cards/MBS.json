@@ -20,7 +20,7 @@
                 "target": "IterationEntity"
             }
         },
-        "selfShuffleIntoLibraryOnResolve": true
+        "selfLibraryPlacementOnResolve": "Shuffled"
     },
     "metadata": {
         "collectorNumber": "39",
@@ -61,7 +61,7 @@
                 "id": "t0"
             }
         ],
-        "selfShuffleIntoLibraryOnResolve": true
+        "selfLibraryPlacementOnResolve": "Shuffled"
     },
     "metadata": {
         "collectorNumber": "20",
@@ -284,7 +284,7 @@
                 "EmitLibrarySearchedEvent"
             ]
         },
-        "selfShuffleIntoLibraryOnResolve": true
+        "selfLibraryPlacementOnResolve": "Shuffled"
     },
     "metadata": {
         "collectorNumber": "81",
@@ -948,7 +948,7 @@
                 "id": "t0"
             }
         ],
-        "selfShuffleIntoLibraryOnResolve": true
+        "selfLibraryPlacementOnResolve": "Shuffled"
     },
     "metadata": {
         "collectorNumber": "74",
@@ -1188,7 +1188,7 @@
             ],
             "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d400b41-813d-4a63-848f-5eb4db4bf3bb.jpg?1783903575"
         },
-        "selfShuffleIntoLibraryOnResolve": true
+        "selfLibraryPlacementOnResolve": "Shuffled"
     },
     "metadata": {
         "collectorNumber": "19",
