@@ -152,6 +152,11 @@ class ActivatedAbilityEnumerator(
                 // Planeswalker loyalty abilities: sorcery speed + once per turn + loyalty cost check
                 if (ability.isPlaneswalkerAbility) {
                     if (context.cantActivateLoyaltyAbilities) continue
+                    // The Immortal Sun: "Players can't activate planeswalkers' loyalty abilities."
+                    if (context.castPermissionUtils.isActivationPreventedForPlayer(
+                            state, entityId, playerId, abilityIsLoyaltyAbility = true
+                        )
+                    ) continue
                     if (!context.canPlaySorcerySpeed &&
                         !context.castPermissionUtils.canActivateLoyaltyAtInstantSpeed(state, playerId, entityId)
                     ) continue
