@@ -336,9 +336,12 @@ something, is a gap to close:
   — close it in this PR: it fixes every card on that effect type, and you know the semantics now. Add an
   AI test for the decision it changes, re-bless `just ai-reading-baseline`, and add the
   `ai/CHANGELOG.md` line (`docs/ai/reading-audit.md` has the readers and the ratchet).
-- **A gap bigger than that** (a reader that needs a new concept), split it out as `add-feature` work or
-  name it in the PR body for `just ai-reading-loop`. If the effect type is new to the corpus,
-  `AiReadingRatchetTest` fails: re-bless `just ai-reading-baseline` in this PR.
+- **A gap bigger than that** (a reader that needs a new concept, not just a new `when` branch): split it
+  out as its own `add-feature` PR, opened next, and say in this PR body why it couldn't be closed here.
+  Never defer a gap because it is pre-existing, because other cards share the effect, or because "it
+  belongs to the AI reading loop" — those are reasons it is *worth* closing now, not reasons to skip it.
+  If the effect type is new to the corpus, `AiReadingRatchetTest` fails: re-bless
+  `just ai-reading-baseline` in this PR.
 - **A decision no reader can make** — a card whose right play is card-specific (when to hold a
   combat trick, which mode or creature type to name, an X to pick, when *not* to attack with it), and
   where the generic 1-ply simulation demonstrably picks wrong — gets a `CardAdvisor`
@@ -377,7 +380,8 @@ something, is a gap to close:
 **Say it in the PR body**, one line per card or one for the batch:
 `AI: reads 2/2 · pick 2.4 (FDN table) · intent Removal · synergy feeds death / rewards lifegain` — and
 call out every remaining `✕`, every heuristic-only pick, and every synergy the line misses, so a
-reviewer sees what the AI will get wrong before players do.
+reviewer sees what the AI will get wrong before players do. A remaining `✕` needs the split-out PR
+above; a reviewer treats one without it as a blocking finding.
 
 ## Step 11: Verify and commit
 

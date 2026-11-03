@@ -191,7 +191,12 @@ These are the ones that have actually caused bugs here.
   where that comes from (flagging a card nothing rates, so the AI guesses from a heuristic), its board
   value in play, what it thinks the card is for, and which synergy axes it reads the card feeding or
   rewarding. Before a card or feature PR (`add-card` / `add-feature` Step 10) it is a gate, not a
-  report: close the understanding, rating and synergy gaps it shows, or name them in the PR. Use it also
+  report: **close the understanding, rating and synergy gaps it shows in the same PR.** Naming a gap in
+  the PR body is not closing it, and "pre-existing", "other cards share the effect" or "belongs to the
+  AI reading loop" is never a reason to defer — you know the effect's semantics now, and one reader
+  entry fixes every card on it. Only a gap that needs a brand-new reader concept may be split out, as
+  its own `add-feature` PR opened next, and the PR body says why. Loops follow the same rule (their
+  shared `LOOP_PR_PROTOCOL` runs this check before review). Use it also
   whenever you need to explain or predict an AI decision — a misplay in an
   `ai-game-review` or `ai-playtest` log, a strange draft pick. The Assay Explorer's card page draws the
   reading and rating for humans.
