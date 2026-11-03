@@ -11939,6 +11939,15 @@ in the declare-blockers step, even before the turn-based block action has comple
   manifest dread) is matched as the nameless colorless 2/2 creature it would enter as (CR 708.2a), so
   the Cage stops manifesting any card from a library. A permanent spell enters from the
   stack, so a zone-scoped lock never stops one cast from a graveyard.
+- `CantPhaseIn` — a phase-in prohibition: while it functions, no permanent phases in. The City on
+  the Edge of Forever's Human token = `CantPhaseIn` ("Permanents can't phase in"), given to the token
+  through `CreateToken(staticAbilities = …)`. Read by `PhaseInLocks` on every phase-in path: the untap
+  step's turn-based phase-in (CR 702.26a) phases nothing in, and everything tries again at its
+  controller's next untap step; an Oubliette-style `PhaseInLinkedToSource` whose source leaves under
+  the lock just ends (the link and its tap rider are cleared). The lock is read before anything phases
+  in, so a printer phasing in with the rest stops nothing. It never stops phasing *out*. Unfiltered on
+  purpose — a filter would need to judge indirectly phased-out attachments by their host (CR 702.26g).
+  Distinct from `PhaseOut(cantPhaseIn = …)`, a window stamped on the one permanent an effect phases out.
 - `CantAttackUnless(condition, filter = GroupFilter.source(), coversPlaneswalkers = true)` — the
   creatures `filter` covers can't attack unless `condition` holds against the defender each one is
   declared against (CR 508.1c); `Player.DefendingPlayer` in the condition is the attacked player, or

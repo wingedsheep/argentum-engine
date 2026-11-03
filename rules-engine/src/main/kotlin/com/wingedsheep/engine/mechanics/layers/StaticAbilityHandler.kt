@@ -1379,6 +1379,8 @@ class StaticAbilityHandler(
             is PlayersCantCastSpells,
             is com.wingedsheep.sdk.scripting.PlayersCantPlayLands,
             is com.wingedsheep.sdk.scripting.CantEnterTheBattlefield,
+            // Phase-in prohibition (PhaseInLocks, read by the untap step + linked phase-in):
+            is com.wingedsheep.sdk.scripting.CantPhaseIn,
             is RestrictSpellsCastPerTurn,
             // Per-turn draw cap (DrawRestrictions, read by DrawLoop / DrawUpToExecutor):
             is com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn,
