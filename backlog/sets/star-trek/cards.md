@@ -141,7 +141,7 @@
 - [ ] Kai Winn, Faithless Leader
 - [ ] Khaaaaaaaaaaaannn!
 - [ ] Khan, Despot by Design
-- [ ] Khan, Vengeful Heart
+- [x] Khan, Vengeful Heart
 - [ ] Kira Nerys, Firebrand
 - [ ] Kirk, Commanding Officer
 - [ ] Kobayashi Maru Scenario
@@ -166,12 +166,13 @@
 - [ ] Nog, Ambitious Cadet
 - [ ] Nyota Uhura, Communications
 - [x] Oberth-Class Starship
-- [ ] Obsidian Order Operative
+- [x] Obsidian Order Operative
 - [x] Open Communications
 - [x] Organic Avulsion Unit
 - [x] Orion
-- [ ] Overflow Submatrix
+- [x] Overflow Submatrix
 - [x] Overgrown Tomb
+- [x] Pattern Buffer Preservation
 - [ ] Pah-Wraith
 - [x] Peace in Our Time
 - [ ] Perils of the Past
@@ -192,7 +193,7 @@
 - [x] Reckless Impulse
 - [x] Relentless Drednok
 - [ ] Replicator
-- [ ] Resistance Is Futile
+- [x] Resistance Is Futile
 - [x] Risa
 - [x] Rogue Artificial Intelligence
 - [ ] Romulan Bird-of-Prey
@@ -201,7 +202,7 @@
 - [x] Rutherford, Upgraded Ensign
 - [ ] Saavik, Stoic Student
 - [x] Sacred Foundry
-- [ ] Salt Vampire
+- [x] Salt Vampire
 - [ ] Saurian Explorer
 - [x] Scotty, Miracle Worker
 - [x] Sela, Tal Shiar Paradox
