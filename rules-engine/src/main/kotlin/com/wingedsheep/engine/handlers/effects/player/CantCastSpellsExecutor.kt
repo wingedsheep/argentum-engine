@@ -49,10 +49,13 @@ class CantCastSpellsExecutor(
             is Duration.Permanent -> PlayerEffectRemoval.Permanent
             is Duration.EndOfYourNextTurn -> PlayerEffectRemoval.EndOfYourNextTurn
             is Duration.UntilYourNextTurn -> PlayerEffectRemoval.UntilYourNextTurn
+            is Duration.DuringAffectedPlayersNextTurn -> PlayerEffectRemoval.DuringYourNextTurn
             else -> PlayerEffectRemoval.EndOfTurn
         }
-        val expiresAfterTurn =
-            if (removeOn == PlayerEffectRemoval.EndOfYourNextTurn) state.turnNumber + 1 else null
+        val expiresAfterTurn = when (removeOn) {
+            PlayerEffectRemoval.EndOfYourNextTurn, PlayerEffectRemoval.DuringYourNextTurn -> state.turnNumber + 1
+            else -> null
+        }
 
         val spellFilter = lockIn(effect.spellFilter, state, context)
         val newState = targetIds.fold(state) { acc, targetId ->

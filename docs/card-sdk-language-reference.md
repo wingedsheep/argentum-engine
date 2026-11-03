@@ -3483,7 +3483,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `UntilYourNextTurn`: it ends as the affected object's **owner**'s next turn begins, whoever created the
   effect — "until that player's next turn" when "that player" is the owner of the card the effect names
   (Firestorm Phoenix). Honoured by floating effects and by the card-scoped hand restrictions
-  (`CantPlayCardsFromHand` / `RevealCardInHand` on a card). For the
+  (`CantPlayCardsFromHand` / `RevealCardInHand` on a card). **`Duration.DuringAffectedPlayersNextTurn`**
+  is the one duration that doesn't start at once: "… during that player's next turn" lies dormant
+  through the rest of this turn and every other turn, applies throughout each affected player's own next
+  turn, and ends at its cleanup (Sphinx's Decree). Honoured by `CantCastSpellsEffect` only. For the
   "if <condition>, … **instead**" duration switch, wrap two `GainControlEffect`s that differ only in
   `duration` in one `Effects.If` — never a short steal followed by a second grab; that would
   be two control changes where the card describes one. Pair with
@@ -3840,7 +3843,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
   expire separately; supported durations are `EndOfTurn`, `UntilYourNextTurn` (lifts right after the
   effect controller's next untap step, for every affected player), `EndOfYourNextTurn` (lifts at the cleanup of the
-  effect controller's next turn, for every affected player — **Single Combat**) and `Permanent`. Existing spells on the
+  effect controller's next turn, for every affected player — **Single Combat**), `DuringAffectedPlayersNextTurn`
+  (binds only during each banned player's own next turn, ending at its cleanup; the current turn never counts —
+  **Sphinx's Decree**: `CantCastSpells(PlayerRef(EachOpponent), DuringAffectedPlayersNextTurn, InstantOrSorcery)`)
+  and `Permanent`. Existing spells on the
   stack, land plays and activated abilities are unaffected. The default still forbids every spell.
   A dynamic mana-value bound (`manaValueEqualsDynamic` / `ManaValueAtMostDynamic`) is locked in as a literal when
   the effect resolves (CR 608.2h) — **Living Breakthrough**: `Triggers.you.casts()` →
