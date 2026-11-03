@@ -5620,6 +5620,97 @@
     }
 }
 
+// Kobayashi Maru Scenario
+{
+    "name": "Kobayashi Maru Scenario",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, choose one that hasn't been chosen —\n• Hail — Return up to one target creature an opponent controls with mana value 3 or less to its owner's hand.\n• Sensors — Draw two cards.\n• Transport — Create two 1/1 red Officer creature tokens.\n• Abandon Ship — You lose the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kobayashi Maru Scenario:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature mv<=3 ctrl:opponent"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Hail — Return up to one target creature an opponent controls with mana value 3 or less to its owner's hand"
+                        },
+                        {
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "Sensors — Draw two cards"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Officer"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893"
+                            },
+                            "description": "Transport — Create two 1/1 red Officer creature tokens"
+                        },
+                        {
+                            "effect": "LoseGame",
+                            "description": "Abandon Ship — You lose the game"
+                        }
+                    ],
+                    "excludePreviouslyChosenModes": true,
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "At the beginning of your upkeep, choose one that hasn't been chosen —"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "MYTHIC",
+        "artist": "Kevin Glint",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7fb72cc-1bc6-4774-9798-44824de46c72.jpg?1792508172"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // L'Rell, Fierce Visionary
 {
     "name": "L'Rell, Fierce Visionary",
@@ -5697,6 +5788,87 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Lieutenant Commander Data
+{
+    "name": "Lieutenant Commander Data",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Artifact Creature — Android Scientist",
+    "oracleText": "Whenever a player casts a noncreature spell, put a +1/+1 counter on Lieutenant Commander Data.\n{1}, Remove three counters from among creatures you control: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lieutenant Commander Data:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lieutenant Commander Data:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{1}, Remove three counters from among creatures you control: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "MYTHIC",
+        "artist": "Irvin Rodriguez",
+        "flavorText": "\"Reasoning from the general to the specific. Is that not the very definition of deduction? Is that not the way Sherlock Holmes worked?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6d5da51-6c74-4dd5-a532-cf4c2a7b601c.jpg?1792508182"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5834,6 +6006,44 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Lt. Cmdr. Geordi La Forge
+{
+    "name": "Lt. Cmdr. Geordi La Forge",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "If you would put one or more charge counters on an artifact you control, put twice that many charge counters on that artifact instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ScaleCounterPlacement",
+                "placer": "You",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "counterType": "CHARGE",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "artifact ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Julie Dillon",
+        "flavorText": "\"There's no way the computer can compensate for the human factor, the . . . the intuition, the experience.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a558d82-7efd-49b3-9f7b-ace639b44a35.jpg?1792508185"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6269,6 +6479,42 @@
     ]
 }
 
+// Mr. Spock, Science Officer
+{
+    "name": "Mr. Spock, Science Officer",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Vulcan Human Scientist",
+    "oracleText": "If you would draw a card, draw two cards instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "MYTHIC",
+        "artist": "Colin Boyer",
+        "flavorText": "\"Insufficient facts always invites danger.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d19fc127-669e-4264-935a-e5991e6c0964.jpg?1792508192"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mugato
 {
     "name": "Mugato",
@@ -6345,6 +6591,99 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ni'Var Science Academy
+{
+    "name": "Ni'Var Science Academy",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control two or more other lands.\nWhen this land enters untapped, choose one —\n• Target creature gains flying until end of turn.\n• Surveil 1.\n{T}: Add {U}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ni'Var Science Academy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "untapped",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature gains flying until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 1
+                            },
+                            "description": "Surveil 1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this land enters untapped, choose one — target creature gains flying until end of turn; or surveil 1."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ni'Var Science Academy:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "287",
+        "rarity": "RARE",
+        "artist": "Raphael Lacoste",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a785dcd0-2df5-4d31-a01a-61fa7a1f1806.jpg?1793273928"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6480,6 +6819,66 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Nyota Uhura, Communications
+{
+    "name": "Nyota Uhura, Communications",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "Hailing Frequencies — As Nyota Uhura enters, choose a number between 0 and 10.\nOpen a Channel — Whenever an opponent casts a spell with mana value equal to the chosen number, you draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nyota Uhura, Communications:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "ManaValueEqualsDynamic",
+                                "amount": {
+                                    "type": "CastChoice",
+                                    "slot": "CHOSEN_NUMBER"
+                                }
+                            }
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts a spell with mana value equal to the chosen number, you draw a card."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "NUMBER",
+                "maxValue": 10
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Charles Chaisson",
+        "flavorText": "She's fluent in thirty-seven languages and infinitely more insightful than a universal translator.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b04066ef-ad43-4b40-b4ae-5d94f154261f.jpg?1792508198"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7545,6 +7944,149 @@
     ]
 }
 
+// Romulan Bird-of-Prey
+{
+    "name": "Romulan Bird-of-Prey",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact — Spacecraft",
+    "oracleText": "Cloaking Device — As long as this Spacecraft isn't a creature, it has hexproof.\nWhenever you cast a noncreature spell, if this Spacecraft isn't a creature, put two charge counters on it.\nStation\n8+ | Flying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Romulan Bird-of-Prey:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": "creature"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, if this Spacecraft isn't a creature, put two charge counters on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Romulan Bird-of-Prey:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": "creature"
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Edouard",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a461d90-6b7b-4777-958a-8a5d8365ad8c.jpg?1792508202"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Romulus
 {
     "name": "Romulus",
@@ -7602,6 +8144,120 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "BLUE"
+    ]
+}
+
+// Rules of Acquisition
+{
+    "name": "Rules of Acquisition",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Follow the 3rd Rule — Gain control of target nonland permanent an opponent controls. That opponent draws three cards.\n• Follow the 98th Rule — Target opponent gains control of target nonland permanent you control. If they do, you draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StorePlayer",
+                                "storeAs": "players0",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target nonland permanent"
+                                }
+                            },
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": {
+                                        "type": "InCollection",
+                                        "collection": "players0"
+                                    }
+                                },
+                                "body": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Follow the 3rd Rule — Gain control of target nonland permanent an opponent controls. That opponent draws three cards"
+                },
+                {
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "GiveControlToTargetPlayer",
+                                "permanent": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "newController": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "successCriterion": "SuccessCriterion.ControlChanged"
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t1"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent ctrl:you"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Follow the 98th Rule — Target opponent gains control of target nonland permanent you control. If they do, you draw three cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Racrufi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/307c36ec-6fa1-4d4b-afcd-c3c83b876ee8.jpg?1793013546"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -7930,6 +8586,146 @@
     ]
 }
 
+// Seven of Nine, Unassimilated
+{
+    "name": "Seven of Nine, Unassimilated",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Artifact Creature — Human Officer",
+    "oracleText": "At the beginning of your first main phase, draw a card. Then discard a card unless you control five or more differently named lands.\n{6}{U}: Seven of Nine's base power and toughness become 7/9. Activate only if you control seven or more differently named lands.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seven of Nine, Unassimilated:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land",
+                                        "aggregation": "DISTINCT_NAMES"
+                                    },
+                                    "operator": "LT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Seven of Nine, Unassimilated:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 9
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_NAMES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "MYTHIC",
+        "artist": "Toraji",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddc517bd-27e1-4688-8941-a41c312bd782.jpg?1792508210"
+    }
+}
+
 // Shields Up!
 {
     "name": "Shields Up!",
@@ -8208,6 +9004,102 @@
         "artist": "Chris Rallis",
         "flavorText": "A resourceful crew can solve most any problem with elbow grease and dilithium.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16bc9660-2bef-4926-b0e6-f49b22817bea.jpg?1793361250"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Subcommander T'Pol
+{
+    "name": "Subcommander T'Pol",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Vulcan Scientist",
+    "oracleText": "Flash\nWhen Subcommander T'Pol enters, choose one —\n• Counter target activated or triggered ability.\n• Tap up to one target artifact or creature. Put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Subcommander T'Pol:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Counter",
+                                "target": "CounterTarget.Ability"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsActivatedOrTriggeredAbility"
+                                            ]
+                                        },
+                                        "zone": "Stack"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Counter target activated or triggered ability"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "STUN",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "artifact|creature"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Tap up to one target artifact or creature and put a stun counter on it"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Subcommander T'Pol enters, choose one — counter target activated or triggered ability; or tap up to one target artifact or creature and put a stun counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d90016d-c2cb-457b-9d97-c3b9411c46e3.jpg?1793013074"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -8719,6 +9611,86 @@
     ]
 }
 
+// Test of Priorities
+{
+    "name": "Test of Priorities",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Power to Engines — Surveil 2, then draw a card.\n• Power to Life Support — Exile target creature you control. Return that card to the battlefield under its owner's control at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Surveil",
+                                "count": 2
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Power to Engines — Surveil 2, then draw a card"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "destination": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Power to Life Support — Exile target creature you control; it returns at the next end step"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Paolo Puggioni",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89e3ec23-e4dc-4d58-aeda-9f73ed4504a5.jpg?1793013095"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // The City on the Edge of Forever
 {
     "name": "The City on the Edge of Forever",
@@ -9167,6 +10139,123 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Those Old Scientists
+{
+    "name": "Those Old Scientists",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Draw two cards, then discard two cards.\nII — Return up to one target artifact, instant, or sorcery card from your graveyard to your hand.\nIII — Choose up to two target cards in graveyards. The owners of those cards shuffle them into their libraries.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "artifact|instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Library",
+                        "placement": "Shuffled"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Gregg Schigiel",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44280b43-b07e-43a4-9ae3-2eac0baeb918.jpg?1792753712"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9747,6 +10836,163 @@
     }
 }
 
+// V'Ger, the Intruder
+{
+    "name": "V'Ger, the Intruder",
+    "manaCost": "{6}{U}",
+    "typeLine": "Legendary Artifact Creature — Construct",
+    "oracleText": "Flying\nWhenever V'Ger enters or attacks, choose one —\n• Look at target opponent's hand, then draw a card.\n• Creatures your opponents control get -1/-0 until your next turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "V'Ger, the Intruder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LookAtTargetHand",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Look at target opponent's hand, then draw a card."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    }
+                                },
+                                "body": {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": -1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": "IterationEntity",
+                                    "duration": "UntilYourNextTurn"
+                                }
+                            },
+                            "description": "Creatures your opponents control get -1/-0 until your next turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever V'Ger enters, choose one — look at target opponent's hand, then draw a card; or creatures your opponents control get -1/-0 until your next turn."
+            },
+            {
+                "id": "V'Ger, the Intruder:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LookAtTargetHand",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Look at target opponent's hand, then draw a card."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    }
+                                },
+                                "body": {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": -1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": "IterationEntity",
+                                    "duration": "UntilYourNextTurn"
+                                }
+                            },
+                            "description": "Creatures your opponents control get -1/-0 until your next turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever V'Ger attacks, choose one — look at target opponent's hand, then draw a card; or creatures your opponents control get -1/-0 until your next turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Jessica Rossier",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b082d454-d331-4960-8120-754f107ffa42.jpg?1785981430"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Vexing Drone
 {
     "name": "Vexing Drone",
@@ -9852,6 +11098,93 @@
         "BLUE",
         "WHITE"
     ]
+}
+
+// Vulcan Mind-Meld
+{
+    "name": "Vulcan Mind-Meld",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent looks at the top card of your library, then exiles it face down. You look at the top two cards of their library, then exile them face down. For each card exiled this way, the player who exiled it may play it for as long as it remains exiled. Mana of any type can be spent to cast spells this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "lookAudience": "None"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "faceDown": "HIDDEN"
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "expiry": "Permanent",
+                    "withAnyManaType": true,
+                    "recipient": {
+                        "type": "PlayerRef",
+                        "player": "TargetOpponent"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "player": "TargetOpponent"
+                    },
+                    "storeAs": "gathered3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": "TargetOpponent"
+                    },
+                    "faceDown": "HIDDEN"
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered3",
+                    "expiry": "Permanent",
+                    "withAnyManaType": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Pavel Kolomeyets",
+        "flavorText": "\"My mind to your mind. My thoughts to your thoughts.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd6c0c12-01b8-4f68-9401-7430a7f94bf7.jpg?1793274240"
+    }
 }
 
 // Warp Core
@@ -9960,6 +11293,176 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/e/de8e2bde-b368-4d10-8409-86f5da6997f6.jpg?1792590999"
     },
     "colorIdentityOverride": []
+}
+
+// Wesley Crusher, Starfleet Cadet
+{
+    "name": "Wesley Crusher, Starfleet Cadet",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "Flash\nWhen Wesley Crusher enters, choose two —\n• Counter target noncreature spell unless its controller pays {2}.\n• Return target creature with mana value 2 or less to its owner's hand.\n• Target creature can't be blocked this turn.\n• Target player draws two cards, then discards two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wesley Crusher, Starfleet Cadet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Counter",
+                                "condition": {
+                                    "type": "CounterCondition.UnlessPaysMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "noncreature",
+                                        "zone": "Stack"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Counter target noncreature spell unless its controller pays {2}."
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature mv<=2"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Return target creature with mana value 2 or less to its owner's hand."
+                        },
+                        {
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "CANT_BE_BLOCKED",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Target creature can't be blocked this turn."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t3"
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand",
+                                                    "player": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t3"
+                                                    }
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 2
+                                                    }
+                                                },
+                                                "chooser": "TargetPlayer",
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 2 cards to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard",
+                                                    "player": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t3"
+                                                    }
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t3"
+                                }
+                            ],
+                            "description": "Target player draws two cards, then discards two cards."
+                        }
+                    ],
+                    "chooseCount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Nia Kovalevski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/956eeb71-fd5f-4a26-aff6-77127c0ad4e7.jpg?1793274247"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Xenobotanist
