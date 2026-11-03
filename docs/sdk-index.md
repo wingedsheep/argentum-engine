@@ -1320,7 +1320,7 @@ Families:
 - `Gate.MayDecide(prompt: String?, hint: String?, dynamicHint: DynamicHint?, sourceRequiredZone: Zone?, inlineOnTrigger: Boolean, feasibility: FeasibilityCheck?, choiceLabels: ChoiceLabels?)` — Pure yes/no — "You may then." The decision-maker chooses whether GatedEffect.then happens at all.
 - `Gate.MayPay(cost: Effect)` — Optionally pay a cost — "You may cost.
 - `Gate.MayPayAnyAmountOfLife` — Optionally pay a *variable* amount of life — "You may pay any amount of life.
-- `Gate.MayPayX(additionalCost: ManaCost)` — Optionally pay a *variable* amount of generic mana — "You may pay {X}.
+- `Gate.MayPayX(additionalManaCost: ManaCost)` — Optionally pay a *variable* amount of generic mana — "You may pay {X}.
 - `Gate.OnceEachTurn(abilityId: AbilityId, spend: Boolean)` — Not a decision — a **per-turn action budget**.
 - `Gate.WhenCondition(condition: Condition)` — Not a decision — a state test.
 

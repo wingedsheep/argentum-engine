@@ -600,7 +600,7 @@ class GatedEffectExecutor(
      * (or nothing) — then, on "yes", a 0..max-affordable number chooser; [MayPayXContinuation]
      * answers both (`resumeMayPayX`), auto-tapping the chosen X and running [GatedEffect.then] with
      * `xValue` bound. With no mana available the "yes" pays X = 0 without asking for a number.
-     * A fixed [Gate.MayPayX.additionalCost] ("{X}{R}") the payer can't afford makes "yes"
+     * A fixed [Gate.MayPayX.additionalManaCost] ("{X}{R}") the payer can't afford makes "yes"
      * impossible, so the prompt is skipped and [GatedEffect.otherwise] runs — as for [Gate.MayPay].
      */
     private fun executeMayPayX(
@@ -613,7 +613,7 @@ class GatedEffectExecutor(
             ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
             ?: context.controllerId
 
-        if (!gate.additionalCost.isEmpty() && !manaSolver.canPay(state, playerId, gate.additionalCost)) {
+        if (!gate.additionalManaCost.isEmpty() && !manaSolver.canPay(state, playerId, gate.additionalManaCost, allowPhyrexianLife = false)) {
             return effect.otherwise
                 ?.let { effectExecutor(state, it, context) }
                 ?: EffectResult.success(state)
@@ -629,14 +629,14 @@ class GatedEffectExecutor(
             playerId = playerId,
             prompt = SourceReferenceText.sentence(effect, SourceReferenceText.referenceFor(state, context.sourceId)),
             context = decisionContext,
-            yesText = "Pay {X}${gate.additionalCost}",
+            yesText = "Pay {X}${gate.additionalManaCost}",
             noText = "Don't pay",
             hint = effect.hint
         ) }
 
         val continuation = MayPayXContinuation(
             playerId = playerId,
-            additionalCost = gate.additionalCost,
+            additionalManaCost = gate.additionalManaCost,
             sourceName = sourceName,
             effect = effect.then,
             otherwise = effect.otherwise,

@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * tokens that are tapped and attacking. At the beginning of the next end step, exile those tokens
  * unless you have the city's blessing.
  *
- * The payment is `Effects.MayPayX(additionalCost = {R})` — X and the red pip in one payment, X = 0
+ * The payment is `Effects.MayPayX(additionalManaCost = {R})` — X and the red pip in one payment, X = 0
  * still paying {R}. The delayed end-step trigger carries the created tokens and tests the city's
  * blessing when it resolves, so getting the blessing before then keeps them. Each token picks its
  * own defender (`CONTROLLER_CHOOSES`), per the ruling that it needn't attack what the Summoner attacks.
@@ -47,7 +47,7 @@ val TilonallisSummoner = card("Tilonalli's Summoner") {
     triggeredAbility {
         trigger = Triggers.self.attacks()
         effect = Effects.MayPayX(
-            additionalCost = ManaCost.parse("{R}"),
+            additionalManaCost = ManaCost.parse("{R}"),
             descriptionOverride = "You may pay {X}{R}. If you do, create X 1/1 red Elemental creature tokens " +
                 "that are tapped and attacking. At the beginning of the next end step, exile those tokens " +
                 "unless you have the city's blessing.",

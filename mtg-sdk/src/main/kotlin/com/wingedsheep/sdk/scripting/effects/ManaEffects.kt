@@ -105,7 +105,7 @@ data class PayDynamicManaCostEffect(
  * payoff.
  *
  * Distinct from [Gate.MayPayX], which is one *variable-size* generic payment binding X (no cap, no
- * repeat unit; coloured pips only in its once-paid `additionalCost`): here the unit cost is fixed and repeated, so `{G}` three times
+ * repeat unit; coloured pips only in its once-paid `additionalManaCost`): here the unit cost is fixed and repeated, so `{G}` three times
  * costs `{G}{G}{G}` and cannot be paid with three colorless.
  *
  * @property cost One repetition's cost. Repeated with `ManaCost.times`, so colored pips repeat too.

@@ -1356,7 +1356,7 @@ class ManaPaymentContinuationResumer(
                 if (result.error != null || result.outcome is Outcome.Paused) return result
                 return checkForMore(result.state, result.events.toList())
             }
-            val maxX = maxAffordableX(state, continuation.playerId, continuation.additionalCost)
+            val maxX = maxAffordableX(state, continuation.playerId, continuation.additionalManaCost)
             if (maxX <= 0) return payMayPayX(state, continuation, 0, checkForMore)
             val question = { decisionId: String -> ChooseNumberDecision(
                 id = decisionId,
@@ -1387,15 +1387,15 @@ class ManaPaymentContinuationResumer(
     }
 
     /**
-     * The largest X the payer can pay *on top of* [additionalCost] — the number chooser's ceiling.
+     * The largest X the payer can pay *on top of* [additionalManaCost] — the number chooser's ceiling.
      * A bare "{X}" is the generic mana they can produce; with a fixed part, the coloured pips may
      * consume sources a pure count would spend on X, so the ceiling is confirmed by the solver.
      */
-    private fun maxAffordableX(state: GameState, playerId: EntityId, additionalCost: ManaCost): Int {
-        val ceiling = services.manaSolver.getAvailableManaCount(state, playerId) - additionalCost.cmc
-        if (additionalCost.isEmpty()) return ceiling.coerceAtLeast(0)
+    private fun maxAffordableX(state: GameState, playerId: EntityId, additionalManaCost: ManaCost): Int {
+        val ceiling = services.manaSolver.getAvailableManaCount(state, playerId) - additionalManaCost.cmc
+        if (additionalManaCost.isEmpty()) return ceiling.coerceAtLeast(0)
         var x = ceiling
-        while (x > 0 && !services.manaSolver.canPay(state, playerId, additionalCost + genericMana(x))) x--
+        while (x > 0 && !services.manaSolver.canPay(state, playerId, additionalManaCost + genericMana(x), allowPhyrexianLife = false)) x--
         return x.coerceAtLeast(0)
     }
 
@@ -1409,7 +1409,7 @@ class ManaPaymentContinuationResumer(
         chosenX: Int,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        val xCost = genericMana(chosenX) + continuation.additionalCost
+        val xCost = genericMana(chosenX) + continuation.additionalManaCost
         if (xCost.isEmpty()) return runMayPayXEffect(state, continuation, 0, emptyList(), checkForMore)
 
         // Auto-tap sources for the payment

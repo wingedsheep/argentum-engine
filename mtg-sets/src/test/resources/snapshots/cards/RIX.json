@@ -4111,7 +4111,7 @@
                     "type": "Gated",
                     "gate": {
                         "type": "Gate.MayPayX",
-                        "additionalCost": "{R}"
+                        "additionalManaCost": "{R}"
                     },
                     "then": {
                         "type": "Composite",
