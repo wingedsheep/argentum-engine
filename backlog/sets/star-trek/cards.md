@@ -153,7 +153,7 @@
 - [x] Lore, Positronic Provocateur
 - [ ] Lt. Cmdr. Geordi La Forge
 - [ ] Lwaxana Troi, Charming Guest
-- [ ] Make It So
+- [x] Make It So
 - [x] Malfunctioning Holodeck
 - [x] Marooned
 - [ ] Miles O'Brien, Transporter Ops
