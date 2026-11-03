@@ -85,24 +85,6 @@ export interface SetProfile {
 }
 
 export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
-  M19: {
-    tagline: 'A back-to-basics core set with a Dragon flavour: two-colour decks built on evergreen keywords, common removal and big fliers, with Elder Dragons and planeswalkers as the bombs.',
-    setting: "A core set with no plane, framing Nicol Bolas's return with Dragons, the five Elder Dragons and five planeswalkers.",
-    gameplay: 'Games are decided on the board: creatures trade, fliers race and the deck with more removal pulls ahead. Each colour pair has a straightforward plan: white-blue artifacts, blue-red spells around Enigma Drake, white-black lifegain making Bats, black-red sacrifice aggro, red-green ramp into Dragons and green-white enchantments. A dual tapland comes in a third of packs, so a light splash is affordable.',
-    tips: [
-      "Pick removal early: Shock, Lich's Caress, Electrify and Dwindle are what break board stalls.",
-      'Respect fliers: Dragons, Drakes and Bats end games, so keep Plummet, reach creatures or your own fliers around.',
-      'The land slot often carries a dual tapland; one or two of them make splashing a bomb rare cheap.',
-    ],
-    tryIf: 'straightforward, back-to-basics Limited with Dragons and planeswalkers',
-    power: 3, speed: 3, complexity: 2,
-    themes: ['flyers', 'bigThings', 'lifegain'],
-    mechanics: [
-      { name: 'Dragons', inPlay: 'Red and its neighbours care about Dragons, from cheap firebreathing commons to the Elder Dragon bombs; one big flier can take over a board.' },
-      { name: 'Evergreen keywords', inPlay: 'Flying, deathtouch, lifelink and friends do most of the work; reading combat well matters more than any set mechanic.' },
-      { name: 'Planeswalkers', inPlay: 'Rare walkers take over an unattended board; attack them early or they generate value every turn.' },
-    ],
-  },
   LEA: {
     tagline: 'The original 1993 game: plain creatures, walls and burn, with a handful of rares strong enough to decide a match on their own. Removal and fliers win; the rest is a slow ground war.',
     setting: 'The first Magic set ever printed: no plane, no story, just the five colours as Richard Garfield first drew them.',
@@ -526,6 +508,24 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Constellation', inPlay: 'Rewards each enchantment you land; Omens and enchantment creatures double as triggers, so count enablers before taking payoffs.' },
       { name: 'Devotion', inPlay: 'Heavy commitment to one colour wakes the gods and powers devotion payoffs, which makes splashing costlier than usual.' },
       { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you exposed to removal in response.' },
+    ],
+  },
+  M19: {
+    tagline: 'A back-to-basics core set with a Dragon flavour: two-colour decks built on evergreen keywords, common removal and big fliers, with Elder Dragons and planeswalkers as the bombs.',
+    setting: "A core set with no plane, framing Nicol Bolas's return with Dragons, the five Elder Dragons and five planeswalkers.",
+    gameplay: 'Games are decided on the board: creatures trade, fliers race and the deck with more removal pulls ahead. Each colour pair has a straightforward plan: white-blue artifacts, blue-red spells around Enigma Drake, white-black lifegain making Bats, black-red sacrifice aggro, red-green ramp into Dragons and green-white enchantments. A dual tapland comes in a third of packs, so a light splash is affordable.',
+    tips: [
+      "Pick removal early: Shock, Lich's Caress, Electrify and Dwindle are what break board stalls.",
+      'Respect fliers: Dragons, Drakes and Bats end games, so keep Plummet, reach creatures or your own fliers around.',
+      'The land slot often carries a dual tapland; one or two of them make splashing a bomb rare cheap.',
+    ],
+    tryIf: 'straightforward, back-to-basics Limited with Dragons and planeswalkers',
+    power: 3, speed: 3, complexity: 2,
+    themes: ['flyers', 'bigThings', 'lifegain'],
+    mechanics: [
+      { name: 'Dragons', inPlay: 'Red and green care about Dragons, from Dragon Egg and Sparktongue Dragon to the rare payoffs and Elder Dragon bombs; one big flier can take over a board.' },
+      { name: 'Evergreen keywords', inPlay: 'Flying, deathtouch, lifelink and friends do most of the work; reading combat well matters more than any set mechanic.' },
+      { name: 'Planeswalkers', inPlay: 'Rare walkers take over an unattended board; attack them early or they generate value every turn.' },
     ],
   },
   GRN: {

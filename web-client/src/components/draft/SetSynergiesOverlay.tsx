@@ -1619,7 +1619,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Artifacts',
         colors: ['W', 'U'],
         keyCard: 'Aerial Engineer',
-        description: 'Play cheap artifacts so Aerial Engineer and other artifact payoffs switch on, holding the ground with Constructs while the payoffs take to the air. A midrange deck that rewards counting artifacts.',
+        description: 'Play cheap artifacts so Aerial Engineer and other artifact payoffs switch on, holding the ground with artifact creatures while the payoffs take to the air. A midrange deck that rewards counting artifacts.',
       },
       {
         name: 'Card Advantage Control',
@@ -1637,7 +1637,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Dragons',
         colors: ['R', 'G'],
         keyCard: 'Draconic Disciple',
-        description: 'Ramp with mana creatures like Draconic Disciple into Dragons and the cards that care about them, closing with big fliers. A ramp deck that goes over the top.',
+        description: 'Ramp with mana creatures like Draconic Disciple into Dragons and Dragon payoffs like Dragon Egg, closing with big fliers. A ramp deck that goes over the top.',
         creatureTypes: ['Dragon'],
       },
       {
