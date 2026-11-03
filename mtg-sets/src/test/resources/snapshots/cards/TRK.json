@@ -250,6 +250,44 @@
     ]
 }
 
+// Adversary by Algorithm
+{
+    "name": "Adversary by Algorithm",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 3/3 colorless Illusion artifact creature token.\nBeam me up {3}{G} (You may cast this card from your graveyard for {3}{G} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+    "keywords": [
+        "BEAM_ME_UP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "BeamMeUp",
+            "cost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 3,
+            "toughness": 3,
+            "colors": [],
+            "creatureTypes": [
+                "Illusion"
+            ],
+            "artifactToken": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41644f06-d08f-406c-a56a-47e1b5273982.jpg?1793013240"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // All Good Things...
 {
     "name": "All Good Things...",
@@ -450,6 +488,87 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Amok Time
+{
+    "name": "Amok Time",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Target creature you control fights up to one target creature an opponent controls.\nII — You gain 3 life.\nIII — Return target creature card from your graveyard to your hand.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t2"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Raish",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d31447b6-484f-4dda-b6af-ab068a84f896.jpg?1787205814"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -958,6 +1077,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Astute Terraformer
+{
+    "name": "Astute Terraformer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Vulcan Scientist",
+    "oracleText": "Strange new worlds — {6}: This creature gets +2/+2 until end of turn. This ability costs {X} less to activate, where X is the number of differently named lands you control. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Astute Terraformer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land",
+                    "aggregation": "DISTINCT_NAMES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Andreia Ugrai",
+        "flavorText": "\"Humans believe cataloging life as a predictable series of scientific reactions robs it of its majesty. I find this attitude belittles the majesty of science.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ef7c30c-3ee6-413d-bd24-476322f36cb8.jpg?1793361354"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1730,6 +1905,68 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Branching Timeline
+{
+    "name": "Branching Timeline",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strange new worlds — Reveal the top X cards of your library, where X is the number of differently named lands you control. Put all permanent cards revealed this way onto the battlefield tapped and the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_NAMES"
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "revealed": true
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "permanent",
+                    "storeMatching": "matching1",
+                    "storeNonMatching": "rest1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Borja Pindado",
+        "flavorText": "What might have been is the horizon of what could be.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a2231ff-677d-4041-9413-b8d683846920.jpg?1793013249"
+    }
 }
 
 // Brazen Bluff
@@ -2512,6 +2749,47 @@
     ]
 }
 
+// Captain Kathryn Janeway
+{
+    "name": "Captain Kathryn Janeway",
+    "manaCost": "{3}{G}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "You may play an additional land on each of your turns.\nWhenever Captain Janeway or another creature you control enters, that creature explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on the creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain Kathryn Janeway:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Explore",
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantAdditionalLandDrop"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "MYTHIC",
+        "artist": "Jason Pastrana",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d17ea45c-7f9c-411f-b7d3-ca7100ffe53b.jpg?1784036788"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Captain Michael Burnham
 {
     "name": "Captain Michael Burnham",
@@ -2588,6 +2866,52 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Captain Pike, Fullness of Time
+{
+    "name": "Captain Pike, Fullness of Time",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Human Officer Scout",
+    "oracleText": "Strange new worlds — Captain Pike's power and toughness are each equal to the number of differently named lands you control.\nYou may look at the top card of your library any time.\nYou may play lands from the top of your library.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_NAMES"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_NAMES"
+            }
+        }
+    },
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": null
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "RARE",
+        "artist": "Joel Chaim Holtzman",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/743be4c4-5c91-42bb-9942-115e903041a9.jpg?1792508262"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3922,6 +4246,75 @@
     "colorIdentityOverride": []
 }
 
+// Culber and Stamets, Star-Crossed
+{
+    "name": "Culber and Stamets, Star-Crossed",
+    "manaCost": "{3}{G}",
+    "typeLine": "Legendary Creature — Human Doctor Artificer",
+    "oracleText": "When Culber and Stamets enter, choose one —\n• Put a +1/+1 counter on target creature.\n• Add two mana of any one color.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Culber and Stamets, Star-Crossed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature."
+                        },
+                        {
+                            "effect": {
+                                "type": "AddManaOfChoice",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "Add two mana of any one color."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Harkalé Linaï",
+        "flavorText": "\"One tends to worry when they're doomed to love a brilliant but reckless maniac who's willing to risk his life for glory.\"\n—Dr. Hugh Culber",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/962752f7-5c94-41e4-ab7d-3e8741c7a502.jpg?1793290364"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cybernetic Specialist
 {
     "name": "Cybernetic Specialist",
@@ -4517,6 +4910,80 @@
     ]
 }
 
+// Dathon and Picard at El-Adrel
+{
+    "name": "Dathon and Picard at El-Adrel",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Temba, His Arms Wide — Target creature gets +3/+3 and gains trample until end of turn.\n• Shaka, When the Walls Fell — Each opponent sacrifices a nontoken artifact or enchantment of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Temba, His Arms Wide — Target creature gets +3/+3 and gains trample until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "artifact|enchantment nontoken",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "description": "Shaka, When the Walls Fell — Each opponent sacrifices a nontoken artifact or enchantment of their choice"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "artist": "Bartek Fedyczak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94e9d400-f2bb-46e7-8d41-6038ebdc6c8b.jpg?1785981571"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // David and Carol Marcus, Creators
 {
     "name": "David and Carol Marcus, Creators",
@@ -4918,6 +5385,74 @@
     ]
 }
 
+// Dominion Assault Force
+{
+    "name": "Dominion Assault Force",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Jem'Hadar Warrior",
+    "oracleText": "Vigilance\nWhen this creature enters, choose one —\n• Exile target card from a graveyard.\n• Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dominion Assault Force:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {},
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Exile target card from a graveyard."
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 1
+                            },
+                            "description": "Surveil 1."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "Ioannis Fiore",
+        "flavorText": "\"As of this moment, we are all dead. We go into battle to reclaim our lives.\"\n—First Omet'iklan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28a55f63-1cbd-4362-a192-e42a06f44686.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dominion Infiltration
 {
     "name": "Dominion Infiltration",
@@ -5037,6 +5572,71 @@
     ]
 }
 
+// Dominion Supervisor
+{
+    "name": "Dominion Supervisor",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Vorta Doctor",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature.\nCreatures you control with counters on them have trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dominion Supervisor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "HasAnyCounter"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Kevin Glint",
+        "flavorText": "The loyal Vorta saw to the distribution of ketracel-white, the Dominion's powerful combination of narcotics and life-giving enzymes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fa76320-24c0-4294-8ae4-fb39e171fbe6.jpg?1785981577"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dr. Beverly Crusher
 {
     "name": "Dr. Beverly Crusher",
@@ -5074,6 +5674,176 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Dr. Joseph M'Benga
+{
+    "name": "Dr. Joseph M'Benga",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Human Doctor",
+    "oracleText": "Other creatures you control with counters on them have hexproof.\nIf you would put one or more counters on a creature you control, put twice that many of each of those kinds of counters on that creature instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "HasAnyCounter"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ScaleCounterPlacement",
+                "placer": "You",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "MYTHIC",
+        "artist": "Romana Kendelic",
+        "flavorText": "\"I prefer saving lives to taking them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c27e6865-40ba-406c-9dce-d8a7a9b8035b.jpg?1792508272"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Dr. Leonard "Bones" McCoy
+{
+    "name": "Dr. Leonard \"Bones\" McCoy",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Human Doctor",
+    "oracleText": "Flash\nWhen Dr. McCoy enters, choose one —\n• Return target non-Doctor permanent card from your graveyard to your hand.\n• Choose up to one other target creature. When it dies this turn, return that card to the battlefield under its owner's control with a +1/+1 counter on it at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dr. Leonard \"Bones\" McCoy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand",
+                                "fromZone": "Graveyard"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsPermanent",
+                                                {
+                                                    "type": "NotSubtype",
+                                                    "subtype": "Doctor"
+                                                }
+                                            ],
+                                            "controllerPredicate": "OwnedByYou"
+                                        },
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return target non-Doctor permanent card from your graveyard to your hand."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateDelayedTrigger",
+                                "effect": {
+                                    "type": "CreateDelayedTrigger",
+                                    "step": "END",
+                                    "effect": {
+                                        "type": "MoveToZone",
+                                        "target": "TriggeringEntity",
+                                        "destination": "Battlefield",
+                                        "fromZone": "Graveyard",
+                                        "entryCounters": [
+                                            {
+                                                "counterType": "PLUS_ONE_PLUS_ONE"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "trigger": {
+                                    "event": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    }
+                                },
+                                "watchedTarget": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "fireOnce": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature",
+                                        "excludeSelf": true
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Choose up to one other target creature. When it dies this turn, return that card to the battlefield under its owner's control with a +1/+1 counter on it at the beginning of the next end step."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "RARE",
+        "artist": "Sam Kennedy",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8593bf7-5248-4f4a-bf8b-9816d2f76c6b.jpg?1793187127"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6545,6 +7315,92 @@
     ]
 }
 
+// Final Frontier
+{
+    "name": "Final Frontier",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card or Planet card, put it onto the battlefield tapped, then shuffle.\nBeam me up {1}{G} (You may cast this card from your graveyard for {1}{G} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+    "keywords": [
+        "BEAM_ME_UP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "BeamMeUp",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsBasicLand",
+                                        {
+                                            "type": "And",
+                                            "predicates": [
+                                                "IsLand",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Planet"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land or land Planet card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Jessica Rossier",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34ea6df3-36e3-42c5-a4ed-a4cd18ec6dd0.jpg?1793013607"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // First Contact
 {
     "name": "First Contact",
@@ -6968,6 +7824,161 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Genesis Device
+{
+    "name": "Genesis Device",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "When Genesis Device enters, search your library for a basic land card or Planet card, put it onto the battlefield tapped, then shuffle.\n{3}{G}{G}, {T}, Sacrifice Genesis Device: Sacrifice any number of lands you control, then search your library for up to that many land cards, put them onto the battlefield tapped, then shuffle. Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Genesis Device:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsBasicLand",
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsLand",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Planet"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land or land Planet card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Genesis Device:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{G}{G}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Sacrifice",
+                            "filter": "land",
+                            "any": true
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": "PermanentsSacrificedThisWay"
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for land cards (up to the number of permanents sacrificed this way) to put onto the battlefield tapped",
+                                    "selectedLabel": "Put onto the battlefield tapped"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{3}{G}{G}, {T}, Sacrifice Genesis Device: Sacrifice any number of lands you control, then search your library for up to that many land cards, put them onto the battlefield tapped, then shuffle. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Cliff Nielsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a5b94ba-ac1f-478e-981f-7dfc31ad02f9.jpg?1793188016"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
