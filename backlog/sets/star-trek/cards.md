@@ -70,7 +70,7 @@
 - [ ] D'Ghor Bloodletter
 - [x] D'Vana Tendi, Optimistic Ensign
 - [ ] Dahar Master
-- [ ] Dal R'El, Augment Orphan
+- [x] Dal R'El, Augment Orphan
 - [ ] Daniels, Temporal Agent
 - [x] Data, New Life
 - [ ] Dathon and Picard at El-Adrel
@@ -112,9 +112,9 @@
 - [ ] Genesis Effect
 - [ ] Georgiou, Terran Emperor
 - [x] Godless Shrine
-- [ ] Gowron, Eager for Battle
+- [x] Gowron, Eager for Battle
 - [ ] Grand Nagus Zek
-- [ ] Gray and Adira, Forever Joined
+- [x] Gray and Adira, Forever Joined
 - [x] Guidance Failure
 - [ ] H.M.S. Bounty, Unlikely Timeship
 - [x] Hallowed Fountain
@@ -143,7 +143,7 @@
 - [ ] Khan, Despot by Design
 - [x] Khan, Vengeful Heart
 - [ ] Kira Nerys, Firebrand
-- [ ] Kirk, Commanding Officer
+- [x] Kirk, Commanding Officer
 - [ ] Kobayashi Maru Scenario
 - [x] L'Rell, Fierce Visionary
 - [ ] La'An Noonien-Singh, Security
@@ -188,7 +188,7 @@
 - [ ] Q, Stacking the Deck
 - [x] Qo'noS
 - [ ] Quark, Humble Proprietor
-- [ ] Quark's Bar
+- [x] Quark's Bar
 - [ ] Ravenous Cosmozoan
 - [x] Reckless Impulse
 - [x] Relentless Drednok
@@ -212,8 +212,8 @@
 - [x] Shields Up!
 - [x] Shuttle Ace
 - [x] Silicate Surveyor
-- [ ] Spatial Anomaly
-- [ ] Spock, Always Your Friend
+- [x] Spatial Anomaly
+- [x] Spock, Always Your Friend
 - [ ] Starfleet Academy
 - [x] Starfleet Spanner Jockey
 - [x] Steam Vents
@@ -246,7 +246,7 @@
 - [ ] The City on the Edge of Forever
 - [x] The Destruction of Praxis
 - [x] The Doctor, EMH
-- [ ] The Duras Sisters
+- [x] The Duras Sisters
 - [x] The Holodeck
 - [ ] The Inner Light
 - [x] The Measure of a Man
@@ -273,12 +273,12 @@
 - [x] Vulcan
 - [ ] Warp Core
 - [x] Watery Grave
-- [ ] Will Riker, First in the Field
-- [ ] Worf, Honor-Bound Warrior
-- [ ] Worf, Intelligence Contractor
+- [x] Will Riker, First in the Field
+- [x] Worf, Honor-Bound Warrior
+- [x] Worf, Intelligence Contractor
 - [x] Xenobotanist
 - [x] Xindi Surveyors
-- [ ] Year of Hell
+- [x] Year of Hell
 - [ ] Zefram Cochrane, Warp Pioneer
 - [x] Zero, Incorporeal Sensate
 
