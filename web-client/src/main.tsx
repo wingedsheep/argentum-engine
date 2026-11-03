@@ -6,6 +6,7 @@ import './styles/base.css'
 import './styles/responsive.css'
 import 'mana-font/css/mana.min.css'
 import 'keyrune/css/keyrune.min.css'
+import './styles/set-symbols.css'
 import { initAnalytics } from './utils/analytics'
 
 const App = lazy(() => import('./App'))
