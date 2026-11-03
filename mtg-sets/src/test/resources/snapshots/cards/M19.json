@@ -1067,6 +1067,78 @@
     ]
 }
 
+// Arcades, the Strategist
+{
+    "name": "Arcades, the Strategist",
+    "manaCost": "{1}{G}{W}{U}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, vigilance\nWhenever a creature you control with defender enters, draw a card.\nEach creature you control with defender assigns combat damage equal to its toughness rather than its power and can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arcades, the Strategist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature kw:defender ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": "creature kw:defender ctrl:you"
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            },
+            {
+                "type": "CanAttackDespiteDefender",
+                "filter": {
+                    "baseFilter": "creature kw:defender ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "MYTHIC",
+        "artist": "Even Amundsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e90c638-d4b2-4243-bbc4-1cc10516c40f.jpg?1783934524",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Arcades's last ability doesn't actually change any creature's power. It changes only the amount of combat damage it assigns. All other rules and effects that check power or toughness use the real values."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If Arcades leaves the battlefield after a creature with defender has attacked, that creature remains an attacking creature, although it will assign damage equal to its power."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Arcane Encyclopedia
 {
     "name": "Arcane Encyclopedia",
@@ -1693,6 +1765,103 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Chromium, the Mutable
+{
+    "name": "Chromium, the Mutable",
+    "manaCost": "{4}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flash\nThis spell can't be countered.\nFlying\nDiscard a card: Until end of turn, Chromium becomes a Human with base power and toughness 1/1, loses all abilities, and gains hexproof. It can't be blocked this turn.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chromium, the Mutable:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Human"
+                            ],
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "RemoveAllAbilities",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Discard a card: Until end of turn, Chromium becomes a 1/1 Human, loses all abilities, and gains hexproof. It can't be blocked this turn."
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50c1de2c-1acc-47c8-9b5e-a9dae3da8a49.jpg?1783934522",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Chromium stops being an Elder Dragon for the turn once its last ability has resolved. It's still a legendary creature named Chromium, the Mutable."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Chromium's activated ability overwrites all previous effects that set its base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after that ability resolves will overwrite this effect."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If Chromium gains an ability after its activated ability resolves, it will keep that ability."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Activating Chromium's last ability after it has become blocked won't cause Chromium to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Cleansing Nova
@@ -6183,6 +6352,286 @@
     ]
 }
 
+// Nicol Bolas, the Ravager
+{
+    "name": "Nicol Bolas, the Ravager",
+    "manaCost": "{1}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying\nWhen Nicol Bolas enters, each opponent discards a card.\n{4}{U}{B}{R}: Exile Nicol Bolas, then return him to the battlefield transformed under his owner's control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nicol Bolas, the Ravager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When Nicol Bolas enters, each opponent discards a card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nicol Bolas, the Ravager:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U}{B}{R}"
+                    }
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Exile Nicol Bolas, then return him to the battlefield transformed under his owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Nicol Bolas, the Arisen",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Bolas",
+        "oracleText": "+2: Draw two cards.\n−3: Nicol Bolas deals 10 damage to target creature or planeswalker.\n−4: Put target creature or planeswalker card from a graveyard onto the battlefield under your control.\n−12: Exile all but the bottom card of target player's library.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Nicol Bolas, the Arisen:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Draw two cards."
+                },
+                {
+                    "id": "Nicol Bolas, the Arisen:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -3
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 10
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Nicol Bolas deals 10 damage to target creature or planeswalker."
+                },
+                {
+                    "id": "Nicol Bolas, the Arisen:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -4
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Put target creature or planeswalker card from a graveyard onto the battlefield under your control."
+                },
+                {
+                    "id": "Nicol Bolas, the Arisen:4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -12
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "IfPositive",
+                                        "amount": {
+                                            "type": "Subtract",
+                                            "left": {
+                                                "type": "Count",
+                                                "player": "TargetPlayer",
+                                                "zone": "Library"
+                                            },
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    },
+                                    "player": "TargetPlayer"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t2"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Exile all but the bottom card of target player's library."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "218",
+            "rarity": "MYTHIC",
+            "artist": "Svetlin Velinov",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/b/7b215968-93a6-4278-ac61-4e3e8c3c3943.jpg?1783934524",
+            "rulings": [
+                {
+                    "date": "2018-07-13",
+                    "text": "Nicol Bolas, the Arisen has a color indicator on its typeline. This color indicator means that it's a blue, black, and red permanent."
+                },
+                {
+                    "date": "2018-07-13",
+                    "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well. If you leave the game, any permanents you control from Nicol Bolas's third loyalty ability that came from other players' graveyards are exiled."
+                }
+            ]
+        },
+        "startingLoyalty": 7,
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "BLACK",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b215968-93a6-4278-ac61-4e3e8c3c3943.jpg?1783934524",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "When Nicol Bolas's enters-the-battlefield triggered ability resolves, first the next opponent in turn order (or, if it's an opponent's turn, that opponent) chooses a card in their hand without revealing it, then each other opponent in turn order does the same. Then all the chosen cards are discarded at the same time."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If Nicol Bolas leaves the battlefield after his creature face's activated ability has been activated but before it resolves, the card remains in whichever zone it moves to. It won't be exiled or return transformed."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If another permanent that isn't a double-faced card (such as Mirror Image) becomes a copy of Nicol Bolas, the Ravager, activating the ability to exile it and return it transformed will only exile it. It won't return to the battlefield at all."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "The mana value of a double-faced card is the mana value of its front face, even while it's on the battlefield with its back face up. For example, the mana value of Nicol Bolas, the Arisen is 4."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "In some rare cases, a spell or ability may cause Nicol Bolas to transform while it's a creature on the battlefield. If this happens, the resulting planeswalker won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Nightmare's Thirst
 {
     "name": "Nightmare's Thirst",
@@ -8738,6 +9187,82 @@
             }
         ]
     }
+}
+
+// Skyrider Patrol
+{
+    "name": "Skyrider Patrol",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "Flying\nAt the beginning of combat on your turn, you may pay {G}{U}. When you do, put a +1/+1 counter on another target creature you control, and that creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyrider Patrol:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{G}{U}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeSelf": true
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Mitchell Malloy",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/650461af-081b-4cc9-a140-865a666f1443.jpg?1783934518"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
 }
 
 // Skyscanner
