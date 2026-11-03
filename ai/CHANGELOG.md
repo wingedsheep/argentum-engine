@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads statics that make its own spells or activated abilities cheaper (Bladegraft Aspirant, Training Grounds, Silver-Fur Master) as cost reducers: values them in draft ratings without mistaking them for mana sources
 - Reads "spells and abilities your opponents cast or activate that target your permanents cost more" (Kopala, Warden of Waves, Sphinx of New Prahv) as protection, and values those statics in its draft ratings instead of pricing the card as its bare body
 - #4369 Reads life-total exchanges (Psychic Transfer, Mister Negative, Axis of Mortality): aims them at the opponent, picks itself as one side of a two-player swap, and no longer casts a harmful "target player" spell that hexproof has left aimed only at itself
 - #4368 No longer reads a delayed trigger that exiles or sacrifices "those tokens" the same ability made (Tilonalli's Summoner) as removal, so such cards stop counting as answers when it plans its removal
