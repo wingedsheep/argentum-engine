@@ -18,6 +18,99 @@
     ]
 }
 
+// Anointed Deacon
+{
+    "name": "Anointed Deacon",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "At the beginning of combat on your turn, you may have target Vampire get +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anointed Deacon:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Vampire"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Winona Nelson",
+        "flavorText": "Inspiration is red as rubies, flowing like honeyed wine.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bae5e75-0048-41fd-8bbb-89607ab96d6e.jpg?1783935768"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Belligerent Brontodon
+{
+    "name": "Belligerent Brontodon",
+    "manaCost": "{5}{G}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Each creature you control assigns combat damage equal to its toughness rather than its power.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Predators try to separate the young, old, or injured from the rest of the herd. The alternative is crushing defeat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39bab75a-2c1f-4ff1-a26e-134e52f61d39.jpg?1783935714"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Bishop of Rebirth
 {
     "name": "Bishop of Rebirth",
@@ -262,6 +355,44 @@
     ]
 }
 
+// Brazen Buccaneers
+{
+    "name": "Brazen Buccaneers",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Haste\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brazen Buccaneers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9ca29a73-9606-4422-9187-67e00dcd52aa.jpg?1783935749"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Call to the Feast
 {
     "name": "Call to the Feast",
@@ -396,6 +527,49 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Castaway's Despair
+{
+    "name": "Castaway's Despair",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Castaway's Despair:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3a26ba9-84b8-4f54-918c-f75d4cacad0b.jpg?1783935685"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -579,6 +753,41 @@
         "artist": "Winona Nelson",
         "flavorText": "For a price, the floating city of High and Dry offers all the amenities a pirate could want: rest, recreation, and revenge.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1f20feb-b1ed-4d80-bef9-f3cc44ffb7b0.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Costly Plunder
+{
+    "name": "Costly Plunder",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact or creature.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Ben Maier",
+        "flavorText": "No lock of iron is a match for Vraska's will of stone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3f1f41e-98fc-4f6b-b287-c8899dff8ab0.jpg?1783935765"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -813,6 +1022,99 @@
     "colorIdentityOverride": [
         "BLACK",
         "BLUE"
+    ]
+}
+
+// Deadeye Tormentor
+{
+    "name": "Deadeye Tormentor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Raid — When this creature enters, if you attacked this turn, target opponent discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadeye Tormentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Eric Deschamps",
+        "flavorText": "Despite their noble heritage, the pirates of the Deadeye Fleet are known for underhanded tactics and despicable trickery.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d219fb0a-49a3-4711-9b37-a0c1b36f68d0.jpg?1783935764"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1141,6 +1443,44 @@
     ]
 }
 
+// Dire Fleet Interloper
+{
+    "name": "Dire Fleet Interloper",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Menace\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dire Fleet Interloper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "John Severin Brassell",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2e3f7ee-98d0-45bd-97ae-3dc8050085a1.jpg?1783935762"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dive Down
 {
     "name": "Dive Down",
@@ -1279,6 +1619,199 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/e/aec26144-9acf-43b7-8614-1a2952df613d.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Elaborate Firecannon
+{
+    "name": "Elaborate Firecannon",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact doesn't untap during your untap step.\n{4}, {T}: This artifact deals 2 damage to any target.\nAt the beginning of your upkeep, you may discard a card. If you do, untap this artifact.",
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elaborate Firecannon:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Elaborate Firecannon:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Adrian Majkrzak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b9170f0-d332-42ba-98c7-7e99922fa3fb.jpg?1783935704"
+    }
+}
+
+// Emissary of Sunrise
+{
+    "name": "Emissary of Sunrise",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "First strike\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emissary of Sunrise:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/0636cd47-d2a3-4320-97bf-40db805fca51.jpg?1783935802"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Emperor's Vanguard
+{
+    "name": "Emperor's Vanguard",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Whenever this creature deals combat damage to a player, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emperor's Vanguard:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f10c22b9-bdb7-4933-a58a-c53d040ae3bb.jpg?1783935726"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Encampment Keeper
@@ -1448,6 +1981,97 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Fell Flagship
+{
+    "name": "Fell Flagship",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Pirates you control get +1/+0.\nWhenever this Vehicle deals combat damage to a player, that player discards a card.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fell Flagship:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "permanent Pirate ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2774bdb6-7a02-43c9-9e6f-75d0b09570ca.jpg?1783935703"
+    }
 }
 
 // Field of Ruin
@@ -1888,6 +2512,54 @@
     ]
 }
 
+// Goring Ceratops
+{
+    "name": "Goring Ceratops",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Double strike\nWhenever this creature attacks, other creatures you control gain double strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goring Ceratops:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "DOUBLE_STRIKE",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"Follow her footsteps and she will show you the way.\"\n—Itzama the Crested",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/8309f684-5912-4191-9f64-d573f1cc84c9.jpg?1783935801"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Grazing Whiptail
 {
     "name": "Grazing Whiptail",
@@ -2078,6 +2750,116 @@
     ]
 }
 
+// Herald of Secret Streams
+{
+    "name": "Herald of Secret Streams",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Warrior",
+    "oracleText": "Creatures you control with +1/+1 counters on them can't be blocked.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "flavorText": "\"You might as well try to stop the waterfall.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/168cbca9-0124-478b-8dd7-0bd9dc711c6d.jpg?1783935781"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Hierophant's Chalice
+{
+    "name": "Hierophant's Chalice",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, target opponent loses 1 life and you gain 1 life.\n{T}: Add {C}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hierophant's Chalice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hierophant's Chalice:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "artist": "John Stanko",
+        "flavorText": "In the Rite of Redemption, nobles take the same vows as Elenda, the first vampire, and make the same eternal sacrifice.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e8be52c-25ce-49da-8435-58797550f058.jpg?1783935703"
+    }
+}
+
 // Huatli's Snubhorn
 {
     "name": "Huatli's Snubhorn",
@@ -2252,6 +3034,41 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ixalli's Diviner
+{
+    "name": "Ixalli's Diviner",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ixalli's Diviner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b22b55f6-681f-45da-bc57-a0cf7b8f671d.jpg?1783935725"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2865,6 +3682,42 @@
     ]
 }
 
+// Merfolk Branchwalker
+{
+    "name": "Merfolk Branchwalker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Merfolk Branchwalker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c6f0d4a-4827-47b6-8af6-803949c195f8.jpg?1783935724"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nest Robber
 {
     "name": "Nest Robber",
@@ -3244,6 +4097,63 @@
     ]
 }
 
+// Pious Interdiction
+{
+    "name": "Pious Interdiction",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, you gain 2 life.\nEnchanted creature can't attack or block.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pious Interdiction:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"Ours is the true and righteous path. You will bow before our might.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/670b9645-ce34-41eb-a527-4af3e13c3a54.jpg?1783935795"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pirate's Cutlass
 {
     "name": "Pirate's Cutlass",
@@ -3446,6 +4356,77 @@
     ]
 }
 
+// Prying Blade
+{
+    "name": "Prying Blade",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0.\nWhenever equipped creature deals combat damage to a player, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prying Blade:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Prying Blade:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "244",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad45720e-2870-414d-8119-8e48c5600d3b.jpg?1783935708"
+    }
+}
+
 // Pterodon Knight
 {
     "name": "Pterodon Knight",
@@ -3485,6 +4466,44 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Queen's Agent
+{
+    "name": "Queen's Agent",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Vampire Scout",
+    "oracleText": "Lifelink\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Queen's Agent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3562f65a-bd69-47e4-9d9d-ab5c2c6ceb35.jpg?1783935758"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3616,6 +4635,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ranging Raptors
+{
+    "name": "Ranging Raptors",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Enrage — Whenever this creature is dealt damage, you may search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ranging Raptors:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Enrage — Whenever this creature is dealt damage, you may search your library for a basic land card, put it onto the battlefield tapped, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "They cover their territory like a tide of teeth and claws.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e91efc6-0e6a-4a9e-a486-adf53e53d3f1.jpg?1783935720"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3775,6 +4869,79 @@
     },
     "colorIdentityOverride": [
         "GREEN",
+        "RED"
+    ]
+}
+
+// Repeating Barrage
+{
+    "name": "Repeating Barrage",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Repeating Barrage deals 3 damage to any target.\nRaid — {3}{R}{R}: Return this card from your graveyard to your hand. Activate only if you attacked this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Repeating Barrage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "PLAYER_ATTACKED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba90a2d6-8292-4ff1-91d0-b30ae9775f12.jpg?1783935741"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -4037,6 +5204,43 @@
     ]
 }
 
+// Run Aground
+{
+    "name": "Run Aground",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Put target artifact or creature on top of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Sara Winters",
+        "flavorText": "\"That's the first time I've seen the ground do the running.\"\n—Captain Brinely Rage",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ed573c6-2b95-4052-8b43-106cbaacb721.jpg?1783935775"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sailor of Means
 {
     "name": "Sailor of Means",
@@ -4130,6 +5334,43 @@
                 "text": "In a Two-Headed Giant game, Sanctum Seeker's ability causes the opposing team to lose 2 life and you to gain 1 life."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Seekers' Squire
+{
+    "name": "Seekers' Squire",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seekers' Squire:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Dusk follows the light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e37a6802-7a1d-4d37-bd65-f3e3e5127aca.jpg?1783935755"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -4430,6 +5671,44 @@
         "artist": "YW Tang",
         "flavorText": "Over their long life spans, the larger trilobites accumulate vast treasure troves in their guts.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/135d1145-8640-44e1-8079-45832fa2556d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Siren Lookout
+{
+    "name": "Siren Lookout",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Siren Pirate",
+    "oracleText": "Flying\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Siren Lookout:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0000cd57-91fe-411f-b798-646e965eec37.jpg?1783935773"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -4937,6 +6216,161 @@
     "colorIdentityOverride": []
 }
 
+// Spreading Rot
+{
+    "name": "Spreading Rot",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land. Its controller loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"What is this foul presence that defies the sun's cleansing rays?\"\n—Itzama the Crested",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca8a160c-5e89-4347-8e88-3541b6d221e0.jpg?1783935752"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Storm Fleet Aerialist
+{
+    "name": "Storm Fleet Aerialist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Flying\nRaid — This creature enters with a +1/+1 counter on it if you attacked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"Only one thing beats the freedom of the sea: the freedom of the sky.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9de1acd5-bee4-48fe-951d-7936e20f0a71.jpg?1783935769"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Storm Fleet Arsonist
+{
+    "name": "Storm Fleet Arsonist",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "Raid — When this creature enters, if you attacked this turn, target opponent sacrifices a permanent of their choice.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm Fleet Arsonist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"Go ahead, build another. I'll burn that down as well.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d8ecb6d-f794-468b-8399-60a50aaa13ac.jpg?1783935737"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Storm Fleet Pyromancer
 {
     "name": "Storm Fleet Pyromancer",
@@ -5294,6 +6728,44 @@
     ]
 }
 
+// Sunrise Seeker
+{
+    "name": "Sunrise Seeker",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Vigilance\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sunrise Seeker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/709d87b3-bf42-47ed-961d-d0e86d3e1d90.jpg?1783935788"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Swashbuckling
 {
     "name": "Swashbuckling",
@@ -5479,6 +6951,42 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Tishana's Wayfinder
+{
+    "name": "Tishana's Wayfinder",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tishana's Wayfinder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "artist": "Shreya Shetty",
+        "flavorText": "\"There is always another way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af52383b-545e-4b64-93f9-317ba6dcf5a8.jpg?1783935717"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

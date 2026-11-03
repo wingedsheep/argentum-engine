@@ -1,0 +1,40 @@
+package com.wingedsheep.mtg.sets.definitions.xln.cards
+
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+
+/**
+ * Siren Lookout
+ * {2}{U}
+ * Creature — Siren Pirate
+ * 1/2
+ * Flying
+ * When this creature enters, it explores.
+ */
+val SirenLookout = card("Siren Lookout") {
+    manaCost = "{2}{U}"
+    colorIdentity = "U"
+    typeLine = "Creature — Siren Pirate"
+    power = 1
+    toughness = 2
+    oracleText = "Flying\n" +
+        "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)"
+
+    keywords(Keyword.FLYING)
+
+    triggeredAbility {
+        trigger = Triggers.self.enters()
+        effect = Effects.Explore(EffectTarget.Self)
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "78"
+        artist = "Chris Rallis"
+        imageUri = "https://cards.scryfall.io/normal/front/0/0/0000cd57-91fe-411f-b798-646e965eec37.jpg?1783935773"
+    }
+}
