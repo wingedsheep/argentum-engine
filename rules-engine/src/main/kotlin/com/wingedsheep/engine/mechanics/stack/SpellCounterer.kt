@@ -114,7 +114,8 @@ class SpellCounterer(
         newState = newState.addToZone(destZoneKey, spellId)
         val destinationObject = newState.objectRef(spellId)
         // A card-intrinsic redirect into the library shuffles the card in (Progenitus).
-        if (destZone == Zone.LIBRARY && counterRedirect.shuffleIntoLibrary) {
+        val shuffledIn = destZone == Zone.LIBRARY && counterRedirect.shuffleIntoLibrary
+        if (shuffledIn) {
             newState = SpellZoneMoves.shuffleOwnerLibrary(newState, ownerId)
         }
         if (destZone == Zone.EXILE && counterRedirect.linkSourceId != null) {
@@ -158,7 +159,7 @@ class SpellCounterer(
                     destZone,
                     ownerId, oldObject = state.objectRef(spellId), newObject = destinationObject
                 )
-            ) + riderEvents
+            ) + listOfNotNull(LibraryShuffledEvent(ownerId).takeIf { shuffledIn }) + riderEvents
         )
     }
 
