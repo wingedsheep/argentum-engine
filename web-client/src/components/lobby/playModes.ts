@@ -152,7 +152,10 @@ export interface PlayOptions {
   sealedStyle: SealedStyle
   /** Only read at a multiplayer table. */
   tableCards: TableCards
-  /** The set to open or draft, when the cards come from packs. Null = the lobby's default. */
+  /**
+   * The set to open or draft, when the cards come from packs. Null = the lobby's default.
+   * `RANDOM_SET_CODE` = a deferred Random Set the server rolls when the event starts.
+   */
   setCode: string | null
   /**
    * The set a rolled deck is built from, when the panel rolls one. Null = any set — the server picks
