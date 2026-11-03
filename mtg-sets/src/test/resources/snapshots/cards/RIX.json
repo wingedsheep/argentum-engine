@@ -124,6 +124,107 @@
     ]
 }
 
+// Arterial Flow
+{
+    "name": "Arterial Flow",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent discards two cards. If you control a Vampire, each opponent loses 2 life and you gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Vampire"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "\"It is impious to admit, but I do enjoy pirate blood. Something in the salty tang of it, the spice of rebellion.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13c41212-9f16-48e0-8c4b-985ce331164b.jpg?1783935316"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Atzocan Seer
 {
     "name": "Atzocan Seer",
@@ -1073,6 +1174,45 @@
     ]
 }
 
+// Flood of Recollection
+{
+    "name": "Flood of Recollection",
+    "manaCost": "{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target instant or sorcery card from your graveyard to your hand. Exile Flood of Recollection.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Jace tumbled down the waterfall and plunged deep into his past.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03a353c1-a640-4b01-9754-3fb6011c8211.jpg?1783935325"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Forerunner of the Coalition
 {
     "name": "Forerunner of the Coalition",
@@ -1738,6 +1878,55 @@
     ]
 }
 
+// Jade Bearer
+{
+    "name": "Jade Bearer",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Merfolk Shaman",
+    "oracleText": "When this creature enters, put a +1/+1 counter on another target Merfolk you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jade Bearer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Merfolk ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Alex Konstad",
+        "flavorText": "\"Sisora wore this, who defeated the tyrant of Azcanta, and before her Natena of Vuhana's band. May it bring you their strength.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/696bb954-353e-488b-a1e8-0df75da6339b.jpg?1783935285"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jadecraft Artisan
 {
     "name": "Jadecraft Artisan",
@@ -2080,6 +2269,92 @@
     ]
 }
 
+// Kumena, Tyrant of Orazca
+{
+    "name": "Kumena, Tyrant of Orazca",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Creature — Merfolk Shaman",
+    "oracleText": "Tap another untapped Merfolk you control: Kumena can't be blocked this turn.\nTap three untapped Merfolk you control: Draw a card.\nTap five untapped Merfolk you control: Put a +1/+1 counter on each Merfolk you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kumena, Tyrant of Orazca:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "permanent Merfolk",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Kumena, Tyrant of Orazca:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 3,
+                        "filter": "permanent Merfolk"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Kumena, Tyrant of Orazca:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 5,
+                        "filter": "permanent Merfolk"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Merfolk ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3aef818-c896-46e6-aaff-56aee52a066c.jpg?1783935272"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Legion Lieutenant
 {
     "name": "Legion Lieutenant",
@@ -2157,6 +2432,55 @@
         "artist": "Steve Argyle",
         "flavorText": "\"Your part in this fight is done, vampire. Get used to your thirst.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/2/c/2ca3a547-ef22-4b87-b90f-e8ffb42f73ac.jpg?1783935337"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Majestic Heliopterus
+{
+    "name": "Majestic Heliopterus",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Flying\nWhenever this creature attacks, another target Dinosaur you control gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Majestic Heliopterus:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Dinosaur ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "\"Its rise is like the sun's, a beautiful beginning. Its descent is like the sun's, a frightful ending.\"\n—Huatli",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a012af0-c54e-4658-8a3b-b81cc8835e1b.jpg?1783935338"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2815,6 +3139,37 @@
     ]
 }
 
+// Polyraptor
+{
+    "name": "Polyraptor",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Enrage — Whenever this creature is dealt damage, create a token that's a copy of this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Polyraptor:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": "CreateTokenCopyOfSource"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "MYTHIC",
+        "artist": "Mark Behm",
+        "flavorText": "An innumerable pack is concealed in a single reflection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8965a3a-93fe-4021-a665-b6013bdc86f7.jpg?1783935282"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Raging Regisaur
 {
     "name": "Raging Regisaur",
@@ -3049,6 +3404,55 @@
     ]
 }
 
+// Sanguine Glorifier
+{
+    "name": "Sanguine Glorifier",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "When this creature enters, put a +1/+1 counter on another target Vampire you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanguine Glorifier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Vampire ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Sara Winters",
+        "flavorText": "For the Legion of Dusk, the Immortal Sun is a source of eternal life. When they reclaim it, they will no longer be forced to subsist on the blood of the wicked.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12993e53-8790-4d6f-9da1-a259f67aa5bf.jpg?1783935332"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Seafloor Oracle
 {
     "name": "Seafloor Oracle",
@@ -3207,6 +3611,59 @@
     ]
 }
 
+// Siren Reaver
+{
+    "name": "Siren Reaver",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Siren Pirate",
+    "oracleText": "Raid — This spell costs {1} less to cast if you attacked this turn.\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "PLAYER_ATTACKED"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Prepare to be boarded.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e5827a7-8ee3-4a89-b936-00a3283ddad3.jpg?1783935319"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Soul of the Rapids
 {
     "name": "Soul of the Rapids",
@@ -3326,6 +3783,41 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Strength of the Pack
+{
+    "name": "Strength of the Pack",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put two +1/+1 counters on each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 2,
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "The pack that ambushes, eviscerates, and devours together stays together.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15dd7d94-e2bd-4320-8452-9e0deb1be351.jpg?1783935283"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3597,6 +4089,127 @@
     ]
 }
 
+// Tomb Robber
+{
+    "name": "Tomb Robber",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Menace\n{1}, Discard a card: This creature explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tomb Robber:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Xi Zhang",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68132a28-b33b-48cb-acf8-42245312934e.jpg?1783935306"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Trapjaw Tyrant
+{
+    "name": "Trapjaw Tyrant",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Enrage — Whenever this creature is dealt damage, exile target creature an opponent controls until this creature leaves the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trapjaw Tyrant:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Trapjaw Tyrant:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "\"I would advise you not to struggle.\"\n—Huatli",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2c280c8-3471-4ae1-be96-0f392b095ce2.jpg?1783935330"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Twilight Prophet
 {
     "name": "Twilight Prophet",
@@ -3812,6 +4425,106 @@
         "artist": "Kieran Yanner",
         "flavorText": "The purest devotion isn't the Blood Fast itself, but the craving that follows.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/6/d66a9f1b-31c8-4557-888b-a927922d37af.jpg?1783935303"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vraska's Conquistador
+{
+    "name": "Vraska's Conquistador",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "Whenever this creature attacks or blocks, if you control a Vraska planeswalker, target opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vraska's Conquistador:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Vraska"
+                }
+            },
+            {
+                "id": "Vraska's Conquistador:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t1"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Vraska"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Abandoning both queen and church, he chose to follow power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d890a17-ffd4-4bda-bef3-2c116f7bf66f.jpg?1783935259"
     },
     "colorIdentityOverride": [
         "BLACK"
