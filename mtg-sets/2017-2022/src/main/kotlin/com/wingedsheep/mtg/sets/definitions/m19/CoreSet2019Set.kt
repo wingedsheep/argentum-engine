@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Core Set 2019 (2018)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every booster card is implemented; Nexus of Fate (Buy-a-Box promo) is an extra.
  *
  * Set Code: M19
  * Release Date: 2018-07-13
@@ -20,7 +19,6 @@ object CoreSet2019Set : MtgSet {
     override val displayName = "Core Set 2019"
     override val releaseDate = "2018-07-13"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
