@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
@@ -302,6 +303,11 @@ object AiReadingAudit {
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect ||
+                            // An instant-speed cast ban on an opponent: HoldPolicy rewards casting it
+                            // before their main phase, where it covers their whole turn. Not a face
+                            // (Revel in Silence): CastBanWindow reads the card's own spell only.
+                            (leaf is CantCastSpellsEffect && IntentTag.CAST_BAN in intent.tags &&
+                                script === card.script && card.cardFaces.isEmpty()) ||
                             // A spell that only grants keywords until end of turn is floored where no
                             // fight is left; the floor asks it of the whole spell, not one leaf. Not
                             // an Adventure or prepare face: HoldPolicy reads no face's effects.
@@ -572,6 +578,7 @@ object AiReadingAudit {
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
+        IntentTag.CAST_BAN -> "stops opponents casting spells"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
     }
 
@@ -668,6 +675,10 @@ object AiReadingAudit {
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
+        // A cast ban that binds its controller too — "you can't cast spells this turn" (Conduit of
+        // Worlds), "each player can't cast noncreature spells this turn" (Calamity's Wake) — is the
+        // price of the card's payoff, not its point. A ban on an opponent reads CAST_BAN.
+        if (leaf is CantCastSpellsEffect && !CardIntentAnalyzer.bansAnOpponent(leaf.target)) return true
         // "Sacrifice it unless you pay {1}{U}" (an upkeep cost, a land's "sacrifice it unless you pay {1}") is a drawback its
         // controller chooses to pay or take: no target, nothing to hold, and whether to pay is the
         // simulation's call when the trigger resolves. A suffer that needs no intent of its own (life

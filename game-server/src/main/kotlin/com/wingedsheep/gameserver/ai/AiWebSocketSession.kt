@@ -578,6 +578,9 @@ class AiWebSocketSession(
         )
     }
 
+    /** Whether the AI wants a window the server would auto-pass — see [AiPlayerController.wantsPriority]. */
+    fun wantsPriority(state: com.wingedsheep.engine.state.GameState): Boolean = controller.wantsPriority(state)
+
     fun shutdown() {
         open.set(false)
         scope.cancel()

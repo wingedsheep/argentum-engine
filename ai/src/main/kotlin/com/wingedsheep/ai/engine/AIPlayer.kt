@@ -84,12 +84,21 @@ class AIPlayer(
      * ~20-30 windows it crosses.
      */
     fun chooseAction(state: GameState): GameAction {
-        if (useMeaningfulFilter && MeaningfulActionFilter.canAutoPassWithoutEnumerating(state, playerId)) {
+        if (useMeaningfulFilter && MeaningfulActionFilter.canAutoPassWithoutEnumerating(state, playerId) &&
+            !wantsWindowItWouldAutoPass(state)
+        ) {
             return PassPriority(playerId)
         }
         val legalActions = simulator.getLegalActions(state, playerId)
         return chooseFrom(state, legalActions).action
     }
+
+    /**
+     * Whether this seat wants a priority window that smart auto-pass skips without asking — the
+     * opponent's upkeep while we hold an instant-speed cast ban ([Strategist.wantsWindowForABan]).
+     * Read by [chooseAction]'s shortcut here and by the game server's auto-pass loop for AI seats.
+     */
+    fun wantsWindowItWouldAutoPass(state: GameState): Boolean = strategist.wantsWindowForABan(state, playerId)
 
     /**
      * Choose the best [LegalAction] from the given list.
@@ -395,6 +404,7 @@ class AIPlayer(
                     lifelinkWaitsForBlocks = profile.lifelinkWaitsForBlocks,
                     tapToGrowAtTheirEndStep = profile.tapToGrowAtTheirEndStep,
                     borrowedCreaturesGoHome = profile.borrowedCreaturesGoHome,
+                    castBansDenyTheirTurn = profile.castBansDenyTheirTurn,
                     holdXSpellsForBiggerX = profile.holdXSpellsForBiggerX,
                     convokeLandsFirst = profile.convokeLandsFirst,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves

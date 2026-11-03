@@ -657,6 +657,9 @@ object LimitedCardRater {
         IntentTag.EVASION_GRANT to 0.3,
         IntentTag.PROTECTION to 0.3,
         IntentTag.SACRIFICE_OUTLET to 0.2,
+        // A turn of no spells from the opponent: real tempo, but it answers nothing already on the
+        // board — in Limited a little under a tapper.
+        IntentTag.CAST_BAN to 0.3,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

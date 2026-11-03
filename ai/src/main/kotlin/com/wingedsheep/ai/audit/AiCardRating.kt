@@ -215,6 +215,7 @@ object AiCardRating {
         IntentTag.TAPPER to "Tapper",
         IntentTag.EVASION_GRANT to "Grants evasion",
         IntentTag.SACRIFICE_OUTLET to "Sacrifice outlet",
+        IntentTag.CAST_BAN to "Stops opponents casting spells",
     )
 
     private val SPEED_LABEL = mapOf(
