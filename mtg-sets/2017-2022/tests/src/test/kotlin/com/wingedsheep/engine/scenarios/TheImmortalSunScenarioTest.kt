@@ -82,14 +82,26 @@ class TheImmortalSunScenarioTest : ScenarioTestBase() {
         test("loyalty abilities come back once The Immortal Sun is gone") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "The Immortal Sun")
                 .withCardOnBattlefield(1, "Sun Test Walker")
+                .withCardInHand(1, "Shatter")
+                .withLandsOnBattlefield(1, "Mountain", 1)
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
 
             val loyalty = abilities().first { it.isPlaneswalkerAbility }
-            game.execute(ActivateAbility(game.player1Id, game.findPermanent("Sun Test Walker")!!, loyalty.id))
-                .error shouldBe null
+            val walker = game.findPermanent("Sun Test Walker")!!
+            game.execute(ActivateAbility(game.player1Id, walker, loyalty.id)).error shouldNotBe null
+
+            withClue("Shatter ({1}{R}, reduced to {R}) destroys The Immortal Sun") {
+                game.castSpell(1, "Shatter", game.findPermanent("The Immortal Sun")!!).error shouldBe null
+                game.resolveStack()
+                game.findPermanent("The Immortal Sun") shouldBe null
+            }
+            withClue("the loyalty ability activates again") {
+                game.execute(ActivateAbility(game.player1Id, walker, loyalty.id)).error shouldBe null
+            }
         }
 
         test("extra draw, cost reduction and anthem") {
