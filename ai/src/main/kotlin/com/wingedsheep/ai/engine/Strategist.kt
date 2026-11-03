@@ -10,12 +10,14 @@ import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.ai.engine.evaluation.EvaluationWeights
 import com.wingedsheep.ai.engine.evaluation.LibraryClock
 import com.wingedsheep.ai.engine.evaluation.ThreatAssessment
+import com.wingedsheep.ai.engine.knowledge.CastBanWindow
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.XPatience
 import com.wingedsheep.ai.engine.knowledge.HoldPolicy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
+import com.wingedsheep.ai.engine.knowledge.Speed
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TimingVerdict
 import com.wingedsheep.ai.engine.rollout.CandidateEvaluator
@@ -270,6 +272,11 @@ class Strategist(
      * it to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
      */
     private val borrowedCreaturesGoHome: Boolean = false,
+    /**
+     * [AiProfile.castBansDenyTheirTurn] — refund the hand charge of a cast ban cast where it denies
+     * an opponent a whole turn ([castBanCredit]); [HoldPolicy] adds its window reward.
+     */
+    private val castBansDenyTheirTurn: Boolean = false,
     /** [AiProfile.holdXSpellsForBiggerX] — see [com.wingedsheep.ai.engine.knowledge.XPatience]. */
     private val holdXSpellsForBiggerX: Boolean = false,
     /**
@@ -322,6 +329,7 @@ class Strategist(
         lifelinkWaitsForBlocks = lifelinkWaitsForBlocks,
         tapToGrowAtTheirEndStep = tapToGrowAtTheirEndStep,
         borrowedCreaturesGoHome = borrowedCreaturesGoHome,
+        castBansDenyTheirTurn = castBansDenyTheirTurn,
         boardPresenceWeight = boardPresenceWeight,
         legalActions = simulator::getLegalActions,
         opponentKnowledge = opponentKnowledge,
@@ -1015,11 +1023,13 @@ class Strategist(
         if (spendFuelWalkers) fuelWalkerSpend(state, action, playerId, passScore, leafState)?.let { return it }
         val deployed = deploymentCredit(state, action, leafState, playerId)
         val fuel = fuelLoyaltyCredit(state, action, leafState, playerId)
-        val credit = deployed + fuel
+        val ban = castBanCredit(state, action, playerId)
+        val credit = deployed + fuel + ban
         val leafScore = rawLeafScore + credit
         val creditNote = listOfNotNull(
             if (deployed > 0.0) "deployed, not spent %+.2f".format(deployed) else null,
             if (fuel > 0.0) "loyalty is only fuel %+.2f".format(fuel) else null,
+            if (ban > 0.0) "ban denies their turn %+.2f".format(ban) else null,
         ).joinToString("; ").ifEmpty { null }
         rideForTheAttack(state, action, playerId, leafState, passScore)?.let { return it }
         val cardName = resolveCardName(state, action) ?: return AdjustedScore(leafScore, creditNote)
@@ -1645,6 +1655,53 @@ class Strategist(
         val hand = ZoneKey(playerId, Zone.HAND)
         if (cast.cardId !in root.getZone(hand)) return 0.0
         if (cast.cardId !in leaf.getBattlefield(playerId)) return 0.0
+        val without = root.removeFromZone(hand, cast.cardId)
+        val charge = evaluator.evaluate(root, root.projectedState, playerId) -
+            evaluator.evaluate(without, without.projectedState, playerId)
+        return charge.coerceAtLeast(0.0)
+    }
+
+    /**
+     * Whether we hold an instant-speed cast ban that denies the opponent their whole turn if cast
+     * now — [AiProfile.castBansDenyTheirTurn]. Their upkeep and draw step are windows
+     * [MeaningfulActionFilter.canAutoPassWithoutEnumerating] passes without asking, which is right
+     * for every card but this one: Silence is worth most exactly there. [AIPlayer] asks this before
+     * taking that shortcut.
+     */
+    fun wantsWindowForABan(state: GameState, playerId: EntityId): Boolean {
+        if (!castBansDenyTheirTurn || state.isActiveTurnFor(playerId)) return false
+        val bans = state.getZone(playerId, Zone.HAND).filterTo(HashSet()) { id ->
+            val name = state.getEntity(id)?.get<CardComponent>()?.name ?: return@filterTo false
+            val intent = intents.forName(name) ?: return@filterTo false
+            IntentTag.CAST_BAN in intent.tags && intent.speed == Speed.INSTANT &&
+                intents.definition(name)?.let { CastBanWindow.deniesATurn(state, playerId, it) } == true
+        }
+        if (bans.isEmpty()) return false
+        // Only a ban we can actually cast: a Silence without a white source must not stop the
+        // server's auto-pass every upkeep just to pass. Rare enough to afford the enumeration.
+        return simulator.getLegalActions(state, playerId).any { action ->
+            action.affordable && (action.action as? CastSpell)?.cardId in bans
+        }
+    }
+
+    /**
+     * What the evaluator charged for taking a cast ban's card out of our hand, refunded when the ban
+     * denies an opponent a whole turn of casting — [AiProfile.castBansDenyTheirTurn].
+     *
+     * The ban moves no permanent, so the leaf sees only the card spent; its payoff is the spells the
+     * opponent does not cast, which [CastBanWindow] vouches for. Measured with the evaluator, as
+     * [deploymentCredit] is, so the refund is exactly the charge. Never negative.
+     */
+    private fun castBanCredit(root: GameState, action: LegalAction, playerId: EntityId): Double {
+        if (!castBansDenyTheirTurn) return 0.0
+        val cast = action.action as? CastSpell ?: return 0.0
+        if (cast.faceIndex != null || cast.castFused) return 0.0
+        val hand = ZoneKey(playerId, Zone.HAND)
+        if (cast.cardId !in root.getZone(hand)) return 0.0
+        val name = root.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return 0.0
+        if (IntentTag.CAST_BAN !in (intents.forName(name)?.tags ?: return 0.0)) return 0.0
+        val definition = intents.definition(name) ?: return 0.0
+        if (!CastBanWindow.deniesATurn(root, playerId, definition)) return 0.0
         val without = root.removeFromZone(hand, cast.cardId)
         val charge = evaluator.evaluate(root, root.projectedState, playerId) -
             evaluator.evaluate(without, without.projectedState, playerId)

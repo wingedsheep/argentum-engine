@@ -77,7 +77,7 @@ Abzan Guide
 Abzan Monument
 Academic Ascent
 Academic Dispute	timing: GrantKeywordEffect
-Academic Probation	intent: ModalEffect
+Academic Probation
 Academy Drake
 Academy Instructor
 Academy Journeymage	polarity: MoveToZoneEffect
@@ -1102,7 +1102,7 @@ Ayula, Queen Among Bears	polarity: FightEffect
 Azami, Lady of Scrolls
 Aziza, Mage Tower Captain	intent: CopyTargetSpellEffect
 Azog, Moria's Ruin
-Azor, the Lawbringer	intent: CantCastSpellsEffect
+Azor, the Lawbringer
 Azorius Chancery
 Azorius Charm	polarity: MoveToZoneEffect
 Azorius Guildgate
@@ -2335,7 +2335,7 @@ Calamitous Cave-In
 Calamitous Tide	polarity: MoveToZoneEffect
 Calamity Bearer
 Calamity of Cinders
-Calamity's Wake	intent: CantCastSpellsEffect; intent: Pipeline(graveyard→exile); timing: CantCastSpellsEffect
+Calamity's Wake	intent: Pipeline(graveyard→exile); timing: CantCastSpellsEffect
 Calamity, Galloping Inferno
 Calciderm
 Caldaia Strongarm
@@ -3202,7 +3202,7 @@ Conductor of Cacophony
 Conduit Goblin
 Conduit Pylons
 Conduit of Storms
-Conduit of Worlds	intent: CantCastSpellsEffect; intent: Pipeline(ChosenTargets→?); polarity: CantCastSpellsEffect; polarity: Pipeline(ChosenTargets→?)
+Conduit of Worlds	intent: Pipeline(ChosenTargets→?); polarity: CantCastSpellsEffect; polarity: Pipeline(ChosenTargets→?)
 Cone of Flame
 Confiscate
 Confounding Conundrum	intent: ForEach>Pipeline(BattlefieldMatching→hand)
@@ -5984,7 +5984,7 @@ Flamekin Harbinger
 Flamekin Spitfire
 Flames of the Firebrand	polarity: DividedDamageEffect
 Flames of the Raze-Boar
-Flamescroll Celebrant	intent: CantActivateLoyaltyAbilitiesEffect; intent: CantCastSpellsEffect; timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
+Flamescroll Celebrant	timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
 Flameskull	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity|TopOfLibrary|exile→exile)
 Flamestick Courier
 Flametongue Kavu
@@ -8548,7 +8548,7 @@ Invasion of Xerex	polarity: MoveToZoneEffect
 Invasion of Zendikar
 Invasion of the Giants
 Invasive Maneuvers
-Inventive Iteration	intent: CantCastSpellsEffect
+Inventive Iteration
 Inventive Wingsmith	intent: AddCountersEffect
 Inventor's Apprentice
 Inventor's Axe
@@ -11849,7 +11849,7 @@ Ori, Keeper of Songs
 Origin of Metalbending
 Origin of Spider-Man
 Origin of the Avengers
-Orim's Chant	intent: CantAttackGroupEffect; intent: CantCastSpellsEffect; polarity: CantCastSpellsEffect; timing: CantAttackGroupEffect; timing: CantCastSpellsEffect
+Orim's Chant	timing: CantAttackGroupEffect
 Orim's Prayer
 Orim's Touch
 Orim, Samite Healer
@@ -15051,7 +15051,7 @@ Signature Slam	polarity: ForEachEffect
 Signpost Scarecrow
 Sigrid, God-Favored
 Sigurd, Jarl of Ravensthorpe	intent: AddCountersEffect; intent: RemoveCountersEffect; polarity: AddCountersEffect; polarity: RemoveCountersEffect
-Silence	intent: CantCastSpellsEffect; timing: CantCastSpellsEffect
+Silence
 Silence the Echo
 Silent Artisan
 Silent Attendant
@@ -15133,7 +15133,7 @@ Sinew Dancer
 Sinew Sliver
 Singing Bell Strike	polarity: Aura>GrantActivatedAbility; polarity: Aura>GrantKeyword; polarity: Aura>TapUntapEffect
 Singing Tree	combat: SetBaseStatsEffect; intent: SetBaseStatsEffect
-Single Combat	intent: CantCastSpellsEffect; intent: ForEach>Pipeline(ControlledPermanents→?); intent: Pipeline(?→graveyard)
+Single Combat	intent: ForEach>Pipeline(ControlledPermanents→?); intent: Pipeline(?→graveyard)
 Singularity Rupture	polarity: ForEachEffect; polarity: Pipeline(BattlefieldMatching→graveyard)
 Sinister Concoction
 Sinister Cryologist	intent: ModifyStatsEffect
@@ -15713,7 +15713,7 @@ Sphinx of the Guildpact
 Sphinx of the Second Sun	intent: AddBeginningPhaseEffect
 Sphinx of the Steel Wind
 Sphinx's Approach
-Sphinx's Decree	intent: CantCastSpellsEffect
+Sphinx's Decree
 Sphinx's Insight
 Sphinx's Revelation
 Spicy Oatmeal Pizza
@@ -19619,10 +19619,10 @@ Wydwen, the Biting Gale
 Wyleth, Soul of Steel
 Wylie Duke, Atiin Hero
 Wyluli Wolf
-Xanathar, Guild Kingpin	intent: CantCastSpellsEffect; intent: GrantStaticAbilityEffect; polarity: CantCastSpellsEffect; polarity: GrantStaticAbilityEffect
+Xanathar, Guild Kingpin
 Xande, Dark Mage
 Xander's Lounge
-Xantid Swarm	intent: CantCastSpellsEffect
+Xantid Swarm
 Xathrid Necromancer
 Xenagos, God of Revels
 Xenic Poltergeist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect

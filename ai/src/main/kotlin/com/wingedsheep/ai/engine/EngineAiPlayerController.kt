@@ -71,6 +71,8 @@ class EngineAiPlayerController(
             cardRegistry, playerId, profile, insightSink = insightSink,
         )
 
+    override fun wantsPriority(state: GameState): Boolean = aiPlayer.wantsWindowItWouldAutoPass(state)
+
     override fun chooseAction(
         state: ClientGameState,
         legalActions: List<LegalActionInfo>,

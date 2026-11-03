@@ -647,6 +647,13 @@ class AiGameManager(
     fun isAiPlayer(playerId: EntityId): Boolean = playerId in aiPlayerIds
 
     /**
+     * Whether AI seat [aiPlayerId] of [gameSessionId] wants to act in the window the auto-pass loop
+     * is about to pass for it ([com.wingedsheep.ai.AiPlayerController.wantsPriority]).
+     */
+    fun aiWantsPriority(gameSessionId: String, aiPlayerId: EntityId, state: com.wingedsheep.engine.state.GameState): Boolean =
+        activeSessions[gameSessionId]?.get(aiPlayerId)?.wantsPriority(state) == true
+
+    /**
      * Clean up AI resources when a game ends.
      */
     fun cleanupGame(gameSessionId: String) {

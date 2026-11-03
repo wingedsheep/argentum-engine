@@ -163,6 +163,11 @@ class HoldPolicy(
      */
     private val borrowedCreaturesGoHome: Boolean = false,
     /**
+     * [AiProfile.castBansDenyTheirTurn][com.wingedsheep.ai.engine.AiProfile.castBansDenyTheirTurn]
+     * — reward a cast ban where it denies an opponent a whole turn of casting ([CastBanWindow]).
+     */
+    private val castBansDenyTheirTurn: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -263,6 +268,18 @@ class HoldPolicy(
                 )
             ) {
                 return TimingVerdict.NoWindow
+            }
+        }
+
+        // A ban on an opponent's spells, where it covers their whole turn: the board score sees only
+        // the card spent, so name the window. An instant (Silence in their upkeep) is cast there
+        // outright; a sorcery (Sphinx's Decree) only with mana nothing else wants this turn.
+        if (castBansDenyTheirTurn && cast != null && IntentTag.CAST_BAN in intent.tags) {
+            val definition = intents.definition(cardName)
+            if (definition != null && CastBanWindow.deniesATurn(state, playerId, definition)) {
+                return TimingVerdict.Adjust(
+                    CAST_BAN_WINDOW, reason = "ban denies their turn", onlyWhenIdle = intent.speed != Speed.INSTANT,
+                )
             }
         }
 
@@ -830,6 +847,13 @@ class HoldPolicy(
          * `passScore - 1.5`, but only for the cards that actually want the window.
          */
         const val END_STEP_WINDOW = 1.5
+
+        /**
+         * The reward for an [IntentTag.CAST_BAN] cast where it denies an opponent a whole turn
+         * ([CastBanWindow]). Sized like [END_STEP_WINDOW]: both name the window a card is strictly
+         * better spent in, which the board score is blind to.
+         */
+        const val CAST_BAN_WINDOW = 1.5
 
         val COMBAT_STEPS = setOf(
             Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS,

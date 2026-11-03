@@ -350,6 +350,19 @@ enum class IntentTag {
 
     /** An activated ability whose cost is sacrificing a permanent — a sacrifice outlet. */
     SACRIFICE_OUTLET,
+
+    /**
+     * Stops an opponent casting spells (or a kind of spell) for a stretch of turn — Silence's "your
+     * opponents can't cast spells this turn", Sphinx's Decree's "can't cast instant or sorcery spells
+     * during that player's next turn", Xantid Swarm's attack trigger.
+     *
+     * Its payoff is spells that are never cast, which no board simulation sees: the ban leaves every
+     * permanent where it was. So the tag is what tells the AI the card is disruption rather than a
+     * blank, and what [HoldPolicy] reads to cast an instant-speed ban where it covers the opponent's
+     * whole turn. A ban that binds its own controller too (Calamity's Wake, Conduit of Worlds) is the
+     * card's price, not its point, and earns no tag — see `CardIntentAnalyzer.bansAnOpponent`.
+     */
+    CAST_BAN,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */
