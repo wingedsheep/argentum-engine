@@ -10713,7 +10713,7 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     touch (CR 400.7). Where the fired trigger rebinds `TriggeringEntity` (an event trigger's own object, or a
     step trigger's `watchedTarget` / `fireOnPlayer`), that reference stays late-bound (Goblin Flotilla's
     "that creature gains first strike"). **The Wrath of Khan** chapter I = `DealDamage(4, creature) then
-    CreateDelayedTrigger(step = BEGIN_COMBAT, fireOnce = true, expiry = EndOfTurn, effect =
+    CreateDelayedTrigger(step = BEGIN_COMBAT, timing = THIS_TURN_ONLY, effect =
     GainControl(creature, EndOfTurn) then Untap(creature) then GrantKeyword(HASTE, creature))`.
 
 ---

@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -37,8 +37,7 @@ val TheWrathOfKhan = card("The Wrath of Khan") {
         val creature = target(TargetFilter.CreatureOpponentControls)
         effect = Effects.DealDamage(4, creature) then Effects.CreateDelayedTrigger(
             step = Step.BEGIN_COMBAT,
-            fireOnce = true,
-            expiry = DelayedTriggerExpiry.EndOfTurn,
+            timing = DelayedTriggerTiming.THIS_TURN_ONLY,
             effect = Effects.GainControl(creature, Duration.EndOfTurn) then
                 Effects.Untap(creature) then
                 Effects.GrantKeyword(Keyword.HASTE, creature),

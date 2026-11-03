@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
@@ -31,8 +31,7 @@ class DelayedTriggerThreatenTargetBakingTest : FunSpec({
             val creature = target(TargetFilter.Creature)
             effect = Effects.CreateDelayedTrigger(
                 step = Step.BEGIN_COMBAT,
-                fireOnce = true,
-                expiry = DelayedTriggerExpiry.EndOfTurn,
+                timing = DelayedTriggerTiming.THIS_TURN_ONLY,
                 effect = Effects.GainControl(creature, Duration.EndOfTurn) then
                     Effects.Untap(creature) then
                     Effects.GrantKeyword(Keyword.HASTE, creature),
@@ -48,8 +47,7 @@ class DelayedTriggerThreatenTargetBakingTest : FunSpec({
             target(TargetFilter.Creature)
             effect = Effects.CreateDelayedTrigger(
                 step = Step.BEGIN_COMBAT,
-                fireOnce = true,
-                expiry = DelayedTriggerExpiry.EndOfTurn,
+                timing = DelayedTriggerTiming.THIS_TURN_ONLY,
                 effect = Effects.Tap(EffectTarget.ContextTarget(0)),
             )
         }

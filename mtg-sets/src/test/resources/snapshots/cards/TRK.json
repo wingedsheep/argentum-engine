@@ -18605,7 +18605,7 @@
                                     }
                                 ]
                             },
-                            "fireOnce": true
+                            "timing": "ThisTurnOnly"
                         }
                     ]
                 },

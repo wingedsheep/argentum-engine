@@ -92,4 +92,21 @@ class TheWrathOfKhanScenarioTest : FunSpec({
             driver.getGraveyardCardNames(opponent).contains("Grizzly Bears") shouldBe true
         }
     }
+
+    test("chapter I after combat steals nothing at a later turn's combat") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        val force = driver.putCreatureOnBattlefield(opponent, "Force of Nature")
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.castSagaAt(me, force)
+
+        withClue("no combat is left this turn, so the threaten is dropped at end of turn") {
+            driver.passPriorityUntil(Step.BEGIN_COMBAT)
+            driver.drain()
+            driver.state.projectedState.getController(force) shouldBe opponent
+            driver.state.delayedTriggers.isEmpty() shouldBe true
+        }
+    }
 })
