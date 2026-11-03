@@ -317,6 +317,7 @@ internal class ActivationChoicePauses(
 
     // -------------------------------------------------------------------
     // ExileFromGraveyard cost-choice pause (legal-actions submission path).
+    // Also asks for a hand exile cost ("Exile a card from your hand"), same shape.
     //
     // When the cost is `ExileFromGraveyard(count, filter)` (Rust Harvester:
     // "{2}, {T}, Exile an artifact card from your graveyard: ...") and the
@@ -333,7 +334,7 @@ internal class ActivationChoicePauses(
     private fun exileFromGraveyardChoice(state: GameState, activation: Activation): ExecutionResult? {
         val action = activation.action
         val sourceName = activation.sourceName
-        val exileFromGraveyardCost = activation.effectiveCost.extractExileFromGraveyardCost()
+        val exileFromGraveyardCost = activation.effectiveCost.extractChosenCardExileCost()
         val alreadyExiling = (action.costPayment?.exiledCards?.isNotEmpty() == true)
         if (exileFromGraveyardCost == null || alreadyExiling) return null
         // The pool follows the atom's own flags, not "the activator's graveyard": Night Soil
@@ -350,7 +351,8 @@ internal class ActivationChoicePauses(
                 exileCandidatesByOwner.flatten()
             }
         if (exileCandidates.size <= exileFromGraveyardCost.count) return null
-        val prompt = "Select ${exileFromGraveyardCost.count} card${if (exileFromGraveyardCost.count > 1) "s" else ""} to exile from graveyard for ${sourceName}"
+        val zoneLabel = if (exileFromGraveyardCost.zone == Zone.HAND) "your hand" else "graveyard"
+        val prompt = "Select ${exileFromGraveyardCost.count} card${if (exileFromGraveyardCost.count > 1) "s" else ""} to exile from $zoneLabel for ${sourceName}"
         val continuation = ActivateAbilityExileFromGraveyardContinuation(
             action = action,
             exileCandidates = exileCandidates,

@@ -17,8 +17,9 @@ import com.wingedsheep.sdk.model.EntityId
  * A **card in exile** may gain a *triggered* ability too ([allowExiledCard]) — "It gains 'At the
  * beginning of your upkeep, if this card is exiled, …'" (Uvilda, Dean of Perfection). Such an ability
  * functions only if it declares `activeZones = EXILE`, and it ends when the card leaves exile
- * (`ZoneTransitionService`, or `SpellCaster` when it is cast). Activated and state-triggered grants
- * stay permanent-only: nothing scans an exiled card for them.
+ * (`ZoneTransitionService`, or `SpellCaster` when it is cast). An *activated* ability may land there
+ * only when it is activatable from exile (`activateFromZone = EXILE`, Q, Stacking the Deck), where
+ * `ZoneActivatedAbilityEnumerator(EXILE)` surfaces it; state-triggered grants stay permanent-only.
  *
  * Shared by the triggered, state-triggered and activated grant executors.
  */

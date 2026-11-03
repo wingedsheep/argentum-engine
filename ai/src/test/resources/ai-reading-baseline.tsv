@@ -12679,6 +12679,7 @@ Pyrotechnics	polarity: DividedDamageEffect
 Pyrrhic Blast
 Pyrrhic Strike
 Python
+Q, Stacking the Deck	intent: GatherUntilMatchEffect; intent: GrantActivatedAbilityEffect; intent: Pipeline(?→exile)
 Qarsi Revenant
 Qasali Slingers
 Qiqirn Merchant
