@@ -300,8 +300,8 @@ enum class IntentTag {
      *
      * Tagged apart from [RAMP] because a discount is not a mana source: it pays for nothing on its
      * own, can't be tapped for a colour, and only matters for the spells and abilities it names —
-     * folding it into [RAMP] would price it as a mana rock in [CardIntent.staticPriorValue] and hand
-     * it the ramp slot of a deck's mana curve. Only a discount on the controller's own side reads
+     * folding it into [RAMP] would count it as a mana source wherever the AI asks for one (the
+     * mana-source prior rung, a deck's ramp role). Only a discount on the controller's own side reads
      * this way; a symmetric one (Helm of Awakening) helps the opponent as much and earns no tag.
      */
     COST_REDUCER,
