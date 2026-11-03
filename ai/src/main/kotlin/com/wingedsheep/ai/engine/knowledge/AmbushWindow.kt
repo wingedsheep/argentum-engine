@@ -324,7 +324,8 @@ internal object AmbushWindow {
      *    [ANSWERS_THEIR_BOARD] there is no side-of-the-table question to ask about it.
      *  - **Hands us something to spend**: [IntentTag.DRAW], [IntentTag.TUTOR], [IntentTag.RAMP],
      *    [IntentTag.RECURSION]. A card drawn in our main phase can be cast in our main phase; the
-     *    same card drawn on their end step cannot.
+     *    same card drawn on their end step cannot. [IntentTag.COST_REDUCER] belongs here too: a
+     *    discount in play by our main phase is spent on that main phase's spells.
      *
      * [IntentTag.COUNTERSPELL] and [IntentTag.COMBAT_TRICK] are absent on purpose. They are not
      * exceptions this set forgot — [HoldPolicy] branches on both *before* it reaches here, so
@@ -349,7 +350,7 @@ internal object AmbushWindow {
 
     private val PAYS_OFF_BEFORE_THE_AMBUSH = setOf(
         IntentTag.PUMP, IntentTag.ANTHEM, IntentTag.EVASION_GRANT, IntentTag.PROTECTION,
-        IntentTag.DRAW, IntentTag.TUTOR, IntentTag.RAMP, IntentTag.RECURSION,
+        IntentTag.DRAW, IntentTag.TUTOR, IntentTag.RAMP, IntentTag.COST_REDUCER, IntentTag.RECURSION,
     )
 
     /**

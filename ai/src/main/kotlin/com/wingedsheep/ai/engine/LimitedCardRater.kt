@@ -652,6 +652,7 @@ object LimitedCardRater {
         IntentTag.TOKEN_MAKER to 0.5,
         IntentTag.DISCARD to 0.4,
         IntentTag.RAMP to 0.4,
+        IntentTag.COST_REDUCER to 0.3,
         IntentTag.PUMP to 0.3,
         IntentTag.COMBAT_TRICK to 0.3,
         IntentTag.EVASION_GRANT to 0.3,
