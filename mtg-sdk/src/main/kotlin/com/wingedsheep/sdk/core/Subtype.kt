@@ -383,7 +383,7 @@ value class Subtype(val value: String) {
 
         /** All artifact types per comprehensive rules 205.3g. */
         val ALL_ARTIFACT_TYPES: Set<String> = setOf(
-            "Attraction", "Blood", "Bobblehead", "Book", "Clue", "Contraption", "Equipment", "Food",
+            "Attraction", "Blood", "Bobblehead", "Book", "Clue", "Communicator", "Contraption", "Equipment", "Food",
             "Fortification", "Gold", "Heartwood", "Incubator", "Infinity", "Junk", "Lander", "Map",
             "Mutagen", "Powerstone", "Spacecraft", "Stone", "Treasure", "Vehicle", "Vibranium"
         )
