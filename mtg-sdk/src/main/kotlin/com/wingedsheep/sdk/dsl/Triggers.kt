@@ -986,6 +986,38 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun choosesTargets(): TriggerSpec = spec(TargetsChosenEvent(player = player))
 
     /**
+     * "Whenever [player] become(s) the target of a spell or ability" — the player-only half of the
+     * becomes-target family (CR 115.10 — a player can be a target): `Triggers.you.becomesTarget(byOpponent
+     * = true)` is "whenever you become the target of a spell or ability an opponent controls" (Amulet of
+     * Safekeeping). No permanent fires it; for "you or a permanent you control" use the object subject
+     * with `players = Player.You` instead (Valkmira, Protector's Shield). [byYou] / [byOpponent] narrow who
+     * controls the targeting object, [spellsOnly] / [abilitiesOnly] what it is, [of] which kind of spell
+     * or source permanent. The targeting spell or ability is `EffectTarget.TargetingSource` in the effect.
+     */
+    fun becomesTarget(
+        of: GameObjectFilter? = null,
+        byYou: Boolean = false,
+        byOpponent: Boolean = false,
+        spellsOnly: Boolean = false,
+        abilitiesOnly: Boolean = false,
+        firstTimeEachTurn: Boolean = false,
+    ): TriggerSpec {
+        only("becomesTarget", Player.You, Player.EachOpponent, Player.Each)
+        return spec(
+            BecomesTargetEvent(
+                byYou = byYou,
+                byOpponent = byOpponent,
+                firstTimeEachTurn = firstTimeEachTurn,
+                spellsOnly = spellsOnly,
+                playerTargets = player,
+                abilitiesOnly = abilitiesOnly,
+                sourceFilter = of,
+                includeObjectTargets = false,
+            )
+        )
+    }
+
+    /**
      * "a spell or ability is put onto the stack" (Grip of Chaos) — by any player, so only
      * [Triggers.anyPlayer].
      */
