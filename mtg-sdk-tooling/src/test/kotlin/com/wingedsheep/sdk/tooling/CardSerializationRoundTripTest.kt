@@ -381,6 +381,29 @@ class CardSerializationRoundTripTest : DescribeSpec({
             val deserialized = CardLoader.fromJson(serialized)
             deserialized.script.replacementEffects.size shouldBe 2
         }
+
+        it("should round-trip a granted RedirectTokenCreationController (Crafty Cutpurse)") {
+            val redirect = RedirectTokenCreationController()
+            val card = card("Crafty Cutpurse") {
+                manaCost = "{3}{U}"
+                typeLine = "Creature — Human Pirate"
+                power = 2
+                toughness = 2
+                triggeredAbility {
+                    trigger = Triggers.self.enters()
+                    effect = Effects.GrantReplacementEffect(redirect, EffectTarget.Self, Duration.EndOfTurn)
+                }
+            }
+
+            val serialized = CardLoader.toJson(card)
+            serialized shouldContain "RedirectTokenCreationController"
+
+            val deserialized = CardLoader.fromJson(serialized)
+            deserialized.script.triggeredAbilities.single().effect shouldBe
+                card.script.triggeredAbilities.single().effect
+            redirect.description shouldBe
+                "Each token that would be created under an opponent's control is created under your control instead"
+        }
     }
 
     describe("Condition round-trip serialization") {

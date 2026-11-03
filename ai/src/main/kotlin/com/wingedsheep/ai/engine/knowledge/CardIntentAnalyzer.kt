@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
+import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -870,6 +871,18 @@ object CardIntentAnalyzer {
         // "Your opponents can't cast spells this turn" / "target player can't cast …": disruption whose
         // payoff is spells never cast. A ban that binds its controller too is a price, not a payoff.
         is CantCastSpellsEffect -> if (bansAnOpponent(effect.target)) setOf(IntentTag.CAST_BAN) else emptySet()
+
+        // "Each token that would be created under an opponent's control this turn is created under
+        // your control instead" (Crafty Cutpurse): the opponent's tokens become ours for the turn.
+        // Only a redirect toward its controller from the opponents' side reads; other granted
+        // replacement kinds are still unread.
+        is GrantReplacementEffectEffect -> when (val replacement = effect.replacement) {
+            is RedirectTokenCreationController ->
+                if ((replacement.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.TokenCreationEvent)
+                        ?.controller == com.wingedsheep.sdk.scripting.references.Player.EachOpponent
+                ) setOf(IntentTag.TOKEN_THEFT) else emptySet()
+            else -> emptySet()
+        }
 
         is GatherCardsEffect ->
             if ((effect.source as? CardSource.FromZone)?.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR)

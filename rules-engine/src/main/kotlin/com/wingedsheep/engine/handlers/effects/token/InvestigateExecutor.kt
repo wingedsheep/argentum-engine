@@ -43,12 +43,20 @@ class InvestigateExecutor(
             ?.let { context.resolvePlayerTarget(it, state) ?: return EffectResult.success(state) }
             ?: context.controllerId
 
+        // A question about the Clues that re-runs the creating instruction once answered (whose
+        // control they're created under, which substitute) re-runs the whole investigate, so the
+        // investigate events go out with the Clues rather than before them.
         val created = createPredefinedToken.execute(
             state,
             CreatePredefinedTokenEffect("Clue", count = times, controller = effect.controller),
-            context
+            context,
+            rootEffect = effect
         )
         if (created.outcome is Outcome.Rejected) return created
+        if (created.outcome is Outcome.Paused &&
+            (created.state.peekContinuation() as? com.wingedsheep.engine.core.Suspension)?.answer is
+                com.wingedsheep.engine.core.TokenSubstitutionChoiceContinuation
+        ) return created
 
         val alreadyInvestigated = created.state.getEntity(investigatorId)
             ?.has<InvestigatedThisTurnComponent>() == true

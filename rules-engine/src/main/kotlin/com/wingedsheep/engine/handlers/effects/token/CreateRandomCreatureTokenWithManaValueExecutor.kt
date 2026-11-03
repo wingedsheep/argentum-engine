@@ -69,16 +69,25 @@ class CreateRandomCreatureTokenWithManaValueExecutor(
             return EffectResult.success(state)
         }
 
+        // "Created under your control instead" (Crafty Cutpurse) before any other token
+        // replacement — asked, if at all, before the random pick so the re-run draws the same card.
+        val tokenControllerId = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, context.controllerId, context, effect, amountEvaluator.predicates
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
+
         val (chosen, stateAfterPick) = state.nextRandom { pick(candidates) }
 
         // "If one or more tokens would be created under your control, that many … are created
         // instead" (Holo-Engineer). A question about the substitute pauses on the state *before*
         // the pick, so the re-run after the answer draws the same creature from the same seed.
-        val prospective = com.wingedsheep.engine.core.CardEntityFactory.create(chosen, ownerId = context.controllerId)
+        val prospective = com.wingedsheep.engine.core.CardEntityFactory.create(chosen, ownerId = tokenControllerId)
             .get<com.wingedsheep.engine.state.components.identity.CardComponent>()
         if (prospective != null) {
             TokenCreationReplacementHelper.substituteIfReplaced(
-                stateAfterPick, prospective, context.controllerId, 1, context, effect,
+                stateAfterPick, prospective, tokenControllerId, 1, context, effect,
                 amountEvaluator.predicates, staticAbilityHandler, cardRegistry,
                 pauseState = state,
             )?.let { return it }
@@ -87,7 +96,7 @@ class CreateRandomCreatureTokenWithManaValueExecutor(
         return TokenFromDefinition.mint(
             state = stateAfterPick,
             cardDef = chosen,
-            controllerId = context.controllerId,
+            controllerId = tokenControllerId,
             cardRegistry = cardRegistry,
             staticAbilityHandler = staticAbilityHandler,
             predicateEvaluator = amountEvaluator.predicates

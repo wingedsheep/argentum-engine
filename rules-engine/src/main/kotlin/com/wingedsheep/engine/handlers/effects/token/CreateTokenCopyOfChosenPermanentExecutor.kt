@@ -124,6 +124,34 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             effect: CreateTokenCopyOfChosenPermanentEffect,
             context: EffectContext,
         ): EffectResult {
+            if (state.getEntity(chosenId)?.copiableCardComponent() == null) return EffectResult.success(state)
+            // "Created under your control instead" (Crafty Cutpurse) before any other token
+            // replacement. A redirect question re-runs [effect] with the chosen permanent remembered.
+            val remembered = context.copy(pipeline = context.pipeline.copy(
+                chosenValues = context.pipeline.chosenValues + (CHOSEN_PERMANENT_KEY to chosenId.value)
+            ))
+            val tokenControllerId = when (val redirect = TokenCreationReplacementHelper.redirectController(
+                state, controllerId, remembered, effect, predicateEvaluator
+            )) {
+                is TokenControllerRedirect.Resolved -> redirect.controllerId
+                is TokenControllerRedirect.Ask -> return redirect.result
+            }
+            return mintTokenCopy(
+                state, chosenId, tokenControllerId, staticAbilityHandler, cardRegistry, predicateEvaluator,
+                effect, remembered
+            )
+        }
+
+        private fun mintTokenCopy(
+            state: GameState,
+            chosenId: EntityId,
+            controllerId: EntityId,
+            staticAbilityHandler: StaticAbilityHandler?,
+            cardRegistry: CardRegistry?,
+            predicateEvaluator: PredicateEvaluator,
+            effect: CreateTokenCopyOfChosenPermanentEffect,
+            remembered: EffectContext,
+        ): EffectResult {
             val chosenContainer = state.getEntity(chosenId)
                 ?: return EffectResult.success(state)
 
@@ -134,9 +162,6 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             // a token is not a card (CR 111.1) — see CreateTokenCopyOfTargetExecutor.
             val tokenCard = chosenCard.copy(ownerId = controllerId, isDoubleFaced = false)
 
-            val remembered = context.copy(pipeline = context.pipeline.copy(
-                chosenValues = context.pipeline.chosenValues + (CHOSEN_PERMANENT_KEY to chosenId.value)
-            ))
             TokenCreationReplacementHelper.substituteIfReplaced(
                 state, tokenCard, controllerId, 1, remembered, effect,
                 predicateEvaluator, staticAbilityHandler, cardRegistry,

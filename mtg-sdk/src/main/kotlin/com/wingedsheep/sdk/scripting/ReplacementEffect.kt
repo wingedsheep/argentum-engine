@@ -201,6 +201,58 @@ data class ModifyTokenCount(
 }
 
 /**
+ * "Each token that would be created under an opponent's control is created under your control
+ * instead" (Crafty Cutpurse). Tokens of a creation event [appliesTo] matches — read relative to
+ * this replacement's controller, so the default `Player.EachOpponent` means "under an opponent of
+ * yours" — are created under this replacement's controller instead, and that player is also their
+ * owner (a token's owner is the player under whose control it was created).
+ *
+ * The closest existing types are [ReplaceTokenCreationWithToken], which swaps the tokens'
+ * *characteristics* and keeps the player, and [MultiplyTokenCreation] / [ModifyTokenCount], which
+ * change only the *count*: neither has a "who" axis, and giving either one would make a
+ * controller change mean a different thing per field. The player the tokens are created for is
+ * the axis every other token replacement keys on, so it is its own replacement, applied first.
+ *
+ * The engine applies it before every other token replacement — doublers, additional tokens,
+ * substitutions and attached-copy offers then judge the event under the new controller (the
+ * Crafty Cutpurse ruling: an opponent's Anointed Procession no longer applies, yours does). It
+ * changes only who the tokens are created under: tokens already on the battlefield are untouched,
+ * "tapped and attacking" tokens whose new controller isn't an attacking player enter tapped but
+ * not attacking, and delayed triggers the creating effect sets up stay with that effect's
+ * controller. When several apply, the would-be controller picks one, the new would-be controller
+ * then picks among the rest, and each applies at most once — so two players' redirects cancel out.
+ *
+ * `appliesTo.tokenFilter` isn't read yet (filtered events are skipped, as by the count
+ * replacements); nothing prints a filtered redirect.
+ *
+ * Usually granted for the turn: `Effects.GrantReplacementEffect(RedirectTokenCreationController(),
+ * EffectTarget.Self, Duration.EndOfTurn)`.
+ */
+@SerialName("RedirectTokenCreationController")
+@Serializable
+data class RedirectTokenCreationController(
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent(
+        controller = Player.EachOpponent
+    )
+) : ReplacementEffect {
+    override val description: String
+        get() {
+            val whose = when (val player = (appliesTo as? EventPattern.TokenCreationEvent)?.controller) {
+                null, Player.EachOpponent -> "an opponent's"
+                Player.Any,
+                Player.Each -> "any player's"
+                else -> "${player.description}'s"
+            }
+            return "Each token that would be created under $whose control is created under your control instead"
+        }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+/**
  * When a player would create one or more tokens matching [appliesTo], also create
  * [additionalTokenCount] predefined token(s) of a *different* type ([additionalTokenType]).
  *

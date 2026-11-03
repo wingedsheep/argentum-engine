@@ -691,6 +691,9 @@ object LimitedCardRater {
         // A trigger lock shuts off enter triggers on both sides — in Limited, where most decks run
         // a few, it is a sideboard hoser more than a maindeck card.
         IntentTag.TRIGGER_LOCK to 0.1,
+        // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
+        // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
+        IntentTag.TOKEN_THEFT to 0.2,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

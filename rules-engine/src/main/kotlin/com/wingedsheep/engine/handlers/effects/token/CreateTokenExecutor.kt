@@ -146,7 +146,8 @@ class CreateTokenExecutor(
         tokenControllerId: EntityId,
         riders: TokenRiders,
         rootEffect: com.wingedsheep.sdk.scripting.effects.Effect,
-        alreadyApplied: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet()
+        alreadyApplied: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet(),
+        delayedTriggerControllerId: EntityId = tokenControllerId
     ): EffectResult {
         if (count <= 0) return EffectResult.success(state)
         val normalized = substitution.token.copy(
@@ -163,7 +164,8 @@ class CreateTokenExecutor(
         )
         return createTokensFor(
             state, normalized, context, count, tokenControllerId, rootEffect,
-            appliedSubstitutions = alreadyApplied + substitution.applied
+            appliedSubstitutions = alreadyApplied + substitution.applied,
+            delayedTriggerControllerId = delayedTriggerControllerId
         )
     }
 
@@ -180,11 +182,23 @@ class CreateTokenExecutor(
         effect: CreateTokenEffect,
         context: EffectContext,
         baseCount: Int,
-        tokenControllerId: EntityId,
+        wouldBeControllerId: EntityId,
         rootEffect: com.wingedsheep.sdk.scripting.effects.Effect,
-        appliedSubstitutions: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet()
+        appliedSubstitutions: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet(),
+        delayedTriggerControllerId: EntityId = wouldBeControllerId
     ): EffectResult {
         val substituted = appliedSubstitutions.isNotEmpty()
+        // "Created under your control instead" (Crafty Cutpurse) comes before every other token
+        // replacement, so the doublers and substitutions below judge the event under the new
+        // controller. Substitutes belong to an event already redirected, and a batch redirected
+        // the whole event before its groups run.
+        val tokenControllerId = if (substituted || TokenCreationBatch.active(context)) wouldBeControllerId
+        else when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, wouldBeControllerId, context, rootEffect, amountEvaluator.predicates
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
         // Apply token-count replacements (Doubling Season / Exalted Sunborn,
         // and per-N modifiers) before downstream replacements get a look.
         val requestedCount = if (substituted || TokenCreationBatch.active(context)) baseCount else TokenCreationReplacementHelper.applyCountReplacements(
@@ -228,7 +242,8 @@ class CreateTokenExecutor(
         )?.let { lookup ->
             return when (lookup) {
                 is TokenSubstitution -> createSubstituteTokens(
-                    state, lookup, context, count, tokenControllerId, TokenRiders.of(effect), rootEffect, appliedSubstitutions
+                    state, lookup, context, count, tokenControllerId, TokenRiders.of(effect), rootEffect, appliedSubstitutions,
+                    delayedTriggerControllerId
                 )
                 is TokenSubstitutionChoice ->
                     TokenCreationReplacementHelper.askForSubstitution(state, lookup, rootEffect, context, count)
@@ -278,6 +293,7 @@ class CreateTokenExecutor(
                 )
         } else null
 
+        val attackingPlayer = com.wingedsheep.engine.mechanics.combat.CombatDefenders.isAttackingPlayer(state, tokenControllerId)
         val donatedTriggers = donatedTriggeredAbilities(state, effect, context)
 
         var newState = state
@@ -327,7 +343,9 @@ class CreateTokenExecutor(
             // (CR 508.4), else it joins the attack of the source creature (CR 802.2a: defender
             // per attacking creature), falling back to the sole active opponent outside
             // combat-derived contexts.
-            val defenderId = if (!effect.attacking) null
+            // Only an attacking player's creature can enter attacking: a token redirected to the
+            // defending player (Crafty Cutpurse) enters tapped, not attacking.
+            val defenderId = if (!effect.attacking || !attackingPlayer) null
                 else if (chosenDefenders != null) chosenDefenders[indexInBatch]
                 else if (namesDefendingPlayer) namedDefendingPlayer
                 else com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
@@ -405,7 +423,8 @@ class CreateTokenExecutor(
                     sourceId = sourceId,
                     objectReferences = context.objectReferences,
                     sourceName = sourceName,
-                    controllerId = tokenControllerId
+                    // The creating effect's player, even when the token went to someone else.
+                    controllerId = delayedTriggerControllerId
                 )
                 newState = newState.addDelayedTrigger(delayedTrigger)
             }
@@ -430,7 +449,8 @@ class CreateTokenExecutor(
                     sourceId = sourceId,
                     objectReferences = context.objectReferences,
                     sourceName = sourceName,
-                    controllerId = tokenControllerId
+                    // The creating effect's player, even when the token went to someone else.
+                    controllerId = delayedTriggerControllerId
                 )
                 newState = newState.addDelayedTrigger(delayedTrigger)
             }

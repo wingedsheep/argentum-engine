@@ -53,8 +53,16 @@ class CreateTokenBatchExecutor(
             return EffectResult(after, events, updatedCollections = mapOf(CREATED_TOKENS to created))
         }
         check(!TokenCreationBatch.active(context)) { "Token creation batches cannot nest" }
-        val controller = effect.controller?.let { context.resolvePlayerTarget(it, state) }
+        val wouldBeController = effect.controller?.let { context.resolvePlayerTarget(it, state) }
             ?: if (effect.controller == null) context.controllerId else return EffectResult.success(state)
+        // One event, one redirect (Crafty Cutpurse) — before the count replacements below, and the
+        // groups then run under the new controller without redirecting again.
+        val controller = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, wouldBeController, context, effect, amountEvaluator.predicates
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
         val counts = effect.groups.map {
             when (it) {
                 is CreateTokenEffect -> amountEvaluator.evaluate(state, it.count, context).coerceAtLeast(0)
