@@ -173,7 +173,7 @@
 - [ ] Overflow Submatrix
 - [x] Overgrown Tomb
 - [ ] Pah-Wraith
-- [ ] Peace in Our Time
+- [x] Peace in Our Time
 - [ ] Perils of the Past
 - [x] Pet Sehlat
 - [ ] Phlox, Unorthodox Doctor
