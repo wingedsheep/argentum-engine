@@ -638,6 +638,9 @@ data class CreateTokenCopyOfChosenContinuation(
     val sourceId: EntityId?,
     val sourceName: String?,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    /** The resolving effect and its context, re-run if a token substitution asks a question. */
+    val effect: com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfChosenPermanentEffect? = null,
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null,
 ) : AnswerContinuation
 
 /**

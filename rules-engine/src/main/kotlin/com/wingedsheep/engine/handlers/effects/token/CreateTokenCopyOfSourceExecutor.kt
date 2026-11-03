@@ -56,14 +56,48 @@ class CreateTokenCopyOfSourceExecutor(
         state: GameState,
         effect: CreateTokenCopyOfSourceEffect,
         context: EffectContext
-    ): EffectResult = createTokens(
-        state, effect, context, context.controllerId,
+    ): EffectResult {
+        val controllerId = context.controllerId
         // Token-count replacements (Doubling Season, Parallel Lives) apply to token copies too.
         // Applied once here, never by the token-by-token resume that re-enters createTokens.
-        TokenCreationReplacementHelper.applyCountReplacements(
-            state, context.controllerId, effect.count, predicateEvaluator = predicateEvaluator
-        ),
-    )
+        val count = TokenCreationReplacementHelper.applyCountReplacements(
+            state, controllerId, effect.count, predicateEvaluator = predicateEvaluator
+        )
+        // "If one or more tokens would be created under your control, that many … are created
+        // instead" (Holo-Engineer) replaces token copies too; the copy's characteristics are what
+        // its filter reads. The end-step exile rider still applies to the substitutes.
+        sourceCopyCharacteristics(state, effect, context, controllerId)?.let { prospective ->
+            TokenCreationReplacementHelper.substituteIfReplaced(
+                state, prospective, controllerId, count, context, effect,
+                predicateEvaluator, staticAbilityHandler, cardRegistry,
+                riders = TokenRiders(exileAtStep = effect.exileAtStep),
+            )?.let { return it }
+        }
+        return createTokens(state, effect, context, controllerId, count)
+    }
+
+    /** The source whose copiable values the tokens copy — the live object, or its last-known state. */
+    private fun copySource(state: GameState, context: EffectContext): ComponentContainer? {
+        val sourceId = context.sourceId ?: return null
+        // An ability keeps the source's copiable values after it leaves, including when a
+        // source token has ceased to exist or the card has returned as a different permanent.
+        val departedSource = context.lastKnownSourceSnapshot
+            ?.takeIf { context.sourceReferenceLost || sourceId !in state.getBattlefield() }
+            ?.copiableContainer()
+        return departedSource ?: state.getEntity(sourceId)
+    }
+
+    /** The token copy's characteristics: the source's copiable values plus the "except …" clause. */
+    private fun sourceCopyCharacteristics(
+        state: GameState,
+        effect: CreateTokenCopyOfSourceEffect,
+        context: EffectContext,
+        controllerId: EntityId,
+    ): CardComponent? {
+        val sourceCard = copySource(state, context)?.copiableCardComponent() ?: return null
+        return CopyExceptionApplier.apply(sourceCard, effect.copyExceptions, context.resolvingTriggeredAbility)
+            .copy(ownerId = controllerId, isDoubleFaced = false)
+    }
 
     /**
      * Create [count] token copies of the effect's source. Split out of [execute] so the
@@ -79,13 +113,7 @@ class CreateTokenCopyOfSourceExecutor(
     ): EffectResult {
         val sourceId = context.sourceId
             ?: return EffectResult.success(state)
-
-        // An ability keeps the source's copiable values after it leaves, including when a
-        // source token has ceased to exist or the card has returned as a different permanent.
-        val departedSource = context.lastKnownSourceSnapshot
-            ?.takeIf { context.sourceReferenceLost || sourceId !in state.getBattlefield() }
-            ?.copiableContainer()
-        val sourceContainer = departedSource ?: state.getEntity(sourceId)
+        val sourceContainer = copySource(state, context)
             ?: return EffectResult.success(state)
 
         val sourceCard = sourceContainer.copiableCardComponent()

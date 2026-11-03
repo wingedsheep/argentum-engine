@@ -1735,7 +1735,8 @@ class ModalAndCloneContinuationResumer(
         val result = com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfChosenPermanentExecutor.createTokenCopy(
             state, chosenId, continuation.controllerId,
             staticAbilityHandler, services.cardRegistry,
-            predicateEvaluator = services.predicateEvaluator
+            predicateEvaluator = services.predicateEvaluator,
+            effect = continuation.effect, context = continuation.effectContext,
         ).toExecutionResult()
         if (result.outcome is Outcome.Paused) return result
         return checkForMore(result.state, result.events.toList())

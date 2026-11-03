@@ -513,6 +513,50 @@ object TokenCreationReplacementHelper {
     }
 
     /**
+     * The token-substitution gate for the token paths that don't build [CreateTokenEffect] tokens
+     * themselves — token copies of the source, of a chosen permanent or of the equipped creature,
+     * Aura tokens such as Roles, and tokens minted from a bare card definition. "If one or more
+     * tokens would be created under your control, that many … are created instead" (Holo-Engineer)
+     * replaces *every* token-creation event, whatever the instruction that creates them.
+     *
+     * Looks up a [ReplaceTokenCreationWithToken] that applies to [count] tokens with [prospective]'s
+     * characteristics under [tokenControllerId]. When one applies, creates the substitutes through
+     * the one creature-token path ([CreateTokenExecutor.createSubstituteTokens]) — or pauses to ask
+     * its controller ([askForSubstitution]), after which [rootEffect] runs again from the top with
+     * the answer in [context] — and returns that result. Returns null when nothing applies, so the
+     * caller creates its own tokens. [pauseState] is the state that question pauses on — the
+     * re-run starts from it (a caller that already drew randomness passes the state before the draw).
+     */
+    fun substituteIfReplaced(
+        state: GameState,
+        prospective: CardComponent,
+        tokenControllerId: EntityId,
+        count: Int,
+        context: EffectContext,
+        rootEffect: Effect,
+        predicateEvaluator: PredicateEvaluator,
+        staticAbilityHandler: StaticAbilityHandler?,
+        cardRegistry: CardRegistry?,
+        riders: TokenRiders = TokenRiders(),
+        pauseState: GameState = state,
+    ): EffectResult? {
+        if (count <= 0) return null
+        val lookup = findTokenSubstitution(
+            state, tokenControllerId, prospective,
+            predicateEvaluator = predicateEvaluator,
+            eligibleSources = TokenCreationBatch.sources(context),
+            choices = context.pipeline.chosenValues,
+        ) ?: return null
+        val tokenCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "substituted tokens")
+        return when (lookup) {
+            is TokenSubstitution ->
+                CreateTokenExecutor(predicateEvaluator.conditions.amounts, staticAbilityHandler, cardRegistry)
+                    .createSubstituteTokens(state, lookup, context, tokenCount, tokenControllerId, riders, rootEffect)
+            is TokenSubstitutionChoice -> askForSubstitution(pauseState, lookup, rootEffect, context, tokenCount)
+        }
+    }
+
+    /**
      * Check if any permanent controlled by the token creator has a
      * ReplaceTokenCreationWithAttachedCopy replacement effect that applies
      * (e.g., Mirrormind Crown, Moonlit Meditation).

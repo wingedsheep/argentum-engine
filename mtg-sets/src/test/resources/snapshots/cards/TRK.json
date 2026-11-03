@@ -8995,6 +8995,67 @@
     ]
 }
 
+// Holo-Engineer
+{
+    "name": "Holo-Engineer",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, create a 3/3 colorless Illusion artifact creature token.\nIf one or more tokens would be created under your control, that many 3/3 colorless Illusion artifact creature tokens are created instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Holo-Engineer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Illusion"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceTokenCreationWithToken",
+                "tokens": [
+                    {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 3,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Illusion"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d760eee8-e49a-4662-8bfc-fcf8ed2ad2d8.jpg?1793364353",
+                        "artifactToken": true
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"This is a test run. I can assure you that the final product will be... zesty.\"\n—Dr. Lewis Zimmerman",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acfaf5f3-a4f5-418a-a29a-211b33bf18ee.jpg?1793100831"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hologram Janeway
 {
     "name": "Hologram Janeway",
