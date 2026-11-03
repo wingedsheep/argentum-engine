@@ -827,6 +827,97 @@
     ]
 }
 
+// Engineered Explosives
+{
+    "name": "Engineered Explosives",
+    "manaCost": "{X}",
+    "typeLine": "Artifact",
+    "oracleText": "Sunburst (This artifact enters with a charge counter on it for each color of mana spent to cast it.)\n{2}, Sacrifice this artifact: Destroy each nonland permanent with mana value equal to the number of charge counters on this artifact.",
+    "keywords": [
+        "SUNBURST"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Engineered Explosives:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "LastKnownSourceCounters",
+                                                "counterType": "CHARGE"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, Sacrifice this artifact: Destroy each nonland permanent with mana value equal to the number of charge counters on this artifact."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Ron Spears",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/8492a272-e595-4f94-a6eb-08d29f211fd6.jpg?1783944383",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "You can choose any value for X as you cast Engineered Explosives. The value chosen for X doesn't directly affect the number of charge counters Engineered Explosives enters the battlefield with, but it does let you pay more mana and thus spend more colors of mana to cast it."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Colorless mana won't give Engineered Explosives another charge counter. Colorless is not a color."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Tokens that aren't a copy of something else don't have a mana cost. Anything without a mana cost normally has a mana value of 0."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Eternal Witness
 {
     "name": "Eternal Witness",

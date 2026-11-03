@@ -1156,6 +1156,10 @@ internal class PermanentEntry(
         newState = ownState
         events.addAll(ownEvents)
 
+        val (sunburstState, sunburstEvents) = applySunburst(newState, entityId, cardDef, controllerId)
+        newState = sunburstState
+        events.addAll(sunburstEvents)
+
         val (globalState, globalEvents) = EntersWithReplacements.applyGlobal(
             newState, entityId, controllerId, cardRegistry,
             predicateEvaluator = conditionEvaluator.predicates
@@ -1164,5 +1168,43 @@ internal class PermanentEntry(
         events.addAll(globalEvents)
 
         return newState to events
+    }
+
+    /**
+     * Sunburst (CR 702.44a) — "If this object is entering the battlefield from the stack as a
+     * creature, it enters with a +1/+1 counter on it for each color of mana spent to cast it.
+     * Otherwise, it enters with a charge counter on it for each color of mana spent to cast it."
+     *
+     * Synthesized here, on the stack-resolution path only, because the keyword functions only as
+     * the object enters *from the stack*: a sunburst permanent put onto the battlefield any other way
+     * gets no counters. Whether it enters as a creature — and whether it still has sunburst at all —
+     * is read off the object as it would exist on the battlefield (CR 614.12,
+     * [com.wingedsheep.engine.handlers.effects.EntryCharacteristics]), so an artifact March of the
+     * Machines animates gets +1/+1 counters. The printed keyword gates the scratch projection so
+     * ordinary permanents never pay for it. Colorless mana is not a color (CR 105.1), so a spell paid
+     * only with colorless mana enters with no counters.
+     */
+    private fun applySunburst(
+        state: GameState,
+        entityId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        controllerId: EntityId,
+    ): Pair<GameState, List<GameEvent>> {
+        if (com.wingedsheep.sdk.core.Keyword.SUNBURST !in cardDef.keywords) return state to emptyList()
+        val predicates = conditionEvaluator.predicates
+        val entering = com.wingedsheep.engine.handlers.effects.EntryCharacteristics.projectedAsEntering(
+            state, entityId, controllerId, entryCopy = null, cardRegistry, predicates
+        ) ?: return state to emptyList()
+        if (!entering.hasKeyword(entityId, com.wingedsheep.sdk.core.Keyword.SUNBURST)) return state to emptyList()
+        val colors = predicates.amounts.evaluate(
+            state,
+            com.wingedsheep.sdk.scripting.values.DynamicAmount.DistinctColorsManaSpent(),
+            EffectContext(sourceId = entityId, controllerId = controllerId),
+        )
+        val kind = if (entering.isCreature(entityId)) CounterType.PLUS_ONE_PLUS_ONE else CounterType.CHARGE
+        val name = state.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
+        return EntersWithReplacements.placeEntryCounters(
+            state, entityId, kind, colors, controllerId, name, predicateEvaluator = predicates
+        )
     }
 }

@@ -39,14 +39,33 @@ object EntryCharacteristics {
     ): Boolean {
         // A face-down permanent is a 2/2 creature with no other characteristics (CR 708.2a).
         if (faceDown) return true
+        return projectedAsEntering(state, entityId, controllerId, entryCopy, cardRegistry, predicateEvaluator, entersWith)
+            ?.isCreature(entityId) == true
+    }
+
+    /**
+     * The projection of [entityId] as it would exist on the battlefield — the scratch state
+     * [wouldBeCreature] judges by, for a caller that reads more than the creature type off it
+     * (Sunburst reads both whether it is a creature and whether it still has the keyword).
+     * Null when the object or its controller can't be found.
+     */
+    fun projectedAsEntering(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId?,
+        entryCopy: EntryCopyChoice?,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+        entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null,
+    ): com.wingedsheep.engine.mechanics.layers.ProjectedState? {
         val choice = GrantedEntryCopy.find(state, entityId, predicateEvaluator)?.chosen(entryCopy) ?: entryCopy
         var scratch = choice?.takeIf { it.copiedCard != null }
             ?.let { EffectCopyEntry.apply(state, entityId, it) } ?: state
-        val container = scratch.getEntity(entityId) ?: return false
+        val container = scratch.getEntity(entityId) ?: return null
         val controller = controllerId
             ?: container.get<ControllerComponent>()?.playerId
             ?: container.get<CardComponent>()?.ownerId
-            ?: return false
+            ?: return null
         scratch.logicalZone(entityId)?.let { scratch = scratch.removeFromZone(it, entityId) }
         val statics = StaticAbilityHandler(cardRegistry)
         scratch = scratch.addToZone(ZoneKey(controller, Zone.BATTLEFIELD), entityId)
@@ -55,6 +74,6 @@ object EntryCharacteristics {
         entersWith?.let {
             scratch = com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry.apply(scratch, entityId, controller, it)
         }
-        return scratch.projectedState.isCreature(entityId)
+        return scratch.projectedState
     }
 }
