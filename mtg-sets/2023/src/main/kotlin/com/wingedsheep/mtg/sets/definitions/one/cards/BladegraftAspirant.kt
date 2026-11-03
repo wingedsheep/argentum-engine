@@ -44,7 +44,7 @@ val BladegraftAspirant = card("Bladegraft Aspirant") {
         ability = ReduceActivatedAbilityCost(
             filter = GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()),
             amount = DynamicAmounts.fixed(1),
-            onlyIfTargetIsSource = true,
+            targeting = GroupFilter.source(),
         )
     }
 

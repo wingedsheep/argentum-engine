@@ -543,25 +543,7 @@ class CostCalculator(
         if (chosenTargets.isEmpty()) return false
         val sourceController = modifierController(state, sourceId) ?: return false
         if (sourceController == casterId) return false
-        val context = PredicateContext(controllerId = sourceController, sourceId = sourceId)
-        val projected = state.projectedState
-        return chosenTargets.any { targetId ->
-            when (val scope = targetFilter.scope) {
-                is Scope.Self -> targetId == sourceId
-                is Scope.Specific -> targetId == scope.entityId
-                is Scope.AttachedTo -> {
-                    val attached = state.getEntity(sourceId)
-                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                        ?.targetId
-                    attached != null && targetId == attached
-                }
-                is Scope.SoulbondPair ->
-                    com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(state, sourceId, targetId)
-                is Scope.ChosenCreature -> state.chosenCreatureOf(sourceId) == targetId
-                is Scope.Battlefield ->
-                    predicateEvaluator.matches(state, projected, targetId, targetFilter.baseFilter, context)
-            }
-        }
+        return anyTargetInGroup(state, predicateEvaluator, sourceId, sourceController, targetFilter, chosenTargets)
     }
 
     /**

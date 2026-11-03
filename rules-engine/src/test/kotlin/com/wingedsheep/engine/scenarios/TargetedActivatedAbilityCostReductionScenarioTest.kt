@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldStartWith
 
 /**
- * `ReduceActivatedAbilityCost(onlyIfTargetIsSource = true)` — "Activated abilities of Equipment you
+ * `ReduceActivatedAbilityCost(targeting = GroupFilter.source())` — "Activated abilities of Equipment you
  * control that target this creature cost {1} less to activate" (Bladegraft Aspirant).
  *
  * Targets are chosen before the total cost is determined (CR 601.2c, then 601.2f; CR 602.2b applies
@@ -49,7 +49,7 @@ class TargetedActivatedAbilityCostReductionScenarioTest : ScenarioTestBase() {
             ability = ReduceActivatedAbilityCost(
                 filter = GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()),
                 amount = DynamicAmount.Fixed(1),
-                onlyIfTargetIsSource = true
+                targeting = GroupFilter.source()
             )
         }
     }
