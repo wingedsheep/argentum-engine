@@ -769,6 +769,56 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         }
     }
 
+    test("Star Trek play booster is 7 commons, 3 uncommons, two wildcards, a rare or mythic and a land slot") {
+        // Play Booster per magic.wizards.com/en/news/feature/collecting-star-trek (2026-10-20). The
+        // 1-in-25 Stardates common replacement and the sub-2% treatment variants are not modelled.
+        val trk = boosterGenerator.availableSets["TRK"].shouldNotBeNull()
+        trk.fullyImplemented shouldBe true
+        val strategy = trk.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
+        val base = strategy.base.shouldBeInstanceOf<PlayBooster>()
+        base.commons shouldBe 7
+        base.uncommons shouldBe 3
+        base.mythicChance shouldBe (0.134 plusOrMinus 0.001)
+        base.wildcardSlots.size shouldBe 2
+        strategy.nonbasicChance shouldBe 0.5
+        strategy.nonbasicLandNames.size shouldBe 10
+        strategy.basicLands.size shouldBe 20
+        val eligible = trk.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // The article's main set: 81 commons + 10 common duals, 110 uncommons, 80 rares (incl. the ten
+        // default-frame shock lands), 25 mythics.
+        eligible.distinctBy { it.name }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 91, Rarity.UNCOMMON to 110, Rarity.RARE to 80, Rarity.MYTHIC to 25,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        var duals = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("TRK")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            val land = pack.last()
+            val rest = pack.dropLast(1)
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                rest.all { it.name in eligibleNames && it.name !in strategy.nonbasicLandNames } shouldBe true
+            }
+            (land.typeLine.isBasicLand || land.name in strategy.nonbasicLandNames) shouldBe true
+            if (land.name in strategy.nonbasicLandNames) duals++
+            (rest.count { it.metadata.rarity == Rarity.COMMON } >= 7) shouldBe true
+            (rest.count { it.metadata.rarity == Rarity.UNCOMMON } >= 3) shouldBe true
+            (rest.count { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC } >= 1) shouldBe true
+            mythics += rest.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        // Rare slot 12.4 / 92.5 mythic, plus the wildcards' 2.6% and 1.0% mythic shares, normalised by each mix's sum.
+        (mythics.toDouble() / packs) shouldBe (0.172 plusOrMinus 0.03)
+        (duals.toDouble() / packs) shouldBe (0.5 plusOrMinus 0.05)
+        repeat(20) {
+            val pack = boosterGenerator.generateBooster("TRK", bannedCardNames = strategy.nonbasicLandNames)
+            pack.size shouldBe 14
+            pack.last().typeLine.isBasicLand shouldBe true
+        }
+    }
+
     test("Eighth Edition appears as a selectable set") {
         boosterGenerator.availableSets shouldContainKey "8ED"
     }

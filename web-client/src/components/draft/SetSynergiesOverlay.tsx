@@ -3021,6 +3021,74 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  TRK: {
+    setCode: 'TRK',
+    setName: 'Star Trek',
+    archetypes: [
+      {
+        name: 'Spacecraft Tempo',
+        colors: ['W', 'U'],
+        keyCard: 'Hemmer, Fixing What Is Broken',
+        description: 'Crew and station Spacecraft, then lock down blockers with tap and stun effects while your ships fly over. A tempo deck that protects its Spacecraft on your turn and loots each time its crew taps.',
+      },
+      {
+        name: 'Dilemmas',
+        colors: ['U', 'B'],
+        keyCard: 'Seven of Nine',
+        description: 'Play modal spells and abilities, drawing a card each time you face a dilemma, while surveil and evasive Androids pick at the opponent. A value-control deck that wins by out-choosing the opponent every turn.',
+      },
+      {
+        name: 'Klingon Warriors',
+        colors: ['B', 'R'],
+        keyCard: "L'Rell, Fierce Visionary",
+        description: 'Make hasty Klingon Warrior tokens each combat and sacrifice them, plus spare artifacts, for value before they leave. An aggressive attrition deck that keeps the pressure on and profits when its creatures die.',
+        creatureTypes: ['Klingon'],
+      },
+      {
+        name: 'Landfall',
+        colors: ['R', 'G'],
+        keyCard: 'Cleveland Booker, Empath',
+        description: 'Play a land every turn and turn each one into Worm tokens, extra mana or cards, then pump the whole board for the last swing. A go-wide ramp deck that cashes in its land drops.',
+      },
+      {
+        name: '+1/+1 Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Phlox, Unorthodox Doctor',
+        description: 'Spread +1/+1 counters across the team, then draw a card each time a creature with a counter connects. A midrange counters deck that grows its creatures turn by turn and refuels through combat.',
+      },
+      {
+        name: 'Borg Collective',
+        colors: ['W', 'B'],
+        keyCard: 'Locutus, the One Who Speaks',
+        description: 'Assemble an army of Borg artifact creatures, assimilate cards onto the battlefield and pump the collective with lords. A go-wide midrange deck that gains life and picks off blockers as it grows.',
+        creatureTypes: ['Borg'],
+      },
+      {
+        name: 'Noncreature Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Gray and Adira, Forever Joined',
+        description: 'Dig for instants, sorceries and artifacts, and reward each noncreature spell with token copies of your best creature. A spells-matter tempo deck that turns cheap tricks into surprise attackers.',
+      },
+      {
+        name: 'Graveyard Exploration',
+        colors: ['B', 'G'],
+        keyCard: 'Vash, Freelance Archaeologist',
+        description: 'Surveil cards into the graveyard, then return creatures from it, drawing a card whenever one leaves. A grindy recursion deck that wins the long game on card advantage.',
+      },
+      {
+        name: 'Big Attacks',
+        colors: ['R', 'W'],
+        keyCard: 'Worf, Honor-Bound Warrior',
+        description: 'Attack with creatures totalling 8 or more power to trigger bonuses like doubled power and extra cards. An aggressive midrange deck that goes big with its team and rewards every all-out attack.',
+      },
+      {
+        name: 'Strange New Worlds',
+        colors: ['G', 'U'],
+        keyCard: 'The Traveler',
+        description: 'Collect differently named lands, including Planet tokens, and untap permanents for extra value as you explore. A ramp deck whose threats grow with each new world you reach.',
+      },
+    ],
+  },
 }
 
 /**
