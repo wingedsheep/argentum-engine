@@ -1,13 +1,13 @@
 # Star Trek (TRK) - Card Checklist
 
-**Set Size:** 254 cards
+**Set Size:** 256 cards
 **Release Date:** November 13, 2026
-**Implemented:** 74 / 254
+**Implemented:** 90 / 256
 > Preview snapshot from October 28, 2026. Scryfall currently marks every TRK printing as `booster: false`, so all cards appear under Extras. Refresh the bootstrap as previews and booster classifications change; this is not the final set size.
 
 | Section    | Total | Done |
 |------------|-------|------|
-| Extras     | 254   | 75   |
+| Extras     | 256   | 90   |
 
 > Verify status anytime with `scripts/card-status --set TRK` (and `--list`). That command's count is authoritative — keep this file's `Implemented:` line in sync (`just fix-backlog`) as boxes are checked. The set's mechanics are catalogued in [`mechanics.md`](mechanics.md).
 
@@ -17,13 +17,13 @@
 
 > Not in boosters — starter decks, promos, bonus sheets. Counted separately by `scripts/card-status`.
 
-- [ ] 70,000 Light-Years from Home
+- [x] 70,000 Light-Years from Home
 - [ ] A Good Day to Die
 - [ ] Adversary by Algorithm
 - [ ] All Good Things...
 - [ ] Amok Time
 - [x] Andoria
-- [ ] Andromedan Automatons
+- [x] Andromedan Automatons
 - [ ] Antagonist Incorporator
 - [ ] Anthropological Mission
 - [ ] Armus, Skin of Evil
@@ -61,7 +61,7 @@
 - [x] Command Subadjunct
 - [ ] Commander Raffi Musiker
 - [ ] Common Goal
-- [ ] Conquest Mission
+- [x] Conquest Mission
 - [ ] Consider the Prime Directive
 - [x] Constable Odo
 - [ ] Crystalline Entity
@@ -97,7 +97,7 @@
 - [ ] Erica Ortegas, Plucky Pilot
 - [ ] Excalbian Gamemaster
 - [ ] Exploratory Mission
-- [ ] Federation Field Medic
+- [x] Federation Field Medic
 - [ ] Federation Outpost
 - [x] Federation Probe
 - [x] Ferenginar
@@ -106,6 +106,7 @@
 - [x] Forest
 - [x] Free Borg Revolutionaries
 - [ ] Gabriel Lorca, Mirror Menace
+- [x] Ghost of Illyria
 - [x] General Chang, Cold Warrior
 - [ ] Genesis Effect
 - [ ] Georgiou, Terran Emperor
@@ -122,7 +123,7 @@
 - [x] Hit It!
 - [ ] Hive Mind Coprocessor
 - [ ] Holo-Engineer
-- [ ] Hologram Janeway
+- [x] Hologram Janeway
 - [ ] Hologram Stalker
 - [x] Horta
 - [ ] Hoshi Sato, Exolinguist
@@ -163,6 +164,7 @@
 - [x] Munitions Enthusiast
 - [ ] Nog, Ambitious Cadet
 - [ ] Nyota Uhura, Communications
+- [x] Oberth-Class Starship
 - [ ] Obsidian Order Operative
 - [x] Open Communications
 - [x] Organic Avulsion Unit
@@ -172,7 +174,7 @@
 - [ ] Pah-Wraith
 - [ ] Peace in Our Time
 - [ ] Perils of the Past
-- [ ] Pet Sehlat
+- [x] Pet Sehlat
 - [ ] Phlox, Unorthodox Doctor
 - [ ] Picard, Leading by Example
 - [x] Plains
@@ -180,7 +182,7 @@
 - [x] Planetary Patrol
 - [x] Plasma Cascade
 - [x] Primary Unimatrix Adjunct
-- [ ] Pure Energy
+- [x] Pure Energy
 - [ ] Q, Stacking the Deck
 - [x] Qo'noS
 - [ ] Quark, Humble Proprietor
@@ -202,11 +204,11 @@
 - [ ] Saurian Explorer
 - [x] Scotty, Miracle Worker
 - [ ] Sela, Tal Shiar Paradox
-- [ ] Set Phasers to . . .
+- [x] Set Phasers to . . .
 - [ ] Seven of Nine
 - [ ] Seven of Nine, Unassimilated
-- [ ] Shields Up!
-- [ ] Shuttle Ace
+- [x] Shields Up!
+- [x] Shuttle Ace
 - [x] Silicate Surveyor
 - [ ] Spatial Anomaly
 - [ ] Spock, Always Your Friend
@@ -224,14 +226,14 @@
 - [x] Swamp
 - [ ] Sylvia Tilly, Joy of Discovery
 - [x] Syndicate Liquidators
-- [ ] Tactical Officer
+- [x] Tactical Officer
 - [ ] Targ Wrangler
 - [ ] Tasha Yar, Out of Time
 - [x] Tea, Earl Grey, Hot
 - [ ] Tell Me What You See
 - [x] Temple Garden
 - [ ] Temporal Conqueror
-- [ ] Test of Conviction
+- [x] Test of Conviction
 - [ ] Test of Courage
 - [ ] Test of Loyalty
 - [ ] Test of Priorities
@@ -255,7 +257,7 @@
 - [ ] U.S.S. Enterprise-D, Galaxy-Class
 - [ ] U.S.S. Excelsior, Cutting Edge
 - [ ] U.S.S. Reliant, From Hell's Heart
-- [ ] Una Chin-Riley, Number One
+- [x] Una Chin-Riley, Number One
 - [x] Unexplored Territory
 - [ ] V'Ger, the Intruder
 - [ ] Vash, Freelance Archaeologist

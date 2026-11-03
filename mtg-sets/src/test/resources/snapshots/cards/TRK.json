@@ -1,3 +1,118 @@
+// 70,000 Light-Years from Home
+{
+    "name": "70,000 Light-Years from Home",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature or Spacecraft. Its controller may search their library for a basic land card, reveal it, put it into their hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature or Spacecraft"
+                        }
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "basicland"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a basic land card to put into your hand",
+                                    "selectedLabel": "Put into your hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    },
+                                    "revealed": true
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsPermanent",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Spacecraft"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Ariel Orea",
+        "flavorText": "\"If these sensors are working . . . we're on the other side of the Galaxy.\"\n—Ensign Harry Kim",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02080f42-863a-471b-992b-67e35ef1b7b7.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // All Good Things...
 {
     "name": "All Good Things...",
@@ -259,6 +374,75 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Andromedan Automatons
+{
+    "name": "Andromedan Automatons",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact Creature — Android",
+    "oracleText": "When this creature enters, you may search your library for any number of cards named Andromedan Automatons, reveal them, put them into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Andromedan Automatons:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "name:Andromedan Automatons"
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected1",
+                                "prompt": "Search your library for any number of cards named Andromedan Automatons"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Uzuri",
+        "flavorText": "The automatons prepared entire colonies, unaware that a nova had consumed their makers' world.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc386662-0fe3-432f-85a8-9a06e1274245.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1712,6 +1896,85 @@
     ]
 }
 
+// Conquest Mission
+{
+    "name": "Conquest Mission",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken artifact you control enters, put a quest counter on this enchantment. Create a 1/1 colorless Borg artifact creature token. If this enchantment has six or more quest counters on it, create two of those tokens instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conquest Mission:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Conditional",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "QUEST"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    }
+                                },
+                                "ifTrue": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "ifFalse": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Borg"
+                            ],
+                            "artifactToken": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Spears",
+        "flavorText": "The iron hand of mercy rendered grief, remorse, loss, and fear all irrelevant.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f91755d7-6fb9-4caf-b4b4-f21ed5572d52.jpg?1792750872"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Constable Odo
 {
     "name": "Constable Odo",
@@ -2642,6 +2905,109 @@
     ]
 }
 
+// Federation Field Medic
+{
+    "name": "Federation Field Medic",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Doctor",
+    "oracleText": "Vigilance\nWhen this creature enters, choose one —\n• Put a +1/+1 counter on target creature. It gains vigilance until end of turn.\n• Draw a card if you control a permanent with a counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Federation Field Medic:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "VIGILANCE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature. It gains vigilance until end of turn."
+                        },
+                        {
+                            "effect": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsPermanent"
+                                            ],
+                                            "statePredicates": [
+                                                "HasAnyCounter"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "description": "Draw a card if you control a permanent with a counter on it."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Stop whining. Sto-Vo-Kor will be there later.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b312dacd-b87f-44c1-a804-bee221e70f52.jpg?1785981333"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Federation Probe
 {
     "name": "Federation Probe",
@@ -3006,6 +3372,76 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Ghost of Illyria
+{
+    "name": "Ghost of Illyria",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Elemental Spirit",
+    "oracleText": "Flying\nWhen this creature enters, exile up to one other target nonland permanent you control. Return that card to the battlefield under its owner's control at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ghost of Illyria:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Pace Wilder",
+        "flavorText": "The unique electromagnetic virus transformed Hetemit IX's colonists to living plasma.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99830058-c97a-4326-8c2f-8658cf8a1561.jpg?1793359367"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3387,6 +3823,68 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Hologram Janeway
+{
+    "name": "Hologram Janeway",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Artifact Creature — Illusion Officer",
+    "oracleText": "Whenever you attack while creatures you control have total power 8 or greater, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hologram Janeway:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Khadijah Khatib",
+        "flavorText": "\"I am hologram Janeway, your training advisor for exploring the greater Galaxy. On behalf of Starfleet, welcome aboard.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02d29047-a7b8-43fb-8b90-b35ba34da5f9.jpg?1793100636"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4370,6 +4868,149 @@
     ]
 }
 
+// Oberth-Class Starship
+{
+    "name": "Oberth-Class Starship",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Spacecraft",
+    "oracleText": "When this Spacecraft enters, search your library for a basic Plains card, reveal it, put it into your hand, then shuffle.\nStation (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 6+.)\n6+ | Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oberth-Class Starship:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Plains"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic Plains card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Oberth-Class Starship:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Jessica Rossier",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7efe3788-ecf7-4b56-8970-bc324092941c.jpg?1793361187"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Open Communications
 {
     "name": "Open Communications",
@@ -4513,6 +5154,39 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Pet Sehlat
+{
+    "name": "Pet Sehlat",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bear",
+    "oracleText": "This creature can't attack alone.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Narendra Bintara Adi",
+        "flavorText": "The obedience of a Vulcan sehlat makes it a logical choice for a family pet. Some humans, facing six-inch fangs, question that logic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/477a6a46-7fda-4666-87d9-a35c953dd94d.jpg?1793361200"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4754,6 +5428,51 @@
         "artist": "Jodie Muir",
         "flavorText": "Each drone is defined by its role, but even authority provides no individual self. A brain is more useful than a toe, but neither is the body whole.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/9/b94a582c-11bb-4463-a826-bd0c79366752.jpg?1792753859"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Pure Energy
+{
+    "name": "Pure Energy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Distribute two +1/+1 counters among one or two target creatures.\nBeam me up {2}{W} (You may cast this card from your graveyard for {2}{W} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+    "keywords": [
+        "BEAM_ME_UP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "BeamMeUp",
+            "cost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DistributeCountersAmongTargets",
+            "totalCounters": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Evan Shipard",
+        "flavorText": "So advanced in thought and being, the Organians have no need for corporeal form.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/215709a8-044f-4fdb-b3ca-bd5a394b2a0f.jpg?1793361211"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5414,6 +6133,207 @@
     ]
 }
 
+// Set Phasers to . . .
+{
+    "name": "Set Phasers to . . .",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Stun — Tap target creature and put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)\n• Kill — This spell deals 3 damage to target attacking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "STUN",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Stun — Tap target creature and put a stun counter on it"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Kill — This spell deals 3 damage to target attacking creature"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Elizabeth Peiró",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54dbf416-973d-46c8-b9be-e863283d328b.jpg?1784036750"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shields Up!
+{
+    "name": "Shields Up!",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target artifact or creature you control gains hexproof and indestructible until end of turn. If it's a creature, put a +1/+1 counter on it. (It can't be the target of spells or abilities your opponents control. Damage and effects that say \"destroy\" don't destroy it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Raymond Swanland",
+        "flavorText": "Deflector shields use intense graviton fields to create a \"solid\" surface from nothing at all.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b60c9af-8ea9-491d-a4a4-226a2143e7f3.jpg?1785981369"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shuttle Ace
+{
+    "name": "Shuttle Ace",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Kelpien Pilot",
+    "oracleText": "During your turn, this creature has flying.\nWhenever this creature becomes tapped, you gain 2 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shuttle Ace:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Joan Piqué Llorens",
+        "flavorText": "Although she was a Kelpien, a prey species, she feared no predator once behind the controls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/559f838a-24ac-4f18-8c40-23cfde6f65cc.jpg?1786005528"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Silicate Surveyor
 {
     "name": "Silicate Surveyor",
@@ -5594,6 +6514,67 @@
     ]
 }
 
+// Tactical Officer
+{
+    "name": "Tactical Officer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Officer",
+    "oracleText": "Whenever you attack while creatures you control have total power 8 or greater, put a +1/+1 counter on this creature. Untap it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tactical Officer:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Elizabeth Peiró",
+        "flavorText": "\"Kouassi to bridge. Captain, the intruders look like Starfleet, but their combadge is different. It's . . . a dagger through a planet?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/317704a8-a3c2-400c-bbe0-2cbc6fe10710.jpg?1785981383"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Tea, Earl Grey, Hot
 {
     "name": "Tea, Earl Grey, Hot",
@@ -5678,6 +6659,81 @@
         "flavorText": "Lapsang souchong for smoky body. Bergamot for sharpness. An insightful captain's cup.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/8/289e8ebe-ab0f-466b-a4e6-d5cf8411e724.jpg?1792591098"
     }
+}
+
+// Test of Conviction
+{
+    "name": "Test of Conviction",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Battle Stations — Put a +1/+1 counter on each creature you control.\n• Begin Negotiations — Target opponent draws a card. You draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Battle Stations — Put a +1/+1 counter on each creature you control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Begin Negotiations — Target opponent draws a card. You draw two cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "John Tyler Christopher",
+        "flavorText": "\"In our next action, we can risk neither miscalculation nor error.\"\n—Captain James T. Kirk",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/837d7cec-f3f8-4555-86f2-c5ea1849d7d1.jpg?1792668317"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // The City on the Edge of Forever
@@ -5941,6 +6997,87 @@
         "artist": "Wero Gallo",
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c704af22-7c42-45c7-b3a4-b414c4dd8e05.jpg?1792757435"
     }
+}
+
+// Una Chin-Riley, Number One
+{
+    "name": "Una Chin-Riley, Number One",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Illyrian Officer",
+    "oracleText": "Whenever you attack while creatures you control have total power 8 or greater, target attacking creature gets +2/+0 and gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Una Chin-Riley, Number One:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking"
+                    },
+                    "id": "t0"
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Starfleet is not a perfect organization, but it strives to be. And I believe it could be.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5585c90d-3fe7-41f4-9728-36b9410ecc53.jpg?1792668590"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Unexplored Territory
