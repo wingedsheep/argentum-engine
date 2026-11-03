@@ -4760,6 +4760,102 @@
     ]
 }
 
+// Q, Stacking the Deck
+{
+    "name": "Q, Stacking the Deck",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Q",
+    "oracleText": "When Q enters, shuffle your library, then exile cards from the top of your library until you exile a nonland card. That nonland card gains \"Exile a card from your hand: Create a copy of this card. You may cast the copy. Activate only during your turn and only if this card is exiled.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Q, Stacking the Deck:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "ShuffleLibrary",
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "nonland",
+                            "storeMatch": "matched1",
+                            "storeRevealed": "revealed1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Q, Stacking the Deck:1",
+                                "cost": {
+                                    "type": "CostAtomWrapper",
+                                    "atom": {
+                                        "type": "AtomExileFrom",
+                                        "zone": "Hand"
+                                    }
+                                },
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "CopyCardIntoCollection",
+                                            "source": "Self",
+                                            "storeAs": "copy3"
+                                        },
+                                        {
+                                            "type": "Gated",
+                                            "gate": "Gate.MayDecide",
+                                            "then": {
+                                                "type": "CastFromCollectionWithoutPayingCost",
+                                                "from": "copy3",
+                                                "payManaCost": true
+                                            },
+                                            "descriptionOverride": "You may cast the copy."
+                                        }
+                                    ]
+                                },
+                                "restrictions": [
+                                    "OnlyDuringYourTurn"
+                                ],
+                                "activateFromZone": "Exile",
+                                "descriptionOverride": "Exile a card from your hand: Create a copy of this card. You may cast the copy. Activate only during your turn and only if this card is exiled."
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "matched1"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Valle",
+        "flavorText": "\"Games? Did someone say games?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcbe34db-0065-4960-92b8-3ea1d336e803.jpg?1792508237"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Qo'noS
 {
     "name": "Qo'noS",

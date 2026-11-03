@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * Enumerates activated abilities on cards in a non-battlefield [zone] the player owns —
- * one instance per zone (registered for [Zone.GRAVEYARD], [Zone.HAND] and [Zone.COMMAND]).
+ * one instance per zone (registered for [Zone.GRAVEYARD], [Zone.HAND], [Zone.COMMAND] and [Zone.EXILE]).
  *
  * The abilities surfaced are those whose `activateFromZone` matches this enumerator's [zone]:
  * - **Graveyard** — Undead Gladiator ({1}{B}, Discard a card: Return this from your graveyard…),
@@ -35,6 +35,9 @@ import com.wingedsheep.sdk.scripting.TimingRule
  *   Urban Retreat's "{2}, Return a tapped creature you control: put this onto the battlefield".
  * - **Command zone** — the Momir Basic avatar, Derevi's "put Derevi onto the battlefield from the
  *   command zone", and commander ninjutsu (a `ReturnToHand` cost, like hand ninjutsu).
+ * - **Exile** — an ability a resolving effect granted to one exiled card (Q, Stacking the Deck's
+ *   "Exile a card from your hand: Create a copy of this card. You may cast the copy. Activate only
+ *   if this card is exiled."). The grant ends as the card leaves exile (CR 400.7).
  *
  * Handles cost checking for Mana, Discard, DiscardSelf, ExileSelf, Blight, Sacrifice (one or several
  * atoms, jointly — [SacrificeCostAssignment]), and Composite (with

@@ -1105,6 +1105,15 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       }
     }
 
+    // 3b. Exiled cards with an ability the server offers from exile (Q, Stacking the Deck's
+    // "Activate only if this card is exiled") — the exile twin of the graveyard abilities in 1.
+    for (const actionInfo of legalActions) {
+      const action = actionInfo.action
+      if (action.type !== 'ActivateAbility' || actionInfo.sourceZone !== 'EXILE') continue
+      if (actionInfo.isAffordable === false) continue
+      if (gameState.cards[action.sourceId]) ghostCardIds.add(action.sourceId)
+    }
+
     // Return deduplicated ClientCard objects, each shown as the face it would be cast as
     const actionsByCard = getLegalActionsIndex(legalActions).byCard
     return Array.from(ghostCardIds)

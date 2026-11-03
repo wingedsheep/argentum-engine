@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ObjectRef
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import kotlin.reflect.KClass
@@ -23,7 +24,8 @@ import kotlin.reflect.KClass
  * (e.g. Glorious Sunrise grants a land "{T}: Add {G}{G}{G}"). The type of a valid
  * target is already constrained by the effect's [GrantActivatedAbilityEffect.target]
  * requirement, so the executor only verifies the resolved target is a permanent on the
- * battlefield or a permanent spell on the stack ([ObjectGrantTarget]).
+ * battlefield or a permanent spell on the stack ([ObjectGrantTarget]) — or, for an ability
+ * activatable from exile, a card in exile.
  */
 class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect> {
 
@@ -43,7 +45,10 @@ class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect
             ?: return EffectResult.error(state, "Target no longer exists")
         targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        if (!ObjectGrantTarget.canReceive(state, targetId)) {
+        // A card in exile can receive an ability that functions there ("Activate only if this
+        // card is exiled") — a battlefield-only ability on an exiled card would be dead text.
+        val allowExiledCard = effect.ability.activateFromZone == Zone.EXILE
+        if (!ObjectGrantTarget.canReceive(state, targetId, allowExiledCard)) {
             return EffectResult.error(state, ObjectGrantTarget.NOT_A_PERMANENT_OR_PERMANENT_SPELL)
         }
 

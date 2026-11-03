@@ -334,6 +334,13 @@ object Costs {
         AbilityCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count))
 
     /**
+     * "Exile a card from your hand" — exile [count] cards matching [filter] from the activating
+     * player's hand (Q, Stacking the Deck's granted exile ability).
+     */
+    fun ExileFromHand(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
+        AbilityCost.Atom(CostAtom.ExileFrom(Zone.HAND, filter, count))
+
+    /**
      * "Exile another [filter] card from your graveyard" — the graveyard exile cost of an ability
      * activated *from* that graveyard, where the activating card itself can't pay (Gallia, Tragic
      * Host).
