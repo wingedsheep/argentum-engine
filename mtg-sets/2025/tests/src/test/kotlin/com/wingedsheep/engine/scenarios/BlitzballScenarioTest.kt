@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
  *  GOOOOAAAALLL! — {T}, Sacrifice this artifact: Draw two cards. Activate only if an opponent
  *  was dealt combat damage by a legendary creature this turn."
  *
- * Exercises the new DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE turn tracker
+ * Exercises the per-player combat-damage-source record
  * (AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn): the GOOOOAAAALLL ability is gated
  * off until a legendary creature deals combat damage to an opponent, then becomes available.
  */

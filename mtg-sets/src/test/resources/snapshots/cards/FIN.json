@@ -2267,9 +2267,14 @@
                         "condition": {
                             "type": "Compare",
                             "left": {
-                                "type": "TurnTracking",
+                                "type": "CombatDamageSourcesThisTurn",
                                 "player": "EachOpponent",
-                                "tracker": "DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE"
+                                "sourceFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsLegendary"
+                                    ]
+                                }
                             },
                             "operator": "GTE",
                             "right": {

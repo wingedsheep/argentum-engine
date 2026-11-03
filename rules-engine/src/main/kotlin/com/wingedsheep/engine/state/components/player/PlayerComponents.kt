@@ -2416,13 +2416,39 @@ data class CombatDamageReceivedThisTurnComponent(
 ) : Component
 
 /**
- * Marks a player as having been dealt combat damage by a legendary creature this turn.
- * Cleared at end of turn by CleanupPhaseManager.
- * Backs the DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE turn tracker
- * (AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn condition — Blitzball).
+ * Every source that dealt *combat* damage to this player this turn, each frozen as it stood when it
+ * dealt the damage ([com.wingedsheep.engine.state.components.battlefield.DamageSourceLki]: controller,
+ * creature-ness, card types, legendary-ness, subtypes, name). Amounts aren't kept — only which
+ * sources connected. Recorded at the one place all damage to a player funnels
+ * through ([com.wingedsheep.engine.handlers.effects.DamageUtils.trackDamageReceivedByPlayer]), so only
+ * damage actually dealt is recorded; cleared at end of turn by CleanupPhaseManager.
+ *
+ * Backs `DynamicAmount.CombatDamageSourcesThisTurn` — "target nonland permanent controlled by a
+ * player who was dealt combat damage by three or more Pirates this turn" (Admiral Beckett Brass),
+ * "an opponent was dealt combat damage by a legendary creature this turn" (Blitzball). Its rulings
+ * (Beckett's) fix the shape: the sources count as they were when they dealt the damage,
+ * whether or not they are still on the battlefield or still Pirates, and a source that dealt combat
+ * damage twice (double strike) counts once — [countMatching] counts distinct source objects.
  */
 @Serializable
-data object WasDealtCombatDamageByLegendaryCreatureThisTurnComponent : Component
+data class CombatDamageSourcesThisTurnComponent(
+    val sources: Set<com.wingedsheep.engine.state.components.battlefield.DamageSourceLki> = emptySet()
+) : Component {
+    /** Record a hit; a source already on record with the same snapshot is not added twice. */
+    fun adding(source: com.wingedsheep.engine.state.components.battlefield.DamageSourceLki): CombatDamageSourcesThisTurnComponent {
+        val key = source.copy(amount = 0)
+        return if (key in sources) this else copy(sources = sources + key)
+    }
+
+    /**
+     * How many distinct source objects matched [filter] when they dealt this player combat damage,
+     * "you" being [youId]. A source recorded twice with different snapshots (it changed between first-
+     * strike and regular damage) is one source, matching if either snapshot does.
+     */
+    fun countMatching(filter: GameObjectFilter, youId: EntityId): Int =
+        sources.filter { it.matches(filter, youId) }.distinctBy { it.sourceId ?: it }.size
+}
+
 
 /**
  * Pending real turn skips and scheduling bypasses used to insert another player's extra turns.

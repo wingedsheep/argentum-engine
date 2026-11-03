@@ -838,6 +838,9 @@ object DamageUtils {
                 marked.getEntity(sid)?.get<CardComponent>()?.typeLine?.isArtifact == true
             }
         } ?: false
+        // "Dealt combat damage by three or more Pirates this turn" (Admiral Beckett Brass) judges each
+        // source as it was when it dealt the damage, so freeze it now.
+        val combatSource = if (isCombatDamage) sourceId?.let { damageSourceLki(marked, it, amount) } else null
         return marked.updateEntity(playerId) { container ->
             val existing = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent()
@@ -858,6 +861,11 @@ object DamageUtils {
                             existingLifeLost.amount + amount
                         )
                     )
+            }
+            if (combatSource != null) {
+                val sources = container.get<com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent>()
+                    ?: com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent()
+                updated = updated.with(sources.adding(combatSource))
             }
             if (sourceIsArtifact) {
                 val existingArtifact = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent>()
@@ -1516,19 +1524,37 @@ object DamageUtils {
      */
     fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetId: EntityId, amount: Int): GameState {
         if (targetId !in state.getBattlefield()) return state
+        val snapshot = damageSourceLki(state, sourceId, amount) ?: return state
+        return state.updateEntity(targetId) { container ->
+            val existing = container.get<DamagedBySourcesThisTurnComponent>()
+                ?: DamagedBySourcesThisTurnComponent()
+            container.with(existing.adding(snapshot))
+        }
+    }
+
+    /**
+     * [sourceId] frozen as it stands now, dealing [amount] damage — the [DamageSourceLki] both the
+     * damaged-permanent record and a player's combat-damage-source record keep. Null for a source with
+     * no controller or owner to name.
+     */
+    fun damageSourceLki(state: GameState, sourceId: EntityId, amount: Int): DamageSourceLki? {
         val projected = state.projectedState
         val controllerId = projected.getController(sourceId)
             ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
             ?: state.getEntity(sourceId)?.get<CardComponent>()?.ownerId
-            ?: return state
+            ?: return null
         val subtypes = projected.getSubtypes(sourceId)
             .map { com.wingedsheep.sdk.core.Subtype(it) }
             .toSet()
-        val snapshot = DamageSourceLki(
+        return DamageSourceLki(
             sourceControllerId = controllerId,
             sourceId = sourceId,
             sourceSubtypes = subtypes,
             sourceWasCreature = projected.isCreature(sourceId),
+            // A resolving spell has no projection entry; its supertypes are the card's own too.
+            sourceWasLegendary = projected.isLegendary(sourceId) ||
+                (sourceId !in state.getBattlefield() &&
+                    state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.isLegendary == true),
             // A resolving spell has no projection entry; its types are the card's own.
             sourceCardTypes = projected.getTypes(sourceId)
                 .mapNotNull { type -> CardType.entries.firstOrNull { it.name == type } }
@@ -1539,11 +1565,6 @@ object DamageUtils {
                 ?.let { projected.getName(sourceId) ?: it.get<CardComponent>()?.name },
             amount = amount,
         )
-        return state.updateEntity(targetId) { container ->
-            val existing = container.get<DamagedBySourcesThisTurnComponent>()
-                ?: DamagedBySourcesThisTurnComponent()
-            container.with(existing.adding(snapshot))
-        }
     }
 
     /**

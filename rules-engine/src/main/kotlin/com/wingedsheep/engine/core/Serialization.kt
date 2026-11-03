@@ -789,7 +789,7 @@ val engineSerializersModule = SerializersModule {
         subclass(com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent::class)
         subclass(WasDealtCombatDamageThisTurnComponent::class)
         subclass(CombatDamageReceivedThisTurnComponent::class)
-        subclass(WasDealtCombatDamageByLegendaryCreatureThisTurnComponent::class)
+        subclass(CombatDamageSourcesThisTurnComponent::class)
         subclass(AdditionalPhasesComponent::class)
         subclass(InAdditionalCombatPhaseComponent::class)
         subclass(AdditionalUpkeepStepsComponent::class)

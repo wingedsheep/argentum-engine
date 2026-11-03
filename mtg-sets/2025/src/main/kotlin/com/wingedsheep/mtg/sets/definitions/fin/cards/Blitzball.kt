@@ -17,10 +17,10 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * GOOOOAAAALLL! — {T}, Sacrifice this artifact: Draw two cards. Activate only if an
  * opponent was dealt combat damage by a legendary creature this turn.
  *
- * The mana ability is the standard `AddAnyColorMana` rock. The draw ability gates on a new
- * per-turn tracker — [Conditions.AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn],
- * backed by `DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE` — recorded in `CombatDamageManager`
- * whenever a legendary creature deals combat damage to a player and cleared at end of turn.
+ * The mana ability is the standard `AddAnyColorMana` rock. The draw ability gates on
+ * [Conditions.AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn] — a count of the legendary
+ * creatures in each opponent's per-turn record of combat-damage sources
+ * (`DynamicAmount.CombatDamageSourcesThisTurn`), cleared at end of turn.
  */
 val Blitzball = card("Blitzball") {
     manaCost = "{3}"
