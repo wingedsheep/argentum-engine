@@ -222,7 +222,7 @@ data class ExchangeLifeAndStatEffect(
 }
 
 /**
- * Exchange the controller's life total with [target] player's (CR 701.12c): each player gains or
+ * Exchange [player]'s life total (the controller by default) with [target] player's (CR 701.12c): each player gains or
  * loses the life needed to reach the other's former total. Applied through the shared gain/lose-life
  * primitives, so life-gain prevention/replacements and life-loss modification apply, and both
  * players' `LifeChangedEvent`s fire for "whenever you gain/lose life" triggers.
