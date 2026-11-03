@@ -1306,6 +1306,34 @@ object SetArchetypes {
                     creatureTypes = listOf("Hero")),
             )
         ),
+        "TRK" to SetSynergies(
+            setCode = "TRK",
+            setName = "Star Trek",
+            archetypes = listOf(
+                Archetype("Spacecraft Tempo", listOf(Color.WHITE, Color.BLUE),
+                    "Crew and station Spacecraft, then lock down blockers with tap and stun effects while your ships fly over. A tempo deck that protects its Spacecraft on your turn and loots each time its crew taps."),
+                Archetype("Dilemmas", listOf(Color.BLUE, Color.BLACK),
+                    "Play modal spells and abilities, drawing a card each time you face a dilemma, while surveil and evasive Androids pick at the opponent. A value-control deck that wins by out-choosing the opponent every turn."),
+                Archetype("Klingon Warriors", listOf(Color.BLACK, Color.RED),
+                    "Make hasty Klingon Warrior tokens each combat and sacrifice them, plus spare artifacts, for value before they leave. An aggressive attrition deck that keeps the pressure on and profits when its Warriors die.",
+                    creatureTypes = listOf("Klingon")),
+                Archetype("Landfall", listOf(Color.RED, Color.GREEN),
+                    "Play a land every turn and turn each one into Worm tokens, extra mana or cards, then pump the whole board for the last swing. A go-wide ramp deck that cashes in its land drops."),
+                Archetype("Counters Medics", listOf(Color.GREEN, Color.WHITE),
+                    "Spread +1/+1 counters across the team, then draw a card each time a creature with a counter connects. A midrange counters deck that grows its creatures turn by turn and refuels through combat."),
+                Archetype("Borg Collective", listOf(Color.WHITE, Color.BLACK),
+                    "Assemble an army of Borg artifact creatures, assimilate cards onto the battlefield and pump the collective with lords. A go-wide midrange deck that gains life and picks off blockers as it grows.",
+                    creatureTypes = listOf("Borg")),
+                Archetype("Noncreature Spells", listOf(Color.BLUE, Color.RED),
+                    "Dig for instants, sorceries and artifacts, and reward each noncreature spell with token copies of your best creature. A spells-matter tempo deck that turns cheap tricks into surprise attackers."),
+                Archetype("Graveyard Exploration", listOf(Color.BLACK, Color.GREEN),
+                    "Surveil cards into the graveyard, then return creatures from it, drawing a card whenever one leaves. A grindy recursion deck that wins the long game on card advantage."),
+                Archetype("Big Attacks", listOf(Color.RED, Color.WHITE),
+                    "Attack with creatures totalling 8 or more power to trigger bonuses like doubled power and extra cards. An aggressive midrange deck that goes big with its team and rewards every all-out attack."),
+                Archetype("Strange New Worlds", listOf(Color.GREEN, Color.BLUE),
+                    "Collect differently named lands, including Planet tokens, and untap permanents for extra value as you explore. A ramp deck whose threats grow with each new world you reach."),
+            )
+        ),
     )
 
     /** Get archetypes for a specific set code, or null if not found. */

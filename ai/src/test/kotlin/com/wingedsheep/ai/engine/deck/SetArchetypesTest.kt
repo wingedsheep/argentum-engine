@@ -482,6 +482,28 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
+    "Star Trek exposes its ten signpost color-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("trk"))
+
+        synergies.setName shouldBe "Star Trek"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Spacecraft Tempo",
+            "Dilemmas",
+            "Klingon Warriors",
+            "Landfall",
+            "Counters Medics",
+            "Borg Collective",
+            "Noncreature Spells",
+            "Graveyard Exploration",
+            "Big Attacks",
+            "Strange New Worlds",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Klingon Warriors" to listOf("Klingon"),
+            "Borg Collective" to listOf("Borg"),
+        )
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(

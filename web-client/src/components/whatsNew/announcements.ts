@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-trk',
+    date: '2026-11-03',
+    kind: 'set',
+    setCode: 'TRK',
+    title: 'Star Trek is complete',
+    body:
+      "Star Trek puts the Federation, Klingons, Borg and more on the battlefield: crew and station Spacecraft, face dilemmas with modal spells, assimilate cards into a Borg collective and explore strange new worlds with Planet tokens. Each colour pair has a plan, from hasty Klingon Warriors in black-red to +1/+1 counter medics in green-white, and every pack's land slot can open a Planet dual.",
+    tryIf: 'modal-spell value, Spacecraft and go-wide artifact armies',
+  },
+  {
     id: 'set-m19',
     date: '2026-11-03',
     kind: 'set',
