@@ -947,6 +947,13 @@ value class CounterType(val name: String) {
          */
         val PEACE = CounterType("PEACE")
 
+        /**
+         * Promotion counter (TRK — Beckett Mariner, Impetuous Ensign). A passive tally with no
+         * inherent rule: one each time she becomes tapped, and at three they are removed and she
+         * deals 2 damage to each opponent.
+         */
+        val PROMOTION = CounterType("PROMOTION")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1113,6 +1120,7 @@ value class CounterType(val name: String) {
             KNOWLEDGE,
             PHYLACTERY,
             PEACE,
+            PROMOTION,
         )
 
         /**
