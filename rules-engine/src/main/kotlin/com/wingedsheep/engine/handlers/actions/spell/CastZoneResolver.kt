@@ -45,6 +45,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
+import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -551,6 +552,7 @@ class CastZoneResolver(
         if (state.turnOrder.none { cardId in state.getZone(ZoneKey(it, Zone.GRAVEYARD)) }) return null
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
         if (castGoesThroughOwnRoute(state, action, cardComponent)) return null
+        if (castGoesThroughStaticPlayGrant(state, action, cardComponent)) return null
         return findMayCastFromGraveyardGrant(state, playerId, cardId, cardComponent, action.graveyardCastRider)
             ?.additionalCost
     }
@@ -1124,10 +1126,17 @@ class CastZoneResolver(
      * Evelyn, the Covetous from exile; The Holodeck from the caster's graveyard or sideboard — or
      * null. Read before the card leaves its zone.
      *
-     * A cast that goes through a route of the card's own, or through a graveyard permission that
-     * isn't a may-play grant (Muldrotha's per-type allowance, a `MayCastFromGraveyard` static), is
-     * charged to that route instead: those routes record their own use, and charging both would
-     * burn two allowances for one cast.
+     * A cast that goes through a route of the card's own (flashback, escape, Muldrotha's per-type
+     * allowance, …) is charged to that route instead: those routes record their own use, and
+     * charging both would burn two allowances for one cast.
+     *
+     * A graveyard card a `MayCastFromGraveyard` grant also covers (Serra Paragon) goes through the
+     * permission the player picked. The enumerator offers each graveyard grant's cast with its
+     * [CastSpell.graveyardCastRider] set, and the may-play offer without one — so a selection means
+     * the graveyard grant, and no selection means this grant: charge it, and the graveyard grant's
+     * rider and allowance stay out of it (see [castGoesThroughStaticPlayGrant]). The one exception
+     * is an unlimited, rider-free graveyard grant (Yawgmoth's Agenda): it could have carried the
+     * cast at no cost, so the scarce allowance is spared.
      */
     fun findOncePerTurnPlayGranter(
         state: GameState,
@@ -1142,8 +1151,40 @@ class CastZoneResolver(
             cardId in state.getZone(ZoneKey(playerId, Zone.SIDEBOARD))
         if (!reachable) return null
         if (castGoesThroughOwnRoute(state, action, cardComponent)) return null
-        if (inGraveyard && hasMayCastFromGraveyardPermission(state, playerId, cardId, cardComponent)) return null
+        if (inGraveyard) {
+            if (action.graveyardCastRider != null) return null
+            if (freeGraveyardGrantCovers(state, playerId, cardId, land = false)) return null
+        }
         return state.oncePerTurnGranterToSpend(cardId, playerId, conditionEvaluator, cardRegistry)
+    }
+
+    /**
+     * True when a graveyard cast goes through a static may-play grant (The Holodeck) rather than a
+     * `MayCastFromGraveyard` grant: the grant's allowance is what the cast spends, so no graveyard
+     * grant's rider, additional cost or allowance applies to it.
+     */
+    fun castGoesThroughStaticPlayGrant(
+        state: GameState,
+        action: CastSpell,
+        cardComponent: CardComponent,
+    ): Boolean = action.cardId in state.getGraveyard(action.playerId) &&
+        findOncePerTurnPlayGranter(state, action, cardComponent) != null
+
+    /**
+     * True when an unlimited `MayCastFromGraveyard` grant with no rider, cost or life payment
+     * (Yawgmoth's Agenda, Crucible-style `playsLands`) covers [cardId] in [playerId]'s graveyard —
+     * a play it could carry for free, so a once-per-turn may-play allowance is never spent on it.
+     * [land] asks about a land play (only `playsLands` grants count) rather than a cast.
+     */
+    fun freeGraveyardGrantCovers(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId,
+        land: Boolean,
+    ): Boolean = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).any {
+        it.unlimited && (!land || it.grant.playsLands) &&
+            !it.grant.hasEntryRider && it.grant.exileCastThisWay == CastThisWayExile.NONE &&
+            it.grant.additionalCost == null && it.grant.lifeCost == 0
     }
 
     private fun findGraveyardPlayPermissionSource(

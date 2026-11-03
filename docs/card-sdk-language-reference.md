@@ -13359,8 +13359,12 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   your graveyard" =
   `MayPlayCardsFromExile(GameObjectFilter.Permanent.ownedByYou(), condition = Conditions.IsYourTurn, oncePerTurn = true, zones = setOf(Zone.GRAVEYARD, Zone.SIDEBOARD))`
   — one `oncePerTurn` allowance shared by both zones, lands included. A graveyard play that a
-  non-permission route also covers (Muldrotha's per-type allowance, Crucible of Worlds, a
-  `MayCastFromGraveyard` static, the card's own flashback/escape) is charged to that route instead.
+  non-permission route also covers (Muldrotha's per-type allowance, Crucible of Worlds, the card's
+  own flashback/escape, an unlimited rider-free `MayCastFromGraveyard` such as Yawgmoth's Agenda) is
+  charged to that route instead. Beside a limited or rider-bearing `MayCastFromGraveyard` (Serra
+  Paragon) the player picks: the may-play offer (no `graveyardCastRider`) spends this grant and takes
+  no rider; the graveyard grant's offer spends that grant. A land play has no choice and spends this
+  grant.
   The legal-action enumerator walks a sideboard only while a stored permission or such a static grant
   could play from it, and the client's existing "outside the game" affordance (the one Wishes use)
   shows the offers.

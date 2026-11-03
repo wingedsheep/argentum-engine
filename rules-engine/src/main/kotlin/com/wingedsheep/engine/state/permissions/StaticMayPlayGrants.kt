@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.state.permissions
 
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -63,8 +65,9 @@ internal object StaticMayPlayGrants {
             else -> return emptyList()
         }
 
+        // No grant reaching this zone means no per-card work at all.
         val grants = grantsFor(state, playerId, cardRegistry)
-        if (grants.isEmpty()) return emptyList()
+        if (grants.none { (_, ability) -> zone in ability.zones }) return emptyList()
 
         val projected = state.projectedState
         return grants.mapNotNull { (granterId, ability) ->
@@ -101,16 +104,23 @@ internal object StaticMayPlayGrants {
     /**
      * True when [playerId] has a static grant reaching [zone] whose allowance isn't spent this turn.
      * The enumerator asks this before walking a sideboard, which a Limited game fills with the whole
-     * unplayed pool — so the walk only happens while a grant (The Holodeck) could play from it. The
-     * grant's own gate (its condition) is left to the per-card read.
+     * unplayed pool — so the walk only happens while a grant (The Holodeck) could play from it.
      */
     fun coversZone(
         state: GameState,
         playerId: EntityId,
         zone: Zone,
         cardRegistry: CardRegistry,
+        conditionEvaluator: ConditionEvaluator,
     ): Boolean = grantsFor(state, playerId, cardRegistry).any { (granterId, ability) ->
-        zone in ability.zones && !allowanceSpent(state, granterId, ability)
+        zone in ability.zones && !allowanceSpent(state, granterId, ability) &&
+            // The grant's gate ("during your turn"), judged against the granter as the per-card
+            // read does (`gateOpen`), so a closed gate skips the walk entirely.
+            ability.condition.let { gate ->
+                gate == null || conditionEvaluator.evaluate(
+                    state, gate, EffectContext(sourceId = granterId, controllerId = playerId)
+                )
+            }
     }
 
     private fun allowanceSpent(state: GameState, granterId: EntityId, ability: MayPlayCardsFromExile): Boolean =

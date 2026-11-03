@@ -555,7 +555,7 @@ class CastFromZoneEnumerator(
         // pool, so skip it outright without a grant.
         val sideboardCandidates = if (
             state.mayPlayPermissions.none { it.controllerId == playerId } &&
-            !StaticMayPlayGrants.coversZone(state, playerId, Zone.SIDEBOARD, context.cardRegistry)
+            !StaticMayPlayGrants.coversZone(state, playerId, Zone.SIDEBOARD, context.cardRegistry, context.conditionEvaluator)
         ) emptyList()
         else state.getZone(ZoneKey(playerId, Zone.SIDEBOARD)).map { it to "SIDEBOARD" }
         for ((cardId, sourceZoneLabel) in exileCandidates + graveyardCandidates + sideboardCandidates) {

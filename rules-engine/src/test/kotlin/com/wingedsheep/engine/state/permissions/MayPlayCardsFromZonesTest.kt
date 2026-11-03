@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -12,6 +13,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.MayPlayCardsFromExile
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
@@ -50,6 +52,15 @@ class MayPlayCardsFromZonesTest : ScenarioTestBase() {
         })
         cardRegistry.register(card("Test Zone Bear") {
             manaCost = "{0}"; typeLine = "Creature — Bear"; power = 2; toughness = 2
+        })
+
+        cardRegistry.register(card("Test Once Exile Deck") {
+            manaCost = "{0}"; typeLine = "Artifact"
+            staticAbility { ability = MayPlayCardsFromExile(filter = GameObjectFilter.Any, oncePerTurn = true) }
+        })
+        cardRegistry.register(card("Test Self Exile Caster") {
+            manaCost = "{0}"; typeLine = "Creature — Goblin"; power = 1; toughness = 1
+            staticAbility { ability = MayCastSelfFromZones(zones = listOf(Zone.EXILE)) }
         })
 
         fun TestGame.offered(cardId: EntityId): Boolean =
@@ -110,6 +121,25 @@ class MayPlayCardsFromZonesTest : ScenarioTestBase() {
             g.execute(PlayLand(g.player1Id, g.findCardsInGraveyard(1, "Forest").single())).error shouldBe null
             g.spent("Test Grave Deck") shouldBe true
             g.offered(g.findCardsInGraveyard(1, "Test Zone Bear").single()) shouldBe false
+        }
+
+        test("an exile cast through the card's own permission leaves a once-per-turn exile grant unspent (Evelyn)") {
+            val g = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Test Once Exile Deck")
+                .withCardInExile(1, "Test Self Exile Caster")
+                .withCardInExile(1, "Test Zone Bear")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val selfCaster = g.state.getExile(g.player1Id).single { g.state.getEntity(it)?.get<CardComponent>()?.name == "Test Self Exile Caster" }
+            g.execute(CastSpell(g.player1Id, selfCaster)).error shouldBe null
+            g.spent("Test Once Exile Deck") shouldBe false
+            g.resolveStack()
+
+            val bear = g.state.getExile(g.player1Id).single()
+            g.execute(CastSpell(g.player1Id, bear)).error shouldBe null
+            g.spent("Test Once Exile Deck") shouldBe true
         }
 
         test("zones outside exile, graveyard and sideboard are rejected") {

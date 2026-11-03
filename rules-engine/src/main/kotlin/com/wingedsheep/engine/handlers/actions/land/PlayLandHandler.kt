@@ -922,9 +922,16 @@ class PlayLandHandler(
     ): GameState {
         if (fromZone == Zone.GRAVEYARD || fromZone == Zone.SIDEBOARD) {
             // A graveyard land a non-permission route already plays (Crucible of Worlds, Muldrotha's
-            // land allowance — recorded on its own — or Mayhem) leaves a filter-defined once-per-turn
-            // grant (The Holodeck) untouched.
-            if (fromZone == Zone.GRAVEYARD && hasNonPermissionGraveyardLandPlay(state, action.playerId, action.cardId)) {
+            // land allowance — recorded on its own — or Mayhem), or an unlimited rider-free
+            // `MayCastFromGraveyard(playsLands = true)` grant could carry for free, leaves a
+            // filter-defined once-per-turn grant (The Holodeck) untouched. A limited or rider-bearing
+            // graveyard grant (Serra Paragon) is the one spared instead — the same rule the cast path
+            // follows when the player casts through the may-play offer.
+            if (fromZone == Zone.GRAVEYARD && (
+                    hasNonPermissionGraveyardLandPlay(state, action.playerId, action.cardId) ||
+                        zoneResolver.freeGraveyardGrantCovers(state, action.playerId, action.cardId, land = true)
+                    )
+            ) {
                 return newState
             }
             return state.oncePerTurnGranterToSpend(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
