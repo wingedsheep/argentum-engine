@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -1165,6 +1166,9 @@ object CardIntentAnalyzer {
             if (static.targeting != null && static.reach == ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS) {
                 setOf(IntentTag.PROTECTION)
             } else emptySet()
+        // "Creatures entering the battlefield don't cause abilities to trigger" (Torpor Orb, Tocatli
+        // Honor Guard, Hushbringer) and its opponents-only form (Elesh Norn, Mother of Machines).
+        is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
         else -> emptySet()
     }
 

@@ -363,6 +363,18 @@ enum class IntentTag {
      * card's price, not its point, and earns no tag — see `CardIntentAnalyzer.bansAnOpponent`.
      */
     CAST_BAN,
+
+    /**
+     * Stops permanents entering (or dying) from triggering abilities — Torpor Orb's and Tocatli
+     * Honor Guard's "creatures entering the battlefield don't cause abilities to trigger", Hushbringer's
+     * enters-or-dies lock, Elesh Norn, Mother of Machines' opponents-only half.
+     *
+     * A lock moves nothing and its payoff is triggers that never happen, so no board simulation sees
+     * it; without the tag the static read as "abilities not recognised" and the card as a blank. The
+     * symmetric lock is a hoser — it shuts off its controller's own enter triggers too — so the draft
+     * heuristic prices it low. It is not opponent-facing: a symmetric lock hits its own side too.
+     */
+    TRIGGER_LOCK,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */
