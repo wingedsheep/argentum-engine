@@ -866,6 +866,10 @@ object CardIntentAnalyzer {
         // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
         is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)
 
+        // "Your opponents can't cast spells this turn" / "target player can't cast …": disruption whose
+        // payoff is spells never cast. A ban that binds its controller too is a price, not a payoff.
+        is CantCastSpellsEffect -> if (bansAnOpponent(effect.target)) setOf(IntentTag.CAST_BAN) else emptySet()
+
         is GatherCardsEffect ->
             if ((effect.source as? CardSource.FromZone)?.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR)
             else emptySet()
@@ -960,6 +964,17 @@ object CardIntentAnalyzer {
         if (filter.anyOf.isNotEmpty() || CardPredicate.IsLand !in filter.cardPredicates) return false
         if (filter.controllerPredicate != ControllerPredicate.ControlledByYou) return false
         return EffectWalker.payoffLeaves(body).any { it is TapUntapEffect && !it.tap && it.target == EffectTarget.IterationEntity }
+    }
+
+    /**
+     * Whether a cast ban on [target] is aimed at an opponent: each opponent, the defending player, or
+     * a chosen target player (whom the polarity reader aims at an opponent). "You" and "each player"
+     * bind the controller too, which makes the ban a price the card pays rather than what it is for.
+     */
+    internal fun bansAnOpponent(target: EffectTarget): Boolean = when (target) {
+        is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
+        is EffectTarget.PlayerRef -> target.player in OPPONENT_PLAYERS
+        else -> false
     }
 
     /**
@@ -1385,6 +1400,7 @@ object CardIntentAnalyzer {
     }
 
     private val OPPONENT_FACING = setOf(
+        IntentTag.CAST_BAN,
         IntentTag.REMOVAL,
         IntentTag.EXILE_REMOVAL,
         IntentTag.SWEEPER,

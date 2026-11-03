@@ -1106,6 +1106,12 @@ class GamePlayHandler(
                     logger.debug("Skipping auto-pass for AI player at {} — AI will handle combat", state.step)
                     break
                 }
+                // A window smart auto-pass skips that the AI wants to act in (Silence in the
+                // opponent's upkeep): leave the priority with the AI, which decides on its own.
+                if (state != null && aiGameManager.aiWantsPriority(gameSession.sessionId, autoPassPlayer, state)) {
+                    logger.debug("Skipping auto-pass for AI player at {} — AI wants this window", state.step)
+                    break
+                }
             }
 
             logger.debug("Auto-passing for player: ${autoPassPlayer.value}")

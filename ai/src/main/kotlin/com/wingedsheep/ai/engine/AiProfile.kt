@@ -1407,6 +1407,21 @@ data class AiProfile(
      */
     val borrowedCreaturesGoHome: Boolean = false,
     /**
+     * Cast a ban on an opponent's spells ([com.wingedsheep.ai.engine.knowledge.IntentTag.CAST_BAN])
+     * where it denies them a whole turn of casting
+     * ([com.wingedsheep.ai.engine.knowledge.CastBanWindow]): Silence in their upkeep, Sphinx's
+     * Decree with mana nothing else wants.
+     *
+     * The ban moves no permanent, so the leaf scored every cast of one as a card thrown away and the
+     * AI never cast Silence or Sphinx's Decree at all. With this on, `Strategist` refunds the hand
+     * charge of a ban cast in that window (measured with the evaluator, as
+     * [permanentCastIsNotCardLoss]'s refund is), and [com.wingedsheep.ai.engine.knowledge.HoldPolicy]
+     * adds its window reward on top — for a sorcery-speed ban only when nothing else beats passing.
+     * Pinned by `CastBanReadingAiTest`. Unmeasured in the arena: no set the arena drafts plays
+     * enough bans to move a win rate.
+     */
+    val castBansDenyTheirTurn: Boolean = false,
+    /**
      * Hold a free-`{X}` spell while our mana is still growing into a bigger X, instead of casting it
      * the first turn it is affordable.
      *
@@ -2503,6 +2518,7 @@ data class AiProfile(
             holdRemovalForUnseenThreats = true,
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,
+            castBansDenyTheirTurn = true,
             holdXSpellsForBiggerX = true,
             curveAwareMulligan = true,
             surplusLandsReadTheHand = true,

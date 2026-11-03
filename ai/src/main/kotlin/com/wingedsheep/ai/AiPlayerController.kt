@@ -6,6 +6,7 @@ import com.wingedsheep.ai.llm.MulliganInfo
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PendingDecision
+import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.view.ClientGameState
 import com.wingedsheep.engine.view.LegalActionInfo
 import com.wingedsheep.sdk.model.EntityId
@@ -52,6 +53,14 @@ interface AiPlayerController {
      * Controllers that make no use of it ignore it.
      */
     fun setOpponentDeckListSource(source: (EntityId) -> Map<String, Int>?) {}
+
+    /**
+     * Whether this seat wants to act in a priority window the server's smart auto-pass would pass
+     * for it — the opponent's upkeep, where an instant-speed cast ban covers their whole turn
+     * ([com.wingedsheep.ai.engine.knowledge.CastBanWindow]). Asked only at a window the server is
+     * about to auto-pass; false keeps the auto-pass. Controllers with no such window keep the default.
+     */
+    fun wantsPriority(state: GameState): Boolean = false
 
     // =========================================================================
     // Draft Picking
