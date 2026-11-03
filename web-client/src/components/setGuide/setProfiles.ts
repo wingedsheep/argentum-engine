@@ -1400,6 +1400,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Flashback', inPlay: 'Spells recast from the graveyard; in a format this slow, cards like Bestial Incursion often get both halves.' },
     ],
   },
+  TRK: {
+    tagline: 'A board-building format of Spacecraft, Officers and counters: crew-tapping powers up Starships, while planets and away teams reward a wide spread of lands and creature types.',
+    setting: 'Star Trek: Starfleet crews, Klingons, Romulans and the Borg across the final frontier.',
+    gameplay: 'Most decks build a board and spend it: tapping creatures charges Spacecraft through station until they become large fliers, and counters pile onto creatures to unlock thresholds. Officer tokens and artifact creatures go wide, sacrifice outlets turn spare bodies into value, and beam me up recasts instants and sorceries from the graveyard by returning a creature to hand. Planet lands and New Planet tokens fix colours, which strange new worlds and federation reward with bigger effects.',
+    tips: [
+      'Count your tappers before taking a Spacecraft: station needs untapped creatures to spare, so it suits decks that go wide.',
+      'Play a spread of lands and creature types; strange new worlds counts differently named lands and federation counts creature types.',
+      'Keep a cheap creature around for beam me up: returning it to hand is the price of recasting a spell from your graveyard.',
+    ],
+    tryIf: 'Star Trek, Spacecraft that power up over a game and go-wide crew boards',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['counters', 'tokens', 'artifacts'],
+    mechanics: [
+      { name: 'Station', inPlay: 'Tap another creature at sorcery speed to put charge counters equal to its power on a Spacecraft; thresholds unlock its abilities and turn it into a creature.' },
+      { name: 'Beam me up', inPlay: 'Cast an instant or sorcery from your graveyard by also returning a creature you control to hand, then exile the spell.' },
+      { name: 'Strange new worlds', inPlay: 'Effects that scale with how many differently named lands you control; Planets and New Planet tokens raise the count.' },
+      { name: 'Federation', inPlay: 'Effects that count the distinct creature types among your non-Borg creatures, rewarding a mixed crew.' },
+      { name: 'Face a dilemma', inPlay: 'Choosing modes on a modal spell or ability counts as facing a dilemma, which some cards trigger on.' },
+    ],
+  },
 }
 
 export function setProfile(code: string): SetProfile | undefined {
