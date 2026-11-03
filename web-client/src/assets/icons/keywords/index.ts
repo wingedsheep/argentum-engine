@@ -240,4 +240,5 @@ export const counterManaClass: Record<string, string> = {
   HOUR: 'counter-time',
   KNOWLEDGE: 'counter-lore',
   PHYLACTERY: 'counter-skull',
+  PEACE: 'counter-lore',
 }

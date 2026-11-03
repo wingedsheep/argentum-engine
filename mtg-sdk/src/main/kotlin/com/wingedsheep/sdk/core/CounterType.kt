@@ -940,6 +940,13 @@ value class CounterType(val name: String) {
          */
         val PHYLACTERY = CounterType("PHYLACTERY")
 
+        /**
+         * Peace counter (TRK — Peace in Our Time). A passive tally with no inherent rule: the
+         * enchantment gains one each time a player trades their attack for a card, and wins the game
+         * for its controller at twelve.
+         */
+        val PEACE = CounterType("PEACE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1105,6 +1112,7 @@ value class CounterType(val name: String) {
             HOUR,
             KNOWLEDGE,
             PHYLACTERY,
+            PEACE,
         )
 
         /**

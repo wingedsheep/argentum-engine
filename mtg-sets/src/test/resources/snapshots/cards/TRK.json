@@ -5707,6 +5707,109 @@
     ]
 }
 
+// Peace in Our Time
+{
+    "name": "Peace in Our Time",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of combat on each player's turn, that player may draw a card. If they do, they can't attack this turn and you put a peace counter on this enchantment.\nAt the beginning of your upkeep, if this enchantment has twelve or more peace counters on it, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Peace in Our Time:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Draw a card? If you do, you can't attack this turn."
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            },
+                            {
+                                "type": "CantAttackGroup",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": "ControlledByActivePlayer"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PEACE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "descriptionOverride": "That player may draw a card. If they do, they can't attack this turn and you put a peace counter on this enchantment."
+                },
+                "descriptionOverride": "At the beginning of combat on each player's turn, that player may draw a card. If they do, they can't attack this turn and you put a peace counter on this enchantment."
+            },
+            {
+                "id": "Peace in Our Time:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PEACE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 12
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if this enchantment has twelve or more peace counters on it, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Elizabeth Peiró",
+        "flavorText": "Sometimes, hope is a choice.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dd522dd-a894-496e-9d31-68583dba7ecc.jpg?1792508151"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pet Sehlat
 {
     "name": "Pet Sehlat",

@@ -915,6 +915,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.KNOWLEDGE,
   // Phylactery Lich's anchor: the Lich is sacrificed once no permanent you control has one.
   CounterType.PHYLACTERY,
+  // Peace in Our Time's win tally: twelve wins the game.
+  CounterType.PEACE,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
