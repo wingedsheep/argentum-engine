@@ -183,6 +183,73 @@
     ]
 }
 
+// Academy Instructor
+{
+    "name": "Academy Instructor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Bolian Officer",
+    "oracleText": "This creature gets +1/+0 for each Officer token you control.\nWhenever you cast a noncreature spell, create a 1/1 red Officer creature token.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Academy Instructor:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Officer"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "Officer token"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/660ec8bc-dc03-4b42-84f3-091c19e2a853.jpg?1793188005"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // All Good Things...
 {
     "name": "All Good Things...",
@@ -1235,6 +1302,48 @@
     ]
 }
 
+// Boarding Action
+{
+    "name": "Boarding Action",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 2/1 red Klingon Warrior creature token with haste.\nBeam me up {2}{R} (You may cast this card from your graveyard for {2}{R} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+    "keywords": [
+        "BEAM_ME_UP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "BeamMeUp",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 2,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Klingon",
+                "Warrior"
+            ],
+            "keywords": [
+                "HASTE"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a0d33cd-f81c-4950-81ed-9536061eca8a.jpg?1793361310"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Borg Cube
 {
     "name": "Borg Cube",
@@ -1533,6 +1642,95 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Cantankerous Captain
+{
+    "name": "Cantankerous Captain",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Tellarite Officer",
+    "oracleText": "At the beginning of combat on your turn, target creature you control gets +1/+0 until end of turn. Then that creature gains menace until end of turn if creatures you control have total power 8 or greater. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cantankerous Captain:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature",
+                                        "aggregation": "SUM",
+                                        "property": "POWER"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 8
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Edouard",
+        "flavorText": "\"Are you the best crew in the fleet or not?!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c053ec5-d1ea-4526-8a0d-e4dfafb8ecdf.jpg?1786005671"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1901,6 +2099,85 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Captain Michael Burnham
+{
+    "name": "Captain Michael Burnham",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "Trample\nLandfall — Whenever a land you control enters, Captain Burnham deals 1 damage to each opponent. If this is the second time this ability has resolved this turn, put a +1/+1 counter on Captain Burnham.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain Michael Burnham:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "AbilityResolutionsThisTurn"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Romana Kendelic",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e10d6d71-9360-4ecf-97c8-22afb22aaeb7.jpg?1792508221"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4885,6 +5162,120 @@
     ]
 }
 
+// Erica Ortegas, Plucky Pilot
+{
+    "name": "Erica Ortegas, Plucky Pilot",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Human Pilot",
+    "oracleText": "Haste\nWhenever Erica Ortegas becomes tapped, you may put a land card from your hand onto the battlefield. If you do, return a land you control to its owner's hand at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Erica Ortegas, Plucky Pilot:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put a land card from your hand onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "BattlefieldMatching",
+                                                "filter": "land",
+                                                "player": "You"
+                                            },
+                                            "storeAs": "gathered4"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "gathered4",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "selected5",
+                                            "prompt": "Return a land you control to its owner's hand",
+                                            "useTargetingUI": true
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "selected5",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "expiry": "DelayedTriggerExpiry.Never",
+                                "fireOnce": true
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Erica Ortegas becomes tapped, you may put a land card from your hand onto the battlefield. If you do, return a land you control to its owner's hand at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Romana Kendelic",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3667eb41-598e-4543-97ed-6da961f8b567.jpg?1793013175"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Excalbian Gamemaster
 {
     "name": "Excalbian Gamemaster",
@@ -4956,6 +5347,100 @@
         "artist": "Charles Chaisson",
         "imageUri": "https://cards.scryfall.io/normal/front/3/1/31b5780c-8c5f-4836-8848-1eea1d416a93.jpg?1792753846"
     }
+}
+
+// Exploratory Mission
+{
+    "name": "Exploratory Mission",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Landfall — Whenever a land you control enters, put a quest counter on this enchantment. Then exile cards from the top of your library until you exile a nonland card. You may play that card this turn. If this enchantment has five or more quest counters on it, add {R}{R}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Exploratory Mission:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherUntilMatch",
+                                    "filter": "nonland",
+                                    "storeMatch": "matched0",
+                                    "storeRevealed": "revealed0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "revealed0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "matched0"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "QUEST"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "AddMana",
+                                "color": "RED",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Pastrana",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61bb2ec5-5f04-4c34-ba72-7fa226922c5c.jpg?1793013181"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Federation Field Medic
@@ -5770,6 +6255,67 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Genesis Effect
+{
+    "name": "Genesis Effect",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Genesis Effect deals 6 damage to target creature. Destroy target land you control. Create a tapped Planet land token named New Planet with \"{T}: Add one mana of any color.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "New Planet",
+                    "tapped": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land ctrl:you"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Anthony Devine",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0996bab-c2e4-4483-a76e-1355c81f1577.jpg?1793361330"
+    }
 }
 
 // Georgiou, Terran Emperor
@@ -7461,6 +8007,74 @@
     ]
 }
 
+// Khan, Despot by Design
+{
+    "name": "Khan, Despot by Design",
+    "manaCost": "{4}{R}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "Trample\nWhen Khan enters, he deals 1 damage to each opponent and each creature your opponents control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Khan, Despot by Design:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Kirk DouPonce",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd283ef1-fd8c-4288-8efa-6e81c92b3415.jpg?1793013585"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Khan, Vengeful Heart
 {
     "name": "Khan, Vengeful Heart",
@@ -7752,6 +8366,66 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "RED"
+    ]
+}
+
+// La'An Noonien-Singh, Security
+{
+    "name": "La'An Noonien-Singh, Security",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Whenever you attack while creatures you control have total power 8 or greater, target creature can't block this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "La'An Noonien-Singh, Security:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Pauline Voss",
+        "flavorText": "\"Lesson six of security: know when to bend the rules.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afe08bef-b184-4b91-8d69-0101e183c3ff.jpg?1785981540"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -9399,6 +10073,77 @@
     ]
 }
 
+// Perils of the Past
+{
+    "name": "Perils of the Past",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Use the Relic — Target creature gets +3/+2 until end of turn.\n• Destroy the Relic — Destroy target artifact.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Use the Relic — Target creature gets +3/+2 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy the Relic — Destroy target artifact"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3df10e9a-efb6-4945-9b1b-29200688702a.jpg?1785981548"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pet Sehlat
 {
     "name": "Pet Sehlat",
@@ -9500,6 +10245,52 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Planetary Bombardment
+{
+    "name": "Planetary Bombardment",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Planetary Bombardment deals 2 damage to target creature. Planetary Bombardment deals 4 damage to that creature instead if a creature died this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Conditional",
+                "condition": "CreatureDiedThisTurn",
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Smirtouille",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d9c39ce-f598-48d1-afa0-22f9513f1483.jpg?1793013596"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10825,6 +11616,60 @@
     ]
 }
 
+// Savvy Profiteer
+{
+    "name": "Savvy Profiteer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Ferengi Rogue",
+    "oracleText": "{T}: Add {R}.\n{3}, {T}: Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Savvy Profiteer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Savvy Profiteer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Andreia Ugrai",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8256376f-011f-4cc8-9be4-47f5121ca75e.jpg?1793359515"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Scotty, Miracle Worker
 {
     "name": "Scotty, Miracle Worker",
@@ -11548,6 +12393,44 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/d/2da8d3bf-4397-4844-90d6-dd888becc804.jpg?1792508542"
     },
     "colorIdentityOverride": []
+}
+
+// Starfleet Security
+{
+    "name": "Starfleet Security",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Officer",
+    "oracleText": "Haste\nWhen this creature dies during your turn, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Starfleet Security:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "Investigate",
+                "triggerRestriction": "IsYourTurn",
+                "descriptionOverride": "When this creature dies during your turn, investigate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Edouard",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62acde0e-791d-4259-83bc-3690e498f3b0.jpg?1793359516"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Starfleet Spanner Jockey
@@ -14765,6 +15648,87 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Vengeance Mission
+{
+    "name": "Vengeance Mission",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature dies, put a quest counter on this enchantment. Target opponent loses 1 life. That player loses 2 life instead if there are seven or more quest counters on this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vengeance Mission:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Conditional",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "QUEST"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    }
+                                },
+                                "ifTrue": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "ifFalse": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"When I take this ship, I'll have Kirk's head stuffed and hung on his cabin wall.\"\n—Commander Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/059e3331-43bc-43a8-90e9-86fef37e032a.jpg?1793187091"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
