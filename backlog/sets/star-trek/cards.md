@@ -204,7 +204,7 @@
 - [ ] Salt Vampire
 - [ ] Saurian Explorer
 - [x] Scotty, Miracle Worker
-- [ ] Sela, Tal Shiar Paradox
+- [x] Sela, Tal Shiar Paradox
 - [x] Set Phasers to . . .
 - [ ] Seven of Nine
 - [ ] Seven of Nine, Unassimilated
@@ -217,7 +217,8 @@
 - [x] Starfleet Spanner Jockey
 - [x] Steam Vents
 - [x] Stomping Ground
-- [ ] Storied Veteran
+- [x] Storied Veteran
+- [x] Stray from History
 - [ ] Subcommander T'Pol
 - [ ] Subspace Anomaly
 - [x] Sulu, Space Swashbuckler
@@ -228,18 +229,21 @@
 - [ ] Sylvia Tilly, Joy of Discovery
 - [x] Syndicate Liquidators
 - [x] Tactical Officer
+- [x] Tal Shiar Operative
 - [ ] Targ Wrangler
 - [ ] Tasha Yar, Out of Time
 - [x] Tea, Earl Grey, Hot
-- [ ] Tell Me What You See
+- [x] Tell Me What You See
 - [x] Temple Garden
 - [ ] Temporal Conqueror
+- [x] Tenacious Drone
 - [x] Test of Conviction
 - [ ] Test of Courage
-- [ ] Test of Loyalty
+- [x] Test of Loyalty
 - [ ] Test of Priorities
 - [ ] The Caretaker
 - [ ] The City on the Edge of Forever
+- [x] The Destruction of Praxis
 - [x] The Doctor, EMH
 - [ ] The Duras Sisters
 - [x] The Holodeck
@@ -258,11 +262,12 @@
 - [x] U.S.S. Enterprise-A, Free Spirit
 - [ ] U.S.S. Enterprise-D, Galaxy-Class
 - [x] U.S.S. Excelsior, Cutting Edge
-- [ ] U.S.S. Reliant, From Hell's Heart
+- [x] U.S.S. Reliant, From Hell's Heart
 - [x] Una Chin-Riley, Number One
 - [x] Unexplored Territory
 - [ ] V'Ger, the Intruder
 - [ ] Vash, Freelance Archaeologist
+- [ ] Vengeance Mission
 - [x] Vexing Drone
 - [x] Vulcan
 - [ ] Warp Core
