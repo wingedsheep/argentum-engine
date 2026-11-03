@@ -840,6 +840,9 @@ object CardIntentAnalyzer {
         is BecomePreparedEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
+        // An exchange is carried out as a gain for the player whose total goes up (rule 701.12c),
+        // and its controller only casts it to be that player: Psychic Transfer at 4 against 9.
+        is ExchangeLifeTotalsEffect -> setOf(IntentTag.LIFEGAIN)
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,
         is CreateTokenCopyOfSourceEffect -> setOf(IntentTag.TOKEN_MAKER)
         // Amass makes the Army token when there is none and grows it when there is: either way a

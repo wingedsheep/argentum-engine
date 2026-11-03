@@ -310,9 +310,12 @@ closing the gap would be a feature of its own, name it in the PR body as `value 
 Prove each reading with an AI test (a decision that changes, a profile or score that's pinned), re-bless
 `just ai-reading-baseline` so the cards it fixed move to read-fully, and add the `ai/CHANGELOG.md` line.
 
-- **If you leave a part for later**, `AiReadingRatchetTest` will fail on a new unread group: re-bless the
-  baseline in this PR and name the unread type (or the missed synergy axis) in the PR body so it lands on
-  the ai-reading-loop list. Say which of understanding / rating / synergy is deferred and why.
+- **Don't leave a part for later.** The capability and its AI reading ship together: a reader entry for
+  the effect type you just added or widened is a few lines, and you are the one who knows its
+  semantics. "Pre-existing", "other cards share it" and "belongs to the AI reading loop" are not
+  reasons to defer. Only a part that needs a brand-new reader concept may be split out, as the next PR,
+  with the PR body saying which of understanding / rating / synergy it is and why; re-bless the baseline
+  here so `AiReadingRatchetTest` passes meanwhile.
 - **Widened an existing type?** Check one card on the old shape and one on the new — a reader matching
   the old shape (including `SynergyAxes`) may silently stop reading it.
 - **PR body:** the same `AI: reads n/n · pick … · intent … · synergy …` line `add-card` asks for, per

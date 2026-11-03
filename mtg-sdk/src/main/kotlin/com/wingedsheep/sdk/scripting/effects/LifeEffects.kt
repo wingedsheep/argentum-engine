@@ -222,7 +222,7 @@ data class ExchangeLifeAndStatEffect(
 }
 
 /**
- * Exchange the controller's life total with [target] player's (CR 701.12c): each player gains or
+ * Exchange [player]'s life total (the controller by default) with [target] player's (CR 701.12c): each player gains or
  * loses the life needed to reach the other's former total. Applied through the shared gain/lose-life
  * primitives, so life-gain prevention/replacements and life-loss modification apply, and both
  * players' `LifeChangedEvent`s fire for "whenever you gain/lose life" triggers.
@@ -237,10 +237,13 @@ data class ExchangeLifeAndStatEffect(
 @Serializable
 data class ExchangeLifeTotalsEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val drawEqualToLifeLost: Boolean = false
+    val drawEqualToLifeLost: Boolean = false,
+    /** The other side of the exchange — the controller by default; a second target for "two target players". */
+    val player: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = buildString {
-        append("Exchange life totals with ${target.description}")
+        if (player == EffectTarget.Controller) append("Exchange life totals with ${target.description}")
+        else append("${player.description} and ${target.description} exchange life totals")
         if (drawEqualToLifeLost) append(". If you lost life this way, draw that many cards")
     }
 }

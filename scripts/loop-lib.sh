@@ -23,6 +23,14 @@ LOOP_PR_PROTOCOL="PR LIFECYCLE — every PR is reviewed BEFORE it is opened, so 
   player would: layout, labels, highlighting, nothing overlapping, clipped or stale. Fix what looks off and shoot
   again. Stop the servers when done, and never touch another loop's ports. Put the final screenshots in the PR body.
   If the app or images can't be run or viewed, say exactly that rather than claiming a UX pass.
+- AI CHECK — before review, on any unit that adds or changes cards or SDK vocabulary: run
+  \`just ai-card \"<every card the unit adds or touches>\"\` and close every understanding, rating and synergy gap it
+  shows IN THIS PR, per add-card / add-feature Step 10: a reader entry keyed by the effect type, an AI decision test,
+  \`just ai-reading-baseline\` re-blessed, the ai/CHANGELOG.md line. \"Pre-existing\", \"other cards share it\" and
+  \"belongs to the AI reading loop\" are never reasons to skip. Only a gap needing a brand-new reader concept may be
+  split out — record it as the next unit in the ledger and say why in the PR body. Put the per-card
+  \`AI: reads n/n · pick … · intent … · synergy …\` line in the PR body. A review finding about an AI gap is blocking:
+  fix it, never decline it.
 - Then review the branch (\`origin/main...HEAD\`) with the review-changes skill in SPLIT MODE: you wrote the code, so
   you only dispatch — one TRIAGE subagent, then (unless it reviewed a single-area diff itself in a single pass) one
   subagent per area it names (at most three) and one WEIGH subagent — each a fresh context,

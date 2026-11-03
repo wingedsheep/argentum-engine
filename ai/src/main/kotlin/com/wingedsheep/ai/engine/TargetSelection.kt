@@ -189,7 +189,7 @@ object TargetSelection {
                 ?.let { intents.abilityTargetPolarities(it, base.abilityId) }.orEmpty()
             else -> emptyList()
         }
-        val slots = targetInfosFor(action)?.size ?: return emptyList()
+        val slots = (targetInfosFor(action) ?: autoSelectedPlayerSlot(action))?.size ?: return emptyList()
         return if (read.size == slots) read else emptyList()
     }
 
@@ -234,7 +234,7 @@ object TargetSelection {
         if (actsOnTheWrongSideOfItsHost(state, action, playerId, intents)) return true
         val polarities = polarities(state, action, intents)
         if (polarities.isEmpty()) return false
-        val infos = targetInfosFor(action) ?: return false
+        val infos = targetInfosFor(action) ?: autoSelectedPlayerSlot(action) ?: return false
         return infos.zip(polarities).any { (info, polarity) ->
             info.minTargets > 0 && info.validTargets.isNotEmpty() && when (polarity) {
                 TargetPolarity.HARMFUL -> info.validTargets.all { sideOf(state, it, playerId) == Side.OURS }
@@ -242,6 +242,23 @@ object TargetSelection {
                 TargetPolarity.UNKNOWN -> false
             }
         }
+    }
+
+    /**
+     * The one slot of an action the enumerator already aimed: a single player requirement with a
+     * single legal player is offered with that player chosen and no target info at all. That player
+     * is the slot's only legal target, so the wrong-side check still applies — Psychic Transfer with
+     * the opponent behind Leyline of Sanctity is offered pre-aimed at ourselves.
+     */
+    private fun autoSelectedPlayerSlot(action: LegalAction): List<TargetInfo>? {
+        if (action.targetRequirements != null || action.validTargets != null) return null
+        val targets = when (val base = action.action) {
+            is CastSpell -> base.targets
+            is ActivateAbility -> base.targets
+            else -> return null
+        }
+        val player = (targets.singleOrNull() as? ChosenTarget.Player)?.playerId ?: return null
+        return listOf(TargetInfo(index = 0, description = "", minTargets = 1, maxTargets = 1, validTargets = listOf(player), targetZone = null))
     }
 
     private fun actsOnTheWrongSideOfItsHost(

@@ -177,7 +177,8 @@ worktree: the set worktree, or an older per-branch 'loop-$CODE-*' worktree that 
    return: a subagent that implements card after card re-reads every earlier card's context on each call, so a
    fresh agent per card is cheaper than a shared one. Each follows the add-card skill through Step 6 and Step 9,
    writing files only (one definition file and one scenario test file per card): no git, no Gradle builds, no
-   tests — skip Step 7 (manual UI check, done once per unit) and Step 10 (verify, rebless, differential); the single gate below is the only build
+   tests — skip Step 7 (manual UI check, done once per unit) and Step 10 (the AI check, run once per unit by the
+   PR LIFECYCLE's AI CHECK below — never skipped); the single gate below is the only build
    and runs every new test class. \`just assay\`, \`just where\` and \`just check-card-printing\` are fine. A card that turns out to need
    new vocabulary — or could only ship as a \"known approximation\" (an engine path, mana type or event that
    doesn't match the printed text exactly) — is dropped from the batch and added to '## Gaps' as a new \`[ ]\` gap — the next iteration builds
