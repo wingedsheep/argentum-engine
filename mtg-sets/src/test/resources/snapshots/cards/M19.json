@@ -872,6 +872,54 @@
     ]
 }
 
+// Amulet of Safekeeping
+{
+    "name": "Amulet of Safekeeping",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you become the target of a spell or ability an opponent controls, counter that spell or ability unless its controller pays {1}.\nCreature tokens get -1/-0.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Amulet of Safekeeping:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "byOpponent": true,
+                    "playerTargets": "You",
+                    "includeObjectTargets": false
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "WardCounter",
+                    "cost": {
+                        "type": "WardCost.Mana",
+                        "manaCost": "{1}"
+                    }
+                },
+                "descriptionOverride": "Whenever you become the target of a spell or ability an opponent controls, counter that spell or ability unless its controller pays {1}."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "flavorText": "Whether it is magical, lucky, or merely old, it is cherished, and that gives it power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d45ac8dc-281f-4257-9658-80af65a0295b.jpg?1783934517"
+    },
+    "colorIdentityOverride": []
+}
+
 // Angel of the Dawn
 {
     "name": "Angel of the Dawn",

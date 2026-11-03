@@ -8412,7 +8412,8 @@ For `enter()` and `die()`, a filter with no controller predicate means "you cont
 
 **Player verbs**: `beginningOf(step)`, `casts(spell, requires)`, `castsNth(n, spell?)`, `copies(spell)`,
 `castsOrCopies(spell)`,
-`choosesTargets()`, `putsSpellOrAbilityOnStack()`, `activatesAbility(of?, targeting?, loyalty,
+`choosesTargets()`, `becomesTarget(of?, byYou, byOpponent, spellsOnly, abilitiesOnly)` (player-only —
+see `Triggers.you.becomesTarget` below), `putsSpellOrAbilityOnStack()`, `activatesAbility(of?, targeting?, loyalty,
 minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, tapInCost?)`,
 `attackTriggersAbility()`, `permanentEnteringTriggersAbility()`, `attacks(with?, minAttackers?)` (you declare attackers), `isAttacked(…)`,
 `isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
@@ -9686,6 +9687,15 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   redirect makes it one. Pre-existing and orthogonal to the player axis, so it is pinned rather than
   fixed by `BecomesTargetPlayerAndAbilityAxesTest`, which characterizes current-and-wrong behaviour —
   when a later unit fixes it, invert that test rather than deleting it.
+- `Triggers.you.becomesTarget(of?, byYou, byOpponent, spellsOnly, abilitiesOnly)` — the
+  **player-only** wording: "whenever **you** become the target of a spell or ability an opponent controls"
+  (**Amulet of Safekeeping**: `Triggers.you.becomesTarget(byOpponent = true)` +
+  `Effects.CounterTargetingSourceUnlessPays(WardCost.Mana("{1}"))`). No permanent or spell being targeted
+  fires it — for "you **or** a permanent you control" use the object subject with `players = Player.You`
+  instead (Valkmira). `Triggers.anOpponent` / `Triggers.anyPlayer` read "an opponent" / "a player". Builds
+  `BecomesTargetEvent(playerTargets = <subject>, includeObjectTargets = false)`; `includeObjectTargets =
+  false` without `playerTargets`, or alongside an object filter / `includeSpellTargets` / `targetsOnlyIt` / `batch`, is
+  rejected at construction. The targeting spell or ability is `EffectTarget.TargetingSource`.
 - `Triggers.a(filter).becomesTarget(..., batch = true)` — the "**one or more** … become the target" template
   (CR 603.2c): fires **once per targeting spell or ability**, however many of its targets match. Sets
   `BecomesTargetEvent(batch = true)`; every other axis still decides which targets count, and one is

@@ -2166,6 +2166,10 @@ class TriggerMatcher(
             TriggerBinding.ATTACHED -> return false // handled by AttachmentTriggerDetector
         }
 
+        // A player-only trigger ("whenever you become the target …" — Amulet of Safekeeping) has no
+        // object half: a targeted permanent or spell never wakes it.
+        if (!event.targetIsPlayer && !trigger.includeObjectTargets) return false
+
         // Spell targets fire only for triggers that opted in ("... or a creature spell you control",
         // e.g. Surrak). Permanent-only wording ("a creature you control" — Pawpatch Recruit, Daru
         // Spiritualist) must not react to a creature spell on the stack being targeted.

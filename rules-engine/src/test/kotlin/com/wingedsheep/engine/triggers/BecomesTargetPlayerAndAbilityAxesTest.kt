@@ -179,8 +179,17 @@ class BecomesTargetPlayerAndAbilityAxesTest : FunSpec({
         }
     }
 
+    val youOnlyObserver = card("You Only Observer") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        triggeredAbility {
+            trigger = Triggers.you.becomesTarget(byOpponent = true)
+            effect = Effects.DrawCards(1)
+        }
+    }
+
     val extras = listOf(
-        youOrYoursObserver,
+        youOrYoursObserver, youOnlyObserver,
         playerPinger, playerDrain, playerAndCreatureSpell, retargeter,
         lokiLike, abilityObjectObserver, anySourcePlayerObserver, plainObserver, spellObserver,
     )
@@ -548,6 +557,37 @@ class BecomesTargetPlayerAndAbilityAxesTest : FunSpec({
                     batch = true,
                 ).description shouldBe
                     "you and/or one or more permanents you control become the target of a spell or ability an opponent controls"
+            }
+        }
+
+        context("player-only subject (Amulet of Safekeeping)") {
+
+            test("only you, targeted by an opponent, fires it — never a permanent") {
+                val driver = createDriver()
+                val amulet = driver.putPermanentOnBattlefield(driver.player1, "You Only Observer")
+                val yourBears = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+
+                withClue("you, targeted by an opponent's ability") {
+                    firings(driver, targeted(driver, driver.player1, driver.player2, sourceIsSpell = false, targetIsPlayer = true), amulet) shouldHaveSize 1
+                }
+                withClue("a permanent you control is not 'you'") {
+                    firings(driver, targeted(driver, yourBears, driver.player2, sourceIsSpell = true, targetIsPlayer = false), amulet) shouldHaveSize 0
+                }
+                withClue("nor is the observer itself") {
+                    firings(driver, targeted(driver, amulet, driver.player2, sourceIsSpell = true, targetIsPlayer = false), amulet) shouldHaveSize 0
+                }
+                withClue("an opponent targeted is not you") {
+                    firings(driver, targeted(driver, driver.player2, driver.player2, sourceIsSpell = true, targetIsPlayer = true), amulet) shouldHaveSize 0
+                }
+            }
+
+            test("it reads 'you become', and an object-free pattern without players is rejected") {
+                Triggers.you.becomesTarget(byOpponent = true).event.description shouldBe
+                    "you become the target of a spell or ability an opponent controls"
+                Triggers.anOpponent.becomesTarget(spellsOnly = true).event.description shouldBe
+                    "an opponent becomes the target of a spell"
+                runCatching { EventPattern.BecomesTargetEvent(includeObjectTargets = false) }
+                    .exceptionOrNull().shouldNotBeNull()
             }
         }
     }

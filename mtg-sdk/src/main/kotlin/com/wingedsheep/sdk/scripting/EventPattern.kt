@@ -2359,6 +2359,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * and the targeting object as [com.wingedsheep.sdk.scripting.targets.EffectTarget.TargetingSource]
      * / [Player.ControllerOfCause].
      *
+     * [includeObjectTargets] `false` drops the object half entirely, leaving a **player-only**
+     * trigger — "whenever **you** become the target of a spell or ability an opponent controls"
+     * (Amulet of Safekeeping), built by `Triggers.you.becomesTarget(...)`. It needs [playerTargets],
+     * and [targetFilter] / [includeSpellTargets] / [targetsOnlyIt] / [batch] have nothing left to narrow.
+     *
      * Note that [spellsOnly] / [abilitiesOnly] / [sourceFilter] narrow *what did the targeting*,
      * while [includeSpellTargets] / [playerTargets] widen *what got targeted*; the two axes
      * are independent.
@@ -2377,9 +2382,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val sourceFilter: GameObjectFilter? = null,
         val backupAbilitiesOnly: Boolean = false,
         val targetsOnlyIt: Boolean = false,
-        val batch: Boolean = false
+        val batch: Boolean = false,
+        val includeObjectTargets: Boolean = true
     ) : EventPattern {
         init {
+            require(includeObjectTargets || playerTargets != null) {
+                "BecomesTargetEvent with includeObjectTargets = false needs playerTargets — nothing would match"
+            }
+            require(includeObjectTargets || (targetFilter == GameObjectFilter.Any && !includeSpellTargets && !targetsOnlyIt && !batch)) {
+                "A player-only BecomesTargetEvent has no object half for targetFilter/includeSpellTargets/targetsOnlyIt/batch to narrow"
+            }
             require(!(spellsOnly && (abilitiesOnly || backupAbilitiesOnly))) {
                 "BecomesTargetEvent cannot be both spellsOnly and abilitiesOnly — nothing would match"
             }
@@ -2390,6 +2402,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
         override val description: String = buildString {
             when {
+                // Player-only (Amulet of Safekeeping): "you become", "an opponent becomes".
+                !includeObjectTargets -> append(
+                    when (playerTargets) {
+                        Player.You -> "you"
+                        Player.EachOpponent -> "an opponent"
+                        else -> "a player"
+                    }
+                )
                 // "you and/or one or more permanents you control become the target" (Leyline of
                 // Combustion) — the batch template names the objects in the plural.
                 batch -> {
@@ -2430,7 +2450,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                     ?.takeIf { f.controllerPredicate == null && f.statePredicates.isEmpty() && f.anyOf.isEmpty() }
                 "${f.indefiniteArticle} ${subtype?.description ?: f.description} $kind"
             }
-            val verb = if (batch) " become the target of" else " becomes the target of"
+            val plural = batch || (!includeObjectTargets && playerTargets == Player.You)
+            val verb = if (plural) " become the target of" else " becomes the target of"
             when {
                 sourceNoun != null -> append("$verb $sourceNoun")
                 backupAbilitiesOnly -> append("$verb a backup ability")
