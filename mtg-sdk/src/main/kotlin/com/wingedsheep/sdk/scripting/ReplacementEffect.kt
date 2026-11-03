@@ -1112,6 +1112,13 @@ data class EntersWithKeywords(
  * rounded up by default ([roundUp]) — Gisela, Blade of Goldnight's "If a source would deal damage to
  * you or a permanent you control, prevent half that damage, rounded up." It is a prevention effect,
  * so damage that can't be prevented passes through in full. [amount] must be null with it.
+ *
+ * [allBut] prevents **all but** that many points of the damage that reaches this prevention — Temple
+ * Altisaur's "If a source would deal damage to another Dinosaur you control, prevent all but 1 of that
+ * damage." Damage at or below [allBut] is untouched. The standing twin of the one-shot
+ * [com.wingedsheep.sdk.scripting.effects.PreventNextDamageLeavingAmountEffect]; [amount] must be null and
+ * [half] false with it. The affected player applies it before any "prevent half" or fixed "prevent N"
+ * (CR 616.1 lets them order it), the order that always leaves them the least damage.
  */
 @SerialName("PreventDamage")
 @Serializable
@@ -1121,10 +1128,14 @@ data class PreventDamage(
     override val appliesTo: EventPattern,
     val onPrevented: Effect? = null,
     val half: Boolean = false,
-    val roundUp: Boolean = true
+    val roundUp: Boolean = true,
+    val allBut: Int? = null
 ) : ReplacementEffect {
     init {
         require(!half || amount == null) { "PreventDamage: half prevents a fraction, not a fixed amount" }
+        require(allBut == null || (amount == null && !half && allBut >= 0)) {
+            "PreventDamage: allBut leaves a fixed remainder; amount must be null and half false"
+        }
     }
 
     override val description: String = buildString {
@@ -1139,6 +1150,8 @@ data class PreventDamage(
         append(", prevent ")
         if (half) {
             append("half that damage, rounded ${if (roundUp) "up" else "down"}")
+        } else if (allBut != null) {
+            append("all but $allBut of that damage")
         } else if (amount == null) {
             append("that damage")
         } else {
