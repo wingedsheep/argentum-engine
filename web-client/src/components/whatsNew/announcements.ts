@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-m19',
+    date: '2026-11-03',
+    kind: 'set',
+    setCode: 'M19',
+    title: 'Core Set 2019 is complete',
+    body:
+      "Core Set 2019 follows Nicol Bolas's return with Dragons, elder-dragon bombs and five planeswalkers, built from clean, classic Magic rather than set mechanics. Each colour pair has its own plan: artifacts in white-blue, spells-matter Enigma Drakes in blue-red, lifegain Vampires in white-black, sacrifice aggro in black-red and Dragon ramp in red-green, with a dual land in a third of packs.",
+    tryIf: 'straightforward, back-to-basics Limited with Dragons and planeswalkers',
+  },
+  {
     id: 'set-grn',
     date: '2026-11-02',
     kind: 'set',

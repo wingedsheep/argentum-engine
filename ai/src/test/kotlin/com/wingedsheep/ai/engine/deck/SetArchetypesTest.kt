@@ -270,6 +270,26 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
 
+    "Core Set 2019 exposes one archetype per gold signpost uncommon" {
+        val synergies = SetArchetypes.getForSet("M19")!!
+
+        synergies.setName shouldBe "Core Set 2019"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Artifacts" to setOf(Color.WHITE, Color.BLUE),
+            "Card Advantage Control" to setOf(Color.BLUE, Color.BLACK),
+            "Sacrifice Aggro" to setOf(Color.BLACK, Color.RED),
+            "Dragons" to setOf(Color.RED, Color.GREEN),
+            "Enchantments" to setOf(Color.GREEN, Color.WHITE),
+            "Lifegain" to setOf(Color.WHITE, Color.BLACK),
+            "Spells" to setOf(Color.BLUE, Color.RED),
+            "Deathtouch Attrition" to setOf(Color.BLACK, Color.GREEN),
+            "Go Wide Aggro" to setOf(Color.RED, Color.WHITE),
+            "Flying Counters" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.name to it.creatureTypes } shouldContainExactly
+            listOf("Dragons" to listOf("Dragon"))
+    }
+
     "Core Set 2020 exposes one archetype per gold signpost uncommon" {
         val synergies = SetArchetypes.getForSet("M20")!!
 

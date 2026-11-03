@@ -1611,6 +1611,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  M19: {
+    setCode: 'M19',
+    setName: 'Core Set 2019',
+    archetypes: [
+      {
+        name: 'Artifacts',
+        colors: ['W', 'U'],
+        keyCard: 'Aerial Engineer',
+        description: 'Play cheap artifacts so Aerial Engineer and other artifact payoffs switch on, holding the ground with Constructs while the payoffs take to the air. A midrange deck that rewards counting artifacts.',
+      },
+      {
+        name: 'Card Advantage Control',
+        colors: ['U', 'B'],
+        keyCard: 'Psychic Symbiont',
+        description: 'Trade with removal and card-advantage creatures like Psychic Symbiont, stripping the opponent\'s hand while refilling yours. A control deck that wins the long game on cards.',
+      },
+      {
+        name: 'Sacrifice Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Brawl-Bash Ogre',
+        description: 'Turn small creatures and tokens into fuel for Brawl-Bash Ogre and other sacrifice outlets, attacking with menace while removal clears the way. An aggressive deck that cashes in its own creatures.',
+      },
+      {
+        name: 'Dragons',
+        colors: ['R', 'G'],
+        keyCard: 'Draconic Disciple',
+        description: 'Ramp with mana creatures like Draconic Disciple into Dragons and the cards that care about them, closing with big fliers. A ramp deck that goes over the top.',
+        creatureTypes: ['Dragon'],
+      },
+      {
+        name: 'Enchantments',
+        colors: ['G', 'W'],
+        keyCard: 'Satyr Enchanter',
+        description: 'Cast Auras and other enchantments to draw cards with Satyr Enchanter and suit up a few sturdy creatures. A midrange deck that grows its threats while keeping a full hand.',
+      },
+      {
+        name: 'Lifegain',
+        colors: ['W', 'B'],
+        keyCard: 'Regal Bloodlord',
+        description: 'Gain life in small bursts so Regal Bloodlord and other lifegain payoffs make Bats and drain the opponent. A grindy deck that stays out of reach while its fliers peck away.',
+      },
+      {
+        name: 'Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Enigma Drake',
+        description: 'Fill the graveyard with instants and sorceries so Enigma Drake hits hard, burning and countering your way past blockers. A tempo deck that leans on cheap spells.',
+      },
+      {
+        name: 'Deathtouch Attrition',
+        colors: ['B', 'G'],
+        keyCard: 'Poison-Tip Archer',
+        description: 'Trade creatures freely and turn every death into lost life with Poison-Tip Archer, holding the board with deathtouch and recursion. A grindy midrange deck that wins the war of attrition.',
+      },
+      {
+        name: 'Go Wide Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Heroic Reinforcements',
+        description: 'Flood the board with cheap creatures and Soldier tokens, then pump the whole team with Heroic Reinforcements for a hasty alpha strike. A fast aggro deck that ends the game early.',
+      },
+      {
+        name: 'Flying Counters',
+        colors: ['G', 'U'],
+        keyCard: 'Skyrider Patrol',
+        description: 'Grow creatures with +1/+1 counters and grant them flying with Skyrider Patrol, pairing big green bodies with blue evasion. A midrange deck that takes over the skies.',
+      },
+    ],
+  },
   M20: {
     setCode: 'M20',
     setName: 'Core Set 2020',
