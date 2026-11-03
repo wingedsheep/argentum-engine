@@ -80,6 +80,13 @@ class SynergyPresenceAiTest : ScenarioTestBase() {
             axes("Grizzly Bears").rewards shouldBe emptySet()
         }
 
+        test("a feeding effect inside a ForEach body is read: a counter on each creature feeds +1/+1 counters") {
+            // Bellowing Aegisaur's enrage and Victory's Envoy's upkeep trigger put a +1/+1 counter
+            // on each creature through ForEachInGroup; the effect walk stops at ForEach bodies.
+            axes("Bellowing Aegisaur").feeds shouldContain SynergyAxis.PLUS_COUNTERS
+            axes("Victory's Envoy").feeds shouldContain SynergyAxis.PLUS_COUNTERS
+        }
+
         test("a payoff's term grows with the fuel beside it, and only our own hand is read") {
             val empty = scenario().withPlayers()
                 .withCardOnBattlefield(1, "Blood Artist")

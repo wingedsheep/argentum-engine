@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -259,6 +260,12 @@ object SynergyAxes {
 
     private fun effectFeeds(effect: Effect): Set<SynergyAxis> = buildSet {
         for (leaf in EffectWalker.leaves(effect)) {
+            // "Put a +1/+1 counter on each other creature you control" is a ForEach whose body is
+            // the feeding leaf; the walk stops at ForEach bodies, so open them here.
+            if (leaf is ForEachEffect) {
+                addAll(effectFeeds(leaf.body))
+                continue
+            }
             addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
             if (IntentTag.LIFEGAIN in tags) add(SynergyAxis.LIFEGAIN)
