@@ -329,6 +329,26 @@ object PredefinedTokens {
     }
 
     /**
+     * Neuroflux Heirloom — a colorless Equipment artifact token with:
+     * "Equipped creature gets +1/+1" and equip {2}. The Sword shape under Star Trek's name;
+     * created (and attached) by Gwyndala, the Progeny.
+     */
+    val NeurofluxHeirloom = card("Neuroflux Heirloom") {
+        typeLine = "Artifact — Equipment"
+
+        staticAbility {
+            ability = ModifyStats(+1, +1, Filters.EquippedCreature)
+        }
+
+        equipAbility("{2}")
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/d/8/d811c3c3-6b5b-4b42-be4f-0a455313ccd3.jpg?1793364366"
+            artist = "David Frasheski"
+        }
+    }
+
+    /**
      * Cragflame — a legendary colorless Equipment artifact token with:
      * "Equipped creature gets +1/+1 and has vigilance, trample, and haste" and equip {2}.
      * Created by Mabel, Heir to Cragflame.
@@ -1441,6 +1461,7 @@ object PredefinedTokens {
         JustOneGlass,
         Map,
         Sword,
+        NeurofluxHeirloom,
         Cragflame,
         IcingdeathFrostTongue,
         Mutavault,
