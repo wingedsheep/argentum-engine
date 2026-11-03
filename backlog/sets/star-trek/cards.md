@@ -25,7 +25,7 @@
 - [x] Andoria
 - [x] Andromedan Automatons
 - [x] Antagonist Incorporator
-- [ ] Anthropological Mission
+- [x] Anthropological Mission
 - [ ] Armus, Skin of Evil
 - [x] Assault Drone
 - [ ] Assembly Specialist
@@ -62,7 +62,7 @@
 - [ ] Commander Raffi Musiker
 - [ ] Common Goal
 - [x] Conquest Mission
-- [ ] Consider the Prime Directive
+- [x] Consider the Prime Directive
 - [x] Constable Odo
 - [ ] Crystalline Entity
 - [x] Cybernetic Specialist
@@ -90,10 +90,10 @@
 - [ ] Eject the Warp Core
 - [ ] Elim Garak, Simple Tailor
 - [x] Emergency Medical Hologram
-- [ ] Energize
+- [x] Energize
 - [ ] Engineered Explosives
-- [ ] Ensign Pavel Chekov
-- [ ] Enterprise NX-01
+- [x] Ensign Pavel Chekov
+- [x] Enterprise NX-01
 - [ ] Erica Ortegas, Plucky Pilot
 - [x] Excalbian Gamemaster
 - [ ] Exploratory Mission
@@ -115,19 +115,19 @@
 - [ ] Gowron, Eager for Battle
 - [ ] Grand Nagus Zek
 - [ ] Gray and Adira, Forever Joined
-- [ ] Guidance Failure
+- [x] Guidance Failure
 - [ ] H.M.S. Bounty, Unlikely Timeship
 - [x] Hallowed Fountain
 - [x] He's Dead, Jim
 - [x] Hemmer, Fixing What Is Broken
-- [ ] Highly Illogical
+- [x] Highly Illogical
 - [x] Hit It!
 - [ ] Hive Mind Coprocessor
 - [ ] Holo-Engineer
 - [x] Hologram Janeway
 - [ ] Hologram Stalker
 - [x] Horta
-- [ ] Hoshi Sato, Exolinguist
+- [x] Hoshi Sato, Exolinguist
 - [x] Humpback Whales
 - [ ] I'm a Doctor, Not a . . .
 - [ ] Impossible Choice
@@ -137,7 +137,7 @@
 - [x] Island
 - [ ] Jadzia Dax, Living Legacy
 - [ ] Jake Sisko, War Correspondent
-- [ ] Jett Reno, Problem Solver
+- [x] Jett Reno, Problem Solver
 - [ ] Kai Winn, Faithless Leader
 - [ ] Khaaaaaaaaaaaannn!
 - [ ] Khan, Despot by Design
@@ -214,7 +214,7 @@
 - [ ] Spatial Anomaly
 - [ ] Spock, Always Your Friend
 - [ ] Starfleet Academy
-- [ ] Starfleet Spanner Jockey
+- [x] Starfleet Spanner Jockey
 - [x] Steam Vents
 - [x] Stomping Ground
 - [ ] Storied Veteran
@@ -222,8 +222,8 @@
 - [ ] Subspace Anomaly
 - [x] Sulu, Space Swashbuckler
 - [ ] Support Mission
-- [ ] Suurok-Class Science Vessel
-- [ ] Suus Mahna Practitioner
+- [x] Suurok-Class Science Vessel
+- [x] Suus Mahna Practitioner
 - [x] Swamp
 - [ ] Sylvia Tilly, Joy of Discovery
 - [x] Syndicate Liquidators

@@ -509,6 +509,115 @@
     ]
 }
 
+// Anthropological Mission
+{
+    "name": "Anthropological Mission",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a noncreature spell, put a quest counter on this enchantment. Draw a card. Then discard a card unless this enchantment has three or more quest counters on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anthropological Mission:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "QUEST"
+                                        }
+                                    },
+                                    "operator": "LT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Pablo Mendoza",
+        "flavorText": "While the Prime Directive doesn't allow the Federation to interfere with pre-warp societies, it can learn from them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93b458aa-a928-48ef-b685-1306cc65ad06.jpg?1793012962"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Assault Drone
 {
     "name": "Assault Drone",
@@ -1662,6 +1771,100 @@
     ]
 }
 
+// Cloak and Phaser
+{
+    "name": "Cloak and Phaser",
+    "manaCost": "{8}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strange new worlds — This spell costs {X} less to cast, where X is the number of differently named lands you control.\nCreate two 2/2 black Romulan creature tokens. Draw two cards, then discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Romulan"
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "DifferentlyNamedPermanentsYouControl",
+                        "filter": "land"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "David Szabo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d9fb7e7-582d-41e7-be9e-98372505ea44.jpg?1793187986"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cloistered Telepath
 {
     "name": "Cloistered Telepath",
@@ -2172,6 +2375,90 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Consider the Prime Directive
+{
+    "name": "Consider the Prime Directive",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Interfere — Counter target spell unless its controller pays {3}.\n• Observe — Tap up to one target creature and put a stun counter on it. Draw a card. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "condition": {
+                            "type": "CounterCondition.UnlessPaysMana",
+                            "cost": "{3}"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Interfere — Counter target spell unless its controller pays {3}"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "STUN",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Observe — Tap up to one target creature and put a stun counter on it. Draw a card"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e8f75b8-cca7-4ed3-90db-bcac02e74611.jpg?1784036751"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3076,6 +3363,71 @@
     ]
 }
 
+// Emergency Holographic Crew
+{
+    "name": "Emergency Holographic Crew",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact Creature — Illusion Officer",
+    "oracleText": "When this creature enters, choose one —\n• Return target Spacecraft card from your graveyard to your hand.\n• Surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emergency Holographic Crew:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "Spacecraft own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return target Spacecraft card from your graveyard to your hand"
+                        },
+                        {
+                            "effect": {
+                                "type": "Surveil",
+                                "count": 2
+                            },
+                            "description": "Surveil 2"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Thanh Tuấn",
+        "flavorText": "\"Reporting for duty, Captain.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53943948-8f24-495a-b6eb-e788fa169fcd.jpg?1793359393"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Emergency Medical Hologram
 {
     "name": "Emergency Medical Hologram",
@@ -3133,6 +3485,299 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Energize
+{
+    "name": "Energize",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature an opponent controls to its owner's hand.\nBeam me up {3}{U} (You may cast this card from your graveyard for {3}{U} if you also return a creature you control to its owner's hand. Then exile this spell.)",
+    "keywords": [
+        "BEAM_ME_UP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "BeamMeUp",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Carlos C Diaz",
+        "flavorText": "\"Beam us up! BEAM US UP!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24e72db3-a8d9-4553-92fe-ba6e40c4f62e.jpg?1792668391"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ensign Pavel Chekov
+{
+    "name": "Ensign Pavel Chekov",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Human Pilot",
+    "oracleText": "Strange new worlds — When Ensign Chekov enters, each opponent exiles the top X cards of their library, where X is the number of differently named lands you control. For each opponent, choose a land card that player owns exiled this way. You may play the chosen cards for as long as they remain exiled.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ensign Pavel Chekov:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "ControllerOfSource",
+                                        "filter": "land",
+                                        "aggregation": "DISTINCT_NAMES"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "filter": "land",
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a land card you may play for as long as it remains exiled"
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "selected2",
+                                "expiry": "Permanent",
+                                "recipient": {
+                                    "type": "PlayerRef",
+                                    "player": "ControllerOfSource"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Strange new worlds — When Ensign Chekov enters, each opponent exiles the top X cards of their library, where X is the number of differently named lands you control. For each opponent, choose a land card that player owns exiled this way. You may play the chosen cards for as long as they remain exiled."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Gal Or",
+        "flavorText": "\"I took naturally to navigation, sir. After all, Russia invented the map.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a441c12e-1a2f-4b04-83dd-407bf6040efe.jpg?1792753698"
+    }
+}
+
+// Enterprise NX-01
+{
+    "name": "Enterprise NX-01",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Artifact — Spacecraft",
+    "oracleText": "When Enterprise NX-01 enters, tap target creature an opponent controls and put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)\nStation (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 6+.)\n6+ | Flying, vigilance",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Enterprise NX-01:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Enterprise NX-01:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Colin Searle",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/385638fe-cafb-4541-ba37-19bc57520c48.jpg?1793100690"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3817,6 +4462,74 @@
     ]
 }
 
+// Guidance Failure
+{
+    "name": "Guidance Failure",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if it targets an attacking creature.\nTarget creature or Spacecraft's owner puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "PutOnLibraryPositionOfChoice",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsPermanent",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Spacecraft"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 1,
+                        "filter": "creature attacking"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "David Álvarez",
+        "flavorText": "The ionized gasses of the Mutara Nebula wreaked havoc with sensors and shielding.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86b790e6-3c99-4a95-8327-eb90ed9380f2.jpg?1785981409"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gul Dukat, Colonial Prefect
 {
     "name": "Gul Dukat, Colonial Prefect",
@@ -4200,6 +4913,54 @@
     ]
 }
 
+// Highly Illogical
+{
+    "name": "Highly Illogical",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {1}{U} (You may pay an additional {1}{U} as you cast this spell.)\nCounter target spell with mana value 2 or less. If this spell was kicked, instead counter target spell.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "mv<=2",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "kickerTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t1"
+            }
+        ],
+        "kickerSpellEffect": "Counter"
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Joel Chaim Holtzman",
+        "flavorText": "For the briefest of moments, Spock felt fear. Not of the rabbit, but that the universe could let it exist without logical cause.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11c94c5f-abf4-429e-8703-c5db9abd79bf.jpg?1784065440"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hit It!
 {
     "name": "Hit It!",
@@ -4387,6 +5148,98 @@
     ]
 }
 
+// Hoshi Sato, Exolinguist
+{
+    "name": "Hoshi Sato, Exolinguist",
+    "manaCost": "{4}{U}",
+    "typeLine": "Legendary Creature — Human Scientist",
+    "oracleText": "Federation — When Hoshi Sato enters, look at the top X cards of your library, where X is the number of creature types among non-Borg creatures you control. Put one of them into your hand and the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hoshi Sato, Exolinguist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Borg"
+                                            }
+                                        ]
+                                    },
+                                    "aggregation": "DISTINCT_CREATURE_TYPES"
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Seiler",
+        "flavorText": "\"Whatever they say, you have to respond in kind. Otherwise they'll take offense.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24589f4d-c530-4f6a-b2d0-450ef70fca71.jpg?1784065562"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Humpback Whales
 {
     "name": "Humpback Whales",
@@ -4472,6 +5325,77 @@
         "artist": "Cliff Nielsen",
         "flavorText": "\"My alter ego, so to speak. You must admit, he's effective. You would never have been frightened by me.\"\n—Balok",
         "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b7d505f-2a6b-4525-87c7-19e06d49c9df.jpg?1792672545"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jett Reno, Problem Solver
+{
+    "name": "Jett Reno, Problem Solver",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Whenever Jett Reno becomes tapped, surveil 1. If her power is 4 or greater, instead draw a card.\nWhenever you face a dilemma, put a +1/+1 counter on Jett Reno. (You face a dilemma as you choose one or more modes for a spell or ability.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jett Reno, Problem Solver:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Surveil",
+                        "count": 1
+                    }
+                }
+            },
+            {
+                "id": "Jett Reno, Problem Solver:2",
+                "trigger": "DilemmaFacedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Riccardo Federici",
+        "flavorText": "\"Awesome. I know. I built them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6dc34d44-397a-4dda-a8e3-0c2ff7da110f.jpg?1793511776"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -5085,6 +6009,46 @@
         "artist": "Joel Chaim Holtzman",
         "flavorText": "\"Okay, new plan!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/8/0820a78e-e392-423c-9d62-ddfda5cb3f03.jpg?1785981422"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Melkotian Adjudicator
+{
+    "name": "Melkotian Adjudicator",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Melkotian Advisor",
+    "oracleText": "Flying, vigilance\nWhenever you face a dilemma, put a +1/+1 counter on this creature. (You face a dilemma as you choose one or more modes for a spell or ability.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Melkotian Adjudicator:1",
+                "trigger": "DilemmaFacedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Jason Raish",
+        "flavorText": "The Melkotian court is the mind, and its advocates the phantoms of the past.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/873c9933-7939-4376-873c-6a5b3bbc98d4.jpg?1793359395"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -7113,6 +8077,42 @@
     }
 }
 
+// Starfleet Spanner Jockey
+{
+    "name": "Starfleet Spanner Jockey",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Defender\nAs long as you've cast a noncreature spell this turn, this creature can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "filter": "noncreature",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Chris Rallis",
+        "flavorText": "A resourceful crew can solve most any problem with elbow grease and dilithium.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16bc9660-2bef-4926-b0e6-f49b22817bea.jpg?1793361250"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sulu, Space Swashbuckler
 {
     "name": "Sulu, Space Swashbuckler",
@@ -7166,6 +8166,179 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Suurok-Class Science Vessel
+{
+    "name": "Suurok-Class Science Vessel",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact — Spacecraft",
+    "oracleText": "When this Spacecraft enters, draw a card.\nStation (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 5+.)\n5+ | Flying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Suurok-Class Science Vessel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Suurok-Class Science Vessel:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "artist": "Pace Wilder",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/7608943e-329e-41f9-b098-a0a94b01e6a1.jpg?1793361260"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Suus Mahna Practitioner
+{
+    "name": "Suus Mahna Practitioner",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Vulcan Officer",
+    "oracleText": "Strange new worlds — {4}{U}, {T}: Tap target creature. This ability costs {X} less to activate, where X is the number of differently named lands you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Suus Mahna Practitioner:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land",
+                    "aggregation": "DISTINCT_NAMES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Lucas Durham",
+        "flavorText": "Vulcans practice martial arts as a meditative exercise, though their physical aspects are sometimes useful.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb204e41-06a9-4ad2-81f2-a4d62f771cfa.jpg?1793361270"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
