@@ -3346,6 +3346,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   a colorless land token with all five basic land subtypes (Plains/Island/Swamp/Mountain/Forest) that
   taps for any color — i.e. the mana ability of each basic land type, without the basic supertype. The
   Overlord of the Hauntwoods trigger creates them `tapped = true`.
+- `CreateNewPlanet(count?, tapped? = true, controller?)` — New Planet land tokens (Star Trek): a
+  colorless "Token Land — Planet" with "{T}: Add one mana of any color." Planet has no intrinsic
+  mana ability, so the token spells it out. Defaults to `tapped = true`, as every creator prints it.
 - `CreateRoleToken(roleName, target)` — attach a Role aura token (a facade over `CreateAuraTokenEffect`).
 - `CreateAuraToken(tokenName, target)` — create a named predefined Aura token attached to the target
   object (`CreateAuraTokenEffect`, which Roles share): Fallout's Settlement (Preston Garvey,

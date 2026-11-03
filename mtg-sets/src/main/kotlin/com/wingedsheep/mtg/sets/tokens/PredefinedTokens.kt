@@ -728,6 +728,29 @@ object PredefinedTokens {
     }
 
     /**
+     * New Planet — the colorless Planet land token Star Trek's terraforming cards create
+     * (Gaseous Anomaly, David and Carol Marcus, Genesis Effect, …): "Token Land — Planet" with
+     * "{T}: Add one mana of any color." Planet is a non-basic land type with no intrinsic mana
+     * ability, so the ability is written out.
+     */
+    val NewPlanet = card("New Planet") {
+        typeLine = "Token Land — Planet"
+        oracleText = "{T}: Add one mana of any color."
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddAnyColorMana(1)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/2/1/21d855f7-fd5c-4eb4-b997-a905849806b9.jpg?1793364386"
+            artist = "David Frasheski"
+        }
+    }
+
+    /**
      * Munitions — a colorless artifact token created by Weapons Manufacturing with:
      * "When this token leaves the battlefield, it deals 2 damage to any target."
      */
@@ -1431,6 +1454,7 @@ object PredefinedTokens {
         Incubator,
         Drone,
         Everywhere,
+        NewPlanet,
         Munitions,
         Mutagen,
         Frog,
