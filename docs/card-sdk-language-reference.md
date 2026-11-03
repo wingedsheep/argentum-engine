@@ -10706,6 +10706,15 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     its printed characteristics from the captured entity's `CardComponent` via last-known information. Used by
     **Esoteric Duplicator** ("whenever you sacrifice this artifact or another artifact … create a token that's a
     copy of that artifact").
+  - **…and `GainControlEffect`, `TapUntapEffect` and `GrantKeywordEffect`.** "At the beginning of the next
+    combat this turn, gain control of that creature until end of turn. Untap it. It gains haste until end of
+    turn." names the creating ability's target, so each of the three bakes it to a `SpecificEntity` bound to
+    the object it names now — a creature that died or left and returned in between is a new object they don't
+    touch (CR 400.7). Where the fired trigger rebinds `TriggeringEntity` (an event trigger's own object, or a
+    step trigger's `watchedTarget` / `fireOnPlayer`), that reference stays late-bound (Goblin Flotilla's
+    "that creature gains first strike"). **The Wrath of Khan** chapter I = `DealDamage(4, creature) then
+    CreateDelayedTrigger(step = BEGIN_COMBAT, timing = THIS_TURN_ONLY, effect =
+    GainControl(creature, EndOfTurn) then Untap(creature) then GrantKeyword(HASTE, creature))`.
 
 ---
 

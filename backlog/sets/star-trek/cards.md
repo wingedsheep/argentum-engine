@@ -253,7 +253,7 @@
 - [x] The Needs of the Many
 - [ ] The Traveler
 - [ ] The Unicomplex
-- [ ] The Wrath of Khan
+- [x] The Wrath of Khan
 - [x] There's Coffee in that Nebula
 - [ ] Those Old Scientists
 - [ ] Tricorder

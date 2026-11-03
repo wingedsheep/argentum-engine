@@ -33,6 +33,9 @@ import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
 import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -111,7 +114,8 @@ class CreateDelayedTriggerExecutor(
                 storedCollections = context.pipeline.storedCollections - TRIGGER_SCOPED_COLLECTIONS
             )
         ) else context
-        val resolvedEffect = resolveContextTargets(effect.effect, bakingContext, state, bound, snapshots)
+        val resolvedEffect = resolveContextTargets(effect.effect, bakingContext, state, bound, snapshots,
+            lateBoundTriggering = effect.trigger != null || effect.watchedTarget != null || effect.fireOnPlayer != null)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
         // Long List of the Ents (LTR) needs "when you cast a creature spell of the type just
@@ -474,6 +478,23 @@ class CreateDelayedTriggerExecutor(
         else context.resolveTarget(target)
 
     /**
+     * [bakedId], bound to the battlefield object it names now. When the fired trigger rebinds
+     * [EffectTarget.TriggeringEntity] — to its own event's object ("whenever this creature blocks …,
+     * that creature gains first strike" — Goblin Flotilla), or to its watched entity / fireOnPlayer
+     * for a step-based one — that reference stays late-bound ([lateBoundTriggering]).
+     */
+    private fun boundObjectId(
+        target: EffectTarget,
+        context: EffectContext,
+        state: GameState,
+        bound: MutableList<CapturedObjectBinding>,
+        lateBoundTriggering: Boolean,
+    ): EntityId? {
+        if (lateBoundTriggering && target == EffectTarget.TriggeringEntity) return null
+        return bakedId(target, context)?.also { bind(it, state, bound) }
+    }
+
+    /**
      * The copiable snapshot of [id] as it last existed on the battlefield, when it has already left:
      * the triggering departure's snapshot ("when this dies") or the one riding on the departed card.
      * Null while [id] is still on the battlefield (the payoff reads it live) or nothing was frozen.
@@ -544,6 +565,7 @@ class CreateDelayedTriggerExecutor(
         state: GameState,
         bound: MutableList<CapturedObjectBinding>,
         snapshots: MutableList<EntitySnapshot>,
+        lateBoundTriggering: Boolean,
     ): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
@@ -598,6 +620,23 @@ class CreateDelayedTriggerExecutor(
                         enteredBattlefieldTimestamp = entryTimestamp
                     )
                 } else effect
+            }
+            // "At the beginning of the next combat this turn, gain control of that creature until
+            // end of turn. Untap it. It gains haste until end of turn." (The Wrath of Khan) — "that
+            // creature" is the creating ability's chosen target, and that context is gone when the
+            // trigger fires. Each is bound to the object it names now, so a creature that left and
+            // came back is a new object these don't touch (CR 400.7).
+            is GainControlEffect -> {
+                val resolvedId = boundObjectId(effect.target, context, state, bound, lateBoundTriggering)
+                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
+            }
+            is TapUntapEffect -> {
+                val resolvedId = boundObjectId(effect.target, context, state, bound, lateBoundTriggering)
+                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
+            }
+            is GrantKeywordEffect -> {
+                val resolvedId = boundObjectId(effect.target, context, state, bound, lateBoundTriggering)
+                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is AddCountersEffect -> {
                 val resolvedId = bakedId(effect.target, context)
@@ -686,7 +725,7 @@ class CreateDelayedTriggerExecutor(
                 if (target !== effect.target) effect.copy(target = target) else effect
             }
             is CompositeEffect -> effect.copy(
-                effects = effect.effects.map { resolveContextTargets(it, context, state, bound, snapshots) }
+                effects = effect.effects.map { resolveContextTargets(it, context, state, bound, snapshots, lateBoundTriggering) }
             )
             // "Flip a coin at the beginning of the next end step. If you lose the flip, sacrifice
             // that creature" (Goblin Kites) — the flip happens when the delayed trigger fires, but
@@ -694,17 +733,17 @@ class CreateDelayedTriggerExecutor(
             // effect gets. Without this the branch keeps an unresolvable ContextTarget and does
             // nothing when the trigger resolves.
             is FlipCoinEffect -> effect.copy(
-                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state, bound, snapshots) },
-                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state, bound, snapshots) },
+                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state, bound, snapshots, lateBoundTriggering) },
+                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state, bound, snapshots, lateBoundTriggering) },
             )
             // Every gate kind — "you may", "if [condition]", "you may pay … if you do", "[action].
             // If you do", … — is resolved when the delayed trigger fires, but the objects its
             // branches name were chosen now. Bake both branches and any effect the gate itself
             // carries (a MayPay cost, a DoAction action), whatever the gate kind.
             is GatedEffect -> {
-                val gate = resolveGateContextTargets(effect.gate, context, state, bound, snapshots)
-                val then = resolveContextTargets(effect.then, context, state, bound, snapshots)
-                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state, bound, snapshots) }
+                val gate = resolveGateContextTargets(effect.gate, context, state, bound, snapshots, lateBoundTriggering)
+                val then = resolveContextTargets(effect.then, context, state, bound, snapshots, lateBoundTriggering)
+                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state, bound, snapshots, lateBoundTriggering) }
                 if (gate !== effect.gate || then !== effect.then || otherwise !== effect.otherwise) {
                     effect.copy(gate = gate, then = then, otherwise = otherwise)
                 } else effect
@@ -723,14 +762,15 @@ class CreateDelayedTriggerExecutor(
         state: GameState,
         bound: MutableList<CapturedObjectBinding>,
         snapshots: MutableList<EntitySnapshot>,
+        lateBoundTriggering: Boolean,
     ): Gate =
         when (gate) {
             is Gate.MayPay -> {
-                val cost = resolveContextTargets(gate.cost, context, state, bound, snapshots)
+                val cost = resolveContextTargets(gate.cost, context, state, bound, snapshots, lateBoundTriggering)
                 if (cost !== gate.cost) gate.copy(cost = cost) else gate
             }
             is Gate.DoAction -> {
-                val action = resolveContextTargets(gate.action, context, state, bound, snapshots)
+                val action = resolveContextTargets(gate.action, context, state, bound, snapshots, lateBoundTriggering)
                 if (action !== gate.action) gate.copy(action = action) else gate
             }
             is Gate.MayDecide,
