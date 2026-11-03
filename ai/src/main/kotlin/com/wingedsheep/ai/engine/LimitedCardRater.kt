@@ -9,18 +9,19 @@ import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.EntersAsCopy
-import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Rates cards for limited (sealed/draft) play on a 0.0–5.0 scale.
@@ -447,7 +448,7 @@ object LimitedCardRater {
 
     private fun replacementScore(replacement: ReplacementEffect): Double = when {
         replacement is EntersAsCopy && replacement.copyOf == null &&
-            replacement.copyFilter.cardPredicates.any { it == com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature } ->
+            replacement.copyFilter.cardPredicates.any { it == CardPredicate.IsCreature } ->
             // A gate (raid) means it often enters as its printed self: half the value.
             ENTRY_COPY_VALUE * (if (replacement.condition != null) 0.5 else 1.0)
         else -> 0.0
