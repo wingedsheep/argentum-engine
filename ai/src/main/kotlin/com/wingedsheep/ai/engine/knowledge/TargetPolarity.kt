@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
+import com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
@@ -358,11 +359,19 @@ object TargetPolarityAnalyzer {
     private fun combine(readings: List<TargetPolarity>): TargetPolarity =
         readings.distinct().singleOrNull() ?: TargetPolarity.UNKNOWN
 
+    /** Whether two bound handles are picks of the same count-N requirement (`t0[0]` and `t0[1]`). */
+    private fun sameRequirement(a: EffectTarget, b: EffectTarget): Boolean =
+        a is EffectTarget.BoundVariable && b is EffectTarget.BoundVariable &&
+            a.name.substringBefore('[') == b.name.substringBefore('[')
+
     /** Whether [this] names a chosen target rather than a fixed player or object. */
     private fun EffectTarget.isSlot(): Boolean = this is EffectTarget.BoundVariable || this is EffectTarget.ContextTarget
 
     private fun slotOf(target: EffectTarget, requirements: List<TargetRequirement>): Int? = when (target) {
-        is EffectTarget.BoundVariable -> requirements.indexOfFirst { it.id == target.name }.takeIf { it >= 0 }
+        // A count-N requirement's handles are `id[0]`, `id[1]`, … (the DSL's destructured
+        // `targets(TargetPlayer(count = 2))`): each one is a pick of that requirement's slot.
+        is EffectTarget.BoundVariable -> target.name.substringBefore('[')
+            .let { id -> requirements.indexOfFirst { it.id == id } }.takeIf { it >= 0 }
         is EffectTarget.ContextTarget -> target.index.takeIf { it in requirements.indices }
         else -> null
     }
@@ -641,6 +650,20 @@ object TargetPolarityAnalyzer {
             is DrawCardsEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
             is GainLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
             is LoseLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
+            // "Exchange life totals with target player" (Psychic Transfer, Mister Negative): swapping
+            // with yourself does nothing, so the slot is the opponent the controller trades with.
+            // "Two target players exchange life totals" only pays its controller off when they are
+            // one of the two, so the player side is theirs and the other side an opponent's. When
+            // both sides are picks of one count-2 requirement (Axis of Mortality's `t0[0]`/`t0[1]`)
+            // they share a slot, and it reads as the player side: the controller picks itself first.
+            is ExchangeLifeTotalsEffect -> return when {
+                leaf.player.isSlot() && leaf.target.isSlot() ->
+                    if (sameRequirement(leaf.player, leaf.target)) listOf(leaf.player to TargetPolarity.BENEFICIAL)
+                    else listOf(leaf.player to TargetPolarity.BENEFICIAL, leaf.target to TargetPolarity.HARMFUL)
+                leaf.player.isSlot() -> listOf(leaf.player to TargetPolarity.BENEFICIAL)
+                leaf.target.isSlot() -> listOf(leaf.target to TargetPolarity.HARMFUL)
+                else -> emptyList()
+            }
             // "Look at target player's hand" reveals what it holds — information only worth having
             // about someone else. Beside a "that player draws" (Vendilion Clique, Oildeep Gearhulk)
             // the two disagree and the slot stays two-sided, as Sign in Blood's does.

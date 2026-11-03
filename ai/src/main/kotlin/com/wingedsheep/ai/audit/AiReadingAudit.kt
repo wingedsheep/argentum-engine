@@ -599,7 +599,9 @@ object AiReadingAudit {
     /** Whether [leaf] names target slot [index] — by the requirement's bound name or its position. */
     private fun names(leaf: Effect, req: TargetRequirement, index: Int): Boolean {
         val text = leaf.toString()
-        return (req.id != null && "BoundVariable(name=${req.id})" in text) || "ContextTarget(index=$index)" in text
+        // A count-N requirement's picks are `id[0]`, `id[1]`, …
+        return (req.id != null && ("BoundVariable(name=${req.id})" in text || "BoundVariable(name=${req.id}[" in text)) ||
+            "ContextTarget(index=$index)" in text
     }
 
     /**
