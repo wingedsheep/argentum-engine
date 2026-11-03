@@ -33,7 +33,7 @@
 - [x] Bajor
 - [x] Bat'leth
 - [x] Battle-Scarred Survivalist
-- [ ] Beckett Mariner, Impetuous Ensign
+- [x] Beckett Mariner, Impetuous Ensign
 - [ ] Blastoneuron
 - [x] Blood Crypt
 - [ ] Borg Cube

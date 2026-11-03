@@ -2555,6 +2555,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   KNOWLEDGE: { bg: 'rgba(20, 50, 90, 0.95)', border: 'rgba(120, 180, 230, 0.6)', color: '#a0c8e8' },
   PHYLACTERY: { bg: 'rgba(28, 18, 40, 0.95)', border: 'rgba(170, 130, 210, 0.7)', color: '#d4bfe8' },
   PEACE: { bg: 'rgba(30, 50, 70, 0.95)', border: 'rgba(200, 225, 245, 0.7)', color: '#e6f2fb' },
+  PROMOTION: { bg: 'rgba(60, 40, 14, 0.95)', border: 'rgba(235, 190, 90, 0.7)', color: '#f6dfa6' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
   MINUS_ZERO_MINUS_TWO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
