@@ -372,7 +372,7 @@ enum class IntentTag {
      * A lock moves nothing and its payoff is triggers that never happen, so no board simulation sees
      * it; without the tag the static read as "abilities not recognised" and the card as a blank. The
      * symmetric lock is a hoser — it shuts off its controller's own enter triggers too — so the draft
-     * heuristic prices it low. It is not opponent-facing: a symmetric lock hits its own side too.
+     * heuristic prices it low. It is not opponent-facing: a static has no target to aim, and the symmetric lock hits its own side too.
      */
     TRIGGER_LOCK,
 }

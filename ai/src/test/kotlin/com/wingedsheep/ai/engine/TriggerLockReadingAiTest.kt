@@ -24,7 +24,7 @@ class TriggerLockReadingAiTest : ScenarioTestBase() {
         test("a zone-change trigger lock reads as a trigger lock") {
             listOf(
                 "Tocatli Honor Guard", "Torpor Orb", "Hushbringer",
-                "Elesh Norn, Mother of Machines", "Doorkeeper Thrull",
+                "Elesh Norn, Mother of Machines", "Doorkeeper Thrull", "Karn, Argent Defender",
             ).forEach { name ->
                 withClue(name) { CardIntentAnalyzer.analyze(card(name)).tags shouldContain IntentTag.TRIGGER_LOCK }
             }
