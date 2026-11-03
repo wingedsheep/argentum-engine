@@ -5680,6 +5680,35 @@
     }
 }
 
+// The Holodeck
+{
+    "name": "The Holodeck",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayPlayCardsFromExile",
+                "filter": "permanent own:you",
+                "condition": "IsYourTurn",
+                "oncePerTurn": true,
+                "zones": [
+                    "Graveyard",
+                    "Sideboard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "RARE",
+        "artist": "Jessica Rossier",
+        "flavorText": "Early holodecks used holograms and force fields to simulate simple environments, but the addition of replicator technology in the 2360s allowed users to immerse all five senses in fictional worlds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57e830f5-564d-4899-87c0-74192c561fc8.jpg?1792508432"
+    }
+}
+
 // Troubling Tribbles
 {
     "name": "Troubling Tribbles",

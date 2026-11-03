@@ -13307,7 +13307,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `effectiveSneakCost` are read by `SneakCastEnumerator` (a graveyard loop) and four sites in
   `CastSpellHandler` (zone gate, both cost paths, the enters-tapped/bounce resolution). No
   exile-on-resolution (unlike flashback) — the creature simply moves graveyard → stack → battlefield.
-- `MayPlayCardsFromExile(filter, condition = null, withAnyManaType = false, withAnyManaColor = false, oncePerTurn = false, spendAsAnyColor = null)` — "you may **play** cards
+- `MayPlayCardsFromExile(filter, condition = null, withAnyManaType = false, withAnyManaColor = false, oncePerTurn = false, spendAsAnyColor = null, zones = setOf(Zone.EXILE))` — "you may **play** cards
   in exile matching `filter`" (spells *and* lands, CR 601.3). The sibling of
   `GrantMayCastFromLinkedExile` for the case where the playable set is a **filter over every exile
   zone** rather than the cards linked to this permanent. Tinybones, Bauble Burglar = "During your turn,
@@ -13352,6 +13352,22 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   names *which* mana stands in for a color (`COLORLESS`, `SNOW`) without rewriting the cost — the same
   field and semantics as `GrantMayPlayFromExile`'s `spendAsAnyColor`. Its ice counters come from a
   `RedirectZoneChangeWith(EXILE, AddCounters(ICE, 1, TriggeringEntity))` death shield.
+  `zones` widens the grant past exile: `Zone.GRAVEYARD` and `Zone.SIDEBOARD` ("outside the game",
+  CR 400.11a) reach only the granted player's **own** graveyard / sideboard ("a card you own"), while
+  `Zone.EXILE` keeps reaching every exile; any other zone is rejected at construction. The Holodeck =
+  "Once during each of your turns, you may play a permanent card you own from outside the game or from
+  your graveyard" =
+  `MayPlayCardsFromExile(GameObjectFilter.Permanent.ownedByYou(), condition = Conditions.IsYourTurn, oncePerTurn = true, zones = setOf(Zone.GRAVEYARD, Zone.SIDEBOARD))`
+  — one `oncePerTurn` allowance shared by both zones, lands included. A graveyard play that a
+  non-permission route also covers (Muldrotha's per-type allowance, Crucible of Worlds, the card's
+  own flashback/escape, an unlimited rider-free `MayCastFromGraveyard` such as Yawgmoth's Agenda) is
+  charged to that route instead. Beside a limited or rider-bearing `MayCastFromGraveyard` (Serra
+  Paragon) the player picks: the may-play offer (no `graveyardCastRider`) spends this grant and takes
+  no rider; the graveyard grant's offer spends that grant. A land play has no choice and spends this
+  grant.
+  The legal-action enumerator walks a sideboard only while a stored permission or such a static grant
+  could play from it, and the client's existing "outside the game" affordance (the one Wishes use)
+  shows the offers.
 - `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null, exileCastThisWay = CastThisWayExile.NONE)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,

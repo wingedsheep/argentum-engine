@@ -43,8 +43,10 @@ internal class CastAuthorization(
     val limitedTopLibraryCastSource: EntityId?,
     /** The Tomb of Aclazotz / Bilbo: the rider-bearing graveyard-cast grant that authorized this cast. */
     val graveyardCastRiderGrant: com.wingedsheep.sdk.scripting.MayCastFromGraveyard?,
-    /** A `MayPlayCardsFromExile(oncePerTurn)` granter (Evelyn, the Covetous) whose allowance this cast spends. */
-    val oncePerTurnExileGranter: EntityId?,
+    /** A `MayPlayCardsFromExile(oncePerTurn)` granter (Evelyn, the Covetous; The Holodeck) whose allowance this cast spends. */
+    val oncePerTurnPlayGranter: EntityId?,
+    /** The Holodeck: a graveyard cast that went through a static may-play grant, so no graveyard grant pays for it. */
+    val throughStaticPlayGrant: Boolean = false,
     /** Glimpse the Cosmos: the exile rider of the card's own `MayCastSelfFromZones` permission this cast went through. */
     val selfZoneExileRider: CastThisWayExile = CastThisWayExile.NONE,
     /** Kaldring, the Rimestaff: the `entersTapped` riders of the may-play permission this cast goes through. */
@@ -84,15 +86,30 @@ internal class CastRecords(
     private val predicateEvaluator: PredicateEvaluator,
 ) {
 
-    fun captureAuthorization(state: GameState, action: CastSpell, cardComponent: CardComponent) = CastAuthorization(
+    fun captureAuthorization(state: GameState, action: CastSpell, cardComponent: CardComponent): CastAuthorization {
+        val oncePerTurnPlayGranter = zoneResolver.findOncePerTurnPlayGranter(state, action, cardComponent)
+        // A graveyard cast through a static may-play grant (The Holodeck) takes no graveyard
+        // grant's rider: the player cast it through the other permission.
+        val throughStaticPlayGrant = oncePerTurnPlayGranter != null && action.cardId in state.getGraveyard(action.playerId)
+        return captureAuthorization(state, action, cardComponent, oncePerTurnPlayGranter, throughStaticPlayGrant)
+    }
+
+    private fun captureAuthorization(
+        state: GameState,
+        action: CastSpell,
+        cardComponent: CardComponent,
+        oncePerTurnPlayGranter: EntityId?,
+        throughStaticPlayGrant: Boolean,
+    ) = CastAuthorization(
         linkedExileGranter = zoneResolver.findLinkedExileGranterEntry(state, action.playerId, action.cardId),
         limitedTopLibraryCastSource = if (action.cardId in state.getLibrary(action.playerId)) {
             zoneResolver.findLimitedTopLibraryCastSourceToConsume(state, action.playerId, action.cardId)
         } else null,
-        graveyardCastRiderGrant = zoneResolver.findMayCastFromGraveyardGrant(
+        graveyardCastRiderGrant = if (throughStaticPlayGrant) null else zoneResolver.findMayCastFromGraveyardGrant(
             state, action.playerId, action.cardId, cardComponent, action.graveyardCastRider
         ),
-        oncePerTurnExileGranter = zoneResolver.findOncePerTurnExileGranter(state, action.playerId, action.cardId),
+        oncePerTurnPlayGranter = oncePerTurnPlayGranter,
+        throughStaticPlayGrant = throughStaticPlayGrant,
         selfZoneExileRider = zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
             ?.exileCastThisWay ?: CastThisWayExile.NONE,
         mayPlayEntersTapped = zoneResolver.castEntersTappedRiders(state, action, cardComponent),
@@ -300,7 +317,7 @@ internal class CastRecords(
      *
      * - Muldrotha: one permanent type per turn, recorded when [castingFromGraveyardViaMuldrotha].
      * - A once-per-turn linked-exile permission (Maralen, Fae Ascendant) marks its granter, and so
- *   does a once-per-turn filter-defined exile grant (Evelyn, the Covetous).
+ *   does a once-per-turn filter-defined play grant (Evelyn, the Covetous; The Holodeck).
      * - A limited top-of-library permission belongs to its granting permanent, not to the player: the
      *   source captured before the card left the library is marked; a source that leaves and returns
      *   is a new object with a fresh allowance, and an unlimited matching source consumes nothing.
@@ -331,7 +348,7 @@ internal class CastRecords(
         if (linkedExileGranter?.ability?.oncePerTurn == true) {
             newState = newState.updateEntity(linkedExileGranter.granterId) { c -> c.with(MayCastFromLinkedExileUsedThisTurnComponent) }
         }
-        authorization.oncePerTurnExileGranter?.let { granter ->
+        authorization.oncePerTurnPlayGranter?.let { granter ->
             newState = newState.updateEntity(granter) { c -> c.with(MayCastFromLinkedExileUsedThisTurnComponent) }
         }
 
@@ -349,7 +366,7 @@ internal class CastRecords(
             }
         }
 
-        if (castFromZone == Zone.GRAVEYARD) {
+        if (castFromZone == Zone.GRAVEYARD && !authorization.throughStaticPlayGrant) {
             when (val spent = zoneResolver.graveyardCastAllowanceToSpend(
                 originState, action.playerId, action.cardId, authorization.graveyardCastRiderGrant
             )) {
