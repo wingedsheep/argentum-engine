@@ -3013,8 +3013,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     the CR 603.12 round-trip, riding the carried trigger context; it just isn't settable from here.) Feeding the
     stored count to a modal's `dynamicChooseCount` is the "choose up to **that many** —" payoff (Hawkeye), and it
     is equally at home in "put **that many** +1/+1 counters" (`DynamicAmounts.timesPaid()` into `AddCounters`).
-  - Distinct from `Gate.MayPayX`, which is a single *variable-size* generic payment binding X: no cap, no repeat
-    unit, no colored pips. Both ask the decline question first: `MayPayX` then prompts `0..max`, where 0 is a
+  - Distinct from `Gate.MayPayX`, which is a single *variable-size* generic payment binding X (plus at most
+    a fixed `additionalManaCost` paid once): no cap, no repeat unit. Both ask the decline question first: `MayPayX` then prompts `0..max`, where 0 is a
     real payment ("pay {0}"), while `PayRepeatedly` prompts `1..cap`. Reach for `MayPayX` when the payment *is* X; for `PayRepeatedly` when a fixed unit —
     especially a colored one — repeats.
 
@@ -4636,8 +4636,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     (read via `DynamicAmount.XValue`). **X = 0 is a payment, not a decline** — "when you do, return
     target creature card with mana value X" can return a mana value 0 card (Isareth the Awakener,
     Halo Forager). With no mana available, yes pays X = 0 without the number prompt. A parameterless
-    `data object` (the {X} cost is implicit). One `MayPayXContinuation` answers both prompts
-    (`resumeMayPayX`), auto-tapping and binding X. Replaces
+    `additionalManaCost: ManaCost` (default empty) is the fixed part paid *with* X — "you may pay {X}{R}"
+    (Tilonalli's Summoner) is `Effects.MayPayX(then, additionalManaCost = ManaCost.parse("{R}"))`. The
+    number chooser's ceiling is then the largest X affordable on top of it, X = 0 still pays it, and
+    when it can't be paid at all the prompt is skipped and `otherwise` runs (as for `Gate.MayPay`).
+    One `MayPayXContinuation` answers both prompts (`resumeMayPayX`), auto-tapping and binding X. Replaces
     `Effects.MayPayX` (see "Optional & gated" below). For the *repeated fixed* cost — "pay {1} up
     to three times", where the count rather than the size is the variable — use
     `Effects.PayRepeatedly` (see "Mana" above) as the gate's cost or as a reflexive trigger's action.
