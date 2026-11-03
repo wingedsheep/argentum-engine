@@ -46,6 +46,8 @@ object StarTrekSet : MtgSet {
      * cards, so they open as the card's ordinary printing. The 1-in-25 Stardates (SDS) common replacement is
      * not modelled: that pack opens its seventh common instead. The main set's 80 rares include the ten
      * default-frame shock lands (#297–306).
+     * The land slot picks its 20 basic arts uniformly, where paper weights default frame 4:1:1 against
+     * the holodeck and away-team arts — a cosmetic difference.
      */
     override val boosterStrategy: BoosterStrategy by lazy {
         LandSlotBooster(

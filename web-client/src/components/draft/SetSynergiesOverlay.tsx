@@ -3041,7 +3041,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Klingon Warriors',
         colors: ['B', 'R'],
         keyCard: "L'Rell, Fierce Visionary",
-        description: 'Make hasty Klingon Warrior tokens each combat and sacrifice them, plus spare artifacts, for value before they leave. An aggressive attrition deck that keeps the pressure on and profits when its Warriors die.',
+        description: 'Make hasty Klingon Warrior tokens each combat and sacrifice them, plus spare artifacts, for value before they leave. An aggressive attrition deck that keeps the pressure on and profits when its creatures die.',
         creatureTypes: ['Klingon'],
       },
       {
@@ -3051,7 +3051,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         description: 'Play a land every turn and turn each one into Worm tokens, extra mana or cards, then pump the whole board for the last swing. A go-wide ramp deck that cashes in its land drops.',
       },
       {
-        name: 'Counters Medics',
+        name: '+1/+1 Counters',
         colors: ['G', 'W'],
         keyCard: 'Phlox, Unorthodox Doctor',
         description: 'Spread +1/+1 counters across the team, then draw a card each time a creature with a counter connects. A midrange counters deck that grows its creatures turn by turn and refuels through combat.',

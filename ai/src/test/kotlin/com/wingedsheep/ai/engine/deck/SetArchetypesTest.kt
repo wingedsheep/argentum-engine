@@ -491,7 +491,7 @@ class SetArchetypesTest : StringSpec({
             "Dilemmas",
             "Klingon Warriors",
             "Landfall",
-            "Counters Medics",
+            "+1/+1 Counters",
             "Borg Collective",
             "Noncreature Spells",
             "Graveyard Exploration",

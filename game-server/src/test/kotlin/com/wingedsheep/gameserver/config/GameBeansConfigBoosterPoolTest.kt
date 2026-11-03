@@ -809,8 +809,8 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             (rest.count { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC } >= 1) shouldBe true
             mythics += rest.count { it.metadata.rarity == Rarity.MYTHIC }
         }
-        // Rare slot 12.4 / 92.5 mythic, plus the wildcards' 2.6% and 1.0% main-set mythic shares.
-        (mythics.toDouble() / packs) shouldBe (0.170 plusOrMinus 0.03)
+        // Rare slot 12.4 / 92.5 mythic, plus the wildcards' 2.6% and 1.0% mythic shares, normalised by each mix's sum.
+        (mythics.toDouble() / packs) shouldBe (0.172 plusOrMinus 0.03)
         (duals.toDouble() / packs) shouldBe (0.5 plusOrMinus 0.05)
         repeat(20) {
             val pack = boosterGenerator.generateBooster("TRK", bannedCardNames = strategy.nonbasicLandNames)
