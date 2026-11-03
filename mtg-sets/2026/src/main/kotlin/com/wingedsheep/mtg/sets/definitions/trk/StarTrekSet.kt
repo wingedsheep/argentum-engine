@@ -9,8 +9,7 @@ import com.wingedsheep.sdk.model.Printing
  * Star Trek (2026)
  *
  * Scaffolded to hold the canonical [CardDefinition]s of cards whose earliest real printing is
- * Star Trek, with later sets contributing reprint [Printing] rows. Intentionally
- * incomplete relative to the official set.
+ * Star Trek, with later sets contributing reprint [Printing] rows.
  *
  * Set Code: TRK
  * Release Date: 2026-11-13
@@ -20,7 +19,6 @@ object StarTrekSet : MtgSet {
     override val code = "TRK"
     override val displayName = "Star Trek"
     override val releaseDate = "2026-11-13"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
