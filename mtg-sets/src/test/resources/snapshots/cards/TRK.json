@@ -3353,15 +3353,11 @@
                         },
                         {
                             "effect": {
-                                "type": "ForEach",
-                                "space": {
-                                    "type": "IterationSpace.Players",
-                                    "players": "Each"
-                                },
-                                "body": {
-                                    "type": "ForceSacrifice",
-                                    "filter": "creature",
-                                    "target": "Controller"
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
                                 }
                             },
                             "description": "Each player sacrifices a creature"

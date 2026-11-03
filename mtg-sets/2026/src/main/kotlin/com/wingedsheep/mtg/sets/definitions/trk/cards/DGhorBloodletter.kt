@@ -37,14 +37,7 @@ val DGhorBloodletter = card("D'Ghor Bloodletter") {
                 )
             },
             mode("Each player sacrifices a creature") {
-                effect = Effects.ForEachPlayer(
-                    players = Player.Each,
-                    effect = Effects.Sacrifice(
-                        filter = GameObjectFilter.Creature,
-                        count = 1,
-                        target = EffectTarget.Controller
-                    )
-                )
+                effect = Effects.Sacrifice(GameObjectFilter.Creature, 1, EffectTarget.PlayerRef(Player.Each))
             }
         ))
     }
