@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -425,6 +426,7 @@ object LimitedCardRater {
      * its size: on the creature it is attached to like a pump, battlefield-wide like an anthem.
      */
     private fun staticScore(static: StaticAbility): Double {
+        if (static is ConditionalStaticAbility) return staticScore(static.ability) * 0.6
         if (static is ModifyStats) {
             val total = static.powerBonus + static.toughnessBonus
             if (total > 0) {
@@ -491,6 +493,8 @@ object LimitedCardRater {
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private object LimitedScoreFold : EffectWalker.Fold<Double> {
+        override fun blink(exile: MoveToZoneEffect, returns: MoveToZoneEffect): Double = 0.3
+
         /**
          * A pipeline's "if those cards include …" branch scores as a conditional over both sides —
          * the same reading [EffectWalker.payoffLeaves] gives the intent and polarity readers.
@@ -521,6 +525,15 @@ object LimitedCardRater {
      */
     private fun scoreEffect(effect: Effect): Double {
         return when (effect) {
+            // Mill spends no opposing board material. Give its library pressure a small term;
+            // full library-depletion valuation belongs to the board evaluator.
+            is GatherCardsEffect -> {
+                val top = effect.source as? CardSource.TopOfLibrary
+                if (top?.isMill == true) {
+                    val amount = (top.count as? DynamicAmount.Fixed)?.amount ?: 4
+                    (amount.coerceAtLeast(0) * 0.05).coerceAtMost(0.4)
+                } else tagValue(CardIntentAnalyzer.leafTags(effect))
+            }
             // Removal — the most valuable effect type in limited
             is MoveToZoneEffect -> when {
                 effect.byDestruction -> DESTROY_SCORE     // destroy

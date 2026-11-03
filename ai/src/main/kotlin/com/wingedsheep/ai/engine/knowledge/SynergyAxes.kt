@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
@@ -266,6 +267,12 @@ object SynergyAxes {
                 addAll(effectFeeds(leaf.body))
                 continue
             }
+            // A global trigger produces the same resources when its event happens, including
+            // discards from a combat-damage loot. The event is a condition, not a new resource.
+            if (leaf is CreateGlobalTriggeredAbilityEffect) {
+                addAll(effectFeeds(leaf.ability.effect))
+                continue
+            }
             addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
             if (IntentTag.LIFEGAIN in tags) add(SynergyAxis.LIFEGAIN)
@@ -280,6 +287,12 @@ object SynergyAxes {
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
         is SurveilEffect -> setOf(SynergyAxis.GRAVEYARD)
+        is com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect -> {
+            val destination = leaf.destination as? com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone
+            if (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard && destination?.player == Player.You) {
+                setOf(SynergyAxis.GRAVEYARD)
+            } else emptySet()
+        }
         is GatherCardsEffect -> {
             val source = leaf.source
             if (source is CardSource.TopOfLibrary && source.isMill && source.player == Player.You) {

@@ -14,6 +14,8 @@ import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.Duration
@@ -310,6 +312,9 @@ object CardIntentAnalyzer {
             flashPermanent = card.typeLine.isPermanent && Keyword.FLASH in card.keywords,
             hasHaste = Keyword.HASTE in card.keywords,
             targetsOnlyOurPermanents = targetsOnlyOurPermanents(scripts),
+            protectionOnlyFromBlink = roots.any { EffectWalker.blinkMoves(it).isNotEmpty() } &&
+                leaves.none { IntentTag.PROTECTION in tagsOf(it) } &&
+                scripts.flatMap { it.staticAbilities }.none { IntentTag.PROTECTION in tagsOf(it) },
             expiringGroupPump = expiringGroupPump,
             selectsIntoHand = (gathersLibraryTop || wishFilters.isNotEmpty()) && movesToHand,
             wishFilters = if (movesToHand) wishFilters else emptyList(),
@@ -408,7 +413,8 @@ object CardIntentAnalyzer {
      * step" — is left out, as a gate's cost is.
      */
     private fun readingLeaves(effect: Effect, requirements: List<TargetRequirement> = emptyList()): List<Effect> {
-        val payoff = EffectWalker.payoffLeaves(effect)
+        val blinks = EffectWalker.blinkMoves(effect)
+        val payoff = EffectWalker.payoffLeaves(effect).filterNot { leaf -> blinks.any { it === leaf } }
         return payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
@@ -467,8 +473,18 @@ object CardIntentAnalyzer {
      * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
      * fold sees a gather and a move, each worth nothing alone.
      */
-    internal fun pipelineTags(root: Effect): Set<IntentTag> =
-        digTags(root) + destroyAllTags(root) + handDisruptionTags(root, eachPlayer = null) + regrowthTags(root)
+    internal fun pipelineTags(root: Effect): Set<IntentTag> = buildSet {
+        addAll(digTags(root))
+        addAll(destroyAllTags(root))
+        addAll(handDisruptionTags(root, eachPlayer = null))
+        addAll(regrowthTags(root))
+        if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
+        // readingLeaves opens the reflexive payoff but discards its composite boundary. Keep
+        // composition readings here too: Escape Protocol's exile-and-return is one blink.
+        EffectWalker.payoffLeaves(root).filterIsInstance<ReflexiveTriggerEffect>().forEach {
+            addAll(pipelineTags(it.reflexiveEffect))
+        }
+    }
 
     /**
      * "Return all nonland permanent cards from your graveyard to the battlefield" (Return to the
@@ -772,6 +788,7 @@ object CardIntentAnalyzer {
     internal fun leafTags(effect: Effect): Set<IntentTag> = tagsOf(effect)
 
     private fun tagsOf(effect: Effect): Set<IntentTag> = when (effect) {
+        is ReflexiveTriggerEffect -> analyzeEffect(effect.reflexiveEffect, effect.reflexiveTargetRequirements).tags
         is MoveToZoneEffect -> when {
             // A group-targeted move is a wrath; a single-target one is spot removal. Both only
             // count as removal when they take *someone else's* permanent off the battlefield.
@@ -916,10 +933,10 @@ object CardIntentAnalyzer {
         // ability it grants: "whenever you cast a spell, draw a card" (Chandra, Chill of Compliance)
         // is card draw and "… deals 5 damage to any target" (Chandra, Torch of Defiance) removal,
         // each paid out later, as a delayed trigger is read as the effect it fires.
-        // Only a lasting one: "this turn, whenever a creature dies, draw a card" on an instant is
-        // a draw only if something dies, and a DRAW reading would cash it into an empty end step.
+        // Temporary grants have the same payoff; HoldPolicy excludes them from automatic
+        // end-step card-flow windows because their event still needs to happen.
         is CreateGlobalTriggeredAbilityEffect ->
-            if (effect.duration == Duration.Permanent) effectTags(effect.ability.effect) else emptySet()
+            effectTags(effect.ability.effect)
 
         // "Target instant or sorcery card in your graveyard gains flashback" (Stingcaster Mage,
         // Snapcaster Mage): the card can be cast again from the graveyard — a recursion, paid for
@@ -1146,6 +1163,8 @@ object CardIntentAnalyzer {
     internal fun staticTags(static: StaticAbility): Set<IntentTag> = tagsOf(static)
 
     private fun tagsOf(static: StaticAbility): Set<IntentTag> = when (static) {
+        is ConditionalStaticAbility -> tagsOf(static.ability)
+        is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
         is ModifyStats -> when {
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
             static.powerBonus > 0 || static.toughnessBonus > 0 -> setOf(IntentTag.ANTHEM)

@@ -270,14 +270,25 @@ object TargetPolarityAnalyzer {
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
+        val blinks = EffectWalker.blinkMoves(effect)
+        for (move in blinks) slotOf(move.target, requirements)?.let { perSlot[it] += TargetPolarity.BENEFICIAL }
         val biteSources = mutableSetOf<Int>()
         for (leaf in EffectWalker.payoffLeaves(effect)) {
+            if (blinks.any { it === leaf }) continue
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
             // that is every target of that slot, so the body reads as the slot's; with several,
             // `ContextTarget(0)` walks all of them and names no one slot.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
-                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
+                if (requirements.size == 1) {
+                    val reading = forRequirements(leaf.body, requirements, definitions, source)
+                    val body = EffectWalker.payoffLeaves(leaf.body)
+                    // A mass bounce is used offensively; one-target rescues retain UNKNOWN below.
+                    perSlot[0] += if (reading.single() == TargetPolarity.UNKNOWN && body.isNotEmpty() && body.all {
+                        it is MoveToZoneEffect && it.destination == Zone.HAND &&
+                            (it.fromZone == null || it.fromZone == Zone.BATTLEFIELD)
+                    }) listOf(TargetPolarity.HARMFUL) else reading
+                }
                 continue
             }
             // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
@@ -323,6 +334,21 @@ object TargetPolarityAnalyzer {
                     }
                 }
                 continue
+            }
+            if (leaf is GatherCardsEffect) {
+                val top = leaf.source as? CardSource.TopOfLibrary
+                if (top?.isMill == true) {
+                    val slot = when (val player = top.player) {
+                        Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
+                            requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
+                        }.singleOrNull()
+                        is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
+                        is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }
+                            .takeIf { it >= 0 }
+                        else -> null
+                    }
+                    slot?.let { perSlot[it] += TargetPolarity.HARMFUL }
+                }
             }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
@@ -505,9 +531,9 @@ object TargetPolarityAnalyzer {
         if (filter.anyOf.isNotEmpty()) return null
         return when (val controller = filter.controllerPredicate) {
             is ControllerPredicate.ControlledByReferencedPlayer -> slotOf(controller.target, requirements)
-                ?.takeIf { requirements[it] is TargetPlayer }
-            ControllerPredicate.ControlledByTargetPlayer ->
-                requirements.indices.filter { requirements[it] is TargetPlayer }.singleOrNull()
+                ?.takeIf { (requirements[it] is TargetPlayer || requirements[it] is TargetOpponent) }
+            ControllerPredicate.ControlledByTargetPlayer, ControllerPredicate.ControlledByTargetOpponent ->
+                requirements.indices.filter { (requirements[it] is TargetPlayer || requirements[it] is TargetOpponent) }.singleOrNull()
             else -> null
         }
     }
