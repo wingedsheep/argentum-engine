@@ -11619,6 +11619,53 @@
     ]
 }
 
+// Zefram Cochrane, Warp Pioneer
+{
+    "name": "Zefram Cochrane, Warp Pioneer",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human Pilot",
+    "oracleText": "You may look at the top card of your library any time.\nOnce during each of your turns, you may cast an artifact spell from the top of your library.\nSpacecraft you control enter with two additional charge counters on them.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CastSpellTypesFromTopOfLibrary",
+                    "filter": "artifact",
+                    "maxCastsPerTurn": 1
+                },
+                "condition": "IsYourTurn"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "CHARGE",
+                "count": 2,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Spacecraft ctrl:you",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43ce2e91-9dce-4e86-a4b8-8d21e4e368ea.jpg?1793013553"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Zero, Incorporeal Sensate
 {
     "name": "Zero, Incorporeal Sensate",
