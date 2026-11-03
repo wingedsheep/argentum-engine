@@ -1,3 +1,71 @@
+// Adanto Vanguard
+{
+    "name": "Adanto Vanguard",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "As long as this creature is attacking, it gets +2/+0.\nPay 4 life: This creature gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Adanto Vanguard:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21c950d7-b4f6-4902-8c9a-98f2933f9fa5.jpg?1783935808",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers whenever a creature with a certain power attacks uses Adanto Vanguard's power after it has +2/+0 to determine whether it triggers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Admiral Beckett Brass
 {
     "name": "Admiral Beckett Brass",
@@ -160,6 +228,81 @@
     ]
 }
 
+// Ashes of the Abhorrent
+{
+    "name": "Ashes of the Abhorrent",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Players can't cast spells from graveyards or activate abilities of cards in graveyards.\nWhenever a creature dies, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashes of the Abhorrent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "fromZones": [
+                    "Graveyard"
+                ]
+            },
+            {
+                "type": "PlayersCantActivateAbilities",
+                "affected": "Each",
+                "permanentFilter": {
+                    "statePredicates": [
+                        {
+                            "type": "InZone",
+                            "zone": "Graveyard"
+                        }
+                    ]
+                },
+                "anyZone": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"Let no trace of the vampires' foulness remain.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e8eb264-dadb-440c-af85-273e755f1db6.jpg?1783935806",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities (such as embalm from the Amonkhet set) are activated abilities and will have colons in their reminder text. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected by Ashes of the Abhorrent."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Ashes of the Abhorrent doesn't stop players from playing land cards from the graveyard if an effect allows them to do so."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a creature dies at the same time that Ashes of the Abhorrent is destroyed, you'll gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Axis of Mortality
 {
     "name": "Axis of Mortality",
@@ -240,6 +383,59 @@
     },
     "colorIdentityOverride": [
         "GREEN",
+        "WHITE"
+    ]
+}
+
+// Bellowing Aegisaur
+{
+    "name": "Bellowing Aegisaur",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Enrage — Whenever this creature is dealt damage, put a +1/+1 counter on each other creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bellowing Aegisaur:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Enrage — Whenever this creature is dealt damage, put a +1/+1 counter on each other creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "Its roaring challenge is punctuated by the slam of its tail on the earth, rousing the herds of the plains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3e3b6c5-fd30-4d45-a122-ce60d5707357.jpg?1783935806",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If another creature you control is dealt lethal damage at the same time that Bellowing Aegisaur is dealt damage, the other creature won't be saved by the +1/+1 counter that would have been put on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -523,6 +719,55 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Bright Reprisal
+{
+    "name": "Bright Reprisal",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target attacking creature.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3340ffb9-9513-4551-ad64-821600596b2e.jpg?1783935805"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1752,6 +1997,75 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/e/aec26144-9acf-43b7-8614-1a2952df613d.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Duskborne Skymarcher
+{
+    "name": "Duskborne Skymarcher",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "Flying\n{W}, {T}: Target attacking Vampire gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Duskborne Skymarcher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Vampire attacking"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"The hour of Dusk is come.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/baa524bb-0ce7-4c30-93c3-ae15c3b05e92.jpg?1783935803"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Elaborate Firecannon
@@ -3170,6 +3484,82 @@
     ]
 }
 
+// Ixalan's Binding
+{
+    "name": "Ixalan's Binding",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\nYour opponents can't cast spells with the same name as the exiled card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ixalan's Binding:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "SharesNameWithLinkedExile"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3c8c31-ceb8-4a2c-beb6-0ff5f7b6ae07.jpg?1783935799",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "The exiled card returns to the battlefield immediately after Ixalan's Binding leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If Ixalan's Binding leaves the battlefield before its triggered ability resolves, the target permanent won't be exiled."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If the exiled card is a land card that's become a nonland permanent, Ixalan's Binding won't stop players from playing lands with that name."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If there is no exiled card (perhaps because the exiled permanent was a token or was a commander that was moved to the command zone in a Commander game), Ixalan's Binding won't stop players from casting spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ixalli's Diviner
 {
     "name": "Ixalli's Diviner",
@@ -3412,6 +3802,49 @@
     ]
 }
 
+// Kinjalli's Sunwing
+{
+    "name": "Kinjalli's Sunwing",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Flying\nCreatures your opponents control enter tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "flavorText": "\"There are moments when I feel I could fly like the sunwing. Far away I would soar, but always a golden gale pushes me back.\"\n—Huatli",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b9e0b0f-651a-44e6-8fb0-e46bfda0ada9.jpg?1783935798",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If a creature an opponent controls enters the battlefield at the same time that Kinjalli's Sunwing enters the battlefield under your control, Kinjalli's Sunwing's effect doesn't apply to your opponent's creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Kitesail Freebooter
 {
     "name": "Kitesail Freebooter",
@@ -3555,6 +3988,75 @@
         "flavorText": "\"I know these waters better than you know yourselves.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/4/34561f87-09d9-4f23-8a05-907fe1303e70.jpg?1783935779"
     }
+}
+
+// Legion Conquistador
+{
+    "name": "Legion Conquistador",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "When this creature enters, you may search your library for any number of cards named Legion Conquistador, reveal them, put them into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Legion Conquistador:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "name:Legion Conquistador"
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected1",
+                                "prompt": "Search your library for any number of cards named Legion Conquistador"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "The Legion of Dusk sailed from Torrezon in search of glory, riches, and the Immortal Sun.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f30590d7-59c7-4a1a-a8e5-3cc13f69bd41.jpg?1783935799"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Legion's Judgment
@@ -4502,6 +5004,140 @@
     ]
 }
 
+// Priest of the Wakening Sun
+{
+    "name": "Priest of the Wakening Sun",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "At the beginning of your upkeep, you may reveal a Dinosaur card from your hand. If you do, you gain 2 life.\n{3}{W}{W}, Sacrifice this creature: Search your library for a Dinosaur card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Priest of the Wakening Sun:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "Dinosaur"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may reveal a Dinosaur card from your hand"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1",
+                            "revealToSelf": false
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Priest of the Wakening Sun:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{W}{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "Dinosaur"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a Dinosaur card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/051dc73e-f04a-4901-b0ed-3b33c33ac72f.jpg?1783935795"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Prosperous Pirates
 {
     "name": "Prosperous Pirates",
@@ -4741,6 +5377,67 @@
         "artist": "Mark Behm",
         "flavorText": "\"Let the blood of the impure flow through you. Only the blessings of the golden city will purge its acrid taste from your mouth.\"\n—High Marshal Arguel",
         "imageUri": "https://cards.scryfall.io/normal/front/f/0/f06c0007-299e-4d71-99c3-f905d942759d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Rallying Roar
+{
+    "name": "Rallying Roar",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+1 until end of turn. Untap them.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "\"The sun's strength sings in our hearts! I have never been more proud of my home and my people.\"\n—Huatli",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d03a5efb-fde9-4bba-be80-d073eba2ad8d.jpg?1783935794",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Rallying Roar affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +1/+1."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Untapped creatures you control get +1/+1 even though Rallying Roar doesn't untap them."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5286,6 +5983,44 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ritual of Rejuvenation
+{
+    "name": "Ritual of Rejuvenation",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 4 life.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"Nothing is more sacred than the gift of blood. Blessed are the vein that empties and the heart that is renewed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/691c0acb-1882-482f-9513-e7d010cc1d15.jpg?1783935794"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6478,6 +7213,77 @@
     ]
 }
 
+// Steadfast Armasaur
+{
+    "name": "Steadfast Armasaur",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Vigilance\n{1}{W}, {T}: This creature deals damage equal to its toughness to target creature blocking or blocked by it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Steadfast Armasaur:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Toughness"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsCombatPairedWithSource"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Steadfast Armasaur deals damage equal to its toughness to target creature blocking or blocked by it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"Like the mighty armasaur, we will defend against all who invade our shores.\"\n—Itzama the Crested",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/197934d5-726c-4cd3-a934-3d6449a5a56e.jpg?1783935790"
+    }
+}
+
 // Storm Fleet Aerialist
 {
     "name": "Storm Fleet Aerialist",
@@ -7202,6 +8008,30 @@
     ]
 }
 
+// Tocatli Honor Guard
+{
+    "name": "Tocatli Honor Guard",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Creatures entering don't cause abilities to trigger.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "SuppressZoneChangeTriggers"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "flavorText": "The glorious city of Pachatupa is the center of the Sun Empire, and Tocatli, the emperor's palace, is its glowing heart.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3fc3501-e7bd-4589-98c5-4476258842ea.jpg"
+    }
+}
+
 // Treasure Map
 {
     "name": "Treasure Map",
@@ -7474,6 +8304,76 @@
     ]
 }
 
+// Vampire's Zeal
+{
+    "name": "Vampire's Zeal",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If it's a Vampire, it gains first strike until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Vampire"
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Gabor Szikszai",
+        "flavorText": "The Feast of Blood sends new life essence flowing through the vampire who partakes, manifesting as even greater strength and speed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88c507f6-c178-40be-bca7-3bd5adb1c5b1.jpg?1783935788"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Vanquish the Weak
 {
     "name": "Vanquish the Weak",
@@ -7740,6 +8640,71 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wakening Sun's Avatar
+{
+    "name": "Wakening Sun's Avatar",
+    "manaCost": "{5}{W}{W}{W}",
+    "typeLine": "Creature — Dinosaur Avatar",
+    "oracleText": "When this creature enters, if you cast it from your hand, destroy all non-Dinosaur creatures.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wakening Sun's Avatar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Dinosaur"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "interveningIf": "WasCastFromHand",
+                "descriptionOverride": "When this creature enters, if you cast it from your hand, destroy all non-Dinosaur creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"Kinjalli's encompassing rays herald new life in the moment of the sun's dawning.\"\n—Chitlati, Lightning Rider",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/7434abe4-87eb-4709-a26d-4e23154b4d31.jpg?1783935787"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
