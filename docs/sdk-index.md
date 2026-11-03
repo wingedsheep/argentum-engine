@@ -607,6 +607,7 @@ Families:
 
 ## Duration
 
+- `Duration.DuringAffectedPlayersNextTurn` — Effect applies only **during** the affected player's next turn — "each opponent can't cast instant or sorcery spells during that player's next turn" (Sphinx's Decree, Azor, the Lawbringer).
 - `Duration.EndOfAffectedControllersNextTurn` — Effect lasts until the end of the affected entity's controller's next turn — "that creature can't attack during its controller's next turn" (Wall of Dust).
 - `Duration.EndOfCombat` — Effect lasts until end of combat.
 - `Duration.EndOfTurn` — Effect lasts until end of turn.

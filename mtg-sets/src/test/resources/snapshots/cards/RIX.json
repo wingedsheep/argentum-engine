@@ -291,6 +291,86 @@
     ]
 }
 
+// Azor, the Lawbringer
+{
+    "name": "Azor, the Lawbringer",
+    "manaCost": "{2}{W}{W}{U}{U}",
+    "typeLine": "Legendary Creature — Sphinx",
+    "oracleText": "Flying\nWhen Azor enters, each opponent can't cast instant or sorcery spells during that player's next turn.\nWhenever Azor attacks, you may pay {X}{W}{U}{U}. If you do, you gain X life and draw X cards.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Azor, the Lawbringer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CantCastSpells",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    },
+                    "duration": "DuringAffectedPlayersNextTurn",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Azor, the Lawbringer:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPayX",
+                        "additionalManaCost": "{W}{U}{U}"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainLife",
+                                "amount": "XValue"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": "XValue"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may pay {X}{W}{U}{U}. If you do, you gain X life and draw X cards."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30dc237e-b28a-4b65-9790-6b434828bf2e.jpg?1783935277"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Bombard
 {
     "name": "Bombard",
@@ -3686,6 +3766,45 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sphinx's Decree
+{
+    "name": "Sphinx's Decree",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent can't cast instant or sorcery spells during that player's next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "CantCastSpells",
+            "target": {
+                "type": "PlayerRef",
+                "player": "EachOpponent"
+            },
+            "duration": "DuringAffectedPlayersNextTurn",
+            "spellFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "Or",
+                        "predicates": [
+                            "IsInstant",
+                            "IsSorcery"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"Be still.\"\n—Azor",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5058a729-9739-4548-b420-deebbc0950b7.jpg?1783935331"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

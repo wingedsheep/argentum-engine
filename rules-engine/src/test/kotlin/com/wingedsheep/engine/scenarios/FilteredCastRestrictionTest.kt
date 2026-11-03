@@ -234,6 +234,23 @@ class FilteredCastRestrictionTest : FunSpec({
         banned(me) shouldBe false
         banned(opp) shouldBe false
     }
+    test("a during-that-player's-next-turn ban made on the holder's own turn sleeps until their next turn") {
+        val d = setup(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        ban(d, GameObjectFilter.Creature, Duration.DuringAffectedPlayersNextTurn)
+        fun banned() = d.state.getEntity(me)?.get<CantCastSpellsComponent>() != null
+        val body = d.putCardInHand(me, creature.name)
+        // The current turn never counts, even though it is the holder's own.
+        offers(d, body).isEmpty() shouldBe false
+        // Survives its creating turn's cleanup and the opponent's turn, dormant.
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, opp)
+        banned() shouldBe true
+        // The holder's next turn: binding.
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, me)
+        offers(d, body).isEmpty() shouldBe true
+        // Gone at that turn's cleanup.
+        d.passPriorityUntil(Step.UPKEEP, opp)
+        banned() shouldBe false
+    }
     test("an until-your-next-turn ban locks a dynamic mana value at resolution and lifts on the controller's next turn") {
         val d = setup(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
         val reference = d.putCardInHand(me, "Grizzly Bears")
