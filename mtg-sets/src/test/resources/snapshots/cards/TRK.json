@@ -4678,6 +4678,88 @@
     ]
 }
 
+// Gwyndala, the Progeny
+{
+    "name": "Gwyndala, the Progeny",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Vau-N'Akat Advisor",
+    "oracleText": "When Gwyndala enters, create a colorless Equipment artifact token named Neuroflux Heirloom with \"Equipped creature gets +1/+1\" and equip {2}. Attach it to Gwyndala.\n{2}: Each Equipment token you control becomes a copy of target Equipment you control until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gwyndala, the Progeny:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Neuroflux Heirloom"
+                        },
+                        {
+                            "type": "AttachTargetEquipmentToCreature",
+                            "equipmentTarget": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            },
+                            "creatureTarget": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Gwyndala enters, create a colorless Equipment artifact token named Neuroflux Heirloom with \"Equipped creature gets +1/+1\" and equip {2}. Attach it to Gwyndala."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gwyndala, the Progeny:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": {
+                        "baseFilter": "permanent Equipment token ctrl:you"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Equipment ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Pierre Raveneau",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a82f5db5-787e-4e4a-ab3c-4a488c6f4990.jpg?1793187993"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // H.M.S. Bounty, Unlikely Timeship
 {
     "name": "H.M.S. Bounty, Unlikely Timeship",
