@@ -25,7 +25,7 @@ import io.kotest.matchers.shouldBe
  *
  * player2 controls Kai Winn with a name already chosen; player1 (the active player, its opponent)
  * casts and activates. The interesting leg is a source its own cost sacrificed: it is matched
- * against the chosen name by its last-known name (CR 113.7a), the live object being gone.
+ * against the chosen name by its last-known name, the live object being gone.
  */
 class KaiWinnFaithlessLeaderScenarioTest : FunSpec({
 

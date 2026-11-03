@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Silencer's shape). One printed trigger with two events: [Triggers.or] of a cast and an
  * activation, both filtered by `namedFromChosenComponent()`. "An ability" is unqualified, so mana
  * abilities count (`includeManaAbilities`). A source its own cost sacrificed is matched by its
- * last-known name (CR 113.7a).
+ * last-known name, as it last existed on the battlefield.
  */
 val KaiWinnFaithlessLeader = card("Kai Winn, Faithless Leader") {
     manaCost = "{1}{B}"
