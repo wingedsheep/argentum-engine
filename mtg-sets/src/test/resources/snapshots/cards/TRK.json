@@ -18549,6 +18549,152 @@
     ]
 }
 
+// The Wrath of Khan
+{
+    "name": "The Wrath of Khan",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — This Saga deals 4 damage to target creature an opponent controls. At the beginning of the next combat this turn, gain control of that creature until end of turn. Untap it. It gains haste until end of turn.\nII — You may exile a card from your hand. If you do, draw a card.\nIII — Each opponent sacrifices a nontoken permanent of their choice.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "BEGIN_COMBAT",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GainControl",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "duration": "EndOfTurn"
+                                    },
+                                    {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "tap": false
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "fireOnce": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "exiled",
+                                        "prompt": "Choose a card to exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "exiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent nontoken",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Kirk DouPonce",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/426d627e-bb88-4879-8d9f-db1babf22b15.jpg?1792510667"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // There's Coffee in that Nebula
 {
     "name": "There's Coffee in that Nebula",
