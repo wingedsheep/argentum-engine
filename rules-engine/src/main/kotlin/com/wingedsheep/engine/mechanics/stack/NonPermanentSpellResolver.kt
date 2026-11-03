@@ -746,6 +746,16 @@ internal class NonPermanentSpellResolver(
                 .linkExiledToSource(newState, spellId, redirect.linkSourceId)
         }
 
+        // A card-intrinsic "shuffle it into its owner's library instead" redirect (Nexus of Fate,
+        // Progenitus) shuffles the resolved card in, as the countered and fizzled paths already
+        // do. Skipped when the card's own Omen / self-shuffle clause already shuffled above.
+        if (destinationZone == Zone.LIBRARY && redirect.shuffleIntoLibrary &&
+            !destination.omenFaceShuffle && !destination.selfShuffleIntoLibrary
+        ) {
+            newState = SpellZoneMoves.shuffleOwnerLibrary(newState, ownerId)
+            events.add(LibraryShuffledEvent(ownerId))
+        }
+
         redirect.additionalEffect?.let { extra ->
             val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
                 zones,

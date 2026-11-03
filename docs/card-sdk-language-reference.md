@@ -19450,11 +19450,12 @@ The priority groups are (CR 616.1a–f):
   moving card's *own* ability referring to itself ("If ~ would be put into a graveyard from anywhere,
   …"). It then functions in **every** zone (CR 614.12), carried on the card entity via
   `SelfZoneRedirectComponent` rather than scanned off the battlefield, so the card is redirected whether
-  it dies, is milled, is discarded, or is countered on the stack — and it stops applying only while the
+  it dies, is milled, is discarded, is countered on the stack, or finishes resolving as an instant or
+  sorcery (Nexus of Fate) — and it stops applying only while the
   source is on the battlefield with all abilities removed. `shuffleIntoLibrary = true` (with
   `newDestination = Zone.LIBRARY`) shuffles the card in rather than placing it on top; `reveal = true`
   is the flavor "reveal it and …" (informational — a public-zone card is already known). Darksteel
-  Colossus / Progenitus: `RedirectZoneChange(newDestination = Zone.LIBRARY, appliesTo =
+  Colossus / Progenitus / Nexus of Fate: `RedirectZoneChange(newDestination = Zone.LIBRARY, appliesTo =
   ZoneChangeEvent(to = Zone.GRAVEYARD), selfOnly = true, shuffleIntoLibrary = true, reveal = true)`.
   **Cause qualifier:** `requiredCause` narrows the replacement to a particular *reason* for the move, on
   top of the from/to zones — the zones alone can't tell "hand → graveyard because you discarded to hand

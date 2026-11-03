@@ -6352,6 +6352,47 @@
     ]
 }
 
+// Nexus of Fate
+{
+    "name": "Nexus of Fate",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Take an extra turn after this one.\nIf Nexus of Fate would be put into a graveyard from anywhere, reveal Nexus of Fate and shuffle it into its owner's library instead.",
+    "script": {
+        "spellEffect": "TakeExtraTurn",
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Library",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true,
+                "shuffleIntoLibrary": true,
+                "reveal": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "306",
+        "rarity": "MYTHIC",
+        "artist": "Mike Bierek",
+        "flavorText": "Sarkhan wandered into a tomb and back in time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f163cfbf-6df6-4af5-9fe4-23b0d511586a.jpg?1783934478",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Nexus of Fate's last ability applies if it would be put into a graveyard in any way, including while it's resolving."
+            }
+        ],
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nicol Bolas, the Ravager
 {
     "name": "Nicol Bolas, the Ravager",
