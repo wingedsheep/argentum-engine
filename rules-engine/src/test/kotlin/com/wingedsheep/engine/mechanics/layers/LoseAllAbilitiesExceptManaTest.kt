@@ -7,7 +7,12 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.scripting.ChoiceType
+import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -54,6 +59,18 @@ class LoseAllAbilitiesExceptManaTest : ScenarioTestBase() {
         }
     }
 
+    private val choiceLand = card("Test Dusk Choice Land") {
+        typeLine = "Land"
+        replacementEffect(EntersWithChoice(ChoiceType.COLOR))
+        replacementEffect(EntersWithCounters(CounterType.CHARGE, count = 2, selfOnly = true))
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddColorlessMana(1)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+    }
+
     private val blank = card("Test Land Blank") {
         manaCost = "{0}"
         typeLine = "Instant"
@@ -76,6 +93,7 @@ class LoseAllAbilitiesExceptManaTest : ScenarioTestBase() {
         cardRegistry.register(sun)
         cardRegistry.register(land)
         cardRegistry.register(blank)
+        cardRegistry.register(choiceLand)
         cardRegistry.register(reanimateLand)
 
         val manaAbility = { cardRegistry.getCard("Test Dusk Land")!!.script.activatedAbilities.first { it.isManaAbility } }
@@ -172,6 +190,24 @@ class LoseAllAbilitiesExceptManaTest : ScenarioTestBase() {
             val landId = game.findPermanent("Test Dusk Land")!!
             game.state.getEntity(landId)!!.has<TappedComponent>() shouldBe false
             game.getLifeTotal(1) shouldBe 20
+        }
+
+        test("a land put onto the battlefield under it neither asks its as-enters choice nor gets its counters") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Test Dusk Sun")
+                .withCardInGraveyard(1, "Test Dusk Choice Land")
+                .withCardInHand(1, "Test Land Return")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val inGraveyard = game.state.getGraveyard(game.player1Id).single()
+            game.castSpellTargetingGraveyardCard(1, "Test Land Return", listOf(inGraveyard)).error shouldBe null
+            game.resolveStack()
+
+            game.hasPendingDecision() shouldBe false
+            val landId = game.findPermanent("Test Dusk Choice Land")!!
+            (game.state.getEntity(landId)!!.get<CountersComponent>()?.getCount(CounterType.CHARGE) ?: 0) shouldBe 0
         }
 
         test("without the static, the same land enters tapped and triggers") {

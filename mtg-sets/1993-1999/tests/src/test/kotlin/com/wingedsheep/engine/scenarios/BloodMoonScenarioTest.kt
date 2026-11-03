@@ -1,11 +1,14 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.drk.cards.BloodMoon
+import com.wingedsheep.mtg.sets.definitions.ulg.cards.TreetopVillage
 import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
@@ -69,6 +72,21 @@ class BloodMoonScenarioTest : FunSpec({
         )
         val pool = driver.state.getEntity(player)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
         pool.red shouldBe 1
+    }
+
+    test("a nonbasic land played under it has already lost enters tapped (CR 614.12)") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(BloodMoon, forest, TreetopVillage))
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val player = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(player, "Blood Moon")
+        val village = driver.putCardInHand(player, "Treetop Village")
+
+        driver.submitSuccess(PlayLand(player, village))
+
+        driver.isTapped(village) shouldBe false
+        driver.state.projectedState.hasSubtype(village, "Mountain").shouldBeTrue()
     }
 
     test("a nonbasic land loses its non-basic land types too (Rule 305.7)") {

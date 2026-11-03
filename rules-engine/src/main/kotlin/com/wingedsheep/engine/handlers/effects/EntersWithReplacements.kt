@@ -148,7 +148,10 @@ object EntersWithReplacements {
         val events = mutableListOf<GameEvent>()
         val counterTotals = suppliedCounters?.toMutableMap()
 
-        val (ownState, ownEvents) = if (suppliedCounters != null && container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
+        // Its own "enters with" replacements are gone if a battlefield static strips its abilities
+        // as it would exist there (Humility, Blood Sun — CR 614.12).
+        val ownLost = EntryCharacteristics.wouldLoseAllAbilities(state, enteringEntityId, enteringControllerId, cardRegistry, predicateEvaluator)
+        val (ownState, ownEvents) = if (ownLost || suppliedCounters != null && container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
             newState to emptyList<GameEvent>()
         } else applyFromDefinition(
             newState, enteringEntityId, cardDef, enteringControllerId, xValue,
