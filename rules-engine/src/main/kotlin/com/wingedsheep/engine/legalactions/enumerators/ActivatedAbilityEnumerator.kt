@@ -202,7 +202,8 @@ class ActivatedAbilityEnumerator(
                                 AbilityCostReduction.apply(costWithDefinedX, ability, state, entityId, playerId, context.targetUtils, predicateEvaluator = predicateEvaluator),
                                 state, entityId, playerId, ability.onceOnlyKind, ability.isManaAbility,
                                 // Targets are chosen after this offer; a targeted ability is priced
-                                // optimistically for a "that target this creature" reduction.
+                                // optimistically: a `targeting` reduction applies, a `targeting` tax
+                                // (Kopala) is left off until the targets are known at payment.
                                 chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null,
                                 abilityKeyword = ability.keyword,
                                 isLoyaltyAbility = ability.isPlaneswalkerAbility,

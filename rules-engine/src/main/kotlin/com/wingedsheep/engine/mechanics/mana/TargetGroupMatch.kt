@@ -29,6 +29,7 @@ internal fun anyTargetInGroup(
     if (targetIds.isEmpty()) return false
     val context = PredicateContext(controllerId = controllerId, sourceId = staticSourceId)
     val projected = state.projectedState
+    val battlefield = state.getBattlefield()
     return targetIds.any { targetId ->
         when (val scope = group.scope) {
             is Scope.Self -> targetId == staticSourceId
@@ -37,7 +38,9 @@ internal fun anyTargetInGroup(
                 state.getEntity(staticSourceId)?.get<AttachedToComponent>()?.targetId == targetId
             is Scope.SoulbondPair -> SoulbondPairing.isInPairOf(state, staticSourceId, targetId)
             is Scope.ChosenCreature -> state.chosenCreatureOf(staticSourceId) == targetId
-            is Scope.Battlefield ->
+            // "A Merfolk you control" is a permanent (CR 109.2): a Merfolk spell on the stack, or a
+            // Merfolk card in a graveyard, is not one, however its type line reads.
+            is Scope.Battlefield -> targetId in battlefield &&
                 predicateEvaluator.matches(state, projected, targetId, group.baseFilter, context)
         }
     }

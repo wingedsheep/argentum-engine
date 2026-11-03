@@ -1143,11 +1143,16 @@ object CardIntentAnalyzer {
         else -> emptySet()
     }
 
+    /** Exhaustive, so a new cost-increase variant has to decide whether it reads as a tax. */
     private fun taxes(modification: CostModification): Boolean = when (modification) {
         is CostModification.IncreaseGeneric, is CostModification.IncreaseGenericBy,
+        is CostModification.IncreaseGenericIfAnyTargetMatches,
+        is CostModification.IncreaseGenericPerOtherSpellThisTurn,
         is CostModification.IncreaseColored, is CostModification.IncreaseColoredPerUnit,
         is CostModification.IncreaseLife -> true
-        else -> false
+        is CostModification.ReduceGeneric, is CostModification.ReduceGenericBy,
+        is CostModification.ReduceColored, is CostModification.ReduceColoredPerUnit,
+        is CostModification.ReduceColoredIfAnyTargetMatches -> false
     }
 
     /**

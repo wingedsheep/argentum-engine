@@ -50,6 +50,26 @@ class KopalaWardenOfWavesScenarioTest : ScenarioTestBase() {
             game.castSpell(2, "Shock", game.findPermanent("Grizzly Bears")!!).error shouldBe null
         }
 
+        test("a counterspell aimed at a Merfolk spell on the stack is not taxed — it isn't a permanent yet") {
+            val game = scenario()
+                .withPlayers("Kopala", "Opponent")
+                .withCardOnBattlefield(1, "Kopala, Warden of Waves")
+                .withCardInHand(1, "Merfolk of the Pearl Trident")
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withCardInHand(2, "Cancel")
+                .withLandsOnBattlefield(2, "Island", 3)
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(1, "Merfolk of the Pearl Trident").error shouldBe null
+            game.passPriority()
+            withClue("three Islands pay Cancel's printed {1}{U}{U}") {
+                game.castSpellTargetingStackSpell(2, "Cancel", "Merfolk of the Pearl Trident").error shouldBe null
+            }
+        }
+
         test("an opponent's {T} ability targeting Kopala gains a {2} cost") {
             fun ping(game: TestGame, targetName: String) = game.execute(
                 ActivateAbility(
@@ -60,8 +80,8 @@ class KopalaWardenOfWavesScenarioTest : ScenarioTestBase() {
                 )
             ).also { if (game.getPendingDecision() is SelectManaSourcesDecision) game.submitManaSourcesAutoPay() }
 
-            withClue("no mana: the taxed {2}, {T} can't be paid") {
-                ping(board(sorcerer = true, mountains = 0), "Kopala, Warden of Waves").error shouldNotBe null
+            withClue("one Mountain: the taxed {2}, {T} can't be paid") {
+                ping(board(sorcerer = true, mountains = 1), "Kopala, Warden of Waves").error shouldNotBe null
             }
             withClue("the untaxed {T} still pings a non-Merfolk") {
                 ping(board(sorcerer = true, mountains = 0), "Grizzly Bears").error shouldBe null
