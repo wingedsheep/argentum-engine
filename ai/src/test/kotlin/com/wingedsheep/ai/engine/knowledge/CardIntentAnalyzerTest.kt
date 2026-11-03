@@ -274,6 +274,10 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
                     intentOf(name).tags shouldNotContain IntentTag.REMOVAL
                 }
             }
+            withClue("Tilonalli's Summoner: exiling \"those tokens\" it made at the end step is its price, not removal") {
+                intentOf("Tilonalli's Summoner").tags shouldNotContain IntentTag.REMOVAL
+                intentOf("Tilonalli's Summoner").tags shouldContain IntentTag.TOKEN_MAKER
+            }
         }
 
         test("the catalog is off by default and answers nothing") {

@@ -4089,6 +4089,105 @@
     ]
 }
 
+// Tilonalli's Summoner
+{
+    "name": "Tilonalli's Summoner",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nWhenever this creature attacks, you may pay {X}{R}. If you do, create X 1/1 red Elemental creature tokens that are tapped and attacking. At the beginning of the next end step, exile those tokens unless you have the city's blessing.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tilonalli's Summoner:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPayX",
+                        "additionalManaCost": "{R}"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "count": "XValue",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "tapped": true,
+                                "attacking": true,
+                                "attackDefender": "CONTROLLER_CHOOSES"
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "Not",
+                                            "condition": "PlayerHasCitysBlessing"
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Collection",
+                                            "collection": "createdTokens"
+                                        },
+                                        "body": {
+                                            "type": "MoveToZone",
+                                            "target": "IterationEntity",
+                                            "destination": "Exile"
+                                        }
+                                    }
+                                },
+                                "carryCollections": [
+                                    "createdTokens"
+                                ]
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may pay {X}{R}. If you do, create X 1/1 red Elemental creature tokens that are tapped and attacking. At the beginning of the next end step, exile those tokens unless you have the city's blessing."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b107726-3a44-4b0f-86ef-4dbbf4473e7e.jpg?1783935291",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "As each Elemental token enters the battlefield, you choose which opponent or opposing planeswalker it's attacking. It doesn't have to attack the same player or planeswalker that Tilonalli's Summoner is attacking."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Whether you have the city's blessing is checked only as the delayed triggered ability resolves during the end step. The tokens you create can help you ascend."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tomb Robber
 {
     "name": "Tomb Robber",

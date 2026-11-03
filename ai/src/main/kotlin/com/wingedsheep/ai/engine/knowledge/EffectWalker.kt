@@ -12,6 +12,8 @@ import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
@@ -194,12 +196,25 @@ object EffectWalker {
         val putOntoBattlefield = (siblings + fired)
             .filter { it is MoveToZoneEffect && it.destination == Zone.BATTLEFIELD }
             .mapTo(HashSet()) { (it as MoveToZoneEffect).target }
-        return fired.filterNot { takesBackItsOwn(it, putOntoBattlefield) }
+        return fired.filterNot { takesBackItsOwn(it, putOntoBattlefield, delayed.carryCollections) }
     }
 
-    private fun takesBackItsOwn(leaf: Effect, putOntoBattlefield: Set<EffectTarget>): Boolean = when (leaf) {
+    /**
+     * A `ForEach` over a collection the scheduling ability carried into the delayed trigger
+     * ("exile those tokens", Tilonalli's Summoner) takes back its own when every step of its body
+     * does — the iterated entity is one of "those", already handled by the scheduling ability.
+     */
+    private fun takesBackItsOwn(
+        leaf: Effect,
+        putOntoBattlefield: Set<EffectTarget>,
+        carried: List<String>,
+    ): Boolean = when (leaf) {
         is SacrificeTargetEffect -> !leaf.sacrificedByItsController || isIt(leaf.target) || leaf.target in putOntoBattlefield
         is MoveToZoneEffect -> leaf.destination != Zone.BATTLEFIELD && (isIt(leaf.target) || leaf.target in putOntoBattlefield)
+        is ForEachEffect -> (leaf.space as? IterationSpace.Collection)?.collection in carried &&
+            payoffLeaves(leaf.body).let { body ->
+                body.isNotEmpty() && body.all { takesBackItsOwn(it, putOntoBattlefield, carried) }
+            }
         else -> false
     }
 

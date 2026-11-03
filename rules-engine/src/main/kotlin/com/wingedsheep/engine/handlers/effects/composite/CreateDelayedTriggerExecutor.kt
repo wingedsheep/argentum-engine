@@ -775,7 +775,7 @@ class CreateDelayedTriggerExecutor(
             }
             is Gate.MayDecide,
             is Gate.WhenCondition,
-            Gate.MayPayX,
+            is Gate.MayPayX,
             Gate.MayPayAnyAmountOfLife,
             is Gate.OnceEachTurn -> gate
         }
