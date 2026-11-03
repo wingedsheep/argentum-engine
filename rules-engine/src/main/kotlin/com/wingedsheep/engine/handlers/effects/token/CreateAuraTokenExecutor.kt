@@ -76,6 +76,14 @@ class CreateAuraTokenExecutor(
         )
         if (!legal) return EffectResult.success(state)
 
+        // "If one or more tokens would be created under your control, that many … are created
+        // instead" (Holo-Engineer): the substitutes aren't Auras, so they enter unattached and no
+        // existing Role is displaced (CR 303.7a only answers a Role actually entering).
+        TokenCreationReplacementHelper.substituteIfReplaced(
+            state, tokenComponent, tokenControllerId, 1, context, effect,
+            zones.predicateEvaluator, staticAbilityHandler, cardRegistry,
+        )?.let { return it }
+
         val events = mutableListOf<GameEvent>()
         var newState = stateWithId
 

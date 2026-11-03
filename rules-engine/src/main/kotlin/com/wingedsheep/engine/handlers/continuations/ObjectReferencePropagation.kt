@@ -107,7 +107,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is ModalContinuation -> objectReferences
     is ModalTargetContinuation -> objectReferences
     is BudgetModalContinuation -> objectReferences
-    is CreateTokenCopyOfChosenContinuation -> objectReferences
+    is CreateTokenCopyOfChosenContinuation -> effectContext.objectReferences
     is CreateTokenCopyAuraHostContinuation -> context.objectReferences
     is ChooseActionContinuation -> context.objectReferences
     is TriggeredAbilityContinuation -> objectReferences
@@ -242,7 +242,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is ModalContinuation -> copy(objectReferences = refs)
     is ModalTargetContinuation -> copy(objectReferences = refs)
     is BudgetModalContinuation -> copy(objectReferences = refs)
-    is CreateTokenCopyOfChosenContinuation -> copy(objectReferences = refs)
+    is CreateTokenCopyOfChosenContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is CreateTokenCopyAuraHostContinuation -> copy(context = context.copy(objectReferences = refs))
     is ChooseActionContinuation -> copy(context = context.copy(objectReferences = refs))
     is TriggeredAbilityContinuation -> copy(objectReferences = refs)

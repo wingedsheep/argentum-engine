@@ -71,6 +71,19 @@ class CreateRandomCreatureTokenWithManaValueExecutor(
 
         val (chosen, stateAfterPick) = state.nextRandom { pick(candidates) }
 
+        // "If one or more tokens would be created under your control, that many … are created
+        // instead" (Holo-Engineer). A question about the substitute pauses on the state *before*
+        // the pick, so the re-run after the answer draws the same creature from the same seed.
+        val prospective = com.wingedsheep.engine.core.CardEntityFactory.create(chosen, ownerId = context.controllerId)
+            .get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+        if (prospective != null) {
+            TokenCreationReplacementHelper.substituteIfReplaced(
+                stateAfterPick, prospective, context.controllerId, 1, context, effect,
+                amountEvaluator.predicates, staticAbilityHandler, cardRegistry,
+                pauseState = state,
+            )?.let { return it }
+        }
+
         return TokenFromDefinition.mint(
             state = stateAfterPick,
             cardDef = chosen,

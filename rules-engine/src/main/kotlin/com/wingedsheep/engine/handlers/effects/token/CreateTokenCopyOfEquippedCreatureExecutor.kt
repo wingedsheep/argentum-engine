@@ -72,9 +72,6 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
 
         val controllerId = context.controllerId
 
-        val (tokenId, stateWithId) = state.newEntity()
-        var newState = stateWithId
-
         // Copy the equipped creature's CardComponent. `isDoubleFaced` is cleared, not inherited:
         // a token is not a card (CR 111.1) — see CreateTokenCopyOfTargetExecutor.
         val exceptions = CopyExceptions(
@@ -82,6 +79,28 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         )
         val tokenCard = CopyExceptionApplier.apply(equippedCard, exceptions)
             .copy(ownerId = controllerId, isDoubleFaced = false)
+
+        // "If one or more tokens would be created under your control, that many … are created
+        // instead" (Holo-Engineer) replaces the copy too. "That token gains haste" still reaches
+        // the substitutes — they are the tokens the instruction created.
+        TokenCreationReplacementHelper.substituteIfReplaced(
+            state, tokenCard, controllerId, 1, context, effect,
+            predicateEvaluator, staticAbilityHandler, cardRegistry,
+        )?.let { substituted ->
+            if (!effect.grantHaste || substituted.outcome !is com.wingedsheep.engine.core.Outcome.Done) return substituted
+            var hasted = substituted.state
+            val hasteEvents = substituted.updatedCollections[com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS].orEmpty()
+                .flatMap { tokenId ->
+                    val grant = GrantKeywordExecutor().execute(hasted,
+                        GrantKeywordEffect(Keyword.HASTE.name, EffectTarget.SpecificEntity(tokenId), Duration.Permanent), context)
+                    hasted = grant.state
+                    grant.events
+                }
+            return substituted.copy(state = hasted, events = substituted.events + hasteEvents)
+        }
+
+        val (tokenId, stateWithId) = state.newEntity()
+        var newState = stateWithId
 
         val components = mutableListOf<Component>(
             tokenCard,

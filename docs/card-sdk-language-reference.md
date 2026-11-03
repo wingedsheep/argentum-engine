@@ -19817,14 +19817,20 @@ The priority groups are (CR 616.1a–f):
   many", under the player the replaced tokens were for), while the replaced instruction's riders still
   apply (the rulings on all three cards): enters tapped / attacking (and the CR 508.4 defender choice),
   exile or sacrifice at a step (a token copy's "your next end step" / "unless it's your Ring-bearer"
-  too), entry counters, creator provenance, and CREATED_TOKENS follow-ups point at the substitutes. Token
-  paths that read no token replacement at all — copies of the source / a chosen permanent / the equipped
-  creature, Role tokens, `TokenFromDefinition` mints — don't read this one either. `tokenFilter` is matched against the would-be token's characteristics before it
+  too), entry counters, creator provenance, and CREATED_TOKENS follow-ups point at the substitutes. With
+  no `tokenFilter` it replaces *every* token (Holo-Engineer: "if one or more tokens would be created under
+  your control, that many 3/3 colorless Illusion artifact creature tokens are created instead"). `tokenFilter` is matched against the would-be token's characteristics before it
   exists (`TokenCreationReplacementHelper.findTokenSubstitution` probes a scratch entity), so it sees an
   artifact creature token's type line, a Treasure's, or a token copy's copiable values *plus* its copy
-  exceptions (Molten Duplication's "except it's an artifact"). Read by the three token executors that read
-  the other token replacements — `CreateTokenExecutor` (after count doublers), `CreatePredefinedTokenExecutor`
-  and `CreateTokenCopyOfTargetExecutor` (after the Mirrormind-style attached-copy offer); the substitutes are
+  exceptions (Molten Duplication's "except it's an artifact"). Read by every token-creation path:
+  `CreateTokenExecutor` (after count doublers), `CreatePredefinedTokenExecutor` and
+  `CreateTokenCopyOfTargetExecutor` (after the Mirrormind-style attached-copy offer), and — through
+  `TokenCreationReplacementHelper.substituteIfReplaced` — token copies of the source, of a chosen permanent
+  (a substitution question re-runs the effect with the chosen permanent remembered) and of the equipped
+  creature ("that token gains haste" reaches the substitutes), Aura tokens such as Roles (the substitutes
+  enter unattached and displace no Role), Momir's `TokenFromDefinition` mints, and the copies an accepted
+  Mirrormind-style `ReplaceTokenCreationWithAttachedCopy` makes instead (CR 616.2; a question re-runs with
+  the accepted offer remembered). The substitutes are
   created without a second doubler pass, but they *are* checked against this family again, minus every
   substitution already applied to the event (CR 616.2 / 614.5) — so substitutions chain without looping:
   Fisher's Talent's level 2 ("if you would create a Fish token, create a 3/3 blue Shark creature token
