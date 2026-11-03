@@ -147,7 +147,7 @@ class SelfBottomOfLibraryOnResolveScenarioTest : FunSpec({
         }
     }
 
-    test("a countered spell goes to the graveyard — CR 701.5a, the effect never happened") {
+    test("a countered spell goes to the graveyard — CR 701.6a, the effect never happened") {
         val driver = newDriver()
         val you = driver.player1
         val opponent = driver.getOpponent(you)

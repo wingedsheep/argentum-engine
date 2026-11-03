@@ -478,9 +478,7 @@ internal class NonPermanentSpellResolver(
         val exileAfterResolveComp: AfterResolveDestinationComponent?,
         val adventureFaceExile: Boolean,
         val omenFaceShuffle: Boolean,
-        /** The card's own "into its owner's library" clause sends it there (shuffled in or on the bottom). */
-        val selfToLibrary: Boolean,
-        /** …and that clause is the shuffling one, so the library is shuffled after the move. */
+        /** The card's own "into its owner's library" clause is the shuffling one (not "on the bottom"). */
         val selfShuffleIntoLibrary: Boolean,
         val reboundExile: Boolean,
         /** Time counters the card's own "exile with N time counters" clause puts on it (0 = none). */
@@ -593,7 +591,6 @@ internal class NonPermanentSpellResolver(
             exileAfterResolveComp = exileAfterResolveComp,
             adventureFaceExile = adventureFaceExile,
             omenFaceShuffle = omenFaceShuffle,
-            selfToLibrary = selfToLibrary,
             selfShuffleIntoLibrary = selfShuffleIntoLibrary,
             reboundExile = reboundExile,
             selfSuspendCounters = if (intendedDestination == Zone.EXILE && !cipherExile) selfSuspendCounters else 0,

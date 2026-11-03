@@ -55,7 +55,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * [AfterResolveDestinationScenarioTest]), this clause is part of the spell's *effect*, so a spell
  * that never resolves never performs it:
  *
- * - **Countered** (CR 701.5a) — the spell is put into its owner's graveyard, and no part of its
+ * - **Countered** (CR 701.6a) — the spell is put into its owner's graveyard, and no part of its
  *   effect happens. Graveyard, not library.
  * - **Fizzled** (CR 608.2b) — a spell whose every target is illegal doesn't resolve. Same answer.
  *
@@ -304,7 +304,7 @@ class SelfShuffleIntoLibraryOnResolveScenarioTest : FunSpec({
         }
     }
 
-    test("a countered spell goes to the graveyard — CR 701.5a, the effect never happened") {
+    test("a countered spell goes to the graveyard — CR 701.6a, the effect never happened") {
         val driver = newDriver()
         val you = driver.player1
         val opponent = driver.getOpponent(you)
