@@ -1732,6 +1732,71 @@
     ]
 }
 
+// Brazen Bluff
+{
+    "name": "Brazen Bluff",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target noncreature spell an opponent controls. That player may exile it. If they don't, you may cast a noncreature spell from your hand without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.MayDecide",
+                "prompt": "Exile your spell? If you don't, your opponent may cast a noncreature spell from their hand for free."
+            },
+            "then": "ExileTargetSpell",
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": "ChooseSpell",
+                        "filter": "nonland noncreature",
+                        "storeSelected": "selected1",
+                        "prompt": "You may cast a noncreature spell from your hand without paying its mana cost",
+                        "selectedLabel": "Cast for free"
+                    },
+                    {
+                        "type": "CastFromCollectionWithoutPayingCost",
+                        "from": "selected1"
+                    }
+                ]
+            },
+            "decisionMaker": "TargetController"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "noncreature ctrl:opponent",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "RARE",
+        "artist": "Filipe Pagliuso",
+        "flavorText": "Some Starfleet captains played chess. Kirk preferred poker.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b306901-1bba-488b-866e-83aa162dab5a.jpg?1793274251"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Cantankerous Captain
 {
     "name": "Cantankerous Captain",
@@ -1941,6 +2006,264 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// Captain James T. Kirk
+{
+    "name": "Captain James T. Kirk",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "Whenever Captain Kirk enters or attacks, choose one. If you have no cards in hand, choose one or more instead.\n• Discard a card, then draw a card.\n• Create a 1/1 red Officer creature token.\n• Creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain James T. Kirk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Discard a card, then draw a card."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Officer"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893"
+                            },
+                            "description": "Create a 1/1 red Officer creature token."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Creatures you control get +1/+0 until end of turn."
+                        }
+                    ],
+                    "dynamicChooseCount": {
+                        "type": "Conditional",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Hand",
+                            "negate": true
+                        },
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "dynamicMinChooseCount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever Captain Kirk enters, choose one. If you have no cards in hand, choose one or more instead. Discard a card, then draw a card.; Create a 1/1 red Officer creature token.; Creatures you control get +1/+0 until end of turn."
+            },
+            {
+                "id": "Captain James T. Kirk:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Discard a card, then draw a card."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Officer"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/6/d676cbef-8e31-4ae6-8dfe-6b84160f71e0.jpg?1793363893"
+                            },
+                            "description": "Create a 1/1 red Officer creature token."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Creatures you control get +1/+0 until end of turn."
+                        }
+                    ],
+                    "dynamicChooseCount": {
+                        "type": "Conditional",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Hand",
+                            "negate": true
+                        },
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "dynamicMinChooseCount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever Captain Kirk attacks, choose one. If you have no cards in hand, choose one or more instead. Discard a card, then draw a card.; Create a 1/1 red Officer creature token.; Creatures you control get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "MYTHIC",
+        "artist": "Jason Pastrana",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40a0466d-20bb-4ed5-858d-947fb9144580.jpg?1784036779"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3806,6 +4129,144 @@
     ]
 }
 
+// D-7 Battle Cruiser
+{
+    "name": "D-7 Battle Cruiser",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact — Spacecraft",
+    "oracleText": "Station (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 8+.)\n3+ | At the beginning of combat on your turn, create a 2/1 red Klingon Warrior creature token with haste. Sacrifice it at the beginning of the next end step.\n8+ | Flying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "D-7 Battle Cruiser:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Klingon",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7897f31-509e-4099-b9b4-c6214b80f29d.jpg?1793364577",
+                    "sacrificeAtStep": "END"
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "D-7 Battle Cruiser:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Kevin Glint",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c22998d-7bd7-433d-95b8-50f2fd8b7b7f.jpg?1792508232"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // DOT-7 Repair Squad
 {
     "name": "DOT-7 Repair Squad",
@@ -4457,6 +4918,72 @@
     ]
 }
 
+// Dominion Infiltration
+{
+    "name": "Dominion Infiltration",
+    "manaCost": "{X}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose X target creatures your opponents control. For each of them, create a token that's a copy of that creature, except it has changeling. Those tokens gain haste. Exile those tokens at the beginning of the next end step. (They're every creature type.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "exileAtStep": "END",
+                        "exceptions": {
+                            "addedKeywords": [
+                                "CHANGELING"
+                            ]
+                        }
+                    },
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Collection",
+                            "collection": "createdTokens"
+                        },
+                        "body": {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": "IterationEntity",
+                            "duration": "Permanent"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Jonathan Bartlett",
+        "flavorText": "There were only four changelings on Earth, but fear of them made a police state out of paradise.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38b7cc7c-e6f0-4460-83c0-0bcd1ab5b4cf.jpg?1793274258"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dominion Saboteur
 {
     "name": "Dominion Saboteur",
@@ -4953,6 +5480,106 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Encounter the Unknown
+{
+    "name": "Encounter the Unknown",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Come in Peace — Exile the top two cards of your library. Until the end of your next turn, you may play those cards.\n• Shoot to Kill — Encounter the Unknown deals 2 damage to each creature and each player.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "CLEANUP",
+                                    "includeCurrentTurn": false
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Come in Peace — Exile the top two cards of your library. You may play them until the end of your next turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    }
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "Each"
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": "Controller"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Shoot to Kill — Deal 2 damage to each creature and each player"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Neil Blevins",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a49f66c-7017-4ddd-8787-21d68fe1bff5.jpg?1793274490"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7749,6 +8376,92 @@
     ]
 }
 
+// Infinite Diversity
+{
+    "name": "Infinite Diversity",
+    "manaCost": "{7}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Federation — Exile target instant or sorcery card from your graveyard. Copy that card X times, where X is the number of creature types among non-Borg creatures you control. You may cast the copies without paying their mana costs. Exile Infinite Diversity.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "RepeatDynamicTimes",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Borg"
+                                }
+                            ]
+                        },
+                        "aggregation": "DISTINCT_CREATURE_TYPES"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CopyCollectionIntoCollection",
+                                "from": "moved1",
+                                "storeAs": "infiniteDiversityCopy"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "infiniteDiversityCopy"
+                                },
+                                "descriptionOverride": "You may cast a copy without paying its mana cost."
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "MYTHIC",
+        "artist": "Julie Dillon",
+        "flavorText": "Our differences make us stronger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33ade614-3593-4055-8ecc-2d9e4858ba19.jpg?1793273819"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Interstellar Effigy
 {
     "name": "Interstellar Effigy",
@@ -9983,6 +10696,61 @@
     ]
 }
 
+// Pah-Wraith
+{
+    "name": "Pah-Wraith",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Wraith",
+    "oracleText": "First strike, haste\nStrange new worlds — Whenever this creature attacks, creatures you control get +X/+0 until end of turn, where X is the number of differently named lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pah-Wraith:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_NAMES"
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Strange new worlds — creatures you control get +X/+0 until end of turn, where X is the number of differently named lands you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Nino Vecia",
+        "flavorText": "Know power. Know adoration. All you must do is accept their love.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24c7e179-c016-4db8-ad8b-aa5629152b5c.jpg?1793013595"
+    }
+}
+
 // Pattern Buffer Preservation
 {
     "name": "Pattern Buffer Preservation",
@@ -10752,6 +11520,145 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "RED"
+    ]
+}
+
+// Quark, Humble Proprietor
+{
+    "name": "Quark, Humble Proprietor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Ferengi Rogue",
+    "oracleText": "You can't sacrifice Treasure tokens.\nAt the beginning of each upkeep, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quark, Humble Proprietor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeSacrificed",
+                "filter": {
+                    "baseFilter": "token Treasure ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "MYTHIC",
+        "artist": "Alex Negrea",
+        "flavorText": "\"Best stem bolts in the quadrant. Self-sealing!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96104754-57e2-46e9-948d-628aab2aa0ad.jpg?1792508242"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ravenous Cosmozoan
+{
+    "name": "Ravenous Cosmozoan",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Fish",
+    "oracleText": "This spell costs {1} less to cast for each noncreature, nonland card in your graveyard.\nFlying, haste",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CardsInGraveyardMatchingFilter",
+                        "filter": "noncreature nonland"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Bruce Brenneise",
+        "flavorText": "To a species evolved to sip solar winds and gnaw on asteroids, the rich plasma of starship engines is like mother's milk.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8eeb471b-412d-4ea1-bec0-d7dd0a557d76.jpg?1793013221"
+    }
+}
+
+// Red Alert!
+{
+    "name": "Red Alert!",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if a creature is attacking you.\nCreatures you control get +2/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "IterationEntity"
+            }
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfCreatureAttackingYou",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Carlos C Diaz",
+        "flavorText": "Solar flares, quantum filaments, molecular reversion fields . . . space is dangerous before you encounter a single hostile ship.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f9b10d3-ba76-45ec-a85c-fb7b26da5561.jpg?1793274269"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -11700,6 +12607,137 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sarcophagus, Ship of the Dead
+{
+    "name": "Sarcophagus, Ship of the Dead",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Artifact — Spacecraft",
+    "oracleText": "Other creatures you control get +1/+0.\nWhenever a creature dies, if Sarcophagus isn't a creature, put a charge counter on it.\nStation (Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery. It's an artifact creature at 10+.)\n10+ | Flying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarcophagus, Ship of the Dead:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": "creature"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature dies, if Sarcophagus isn't a creature, put a charge counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sarcophagus, Ship of the Dead:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "CHARGE",
+                    "amount": "StationCharge",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Joan Piqué Llorens",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5ea32b5-aa58-4f87-ac2e-4e3b8dd4a752.jpg?1793187110"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13227,6 +14265,65 @@
     ]
 }
 
+// Tal Shiar Analyst
+{
+    "name": "Tal Shiar Analyst",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Romulan Scientist",
+    "oracleText": "{T}: This creature deals 1 damage to each opponent.\nWhenever you cast a noncreature spell, untap this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tal Shiar Analyst:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tal Shiar Analyst:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Lucas Durham",
+        "flavorText": "\"If the scanning apparatus can be modified to transmit on encrypted Romulan frequencies, it could be the perfect eavesdropper.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66daae4f-8024-4d87-b42f-e5271d29e646.jpg?1793361345"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tal Shiar Operative
 {
     "name": "Tal Shiar Operative",
@@ -13285,6 +14382,152 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Targ Wrangler
+{
+    "name": "Targ Wrangler",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Klingon Warrior",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nAt the beginning of your end step, if this creature attacked this turn, sacrifice a nonland permanent.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Targ Wrangler:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "nonland permanent"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Harkalé Linaï",
+        "flavorText": "\"You complain about the conditions, yet you fail to appreciate that I keep them on leashes.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/eabc4252-cf58-48c3-9483-7862450e03d0.jpg?1793100726"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Tasha Yar, Out of Time
+{
+    "name": "Tasha Yar, Out of Time",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Human Officer",
+    "oracleText": "Haste\nWhen Tasha Yar dies, exile the top card of your library. Until the end of your next turn, you may play that card.\n{2}{R}, Exile this card from your graveyard: Create a token that's a copy of this card. Sacrifice it at the beginning of the next end step. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tasha Yar, Out of Time:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Tasha Yar dies, exile the top card of your library. Until the end of your next turn, you may play that card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tasha Yar, Out of Time:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "sacrificeAtStep": "END"
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{R}, Exile this card from your graveyard: Create a token that's a copy of this card. Sacrifice it at the beginning of the next end step. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Patricia Pria",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f6cbe6c-5cd8-4eec-82b7-25d5bf5641c0.jpg?1793100738"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13577,6 +14820,122 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Test of Identity
+{
+    "name": "Test of Identity",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• I Am Klingon — Target Klingon gets +1/+1 and gains double strike until end of turn.\n• I Am Starfleet — Discard a card. If you do, draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOUBLE_STRIKE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent Klingon"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "I Am Klingon — Target Klingon gets +1/+1 and gains double strike until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "description": "I Am Starfleet — Discard a card. If you do, draw two cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"I am Worf, son of Mogh, House of Martok, son of Sergey, House of Rozhenko.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e1c0423-bf58-47a1-a838-c15bbf40eaba.jpg?1793359534"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
