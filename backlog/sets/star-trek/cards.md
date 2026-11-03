@@ -2,7 +2,7 @@
 
 **Set Size:** 256 cards
 **Release Date:** November 13, 2026
-**Implemented:** 90 / 256
+**Implemented:** 105 / 258
 > Preview snapshot from October 28, 2026. Scryfall currently marks every TRK printing as `booster: false`, so all cards appear under Extras. Refresh the bootstrap as previews and booster classifications change; this is not the final set size.
 
 | Section    | Total | Done |
@@ -24,7 +24,7 @@
 - [ ] Amok Time
 - [x] Andoria
 - [x] Andromedan Automatons
-- [ ] Antagonist Incorporator
+- [x] Antagonist Incorporator
 - [ ] Anthropological Mission
 - [ ] Armus, Skin of Evil
 - [x] Assault Drone
@@ -43,7 +43,7 @@
 - [ ] Cantankerous Captain
 - [ ] Captain Benjamin Sisko
 - [ ] Captain James T. Kirk
-- [ ] Captain Jean-Luc Picard
+- [x] Captain Jean-Luc Picard
 - [ ] Captain Jonathan Archer
 - [ ] Captain Kathryn Janeway
 - [ ] Captain Michael Burnham
@@ -76,7 +76,7 @@
 - [ ] Dathon and Picard at El-Adrel
 - [ ] Dathon, His Heart Open
 - [ ] De-evolve
-- [ ] Deanna Troi, Psychic Counsel
+- [x] Deanna Troi, Psychic Counsel
 - [ ] Death Is Irrelevant
 - [ ] Deep Space 9
 - [ ] Deep Space Scan
@@ -95,11 +95,12 @@
 - [ ] Ensign Pavel Chekov
 - [ ] Enterprise NX-01
 - [ ] Erica Ortegas, Plucky Pilot
-- [ ] Excalbian Gamemaster
+- [x] Excalbian Gamemaster
 - [ ] Exploratory Mission
 - [x] Federation Field Medic
 - [ ] Federation Outpost
 - [x] Federation Probe
+- [x] Federation Resupply
 - [x] Ferenginar
 - [ ] Final Frontier
 - [ ] First Contact
@@ -118,7 +119,7 @@
 - [ ] H.M.S. Bounty, Unlikely Timeship
 - [x] Hallowed Fountain
 - [x] He's Dead, Jim
-- [ ] Hemmer, Fixing What Is Broken
+- [x] Hemmer, Fixing What Is Broken
 - [ ] Highly Illogical
 - [x] Hit It!
 - [ ] Hive Mind Coprocessor
@@ -148,7 +149,7 @@
 - [ ] La'An Noonien-Singh, Security
 - [ ] Lieutenant Commander Data
 - [ ] Live Long and Prosper
-- [ ] Locutus, the One Who Speaks
+- [x] Locutus, the One Who Speaks
 - [ ] Lore, Positronic Provocateur
 - [ ] Lt. Cmdr. Geordi La Forge
 - [ ] Lwaxana Troi, Charming Guest
@@ -219,7 +220,7 @@
 - [ ] Storied Veteran
 - [ ] Subcommander T'Pol
 - [ ] Subspace Anomaly
-- [ ] Sulu, Space Swashbuckler
+- [x] Sulu, Space Swashbuckler
 - [ ] Support Mission
 - [ ] Suurok-Class Science Vessel
 - [ ] Suus Mahna Practitioner
@@ -239,23 +240,24 @@
 - [ ] Test of Priorities
 - [ ] The Caretaker
 - [ ] The City on the Edge of Forever
-- [ ] The Doctor, EMH
+- [x] The Doctor, EMH
 - [ ] The Duras Sisters
 - [x] The Holodeck
 - [ ] The Inner Light
-- [ ] The Measure of a Man
+- [x] The Measure of a Man
+- [x] The Needs of the Many
 - [ ] The Traveler
 - [ ] The Unicomplex
 - [ ] The Wrath of Khan
-- [ ] There's Coffee in that Nebula
+- [x] There's Coffee in that Nebula
 - [ ] Those Old Scientists
 - [ ] Tricorder
 - [x] Troubling Tribbles
 - [x] Type-2 Phaser
 - [ ] U.S.S. Discovery, at Black Alert
-- [ ] U.S.S. Enterprise-A, Free Spirit
+- [x] U.S.S. Enterprise-A, Free Spirit
 - [ ] U.S.S. Enterprise-D, Galaxy-Class
-- [ ] U.S.S. Excelsior, Cutting Edge
+- [x] U.S.S. Excelsior, Cutting Edge
 - [ ] U.S.S. Reliant, From Hell's Heart
 - [x] Una Chin-Riley, Number One
 - [x] Unexplored Territory
@@ -272,5 +274,5 @@
 - [x] Xindi Surveyors
 - [ ] Year of Hell
 - [ ] Zefram Cochrane, Warp Pioneer
-- [ ] Zero, Incorporeal Sensate
+- [x] Zero, Incorporeal Sensate
 
