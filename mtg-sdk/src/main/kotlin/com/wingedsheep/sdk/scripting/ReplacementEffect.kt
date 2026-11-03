@@ -2581,6 +2581,12 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   are the object's as the entrant enters, or as it last existed on the battlefield
  *                   if it has left. Null (default) is the classic Clone: the entrant's own as-enters
  *                   choice.
+ * @param condition When non-null, the entrant's own as-enters copy choice is offered only if this
+ *                   condition holds as the permanent would enter — evaluated with the entrant as the
+ *                   source and its controller as "you" (Protean Raider's "Raid — If you attacked this
+ *                   turn, you may have this creature enter as a copy of …", `Conditions.YouAttackedThisTurn`).
+ *                   When it doesn't hold the permanent simply enters as its printed self, with none of
+ *                   the copy riders. Not allowed with [copyOf] — condition the grant instead.
  */
 @SerialName("EntersAsCopy")
 @Serializable
@@ -2602,12 +2608,16 @@ data class EntersAsCopy(
         com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val duration: Duration = Duration.Permanent,
     val copyOf: EffectTarget? = null,
+    val condition: Condition? = null,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
     init {
+        require(copyOf == null || condition == null) {
+            "EntersAsCopy(copyOf = …) is a granted copy; gate the grant, not the copy, with a condition"
+        }
         require(duration == Duration.Permanent || duration == Duration.EndOfTurn) {
             "EntersAsCopy supports only Permanent or EndOfTurn durations, got $duration"
         }
@@ -2640,7 +2650,8 @@ data class EntersAsCopy(
             "$subject enters ${tappedWord}as a copy of any $where"
         }
         buildString {
-            append(lead)
+            if (condition != null) append("If ${condition.description}, ")
+            append(if (condition != null) lead.replaceFirstChar { it.lowercase() } else lead)
             val exceptions = buildList {
                 if (nameOverride != null) add("its name is $nameOverride")
                 if (powerOverride != null && toughnessOverride != null) {
@@ -2667,8 +2678,9 @@ data class EntersAsCopy(
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
         val newExceptions = exceptions.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo || newExceptions !== exceptions)
-            copy(appliesTo = newAppliesTo, exceptions = newExceptions) else this
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newExceptions !== exceptions || newCondition !== condition)
+            copy(appliesTo = newAppliesTo, exceptions = newExceptions, condition = newCondition) else this
     }
 }
 

@@ -11,14 +11,17 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Rates cards for limited (sealed/draft) play on a 0.0–5.0 scale.
@@ -210,6 +213,7 @@ object LimitedCardRater {
         rating += keywordBonus(card)
         rating += effectBonus(card)
         rating += staticBonus(card)
+        rating += replacementBonus(card)
         rating += manaAbilityBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
@@ -250,6 +254,10 @@ object LimitedCardRater {
         script.staticAbilities.forEachIndexed { i, static ->
             val v = staticScore(static)
             if (v != 0.0) add(Term("Static ability ${i + 1}", v, static.description.takeIf { it.isNotBlank() }))
+        }
+        script.replacementEffects.forEachIndexed { i, replacement ->
+            val v = replacementScore(replacement)
+            if (v != 0.0) add(Term("Replacement effect ${i + 1}", v, replacement.description.takeIf { it.isNotBlank() }))
         }
         manaAbilityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Mana ability", it, "a mana source that isn't a land")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
@@ -429,6 +437,25 @@ object LimitedCardRater {
         }
         return tagValue(CardIntentAnalyzer.staticTags(static))
     }
+
+    /**
+     * What the card's printed replacement effects are worth. Only the as-enters copy (Clone,
+     * Protean Raider, Superior Spider-Man) is priced today: entering as a copy of the best creature is
+     * most of such a card's value, and its own printed body (often 0/0) is what the base saw.
+     */
+    private fun replacementBonus(card: CardDefinition): Double =
+        card.script.replacementEffects.sumOf { replacementScore(it) }
+
+    private fun replacementScore(replacement: ReplacementEffect): Double = when {
+        replacement is EntersAsCopy && replacement.copyOf == null &&
+            replacement.copyFilter.cardPredicates.any { it == CardPredicate.IsCreature } ->
+            // A gate (raid) means it often enters as its printed self: half the value.
+            ENTRY_COPY_VALUE * (if (replacement.condition != null) 0.5 else 1.0)
+        else -> 0.0
+    }
+
+    /** A copy of the best creature in play, chosen as it enters — about a solid playable's worth. */
+    private const val ENTRY_COPY_VALUE = 1.4
 
     /**
      * A non-land card with a mana ability is a mana source — [EffectWalker.slots] skips mana

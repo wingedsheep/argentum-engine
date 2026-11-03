@@ -243,6 +243,11 @@ internal class PermanentSpellResolver(
     ): ExecutionResult? {
         val entersAsCopy = cardDef.script.replacementEffects.filterIsInstance<EntersAsCopy>()
             .firstOrNull { it.copyOf == null }
+            ?.takeIf {
+                com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.entersAsCopyConditionHolds(
+                    state, spellId, controllerId, it, predicateEvaluator
+                )
+            }
         if (entersAsCopy != null) {
             // Find candidates to copy. Battlefield copies (Clone) read permanents in play;
             // graveyard copies (Superior Spider-Man) read creature cards across every graveyard.

@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Drafts Clone-style cards (enter as a copy of a creature) above their printed body; a raid-gated copy (Protean Raider) counts half
 - Reads statics that stop permanents entering or dying from triggering abilities (Torpor Orb, Tocatli Honor Guard, Hushbringer, Elesh Norn, Mother of Machines) as trigger locks: values a lock permanent on the board above an unreadable one and prices the lock in draft ratings
 - Reads +1/+1 counters put on each creature you control (Bellowing Aegisaur, Victory's Envoy) as feeding a +1/+1-counter deck, so it drafts those cards alongside counter payoffs
 - #4374 Reads bans on an opponent's spells (Silence, Sphinx's Decree, Azor, Orim's Chant, Xantid Swarm) as disruption: stops in the opponent's upkeep to cast an instant ban that covers their whole turn, casts a sorcery-speed one like Sphinx's Decree with mana nothing else wants while they hold cards, aims a "target player" ban at the opponent, and rates the effect in draft
