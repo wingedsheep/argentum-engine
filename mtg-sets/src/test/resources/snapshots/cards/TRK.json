@@ -2926,6 +2926,41 @@
     ]
 }
 
+// David and Carol Marcus, Creators
+{
+    "name": "David and Carol Marcus, Creators",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Scientist",
+    "oracleText": "When David and Carol Marcus enter, create a tapped Planet land token named New Planet with \"{T}: Add one mana of any color.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "David and Carol Marcus, Creators:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "New Planet",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "KarrahE",
+        "flavorText": "Director of Project Genesis, Dr. Carol Marcus, along with her son David, revolutionized the science of terraforming. While Kirk voyaged to discover strange new worlds, his estranged family built them from scratch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55d21155-647e-4892-b349-86b8d4e6d9b9.jpg?1793188281"
+    }
+}
+
 // Deanna Troi, Psychic Counsel
 {
     "name": "Deanna Troi, Psychic Counsel",
@@ -4327,6 +4362,72 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Gaseous Anomaly
+{
+    "name": "Gaseous Anomaly",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{5}{U}, {T}, Sacrifice this land: Draw two cards. Create a tapped Planet land token named New Planet with \"{T}: Add one mana of any color.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gaseous Anomaly:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Gaseous Anomaly:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{U}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "New Planet",
+                            "tapped": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "UNCOMMON",
+        "artist": "Racrufi",
+        "flavorText": "\"It's like the warp engines are feeding it!\"\n—Lieutenant Hikaru Sulu",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6974579-7e88-4d7f-9b05-93d08167cb17.jpg?1793361441"
+    }
 }
 
 // General Chang, Cold Warrior

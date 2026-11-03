@@ -4175,6 +4175,17 @@ object Effects {
     fun CreateEverywhere(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Everywhere", count, controller, tapped)
 
+    /**
+     * Create New Planet land tokens (Star Trek): "a tapped Planet land token named New Planet
+     * with '{T}: Add one mana of any color.'" Every printed creator makes it tapped.
+     *
+     * @param count Number of tokens to create
+     * @param tapped Whether the tokens enter the battlefield tapped
+     * @param controller Who controls the tokens (null = spell controller)
+     */
+    fun CreateNewPlanet(count: Int = 1, tapped: Boolean = true, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("New Planet", count, controller, tapped)
+
     // =========================================================================
     // Protection, Choice & Keyword-Grant Effects
     // =========================================================================
