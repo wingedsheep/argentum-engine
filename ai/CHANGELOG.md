@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #PRNUM Reads bans on an opponent's spells (Silence, Sphinx's Decree, Azor, Orim's Chant, Xantid Swarm) as disruption: stops in the opponent's upkeep to cast an instant ban that covers their whole turn, casts a sorcery-speed one like Sphinx's Decree with mana nothing else wants while they hold cards, aims a "target player" ban at the opponent, and rates the effect in draft
+- #4374 Reads bans on an opponent's spells (Silence, Sphinx's Decree, Azor, Orim's Chant, Xantid Swarm) as disruption: stops in the opponent's upkeep to cast an instant ban that covers their whole turn, casts a sorcery-speed one like Sphinx's Decree with mana nothing else wants while they hold cards, aims a "target player" ban at the opponent, and rates the effect in draft
 - Reads "spells and abilities your opponents cast or activate that target your permanents cost more" (Kopala, Warden of Waves, Sphinx of New Prahv) as protection, and values those statics in its draft ratings instead of pricing the card as its bare body
 - #4369 Reads life-total exchanges (Psychic Transfer, Mister Negative, Axis of Mortality): aims them at the opponent, picks itself as one side of a two-player swap, and no longer casts a harmful "target player" spell that hexproof has left aimed only at itself
 - #4368 No longer reads a delayed trigger that exiles or sacrifices "those tokens" the same ability made (Tilonalli's Summoner) as removal, so such cards stop counting as answers when it plans its removal
