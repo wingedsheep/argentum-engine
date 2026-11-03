@@ -46,7 +46,7 @@ val TheCityOnTheEdgeOfForever = card("The City on the Edge of Forever") {
             power = 0, toughness = 1,
             colors = setOf(Color.WHITE),
             creatureTypes = setOf("Human"),
-            staticAbilities = listOf(CantPhaseIn()),
+            staticAbilities = listOf(CantPhaseIn),
             imageUri = "https://cards.scryfall.io/normal/front/2/5/25b0644d-4934-4495-9b6e-c31d1d10c298.jpg?1784177188"
         )
     }

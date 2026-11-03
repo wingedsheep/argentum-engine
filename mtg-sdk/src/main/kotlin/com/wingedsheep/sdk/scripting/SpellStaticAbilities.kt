@@ -1324,40 +1324,30 @@ data class CantEnterTheBattlefield(
 }
 
 /**
- * Phased-out permanents matching [filter] can't phase in — a phase-in prohibition (CR 702.26c:
- * phasing in is the status change back to "phased in"; CR 101.2: the "can't" wins over the rule or
- * effect that would phase it in).
+ * "Permanents can't phase in" — a phase-in prohibition (CR 702.26c: phasing in is the status change
+ * back to "phased in"; CR 101.2: the "can't" wins over the rule or effect that would phase it in).
  *
- *  - The City on the Edge of Forever's Human token: `CantPhaseIn()` ("Permanents can't phase in").
+ *  - The City on the Edge of Forever's Human token: `CantPhaseIn`.
  *
  * The lock is owned by whichever permanent prints it, so every phase-in path asks it: the untap
- * step's turn-based phase-in (CR 702.26a) skips a locked permanent, which stays phased out and
+ * step's turn-based phase-in (CR 702.26a) skips every phased-out permanent while it holds, and each
  * tries again at its controller's next untap step; a "phases out until [source] leaves" link
  * (Oubliette) whose source leaves while the lock holds simply ends, and the permanent phases in at
  * a later untap step like any other once the lock is gone. It never stops phasing *out*.
  *
- * A phased-out permanent has no projected characteristics, so [filter] is matched against its
- * base card.
+ * Deliberately unfiltered: a filter would have to judge an Aura or Equipment that phased out
+ * indirectly by its host (CR 702.26g), and no printed card asks for one yet.
  *
  * Neither neighbour takes the axis: [CantEnterTheBattlefield] is the same printer-owned lock for a
  * zone change (phasing isn't one, CR 702.26d), and `PhaseOutEffect.cantPhaseIn` is a lock the
  * phasing *effect* stamps on the one permanent it phases out, not a standing static.
- *
- * @property filter Which phased-out permanents can't phase in, matched on their base card.
  */
 @SerialName("CantPhaseIn")
 @Serializable
-data class CantPhaseIn(
-    val filter: GameObjectFilter = GameObjectFilter.Any
-) : StaticAbility {
-    override val description: String =
-        (if (filter == GameObjectFilter.Any) "Permanents" else "${filter.description.replaceFirstChar { it.uppercase() }}s") +
-            " can't phase in"
+data object CantPhaseIn : StaticAbility {
+    override val description: String = "Permanents can't phase in"
 
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
 /** "graveyards", "graveyards or exile", "graveyards and libraries"-style rendering of a zone set. */

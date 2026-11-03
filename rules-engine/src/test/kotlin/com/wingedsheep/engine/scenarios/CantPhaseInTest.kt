@@ -32,17 +32,7 @@ class CantPhaseInTest : ScenarioTestBase() {
     private val lock = card("Phase Lock") {
         manaCost = "{2}"; typeLine = "Artifact"
         oracleText = "Permanents can't phase in."
-        staticAbility { ability = CantPhaseIn() }
-    }
-
-    private val creatureLock = card("Creature Phase Lock") {
-        manaCost = "{2}"; typeLine = "Artifact"
-        oracleText = "Creatures can't phase in."
-        staticAbility { ability = CantPhaseIn(GameObjectFilter.Creature) }
-    }
-
-    private val trinket = card("Phase Trinket") {
-        manaCost = "{1}"; typeLine = "Artifact"
+        staticAbility { ability = CantPhaseIn }
     }
 
     private val phaseOut = card("Phase Out Target") {
@@ -93,7 +83,7 @@ class CantPhaseInTest : ScenarioTestBase() {
     }
 
     init {
-        listOf(lock, creatureLock, trinket, phaseOut, phaseOutAll, breakArtifact, breakEnchantment, linkedPrison)
+        listOf(lock, phaseOut, phaseOutAll, breakArtifact, breakEnchantment, linkedPrison)
             .forEach { cardRegistry.register(it) }
 
         fun builder() = scenario()
@@ -148,26 +138,6 @@ class CantPhaseInTest : ScenarioTestBase() {
                 game.toUpkeepOf(game.player2Id)
                 game.isPhasedIn(bears) shouldBe true
             }
-        }
-
-        test("a filtered lock holds only what it matches") {
-            val game = builder()
-                .withCardOnBattlefield(1, creatureLock.name)
-                .withCardOnBattlefield(2, trinket.name)
-                .withCardInHand(1, phaseOut.name)
-                .withCardInHand(1, phaseOut.name)
-                .build()
-            val bears = game.findPermanent("Grizzly Bears")!!
-            val trinketId = game.findPermanent(trinket.name)!!
-
-            game.castSpell(1, phaseOut.name, bears).error shouldBe null
-            game.resolveStack()
-            game.castSpell(1, phaseOut.name, trinketId).error shouldBe null
-            game.resolveStack()
-
-            game.toUpkeepOf(game.player2Id)
-            game.isPhasedIn(trinketId) shouldBe true
-            game.isPhasedIn(bears) shouldBe false
         }
 
         test("a lock phasing in alongside the others doesn't exist yet, so everything phases in together") {

@@ -70,6 +70,7 @@ class TheCityOnTheEdgeOfForeverScenarioTest : ScenarioTestBase() {
                 game.isPhasedIn(thopter) shouldBe false
                 game.isPhasedIn(runeclaw) shouldBe false
                 lands.all { game.isPhasedIn(it) } shouldBe true
+                game.isPhasedIn(game.findPermanent("The City on the Edge of Forever")!!) shouldBe true
             }
             val human = game.human()!!
             withClue("a 0/1 white Human token was created after the phase-out, so it stays in") {

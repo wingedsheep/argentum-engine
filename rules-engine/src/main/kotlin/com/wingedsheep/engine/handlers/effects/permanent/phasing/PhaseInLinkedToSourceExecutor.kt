@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  * The source has already left the battlefield by the time this resolves; `context.sourceId` still
  * identifies it (leaves-battlefield triggers carry their source), so the link match works.
  *
- * A permanent a [com.wingedsheep.sdk.scripting.CantPhaseIn] static forbids doesn't phase in: the
+ * While a [com.wingedsheep.sdk.scripting.CantPhaseIn] static holds nothing phases in: the
  * "until the source leaves" duration has still ended, so its link (and the tap-as-it-phases-in
  * rider that belonged to this phase-in) is cleared, and it phases in at a later untap step of its
  * controller's like any other phased-out permanent once nothing forbids it.
@@ -47,12 +47,12 @@ class PhaseInLinkedToSourceExecutor(
         }
         if (toPhaseIn.isEmpty()) return EffectResult.success(state)
 
-        val lock = PhaseInLocks.of(state, cardRegistry, predicateEvaluator)
+        val locked = PhaseInLocks.locked(state, cardRegistry, predicateEvaluator)
         var newState = state
         val events = mutableListOf<GameEvent>()
         for (entityId in toPhaseIn) {
             val phased = newState.getEntity(entityId)?.get<PhasedOutComponent>() ?: continue
-            if (lock.forbids(entityId)) {
+            if (locked) {
                 newState = newState.updateEntity(entityId) {
                     it.with(phased.copy(phaseInOnSourceLeaves = null, tapOnPhaseIn = false))
                 }
