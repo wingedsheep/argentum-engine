@@ -840,6 +840,19 @@ enum class Keyword(val displayName: String) {
     VANISHING("Vanishing"),
 
     /**
+     * Sunburst (CR 702.44). "If this object is entering the battlefield from the stack as a
+     * creature, it enters with a +1/+1 counter on it for each color of mana spent to cast it.
+     * Otherwise, it enters with a charge counter on it for each color of mana spent to cast it."
+     *
+     * A bare keyword with no DSL helper: the engine synthesizes the entry counters on the
+     * stack-resolution path only (CR 702.44a, "from the stack"), counting
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.DistinctColorsManaSpent] and choosing the
+     * counter kind from the object's characteristics as it would exist on the battlefield
+     * (CR 614.12) — so an artifact March of the Machines animates enters with +1/+1 counters.
+     */
+    SUNBURST("Sunburst"),
+
+    /**
      * Cumulative upkeep [cost] (CR 702.24). Display-only; the `cumulativeUpkeep(cost)` DSL helper
      * composes the upkeep trigger (age counter, then pay the cost per age counter or sacrifice).
      */

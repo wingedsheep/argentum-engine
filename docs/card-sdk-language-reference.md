@@ -15039,6 +15039,16 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   abilities (as suspend's countdown and cast do): a vanishing permanent sits where instant-speed
   counter removal can reach it, and it is sacrificed whenever the last counter leaves, not only on
   an upkeep.
+- `Sunburst` — **engine-live.** Declare it and nothing else: `keywords(Keyword.SUNBURST)` (Engineered
+  Explosives). CR 702.44a: as the permanent enters **from the stack**, the engine places one counter
+  per distinct color of mana spent to cast it (`DistinctColorsManaSpent`; colorless never counts) —
+  **+1/+1** counters if it enters as a creature, **charge** counters otherwise. "As a creature" and
+  "still has sunburst" are read off the object as it would exist on the battlefield
+  (`EntryCharacteristics.projectedAsEntering`, CR 614.12), so an artifact March of the Machines
+  animates gets +1/+1 counters. Synthesized on the stack-resolution path only, so a sunburst
+  permanent reanimated or blinked gets none; the counters go through `placeEntryCounters` (Hardened
+  Scales / Solemnity apply). Don't hand-write an `EntersWithDynamicCounters` for it — it would stack.
+  Converge (an ability word) is the hand-authored neighbour: `convergeEntersWithCounters()`.
 - `Renown(n)` — **engine-live.** Declare it and nothing else:
   `keywordAbility(KeywordAbility.renown(1))` (Topan Freeblade). The engine supplies the CR 702.112
   ability from [`Renown`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Renown.kt): a
