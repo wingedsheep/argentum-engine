@@ -939,7 +939,7 @@ Families:
 - `GrantOneSpellAnyManaTypeEffect(spellFilter: GameObjectFilter)` — "For one spell this turn, you may spend mana as though it were mana of any type to pay that spell's mana cost.
 - `GrantPlayWithAdditionalCostEffect(from: String, additionalCost: AdditionalCost)` — Grant "play with an additional cost" to all cards in a named collection.
 - `GrantPlayWithCostIncreaseEffect(from: String, amount: Int, unlessTargets: GameObjectFilter?)` — Add a generic-mana tax to every card in a named collection so that when the effect controller later casts one of them, the spell costs amount more to cast.
-- `GrantPlayWithoutPayingCostEffect(from: String, expiry: MayPlayExpiry)` — Grant "play without paying mana cost" permission to all cards in a named collection.
+- `GrantPlayWithoutPayingCostEffect(from: String, expiry: MayPlayExpiry, ownerControls: Boolean)` — Grant "play without paying mana cost" permission to all cards in a named collection.
 - `GrantPlayerActionEffect(cost: PayCost, effect: Effect, timing: PlayerActionTiming, target: EffectTarget, duration: Duration, actionDescription: String)` — Creates a repeatable special action, retaining the granting resolution's references and values.
 - `GrantPlayerProtectionEffect(target: EffectTarget, scope: ProtectionScope, duration: Duration)` — Grant a **player** protection from scope (CR 702.16) for duration.
 - `GrantProtectionFromChosenCardTypeEffect(target: EffectTarget, duration: Duration)` — Grant "protection from the card type of your choice" to a target (CR 702.16).

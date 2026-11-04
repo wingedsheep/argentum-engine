@@ -94,6 +94,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
@@ -449,6 +450,7 @@ object TargetPolarityAnalyzer {
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = EffectWalker.payoffLeaves(effect)
+        for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
         for (slot in handDisruptionSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
@@ -710,6 +712,43 @@ object TargetPolarityAnalyzer {
                 .flatMap { listOfNotNull(it.storeMatching, it.storeNonMatching) }
         } while (names.addAll(grown))
         return names
+    }
+
+    /**
+     * Whether [effect] exiles its own chosen targets and lets each card's **owner** cast it from
+     * exile again — Airbend ("its owner may cast it for {2}"), Release to the Wind ("its owner may
+     * cast it without paying its mana cost"), Suspend Aggression. The recast is a bounce that skips
+     * the hand: tempo removal on their permanent, a save or an ETB re-buy on ours. A grant to the
+     * caster instead ("exile target … you may cast that card", Abstruse Appropriation) is a steal,
+     * not this, and stays unread. Riders on the same cards (a mana-cost waiver, a fixed or taxed
+     * recast cost) only change the price of the recast.
+     */
+    internal fun ownerRecastsChosenTargets(effect: Effect): Boolean {
+        val leaves = EffectWalker.payoffLeaves(effect)
+        val chosen = chosenTargetCollections(effect)
+        val exiled = leaves.filterIsInstance<MoveCollectionEffect>()
+            .filter { it.from in chosen && (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE }
+            .flatMapTo(HashSet()) { listOfNotNull(it.from, it.storeMovedAs) }
+        return exiled.isNotEmpty() && leaves.any {
+            it is GrantMayPlayFromExileEffect && it.ownerControls && it.from in exiled
+        }
+    }
+
+    /**
+     * The slots an [ownerRecastsChosenTargets] pipeline acts on: every permanent slot, read
+     * [TargetPolarity.FLEXIBLE] as a bounce is ([classify]'s move to hand). A slot whose card sits in
+     * another zone (a graveyard card exiled beside it) is not bounced, and a player slot is no card.
+     */
+    private fun ownerRecastSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        if (!ownerRecastsChosenTargets(effect)) return emptyList()
+        return requirements.indices.filter { slot ->
+            val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+            when (requirement) {
+                is TargetPlayer, is TargetOpponent -> false
+                is TargetObject -> requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+                else -> true
+            }
+        }
     }
 
     /**

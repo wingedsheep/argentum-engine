@@ -2160,16 +2160,25 @@ data class ConditionalOnCollectionEffect(
  *   your next turn, you may play those cards … without paying their mana costs" (Ignite the
  *   Future). A non-turn-keyed expiry ([MayPlayExpiry.Permanent], the source-keyed ones) never
  *   expires at cleanup: the paired permission's own revocation is what ends the play.
+ * @property ownerControls When true, each card's waiver belongs to its *owner* rather than the
+ *   effect's controller (a turn-keyed [expiry] then follows that owner's turns) — "its owner may
+ *   cast it without paying its mana cost" (Release to the Wind). Pair with a
+ *   [GrantMayPlayFromExileEffect] that also sets `ownerControls`.
  */
 @SerialName("GrantPlayWithoutPayingCost")
 @Serializable
 data class GrantPlayWithoutPayingCostEffect(
     val from: String,
-    val expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn
+    val expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
+    val ownerControls: Boolean = false
 ) : Effect {
-    override val description: String =
-        if (expiry == MayPlayExpiry.EndOfTurn) "Until end of turn, you may play those cards without paying their mana costs"
-        else "You may play those cards without paying their mana costs ${expiry.description}"
+    override val description: String = when {
+        ownerControls && expiry == MayPlayExpiry.EndOfTurn ->
+            "Until end of turn, its owner may play that card without paying its mana cost"
+        ownerControls -> "Its owner may play that card without paying its mana cost ${expiry.description}"
+        expiry == MayPlayExpiry.EndOfTurn -> "Until end of turn, you may play those cards without paying their mana costs"
+        else -> "You may play those cards without paying their mana costs ${expiry.description}"
+    }
 }
 
 /**

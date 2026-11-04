@@ -513,6 +513,9 @@ object CardIntentAnalyzer {
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(regrowthTags(root))
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
+        // Exile it, its owner may cast it again (Airbend, Release to the Wind): a bounce that skips
+        // the hand, so it reads as a bounce's MoveToZone does in [tagsOf] — tempo removal.
+        if (TargetPolarityAnalyzer.ownerRecastsChosenTargets(root)) add(IntentTag.REMOVAL)
         // readingLeaves opens the reflexive payoff but discards its composite boundary. Keep
         // composition readings here too: Escape Protocol's exile-and-return is one blink.
         EffectWalker.payoffLeaves(root).filterIsInstance<ReflexiveTriggerEffect>().forEach {

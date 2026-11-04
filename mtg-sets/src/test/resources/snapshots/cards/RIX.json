@@ -7968,6 +7968,66 @@
     ]
 }
 
+// Release to the Wind
+{
+    "name": "Release to the Wind",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target nonland permanent. For as long as that card remains exiled, its owner may cast it without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "expiry": "Permanent",
+                    "ownerControls": true,
+                    "nonLandOnly": true
+                },
+                {
+                    "type": "GrantPlayWithoutPayingCost",
+                    "from": "gathered0",
+                    "expiry": "Permanent",
+                    "ownerControls": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "flavorText": "\"Here and gone like a fleeting breeze.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b4f72ef-3939-467c-8fe4-fd1c215f2b1e.jpg?1783935323"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Relentless Raptor
 {
     "name": "Relentless Raptor",

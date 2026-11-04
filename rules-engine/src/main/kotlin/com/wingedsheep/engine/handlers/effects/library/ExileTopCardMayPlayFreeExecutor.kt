@@ -429,24 +429,34 @@ class GrantPlayWithoutPayingCostExecutor : EffectExecutor<GrantPlayWithoutPaying
         // Same anchor and turn math as GrantMayPlayFromExileExecutor, so a waiver given the paired
         // grant's expiry ends at the same cleanup. Every non-turn-keyed expiry is ended by the
         // paired permission's revocation, never by cleanup, so the waiver itself is permanent.
+        // ownerControls ("its owner may cast it without paying its mana cost" — Release to the
+        // Wind): each card's waiver belongs to its owner, and a turn-keyed expiry follows that
+        // owner's turns, exactly as the paired GrantMayPlayFromExile(ownerControls) groups it.
         val activatingPlayer = context.effectControllerId ?: controllerId
-        val component = when (val expiry = effect.expiry) {
-            MayPlayExpiry.EndOfTurn -> PlayWithoutPayingCostComponent(controllerId = controllerId)
-            is MayPlayExpiry.UntilControllerStep -> PlayWithoutPayingCostComponent(
-                controllerId = controllerId,
-                expiresAfterTurn = resolveControllerStepTurn(state, activatingPlayer, expiry),
-                expiresAtStep = expiresAtStepFor(expiry),
-                expiryControllerId = activatingPlayer.takeIf { it != controllerId },
-            )
-            MayPlayExpiry.Permanent,
-            MayPlayExpiry.UntilSourceExilesAnother,
-            is MayPlayExpiry.WhileYouControlSource,
-            is MayPlayExpiry.WhileSourceOnBattlefield ->
-                PlayWithoutPayingCostComponent(controllerId = controllerId, permanent = true)
+        fun waiverFor(grantee: EntityId): PlayWithoutPayingCostComponent {
+            val anchor = if (effect.ownerControls) grantee else activatingPlayer
+            return when (val expiry = effect.expiry) {
+                MayPlayExpiry.EndOfTurn -> PlayWithoutPayingCostComponent(controllerId = grantee)
+                is MayPlayExpiry.UntilControllerStep -> PlayWithoutPayingCostComponent(
+                    controllerId = grantee,
+                    expiresAfterTurn = resolveControllerStepTurn(state, anchor, expiry),
+                    expiresAtStep = expiresAtStepFor(expiry),
+                    expiryControllerId = anchor.takeIf { it != grantee },
+                )
+                MayPlayExpiry.Permanent,
+                MayPlayExpiry.UntilSourceExilesAnother,
+                is MayPlayExpiry.WhileYouControlSource,
+                is MayPlayExpiry.WhileSourceOnBattlefield ->
+                    PlayWithoutPayingCostComponent(controllerId = grantee, permanent = true)
+            }
         }
 
         var newState = state
         for (cardId in collection) {
+            val grantee = if (effect.ownerControls) {
+                newState.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: controllerId
+            } else controllerId
+            val component = waiverFor(grantee)
             newState = newState.updateEntity(cardId) { container -> container.with(component) }
         }
 
