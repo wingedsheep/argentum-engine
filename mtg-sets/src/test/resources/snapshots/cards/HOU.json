@@ -67,6 +67,226 @@
     ]
 }
 
+// Aerial Guide
+{
+    "name": "Aerial Guide",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nWhenever this creature attacks, another target attacking creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aerial Guide:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Kefnet taught us to turn obstacles into advantages.\"\n—Neponem, vizier of Kefnet",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b744c138-9b9e-47f6-9d56-feb6a78ce377.jpg?1783936054"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Angel of the God-Pharaoh
+{
+    "name": "Angel of the God-Pharaoh",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "E. M. Gist",
+        "flavorText": "The angels did not deceive. From the start, they were clear their allegiance was to the God-Pharaoh and to him alone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad202785-a91f-4dc8-bcc0-eb1bd49f162e.jpg?1783936066"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aven Reedstalker
+{
+    "name": "Aven Reedstalker",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Warrior",
+    "oracleText": "Flash\nFlying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Our best chance against the Eternals will be tactics they've never seen and styles they've never trained in.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0c2d70a-d646-44eb-9f65-ddf6e329ab43.jpg?1783936054"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aven of Enduring Hope
+{
+    "name": "Aven of Enduring Hope",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird Cleric",
+    "oracleText": "Flying\nWhen this creature enters, you gain 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aven of Enduring Hope:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "James Ryman",
+        "flavorText": "\"This storm will calm. We must believe that.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02c1310c-1b54-42dd-bf24-889770fa2ded.jpg?1783936066"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Bitterbow Sharpshooters
+{
+    "name": "Bitterbow Sharpshooters",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Jackal Archer",
+    "oracleText": "Reach, vigilance",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH",
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Bram Sels",
+        "flavorText": "\"Remember, brother, the eyes are always vulnerable.\"\n\"I never forgot.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ecfcf99-be2b-4e5f-adef-1977ee5c6a0f.jpg?1783936022"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Brambleweft Behemoth
+{
+    "name": "Brambleweft Behemoth",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Florian de Gesincourt",
+        "flavorText": "Life will find a way, or it will make one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c759e94-e437-4dda-af0f-6578c0a50619.jpg?1783935986",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Carrion Screecher
+{
+    "name": "Carrion Screecher",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Bird",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "The banished have come home to roost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57b9e3a3-8d01-4273-9658-9ffcbc2d2297.jpg?1783936042"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Crash Through
 {
     "name": "Crash Through",
@@ -968,6 +1188,42 @@
     ]
 }
 
+// Open Fire
+{
+    "name": "Open Fire",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Open Fire deals 3 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Jason Kang",
+        "flavorText": "Some khenra archers fashion their arrows with a personal touch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/448f9fb5-ffb5-4325-9f81-ce8782e5f9e9.jpg?1783936023"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Overcome
 {
     "name": "Overcome",
@@ -1116,6 +1372,63 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Puncturing Blow
+{
+    "name": "Puncturing Blow",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Puncturing Blow deals 5 damage to target creature. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Neither the false God-Pharaoh nor his bugs will decide our fate.\"\n—Samut, former Tah-crop initiate",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7d88da5-d9a3-49b3-a091-458b058c9114.jpg?1783936024",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Puncturing Blow’s replacement effect will exile the target creature if it would die this turn for any reason, not just due to lethal damage. It applies to the target creature even if Puncturing Blow deals no damage to it (due to a prevention effect) or Puncturing Blow deals damage to a different creature (due to a redirection effect)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1486,6 +1799,36 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Striped Riverwinder
+{
+    "name": "Striped Riverwinder",
+    "manaCost": "{6}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\nCycling {U} ({U}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{U}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Craig J Spearing",
+        "flavorText": "The denizens of the Luxa River woke angry on the currents of blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbeef9ef-487c-400b-bcee-1c0e8ec94b6a.jpg?1783936047"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // The Locust God
