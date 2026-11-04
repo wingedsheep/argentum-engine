@@ -139,6 +139,8 @@ object EffectWalker {
      */
     fun delayedBlinks(leaves: List<Effect>): List<Effect> =
         leaves.filterIsInstance<CreateDelayedTriggerEffect>().flatMap { delayed ->
+            // Only a return timed to a step: one waiting on an event may never come.
+            if (delayed.trigger != null || delayed.step == null) return@flatMap emptyList()
             val returns = delayed.effect as? MoveToZoneEffect ?: return@flatMap emptyList()
             val exile = leaves.firstOrNull { it is MoveToZoneEffect && isBlinkPair(it, returns) }
                 ?: return@flatMap emptyList()
