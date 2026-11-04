@@ -9112,6 +9112,38 @@
     ]
 }
 
+// Spike-Tailed Ceratops
+{
+    "name": "Spike-Tailed Ceratops",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This creature can block an additional creature each combat.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "artist": "Lius Lasahido",
+        "flavorText": "The conquistadors surrounded the dinosaur only to find that it had outflanked them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41a3b5f2-0b0b-42e0-a15b-4bb2fce05927.jpg?1783935717"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spreading Rot
 {
     "name": "Spreading Rot",
@@ -9859,6 +9891,68 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Thrash of Raptors
+{
+    "name": "Thrash of Raptors",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "As long as you control another Dinosaur, this creature gets +2/+0 and has trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Dinosaur",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Dinosaur",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Jonathan Kuo",
+        "flavorText": "They glide through the undergrowth, drawn to sounds of disturbance. They attack in unison and all share in the kill. And then they move on.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a03b859-811c-45ff-8d8a-9e87e4bbf113.jpg?1783935735"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

@@ -819,6 +819,11 @@ object BoardPresence : BoardFeature {
         // [creatureBodyValue]; everything below is a property of this permanent in this position.
         var value = creatureBodyValue(strikingPower, toughness, keywords, settledPower, settledToughness, statContext)
 
+        if (!projected.cantBlock(entityId)) {
+            value += extraBlockingValue(projected.getAdditionalBlockCount(entityId))
+        }
+
+
         // ── Drawbacks ──
         // "Can't attack" hung on the creature by a Pacifism takes away the same thing DEFENDER
         // does: the power. [CreatureValuation.cantAttackCostsPower] is what makes the two spellings
@@ -879,6 +884,8 @@ object BoardPresence : BoardFeature {
 
         return value.coerceAtLeast(0.1)
     }
+
+    internal fun extraBlockingValue(count: Int): Double = count.coerceIn(0, 3) * 0.4
 
     /** What a land is worth on the battlefield. Historical constants; [landSequencing] refines them. */
     internal const val LAND_UNTAPPED = 0.6

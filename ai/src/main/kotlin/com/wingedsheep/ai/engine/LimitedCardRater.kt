@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -446,6 +447,7 @@ object LimitedCardRater {
             keyword?.let { KEYWORD_BONUS[it] }?.let { return it }
         }
         when (static) {
+            is CanBlockAdditionalForCreatureGroup -> return 0.2 * static.count.coerceIn(0, 3)
             is CantBlock -> if (static.filter.scope == Scope.Self) return -0.3
             is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) return -0.3
             is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) return -0.2
