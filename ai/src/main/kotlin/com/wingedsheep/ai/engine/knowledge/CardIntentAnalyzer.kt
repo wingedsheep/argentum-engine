@@ -288,8 +288,9 @@ object CardIntentAnalyzer {
         if (activated.any { !it.isManaAbility && sacrificesOthers(it.cost) }) {
             tags += IntentTag.SACRIFICE_OUTLET
         }
-        // An Aura/Equipment whose whole point is the creature it sits on is a pump, not an anthem.
-        if (scripts.any { it.isAura && it.staticAbilities.any { static -> static is ModifyStats } }) {
+        // An Aura/Equipment whose whole point is the creature it sits on is a pump, not an anthem —
+        // when it raises it: Dead Weight's -2/-2 is removal ([tagsOf]).
+        if (scripts.any { it.isAura && it.staticAbilities.any { static -> static is ModifyStats && (static.powerBonus > 0 || static.toughnessBonus > 0) } }) {
             tags += IntentTag.PUMP
         }
 
@@ -1198,6 +1199,10 @@ object CardIntentAnalyzer {
             // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
             // of Invasion) is its drawback, never a pump or an answer.
             static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> emptySet()
+            // An Aura's "enchanted creature gets -2/-2" (Dead Weight) answers what it enchants; a
+            // power-only cut (Sea Legs' "otherwise, -2/-0") shrinks it without answering it.
+            static.filter.scope == Scope.AttachedTo && static.powerBonus <= 0 && static.toughnessBonus <= 0 ->
+                if (static.toughnessBonus < 0) setOf(IntentTag.REMOVAL) else emptySet()
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
             static.powerBonus > 0 || static.toughnessBonus > 0 -> setOf(IntentTag.ANTHEM)
             static.powerBonus < 0 || static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)

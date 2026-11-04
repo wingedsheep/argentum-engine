@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.ActivatedAbility
@@ -11,6 +12,9 @@ import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
@@ -136,6 +140,16 @@ enum class TargetPolarity {
 }
 
 /**
+ * An Aura whose gift or curse turns on the creature type of what it enchants — Sea Legs' "+0/+2 as
+ * long as it's a Pirate. Otherwise, it gets -2/-0", Gift of Fangs' Vampire, Bonds of Faith's Human.
+ * Its enchant slot is [TargetPolarity.FLEXIBLE] as a whole, but each candidate has one side:
+ * [whenIs] for a creature that has [subtype], [otherwise] for one that doesn't.
+ */
+data class HostSplit(val subtype: Subtype, val whenIs: TargetPolarity, val otherwise: TargetPolarity) {
+    fun polarityFor(hostHasSubtype: Boolean): TargetPolarity = if (hostHasSubtype) whenIs else otherwise
+}
+
+/**
  * Derives [TargetPolarity] per target requirement from a card's effect tree.
  *
  * ## How a leaf is matched to a slot
@@ -169,6 +183,12 @@ enum class TargetPolarity {
  * the unread Auras are curses (Imprison, Brainwash) as often as gifts (Curiosity, Spirit Link), so
  * neither side of the table is the safer default.
  *
+ * An Aura whose statics turn on the enchanted creature's type ("as long as it's a Pirate …
+ * Otherwise, …") is read twice, once for a host of that type and once for any other host. Two
+ * opposite one-sided readings make the slot [TargetPolarity.FLEXIBLE] and give it a [HostSplit],
+ * which the target selector resolves per candidate; a world in which nothing applies ("+2/+2 as
+ * long as it's a Vampire", no otherwise) reads as the other world.
+ *
  * An Aura's own activated abilities aimed at the creature it enchants count too: Strands of
  * Undeath's "{B}: Regenerate enchanted creature" can only be paid by the Aura's controller, so it
  * is a reason to enchant a creature of ours.
@@ -199,6 +219,7 @@ object TargetPolarityAnalyzer {
 
     private val spellCache = ConcurrentHashMap<Pair<String, Boolean>, List<TargetPolarity>>()
     private val abilityCache = ConcurrentHashMap<Triple<String, String, Boolean>, List<TargetPolarity>>()
+    private val hostSplitCache = ConcurrentHashMap<Pair<String, Boolean>, List<HostSplit>>()
     private val modeCache = ConcurrentHashMap<Triple<String, List<Int>, Boolean>, List<TargetPolarity>>()
 
     /**
@@ -218,6 +239,26 @@ object TargetPolarityAnalyzer {
                 else -> emptyList()
             }
         }
+
+    /**
+     * The per-candidate reading of an Aura whose enchant slot reads [TargetPolarity.FLEXIBLE]
+     * because what it does turns on the host's creature type — see [HostSplit]. Null for every
+     * other card.
+     */
+    fun hostSplit(card: CardDefinition, definitions: CardLookup = NO_DEFINITIONS): HostSplit? =
+        hostSplitCache.getOrPut(card.name to (definitions !== NO_DEFINITIONS)) {
+            val script = card.script
+            if (card.cardFaces.isNotEmpty() || script.auraTarget == null || script.targetRequirements.isNotEmpty()) {
+                return@getOrPut emptyList()
+            }
+            val subtype = hostSubtype(card) ?: return@getOrPut emptyList()
+            val whenIs = attachmentReadings(card, definitions, hostIs = true).takeIf { it.isNotEmpty() }?.let(::combine)
+            val otherwise = attachmentReadings(card, definitions, hostIs = false).takeIf { it.isNotEmpty() }?.let(::combine)
+            val oneSided = setOf(TargetPolarity.BENEFICIAL, TargetPolarity.HARMFUL)
+            if (whenIs in oneSided && otherwise in oneSided && whenIs != otherwise) {
+                listOf(HostSplit(subtype, whenIs!!, otherwise!!))
+            } else emptyList()
+        }.singleOrNull()
 
     /**
      * Polarity of each target slot of the modes [modeIndices] of [card]'s modal spell — a
@@ -856,8 +897,52 @@ object TargetPolarityAnalyzer {
      * counts because the attachment's controller is who can activate it.
      */
     private fun attachmentPolarity(card: CardDefinition, definitions: CardLookup): TargetPolarity {
+        if (hostSubtype(card) == null) return combine(attachmentReadings(card, definitions, hostIs = null))
+        // Read once per kind of host; a world where nothing applies takes the other's reading.
+        val whenIs = attachmentReadings(card, definitions, hostIs = true).takeIf { it.isNotEmpty() }?.let(::combine)
+        val otherwise = attachmentReadings(card, definitions, hostIs = false).takeIf { it.isNotEmpty() }?.let(::combine)
+        return when {
+            whenIs == null || otherwise == null -> whenIs ?: otherwise ?: TargetPolarity.UNKNOWN
+            whenIs == otherwise -> whenIs
+            TargetPolarity.UNKNOWN in listOf(whenIs, otherwise) -> TargetPolarity.UNKNOWN
+            else -> TargetPolarity.FLEXIBLE
+        }
+    }
+
+    /**
+     * The one creature type every conditional static of [card] turns on — "as long as enchanted
+     * creature is a Pirate" or its "otherwise" — or null when it has none, or any conditional
+     * static reads something else.
+     */
+    private fun hostSubtype(card: CardDefinition): Subtype? {
+        val conditional = card.script.staticAbilities.filterIsInstance<ConditionalStaticAbility>()
+        if (conditional.isEmpty()) return null
+        val subtypes = conditional.map { hostSubtypeOf(it.condition) ?: return null }
+        return subtypes.distinct().singleOrNull()
+    }
+
+    private fun hostSubtypeOf(condition: Condition): Subtype? = when (condition) {
+        is EnchantedCreatureHasSubtype -> condition.subtype
+        is NotCondition -> (condition.condition as? EnchantedCreatureHasSubtype)?.subtype
+        else -> null
+    }
+
+    /**
+     * Every reading [attachmentPolarity] combines. With [hostIs] set, a static gated on the host's
+     * creature type ([hostSubtype]) counts only in the world where its condition holds.
+     */
+    private fun attachmentReadings(card: CardDefinition, definitions: CardLookup, hostIs: Boolean?): List<TargetPolarity> {
         val readings = mutableListOf<TargetPolarity>()
-        for (static in card.script.staticAbilities) staticPolarity(static)?.let(readings::add)
+        for (static in card.script.staticAbilities) {
+            if (hostIs != null && static is ConditionalStaticAbility) {
+                val holds = when (static.condition) {
+                    is NotCondition -> !hostIs
+                    else -> hostIs
+                }
+                if (!holds) continue
+            }
+            staticPolarity(static)?.let(readings::add)
+        }
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
@@ -879,7 +964,7 @@ object TargetPolarityAnalyzer {
         // A self-only zone redirect (disturb's "if this would be put into a graveyard, exile it
         // instead") moves the Aura itself and never touches the creature, so it is no veto either.
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
-        return combine(readings)
+        return readings
     }
 
     private fun choosesOwnBranchSomewhere(effect: Effect): Boolean =

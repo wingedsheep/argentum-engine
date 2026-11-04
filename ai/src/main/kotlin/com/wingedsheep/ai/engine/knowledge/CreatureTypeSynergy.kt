@@ -22,7 +22,8 @@ import kotlinx.serialization.json.contentOrNull
  * "Asks for" is read off the card's structure, never its Oracle text: a creature type named by
  * any object filter anywhere in its abilities — the "other Goblins" a lord pumps, the "another Elf
  * you control" a trigger watches, the "Goblin spells" a cost reducer discounts, the "Goblin" a
- * sacrifice cost or a tutor wants. A creature-type predicate under a `Not` ("non-Goblin") doesn't
+ * sacrifice cost or a tutor wants, the Pirate an Aura's "as long as enchanted creature is a Pirate"
+ * gates its bonus on. A creature-type predicate under a `Not` ("non-Goblin") doesn't
  * count, nor does one in a filter scoped to an opponent's objects ("Merfolk an opponent controls"),
  * nor a static that shrinks the type ("all Goblins get -1/-1"), which [SynergyStrength.punished] reads.
  *
@@ -75,7 +76,9 @@ internal object CreatureTypeSynergy {
                 if (type == "ModifyStats" && (element.int("powerBonus") ?: 0) + (element.int("toughnessBonus") ?: 0) < 0) return
                 if ((element["controllerPredicate"] as? JsonObject)?.string("type") in OPPONENT_SCOPES) return
                 when (type) {
-                    "HasSubtype" -> element.string("subtype")?.let(out::add)
+                    // "As long as enchanted creature is a Pirate" (Sea Legs, Gift of Fangs) wants the
+                    // Aura on one of that tribe; its "otherwise" half sits under the `Not` above.
+                    "HasSubtype", "EnchantedCreatureHasSubtype" -> element.string("subtype")?.let(out::add)
                     "HasAnyOfSubtypes" -> (element["subtypes"] as? JsonArray)
                         ?.mapNotNullTo(out) { (it as? JsonPrimitive)?.contentOrNull }
                 }

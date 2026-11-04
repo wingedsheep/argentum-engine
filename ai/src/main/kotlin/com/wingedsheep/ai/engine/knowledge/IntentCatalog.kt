@@ -317,6 +317,13 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     }
 
     /**
+     * The per-candidate side of the Aura called [cardName] when what it does turns on the
+     * creature type of what it enchants (Sea Legs) — see [HostSplit]. Null for every other card.
+     */
+    fun spellHostSplit(cardName: String): HostSplit? =
+        registry?.getCard(cardName)?.let { TargetPolarityAnalyzer.hostSplit(it, ::tokenDefinition) }
+
+    /**
      * What the printed activated ability [abilityId] on the card called [cardName] does to the
      * permanent that card is attached to — Strands of Undeath's "{B}: Regenerate enchanted
      * creature" is [TargetPolarity.BENEFICIAL] to whoever controls the creature it enchants.
