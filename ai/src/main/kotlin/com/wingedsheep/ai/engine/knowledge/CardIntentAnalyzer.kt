@@ -936,15 +936,19 @@ object CardIntentAnalyzer {
         }
 
         // "Target creature has base toughness 0 until end of turn" kills anything not propped up
-        // by counters or a pump — removal with no toughness defence, like destroy. A larger base
-        // is a gift or a curse depending on the creature, so it earns no tag.
-        // A base of 1/1 or smaller that leaves it alive (Warkite Marauder's 0/1) shuts the creature
-        // off for the duration — the same line the polarity reader draws for a small base.
+        // by counters or a pump — removal with no toughness defence, like destroy.
+        // A base of 1/1 or smaller that leaves it alive (Warkite Marauder's 0/1), or no power and
+        // little toughness (Sorceress Queen's 0/2), shuts the creature off for the duration — the
+        // same line the polarity reader draws for a small base.
+        // Any other base — a fixed 4/4 (Square Up), X/X (Mirror Entity), or the source's own power
+        // and toughness (Exuberant Wolfbear) — *replaces* the creature's stats for a fight: a combat
+        // enhancement, never a pump a plan may add on top. Whose creature gets it is the polarity
+        // reader's call (a large base on its own reads flexible there).
         is SetBaseStatsEffect -> when {
             !hitsAnotherPermanent(effect.target) -> emptySet()
             effect.toughness?.let(::fixed) == 0 -> removalTags(effect.target)
             setsSmallBase(effect) -> setOf(IntentTag.NEUTRALIZE)
-            else -> emptySet()
+            else -> setOf(IntentTag.COMBAT_ENHANCEMENT)
         }
 
         // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
@@ -996,6 +1000,10 @@ object CardIntentAnalyzer {
 
         is GrantKeywordEffect -> keywordTags(effect.keyword)
         is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)
+        // "Target creature must be blocked this turn if able" / "all creatures able to block it do
+        // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
+        // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
+        is MustBeBlockedEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
         // "Creatures your opponents control can't block this turn" / "creatures you control can't be
         // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
         is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)
@@ -1223,10 +1231,15 @@ object CardIntentAnalyzer {
         else -> false
     }
 
-    /** A base P/T change to fixed values of 1 or less — see [IntentTag.NEUTRALIZE]. */
+    /**
+     * A base P/T change to fixed values of 1 or less, or to no power and at most 2 toughness — see
+     * [IntentTag.NEUTRALIZE]; the polarity reader's `baseStatsPolarity` draws the same line.
+     */
     private fun setsSmallBase(effect: SetBaseStatsEffect): Boolean {
         val set = listOfNotNull(effect.power, effect.toughness)
-        return set.isNotEmpty() && set.all { amount -> fixed(amount)?.let { it <= 1 } == true }
+        val small = set.isNotEmpty() && set.all { amount -> fixed(amount)?.let { it <= 1 } == true }
+        val toothless = effect.power?.let(::fixed) == 0 && effect.toughness?.let(::fixed)?.let { it <= 2 } == true
+        return small || toothless
     }
 
     /** Whether [target] is bound to a "target opponent" requirement. */
@@ -1279,6 +1292,7 @@ object CardIntentAnalyzer {
         return when (parsed) {
             in EVASION_KEYWORDS -> setOf(IntentTag.EVASION_GRANT)
             in PROTECTIVE_KEYWORDS -> setOf(IntentTag.PROTECTION)
+            in COMBAT_KEYWORDS -> setOf(IntentTag.COMBAT_ENHANCEMENT)
             else -> emptySet()
         }
     }
@@ -1707,6 +1721,16 @@ object CardIntentAnalyzer {
 
     /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
     private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)
+
+    /**
+     * Keywords that win or open a fight without adding power or toughness — see
+     * [IntentTag.COMBAT_ENHANCEMENT]. Haste is here because it is spent attacking this turn;
+     * defender, banding and the like are not gifts a controller hands its attacker.
+     */
+    private val COMBAT_KEYWORDS = setOf(
+        Keyword.FIRST_STRIKE, Keyword.DOUBLE_STRIKE, Keyword.DEATHTOUCH, Keyword.LIFELINK,
+        Keyword.VIGILANCE, Keyword.REACH, Keyword.HASTE,
+    )
 
     private val PROTECTIVE_KEYWORDS = setOf(
         Keyword.HEXPROOF, Keyword.SHROUD, Keyword.INDESTRUCTIBLE, Keyword.PROTECTION,

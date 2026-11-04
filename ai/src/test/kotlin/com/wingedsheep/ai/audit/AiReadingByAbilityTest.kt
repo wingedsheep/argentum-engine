@@ -155,9 +155,11 @@ class AiReadingByAbilityTest : FunSpec({
         AiReadingAudit.audit(card("Confounding Conundrum")).map { it.key } shouldContain "intent: ForEach>Pipeline(BattlefieldMatching→hand)"
     }
 
-    test("a permanent setting its own base P/T needs no intent, but setting a target's stays flagged") {
+    test("a permanent setting its own base P/T needs no intent, and setting a target's reads as a combat enhancement") {
         AiReadingAudit.audit(card("Bramblefort Fink")).map { it.key } shouldNotContain "intent: SetBaseStatsEffect"
         AiReadingAudit.audit(card("Master of Winds")).map { it.key } shouldNotContain "intent: SetBaseStatsEffect"
-        AiReadingAudit.audit(card("Square Up")).map { it.key } shouldContain "intent: SetBaseStatsEffect"
+        val squareUp = AiReadingAudit.read(card("Square Up"))
+        squareUp.abilities.flatMap { it.findings }.filter { it.check == Check.INTENT }
+            .any { it.read && it.reason.contains("makes a creature better in combat") } shouldBe true
     }
 })

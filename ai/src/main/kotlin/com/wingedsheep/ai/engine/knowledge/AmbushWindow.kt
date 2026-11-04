@@ -324,7 +324,8 @@ internal object AmbushWindow {
      * Two groups, both about *this turn*:
      *
      *  - **Improves our own attack**: [IntentTag.PUMP], [IntentTag.ANTHEM],
-     *    [IntentTag.EVASION_GRANT], [IntentTag.PROTECTION]. An ETB that pumps the team is worth
+     *    [IntentTag.EVASION_GRANT], [IntentTag.PROTECTION], [IntentTag.COMBAT_ENHANCEMENT]. An ETB
+     *    that pumps the team, or hands our attacker first strike, is worth
      *    having before we swing, and by construction it aims at our own permanents — so unlike
      *    [ANSWERS_THEIR_BOARD] there is no side-of-the-table question to ask about it.
      *  - **Hands us something to spend**: [IntentTag.DRAW], [IntentTag.TUTOR], [IntentTag.RAMP],
@@ -354,7 +355,7 @@ internal object AmbushWindow {
             CombatMath.getCreaturesThatCanAttack(state, state.projectedState, playerId).isEmpty()
 
     private val PAYS_OFF_BEFORE_THE_AMBUSH = setOf(
-        IntentTag.PUMP, IntentTag.ANTHEM, IntentTag.EVASION_GRANT, IntentTag.PROTECTION,
+        IntentTag.PUMP, IntentTag.ANTHEM, IntentTag.EVASION_GRANT, IntentTag.PROTECTION, IntentTag.COMBAT_ENHANCEMENT,
         IntentTag.DRAW, IntentTag.TUTOR, IntentTag.RAMP, IntentTag.COST_REDUCER, IntentTag.RECURSION,
     )
 

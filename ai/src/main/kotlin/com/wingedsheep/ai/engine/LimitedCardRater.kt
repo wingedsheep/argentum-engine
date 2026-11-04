@@ -787,6 +787,9 @@ object LimitedCardRater {
         IntentTag.PUMP to 0.3,
         IntentTag.COMBAT_TRICK to 0.3,
         IntentTag.EVASION_GRANT to 0.3,
+        // A first strike, a deathtouch, a forced block: it decides a fight the way a pump does, but
+        // only one fight, and adds nothing to the body — a little under evasion.
+        IntentTag.COMBAT_ENHANCEMENT to 0.2,
         IntentTag.PROTECTION to 0.3,
         IntentTag.SACRIFICE_OUTLET to 0.2,
         // A turn of no spells from the opponent: real tempo, but it answers nothing already on the
