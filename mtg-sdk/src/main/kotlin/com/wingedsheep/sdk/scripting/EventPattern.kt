@@ -1101,6 +1101,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * cleanup-step hand-size discard. The causing controller is "that player" in the effect:
          * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Trigger-only — the
          * replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
+         * [ZoneChangeCause.NotCycled] admits every discard except one paid as a cycling cost.
          */
         val cause: ZoneChangeCause = ZoneChangeCause.Any
     ) : EventPattern {
@@ -1126,6 +1127,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(if (batch) "cards" else "a card")
             }
             if (firstTimeEachTurn) append(" for the first time each turn")
+            if (cause == ZoneChangeCause.NotCycled) append(" and it wasn't cycled")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

@@ -1304,6 +1304,9 @@ class ZoneTransitionService(
                 pendingDiscardCauseControllers = newState.pendingDiscardCauseControllers - entityId
             )
         }
+        if (entityId in newState.pendingCyclingDiscardIds) {
+            newState = newState.copy(pendingCyclingDiscardIds = newState.pendingCyclingDiscardIds - entityId)
+        }
         events.add(
             ZoneChangeEvent(
                 entityId = entityId,
@@ -1703,8 +1706,11 @@ class ZoneTransitionService(
      *
      * @param causedByControllerId Controller of the spell or ability causing the discard, via
      *   [markDiscardCause]. Null for the cleanup-step hand-size discard and for cost payments.
-     * @param asCyclingCost Marks the emitted [CardsDiscardedEvent] as a cycling cost payment
-     *   (CR 702.29a) so the client can suppress the duplicate log line. Triggers ignore it.
+     * @param asCyclingCost The cards are being cycled — discarded to pay a cycling cost
+     *   (CR 702.29c). Marks the emitted [CardsDiscardedEvent] (the client suppresses the duplicate
+     *   log line; `DiscardEvent(cause = NotCycled)` skips it) and stamps
+     *   [GameState.pendingCyclingDiscardIds] so a `ZoneChangeCause.NotCycled` replacement lets the
+     *   cycled card through.
      */
     fun discardCards(
         state: GameState,
@@ -1722,6 +1728,9 @@ class ZoneTransitionService(
         ) return ZoneTransitionResult(state, emptyList())
         val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         var newState = markDiscardCause(state, cardIds, causedByControllerId)
+        if (asCyclingCost) {
+            newState = newState.copy(pendingCyclingDiscardIds = newState.pendingCyclingDiscardIds + cardIds)
+        }
         val moveEvents = mutableListOf<EngineGameEvent>()
         val transitions = mutableListOf<ZoneTransitionOutcome>()
         for (cardId in cardIds) {

@@ -29,6 +29,7 @@ Abandon the Post	intent: ForEach>CantBlockEffect
 Abandoned Air Temple
 Abandoned Campground
 Abandoned Outpost
+Abandoned Sarcophagus
 Abattoir Ghoul
 Abbey Griffin
 Abbot of Keral Keep	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -13592,6 +13593,7 @@ Resolute Blademaster
 Resolute Reinforcements
 Resolute Rider
 Resolute Strike
+Resolute Survivors
 Resolute Watchdog
 Resonating Lute
 Resounding Roar
@@ -18903,6 +18905,7 @@ Vivisection Evangelist
 Vivisurgeon's Insight
 Vizier of the Menagerie
 Vizier of the Scorpion
+Vizier of the True
 Vizkopa Vampire
 Vizzerdrix
 Vnwxt, Verbose Host
@@ -19764,7 +19767,7 @@ Wren's Run Packmaster	intent: EmitChampionedEventEffect
 Wren's Run Vanquisher
 Wrench
 Wrench Mind
-Wrenn and Realmbreaker	intent: BecomeCreatureEffect; intent: CreatePermanentEmblemEffect; polarity: BecomeCreatureEffect
+Wrenn and Realmbreaker	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Wrenn and Seven	intent: Pipeline(hand→battlefield)
 Wrenn's Resolve
 Wretched Anurid

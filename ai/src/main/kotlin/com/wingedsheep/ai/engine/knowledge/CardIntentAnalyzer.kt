@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
+import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
@@ -1510,6 +1511,9 @@ object CardIntentAnalyzer {
         is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
             setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
+        // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a
+        // standing permission to cast cards back out of our graveyard is recursion, every turn.
+        is MayCastFromGraveyard -> setOf(IntentTag.RECURSION)
         // A composite static is each of its parts (a conditional one is read above, by the
         // ability it gates).
         is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }

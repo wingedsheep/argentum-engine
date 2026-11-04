@@ -41,9 +41,9 @@ object HiddenSlotRewrite {
      * and none of those is read here or visible to [runtimeBlockers], which only inspects the
      * entity's own container. Rewriting such a slot leaves the grant pointing at a different card.
      * That gap predates this projection; closing it means extending this analysis, not assuming it
-     * already covers them. Transient bookkeeping like `pendingSacrificeIds` and
-     * `pendingDiscardCauseControllers` is correctly out of scope: both live and die inside a single
-     * zone move, so no pause can observe them.
+     * already covers them. Transient bookkeeping like `pendingSacrificeIds`,
+     * `pendingDiscardCauseControllers` and `pendingCyclingDiscardIds` is correctly out of scope: all
+     * live and die inside a single zone move, so no pause can observe them.
      */
     sealed interface IdentitySensitiveInFlightPins {
         data class Complete(val entityIds: Set<EntityId>) : IdentitySensitiveInFlightPins

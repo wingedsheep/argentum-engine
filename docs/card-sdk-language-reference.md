@@ -19622,6 +19622,15 @@ The priority groups are (CR 616.1a–f):
   object's controller in the transient `GameState.pendingDiscardCauseControllers` marker (the same idiom
   as `pendingSacrificeIds`), which the redirect path reads and `moveToZone` consumes. The card still
   counts as discarded either way — `CardsDiscardedEvent` fires regardless of where it lands.
+  `ZoneChangeCause.NotCycled` is the inverse provenance — "…and it wasn't cycled": every move except
+  the discard paid as a cycling or typecycling cost (CR 702.29c, 702.29f). Abandoned Sarcophagus:
+  `RedirectZoneChange(newDestination = Zone.EXILE, appliesTo = ZoneChangeEvent(filter =
+  GameObjectFilter.Any.withCycling().nontoken().ownedByYou(), to = Zone.GRAVEYARD), requiredCause =
+  ZoneChangeCause.NotCycled)` — mills, deaths, effect discards and resolving spells are exiled, the
+  cycled card isn't. The cycling handlers stamp the transient `GameState.pendingCyclingDiscardIds` via
+  `discardCards(asCyclingCost = true)`. `withCycling()` in a zone-change filter reads printed cycling
+  and fails for a permanent that lost all its abilities or is face down. The trigger form is
+  `Triggers.self.isDiscarded(cause = ZoneChangeCause.NotCycled)`, which skips the cycling discard.
 
 
 - `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo = DiscardEvent(Player.You))`

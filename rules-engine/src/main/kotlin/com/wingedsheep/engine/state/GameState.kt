@@ -402,6 +402,15 @@ data class GameState(
     val pendingDiscardCauseControllers: Map<EntityId, EntityId> = emptyMap(),
 
     /**
+     * Cards currently being discarded to pay a cycling or typecycling cost — being *cycled*
+     * (CR 702.29c, 702.29f). Stamped by `ZoneTransitionService.discardCards(asCyclingCost = true)`
+     * just before the move and consumed by `moveToZone` like [pendingDiscardCauseControllers], so
+     * `ZoneChangeCause.NotCycled` can tell the cycled card apart from every other graveyard move
+     * (Abandoned Sarcophagus). Transient: it never outlives the single zone move.
+     */
+    val pendingCyclingDiscardIds: Set<EntityId> = emptySet(),
+
+    /**
      * Players (by entity id) who have committed a crime this turn (CR 700-level Outlaws of Thunder
      * Junction rule). Populated wherever a [com.wingedsheep.engine.core.CommitCrimeEvent] is emitted
      * (spell cast, activated ability, triggered ability), and cleared at every turn boundary. Read by
