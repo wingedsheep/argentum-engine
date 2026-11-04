@@ -296,7 +296,7 @@ class AiReadingService(private val registry: CardRegistry) : AiReadingProvider {
                 parts = r.board.parts.map(::part),
                 rule = r.board.rule,
             ),
-            intent = AiIntentView(r.intent.tags.map { AiTagView(it.key, it.label) }, r.intent.speed, r.intent.facts),
+            intent = AiIntentView(r.intent.tags.map { AiTagView(it.key, it.label) }, r.intent.speed, r.intent.facts, r.intent.unrecognised),
             advisor = r.advisor,
         )
     }

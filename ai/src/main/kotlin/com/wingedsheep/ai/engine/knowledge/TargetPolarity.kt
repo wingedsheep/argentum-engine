@@ -228,8 +228,8 @@ object TargetPolarityAnalyzer {
     }
 
     /** Polarity of each target slot of one [mode] of a modal spell or triggered ability. */
-    fun forMode(mode: Mode, definitions: CardLookup = NO_DEFINITIONS): List<TargetPolarity> =
-        forRequirements(mode.effect, mode.targetRequirements, definitions)
+    fun forMode(mode: Mode, definitions: CardLookup = NO_DEFINITIONS, triggered: Boolean = false): List<TargetPolarity> =
+        forRequirements(mode.effect, mode.targetRequirements, definitions, triggered = triggered)
 
     /** Polarity of each target slot of the activated [ability] printed on [card]. */
     fun forAbility(
@@ -265,6 +265,7 @@ object TargetPolarityAnalyzer {
         requirements: List<TargetRequirement>,
         definitions: CardLookup = NO_DEFINITIONS,
         source: CardDefinition? = null,
+        triggered: Boolean = false,
     ): List<TargetPolarity> {
         if (requirements.isEmpty()) return emptyList()
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
@@ -277,7 +278,7 @@ object TargetPolarityAnalyzer {
             // that is every target of that slot, so the body reads as the slot's; with several,
             // `ContextTarget(0)` walks all of them and names no one slot.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
-                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
+                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions, source, triggered)
                 continue
             }
             // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
@@ -326,10 +327,13 @@ object TargetPolarityAnalyzer {
             }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
+            val bounce = if (triggered) triggeredBounceSlot(leaf, requirements) else null
             if (recursion != null) {
                 recursions += recursion
             } else if (copy != null) {
                 perSlot[copy] += TargetPolarity.BENEFICIAL
+            } else if (bounce != null) {
+                perSlot[bounce] += TargetPolarity.HARMFUL
             } else {
                 for ((target, polarity) in classify(leaf, definitions, source)) {
                     val slot = slotOf(target, requirements) ?: continue
@@ -395,6 +399,27 @@ object TargetPolarityAnalyzer {
         val fromGraveyard = leaf.fromZone == Zone.GRAVEYARD ||
             (leaf.fromZone == null && (requirements[slot] as? TargetObject)?.filter?.zone == Zone.GRAVEYARD)
         return slot.takeIf { fromGraveyard }
+    }
+
+    /**
+     * The slot a **triggered bounce** names — "when this creature enters, return target creature to
+     * its owner's hand" (Deadeye Rig-Hauler, Man-o'-War, Aether Adept) — or null.
+     *
+     * [classify] leaves a bounce unread because it is genuinely either-way *at instant speed*:
+     * returning your own creature in response to removal is a real play (`lastchance-05`). A
+     * triggered ability offers no such window — it fires on its event's schedule, not in answer to
+     * the opponent's spell — so its bounce is tempo removal aimed at the other side. A slot whose
+     * filter keeps it on our side ("return another target creature you control") is the rebuy shape
+     * and stays unread, as does a move out of a graveyard ([recursionSlot]'s business).
+     */
+    private fun triggeredBounceSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        if (leaf !is MoveToZoneEffect || leaf.destination != Zone.HAND || leaf.faceDown != null) return null
+        if (leaf.fromZone != null && leaf.fromZone != Zone.BATTLEFIELD) return null
+        val slot = slotOf(leaf.target, requirements) ?: return null
+        val requirement = requirements[slot]
+        val zone = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter?.zone
+        if (zone != null && zone != Zone.BATTLEFIELD) return null
+        return slot.takeUnless { isOwnSide(requirement) }
     }
 
     /**
@@ -566,7 +591,8 @@ object TargetPolarityAnalyzer {
             // Off the battlefield to a graveyard or exile is removal. To hand or library is *not*
             // classified: bouncing your own creature in response to removal is a real play
             // (`lastchance-05`), and a move *onto* the battlefield or out of a graveyard is
-            // recursion, whose polarity is about the card's owner rather than a controller.
+            // recursion, whose polarity is about the card's owner rather than a controller. A
+            // *triggered* bounce has no such window and is read in [triggeredBounceSlot].
             is MoveToZoneEffect -> leaf.target to when {
                 leaf.fromZone != null && leaf.fromZone != Zone.BATTLEFIELD -> null
                 leaf.destination == Zone.GRAVEYARD || leaf.destination == Zone.EXILE -> TargetPolarity.HARMFUL
@@ -679,6 +705,11 @@ object TargetPolarityAnalyzer {
             // Clue or Gold is the controller's to use, and the board evaluator does not price one —
             // so without this the slot is a coin toss between giving it to us or to them.
             is CreatePredefinedTokenEffect -> leaf.controller?.takeIf { it.isSlot() }
+                ?.let { it to TargetPolarity.BENEFICIAL } ?: return emptyList()
+            // "Target opponent creates a 3/3 green Dinosaur creature token" (Baffling End, Forbidden
+            // Orchard): a creature is a body on its controller's side of the table, so the slot
+            // that gets it is the side it helps — a drawback when the slot is an opponent's.
+            is CreateTokenEffect -> leaf.controller?.takeIf { it.isSlot() }
                 ?.let { it to TargetPolarity.BENEFICIAL } ?: return emptyList()
             else -> return emptyList()
         }

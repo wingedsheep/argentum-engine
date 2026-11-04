@@ -9,6 +9,8 @@ import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
@@ -1147,6 +1149,9 @@ object CardIntentAnalyzer {
 
     private fun tagsOf(static: StaticAbility): Set<IntentTag> = when (static) {
         is ModifyStats -> when {
+            // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
+            // of Invasion) is its drawback, never a pump or an answer.
+            static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> emptySet()
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
             static.powerBonus > 0 || static.toughnessBonus > 0 -> setOf(IntentTag.ANTHEM)
             static.powerBonus < 0 || static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)
@@ -1182,6 +1187,11 @@ object CardIntentAnalyzer {
         // "Creatures entering the battlefield don't cause abilities to trigger" (Torpor Orb, Tocatli
         // Honor Guard, Hushbringer) and its opponents-only form (Elesh Norn, Mother of Machines).
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
+        // A condition gates an ability without changing what it is for: ascend's "this creature
+        // has flying as long as you have the city's blessing" grants the same evasion an
+        // unconditional grant does, some of the time. A composite is each of its parts.
+        is ConditionalStaticAbility -> tagsOf(static.ability)
+        is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
         else -> emptySet()
     }
 

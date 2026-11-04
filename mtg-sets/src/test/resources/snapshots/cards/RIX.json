@@ -371,6 +371,237 @@
     ]
 }
 
+// Baffling End
+{
+    "name": "Baffling End",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target creature an opponent controls with mana value 3 or less.\nWhen this enchantment leaves the battlefield, target opponent creates a 3/3 green Dinosaur creature token with trample.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Baffling End:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=3 ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, exile target creature an opponent controls with mana value 3 or less."
+            },
+            {
+                "id": "Baffling End:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Dinosaur"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t1"
+                },
+                "descriptionOverride": "When this enchantment leaves the battlefield, target opponent creates a 3/3 green Dinosaur creature token with trample."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/208c6f51-3c00-4fc6-8579-8f57444d0e97.jpg?1783935341",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "While Baffling End's two abilities are flavorfully related, they are independent. If the first ability doesn't resolve (perhaps because the target gained hexproof), the second will still create a Dinosaur token when Baffling End leaves the battlefield."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "In a multiplayer game, the target opponent who creates a Dinosaur token doesn't have to be the same one whose creature was exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Bishop of Binding
+{
+    "name": "Bishop of Binding",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "When this creature enters, exile target creature an opponent controls until this creature leaves the battlefield.\nWhenever this creature attacks, target Vampire gets +X/+X until end of turn, where X is the power of the exiled card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bishop of Binding:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Bishop of Binding:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Bishop of Binding:3",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "LinkedExiledCard",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "EntityProperty",
+                        "entity": "LinkedExiledCard",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Vampire"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aaadceb3-8a57-45de-b3f1-aca94f20de18.jpg?1783935342"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Blazing Hope
+{
+    "name": "Blazing Hope",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature with power greater than or equal to your life total.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "POWER",
+                                "operator": "GTE",
+                                "amount": "YourLifeTotal"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "\"No shadow remains for you to hide in.\"\n—Caparocti Sunborn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6beac36-e12f-408d-a37b-a70e0e6c52d8.jpg?1783935342"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blood Sun
 {
     "name": "Blood Sun",
@@ -1010,6 +1241,162 @@
     ]
 }
 
+// Curious Obsession
+{
+    "name": "Curious Obsession",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 and has \"Whenever this creature deals combat damage to a player, you may draw a card.\"\nAt the beginning of your end step, if you didn't attack with a creature this turn, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curious Obsession:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf",
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "PLAYER_ATTACKED"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you didn't attack with a creature this turn, sacrifice this Aura."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Curious Obsession:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, you may draw a card."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f998c62-30c9-4fc3-a045-5becc04f9e3e.jpg?1783935327",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Curious Obsession's last ability is satisfied if any creature has attacked, similar to raid abilities. The creature it enchants doesn't have to have attacked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Deadeye Rig-Hauler
+{
+    "name": "Deadeye Rig-Hauler",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Raid — When this creature enters, if you attacked this turn, you may return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadeye Rig-Hauler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Up you go, you soggy rat.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db310d8f-0db7-44c9-9f2d-9a0773b565b0.jpg?1783935325"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Deeproot Elite
 {
     "name": "Deeproot Elite",
@@ -1248,6 +1635,53 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Everdawn Champion
+{
+    "name": "Everdawn Champion",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Prevent all combat damage that would be dealt to this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "\"Undefeated in battle, she is the shining future our empire deserves.\"\n—Huatli",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84a74fa9-1338-40ea-95d9-0f4e78b85f60.jpg?1783935338",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Combat damage can be assigned to Everdawn Champion as normal, even though that damage will be prevented. For example, if Everdawn Champion blocks a 4/4 creature with trample, the attacking player may assign 2 of that creature's combat damage to the player or planeswalker it's attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3205,6 +3639,86 @@
     ]
 }
 
+// Paladin of Atonement
+{
+    "name": "Paladin of Atonement",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "At the beginning of each upkeep, if you lost life last turn, put a +1/+1 counter on this creature.\nWhen this creature dies, you gain life equal to its toughness.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Paladin of Atonement:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_LOST_LAST_TURN"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Paladin of Atonement:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Toughness"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "For every wound there is a blessing; for every death, a reckoning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0ad263e-7ff0-459b-b04b-1d03b09c48aa.jpg?1783935335",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Paladin of Atonement's first ability cares only whether you lost life last turn, even if Paladin of Atonement wasn't on the battlefield when that happened. It doesn't care how much you lost, whether you also gained life, or even whether you gained more life than you lost."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "To determine how much life you gain for the last ability, use Paladin of Atonement's toughness as it last existed on the battlefield. If its toughness was less than 0, you won't gain life. (You also won't lose life.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Path of Discovery
 {
     "name": "Path of Discovery",
@@ -3365,6 +3879,101 @@
     ]
 }
 
+// Pride of Conquerors
+{
+    "name": "Pride of Conquerors",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nCreatures you control get +1/+1 until end of turn. If you have the city's blessing, those creatures get +2/+2 until end of turn instead.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "then": "GainCitysBlessing"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff0a769c-6602-4f6f-a388-f5aa15fb3c90.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Protean Raider
 {
     "name": "Protean Raider",
@@ -3405,6 +4014,57 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Radiant Destiny
+{
+    "name": "Radiant Destiny",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nAs this enchantment enters, choose a creature type.\nCreatures you control of the chosen type get +1/+1. As long as you have the city's blessing, they also have vigilance.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "chosenSubtypeKey": "chosenCreatureType"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "chosenSubtypeKey": "chosenCreatureType"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Emrah Elmasli",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d44584d-e501-40aa-b3f2-a6155e2ee6e7.jpg?1783935337"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3691,6 +4351,63 @@
     ]
 }
 
+// Sea Legs
+{
+    "name": "Sea Legs",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +0/+2 as long as it's a Pirate. Otherwise, it gets -2/-0.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 0,
+                    "toughnessBonus": 2
+                },
+                "condition": {
+                    "type": "EnchantedCreatureHasSubtype",
+                    "subtype": "Pirate"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": -2,
+                    "toughnessBonus": 0
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EnchantedCreatureHasSubtype",
+                        "subtype": "Pirate"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"When the waves pick up, either you find your feet or you lose your lunch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae48b747-b9ea-4af1-84c5-3f5835d1ba1f.jpg?1783935324"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Seafloor Oracle
 {
     "name": "Seafloor Oracle",
@@ -3902,6 +4619,165 @@
     ]
 }
 
+// Skymarcher Aspirant
+{
+    "name": "Skymarcher Aspirant",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nThis creature has flying as long as you have the city's blessing.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/9473190f-5e96-4cf7-a0fa-a77d916acc2e.jpg?1783935332",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Slaughter the Strong
+{
+    "name": "Slaughter the Strong",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player chooses any number of creatures they control with total power 4 or less, then sacrifices all other creatures they control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "Each"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "ControlledPermanents",
+                            "filter": "creature"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": "ChooseAnyNumber",
+                        "storeSelected": "selected1",
+                        "storeRemainder": "remainder1",
+                        "prompt": "Choose any number of creatures you control with total power 4 or less. The rest are sacrificed.",
+                        "selectedLabel": "Keep",
+                        "remainderLabel": "Sacrifice",
+                        "useTargetingUI": true,
+                        "restrictions": [
+                            {
+                                "type": "TotalPowerAtMost",
+                                "max": 4
+                            }
+                        ],
+                        "alwaysPrompt": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "remainder1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Sacrifice"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Cut the beasts out from under them and their strength is nothing.\"\n—Vona of Iedo, Butcher of Magan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4217ab21-181e-4c32-97c3-d8bd441287e0.jpg?1783935331"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Snubhorn Sentry
+{
+    "name": "Snubhorn Sentry",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nThis creature gets +3/+0 as long as you have the city's blessing.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 3,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ee111e7-5309-46d5-b3ea-a049b3962c23.jpg?1783935332",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Soul of the Rapids
 {
     "name": "Soul of the Rapids",
@@ -3963,6 +4839,53 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Spire Winder
+{
+    "name": "Spire Winder",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Flying\nAscend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nThis creature gets +1/+1 as long as you have the city's blessing.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/aca438d7-1134-4fee-9fad-85c3b1abe8ed.jpg?1783935317",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4169,6 +5092,52 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Sun-Crested Pterodon
+{
+    "name": "Sun-Crested Pterodon",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Flying\nThis creature has vigilance as long as you control another Dinosaur.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Dinosaur",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Lars Grant-West",
+        "flavorText": "\"Pterodons tolerate no intrusion into their skies. Even the clouds must ask permission.\"\n—Mahuiz, Sun Empire archer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c298b51f-b725-4a51-a91e-4c66cf6dfe9d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

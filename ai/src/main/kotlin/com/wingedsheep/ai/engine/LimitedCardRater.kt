@@ -11,7 +11,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -425,6 +427,15 @@ object LimitedCardRater {
      * its size: on the creature it is attached to like a pump, battlefield-wide like an anthem.
      */
     private fun staticScore(static: StaticAbility): Double {
+        // "As long as you have the city's blessing, this creature has flying" (ascend), "… has
+        // vigilance as long as you control another Dinosaur": the ability's worth some of the time,
+        // priced at half of what it would be worth unconditionally.
+        if (static is ConditionalStaticAbility) return staticScore(static.ability) * CONDITIONAL_SHARE
+        // A keyword the creature grants itself is a keyword on its body, priced like a printed one.
+        if (static is GrantKeyword && static.filter.scope == Scope.Self) {
+            val keyword = runCatching { Keyword.valueOf(static.keyword.uppercase()) }.getOrNull()
+            if (keyword != null) return keywordValue(keyword)
+        }
         if (static is ModifyStats) {
             val total = static.powerBonus + static.toughnessBonus
             if (total > 0) {
@@ -657,6 +668,9 @@ object LimitedCardRater {
     private const val COMPOSITE_CAP = 2.5
     private const val MODAL_FLEXIBILITY = 0.2
     private const val PUMP_PER_STAT = 0.15
+
+    /** The share of its value a static ability gated on a condition keeps. */
+    private const val CONDITIONAL_SHARE = 0.5
     private const val ANTHEM_PER_STAT = 0.4
     private const val ANTHEM_CAP = 1.6
 

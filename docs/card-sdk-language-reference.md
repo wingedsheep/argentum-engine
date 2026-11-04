@@ -16372,6 +16372,8 @@ answer it and would silently return `false`.
 - `OpponentLostLife` — an opponent lost life this turn.
 - `OpponentLostLifeLastTurn` — an opponent lost life during the previous turn, whoever's it was (Feast on
   the Fallen). Backed by `TurnTracker.LIFE_LOST_LAST_TURN`.
+- `YouLostLifeLastTurn` — you lost life during the previous turn, whoever's it was (Paladin of Atonement).
+  Backed by `TurnTracker.LIFE_LOST_LAST_TURN`.
 - `PermanentPutIntoYourHandFromBattlefieldThisTurn` — a permanent (token included) was put into your hand
   from the battlefield this turn, by any effect (Barrin, Tolarian Archmage). Backed by
   `TurnTracker.PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD`.
@@ -18539,7 +18541,8 @@ of `AddMana`, `AddColorlessMana` and `AddDynamicMana` / `AddManaInAnyCombination
   `DynamicAmounts.lifeLostThisTurn(player)`; powers Rowan, Scion of War.
 - `LIFE_LOST_LAST_TURN` — `LIFE_LOST` one turn back: the previous turn in the game, whoever's it was,
   snapshotted onto `GameState.playersWhoLostLifeLastTurn` by `CleanupPhaseManager.cleanupEndOfTurn`.
-  Facade `Conditions.OpponentLostLifeLastTurn` (Feast on the Fallen).
+  Facades `Conditions.OpponentLostLifeLastTurn` (Feast on the Fallen) and
+  `Conditions.YouLostLifeLastTurn` (Paladin of Atonement).
 - `PLAYER_ATTACKED` — 0 or 1: whether you declared any attackers this turn, including against planeswalkers or battles.
 - `OPPONENTS_ATTACKED` — distinct opponents directly attacked by declared creatures this turn.
   `DynamicAmounts.opponentsAttackedThisTurn(player = Player.You)` exposes the count. Multiple

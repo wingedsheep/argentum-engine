@@ -147,7 +147,13 @@ data class AiBoardView(
 )
 
 @Serializable
-data class AiIntentView(val tags: List<AiTagView>, val speed: String, val facts: List<String>)
+data class AiIntentView(
+    val tags: List<AiTagView>,
+    val speed: String,
+    val facts: List<String>,
+    /** The card has abilities and the intent analyzer placed none — a body-only keyword static doesn't count. */
+    val unrecognised: Boolean = false,
+)
 
 @Serializable
 data class AiTagView(val key: String, val label: String)

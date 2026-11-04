@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #TBD Aims a triggered "return target creature to its owner's hand" (Deadeye Rig-Hauler, Man-o'-War, Aethersnipe) at the opponent's side, gives a "target player creates a token" (Emeritus of Truce) to itself, reads abilities gated on a condition (ascend's "flying as long as you have the city's blessing") as the ability inside them, and prices those conditional statics in draft ratings at half their unconditional worth
 - Reads "each token that would be created under an opponent's control this turn is created under your control instead" (Crafty Cutpurse) as taking the opponent's tokens rather than as an unrecognised ability, and prices it in draft ratings above the bare body
 - Drafts Clone-style cards (enter as a copy of a creature) above their printed body; a raid-gated copy (Protean Raider) counts half
 - Reads statics that stop permanents entering or dying from triggering abilities (Torpor Orb, Tocatli Honor Guard, Hushbringer, Elesh Norn, Mother of Machines) as trigger locks: values a lock permanent on the board above an unreadable one and prices the lock in draft ratings

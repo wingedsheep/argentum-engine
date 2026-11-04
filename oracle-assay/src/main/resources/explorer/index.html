@@ -1234,7 +1234,7 @@ async function loadAiReading(name, scroll = false) {
   el("aisum").outerHTML = sum;
   el("aiblock").innerHTML = "<h2>AI reading</h2>" + body;
   if (d.rating) {
-    const [rsum, rbody] = aiRatingHTML(d.rating, d.source === "preview", d.reading ? d.reading.abilities.length : null);
+    const [rsum, rbody] = aiRatingHTML(d.rating, d.source === "preview");
     el("ratesum").outerHTML = rsum;
     el("rateblock").innerHTML = rbody;
     el("rateblock").hidden = false;
@@ -1405,7 +1405,7 @@ const PICK_SOURCE = {
   heuristic: () => "Estimated by the <b>effect heuristic</b> from what the card does.",
 };
 
-function aiRatingHTML(r, preview, abilities) {
+function aiRatingHTML(r, preview) {
   const p = r.pick, b = pickBand(p.rating);
   const guess = p.source === "heuristic";
   const chip = '<button class="tag ai-sum ' + (guess ? "gap" : b >= 3 ? "ok" : "wait") + '" id="ratesum" title="' +
@@ -1483,13 +1483,14 @@ function aiRatingHTML(r, preview, abilities) {
   const it = r.intent;
   // A creature's main job is its body, which the evaluator prices from stats (above) — that is a
   // reading, not a gap. Intent tags are about its abilities, so "not recognised" is only said when
-  // there are abilities the analyzer couldn't place. Sorcery speed is every card's default and goes
-  // unsaid; instant speed and a static or activated payoff are worth a chip.
+  // there are abilities the analyzer couldn't place — the server's `unrecognised`, which counts a
+  // static granting the creature itself a keyword as body, like a printed one. Sorcery speed is
+  // every card's default and goes unsaid; instant speed and a static or activated payoff are worth a chip.
   const creature = bd.kind === "creature" || bd.kind === "variableCreature";
   const chips = [];
   if (creature) chips.push('<span class="itag sp" title="attacks and blocks — valued from its stats and keywords, under In play">Creature body</span>');
   it.tags.forEach((t) => chips.push('<span class="itag" title="' + esc(t.key) + '">' + esc(t.label) + "</span>"));
-  if (!it.tags.length && abilities !== 0) {
+  if (it.unrecognised) {
     chips.push('<button class="itag none" id="rate2read" title="the intent analyzer recognised none of its abilities — see the AI reading below">' +
       (creature ? "Abilities not recognised" : "Not recognised") + "</button>");
   } else if (!it.tags.length && !creature) {

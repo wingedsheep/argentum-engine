@@ -65,7 +65,13 @@ object AiCardRating {
     /** One recognised thing the card does, in words. */
     data class Tag(val key: String, val label: String)
 
-    data class Intent(val tags: List<Tag>, val speed: String, val facts: List<String>)
+    /**
+     * [unrecognised]: the card has abilities and the intent analyzer placed none of them. A static
+     * that only grants its own creature a keyword is part of the creature body, like a printed
+     * keyword, and never makes a card unrecognised ([AiReadingAudit.AbilityReading.body]). The one
+     * rule both `just ai-card` and the explorer's "Abilities not recognised" chip show.
+     */
+    data class Intent(val tags: List<Tag>, val speed: String, val facts: List<String>, val unrecognised: Boolean = false)
 
     data class Rating(
         val limited: Limited,
@@ -81,7 +87,7 @@ object AiCardRating {
         return Rating(
             limited = Limited(LimitedCardRater.explain(card), setCodes.distinct().map { setPick(card, it) }),
             board = board(card, intent),
-            intent = intent(intent),
+            intent = intent(intent, AiReadingAudit.read(card).abilities.any { !it.body }),
             advisor = liveAdvisors.getAdvisor(card.name)?.let { it::class.simpleName },
         )
     }
@@ -173,7 +179,7 @@ object AiCardRating {
         )
     }
 
-    private fun intent(intent: CardIntent): Intent {
+    private fun intent(intent: CardIntent, hasAbilitiesToPlace: Boolean): Intent {
         val facts = buildList {
             if (IntentTag.FIGHT in intent.tags) add("Its removal reach is the fighting creature's power")
             else if (intent.removalReach != null) add("Its damage answers toughness ${intent.removalReach} or less")
@@ -190,6 +196,7 @@ object AiCardRating {
             tags = intent.tags.sortedBy { it.ordinal }.map { Tag(it.name, TAG_LABEL[it] ?: it.name) },
             speed = SPEED_LABEL.getValue(intent.speed),
             facts = facts,
+            unrecognised = intent.tags.isEmpty() && hasAbilitiesToPlace,
         )
     }
 

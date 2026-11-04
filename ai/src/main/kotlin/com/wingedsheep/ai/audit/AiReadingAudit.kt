@@ -16,8 +16,13 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -169,8 +174,15 @@ object AiReadingAudit {
         val flag: Flag? = null,
     )
 
-    /** Everything the readers said about one ability. A [Check]-free static ability has no findings. */
-    data class AbilityReading(val ability: AbilityRef, val findings: List<Finding>) {
+    /**
+     * Everything the readers said about one ability. A [Check]-free static ability has no findings.
+     *
+     * [body] marks a static that only grants its own creature a keyword ("this creature has
+     * vigilance as long as you control another Dinosaur") — part of the creature's body, which the
+     * evaluator prices from its projected keywords the way it prices a printed one, so nothing an
+     * intent reader is meant to place.
+     */
+    data class AbilityReading(val ability: AbilityRef, val findings: List<Finding>, val body: Boolean = false) {
         /** Whether any reader was asked about this ability. Static abilities are not. */
         val checked: Boolean get() = findings.isNotEmpty()
 
@@ -195,6 +207,17 @@ object AiReadingAudit {
         val faces = facesOf(card)
         val named = faces.size > 1
         return CardReading(card.name, faces.flatMap { readFace(card, it, lookup, named) })
+    }
+
+    /**
+     * A static whose whole effect is a keyword on the creature that has it — printed plainly or
+     * gated on a condition (ascend's "has flying as long as you have the city's blessing").
+     */
+    private fun grantsOnlyItselfAKeyword(static: StaticAbility): Boolean = when (static) {
+        is GrantKeyword -> static.filter.scope == Scope.Self
+        is ConditionalStaticAbility -> grantsOnlyItselfAKeyword(static.ability)
+        is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::grantsOnlyItselfAKeyword)
+        else -> false
     }
 
     /** Whether [card] is a choose-more-than-one modal anywhere — informational. */
@@ -345,8 +368,8 @@ object AiReadingAudit {
         script.triggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
             val reqs = listOfNotNull(trigger.targetRequirement) + trigger.additionalTargetRequirements
-            abilityPolarity(trigger.effect, reqs, lookup, sink) {
-                TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card)
+            abilityPolarity(trigger.effect, reqs, lookup, sink, triggered = true) {
+                TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card, triggered = true)
             }
             // "When this leaves the battlefield, return the exiled card" (O-Ring, Fiend Hunter, champion)
             // needs no intent: it never stands alone — it is the price of the entry's exile, with no
@@ -375,7 +398,10 @@ object AiReadingAudit {
 
         // ── Static abilities: listed, not checked ───────────────────────────
         script.staticAbilities.forEachIndexed { i, static ->
-            out += AbilityReading(AbilityRef(AbilityKind.STATIC, i + 1, faceName, describe { static.description }), emptyList())
+            out += AbilityReading(
+                AbilityRef(AbilityKind.STATIC, i + 1, faceName, describe { static.description }), emptyList(),
+                body = grantsOnlyItselfAKeyword(static),
+            )
         }
         // Closest to Oracle's own order — a permanent's triggers usually precede its activated
         // abilities — with the unchecked statics last so they don't push the findings down.
@@ -392,11 +418,12 @@ object AiReadingAudit {
         reqs: List<TargetRequirement>,
         lookup: CardLookup,
         sink: Sink,
+        triggered: Boolean = false,
         read: () -> List<TargetPolarity>,
     ) {
         if (effect is ModalEffect && reqs.isEmpty()) {
             effect.modes.forEachIndexed { m, mode ->
-                polarity(mode.effect, mode.targetRequirements, TargetPolarityAnalyzer.forMode(mode, lookup), lookup, sink, m + 1)
+                polarity(mode.effect, mode.targetRequirements, TargetPolarityAnalyzer.forMode(mode, lookup, triggered), lookup, sink, m + 1)
             }
         } else if (reqs.isNotEmpty()) {
             polarity(effect, reqs, read(), lookup, sink, null)
