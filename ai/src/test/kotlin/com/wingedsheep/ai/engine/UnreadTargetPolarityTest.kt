@@ -58,9 +58,9 @@ class UnreadTargetPolarityTest : FunSpec({
             TargetPolarityAnalyzer.forAbility(LwaxanaTroiCharmingGuest, ability) shouldBe
                 listOf(TargetPolarity.BENEFICIAL)
         }
-        test("target player draws is a gift; draws and loses life is either way") {
+        test("target player draws is a gift; so is drawing for its life") {
             TargetPolarityAnalyzer.forSpell(Inspiration) shouldBe listOf(TargetPolarity.BENEFICIAL)
-            TargetPolarityAnalyzer.forSpell(SignInBlood) shouldBe listOf(TargetPolarity.UNKNOWN)
+            TargetPolarityAnalyzer.forSpell(SignInBlood) shouldBe listOf(TargetPolarity.BENEFICIAL)
         }
     }
 
