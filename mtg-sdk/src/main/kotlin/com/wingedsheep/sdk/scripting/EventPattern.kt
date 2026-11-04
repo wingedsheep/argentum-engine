@@ -3801,6 +3801,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             }
             "$who ${if (filter == GameObjectFilter.Any) "a permanent" else "a ${filter.description}"}"
         }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**
