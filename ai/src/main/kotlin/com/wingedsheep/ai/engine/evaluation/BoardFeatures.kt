@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
@@ -71,6 +72,18 @@ object LifeDifferential : BoardFeature {
 // Library Clock
 // ═════════════════════════════════════════════════════════════════════════════
 
+private fun hasRepeatableMill(
+    state: GameState, projected: ProjectedState, entityId: EntityId, intents: IntentCatalog,
+): Boolean {
+    if (!intents.isEnabled || projected.hasLostAllAbilities(entityId)) return false
+    val entity = state.getEntity(entityId) ?: return false
+    if (entity.has<FaceDownComponent>()) return false
+    val card = entity.get<CardComponent>() ?: return false
+    return intents.forPermanent(entity, card.name, entrySpent = true).any {
+        it.repeatable && IntentTag.MILL in it.tags
+    }
+}
+
 /**
  * How close each library is to running out — [com.wingedsheep.ai.engine.AiProfile.libraryClock].
  *
@@ -107,11 +120,7 @@ object LibraryClock : BoardFeature {
     private fun hasMillEngine(state: GameState, projected: ProjectedState, side: List<EntityId>, intents: IntentCatalog): Boolean =
         intents.isEnabled && state.getBattlefield().any { id ->
             if (projected.getController(id) !in side) return@any false
-            val entity = state.getEntity(id) ?: return@any false
-            val card = entity.get<CardComponent>() ?: return@any false
-            intents.forPermanent(entity, card.name, entrySpent = true).any {
-                it.repeatable && IntentTag.MILL in it.tags
-            }
+            hasRepeatableMill(state, projected, id, intents)
         }
 
     private fun sideValue(state: GameState, side: List<EntityId>, threatened: Boolean): Double =
@@ -517,9 +526,7 @@ object BoardPresence : BoardFeature {
             } else {
                 0.0
             }
-            val millEngine = intents.forPermanent(container, card.name, entrySpent = true).any {
-                it.repeatable && IntentTag.MILL in it.tags
-            }
+            val millEngine = hasRepeatableMill(state, projected, entityId, intents)
             val millValue = if (millEngine) MILL_ENGINE_VALUE else 0.0
             return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth + millValue)
                 .coerceAtLeast(0.1)

@@ -8,8 +8,11 @@ import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -25,17 +28,22 @@ class MillWinConditionAiTest : ScenarioTestBase() {
     private val intents by lazy { IntentCatalog.of(cardRegistry) }
     private fun card(name: String) = cardRegistry.getCard(name)!!
 
-    private fun position(ours: Int = 24, theirs: Int = 24, engine: String? = null, engineOwner: Int = 1): TestGame =
+    private fun position(ours: Int = 24, theirs: Int = 24, engine: String? = null, engineOwner: Int = 1, suppressAbilities: Boolean = false): TestGame =
         scenario().withPlayers().withActivePlayer(1).apply {
             repeat(ours) { withCardInLibrary(1, "Island") }
             repeat(theirs) { withCardInLibrary(2, "Island") }
             if (engine != null) withCardOnBattlefield(engineOwner, engine)
+            if (suppressAbilities) withCardOnBattlefield(2, "Mill Suppression")
         }.build()
 
     private fun pressure(game: TestGame): Double =
         LibraryClock.Bound(intents).score(game.state, game.state.projectedState, game.player1Id)
 
     init {
+        cardRegistry.register(com.wingedsheep.sdk.dsl.card("Mill Suppression") {
+            typeLine = "Enchantment"
+            staticAbility { ability = LoseAllAbilities(GroupFilter.AllCreatures) }
+        })
         test("opponent-capable mills have intent and repeatable value, self-mill and ordinary gathers do not") {
             for (name in listOf("Fleet Swallower", "Navigator's Ruin")) {
                 val intent = CardIntentAnalyzer.analyze(card(name))
@@ -84,6 +92,28 @@ class MillWinConditionAiTest : ScenarioTestBase() {
             val component = game.state.getEntity(id)!!.get<CardComponent>()!!
             val plain = BoardPresence.permanentValue(game.state, game.state.projectedState, id, component)
             BoardPresence.permanentValue(game.state, game.state.projectedState, id, component, intents) shouldBe plain + 0.75
+        }
+
+        test("a mill creature stripped of its abilities has neither an ability bonus nor library pressure") {
+            val game = position(engine = "Fleet Swallower", suppressAbilities = true)
+            val id = game.state.getBattlefield(game.player1Id).single()
+            val projected = game.state.projectedState
+            projected.hasLostAllAbilities(id) shouldBe true
+            pressure(game) shouldBe 0.0
+            val component = game.state.getEntity(id)!!.get<CardComponent>()!!
+            BoardPresence.permanentValue(game.state, projected, id, component, intents) shouldBe
+                BoardPresence.permanentValue(game.state, projected, id, component)
+        }
+
+        test("a face-down mill creature does not reveal a mill threat or gain its ability bonus") {
+            val game = position(engine = "Fleet Swallower")
+            val id = game.state.getBattlefield(game.player1Id).single()
+            game.state = game.state.updateEntity(id) { it.with(FaceDownComponent) }
+            val projected = game.state.projectedState
+            pressure(game) shouldBe 0.0
+            val component = game.state.getEntity(id)!!.get<CardComponent>()!!
+            BoardPresence.permanentValue(game.state, projected, id, component, intents) shouldBe
+                BoardPresence.permanentValue(game.state, projected, id, component)
         }
 
         test("the AI uses a repeatable mill activation while the opposing library is still large") {
