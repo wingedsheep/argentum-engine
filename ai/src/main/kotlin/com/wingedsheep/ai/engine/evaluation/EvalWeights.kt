@@ -72,7 +72,7 @@ data class EvaluationWeights(
             },
             tempo to Tempo,
             // In life units, so on [life]'s weight: an empty library is a near-loss like 0 life.
-            if (libraryClock) life to LibraryClock else null,
+            if (libraryClock) life to LibraryClock.Bound(intents) else null,
             // In land drops, so on [tempo]'s weight: a Treasure is a share of the next land.
             if (oneShotManaIsMana) tempo to OneShotMana(intents) else null,
             // In board-value units, so on [boardPresence]'s weight: an engine is part of the board.

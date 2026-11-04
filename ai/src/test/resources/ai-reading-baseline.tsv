@@ -889,7 +889,7 @@ Ashiok's Erasure	intent: ExileTargetSpellEffect; intent: Pipeline(FromLinkedExil
 Ashiok's Forerunner	intent: Pipeline(FromMultipleZones→hand)
 Ashiok's Reaper
 Ashiok's Skulker
-Ashiok, Dream Render	intent: ExileOpponentsGraveyardsEffect
+Ashiok, Dream Render
 Ashiok, Nightmare Muse	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(exile→?)
 Ashiok, Sculptor of Fears
 Ashiok, Wicked Manipulator	intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
@@ -6076,7 +6076,7 @@ Floral Evoker
 Floral Spuzzem
 Florian, Voldaren Scion	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile|library)
 Floriferous Vinewall
-Flotsam // Jetsam	intent: ForEach>CastFromCollectionWithoutPayingCostEffect; intent: ForEach>Pipeline(graveyard→?)
+Flotsam // Jetsam
 Flourishing Bloom-Kin
 Flourishing Defenses
 Flourishing Fox
@@ -6929,7 +6929,7 @@ Go-Shintai of Ancient Wars
 Go-Shintai of Boundless Vigor
 Go-Shintai of Hidden Cruelty
 Go-Shintai of Life's Origin
-Go-Shintai of Lost Wisdom	intent: ReflexiveTriggerEffect
+Go-Shintai of Lost Wisdom
 Go-Shintai of Shared Purpose
 Goatnap	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
 Goatnapper	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
@@ -7516,7 +7516,7 @@ Halo Scarab
 Halo-Charged Skaab	intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
 Halvar, God of Battle	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachEquipmentEffect; polarity: AttachTargetEquipmentToCreatureEffect
 Hama Pashar, Ruin Seeker
-Hama, the Bloodbender	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary|graveyard→exile|graveyard)
+Hama, the Bloodbender
 Hamato Guardian Stance
 Hamlet Captain
 Hamlet Glutton
@@ -13246,7 +13246,7 @@ Realm of Koh
 Realm-Cloaked Giant
 Realm-Scorcher Hellkite
 Realmbreaker's Grasp
-Realmbreaker, the Invasion Tree	intent: GrantExileOnLeaveEffect; intent: Pipeline(TopOfLibrary|graveyard→battlefield|graveyard)
+Realmbreaker, the Invasion Tree
 Realmwalker
 Reanimate
 Reaper King
