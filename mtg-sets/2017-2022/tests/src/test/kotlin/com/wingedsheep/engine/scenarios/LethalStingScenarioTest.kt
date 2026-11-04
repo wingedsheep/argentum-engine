@@ -85,4 +85,60 @@ class LethalStingScenarioTest : FunSpec({
         (elf in d.state.getBattlefield()) shouldBe false
         (giant in d.state.getBattlefield()) shouldBe false
     }
+
+    test("a cascaded (free) cast still asks which creature takes the counter") {
+        val d = driver()
+        val bear = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val giant = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        d.putCardOnTopOfLibrary(d.player1, "Lethal Sting")
+        val elf = d.putCardInHand(d.player1, "Bloodbraid Elf")
+        d.giveMana(d.player1, Color.RED, 2)
+        d.giveMana(d.player1, Color.GREEN, 2)
+
+        d.castSpell(d.player1, elf).error shouldBe null
+        // Cascade resolves first: exile until Lethal Sting, then "you may cast it" — yes.
+        var guard = 0
+        while (d.pendingDecision == null && guard++ < 5) d.bothPass()
+        d.submitYesNo(d.player1, true)
+        d.submitTargetSelection(d.player1, listOf(giant))
+        // Grizzly Bears is the only creature (the Elf is still on the stack): auto-paid, no prompt.
+        d.minusCounters(bear) shouldBe 1
+        while (d.state.stack.isNotEmpty()) d.bothPass()
+
+        (giant in d.state.getBattlefield()) shouldBe false
+    }
+
+    test("with two creatures to choose from, the cascaded cast prompts for the counter") {
+        val d = driver()
+        val bear = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val ownGiant = d.putCreatureOnBattlefield(d.player1, "Hill Giant")
+        val giant = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        d.putCardOnTopOfLibrary(d.player1, "Lethal Sting")
+        val elf = d.putCardInHand(d.player1, "Bloodbraid Elf")
+        d.giveMana(d.player1, Color.RED, 2)
+        d.giveMana(d.player1, Color.GREEN, 2)
+
+        d.castSpell(d.player1, elf).error shouldBe null
+        var guard = 0
+        while (d.pendingDecision == null && guard++ < 5) d.bothPass()
+        d.submitYesNo(d.player1, true)
+        d.submitTargetSelection(d.player1, listOf(giant))
+        d.submitCardSelection(d.player1, listOf(ownGiant))
+        d.minusCounters(ownGiant) shouldBe 1
+        d.minusCounters(bear) shouldBe 0
+        while (d.state.stack.isNotEmpty()) d.bothPass()
+        (giant in d.state.getBattlefield()) shouldBe false
+    }
+
+    test("Doubling Season doesn't double the cost's counter: a cost isn't an effect") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, "Doubling Season")
+        val giantOfMine = d.putCreatureOnBattlefield(d.player1, "Hill Giant")
+        val giant = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        val sting = d.putCardInHand(d.player1, "Lethal Sting")
+        d.giveMana(d.player1, Color.BLACK, 3)
+
+        d.sting(sting, giant, giantOfMine).error shouldBe null
+        d.minusCounters(giantOfMine) shouldBe 1
+    }
 })

@@ -12,6 +12,9 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.sdk.scripting.util.quantify
+import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
@@ -1148,7 +1151,7 @@ internal object PutCountersOnPermanentCostKind : SpellCostKind<CostAtom.PutCount
     fun data(cost: CostAtom.PutCountersOnPermanent, candidates: List<EntityId>) = AdditionalCostData(
         // The client prefixes "Select", so this names the pick: "creature to put a -1/-1 counter on".
         description = "${cost.filter.description} to put " +
-            "${com.wingedsheep.sdk.scripting.util.quantify(cost.count, "${cost.counterType.printed} counter")} on",
+            "${quantify(cost.count, "${cost.counterType.printed} counter")} on",
         costType = "PutCounters",
         validCounterPlacementTargets = candidates,
     )
@@ -1177,7 +1180,7 @@ internal object PutCountersOnPermanentCostKind : SpellCostKind<CostAtom.PutCount
         val container = ledger.state.getEntity(id) ?: return null
         // A cost's counters are still a placement (placement replacements apply), but not an
         // effect's — Doubling Season's "if an effect would put" passes them by.
-        val amount = com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers(
+        val amount = ReplacementEffectUtils.applyCounterPlacementModifiers(
             ledger.state, id, cost.counterType, cost.count, placerId = ledger.playerId,
             predicateEvaluator = ledger.zones.predicateEvaluator, byEffect = false
         )
@@ -1185,8 +1188,8 @@ internal object PutCountersOnPermanentCostKind : SpellCostKind<CostAtom.PutCount
         ledger.state = ledger.state.updateEntity(id) { c ->
             c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(cost.counterType, amount))
         }
-        val (marked, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
-            .recordCounterPlacement(ledger.state, id, cost.counterType, placerId = ledger.playerId)
+        val (marked, firstThisTurn, firstOfTypeThisTurn) =
+            DamageUtils.recordCounterPlacement(ledger.state, id, cost.counterType, placerId = ledger.playerId)
         ledger.state = marked
         ledger.events.add(CountersAddedEvent(
             entityId = id,
@@ -1201,7 +1204,7 @@ internal object PutCountersOnPermanentCostKind : SpellCostKind<CostAtom.PutCount
     }
 
     /** Permanents [payerId] controls that match the cost's filter and can take its counters. */
-    private fun eligible(
+    fun eligible(
         state: GameState,
         payerId: EntityId,
         cost: CostAtom.PutCountersOnPermanent,
