@@ -1221,6 +1221,10 @@ object CardIntentAnalyzer {
         // as the copy above. A creature with no prepare spell can't become prepared, so the leaf
         // only ever pays off; which creature it readies is the polarity check's question.
         is BecomePreparedEffect -> setOf(IntentTag.DRAW)
+        // Discover N exiles down to a nonland card of mana value N or less, which its controller
+        // casts free or puts into their hand: either way one more card than they had, like the
+        // free cast off the library top that [digTags] reads as a draw.
+        is DiscoverEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
         // "Copy target spell", "copy target activated or triggered ability", "when you next cast an

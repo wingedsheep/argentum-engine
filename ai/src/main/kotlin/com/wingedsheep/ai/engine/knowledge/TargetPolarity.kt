@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
@@ -1420,6 +1421,11 @@ object TargetPolarityAnalyzer {
             }
             staticPolarity(static)?.let(readings::add)
         }
+        // "Enchanted artifact is a creature with base power and toughness 4/4" (Mightstone's
+        // Animation, Zoetic Glyph, Puppet Crafting): the creature type and the body arrive together,
+        // so the host's controller gains a creature. The base P/T alone stays unread above — on a
+        // creature it can shrink as well as grow — and the type alone could leave a 0/0.
+        if (animatesHost(card.script.staticAbilities)) readings += TargetPolarity.BENEFICIAL
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
@@ -1443,6 +1449,17 @@ object TargetPolarityAnalyzer {
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
         return readings
     }
+
+    /**
+     * Whether [statics] make the attached permanent a creature with a real body: a "CREATURE"
+     * [GrantCardType] on the host beside a [SetBasePowerToughnessStatic] of at least 2/2 on it.
+     */
+    private fun animatesHost(statics: List<StaticAbility>): Boolean =
+        statics.any { it is GrantCardType && it.cardType == "CREATURE" && it.filter.scope == Scope.AttachedTo } &&
+            statics.any {
+                it is SetBasePowerToughnessStatic && it.filter.scope == Scope.AttachedTo &&
+                    (it.power ?: 0) >= 2 && (it.toughness ?: 0) >= 2
+            }
 
     /**
      * Whether every harm [card] does to its host is damage from one of its triggered or activated
