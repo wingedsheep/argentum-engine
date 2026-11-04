@@ -1876,6 +1876,130 @@
     ]
 }
 
+// Cherished Hatchling
+{
+    "name": "Cherished Hatchling",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "When this creature dies, you may cast Dinosaur spells this turn as though they had flash, and whenever you cast a Dinosaur spell this turn, it gains \"When this creature enters, you may have it fight another target creature.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cherished Hatchling:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantFlashToSpells",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Dinosaur"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Cherished Hatchling:1",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "to": "Battlefield"
+                                    },
+                                    "effect": {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "Fight",
+                                            "target1": "Self",
+                                            "target2": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "descriptionOverride": "When this creature enters, you may have it fight another target creature."
+                                    },
+                                    "targetRequirement": {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature",
+                                            "excludeSelf": true
+                                        },
+                                        "id": "t0"
+                                    },
+                                    "descriptionOverride": "When this creature enters, you may have it fight another target creature."
+                                },
+                                "target": "TriggeringEntity",
+                                "duration": "Permanent"
+                            },
+                            "trigger": {
+                                "event": {
+                                    "type": "SpellCastEvent",
+                                    "spellFilter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Dinosaur"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "binding": "ANY"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, you may cast Dinosaur spells this turn as though they had flash, and whenever you cast a Dinosaur spell this turn, it gains \"When this creature enters, you may have it fight another target creature.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Rowan",
+        "flavorText": "Despite its appearance, it's anything but defenseless.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a14fe6c-b272-415b-974d-c60d016ab786.jpg?1783935290",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "During the turn Cherished Hatchling dies, you may cast any number of Dinosaurs as though they had flash."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "You must pay the costs for spells you cast this way. If there's an alternative cost you can pay instead of the mana cost for a Dinosaur spell, you may pay that cost instead."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "For the triggered ability that the entering Dinosaur gains, if the target is illegal when it tries to resolve or if the Dinosaur that entered the battlefield has left the battlefield, no creature will deal or be dealt damage."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "For the triggered ability that the entering Dinosaur gains, you choose a target when the ability goes on the stack, but you don't choose until that ability resolves whether those creatures fight."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If an effect refers to a \"[subtype] spell\" or \"[subtype] card,\" it refers only to a spell or card that has that subtype. For example, March of the Drowned is a card that benefits Pirates and features Pirates in its illustration, but it isn't a Pirate card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cleansing Ray
 {
     "name": "Cleansing Ray",
@@ -3016,6 +3140,71 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Enter the Unknown
+{
+    "name": "Enter the Unknown",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on the creature, then put the card back or put it into your graveyard.)\nYou may play an additional land this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Explore",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "PlayAdditionalLands",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96acf94b-75bb-4f0e-92be-978ce5920710.jpg?1783935289",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Enter the Unknown's effect allows you to play an additional land during your main phase. Doing so follows the normal timing rules for playing lands."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "The effects of multiples of Enter the Unknown in the same turn are cumulative. They're also cumulative with other effects that let you play additional lands, such as the one from Wayward Swordtooth."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If you somehow manage to cast Enter the Unknown when it's not your turn, the target creature explores when it resolves, but you won't be able to play a land that turn."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If the target creature is an illegal target by the time Enter the Unknown tries to resolve, the spell doesn't resolve. It won't explore, and you won't be able to play an additional land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4311,6 +4500,137 @@
     ]
 }
 
+// Golden Guardian
+{
+    "name": "Golden Guardian",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Defender\n{2}: This creature fights another target creature you control. When this creature dies this turn, return it to the battlefield transformed under your control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Golden Guardian:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Fight",
+                            "target1": "Self",
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "ReturnSelfFromZoneTransformed",
+                                "controllerOverride": "Controller"
+                            },
+                            "trigger": {
+                                "event": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                }
+                            },
+                            "watchedTarget": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}: This creature fights another target creature you control. When this creature dies this turn, return it to the battlefield transformed under your control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Gold-Forge Garrison",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Golden Guardian.)\n{T}: Add two mana of any one color.\n{4}, {T}: Create a 4/4 colorless Golem artifact creature token.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Gold-Forge Garrison:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Gold-Forge Garrison:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{4}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Golem"
+                        ],
+                        "artifactToken": true
+                    },
+                    "descriptionOverride": "{4}, {T}: Create a 4/4 colorless Golem artifact creature token."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "179",
+            "rarity": "RARE",
+            "artist": "Svetlin Velinov",
+            "flavorText": "An army of living gold for the golden city.",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/9/397ba02d-f347-46f7-b028-dd4ba55faa2f.jpg?1783935270"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/397ba02d-f347-46f7-b028-dd4ba55faa2f.jpg?1783935270"
+    }
+}
+
 // Grasping Scoundrel
 {
     "name": "Grasping Scoundrel",
@@ -4546,6 +4866,50 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Hardy Veteran
+{
+    "name": "Hardy Veteran",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "During your turn, this creature gets +0/+2.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 0,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Suzanne Helmigh",
+        "flavorText": "For the Sun Empire, the Immortal Sun is a symbol of national identity. When they reclaim it, the Empire will flourish once more.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62f2755f-276f-4260-a201-f02af88b5708.jpg?1783935286",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Hardy Veteran gets +0/+2 for the entire duration of your turn. If it's dealt damage or gets -X/-X until end of turn, those will wear off before your turn is over."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4805,6 +5169,124 @@
     ]
 }
 
+// Induced Amnesia
+{
+    "name": "Induced Amnesia",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, target player exiles all cards from their hand face down, then draws that many cards.\nWhen this enchantment is put into a graveyard from the battlefield, return the exiled cards to their owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Induced Amnesia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TargetPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TargetPlayer"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN",
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "moved1_count"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TargetPlayer"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, target player exiles all cards from their hand face down, then draws that many cards."
+            },
+            {
+                "id": "Induced Amnesia:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "OwnersOfLinkedExile"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this enchantment is put into a graveyard from the battlefield, return the exiled cards to their owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4ee56f1-9f08-459f-8517-0fe7bc645fa3.jpg?1783935325",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "No player may look at the exiled cards."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If Induced Amnesia leaves the battlefield but isn't put into a graveyard, the exiled cards are lost forever. They won't be returned if another Induced Amnesia is put into a graveyard, even if that Induced Amnesia is represented by the same card."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If Induced Amnesia leaves the battlefield before its first ability resolves, its second ability will trigger (if appropriate) and do nothing. Then its first ability will resolve, and the exiled cards will be exiled indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jade Bearer
 {
     "name": "Jade Bearer",
@@ -4902,6 +5384,51 @@
         "artist": "Izzy",
         "flavorText": "\"A blade is not fully forged until it is given.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b745934-c1fe-49f5-bda4-b0eafa1408e1.jpg?1783935285"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Jadelight Ranger
+{
+    "name": "Jadelight Ranger",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Merfolk Scout Ranger",
+    "oracleText": "When this creature enters, it explores, then it explores again. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard. Then repeat this process.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jadelight Ranger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Explore",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Explore",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fe5c719-f20d-4469-9750-fb689d5f3fc8.jpg?1783935285"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -5193,6 +5720,81 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kumena's Awakening
+{
+    "name": "Kumena's Awakening",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nAt the beginning of your upkeep, each player draws a card. If you have the city's blessing, instead only you draw a card.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kumena's Awakening:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "Each"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a86f499-a2d4-47f1-9fc1-b543e5ad5c82.jpg?1783935323",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "A permanent is any object on the battlefield, including tokens and lands. Spells and emblems aren't permanents."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Ascend on a permanent isn't a triggered ability and doesn't use the stack. Players can respond to a spell that will give you your tenth permanent, but they can't respond to getting the city's blessing once you control that tenth permanent. This means that if your tenth permanent is a land you play, players can't respond before you get the city's blessing."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Some cards have triggered abilities that check if you have the city's blessing, but don't use an intervening \"if\" clause. These abilities trigger regardless of whether you have the city's blessing and check whether you do only as they resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7492,6 +8094,86 @@
     ]
 }
 
+// Riverwise Augur
+{
+    "name": "Riverwise Augur",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "When this creature enters, draw three cards, then put two cards from your hand on top of your library in any order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riverwise Augur:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "selected1"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Alayna Danner",
+        "flavorText": "\"Time flows as the rivers do, toward an unknown sea. The wise know to look downstream.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ea5ac8f-f83d-47ca-a20e-3d129afb34d2.jpg?1783935321"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sadistic Skymarcher
 {
     "name": "Sadistic Skymarcher",
@@ -7690,6 +8372,83 @@
             {
                 "date": "2018-01-19",
                 "text": "If Seafloor Oracle is dealt lethal damage at the same time a Merfolk you control deals combat damage to a player, you'll draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Secrets of the Golden City
+{
+    "name": "Secrets of the Golden City",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nDraw two cards. If you have the city's blessing, draw three cards instead.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "then": "GainCitysBlessing"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Jason Felix",
+        "flavorText": "Stolen knowledge can never be stolen back.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/899ecd7a-bfd6-42a4-8cb2-18bac40b4401.jpg",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If you cast a spell with ascend, you don't get the city's blessing until it resolves. Players may respond to that spell by trying to change whether you get the city's blessing."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
             }
         ]
     },
@@ -8173,6 +8932,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Slippery Scoundrel
+{
+    "name": "Slippery Scoundrel",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nAs long as you have the city's blessing, this creature has hexproof and can't be blocked.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"I'd rather be caught red-handed than leave empty-handed!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/262f3c10-f29a-494f-88c6-0d44b2cbdc82.jpg?1783935320",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once Slippery Scoundrel has become blocked, getting the city's blessing won't cause it to become unblocked."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8969,6 +9784,68 @@
     ]
 }
 
+// Tendershoot Dryad
+{
+    "name": "Tendershoot Dryad",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Dryad",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nAt the beginning of each upkeep, create a 1/1 green Saproling creature token.\nSaprolings you control get +2/+2 as long as you have the city's blessing.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tendershoot Dryad:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent Saproling ctrl:you"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a159830a-698f-423c-9da0-a734b210ecab.jpg?1783935280"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tetzimoc, Primal Death
 {
     "name": "Tetzimoc, Primal Death",
@@ -9202,6 +10079,78 @@
     ]
 }
 
+// Thunderherd Migration
+{
+    "name": "Thunderherd Migration",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, reveal a Dinosaur card from your hand or pay {1}.\nSearch your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomRevealFromHand",
+                        "filter": "Dinosaur"
+                    }
+                },
+                "alternativeManaCost": "{1}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c56de4a3-f5ab-469e-ab66-b8187c8c04a0.jpg?1783935278"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tilonalli's Crown
 {
     "name": "Tilonalli's Crown",
@@ -9350,6 +10299,58 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Timestream Navigator
+{
+    "name": "Timestream Navigator",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Pirate Wizard",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\n{2}{U}{U}, {T}, Put this creature on the bottom of its owner's library: Take an extra turn after this one. Activate only if you have the city's blessing.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Timestream Navigator:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}{U}"
+                            }
+                        },
+                        "CostTap",
+                        "CostPutSelfIntoLibrary"
+                    ]
+                },
+                "effect": "TakeExtraTurn",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "MYTHIC",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14770537-209a-4260-88a4-30f4e2b5ede0.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -10211,6 +11212,92 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Warkite Marauder
+{
+    "name": "Warkite Marauder",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Flying\nWhenever this creature attacks, target creature defending player controls loses all abilities and has base power and toughness 0/1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warkite Marauder:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveAllAbilities",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/802ff9cf-f739-40cb-8974-77f6850150eb.jpg?1783935317",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Warkite Marauder's ability overwrites all previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after the ability resolves will overwrite this effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If the affected creature gains an ability after Warkite Marauder's ability resolves, it will keep that ability. If the affected creature has an ability that grants abilities to other objects, Warkite Marauder's effect will stop it from doing so."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Effects that modify a creature's power and/or toughness, such as the effect of Titanic Growth, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

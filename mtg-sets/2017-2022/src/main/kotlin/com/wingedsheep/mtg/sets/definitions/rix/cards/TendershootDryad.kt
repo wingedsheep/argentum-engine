@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.rix.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -35,8 +35,7 @@ val TendershootDryad = card("Tendershoot Dryad") {
             power = 1,
             toughness = 1,
             colors = setOf(Color.GREEN),
-            creatureTypes = setOf("Saproling"),
-            imageUri = "https://cards.scryfall.io/normal/front/5/9/590abe94-9c71-4429-b1b5-8b5de877de03.jpg?1721427861"
+            creatureTypes = setOf("Saproling")
         )
     }
 
@@ -54,8 +53,8 @@ val TendershootDryad = card("Tendershoot Dryad") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "242"
+        collectorNumber = "147"
         artist = "Yongjae Choi"
-        imageUri = "https://cards.scryfall.io/normal/front/3/a/3a60bdb4-53b3-46f2-b7a1-7954117b42a1.jpg?1721429404"
+        imageUri = "https://cards.scryfall.io/normal/front/a/1/a159830a-698f-423c-9da0-a734b210ecab.jpg?1783935280"
     }
 }

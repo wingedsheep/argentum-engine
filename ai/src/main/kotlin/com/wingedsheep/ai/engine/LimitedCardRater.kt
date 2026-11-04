@@ -748,6 +748,9 @@ object LimitedCardRater {
         // "That player loses the game" only pays when the creature carrying it connects — a
         // bomb's rider rather than a card on its own, so a little over a pump.
         IntentTag.GAME_WIN to 0.4,
+        // A whole extra turn — another untap, draw and attack — is a Limited bomb's effect on a
+        // sorcery, though usually a pricey or conditional one: a little over a counterspell.
+        IntentTag.EXTRA_TURN to 1.0,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

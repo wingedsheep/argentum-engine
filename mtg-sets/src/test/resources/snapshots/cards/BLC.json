@@ -4425,69 +4425,6 @@
     ]
 }
 
-// Tendershoot Dryad
-{
-    "name": "Tendershoot Dryad",
-    "manaCost": "{4}{G}",
-    "typeLine": "Creature — Dryad",
-    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nAt the beginning of each upkeep, create a 1/1 green Saproling creature token.\nSaprolings you control get +2/+2 as long as you have the city's blessing.",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 2
-    },
-    "keywords": [
-        "ASCEND"
-    ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Tendershoot Dryad:1",
-                "trigger": {
-                    "type": "StepEvent",
-                    "step": "UPKEEP",
-                    "player": "Each"
-                },
-                "binding": "ANY",
-                "effect": {
-                    "type": "CreateToken",
-                    "power": 1,
-                    "toughness": 1,
-                    "colors": [
-                        "GREEN"
-                    ],
-                    "creatureTypes": [
-                        "Saproling"
-                    ],
-                    "imageUri": "https://cards.scryfall.io/normal/front/5/9/590abe94-9c71-4429-b1b5-8b5de877de03.jpg?1721427861"
-                }
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "ModifyStats",
-                    "powerBonus": 2,
-                    "toughnessBonus": 2,
-                    "filter": {
-                        "baseFilter": "permanent Saproling ctrl:you"
-                    }
-                },
-                "condition": "PlayerHasCitysBlessing"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "242",
-        "rarity": "RARE",
-        "artist": "Yongjae Choi",
-        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a60bdb4-53b3-46f2-b7a1-7954117b42a1.jpg?1721429404"
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
 // The Odd Acorn Gang
 {
     "name": "The Odd Acorn Gang",

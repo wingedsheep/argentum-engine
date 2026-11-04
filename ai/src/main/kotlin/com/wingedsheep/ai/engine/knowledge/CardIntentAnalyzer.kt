@@ -45,6 +45,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -433,6 +434,10 @@ object CardIntentAnalyzer {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
                 is DealDamageEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
+                // "After that turn, that player takes an extra turn" aimed at a target opponent
+                // (Emrakul, the Promised End) is the price of the hijack, not a turn of ours.
+                is TakeExtraTurnEffect -> if (namesAnOpponentSlot(leaf.target, requirements)) emptyList()
                     else listOf(leaf)
                 is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
                 is GatherCardsEffect -> {
@@ -922,9 +927,28 @@ object CardIntentAnalyzer {
         // "Target creature has base toughness 0 until end of turn" kills anything not propped up
         // by counters or a pump — removal with no toughness defence, like destroy. A larger base
         // is a gift or a curse depending on the creature, so it earns no tag.
-        is SetBaseStatsEffect ->
-            if (effect.toughness?.let(::fixed) == 0 && hitsAnotherPermanent(effect.target)) removalTags(effect.target)
-            else emptySet()
+        // A base of 1/1 or smaller that leaves it alive (Warkite Marauder's 0/1) shuts the creature
+        // off for the duration — the same line the polarity reader draws for a small base.
+        is SetBaseStatsEffect -> when {
+            !hitsAnotherPermanent(effect.target) -> emptySet()
+            effect.toughness?.let(::fixed) == 0 -> removalTags(effect.target)
+            setsSmallBase(effect) -> setOf(IntentTag.NEUTRALIZE)
+            else -> emptySet()
+        }
+
+        // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
+        // the battlefield, shut off — the Pacifism reading without the static.
+        is RemoveAllAbilitiesEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.NEUTRALIZE) else emptySet()
+
+        // Explore looks at the top card and keeps it or bins it — a scry's card flow — and the land
+        // it finds goes to hand or the explorer gets a +1/+1 counter. That counter on another
+        // creature is a pump (Enter the Unknown); on the explorer itself it is self-growth, which
+        // needs no tag (Jadelight Ranger).
+        is ExploreEffect -> setOf(IntentTag.CARD_SELECTION) + counterTags(CounterType.PLUS_ONE_PLUS_ONE, effect.target)
+
+        // "Take an extra turn after this one": a whole turn for its controller, or for the player it
+        // targets, who is the controller whenever it is cast to be played.
+        is TakeExtraTurnEffect -> if (takesTheTurnOurselves(effect.target)) setOf(IntentTag.EXTRA_TURN) else emptySet()
 
         is AddCountersEffect -> counterTags(effect.counterType, effect.target)
         is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)
@@ -1050,9 +1074,18 @@ object CardIntentAnalyzer {
         // so the grant is protection, as a regeneration shield is.
         // Its "that player loses the game" handed to a creature (Vraska, Scheming Gorgon's −10)
         // is the win it threatens, as the same trigger printed on Phage is.
+        // A trigger granted for good that serves the creature holding it is that creature's own
+        // ability from then on, read as if printed: Cherished Hatchling's Dinosaurs gaining "when this
+        // creature enters, you may have it fight another target creature" are fight removal. Only a
+        // permanent grant — one until end of turn still waits on its event, so the HoldPolicy card-flow
+        // windows must not see it as the payoff — and only a helpful one, which is ours to hold.
         is GrantTriggeredAbilityEffect -> buildSet {
             if (returnsItselfWhenItLeaves(effect.ability)) add(IntentTag.PROTECTION)
-            if (IntentTag.GAME_WIN in effectTags(effect.ability.effect)) add(IntentTag.GAME_WIN)
+            val granted = effectTags(effect.ability.effect)
+            if (IntentTag.GAME_WIN in granted) add(IntentTag.GAME_WIN)
+            if (effect.duration == Duration.Permanent &&
+                TargetPolarityAnalyzer.grantedTriggerPolarity(effect.ability) == TargetPolarity.BENEFICIAL
+            ) addAll(granted)
         }
 
         // "That player loses the game" aimed away from its controller, or "you win the game": the
@@ -1169,6 +1202,30 @@ object CardIntentAnalyzer {
     }
 
     /** Spot removal or a wrath, depending on whether the effect names a group. */
+    /** A base P/T change to fixed values of 1 or less — see [IntentTag.NEUTRALIZE]. */
+    private fun setsSmallBase(effect: SetBaseStatsEffect): Boolean {
+        val set = listOfNotNull(effect.power, effect.toughness)
+        return set.isNotEmpty() && set.all { amount -> fixed(amount)?.let { it <= 1 } == true }
+    }
+
+    /** Whether [target] is bound to a "target opponent" requirement. */
+    private fun namesAnOpponentSlot(target: EffectTarget, requirements: List<TargetRequirement>): Boolean {
+        val requirement = when (target) {
+            is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name.substringBefore('[') }
+            is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
+            else -> null
+        }
+        return requirement is TargetOpponent
+    }
+
+    /**
+     * Whether an extra turn aimed at [target] goes to its controller. A player slot is theirs to aim
+     * (Time Warp's "target player"), and one only an opponent can fill was dropped in [readingLeaves].
+     */
+    private fun takesTheTurnOurselves(target: EffectTarget): Boolean =
+        target == EffectTarget.Controller || target == EffectTarget.PlayerRef(Player.You) ||
+            target is EffectTarget.ContextTarget || target is EffectTarget.BoundVariable
+
     private fun removalTags(target: EffectTarget): Set<IntentTag> =
         if (targetsAGroup(target)) setOf(IntentTag.REMOVAL, IntentTag.SWEEPER)
         else setOf(IntentTag.REMOVAL)
