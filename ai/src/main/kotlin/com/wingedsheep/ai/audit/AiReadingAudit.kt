@@ -46,6 +46,10 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -96,7 +100,7 @@ import java.util.Locale
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
- *    shifting its own P/T with a loss on either side, an upkeep cost its controller pays or suffers
+ *    shifting its own P/T with a loss on either side, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
  *    to hand chosen among its controller's own permanents).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
@@ -536,7 +540,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -688,7 +692,17 @@ object AiReadingAudit {
      * training) flagged, which errs toward flagging.
      */
     private fun fired(payoff: List<Effect>): List<Effect> = payoff.flatMap { leaf ->
-        if (leaf is CreateDelayedTriggerEffect) fired(EffectWalker.firedLeaves(leaf, payoff)) else listOf(leaf)
+        when (leaf) {
+            is CreateDelayedTriggerEffect -> fired(EffectWalker.firedLeaves(leaf, payoff))
+            // A reflexive trigger is read as the effect it fires, as CardIntentAnalyzer reads it: an
+            // unread one is labelled by its payoff, and a payoff needing no intent reads it. The
+            // action before "when you do" is left out, as the analyzer leaves it out: an optional one
+            // is the payoff's price, like a gate's. A mandatory one (Etched Slith's +1/+1 counter, a
+            // connive) is a real effect neither reads yet; reading it in the analyzer would let its tag
+            // stand for the whole ability and hide an unread payoff (Obscura Interceptor's bounce).
+            is ReflexiveTriggerEffect -> fired(EffectWalker.payoffLeaves(leaf.reflexiveEffect))
+            else -> listOf(leaf)
+        }
     }
 
     private fun needsNoIntent(leaf: Effect): Boolean {
@@ -782,6 +796,18 @@ object AiReadingAudit {
         // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
         // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
         if (leaf is RemoveCountersEffect && leaf.target == EffectTarget.Self) return true
+        // Counters moved between permanents or taken off one, whatever their kind — The Ozolith
+        // storing a leaving creature's counters and moving them on, Essence Channeler's "put its
+        // counters on target creature you control", Etched Slith's "remove a counter from another
+        // target permanent or opponent". No counter is made: what the move or removal is worth is the
+        // counters' kinds on the board (+1/+1 and loyalty help their holder, -1/-1 and stun hurt it),
+        // which no fixed tag can say. The polarity check reads the slot FLEXIBLE so the simulation
+        // weighs each candidate's counters, and whether to do it is the simulation's call too.
+        // Unlike a RemoveCountersEffect of a named kind on another target (still flagged: its kind
+        // fixes a side and a purpose), these name no kind, so a target does not make them taggable.
+        if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
+            leaf is RemoveAnyNumberOfCountersEffect
+        ) return true
         // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
         // counters off its controller's own permanents to pay for a payoff beside it (the doubled
         // counters, read on their own leaf): no target, nothing to hold, and how many to move is the
