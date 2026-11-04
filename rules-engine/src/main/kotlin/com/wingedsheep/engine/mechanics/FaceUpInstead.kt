@@ -40,14 +40,12 @@ import com.wingedsheep.sdk.model.EntityId
  *    already fixed by the time damage would be dealt (a fight reads its power first), so turning
  *    face up never changes how much is dealt.
  *
- * Ordering against other replacement and prevention effects (CR 616.1): the affected object's
- * controller chooses the order, and every choice is legal (CR 616.1e). The engine always applies
- * this one after redirection and before every prevention effect, and then re-evaluates the rest
- * against the face-up permanent (CR 616.1f) — so a face-up creature's own protection or damage
- * replacement applies to the damage that turned it face up. In combat, "after redirection" means
- * after chosen-source redirection only: recipients are fixed and turned face up before the
- * modifier-stage and static redirects (Pariah's Shield, Blood of the Martyr), which that choice
- * of order permits.
+ * Damage ordering is handled by DamageReplacementChain: the affected player can choose this
+ * replacement before or after prevention or redirection. Once chosen, the turn-up is published
+ * before any further question, and the remaining effects are checked against its face-up
+ * characteristics. The replay boundary preserves the original damage amount and emits the
+ * turn-up event only once. Combat assigners still turn up before assigning their damage.
+
  */
 object FaceUpInstead {
 

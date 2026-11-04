@@ -244,3 +244,14 @@ data class PreventNextDamageLeavingAmountContinuation(
     val duration: com.wingedsheep.sdk.scripting.Duration,
     val choices: List<com.wingedsheep.engine.handlers.effects.combat.ChosenDamageSource>
 ) : AnswerContinuation
+
+/** Replays the simultaneous combat damage batch after one replacement-order choice. */
+@Serializable
+data class CombatDamageReplacementContinuation(
+    val choiceKey: String,
+    val optionKeys: List<String>,
+    val firstStrike: Boolean = false,
+    val numberMax: Int? = null,
+    val numberPrefix: String? = null,
+    val numberMin: Int = 0,
+) : AnswerContinuation

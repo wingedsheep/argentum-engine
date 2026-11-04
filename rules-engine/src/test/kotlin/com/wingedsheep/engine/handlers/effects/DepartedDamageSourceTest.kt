@@ -1,5 +1,15 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.stack.captureLastKnown
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.events.Recipient
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -127,4 +137,111 @@ class DepartedDamageSourceTest : FunSpec({
 
         driver.getGraveyardCardNames(driver.player2) shouldContain "Big Wall"
     }
+
+    val fanatic = card("Departed Fanatic") {
+        manaCost = "{R}"
+        typeLine = "Creature — Goblin"
+        power = 1
+        toughness = 1
+        activatedAbility {
+            cost = Costs.SacrificeSelf
+            val t = target(Targets.Any)
+            effect = Effects.DealDamage(1, t)
+        }
+    }
+    val plans = card("Departed Color Ward") {
+        typeLine = "Enchantment"
+        replacementEffect(PreventDamage(appliesTo = EventPattern.DamageEvent(
+            recipient = Recipient.AnyCreature,
+            source = GameObjectFilter.Creature.sharingColorWithRecipient()
+        )))
+    }
+
+    test("Well-Laid Plans pattern prevents a sacrificed red creature damaging another red creature") {
+        val d = newDriver()
+        d.registerCards(listOf(fanatic, plans))
+        d.putPermanentOnBattlefield(d.player1, plans.name)
+        val source = d.putCreatureOnBattlefield(d.player1, fanatic.name)
+        val recipient = d.putCreatureOnBattlefield(d.player2, "Goblin Guide")
+        d.submit(ActivateAbility(d.player1, source, fanatic.activatedAbilities.single().id,
+            targets = listOf(ChosenTarget.Permanent(recipient)))).error shouldBe null
+        d.bothPass().error shouldBe null
+        d.getGraveyardCardNames(d.player1) shouldContain fanatic.name
+        (d.state.getEntity(recipient)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+        (d.state.getEntity(recipient) != null) shouldBe true
+    }
+
+    test("recipient color filtering reads departed colors instead of a newer green incarnation") {
+        val d = newDriver()
+        d.registerCard(plans)
+        d.putPermanentOnBattlefield(d.player1, plans.name)
+        val source = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val recipient = d.putCreatureOnBattlefield(d.player2, "Goblin Guide")
+        val captured = captureLastKnown(d.state, source)
+        val snapshot = captured.copy(colors = setOf("RED"),
+            objectRef = captured.objectRef!!.copy(generation = captured.objectRef!!.generation - 1))
+        val live = DamageReplacementChain.deal(d.zones, d.state, listOf(
+            DamageReplacementChain.Instance(source, recipient, 1)
+        ))
+        live.state.getEntity(recipient)?.get<DamageComponent>()?.amount shouldBe 1
+        val result = DamageReplacementChain.deal(d.zones, d.state, listOf(
+            DamageReplacementChain.Instance(source, recipient, 1, sourceSnapshot = snapshot)
+        ))
+        result.error shouldBe null
+        (result.state.getEntity(recipient)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+    }
+
+    test("snapshot recipient color predicates compose and distinguish a returned object from itself") {
+        val d = newDriver()
+        val source = d.putCreatureOnBattlefield(d.player1, "Goblin Guide")
+        val snapshot = captureLastKnown(d.state, source)
+        val predicate = CardPredicate.SharesColorWithRecipient
+        val context = PredicateContext(controllerId = d.player1, recipientId = source)
+        val evaluator = d.zones.predicateEvaluator
+        fun matches(p: CardPredicate, old: Boolean = true, colors: Set<String>? = setOf("RED")) =
+            evaluator.matchesSnapshot(d.state, snapshot.copy(
+                colors = colors,
+                objectRef = if (old) snapshot.objectRef!!.copy(generation = snapshot.objectRef!!.generation - 1) else snapshot.objectRef
+            ), GameObjectFilter(cardPredicates = listOf(p)), context)
+        matches(predicate, old = false) shouldBe false
+        matches(predicate) shouldBe true
+        matches(CardPredicate.Not(predicate)) shouldBe false
+        matches(CardPredicate.And(listOf(CardPredicate.IsCreature, predicate))) shouldBe true
+        matches(CardPredicate.Or(listOf(CardPredicate.IsLand, predicate))) shouldBe true
+        matches(CardPredicate.Not(predicate), colors = null) shouldBe false
+        matches(predicate, colors = emptySet()) shouldBe false
+        evaluator.matchesSnapshot(d.state, snapshot.copy(objectRef = snapshot.objectRef!!.copy(generation = -1)),
+            GameObjectFilter(anyOf = listOf(GameObjectFilter.Land, GameObjectFilter.Creature.sharingColorWithRecipient())), context) shouldBe true
+    }
+
+    test("snapshot damage-source mana parity and chosen subtype use frozen characteristics") {
+        val d = newDriver()
+        val source = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val snapshot = captureLastKnown(d.state, source).copy(manaValue = 3, subtypes = setOf("Goblin"))
+        val context = PredicateContext(controllerId = d.player1, sourceId = source,
+            lastKnownSourceSnapshot = snapshot.copy(textChoices = mapOf(com.wingedsheep.sdk.scripting.ChoiceSlot.CREATURE_TYPE to "Goblin")))
+        fun matches(p: CardPredicate, faceDown: Boolean = false) = d.zones.predicateEvaluator.matchesSnapshot(
+            d.state, snapshot.copy(wasFaceDown = faceDown), GameObjectFilter(cardPredicates = listOf(p)), context)
+        matches(CardPredicate.ManaValueIsOdd) shouldBe true
+        matches(CardPredicate.ManaValueIsEven) shouldBe false
+        matches(CardPredicate.ManaValueIsOdd, faceDown = true) shouldBe false
+        matches(CardPredicate.ManaValueIsEven, faceDown = true) shouldBe true
+        matches(CardPredicate.HasChosenSubtype) shouldBe true
+    }
+
+
+    test("departed enchanted source matching uses captured attachments") {
+        val d = newDriver()
+        val source = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val snapshot = captureLastKnown(d.state, source)
+        val context = PredicateContext(controllerId = d.player1)
+        val enchanted = snapshot.copy(attachments = listOf(
+            com.wingedsheep.engine.state.components.stack.AttachmentLki(source, d.player1, setOf("Aura"))
+        ))
+        d.zones.predicateEvaluator.matchesSnapshot(d.state, enchanted,
+            GameObjectFilter.Creature.enchanted(), context) shouldBe true
+        d.zones.predicateEvaluator.matchesSnapshot(d.state, snapshot,
+            GameObjectFilter.Creature.enchanted(), context) shouldBe false
+    }
+
 })

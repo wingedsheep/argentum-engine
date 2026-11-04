@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
+
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -13,6 +16,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Tests for Daunting Defender (ONS #21).
@@ -109,6 +113,13 @@ class DauntingDefenderTest : FunSpec({
         val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
         driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(cleric)))
         driver.bothPass()
+
+        // The protected creature's controller chooses which replacement applies first.
+        val order = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        order.playerId shouldBe activePlayer
+        order.options.size shouldBe 2
+        driver.submitDecision(activePlayer, OptionChosenResponse(order.id, 0)).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // 3 damage - 2 prevented (1 per Defender) = 1 damage
         val damage = driver.state.getEntity(cleric)?.get<DamageComponent>()?.amount ?: 0

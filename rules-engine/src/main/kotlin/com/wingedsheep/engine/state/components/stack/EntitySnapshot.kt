@@ -195,6 +195,10 @@ data class EntitySnapshot(
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val wasCast: Boolean = false,
+    /** Whether this permanent was its controller's Ring-bearer at capture. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val wasRingBearer: Boolean = false,
     /** The zone it was cast from (hand, graveyard, library, exile) when it left; null if not cast or untracked. */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
@@ -577,6 +581,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         },
         damageSources = damagedBySourcesOf(state, entityId),
         wasCast = container?.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>() == true,
+        wasRingBearer = com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isRingBearer(state, entityId),
         castFromZone = container?.let(::castFromZoneOf),
         enteredFromZone = container?.get<com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent>()?.zone,
         attachmentIds = attachmentIdsOf(state, entityId),

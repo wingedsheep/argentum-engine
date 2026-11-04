@@ -61,6 +61,7 @@ interface GameBoardProps {
  */
 export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardProps) {
   const blockerDeclarationDescription = useGameStore((s) => s.legalActions.find((a) => a.actionType === 'DeclareBlockers')?.description)
+  const pendingDecision = useGameStore((state) => state.pendingDecision)
   const playerGameState = useGameStore((state) => state.gameState)
   const spectatingState = useGameStore((state) => state.spectatingState)
   const sessionId = useGameStore((state) => state.sessionId)
@@ -1255,7 +1256,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           minWidth: 0,
         }}>
         {(isHijacking || isHijacked || hotseat) && (() => {
-          const actingName = gameState.players.find((p) => p.playerId === gameState.priorityPlayerId)?.name ?? 'active player'
+          const actingSeat = pendingDecision?.playerId ?? gameState.priorityPlayerId
+          const actingName = gameState.players.find((p) => p.playerId === actingSeat)?.name ?? 'active player'
           const text = hotseat
             ? (responsive.isMobile ? `Acting as ${actingName}` : `Hotseat — acting as ${actingName}`)
             : (() => {

@@ -299,6 +299,13 @@ enum class IntentTag {
      */
     COST_REDUCER,
 
+    /** Multiplies damage from our sources, without also multiplying opposing sources. */
+    DAMAGE_AMPLIFIER,
+
+    /** Deals damage to an explicitly named player; may be delayed or damage to ourselves.
+     * This describes the recipient, not immediate lethal reach or creature removal. */
+    DAMAGE_TO_PLAYERS,
+
     /** A continuous P/T bonus to a group of creatures — a lord or an anthem. */
     ANTHEM,
 

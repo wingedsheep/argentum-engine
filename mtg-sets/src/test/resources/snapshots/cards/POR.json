@@ -2625,7 +2625,30 @@
     "typeLine": "Instant",
     "oracleText": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nThis turn, whenever an attacking creature deals combat damage to you, it deals that much damage to its controller.",
     "script": {
-        "spellEffect": "ReflectCombatDamage",
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                },
+                "target": "ControllerOfTriggeringEntity",
+                "damageSource": "TriggeringEntity"
+            },
+            "trigger": {
+                "event": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "creature attacking"
+                },
+                "binding": "ANY"
+            }
+        },
         "castRestrictions": [
             {
                 "type": "OnlyDuringStep",
@@ -2641,7 +2664,7 @@
         "collectorNumber": "18",
         "rarity": "RARE",
         "artist": "John Coulthart",
-        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3657001a-7f79-4d3f-9d35-462ecf684fa8.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3657001a-7f79-4d3f-9d35-462ecf684fa8.jpg?1783946849"
     },
     "colorIdentityOverride": [
         "WHITE"

@@ -1047,8 +1047,36 @@ replacement effects are data (not callbacks), the engine can inspect which repla
 ordering when multiple replacement effects compete (the affected player chooses per Rule 616.1), and
 serialize the state even when a replacement choice is pending.
 
-Life-gain replacements that execute effects use the existing replacement-result queue where damage
-arithmetic cannot suspend. A life-gain instruction drains its result before the next instruction;
+Damage uses a shared transaction boundary, `DamageReplacementChain`, for combat and spell/ability
+instructions. It proposes a complete simultaneous batch, applies one replacement at a time, and
+rechecks all remaining candidates. Competing effects ask the affected player through the ordinary
+option decision. A pending answer stores a serializable choice sequence and the original instruction;
+replaying it never commits partial damage, shield consumption or replacement results. The complete
+transaction returns final damage instances, replacement events and aggregated prevention life gain
+for the ordinary damage-marking code. Damage-to-counter and damage-to-mill results are deferred until
+all surviving damage has been marked, so their future counters and graveyards do not change another
+instance's replacement choices. Chosen face-up replacements are the exception: they reveal the object
+before the next question, with a small original-entity journal preventing repeated turn-up events
+and preserving the announced damage amount on replay. An instance with no candidates is only
+provisionally complete: a later reveal requeues it with its applied identities intact, so newly visible
+global replacements see the whole surviving event. Candidates are cached until a replacement changes
+the event or resource state; ordinary damage with no candidates skips cross-instance choice scans.
+Peer instances are inspected lazily only when a finite shield needs a shared-resource label.
+Redirection retains applied identities. A departed source carries its object reference and frozen
+`EntitySnapshot` through replay, replacement matching, protection and final damage application;
+a later incarnation of the same entity cannot supply its controller, colors or damage keywords.
+When simultaneous sources share a finite resource or competing noncommuting replacements, the
+player can choose which source to modify next. Finite shields, counter-based prevention and limited
+redirection share an exact-total allocation sequence: bounded number decisions divide the resource
+across eligible incoming sources before any other replacement runs. Their remaining capacities are
+reserved once across the whole event, including across pauses. Whole-event replacements retain a
+separate batch scope: unbounded continuous redirection moves all eligible sources together, and
+counter-removal prevention removes the aggregate counters and queues its rider once per recipient.
+Each transformed source retains its own already-applied identities, so a multiplier used before the
+batch redirect cannot apply again afterward. The replacement text determines this event granularity
+(CR 700.1), rather than the number of internal damage instances.
+
+Life-gain replacements that execute effects use the existing replacement-result queue. A life-gain instruction drains its result before the next instruction;
 combat drains results at the settle boundary before state-based actions. The queue isolates later
 results on an automatic continuation while a result asks questions. A replacement-chain boundary
 keeps already-applied identities in scope across nested draws and suspended effects, then restores

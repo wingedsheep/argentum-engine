@@ -336,14 +336,6 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
-     * Damage reflection: when an attacking creature deals combat damage to the protected player,
-     * it deals that much damage to its controller.
-     * Used by Harsh Justice.
-     */
-    @Serializable
-    data class ReflectCombatDamage(val protectedPlayerId: String) : SerializableModification
-
-    /**
      * Grant protection from a specific color.
      * Used by Akroma's Blessing and similar effects.
      */
@@ -939,8 +931,6 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.CantBeBlockedByColor -> Modification.NoOp
     // AttackBlockTaxPerCreatureType doesn't map to a layer modification - it's checked by CombatManager directly
     is SerializableModification.AttackBlockTaxPerCreatureType -> Modification.NoOp
-    // ReflectCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly
-    is SerializableModification.ReflectCombatDamage -> Modification.NoOp
     is SerializableModification.GrantProtectionFromColor -> Modification.GrantProtectionFromColor(color)
     is SerializableModification.GrantProtectionFromCardType -> Modification.GrantProtectionFromCardType(cardType)
     // PreventNextDamage doesn't map to a layer modification - it's checked during damage resolution directly

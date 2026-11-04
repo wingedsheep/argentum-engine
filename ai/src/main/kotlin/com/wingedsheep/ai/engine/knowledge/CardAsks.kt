@@ -89,6 +89,10 @@ internal object CardAsks {
                 groupFilter(static)?.let { add(it, DeckSynergy.TRIBE_MEMBERS_WANTED, spells = false) }
                 spellFilter(static)?.let { add(it, DeckSynergy.FEEDERS_WANTED, spells = true) }
             }
+            for (replacement in script.replacementEffects.filter(DamageAmplifiers::reads)) {
+                val event = replacement.appliesTo as EventPattern.DamageEvent
+                add(event.source, DeckSynergy.FEEDERS_WANTED, spells = false)
+            }
             // An ability paid for by sacrificing a narrow kind of permanent — Auratog's
             // enchantment, Atog's artifact — is fuelled only by the deck's cards of that kind. A
             // broad sacrifice (a creature, a land) is a sac outlet, which [SynergyAxes] reads, and

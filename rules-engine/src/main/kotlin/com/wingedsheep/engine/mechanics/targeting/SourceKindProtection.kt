@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Parity
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import kotlinx.serialization.Serializable
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 
 /**
  * A protection/hexproof quality read straight off the source when protection is checked, rather
@@ -235,7 +236,16 @@ object SourceKindProtection {
      * ([SourceKind.PERMANENT_CAST_THIS_TURN], [SourceKind.RING_BEARER], the mana-value parities)
      * describe objects; ability kinds never match here.
      */
-    fun isProtectedFromObject(state: GameState, protectedId: EntityId, sourceId: EntityId?): Boolean {
+    fun isProtectedFromObject(state: GameState, protectedId: EntityId, sourceId: EntityId?, sourceSnapshot: EntitySnapshot? = null): Boolean {
+        if (sourceSnapshot != null) {
+            val projected = state.projectedState
+            return protectedFromManaValue(state, protectedId, sourceSnapshot.manaValue) ||
+                sourceSnapshot.manaValue?.let { projected.hasKeyword(protectedId, protectionKeyword(
+                    SourceKind.parity(if (it % 2 == 0) Parity.EVEN else Parity.ODD))) } == true ||
+                sourceSnapshot.wasCast && sourceSnapshot.enteredOnTurn == state.turnNumber &&
+                    projected.hasKeyword(protectedId, protectionKeyword(SourceKind.PERMANENT_CAST_THIS_TURN)) ||
+                sourceSnapshot.wasRingBearer && projected.hasKeyword(protectedId, protectionKeyword(SourceKind.RING_BEARER))
+        }
         if (sourceId == null) return false
         val projected = state.projectedState
         if (projected.hasKeyword(protectedId, protectionKeyword(SourceKind.SPELL)) && isSpell(state, sourceId)) return true

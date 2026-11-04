@@ -91,7 +91,20 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             game.state = services.effectExecutorRegistry.execute(game.state,
                 Effects.PreventDamage(amount = com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(2)),
                 EffectContext(sourceId = null, controllerId = game.player1Id)).state
-            game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
+            repeat(12) {
+                when (val decision = game.getPendingDecision()) {
+                    is CombatResolutionDecision -> game.submitDefaultCombatDamage().error shouldBe null
+                    is ChooseOptionDecision -> {
+                        // Apply the multiplier before redirection; it must not apply a second time
+                        // when the destination's two-point shield joins the replacement chain.
+                        val double = decision.options.indexOfFirst { it.contains("double", true) }
+                        val index = if (double >= 0) double else decision.options.indexOfFirst { it.contains("redirect", true) }
+                        (index >= 0) shouldBe true
+                        game.submitDecision(OptionChosenResponse(decision.id, index)).error shouldBe null
+                    }
+                    else -> if (game.state.step != Step.END_COMBAT) game.passPriority().error shouldBe null
+                }
+            }
             game.getLifeTotal(1) shouldBe 16
             game.findPermanent("Grizzly Bears").shouldNotBeNull()
         }

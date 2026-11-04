@@ -8,6 +8,8 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.DamageUtils.dealDamageToTarget
+import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
@@ -82,73 +84,34 @@ class DealDamageExecutor(
                 ?: sourceId?.let(state::objectRef)
         }
 
-        // "Each opponent and planeswalker it has dealt damage to this game" (The Fallen): a set
-        // that mixes players and permanents, read off the damage source's accumulated memory.
-        // Empty is a legal no-op, not an error — a Fallen that has damaged nobody yet does nothing.
-        if (effect.target is EffectTarget.EachDamagedBySourceThisGame) {
-            val recipients = resolveDamagedThisGame(state, sourceId, context)
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                recipients.map { OptionalDamageRedirect.Instance(sourceId, it, amount) },
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-            var newState = readyState
-            val events = mutableListOf<EngineGameEvent>()
-            for (recipientId in recipients) {
-                val result = dealDamageToTarget(zones, newState, recipientId, amount, sourceId, effect.cantBePrevented, damageSourceRef = damageSourceRef)
-                newState = result.newState
-                events.addAll(result.events)
+        // Resolve characteristics by object identity, never by a returned card's newer visit.
+        val sourceReference = (damageSourceTarget ?: EffectTarget.Self) as? EffectTarget.SingleEntity
+        val sourceSnapshot = sourceId?.let { id ->
+            // A spell resolving on the stack is still its current object. Its cast-time
+            // snapshot must not hide keywords or colors granted since it was cast.
+            val departed = if (damageSourceRef != null) !state.isCurrentObject(damageSourceRef)
+            else state.getEntity(id) == null || (id !in state.getBattlefield() &&
+                state.getEntity(id)?.get<LastKnownPermanentComponent>() != null)
+            if (!departed) null else {
+                state.getEntity(id)?.get<LastKnownPermanentComponent>()?.snapshot
+                    ?.takeIf { damageSourceRef == null || it.objectRef == damageSourceRef }
+                    ?: sourceReference?.let { context.lkiSnapshotFor(it, id) }
+                        ?.takeIf { damageSourceRef == null || it.objectRef == null || it.objectRef == damageSourceRef }
             }
-            return EffectResult.success(newState, events)
         }
 
-        // For PlayerRef targets, resolve to potentially multiple players
-        if (effect.target is EffectTarget.PlayerRef) {
-            val playerIds = context.resolvePlayerTargets(effect.target, state)
-            if (playerIds.isEmpty()) {
-                return EffectResult.error(state, "No valid target for damage")
-            }
-
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                playerIds.map { OptionalDamageRedirect.Instance(sourceId, it, amount) },
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-            var newState = readyState
-            val events = mutableListOf<EngineGameEvent>()
-            for (playerId in playerIds) {
-                val result = dealDamageToTarget(zones, newState, playerId, amount, sourceId, effect.cantBePrevented, damageSourceRef = damageSourceRef)
-                newState = result.newState
-                events.addAll(result.events)
-            }
-            return EffectResult.success(newState, events)
+        val recipients = when (effect.target) {
+            EffectTarget.EachDamagedBySourceThisGame -> resolveDamagedThisGame(state, sourceId, context)
+            is EffectTarget.PlayerRef -> context.resolvePlayerTargets(effect.target, state)
+            else -> listOfNotNull(context.resolveTarget(effect.target, state))
         }
-
-        // Single target resolution
-        val targetId = context.resolveTarget(effect.target, state)
-            ?: return EffectResult.error(state, "No valid target for damage")
-
-        // "You may have that damage dealt to you instead" (Blood of the Martyr) — ask before dealing.
-        val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-            state,
-            listOf(OptionalDamageRedirect.Instance(sourceId, targetId, amount)),
-            effect,
-            context,
-            zones.predicateEvaluator
-        )
-        if (pause != null) return pause
-
-        val result = dealDamageToTarget(
-            zones,
-            readyState, targetId, amount, sourceId, effect.cantBePrevented,
-            excessToController = effect.excessToController, damageSourceRef = damageSourceRef
-        )
+        if (recipients.isEmpty()) return EffectResult.success(state)
+        val result = DamageReplacementChain.deal(zones, state,
+            recipients.map { DamageReplacementChain.Instance(sourceId, it, amount,
+                cantBePrevented = effect.cantBePrevented, sourceRef = damageSourceRef, sourceSnapshot = sourceSnapshot) },
+            effect, context, effect.excessToController)
+        if (result.outcome is Outcome.Paused) return result
+        val targetId = recipients.first()
         val excessVariable = effect.excessDamageVariable ?: return result
         // Excess damage (CR 120.4a) dealt to this target by this instruction, read off the actual
         // DamageDealtEvent so prevention, deathtouch, marked damage and loyalty are all accounted.

@@ -1,7 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -190,18 +191,21 @@ class GideonsSacrificeScenarioTest : ScenarioTestBase() {
             test("you choose which of them is dealt the damage — and only that one") {
                 for (pickFirst in listOf(true, false)) {
                     val (game, bears, giant) = twoShields()
-                    val decision = game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                    val decision = game.getPendingDecision().shouldBeInstanceOf<ChooseOptionDecision>()
                     decision.playerId shouldBe game.player1Id
-                    val firstOffered = decision.yesText
-                    game.answerYesNo(pickFirst).error shouldBe null
+                    val firstRecipient = if (pickFirst) "Grizzly Bears" else "Hill Giant"
+                    val option = decision.options.indexOfFirst { it.contains(firstRecipient) }
+                    (option >= 0) shouldBe true
+                    game.submitDecision(OptionChosenResponse(decision.id, option)).error shouldBe null
                     game.resolveStack()
 
                     withClue("no further question, and the damage didn't bounce back and forth") {
                         game.hasPendingDecision() shouldBe false
                     }
                     game.getLifeTotal(1) shouldBe 20
-                    val (dealt, spared) = if ((firstOffered == "Grizzly Bears") == pickFirst) bears to giant else giant to bears
-                    withClue("picked ${if (pickFirst) firstOffered else decision.noText}") {
+                    // The other replacement applies next; the first cannot apply again.
+                    val (dealt, spared) = if (pickFirst) giant to bears else bears to giant
+                    withClue("applied redirection to $firstRecipient first") {
                         if (dealt == bears) {
                             withClue("2 damage on the 2/2 Bears killed them") { game.findPermanent("Grizzly Bears") shouldBe null }
                         } else {
@@ -242,9 +246,12 @@ class GideonsSacrificeScenarioTest : ScenarioTestBase() {
                 val answers = listOf(true, false)
                 for (answer in answers) {
                     repeat(6) { if (!game.hasPendingDecision()) game.passPriority() }
-                    val decision = game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                    val decision = game.getPendingDecision().shouldBeInstanceOf<ChooseOptionDecision>()
                     decision.playerId shouldBe game.player1Id
-                    game.answerYesNo(answer).error shouldBe null
+                    val firstRecipient = if (answer) "Grizzly Bears" else "Hill Giant"
+                    val option = decision.options.indexOfFirst { it.contains(firstRecipient) }
+                    (option >= 0) shouldBe true
+                    game.submitDecision(OptionChosenResponse(decision.id, option)).error shouldBe null
                 }
                 game.hasPendingDecision() shouldBe false
 

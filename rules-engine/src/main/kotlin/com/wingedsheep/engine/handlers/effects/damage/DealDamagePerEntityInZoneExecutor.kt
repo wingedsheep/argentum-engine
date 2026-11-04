@@ -52,44 +52,9 @@ class DealDamagePerEntityInZoneExecutor(private val zones: ZoneTransitionService
         val damageSourceRef = if (damageSourceTarget == null) context.objectReferences.origin
             ?: sourceId?.let(state::objectRef) else sourceId?.let(state::objectRef)
 
-        // For PlayerRef targets, resolve to potentially multiple players
-        if (effect.target is EffectTarget.PlayerRef) {
-            val playerIds = context.resolvePlayerTargets(effect.target, state)
-            if (playerIds.isEmpty()) {
-                return EffectResult.success(state)
-            }
-
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                playerIds.map { OptionalDamageRedirect.Instance(sourceId, it, totalDamage) },
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-            var newState = readyState
-            val events = mutableListOf<EngineGameEvent>()
-            for (playerId in playerIds) {
-                val result = dealDamageToTarget(zones, newState, playerId, totalDamage, sourceId, cantBePrevented = false, damageSourceRef = damageSourceRef)
-                newState = result.newState
-                events.addAll(result.events)
-            }
-            return EffectResult.success(newState, events)
-        }
-
-        // Single target resolution
-        val targetId = context.resolveTarget(effect.target, state)
-            ?: return EffectResult.error(state, "No valid target for damage")
-
-        val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-            state,
-            listOf(OptionalDamageRedirect.Instance(sourceId, targetId, totalDamage)),
-            effect,
-            context,
-            zones.predicateEvaluator
-        )
-        if (pause != null) return pause
-
-        return dealDamageToTarget(zones, readyState, targetId, totalDamage, sourceId, cantBePrevented = false, damageSourceRef = damageSourceRef)
+        val targets = if (effect.target is EffectTarget.PlayerRef) context.resolvePlayerTargets(effect.target, state)
+            else listOfNotNull(context.resolveTarget(effect.target, state))
+        return DamageReplacementChain.deal(zones, state,
+            targets.map { DamageReplacementChain.Instance(sourceId, it, totalDamage, sourceRef = damageSourceRef) }, effect, context)
     }
 }

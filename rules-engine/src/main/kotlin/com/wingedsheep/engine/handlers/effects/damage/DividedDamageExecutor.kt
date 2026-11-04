@@ -69,47 +69,21 @@ class DividedDamageExecutor(
             // the survivors keep exactly what they were assigned. This is why the assigned shares
             // can sum to less than [total] and must not be recomputed from the surviving count.
             val stillLegal = targets.toSet()
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                distribution
-                    .filter { (targetId, amount) -> amount > 0 && targetId in stillLegal }
-                    .map { (targetId, amount) -> OptionalDamageRedirect.Instance(context.sourceId, targetId, amount) },
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-
-            var currentState = readyState
-            val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
-
-            for ((targetId, amount) in distribution) {
-                if (amount <= 0 || targetId !in stillLegal) continue
-                val result = dealDamageToTarget(zones, currentState, targetId, amount, context.sourceId, damageSourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))
-                if (result.outcome !is Outcome.Done) {
-                    return result
-                }
-                currentState = result.newState
-                events.addAll(result.events)
-            }
-
-            return EffectResult.success(currentState, events)
+            return DamageReplacementChain.deal(zones, state, distribution
+                .filter { (targetId, amount) -> amount > 0 && targetId in stillLegal }
+                .map { (targetId, amount) -> DamageReplacementChain.Instance(context.sourceId, targetId, amount,
+                    sourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef)) }, effect, context)
         }
 
         // No division was announced. A single target takes the whole total with nothing to divide;
         // otherwise fall back to asking for the division now (the path non-interactive controllers
         // and engine-direct actions take).
         if (targets.size == 1) {
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                listOf(OptionalDamageRedirect.Instance(context.sourceId, targets.first(), total)),
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-            return dealDamageToTarget(zones, readyState, targets.first(), total, context.sourceId, damageSourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))
+            return DamageReplacementChain.deal(zones, state,
+                listOf(DamageReplacementChain.Instance(context.sourceId, targets.first(), total,
+                    sourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))), effect, context)
         }
+
         return createDistributionDecision(state, effect, context, targets, total)
     }
 

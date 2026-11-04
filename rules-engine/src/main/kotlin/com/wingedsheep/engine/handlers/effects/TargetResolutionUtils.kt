@@ -237,6 +237,9 @@ object TargetResolutionUtils {
             context.triggeringEntityId
                 ?.let { state.getEntity(it)?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId }
                 ?.let { return it }
+            context.triggerContext?.triggeringLastKnownSnapshot
+                ?.takeIf { it.entityId == context.triggeringEntityId }
+                ?.controllerId?.let { return it }
             return context.triggeringPlayerId
         }
         val triggerId = context.triggeringEntityId ?: return null

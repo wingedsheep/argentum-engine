@@ -512,12 +512,6 @@ internal class CardActiveEffectsProjector(
             description = "The next damage from the chosen source is prevented; a triggered ability then resolves",
             icon = "redirect"
         )
-        is SerializableModification.ReflectCombatDamage -> ClientCardEffect(
-            effectId = "reflect_combat_damage",
-            name = "Reflect",
-            description = "Combat damage dealt to you is also dealt to the attacking player",
-            icon = "redirect"
-        )
         is SerializableModification.RedirectCombatDamageToController -> ClientCardEffect(
             effectId = "redirect_combat_damage_to_controller",
             name = "Redirected",

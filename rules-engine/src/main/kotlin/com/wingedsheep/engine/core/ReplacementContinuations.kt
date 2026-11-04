@@ -57,3 +57,17 @@ data class RestoreReplacementChainContinuation(
 /** The later replacement results wait until the current result, including its decisions, finishes. */
 @Serializable
 data class ReplacementRidersContinuation(val riders: List<com.wingedsheep.engine.replacement.PendingReplacementRider>) : AutomaticContinuation
+
+/** Replay one whole damage instruction after choosing its next replacement or prevention effect. */
+@Serializable
+data class DamageReplacementContinuation(
+    val choiceKey: String,
+    val optionKeys: List<String>,
+    val instances: List<com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain.Instance>,
+    val effect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+    val context: EffectContext? = null,
+    val excessToController: Boolean = false,
+    val numberMax: Int? = null,
+    val numberPrefix: String? = null,
+    val numberMin: Int = 0,
+) : AnswerContinuation

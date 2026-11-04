@@ -7195,13 +7195,6 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.RedirectCombatDamageToControllerEffect(target)
 
     /**
-     * "This turn, whenever an attacking creature deals combat damage to you, it deals that much damage
-     * to its controller" (Harsh Justice).
-     */
-    fun ReflectCombatDamage(target: EffectTarget = EffectTarget.Controller): Effect =
-        com.wingedsheep.sdk.scripting.effects.ReflectCombatDamageEffect(target)
-
-    /**
      * Remove all damage marked on [target] immediately — "all damage already dealt to it is healed".
      * The body of a destruction replacement (Dr. McCoy, Surly Surgeon) or a one-shot heal.
      */

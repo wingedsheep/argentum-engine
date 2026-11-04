@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
+
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -13,6 +16,7 @@ import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import com.wingedsheep.engine.core.Outcome
 
 /**
@@ -170,8 +174,14 @@ class ZealousInquisitorTest : FunSpec({
         driver.castSpellWithTargets(p1, bolt, listOf(ChosenTarget.Permanent(inquisitor)))
         driver.bothPass()
 
-        // First shield redirects 1, then remaining 2 hits Inquisitor via recursive call,
-        // second shield activates on that 2 and redirects 1 more.
+        // The protected creature's controller chooses which replacement applies first.
+        val order = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        order.playerId shouldBe p1
+        order.options.size shouldBe 2
+        driver.submitDecision(p1, OptionChosenResponse(order.id, 0)).error shouldBe null
+        driver.pendingDecision shouldBe null
+
+        // The chosen shield redirects 1, then the other redirects 1 of the remaining 2.
         // So Inquisitor takes 1 damage, Hill Giant takes 2.
         val inquisitorDamage = driver.state.getEntity(inquisitor)?.get<DamageComponent>()?.amount ?: 0
         inquisitorDamage shouldBe 1

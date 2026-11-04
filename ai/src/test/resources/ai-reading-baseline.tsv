@@ -553,6 +553,7 @@ Angelsong
 Anger
 Angler Drake
 Angrath's Ambusher
+Angrath's Marauders
 Angrath's Rampage	polarity: ForceSacrificeEffect
 Angrath, Captain of Chaos
 Angry Mob
@@ -1386,7 +1387,7 @@ Beasts of Bogardan
 Beatrix, Loyal General	intent: ForEach>AttachTargetEquipmentToCreatureEffect; intent: Pipeline(BattlefieldMatching→?); polarity: ForEachEffect
 Bebop & Rocksteady	intent: PayOrSufferEffect
 Bebop, Warthog Warrior
-Beckett Mariner, Impetuous Ensign	intent: RemoveAllCountersOfTypeEffect
+Beckett Mariner, Impetuous Ensign
 Become Brutes	intent: ForEach>CreateAuraTokenEffect; intent: ForEach>GrantKeywordEffect
 Become Immense
 Bedeck // Bedazzle	polarity: ModifyStatsEffect
@@ -2449,7 +2450,7 @@ Captain Kathryn Janeway	intent: ExploreEffect
 Captain Lannery Storm
 Captain Mar-Vell, Space-Born
 Captain Marvel, Earth's Protector	intent: AddCountersEffect
-Captain Michael Burnham	intent: IncrementAbilityResolutionCountEffect
+Captain Michael Burnham
 Captain Pike, Fullness of Time
 Captain Sisay
 Captain Storm, Cosmium Raider
@@ -2719,7 +2720,7 @@ Chandra's Regulator	intent: CopyTargetSpellOrAbilityEffect
 Chandra's Spitfire
 Chandra's Triumph
 Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: ForEach>AddCountersEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
-Chandra, Awakened Inferno	intent: ForEach>CreateGlobalTriggeredAbilityEffect
+Chandra, Awakened Inferno
 Chandra, Chill of Compliance
 Chandra, Dressed to Kill	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Chandra, Fire Artisan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -3152,7 +3153,7 @@ Command Decision
 Command Subadjunct
 Command Tower
 Command of Unsummoning
-Command the Dreadhorde	intent: Pipeline(ChosenTargets→battlefield); polarity: DealDamageEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Command the Dreadhorde	polarity: DealDamageEffect; polarity: Pipeline(ChosenTargets→battlefield)
 Command the Stage
 Command the Storm
 Commandeer
@@ -7615,7 +7616,7 @@ Harrow
 Harsh Annotation
 Harsh Deceiver	intent: Pipeline(TopOfLibrary→?)
 Harsh Judgment
-Harsh Justice	intent: ReflectCombatDamageEffect
+Harsh Justice
 Harsh Mentor
 Harsh Mercy
 Haru, Hidden Talent	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
@@ -9943,7 +9944,7 @@ Lord of Atlantis
 Lord of the Accursed
 Lord of the Forsaken
 Lord of the Nazgûl
-Lord of the Pit	intent: SacrificeEffect
+Lord of the Pit
 Lord of the Undead
 Lord of the Void	intent: Pipeline(TopOfLibrary→battlefield|exile)
 Lore Broker
@@ -10681,7 +10682,7 @@ Minamo, School at Water's Edge	intent: TapUntapEffect
 Minas Morgul, Dark Fortress
 Minas Tirith
 Minas Tirith Garrison
-Mind Bomb	intent: ForEach>Pipeline(hand→graveyard)
+Mind Bomb
 Mind Carver
 Mind Drain
 Mind Drill Assailant
@@ -12560,7 +12561,7 @@ Power Armor
 Power Artifact	polarity: Aura>ReduceActivatedAbilityCost
 Power Conduit	polarity: AddCountersEffect
 Power Fist
-Power Leak	intent: GatedEffect; polarity: Aura>DealDamageEffect; polarity: Aura>GatedEffect
+Power Leak	polarity: Aura>DealDamageEffect; polarity: Aura>GatedEffect
 Power Matrix
 Power Plant Worker
 Power Sink	polarity: ForEachEffect
@@ -12871,7 +12872,7 @@ Pyrite Spellbomb
 Pyroceratops
 Pyroclasm
 Pyroclastic Elemental
-Pyroclastic Hellion	intent: ReflexiveTriggerEffect
+Pyroclastic Hellion
 Pyroconvergence
 Pyromancer's Goggles
 Pyromania
@@ -12903,7 +12904,7 @@ Quandrix Cultivator
 Quandrix Pledgemage
 Quandrix, the Proof	intent: CascadeEffect
 Quantum Riddler
-Quark's Bar	intent: ModalEffect
+Quark's Bar
 Quark, Humble Proprietor
 Quarrel
 Quarrel's End
@@ -18433,7 +18434,7 @@ Vaevictis Asmadi
 Vaevictis Asmadi, the Dire	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(ChosenTargets→graveyard); polarity: CaptureControllersEffect; polarity: ForEachCapturedControllerEffect; polarity: Pipeline(ChosenTargets→graveyard)
 Vagrant Plowbeasts
 Valakut Awakening
-Valakut Exploration	intent: Pipeline(FromLinkedExile→graveyard)
+Valakut Exploration
 Valakut Invoker
 Valakut Predator
 Valduk, Keeper of the Flame
@@ -18881,7 +18882,7 @@ Voltage Surge
 Voltaic Construct	intent: TapUntapEffect
 Voltaic Key	intent: TapUntapEffect
 Voltaic Servant	intent: TapUntapEffect
-Voltaic Visionary	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Voltaic Visionary
 Voltstorm Angel
 Volunteer Militia
 Vona, Butcher of Magan

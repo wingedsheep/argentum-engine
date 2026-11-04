@@ -804,7 +804,6 @@ RedirectDamageFromChosenSourceEffect — Effect
 RedirectNextDamageEffect — Effect
 RedistributeLifeTotalsEffect — Effect
 ReduceMaximumHandSizeEffect — Effect
-ReflectCombatDamageEffect — Effect
 ReflexiveTriggerEffect — Effect
 RegenerateEffect — Effect
 RemoveAbilitiesFromSourceOfTargetedAbilityEffect — Effect
