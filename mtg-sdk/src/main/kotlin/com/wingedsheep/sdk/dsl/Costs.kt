@@ -217,6 +217,12 @@ object Costs {
     val DiscardSelf: AbilityCost = AbilityCost.DiscardSelf
 
     /**
+     * Reveal this card from your hand (Tetzimoc, Primal Death) — pair with
+     * `activateFromZone = Zone.HAND`. The card stays in hand; no player selection.
+     */
+    val RevealSelf: AbilityCost = AbilityCost.RevealSelf
+
+    /**
      * Discard the specific card you drew most recently this turn (Jandor's Ring).
      * Unpayable when you haven't drawn a card this turn, or the tracked card has
      * since left your hand. The engine resolves the card automatically — no player

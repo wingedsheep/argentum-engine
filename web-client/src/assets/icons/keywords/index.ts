@@ -242,4 +242,5 @@ export const counterManaClass: Record<string, string> = {
   PHYLACTERY: 'counter-skull',
   PEACE: 'counter-lore',
   PROMOTION: 'counter-arrow',
+  PREY: 'counter-skull',
 }

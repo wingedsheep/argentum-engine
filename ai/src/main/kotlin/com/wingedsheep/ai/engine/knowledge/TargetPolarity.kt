@@ -899,7 +899,7 @@ object TargetPolarityAnalyzer {
 
     private val HARMFUL_COUNTERS = setOf(
         CounterType.STUN, CounterType.FINALITY,
-    )
+    ) + CardIntentAnalyzer.MARKED_FOR_REMOVAL_COUNTERS
 
     /**
      * A keyword or ability flag's polarity. Evasion, combat and protective keywords are good for

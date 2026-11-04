@@ -616,6 +616,23 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     }
 
     /**
+     * Reveal this card from your hand — "{B}, Reveal Tetzimoc, Primal Death from your hand: …"
+     * (Tetzimoc, Primal Death), with `activateFromZone = Zone.HAND`. The source-only sibling of
+     * [DiscardSelf]: payable only while the card is in its owner's hand, and paid with no player
+     * selection. Unlike [DiscardSelf] the card stays in hand, so the ability may be activated again
+     * on the same turn.
+     *
+     * Closest neighbours: [DiscardSelf] moves the card, so it can't take a "stay in hand" axis
+     * without stopping being a discard; `CostAtom.RevealFromHand` is a choose-N-cards-matching
+     * selection over the whole hand, and "this card" isn't a property a hand filter can name.
+     */
+    @SerialName("CostRevealSelf")
+    @Serializable
+    data object RevealSelf : AbilityCost {
+        override val description: String = "Reveal this card from your hand"
+    }
+
+    /**
      * Discard the specific card the controller drew most recently this turn (CR 121
      * "draws"). The engine tracks the per-player most-recently-drawn card on
      * `GameState.lastCardDrawnThisTurnByPlayer`, updated whenever a `CardsDrawnEvent`

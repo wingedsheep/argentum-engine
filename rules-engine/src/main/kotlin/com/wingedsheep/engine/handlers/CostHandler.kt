@@ -156,8 +156,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 // maxAffordableX is capped by graveyard size in LegalActionsCalculator
                 true
             }
-            is AbilityCost.DiscardSelf -> {
-                // Card must be in hand
+            // Card must be in hand — both the discard and the reveal pay with the card itself.
+            is AbilityCost.DiscardSelf, is AbilityCost.RevealSelf -> {
                 val handZone = ZoneKey(controllerId, Zone.HAND)
                 state.getZone(handZone).contains(sourceId)
             }
@@ -413,6 +413,26 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
                 val result = zones.discardCard(state, ownerId, sourceId)
                 CostPaymentResult.success(result.state, manaPool, result.events)
+            }
+            is AbilityCost.RevealSelf -> {
+                // The card stays in hand; revealing is informational, so the only state change is
+                // the event that shows it to every player.
+                val sourceContainer = state.getEntity(sourceId)
+                    ?: return CostPaymentResult.failure("Source card not found")
+                val ownerId = sourceContainer.get<OwnerComponent>()?.playerId
+                    ?: sourceContainer.get<ControllerComponent>()?.playerId
+                    ?: return CostPaymentResult.failure("Source card has no owner")
+                if (!state.getZone(ZoneKey(ownerId, Zone.HAND)).contains(sourceId)) {
+                    return CostPaymentResult.failure("Source card is not in its owner's hand")
+                }
+                val card = sourceContainer.get<CardComponent>()
+                val name = card?.name ?: "Unknown"
+                // The client reads `source` as a card name (it draws that card beside the reveal),
+                // and the card revealing itself is the source.
+                CostPaymentResult.success(
+                    state, manaPool,
+                    listOf(CardsRevealedEvent(ownerId, listOf(sourceId), listOf(name), listOf(card?.imageUri), source = name))
+                )
             }
             is AbilityCost.DiscardLastDrawnThisTurn -> {
                 // The engine picks the card from the per-player tracker — no player choice. canPay

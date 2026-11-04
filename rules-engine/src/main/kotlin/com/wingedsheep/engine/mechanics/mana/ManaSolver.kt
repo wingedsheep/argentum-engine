@@ -3572,7 +3572,8 @@ class ManaSolver private constructor(
         // only while no cost-scoped prohibition protects it.
         is AbilityCost.SacrificeSelf -> com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, sourceId)
         is AbilityCost.ExileSelf,
-        is AbilityCost.ReturnSelfToHand, is AbilityCost.PutSelfIntoLibrary, is AbilityCost.DiscardSelf -> true
+        is AbilityCost.ReturnSelfToHand, is AbilityCost.PutSelfIntoLibrary, is AbilityCost.DiscardSelf,
+        is AbilityCost.RevealSelf -> true
         // Discarding an empty hand is a legal payment of "discard your hand".
         is AbilityCost.DiscardHand -> true
         is AbilityCost.SacrificeChosenCreatureType -> {

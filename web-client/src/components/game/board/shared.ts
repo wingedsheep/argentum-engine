@@ -919,6 +919,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.PEACE,
   // Beckett Mariner's tally: at three they are removed and she deals 2 damage to each opponent.
   CounterType.PROMOTION,
+  // Tetzimoc's mark: each opponent's creature with one is destroyed when Tetzimoc enters.
+  CounterType.PREY,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
