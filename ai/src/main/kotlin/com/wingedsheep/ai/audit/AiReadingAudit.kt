@@ -655,6 +655,7 @@ object AiReadingAudit {
         IntentTag.COMBAT_ENHANCEMENT -> "makes a creature better in combat"
         IntentTag.EQUIPMENT_RELOCATION -> "moves Equipment onto a creature"
         IntentTag.PERMANENT_COPY -> "turns a permanent into a copy of another"
+        IntentTag.SPELL_REDIRECT -> "changes the target of a spell or ability"
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"

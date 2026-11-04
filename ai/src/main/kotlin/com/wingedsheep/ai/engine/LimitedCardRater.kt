@@ -775,6 +775,9 @@ object LimitedCardRater {
         IntentTag.NEUTRALIZE to 1.0,
         IntentTag.FIGHT to 1.0,
         IntentTag.COUNTERSPELL to 0.8,
+        // Turns their removal back on them or onto a sponge: a narrower counterspell, since it
+        // needs a single-target spell and a legal place to send it.
+        IntentTag.SPELL_REDIRECT to 0.5,
         IntentTag.ANTHEM to 0.8,
         IntentTag.DRAW to 0.6,
         IntentTag.TUTOR to 0.6,

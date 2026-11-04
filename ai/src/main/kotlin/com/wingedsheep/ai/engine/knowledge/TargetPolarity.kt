@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -55,6 +56,8 @@ import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -168,9 +171,9 @@ data class HostSplit(val subtype: Subtype, val whenIs: TargetPolarity, val other
  *
  * A leaf names the object it acts on through an [EffectTarget]. A
  * [EffectTarget.BoundVariable] matches the requirement with that `id` (the DSL's `target(...)`
- * handle); an [EffectTarget.ContextTarget] matches by position. Two leaves act on "the target"
- * without naming it — a [CounterEffect] or [ExileTargetSpellEffect] whose spell is the chosen one —
- * and are attributed only when there is exactly one requirement for them to mean.
+ * handle); an [EffectTarget.ContextTarget] matches by position. Three leaves act on "the target"
+ * without naming it — a [CounterEffect], [ExileTargetSpellEffect] or [ChangeTargetEffect] whose spell
+ * is the chosen one — and are attributed only when there is exactly one requirement for them to mean.
  *
  * A slot whose matched leaves all agree takes that polarity. A flexible step alongside other
  * understood steps remains flexible; opposing one-sided readings, any unread matched leaf, or
@@ -909,13 +912,21 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * The leaves that act on "target spell" without naming it: the counter and the spell-exile.
+     * The leaves that act on "target spell" without naming it: the counter, the spell-exile and the redirect.
      * Only "counter *target* spell" — one that counters the triggering spell aims at nothing chosen.
      */
     private fun implicitTargetPolarity(leaf: Effect): TargetPolarity? = when (leaf) {
         is CounterEffect ->
             if (leaf.targetSource == CounterTargetSource.Chosen) TargetPolarity.HARMFUL else null
         is ExileTargetSpellEffect -> TargetPolarity.HARMFUL
+        // A redirect takes the spell or ability away from what its controller aimed it at. Pulled
+        // onto this creature (Spellskite, Hydroelectric Specimen) or off ourselves (Reflecting
+        // Mirror), it is only ever worth doing to an opposing object. An unrestricted "change the
+        // target" (Bolt Bend, Misdirection) can also re-aim one of ours whose target went bad, so
+        // its slot stays open to both sides; where it points is the decision's question.
+        is ChangeTargetEffect ->
+            if (leaf.newTarget != null || leaf.onlyIfCurrentTargetIsController) TargetPolarity.HARMFUL
+            else TargetPolarity.FLEXIBLE
         else -> null
     }
 
@@ -939,6 +950,12 @@ object TargetPolarityAnalyzer {
         if (leaf is MoveAllCountersEffect) {
             return listOf(leaf.source to TargetPolarity.FLEXIBLE, leaf.destination to TargetPolarity.FLEXIBLE)
         }
+        // "Copy target spell" / "copy target spell or ability" (Twincast, Return the Favor,
+        // Lithoform Engine): the copy is ours
+        // whichever side the original belongs to, and it is worth what that object does, which
+        // only the stack shows — so both sides stay open, as a copied permanent's source does.
+        if (leaf is CopyTargetSpellOrAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
+        if (leaf is CopyTargetSpellEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
             // library (Expel from Orazca's "on top of its owner's library instead", Chaos Warp): it
