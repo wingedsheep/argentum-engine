@@ -744,7 +744,8 @@ class GamePlayHandler(
         // scenario / hotseat games inject state directly and have no setup, so they aren't saved.
         val replaySetup = gameSession.getReplaySetup()
         val frameCount = gameSession.getReplayFrameCount()
-        if (replaySetup != null && frameCount >= 5) {
+        // A scenario is practice: never a stored replay, whatever its recording holds.
+        if (replaySetup != null && frameCount >= 5 && !gameSession.isScenario) {
             val winnerName = winnerId?.let { wId ->
                 gameSession.getPlayers().find { it.playerId == wId }?.playerName
             }
@@ -801,7 +802,10 @@ class GamePlayHandler(
         // account/IP via its live identity (null for guests/AI). Only meaningful games count: ones
         // that reached a winner, or had more than a trivial number of actions (>= 10 frames).
         // A warm-up the queue interrupted is nobody's result: the conceding seat left for a real match.
-        val meaningful = (winnerId != null || frameCount >= 10) && gameSession.departedForMatch.isEmpty()
+        // A Scenario Builder game (hand-built, or forked from a replay frame) is practice, not a
+        // result, so it never reaches anyone's match history or stats.
+        val meaningful = (winnerId != null || frameCount >= 10) && gameSession.departedForMatch.isEmpty() &&
+            !gameSession.isScenario
         if (meaningful) {
             val statsLobby = lobbyId?.let { lobbyRepository.findLobbyById(it) }
             val persistenceInfo = gameSession.getPlayerPersistenceInfo()

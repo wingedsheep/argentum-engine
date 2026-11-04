@@ -260,6 +260,15 @@ class GameSession(
     @Volatile
     var ranked: Boolean = false
 
+    /**
+     * A Scenario Builder game (a hand-built board, or a position forked out of a replay). It is
+     * practice, not a result: game over saves no replay and records nothing to match history or
+     * stats. Set by [com.wingedsheep.gameserver.scenario.ScenarioSessionFactory]; persisted so a
+     * scenario recovered after a restart stays one.
+     */
+    @Volatile
+    var isScenario: Boolean = false
+
     /** Which ranked queue this game counts toward when [ranked]; null otherwise. */
     @Volatile
     var rankedMode: com.wingedsheep.gameserver.ranking.RankedMode? = null

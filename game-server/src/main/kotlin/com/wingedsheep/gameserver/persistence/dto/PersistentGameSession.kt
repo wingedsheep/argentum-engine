@@ -27,6 +27,7 @@ data class PersistentGameSession(
     val lobbyId: String?,
     val sideboards: Map<String, List<String>> = emptyMap(),  // playerId.value -> sideboard card names
     val seatNames: Map<String, PersistentSeatNames> = emptyMap(),  // playerId.value -> that seat's card names
+    val isScenario: Boolean = false,  // GameSession.isScenario — no replay, no stats
 )
 
 /**
