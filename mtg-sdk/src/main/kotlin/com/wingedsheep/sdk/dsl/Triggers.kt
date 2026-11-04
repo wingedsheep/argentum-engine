@@ -581,7 +581,7 @@ class ObjectTriggerSubject internal constructor(
     fun exertedAsItAttacks(): TriggerSpec {
         unfiltered("exertedAsItAttacks")
         only("exertedAsItAttacks", TriggerBinding.SELF)
-        return spec(ExertedAsItAttacksEvent)
+        return spec(ExertedEvent(asItAttacks = true))
     }
 
     /** "crews a Vehicle" — the Vehicle is `EffectTarget.TriggeringEntity`. */
@@ -1312,6 +1312,16 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      */
     fun taps(filter: GameObjectFilter, batch: Boolean = false): TriggerSpec =
         spec(TapEvent(filter = filter, batch = batch, tapper = player))
+
+    /**
+     * "exerts a [filter]" (CR 701.43a) — any exert, as an attack cost or an activated ability's
+     * `Costs.Exert`, of any matching permanent, the source included; re-exerting an exerted one
+     * (CR 701.43b) fires again. Vizier of the True: `Triggers.you.exerts(GameObjectFilter.Creature)`.
+     */
+    fun exerts(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec {
+        only("exerts", Player.You, Player.EachOpponent, Player.Each)
+        return spec(ExertedEvent(filter = filter, exertedBy = player))
+    }
 
     /**
      * "taps a [land] for mana" — a non-mana rider that uses the stack. A mana-adding version (Mana

@@ -316,17 +316,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 CostPaymentResult.success(newState, manaPool, events)
             }
             is AbilityCost.Exert -> {
-                // CR 701.43b: exerting an already-exerted permanent is legal but doesn't stack —
-                // only emit ExertedEvent (and only add the untap marker) the first time this turn
-                // cycle. It still counts as exerted *this turn* either way.
-                val container = state.getEntity(sourceId)
-                if (container?.has<ExertedComponent>() == true) {
-                    CostPaymentResult.success(state.updateEntity(sourceId) { it.with(ExertedThisTurnComponent) }, manaPool)
-                } else {
-                    val cardName = container?.get<CardComponent>()?.name ?: "Permanent"
-                    val newState = state.updateEntity(sourceId) { it.with(ExertedComponent).with(ExertedThisTurnComponent) }
-                    CostPaymentResult.success(newState, manaPool, listOf(ExertedEvent(sourceId, cardName)))
-                }
+                // CR 701.43b: exerting an already-exerted permanent is legal and doesn't stack — the
+                // untap marker is idempotent — but the player still exerted it, so the event fires
+                // every time and "whenever you exert a creature" triggers again.
+                val cardName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Permanent"
+                val newState = state.updateEntity(sourceId) { it.with(ExertedComponent).with(ExertedThisTurnComponent) }
+                CostPaymentResult.success(newState, manaPool, listOf(ExertedEvent(sourceId, cardName, exertedBy = controllerId)))
             }
             is AbilityCost.PayXLife -> {
                 val amount = choices.xValue

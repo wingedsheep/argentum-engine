@@ -381,6 +381,7 @@ internal class AttackPhaseManager(
             ExertedEvent(
                 attackerId,
                 state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature",
+                exertedBy = attackingPlayer,
                 asItAttacks = true,
             )
         }

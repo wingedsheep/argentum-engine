@@ -3761,7 +3761,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * This creature enlists another creature. Unlike [ExertedAsItAttacksEvent], this records
+     * This creature enlists another creature. Unlike [ExertedEvent], this records
      * another creature's payment; [TapEvent] alone cannot identify which ability it paid.
      * The enlisted creature is available as TriggeringEntity. The keyword's linked boost is
      * generated separately, once for each paid instance (CR 702.154c–d).
@@ -3773,15 +3773,34 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered
-     * ability linked to [com.wingedsheep.sdk.scripting.ExertAsItAttacks] (CR 607.2h). SELF-only:
-     * it fires for the ability's own source, and only when the exert was chosen as an optional
-     * attack cost, never when the permanent was exerted to pay an activated ability's cost.
+     * A permanent is exerted (CR 701.43a) — "whenever you exert a creature" (Vizier of the True,
+     * Resolute Survivors) and, with [asItAttacks], the "When you do" after "you may exert this
+     * creature as it attacks" (CR 701.43d), linked to [com.wingedsheep.sdk.scripting.ExertAsItAttacks]
+     * (CR 607.2h).
+     *
+     * The exerted permanent is selected by the ability's [TriggerBinding] (SELF for "this creature",
+     * ANY for "a creature") and must match [filter]; [exertedBy] is the player who exerted it,
+     * relative to the trigger's controller. [asItAttacks] restricts it to an exert chosen as an
+     * optional cost to attack, never one paid as an activated ability's `Costs.Exert`. Re-exerting
+     * an already-exerted permanent (CR 701.43b) is still an exert and fires it again.
      */
-    @SerialName("ExertedAsItAttacksEvent")
+    @SerialName("ExertedEvent")
     @Serializable
-    data object ExertedAsItAttacksEvent : EventPattern {
-        override val description: String = "you exert this creature as it attacks"
+    data class ExertedEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val exertedBy: Player = Player.You,
+        val asItAttacks: Boolean = false,
+    ) : EventPattern {
+        override val description: String = if (asItAttacks) {
+            "you exert this creature as it attacks"
+        } else {
+            val who = when (exertedBy) {
+                Player.Each -> "a player exerts"
+                Player.EachOpponent -> "an opponent exerts"
+                else -> "you exert"
+            }
+            "$who ${if (filter == GameObjectFilter.Any) "a permanent" else "a ${filter.description}"}"
+        }
     }
 
     /**

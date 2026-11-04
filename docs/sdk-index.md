@@ -1244,7 +1244,7 @@ Families:
 - `EventPattern.EnlistedEvent` — This creature enlists another creature.
 - `EventPattern.EvidenceCollectedEvent(player: Player)` — Whenever player collects evidence (CR 701.59).
 - `EventPattern.EvolvedEvent` — When a creature evolves (CR 702.100b) — "A creature 'evolves' when one or more +1/+1 counters are put on it as a result of its evolve ability resolving." Watchful Radstag's "Whenever this creature…
-- `EventPattern.ExertedAsItAttacksEvent` — "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered ability linked to com.wingedsheep.sdk.scripting.ExertAsItAttacks (CR 607.2h).
+- `EventPattern.ExertedEvent(filter: GameObjectFilter, exertedBy: Player, asItAttacks: Boolean)` — A permanent is exerted (CR 701.43a) — "whenever you exert a creature" (Vizier of the True, Resolute Survivors) and, with asItAttacks, the "When you do" after "you may exert this creature as it atta…
 - `EventPattern.ExpendEvent(threshold: Int, player: Player)` — When you expend N — i.e., you spend your Nth total mana to cast spells during a turn.
 - `EventPattern.ExploitedEvent(player: Player, requireNontokenExploited: Boolean)` — Whenever a creature exploits a creature (CR 702.110b) — a creature "exploits a creature" when the controller of its exploit ability sacrifices a creature as that ability resolves.
 - `EventPattern.ExploredEvent(filter: GameObjectFilter?, revealedType: ExploreReveal)` — Whenever a permanent matching filter explores (CR 701.44), optionally gated by whether the revealed card was a land (revealedType).
