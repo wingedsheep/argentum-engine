@@ -78,6 +78,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantFlashbackEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
+import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -755,6 +756,10 @@ object TargetPolarityAnalyzer {
             is DealDamageEffect -> leaf.target to TargetPolarity.HARMFUL
             is GainControlEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBlockEffect -> leaf.target to TargetPolarity.HARMFUL
+            // Forcing a block can trade the target into a blocker or draw blockers away from its
+            // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
+            // keep both sides available to simulation, including beside a pump (Emergent Growth).
+            is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is CantBeRegeneratedEffect -> leaf.target to TargetPolarity.HARMFUL
             // "That player can't get counters" (Suncleanser): a prohibition on the player — the
             // energy, experience and other counters they build toward stop coming. Locking out

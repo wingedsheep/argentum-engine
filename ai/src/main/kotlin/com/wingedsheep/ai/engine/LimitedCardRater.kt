@@ -229,6 +229,7 @@ object LimitedCardRater {
         rating += manaAbilityBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
+        rating += sorceryPumpPenalty(card)
         return rating.coerceIn(0.0, 5.0)
     }
 
@@ -275,6 +276,36 @@ object LimitedCardRater {
         manaAbilityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Mana ability", it, "a mana source that isn't a land")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
         curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
+        sorceryPumpPenalty(card).takeIf { it != 0.0 }?.let {
+            add(Term("Sorcery pump", it, "temporary single-creature stats without surprise or lasting value, mana value ${card.cmc}"))
+        }
+    }
+
+    /**
+     * A single-creature sorcery pump spends a card before the opponent chooses blocks, and its
+     * stats disappear after that fight. The generic stats sum otherwise prices a four-mana +5/+5
+     * like premium removal. Discount the missing surprise and the mana committed to that one turn.
+     * Only the plain pump, optionally forcing one blocker, qualifies: drawing a card, lasting
+     * counters, evasion, Lure's team-wide opening and mass pumps retain their own valuations.
+     */
+    private fun sorceryPumpPenalty(card: CardDefinition): Double {
+        if (!card.typeLine.isSorcery) return 0.0
+        val effect = card.script.spellEffect ?: return 0.0
+        val leaves = EffectWalker.leaves(effect)
+        val pump = leaves.filterIsInstance<ModifyStatsEffect>().singleOrNull() ?: return 0.0
+        if (pump.duration != Duration.EndOfTurn ||
+            AmountSign.of(pump.powerModifier) !in setOf(AmountSign.GAIN, AmountSign.ZERO) ||
+            AmountSign.of(pump.toughnessModifier) !in setOf(AmountSign.GAIN, AmountSign.ZERO)
+        ) return 0.0
+        // A group or source target is not the single targeted creature this discount describes.
+        if (pump.target !is com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable &&
+            pump.target !is com.wingedsheep.sdk.scripting.targets.EffectTarget.ContextTarget
+        ) return 0.0
+        if (card.script.targetRequirements.size != 1 || card.script.targetRequirements.single().count != 1) return 0.0
+        if (leaves.any { it !== pump &&
+                !(it is MustBeBlockedEffect && !it.allCreatures && it.target == pump.target)
+            }) return 0.0
+        return -(0.4 + 0.35 * card.cmc)
     }
 
     private fun baseDetail(card: CardDefinition): String = when {

@@ -380,7 +380,7 @@ Alloy Animist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Alloy Golem
 Alloy Myr
 Allure of the Unknown
-Alluring Scent	intent: MustBeBlockedEffect; polarity: MustBeBlockedEffect
+Alluring Scent	intent: MustBeBlockedEffect
 Alluring Suitor
 Ally Encampment
 Almighty Brushwagg
@@ -1785,7 +1785,7 @@ Bloodrage Brawler	intent: Pipeline(hand→graveyard)
 Bloodrite Invoker
 Bloodrock Cyclops
 Bloodroot Apothecary
-Bloodscent	intent: MustBeBlockedEffect; polarity: MustBeBlockedEffect
+Bloodscent	intent: MustBeBlockedEffect
 Bloodshot Cyclops
 Bloodsky Berserker
 Bloodsoaked Altar
@@ -4351,7 +4351,7 @@ Distracting Geist
 Distress
 District Guide
 District Mascot
-Disturbed Slumber	intent: BecomeCreatureEffect; intent: MustBeBlockedEffect; polarity: BecomeCreatureEffect; polarity: MustBeBlockedEffect; timing: BecomeCreatureEffect
+Disturbed Slumber	intent: BecomeCreatureEffect; intent: MustBeBlockedEffect; timing: BecomeCreatureEffect
 Disturbing Conversion
 Disturbing Mirth	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Dive Bomber
@@ -5136,6 +5136,7 @@ Emergency Medical Hologram
 Emergency Phytomedic
 Emergency Powers
 Emergency Weld
+Emergent Growth
 Emergent Haunting
 Emergent Sequence
 Emergent Ultimatum
@@ -16899,8 +16900,8 @@ Tatyova, Benthic Druid
 Tatyova, Steward of Tides	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Taunt	intent: TauntEffect; polarity: TauntEffect
 Taunt from the Rampart	intent: ForEach>CantBlockEffect; intent: ForEach>GoadEffect
-Taunting Arbormage	intent: MustBeBlockedEffect; polarity: MustBeBlockedEffect
-Taunting Challenge	intent: MustBeBlockedEffect; polarity: MustBeBlockedEffect
+Taunting Arbormage	intent: MustBeBlockedEffect
+Taunting Challenge	intent: MustBeBlockedEffect
 Taunting Elf	intent: MustBeBlockedEffect
 Taurean Mauler
 Tavern Ruffian
@@ -18628,7 +18629,7 @@ Venerated Rotpriest	polarity: AddCountersEffect
 Venerated Stormsinger
 Vengeance
 Vengeance Mission
-Vengeant Earth	intent: AddSubtypeEffect; intent: BecomeCreatureEffect; intent: MustBeBlockedEffect; polarity: AddSubtypeEffect; polarity: BecomeCreatureEffect; polarity: MustBeBlockedEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
+Vengeant Earth	intent: AddSubtypeEffect; intent: BecomeCreatureEffect; intent: MustBeBlockedEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
 Vengeful Bloodwitch
 Vengeful Creeper
 Vengeful Dead

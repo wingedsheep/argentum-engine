@@ -1201,12 +1201,13 @@ class Strategist(
      * read off the board as it stands — the pump changes who attacks. Then its value is what the
      * planner itself says that attack is worth over the unpumped one: each plan simulated through
      * combat, blocks by heuristic, crack-back priced. A pump on a creature the plan sends anyway is
-     * not this — it can still be cast once the creature is attacking, after blocks, with strictly
-     * more information — and neither is one the plan ignores, which is the no-attack pump #3211
-     * floors.
+     * not this for an instant — it can still be cast once the creature is attacking, after blocks,
+     * with strictly more information. A sorcery-speed pump cannot wait for that window, so its
+     * improvement to an existing attacker counts too. Neither counts when the plan ignores the
+     * pumped creature, which is the no-attack pump #3211 floors.
      *
      * Our own precombat main, empty stack, never inside a nested simulation; spells read as a
-     * combat trick or team pump, activations whose every payoff is an end-of-turn creature grant.
+     * combat trick, sorcery pump or team pump, activations whose every payoff is an end-of-turn creature grant.
      * Two attack searches per qualifying candidate, the unpumped one shared across the decision.
      */
     private fun pumpThatBuysTheAttack(
@@ -1219,8 +1220,10 @@ class Strategist(
         if (!state.isActiveTurnFor(playerId) || state.stack.isNotEmpty()) return null
         if (state.step != Step.PRECOMBAT_MAIN || simulator.resolvingNestedDecision) return null
         if (leafState.gameOver || leafState.pendingDecision != null) return null
+        val castIntent = (action.action as? CastSpell)?.let { intents.forCast(cardName, it) }
+        val sorceryPump = castIntent?.let { it.speed == Speed.SORCERY && IntentTag.PUMP in it.tags } == true
         val isPump = when (val gameAction = action.action) {
-            is CastSpell -> intents.forCast(cardName, gameAction)?.let { IntentTag.COMBAT_TRICK in it.tags || it.expiringGroupPump } == true
+            is CastSpell -> sorceryPump || castIntent?.let { IntentTag.COMBAT_TRICK in it.tags || it.expiringGroupPump } == true
             is ActivateAbility -> intents.activatedAbility(cardName, gameAction.abilityId)
                 ?.let(ExpiringGrantWindow::buysOnlyExpiringCreatureGrants) == true
             else -> false
@@ -1231,7 +1234,9 @@ class Strategist(
         val withPump = combatAdvisor.plannedAttackFrom(leafState, playerId) { budgetPolicy.budgetForDecision(it, playerId) }
             ?: return null
         val without = plannedAttack(state, playerId) ?: return null
-        if (pumped.none { it in withPump.attackers && it !in without.attackers }) return null
+        // A sorcery cannot wait until blockers are known: improving an attacker already in the
+        // plan is its last useful window too. Instants still wait unless they enable an attack.
+        if (pumped.none { it in withPump.attackers && (sorceryPump || it !in without.attackers) }) return null
         // Facing lethal on board, every plan's value is the crack-back cliff plus whatever the
         // heuristic blocker happens to do, and a pump that "saves" us by baiting a bad block is a
         // reading of the model, not of the game (#3211's T15). There only a pump that wins now is
@@ -1988,7 +1993,8 @@ class Strategist(
             val best = candidates.maxByOrNull { candidate ->
                 val trial = chosenTargets.toMutableList()
                 trial[i] = TargetSelection.toChosenTarget(state, info, candidate, playerId)
-                val result = simulator.simulate(state, TargetSelection.applyTargets(baseAction, trial))
+                val trialAction = TargetSelection.applyTargets(baseAction, trial)
+                val result = simulator.simulate(state, trialAction)
                 // A target that resolves back into the position we are standing in is not a target
                 // choice, it is a no-op wearing one — Aphetto Alchemist untapping itself. Rank it
                 // below every real option, so `chooseAction` only ever drops the whole ability as
@@ -1999,7 +2005,16 @@ class Strategist(
                         Double.NEGATIVE_INFINITY
                     } else {
                         val direct = evaluator.evaluate(leaf, leaf.projectedState, playerId)
-                        if (recastBouncedPermanents) maxOf(direct, bestReplayOfBounced(state, leaf, playerId)) else direct
+                        // Before attackers are declared the leaf deliberately strips temporary
+                        // stats. Compare targets by the same attack gain used to value the cast,
+                        // or a flexible pump ties on both sides and keeps the opposing target.
+                        val attackGain = if (precombatPumpsForThePlan) {
+                            resolveCardName(state, action)?.let { name ->
+                                pumpThatBuysTheAttack(state, action.copy(action = trialAction), playerId, name, leaf)
+                            }
+                        } else null
+                        if (attackGain != null) evaluator.evaluate(state, state.projectedState, playerId) + attackGain
+                        else if (recastBouncedPermanents) maxOf(direct, bestReplayOfBounced(state, leaf, playerId)) else direct
                     }
                 }
             } ?: continue
