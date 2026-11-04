@@ -4652,6 +4652,7 @@
         "collectorNumber": "21",
         "rarity": "UNCOMMON",
         "artist": "Winona Nelson",
+        "flavorText": "\"I was born to glory.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/9/4/9473190f-5e96-4cf7-a0fa-a77d916acc2e.jpg?1783935332",
         "rulings": [
             {
@@ -4765,6 +4766,7 @@
     "metadata": {
         "collectorNumber": "23",
         "artist": "Aaron Miller",
+        "flavorText": "They're fun to train—if you like stubborn, aggressive, and fiercely territorial.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ee111e7-5309-46d5-b3ea-a049b3962c23.jpg?1783935332",
         "rulings": [
             {
