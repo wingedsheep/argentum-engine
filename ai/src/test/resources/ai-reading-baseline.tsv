@@ -1084,6 +1084,7 @@ Avenging Hunter	intent: TakeDesignationEffect
 Avian Changeling
 Avian Oddity
 Aviation Pioneer
+Avid Reclaimer
 Avishkar Raceway
 Avoid Fate
 Awaken the Bear
@@ -4118,7 +4119,7 @@ Demonlord Belzenlok	intent: ExileFromTopRepeatingEffect
 Demonmail Hauberk
 Demotion
 Demystify
-Den of the Bugbear	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Den of the Bugbear	intent: GrantTriggeredAbilityEffect
 Denethor, Ruling Steward
 Denizen of the Deep
 Dennick, Pious Apprentice
@@ -4696,7 +4697,7 @@ Dromoka Dunecaster
 Dromoka Warrior
 Drooling Groodion
 Drop of Honey
-Dropkick Bomber	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Dropkick Bomber	polarity: GrantTriggeredAbilityEffect
 Dross Crocodile
 Dross Golem
 Dross Harvester
@@ -5955,7 +5956,7 @@ Fire Magic
 Fire Nation Attacks
 Fire Nation Cadets
 Fire Nation Engineer
-Fire Nation Palace	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Fire Nation Palace	intent: GrantTriggeredAbilityEffect; polarity: GrantTriggeredAbilityEffect
 Fire Nation Raider
 Fire Nation Warship
 Fire Navy Trebuchet
@@ -7846,7 +7847,7 @@ Herbology Instructor
 Hercules, Prince of Power
 Herd Baloth
 Herd Gnarr
-Herd Heirloom	timing: GrantTriggeredAbilityEffect
+Herd Heirloom
 Herd Migration
 Herigast, Erupting Nullkite
 Heritage Reclamation
@@ -7968,7 +7969,7 @@ Hitchclaw Recluse
 Hithlain Knots
 Hive Mind Coprocessor
 Hive Stirrings
-Hive of the Eye Tyrant	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Hive of the Eye Tyrant	intent: GrantTriggeredAbilityEffect
 Hiveheart Shaman
 Hivespine Wolverine
 Hoar Shade
@@ -10135,7 +10136,7 @@ Lwaxana Troi, Charming Guest	intent: GrantStaticAbilityEffect
 Lynx
 Lyra Dawnbringer
 Lyra, Archangel of Dawn
-Lyra, Tolarian Archangel	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Lyra, Tolarian Archangel	intent: GrantTriggeredAbilityEffect
 Lys Alana Dignitary
 Lys Alana Huntmaster
 Lys Alana Informant
@@ -13091,7 +13092,7 @@ Raging Kavu
 Raging Kronch
 Raging Minotaur
 Raging Poltergeist
-Raging Ravine	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Raging Ravine	intent: GrantTriggeredAbilityEffect
 Raging Redcap
 Raging Regisaur
 Raging River	intent: ForEach>ChoosePileEffect; intent: ForEach>GrantCantBeBlockedExceptByCollectionEffect; intent: ForEach>Pipeline(BattlefieldMatching→?)
@@ -16611,6 +16612,7 @@ Suppression Ray	polarity: AddCountersToCollectionEffect; polarity: PayCountersEf
 Supreme Inquisitor	polarity: Pipeline(library→exile)
 Supreme Phantom
 Supreme Verdict
+Supreme Will
 Sure Strike
 Sure-Footed Infiltrator
 Sureshot Sower
@@ -17357,7 +17359,7 @@ The One Ring	intent: GrantPlayerProtectionEffect
 The Ooze
 The Ozolith
 The Phasing of Zhalfir
-The Pride of Hull Clade	timing: GrantTriggeredAbilityEffect
+The Pride of Hull Clade
 The Prima Vista
 The Princess Takes Flight
 The Prydwen, Steel Flagship
@@ -17377,6 +17379,7 @@ The Ruinous Wrecking Crew
 The Sackville-Bagginses
 The Scarab God	intent: EmitScriedEventEffect; intent: Pipeline(TopOfLibrary→library); polarity: CreateTokenCopyOfTargetEffect; polarity: MoveToZoneEffect
 The Scarlet Witch
+The Scorpion God
 The Seedcore
 The Sentry, Golden Guardian
 The Seriema
@@ -18298,6 +18301,7 @@ Uncle Istvan
 Uncomfortable Chill
 Uncontrollable Anger
 Uncontrolled Infestation
+Unconventional Tactics
 Uncover the Moon-Letters
 Unctus's Retrofitter	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Unctus, Grand Metatect	intent: AddCardTypeEffect; intent: AddColorEffect; polarity: AddCardTypeEffect; polarity: AddColorEffect
