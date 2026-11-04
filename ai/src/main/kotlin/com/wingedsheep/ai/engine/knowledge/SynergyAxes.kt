@@ -14,6 +14,8 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
@@ -320,8 +322,7 @@ object SynergyAxes {
     }
 
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
-        it is com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect ||
-            it is com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect
     }
 
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =

@@ -23,6 +23,10 @@ import io.kotest.matchers.shouldBe
  * (Etched Slith, Price of Betrayal). The counters carry the meaning, so the slot reads FLEXIBLE and
  * the simulation weighs the counters each candidate holds: taking -1/-1 counters off our creature
  * is a gift, taking +1/+1 counters off theirs a loss for them.
+ *
+ * Target choice already simulated both sides while the slot was unread; the two Price of Betrayal
+ * puzzles pin that it still does now that it is read — a fixed HARMFUL or BENEFICIAL reading would
+ * fail one of them. What the reading newly changes is the audit and the counter carriers' synergy.
  */
 class CounterManipulationReadingAiTest : ScenarioTestBase() {
     private val runner by lazy { PuzzleRunner(cardRegistry) { scenario() } }
