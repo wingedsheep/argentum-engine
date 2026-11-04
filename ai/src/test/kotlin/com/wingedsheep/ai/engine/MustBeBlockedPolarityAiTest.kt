@@ -21,7 +21,7 @@ class MustBeBlockedPolarityAiTest : ScenarioTestBase() {
     init {
         test("forcing one blocker or every blocker does not fix the target's side") {
             for (all in listOf(false, true)) {
-                val forceBlock = card("Forced block reader fixture") {
+                val forceBlock = card("Forced block reader fixture all=$all") {
                     manaCost = "{G}"
                     typeLine = "Sorcery"
                     spell {
