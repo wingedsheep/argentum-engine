@@ -41,7 +41,8 @@ class SharedTeamBlockPilesTest : FunSpec({
         val blockers: List<EntityId>,
     )
 
-    fun fixture(capped: Boolean = false): Fixture {
+    fun fixture(capped: Boolean = false, mixed: Boolean = true, blockersPerPlayer: Int = 1,
+                playerCap: Int? = null, singleAttacker: Boolean = false): Fixture {
         val d = GameTestDriver()
         d.registerCards(TestCards.all + limited)
         val players = d.initMultiplayer(
@@ -53,12 +54,17 @@ class SharedTeamBlockPilesTest : FunSpec({
         val attackers = if (capped) {
             listOf(d.putCreatureOnBattlefield(players[0], limited.name))
         } else {
-            List(2) { d.putCreatureOnBattlefield(players[0], "Centaur Courser") }
+            List(if (singleAttacker) 1 else 2) { d.putCreatureOnBattlefield(players[0], "Centaur Courser") }
         }
         attackers.forEach { d.removeSummoningSickness(it) }
-        val blockers = players.drop(2).map { d.putCreatureOnBattlefield(it, "Centaur Courser") }
+        val blockers = players.drop(2).flatMap { owner ->
+            List(blockersPerPlayer) { d.putCreatureOnBattlefield(owner, "Centaur Courser") }
+        }
+        if (playerCap != null) d.replaceState(d.state.updateEntity(players[2]) {
+            it.with(com.wingedsheep.engine.state.components.player.BlockerCountLimitThisCombatComponent(playerCap))
+        })
         val declarations = ControlCombatDeclarationsExecutor()
-        for ((controller, affected) in listOf(players[0] to Player.Each, players[2] to Player.You)) {
+        for ((controller, affected) in if (mixed) listOf(players[0] to Player.Each, players[2] to Player.You) else emptyList()) {
             d.replaceState(declarations.execute(
                 d.state, ControlCombatDeclarationsThisTurnEffect(setOf(CombatDeclaration.BLOCKERS), affected),
                 EffectContext(sourceId = null, controllerId = controller),
@@ -157,4 +163,19 @@ class SharedTeamBlockPilesTest : FunSpec({
             d.state.getEntity(it)!!.has<BlockersDeclaredThisCombatComponent>() shouldBe true
         }
     }
+    test("a cap on the first teammate preserves the second teammate's unrestricted random blocks") {
+        val f = fixture(mixed = false, blockersPerPlayer = 2, playerCap = 1, singleAttacker = true)
+        val d = f.driver
+        (d.pendingDecision as SplitPilesDecision).cards shouldBe f.blockers
+        d.answer(listOf(f.blockers)).error shouldBe null
+        val trimming = d.pendingDecision as SplitPilesDecision
+        trimming.requiredAssignments shouldBe 3
+        trimming.suggestedPiles!!.flatten().size shouldBe 3
+        val kept = listOf(f.blockers[0], f.blockers[2], f.blockers[3])
+        d.answer(listOf(kept)).error shouldBe null
+        d.pendingDecision shouldBe null
+        d.state.getEntity(f.attackers.single())!!.get<BlockedComponent>()!!.blockerIds.toSet() shouldBe kept.toSet()
+        d.state.getEntity(f.blockers[1])!!.has<BlockingComponent>() shouldBe false
+    }
+
 })

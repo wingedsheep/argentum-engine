@@ -1,6 +1,14 @@
 package com.wingedsheep.engine.multiplayer
 
 import com.wingedsheep.engine.core.BlockersDeclaredEvent
+import com.wingedsheep.engine.core.TeamBlockerChoiceEvent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.view.ClientEventTransformer
+import com.wingedsheep.engine.view.LegalActionEnricher
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.player.ControlCombatDeclarationsExecutor
 import com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl
@@ -145,4 +153,54 @@ class SharedTeamBlockChoiceTest : FunSpec({
             }
         }
     }
+    fun Fixture.grantKeyword(entity: EntityId, controller: EntityId, keyword: Keyword) {
+        val granted = driver.services.effectExecutorRegistry.execute(driver.state,
+            Effects.GrantKeyword(keyword, EffectTarget.Self), EffectContext(sourceId = entity, controllerId = controller))
+        granted.error shouldBe null
+        driver.replaceState(granted.state)
+    }
+
+    fun Fixture.assertPublicRetry(hiddenName: String, viewer: EntityId, reason: String) {
+        val retry = driver.events.filterIsInstance<TeamBlockerChoiceEvent>().last()
+        retry.toString() shouldNotContain hiddenName
+        retry.toString() shouldContain "Face-down creature"
+        retry.toString() shouldContain reason
+        val clientEvents = ClientEventTransformer.transform(listOf(retry), viewer, driver.state)
+        clientEvents.toString() shouldNotContain hiddenName
+        clientEvents.toString() shouldContain "Face-down creature"
+        val actions = driver.legalActions(players[2])
+        actions.single().description shouldNotContain hiddenName
+        actions.single().description shouldContain "Face-down creature"
+        val enriched = LegalActionEnricher(driver.services.manaSolver, driver.cardRegistry)
+            .enrich(actions, driver.state, viewer)
+        enriched.single().description shouldNotContain hiddenName
+        enriched.single().description shouldContain "Face-down creature"
+    }
+
+    test("public split-declaration retry never names a face-down blocker rejected by flying") {
+        val f = fixture()
+        val d = f.driver
+        d.grant(f.players[0], Player.Each)
+        d.grant(f.players[2], Player.You)
+        d.replaceState(d.state.updateEntity(f.blockers[0]) { it.with(FaceDownComponent) })
+        f.grantKeyword(f.attacker, f.players[0], Keyword.FLYING)
+        d.declareBlockers(f.players[2], mapOf(f.blockers[0] to listOf(f.attacker))).error shouldBe null
+        d.declareNoBlockers(f.players[3]).error shouldBe null
+        f.assertNoCommittedBlocks()
+        f.assertPublicRetry("Centaur Courser", f.players[0], "flying")
+    }
+
+    test("public split-declaration retry never names a face-down attacker with granted menace") {
+        val f = fixture()
+        val d = f.driver
+        d.grant(f.players[0], Player.Each)
+        d.grant(f.players[2], Player.You)
+        d.replaceState(d.state.updateEntity(f.attacker) { it.with(FaceDownComponent) })
+        f.grantKeyword(f.attacker, f.players[0], Keyword.MENACE)
+        d.declareBlockers(f.players[2], mapOf(f.blockers[0] to listOf(f.attacker))).error shouldBe null
+        d.declareNoBlockers(f.players[3]).error shouldBe null
+        f.assertNoCommittedBlocks()
+        f.assertPublicRetry(menace.name, f.players[2], "menace")
+    }
+
 })

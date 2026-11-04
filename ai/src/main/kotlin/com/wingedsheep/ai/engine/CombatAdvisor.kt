@@ -14,6 +14,7 @@ import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.mechanics.combat.SharedTeamBlockChoices
 import com.wingedsheep.engine.mechanics.combat.rules.BlockCheckContext
 import com.wingedsheep.engine.mechanics.combat.rules.BlockEvasionRule
 import com.wingedsheep.engine.mechanics.combat.rules.defaultBlockEvasionRules
@@ -517,8 +518,21 @@ class CombatAdvisor(
         val myLife = state.lifeTotal(playerId)
 
         // Build mandatory blocker base (preserved across all plans)
-        val mandatoryMap = mutableMapOf<EntityId, List<EntityId>>()
-        val mandatoryBlockerIds = mutableSetOf<EntityId>()
+        val saved = legalAction.proposedBlockerAssignments.orEmpty()
+        val mandatoryMap = saved.toMutableMap()
+        val mandatoryBlockerIds = saved.keys.toMutableSet()
+        val team = state.turnOrder.filter { it in state.sharedTurnTeam(playerId) }
+        val laterChoosers = if (SharedTeamBlockChoices.requiresSeparateChoices(state, playerId))
+            team.drop(team.indexOf(playerId) + 1).toSet() else emptySet()
+        val partialChoice = laterChoosers.isNotEmpty()
+        val possiblePartners = if (partialChoice) state.getBattlefield().filter {
+            projected.getController(it) in laterChoosers && projected.isCreature(it) &&
+                !projected.isBattle(it) && !projected.cantBlock(it) &&
+                state.getEntity(it)?.has<TappedComponent>() != true
+        } else emptyList()
+        val supportedMenace = attackers.filterTo(mutableSetOf()) { attacker ->
+            saved.values.any { attacker in it } || possiblePartners.any { canBlock(state, projected, attacker, it) }
+        }
         for ((blockerId, mustBlockAttackers) in mandatory) {
             if (mustBlockAttackers.isNotEmpty()) {
                 mandatoryMap[blockerId] = mustBlockAttackers.take(legalAction.blockerMaxBlockCounts?.get(blockerId) ?: 1)
@@ -533,14 +547,14 @@ class CombatAdvisor(
         val seedAssigned = mandatoryBlockerIds.toMutableSet()
         chooseBlockersViaHeuristic(
             state, projected, sortedAttackers, validBlockers,
-            seedAssigned, seedMap, myLife
+            seedAssigned, seedMap, myLife, supportedMenace
         )
         if (defendPlaneswalkers) {
             protectPlaneswalkers(state, projected, playerId, attackers, validBlockers, seedAssigned, seedMap)
         }
 
         // ── Phase 2: Improve via local search (if not nested) ──
-        var bestMap = if (useSimulation) {
+        var bestMap = if (useSimulation && !partialChoice) {
             improveViaLocalSearch(
                 state, projected, playerId, attackers, validBlockers,
                 mandatoryBlockerIds, seedMap, budget, myLife, trace
@@ -624,7 +638,8 @@ class CombatAdvisor(
         }
 
         // ── Menace fix: remove illegal single-blocker assignments for menace attackers ──
-        fixMenaceAssignments(state, projected, bestMap, validBlockers, assignedBlockers)
+        fixMenaceAssignments(state, projected, bestMap, validBlockers, assignedBlockers,
+            saved.keys, if (partialChoice) supportedMenace else emptySet())
 
         // ── Block tax: a plan we cannot pay for is a plan we would only decline (see
         // [CombatTaxBudget]) ──
@@ -635,8 +650,12 @@ class CombatAdvisor(
         // Removing an unaffordable partner can invalidate a co-blocker restriction.
         val finalPlan = if (affordable == legal) legal
             else legalizeBlockerPlan(state, playerId, affordable, mandatoryBlockerIds)
-        return DeclareBlockers(playerId, finalPlan)
+        return blockDeclaration(state, playerId, finalPlan)
     }
+
+    /** Saved proposals inform the plan but remain choices owned by the earlier teammate. */
+    private fun blockDeclaration(state: GameState, playerId: EntityId, plan: Map<EntityId, List<EntityId>>): DeclareBlockers =
+        DeclareBlockers(playerId, plan - SharedTeamBlockChoices.proposals(state, playerId).keys)
 
     /**
      * Pairwise combat checks cannot see assignment-wide restrictions such as "can't be blocked by
@@ -651,9 +670,9 @@ class CombatAdvisor(
     ): Map<EntityId, List<EntityId>> {
         val candidate = proposed.toMutableMap()
         fun isIllegal(): Boolean {
-            val simulated = simulator.simulate(state, DeclareBlockers(playerId, candidate))
+            val simulated = simulator.simulate(state, blockDeclaration(state, playerId, candidate))
             return simulated is SimulationResult.Illegal ||
-                com.wingedsheep.engine.mechanics.combat.SharedTeamBlockChoices.problem(simulated.state, playerId) != null
+                SharedTeamBlockChoices.problem(simulated.state, playerId) != null
         }
         while (isIllegal()) {
             val removable = candidate.keys
@@ -675,7 +694,9 @@ class CombatAdvisor(
         projected: ProjectedState,
         blockerMap: MutableMap<EntityId, List<EntityId>>,
         validBlockers: List<EntityId>,
-        assignedBlockers: MutableSet<EntityId>
+        assignedBlockers: MutableSet<EntityId>,
+        fixedBlockers: Set<EntityId> = emptySet(),
+        partialMenace: Set<EntityId> = emptySet(),
     ) {
         // Build attacker → blockers map
         val attackerBlockers = mutableMapOf<EntityId, MutableList<EntityId>>()
@@ -698,7 +719,8 @@ class CombatAdvisor(
                 assignedBlockers.add(second)
             } else {
                 // Can't find a second blocker — remove the single illegal assignment
-                for (b in blockers) {
+                if (attackerId in partialMenace) continue
+                for (b in blockers.filterNot { it in fixedBlockers }) {
                     blockerMap.remove(b)
                     assignedBlockers.remove(b)
                 }
@@ -912,7 +934,8 @@ class CombatAdvisor(
         validBlockers: List<EntityId>,
         assignedBlockers: MutableSet<EntityId>,
         blockerMap: MutableMap<EntityId, List<EntityId>>,
-        myLife: Int
+        myLife: Int,
+        supportedMenace: Set<EntityId> = emptySet(),
     ) {
         val tradeRatio = CombatMath.tradeWillingnessRatio(myLife)
         // Track which attackers are already blocked (e.g., by mandatory blockers)
@@ -920,7 +943,8 @@ class CombatAdvisor(
 
         // ── Pass 1: Free kills — blocker kills attacker and survives ──
         for (attacker in sortedAttackers) {
-            val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers) { info ->
+            val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers,
+                allowSingleMenace = attacker in supportedMenace) { info ->
                 info.effectivelyKillThem && info.weSurvive
             } ?: continue
 
@@ -948,7 +972,8 @@ class CombatAdvisor(
             if (attacker in blockedAttackers) continue
             val attackerValue = CombatMath.combatTradeValue(projected, attacker)
 
-            val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers) { info ->
+            val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers,
+                allowSingleMenace = attacker in supportedMenace) { info ->
                 info.effectivelyKillThem && !info.weSurvive &&
                     info.blockerValue * tradeRatio <= attackerValue
             } ?: continue
@@ -966,7 +991,8 @@ class CombatAdvisor(
             val aPower = projected.getPower(attacker) ?: 0
             if (aPower <= 0) continue
 
-            val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers) { info ->
+            val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers,
+                allowSingleMenace = attacker in supportedMenace) { info ->
                 info.weSurvive
             } ?: continue
 
@@ -1214,9 +1240,10 @@ class CombatAdvisor(
         attacker: EntityId,
         validBlockers: List<EntityId>,
         assignedBlockers: Set<EntityId>,
+        allowSingleMenace: Boolean = false,
         predicate: (BlockInfo) -> Boolean
     ): EntityId? {
-        if (needsTwoBlockers(projected, attacker)) return null
+        if (needsTwoBlockers(projected, attacker) && !allowSingleMenace) return null
         val aPower = projected.getPower(attacker) ?: 0
         val aToughness = projected.getToughness(attacker) ?: 0
         val aKeywords = projected.getKeywords(attacker)
@@ -1289,10 +1316,11 @@ class CombatAdvisor(
         playerId: EntityId,
         blockerMap: Map<EntityId, List<EntityId>>
     ): BlockPlanOutcome? {
-        val blockAction = DeclareBlockers(playerId, blockerMap)
+        val blockAction = blockDeclaration(state, playerId, blockerMap)
         val responders = responses?.respondersAt(state, playerId).orEmpty()
         val simResult = simulator.simulate(state, blockAction, stopBeforeCombatDamage = responders.isNotEmpty())
-        if (simResult is SimulationResult.Illegal || simResult is SimulationResult.StoppedAtLimit) return null
+        if (simResult is SimulationResult.Illegal || simResult is SimulationResult.StoppedAtLimit ||
+            SharedTeamBlockChoices.problem(simResult.state, playerId) != null) return null
 
         var current = simResult.state
 

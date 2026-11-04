@@ -64,6 +64,9 @@ internal class BlockPhaseManager(
     private val predicateEvaluator: PredicateEvaluator
 ) {
     private val conditionEvaluator = predicateEvaluator.conditions
+
+    private fun publicName(state: GameState, entityId: EntityId): String =
+        nameVisibleToAll(state, entityId, state.getEntity(entityId)?.get<CardComponent>()?.name ?: "Creature")
     /**
      * Validate and declare blockers.
      *
@@ -376,7 +379,15 @@ internal class BlockPhaseManager(
             group.size - maximum
         }
         val keys = reduced.keys.toList()
-        val globalMaximum = (keys.size downTo 0).first { count -> validateBlockerCountLimits(state, keys.take(count).toSet()) == null }
+        // A prefix is representative only when every blocker is subject to the same cap.
+        // Per-controller caps can reject an early prefix even though a larger mixed subset fits.
+        val hasPlayerCaps = keys.any { blocker ->
+            state.projectedState.getController(blocker)?.let {
+                state.getEntity(it)?.has<BlockerCountLimitThisCombatComponent>()
+            } == true
+        }
+        val globalMaximum = if (hasPlayerCaps) keys.size else
+            (keys.size downTo 0).first { count -> validateBlockerCountLimits(state, keys.take(count).toSet()) == null }
         val globalMinimum = edges.size - reduced.values.map { it.size }.sortedDescending().take(globalMaximum).sum()
         val minimumRemoved = maxOf(1, perAttackerMinimum, globalMinimum)
         for (removedCount in minimumRemoved..edges.size) {
@@ -719,29 +730,29 @@ internal class BlockPhaseManager(
         val projected = state.projectedState
 
         if (!projected.isCreature(blockerId)) {
-            return "Only creatures can block: ${cardComponent.name}"
+            return "Only creatures can block: ${publicName(state, blockerId)}"
         }
         // CR 509.1a / 506.3f: a creature that is also a battle can't block.
         if (projected.isBattle(blockerId)) {
-            return "A battle can't block: ${cardComponent.name}"
+            return "A battle can't block: ${publicName(state, blockerId)}"
         }
         val controller = projected.getController(blockerId)
         if (controller !in state.sharedTurnTeam(blockingPlayer)) {
-            return "You don't control ${cardComponent.name}"
+            return "You don't control ${publicName(state, blockerId)}"
         }
 
         if (TappedBlockBypass.tappedPreventsBlocking(state, blockerId, cardRegistry, predicateEvaluator)) {
-            return "${cardComponent.name} is tapped and cannot block"
+            return "${publicName(state, blockerId)} is tapped and cannot block"
         }
 
         if (container.has<BlockingComponent>()) {
-            return "${cardComponent.name} is already blocking"
+            return "${publicName(state, blockerId)} is already blocking"
         }
 
         val isFaceDown = container.has<FaceDownComponent>()
 
         if (projected.cantBlock(blockerId)) {
-            return "${cardComponent.name} can't block"
+            return "${publicName(state, blockerId)} can't block"
         }
 
         if (!isFaceDown) {
@@ -757,7 +768,7 @@ internal class BlockPhaseManager(
             val maxBlocks = maxPileMemberships(state, blockerId, Int.MAX_VALUE)
             if (attackerIds.size > maxBlocks) {
                 val countText = if (maxBlocks == 1) "one creature" else "$maxBlocks creatures"
-                return "${cardComponent.name} can only block $countText"
+                return "${publicName(state, blockerId)} can only block $countText"
             }
         }
 
@@ -769,10 +780,10 @@ internal class BlockPhaseManager(
             // aimed at any teammate; without shared team turns (Team vs. Team — CR 808, non-team
             // games) sharedTurnTeam is a singleton, so you can only block attackers aimed at you.
             val attacking = state.getEntity(attackerId)?.get<AttackingComponent>()
-                ?: return "${cardComponent.name} can't block: ${attackerId.value} isn't attacking"
+                ?: return "${publicName(state, blockerId)} can't block: ${attackerId.value} isn't attacking"
             val attackedDefender = CombatDefenders.defendingPlayerOf(state, attacking, projected)
             if (attackedDefender !in state.sharedTurnTeam(blockingPlayer)) {
-                return "${cardComponent.name} can't block a creature attacking another player"
+                return "${publicName(state, blockerId)} can't block a creature attacking another player"
             }
 
             val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
@@ -874,7 +885,7 @@ internal class BlockPhaseManager(
 
             if (projected.hasKeyword(attackerId, Keyword.MENACE)) {
                 if (blockerList.size < 2) {
-                    return "${attackerCard.name} has menace and must be blocked by 2 or more creatures"
+                    return "${publicName(state, attackerId)} has menace and must be blocked by 2 or more creatures"
                 }
             }
         }
@@ -1147,7 +1158,7 @@ internal class BlockPhaseManager(
                         predicateEvaluator.matches(state, projected, otherId, restriction.coBlockerFilter, context)
                 }
                 if (!satisfied) {
-                    return "${cardComponent.name} ${restriction.description}"
+                    return "${publicName(state, blockerId)} ${restriction.description}"
                 }
             }
         }
@@ -1202,11 +1213,9 @@ internal class BlockPhaseManager(
 
                 if (blockingMustBeBlocked.isEmpty()) {
                     val blockerCard = state.getEntity(blockerId)?.get<CardComponent>()
-                    val blockerName = blockerCard?.name ?: "Creature"
+                    val blockerName = publicName(state, blockerId)
 
-                    val attackerNames = canBlockThese.mapNotNull { attackerId ->
-                        state.getEntity(attackerId)?.get<CardComponent>()?.name
-                    }
+                    val attackerNames = canBlockThese.map { attackerId -> publicName(state, attackerId) }
 
                     return if (canBlockThese.size == 1) {
                         "$blockerName must block ${attackerNames.first()}"
@@ -1259,7 +1268,7 @@ internal class BlockPhaseManager(
                 val culpritId = mustBeBlockedIfAbleAttackers.first {
                     it in matchedAttackers && attackerToBlockers[it].isNullOrEmpty()
                 }
-                val attackerName = state.getEntity(culpritId)?.get<CardComponent>()?.name ?: "Creature"
+                val attackerName = publicName(state, culpritId)
                 return "$attackerName must be blocked if able"
             }
         }
@@ -1301,8 +1310,8 @@ internal class BlockPhaseManager(
 
             val actuallyBlocking = blockers[blockerId] ?: emptyList()
             if (attackerId !in actuallyBlocking) {
-                val blockerName = blockerContainer.get<CardComponent>()?.name ?: "Creature"
-                val attackerName = attackerContainer.get<CardComponent>()?.name ?: "creature"
+                val blockerName = publicName(state, blockerId)
+                val attackerName = publicName(state, attackerId)
                 return "$blockerName must block $attackerName (provoke)"
             }
         }
@@ -1332,7 +1341,7 @@ internal class BlockPhaseManager(
             if (!canBlockAny) continue
 
             if (blockerId !in blockers.keys) {
-                val cardName = state.getEntity(blockerId)?.get<CardComponent>()?.name ?: "Creature"
+                val cardName = publicName(state, blockerId)
                 return "$cardName must block this combat if able"
             }
         }
@@ -1546,7 +1555,7 @@ internal class BlockPhaseManager(
             controllerId = projected.getController(blockerId) ?: blockingPlayer,
         )
         if (!conditionEvaluator.evaluate(state, restriction.condition, effectContext)) {
-            return "${cardComponent.name} ${restriction.description}"
+            return "${publicName(state, blockerId)} ${restriction.description}"
         }
 
         return null

@@ -17,6 +17,10 @@ data class BlockCheckContext(
     val blockingPlayer: EntityId,
     val cardRegistry: CardRegistry
 ) {
+    fun publicName(entityId: EntityId): String = com.wingedsheep.engine.state.nameVisibleToAll(
+        state, entityId, state.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name ?: "Creature")
+
     /** Attacker-relative defender; shared-team blocking does not change who it attacks. */
     val defendingPlayer: EntityId = state.getEntity(attackerId)
         ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
