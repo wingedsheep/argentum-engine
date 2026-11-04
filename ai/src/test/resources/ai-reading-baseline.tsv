@@ -1740,7 +1740,7 @@ Blood Lust	polarity: ModifyStatsEffect
 Blood Mist
 Blood Moon
 Blood Operative
-Blood Pact	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Blood Pact
 Blood Pet
 Blood Petal Celebrant
 Blood Price
@@ -1783,7 +1783,7 @@ Bloodline Bidding
 Bloodline Culling
 Bloodline Keeper
 Bloodline Pretender
-Bloodline Recollector	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Bloodline Recollector
 Bloodline Shaman
 Bloodlust Inciter
 Bloodmad Vampire
@@ -3381,7 +3381,7 @@ Cosmogrand Zenith
 Cosmos Charger
 Cosmos Elixir
 Cosmotronic Wave
-Cost of Brilliance	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Cost of Brilliance
 Costly Plunder
 Costume Closet	intent: MoveCountersEffect; polarity: MoveCountersEffect
 Council of Advisors
@@ -3727,7 +3727,7 @@ Dalkovan Encampment
 Dalkovan Packbeasts
 Damage Control Crew
 Damn
-Damnable Pact	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Damnable Pact
 Damnation
 Damning Verdict
 Dampen Thought
@@ -3993,7 +3993,7 @@ Decode Transmissions
 Deconstruct
 Deconstruction Hammer
 Decorated Griffin
-Decorum Dissertation	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Decorum Dissertation
 Decoy Ploy
 Decree of Annihilation
 Decree of Justice
@@ -6237,7 +6237,7 @@ Forced Retreat
 Forced Worship
 Forcefield	intent: PreventNextDamageLeavingAmountEffect; timing: PreventNextDamageLeavingAmountEffect
 Forebear's Blade
-Foreboding Fruit	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Foreboding Fruit
 Foreboding Landscape
 Foreboding Ruins
 Foreboding Statue
@@ -8510,7 +8510,7 @@ Inquisition
 Inquisitive Glimmer
 Inquisitive Puppet
 Insatiable Appetite
-Insatiable Avarice	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Insatiable Avarice
 Insatiable Frugivore	intent: RepeatWhileEffect
 Insatiable Harpy
 Insatiable Hemophage
@@ -11704,7 +11704,7 @@ Oathsworn Knight
 Oathsworn Vampire
 Ob Nixilis's Cruelty
 Ob Nixilis, Captive Kingpin	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Ob Nixilis, the Adversary	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Ob Nixilis, the Adversary
 Ob Nixilis, the Fallen
 Ob Nixilis, the Hate-Twisted
 Obeka, Splitter of Seconds	intent: AddAdditionalUpkeepStepsEffect
@@ -12091,7 +12091,7 @@ Pack's Betrayal
 Pack's Favor
 Packsong Pup
 Pact of Negation
-Pact of the Serpent	polarity: StoreNumberEffect
+Pact of the Serpent
 Pactdoll Terror
 Padeem, Consul of Innovation
 Page, Loose Leaf	intent: GatherUntilMatchEffect; intent: Pipeline(?→hand|library)
@@ -12229,7 +12229,7 @@ Peema Outrider
 Peer Past the Veil
 Peer Pressure
 Peer Through Depths
-Peer into the Abyss	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Peer into the Abyss
 Peerless Recycling
 Peerless Ropemaster
 Peerless Samurai	intent: ModifySpellCostsEffect
@@ -13668,7 +13668,7 @@ Reverberation	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffe
 Revered Dead
 Revered Elder
 Reverent Hoplite
-Reverent Howl	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Reverent Howl
 Reverent Silence
 Reverse Damage
 Reverse Polarity
@@ -14469,7 +14469,7 @@ Scepter of Fugue
 Scepter of Insight
 Scheming Aspirant
 Scheming Fence
-Scheming Silvertongue	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Scheming Silvertongue
 Scheming Symmetry	polarity: ForEachEffect
 Scholar of New Horizons
 Scholar of Stars
@@ -14906,7 +14906,7 @@ Shadows' Verdict	intent: Pipeline(BattlefieldMatching|graveyard→exile)
 Shadowspear	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
 Shadowstorm
 Shadowy Backstreet
-Shadrix Silverquill	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Shadrix Silverquill
 Shady Informant
 Shady Traveler
 Shagrat, Loot Bearer	polarity: AttachTargetEquipmentToCreatureEffect
@@ -15102,7 +15102,7 @@ Shrapnel Slinger
 Shred Memory
 Shredded Sails
 Shredder's Armor
-Shredder's Revenge	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Shredder's Revenge
 Shredder's Technique
 Shredder, Unrelenting
 Shredding Winds
@@ -15180,7 +15180,7 @@ Sigiled Contender
 Sigiled Sentinel
 Sigiled Starfish
 Sigiled Sword of Valeron
-Sign in Blood	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Sign in Blood
 Signature Slam	polarity: ForEachEffect
 Signpost Scarecrow
 Sigrid, God-Favored
@@ -15239,7 +15239,7 @@ Silverglade Elemental
 Silverquill Apprentice
 Silverquill Campus
 Silverquill Charm
-Silverquill Command	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Silverquill Command
 Silverquill Pledgemage
 Silverquill Silencer
 Silverquill, the Disputant
@@ -18631,7 +18631,7 @@ Vault 13: Dweller's Journey
 Vault 21: House Gambit
 Vault 75: Middle School
 Vault 87: Forced Evolution
-Vault Plunderer	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Vault Plunderer
 Vault Robber
 Vault of Champions
 Vault of Whispers
