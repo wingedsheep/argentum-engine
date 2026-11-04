@@ -85,7 +85,7 @@ class EffectExecutorRegistry(
         registerModule(LinkedExileExecutors(zones))
         registerModule(RegenerationExecutors())
         registerModule(BendExecutors())
-        registerModule(CompositeExecutors(::recurse, cardRegistry, targetFinder, decisionHandler, amountEvaluator = amountEvaluator, targetValidator = targetValidator, plainExecutor = ::execute))
+        registerModule(CompositeExecutors(::recurse, zones, cardRegistry, targetFinder, decisionHandler, amountEvaluator = amountEvaluator, targetValidator = targetValidator, plainExecutor = ::execute))
         registerModule(
             DrawingExecutors(
                 ::recurse,

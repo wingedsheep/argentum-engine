@@ -58,7 +58,8 @@ class ForEachExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
     private val predicateEvaluator: PredicateEvaluator,
     /** For the group look-back freeze in [execute]; the continuation resumer needs none. */
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null,
+    private val damageExecutor: com.wingedsheep.engine.handlers.effects.damage.DealDamageExecutor? = null
 ) : EffectExecutor<ForEachEffect> {
 
     override val effectType: KClass<ForEachEffect> = ForEachEffect::class
@@ -71,6 +72,19 @@ class ForEachExecutor(
         val items = enumerateItems(state, effect.space, context)
         if (items.isEmpty()) {
             return EffectResult.success(state)
+        }
+
+        val damage = effect.body as? com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+        val simultaneousDamage = when (effect.space) {
+            IterationSpace.Targets, is IterationSpace.TargetsOf,
+            is IterationSpace.Group, is IterationSpace.Collection, is IterationSpace.Players -> true
+            else -> false
+        }
+        if (damage != null && simultaneousDamage && damageExecutor != null) {
+            // Atomic damage is one instruction across all recipients. A composite body remains
+            // a per-item sequence; it can contain intervening choices or state-changing effects.
+            return damageExecutor.executeSimultaneously(state, damage,
+                items.map { bindIterationContext(state, context, it) }, effect, context, aggregateExcess = true)
         }
 
         // Group with noRegenerate: mark every matched entity before any iteration
