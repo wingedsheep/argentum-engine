@@ -1043,6 +1043,11 @@ object CardIntentAnalyzer {
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
         // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
         is MustBeBlockedEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+        // "Attach target Equipment you control to target creature you control", "attach any number
+        // of Equipment you control to it": a free equip, see [IntentTag.EQUIPMENT_RELOCATION].
+        // An Equipment attaching only itself (Pre-War Formalwear) moves no other Equipment.
+        is AttachTargetEquipmentToCreatureEffect ->
+            if (effect.equipmentTarget == EffectTarget.Self) emptySet() else setOf(IntentTag.EQUIPMENT_RELOCATION)
         // "Creatures your opponents control can't block this turn" / "creatures you control can't be
         // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
         is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)

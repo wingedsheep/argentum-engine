@@ -790,6 +790,9 @@ object LimitedCardRater {
         // A first strike, a deathtouch, a forced block: it decides fights the way a pump does but
         // adds nothing to the body — a little under evasion.
         IntentTag.COMBAT_ENHANCEMENT to 0.2,
+        // A free equip: worth a little on its own, more beside the Equipment it moves (the synergy
+        // ask for Equipment carries that).
+        IntentTag.EQUIPMENT_RELOCATION to 0.2,
         IntentTag.PROTECTION to 0.3,
         IntentTag.SACRIFICE_OUTLET to 0.2,
         // A turn of no spells from the opponent: real tempo, but it answers nothing already on the

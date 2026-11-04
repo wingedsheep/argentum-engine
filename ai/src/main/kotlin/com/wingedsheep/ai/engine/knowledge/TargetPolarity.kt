@@ -50,6 +50,7 @@ import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
@@ -342,6 +343,7 @@ object TargetPolarityAnalyzer {
         }
         // Only an unconditional sequence proves the creature is ours before its follow-up gifts.
         // Do not flatten conditionals: a theft in one branch cannot justify a gift in another.
+        val stolenOnto = mutableSetOf<EffectTarget>()
         val stolen = mutableSetOf<EffectTarget>()
         fun theftFollowUps(node: Effect): List<Effect> {
             val gifts = mutableListOf<Effect>()
@@ -351,6 +353,21 @@ object TargetPolarityAnalyzer {
                     is GainControlEffect -> stolen += part.target
                     is TapUntapEffect -> if (!part.tap && part.target in stolen) gifts += part else stolen.clear()
                     is GrantKeywordEffect -> if (part.keyword == Keyword.HASTE.name && part.target in stolen) gifts += part else stolen.clear()
+                    // "You may attach an Equipment you control to that creature" (Unexpected Request):
+                    // the Equipment rides the stolen creature into the attack, part of the theft.
+                    // "If that artifact is an Equipment, attach it to this creature" (Thieving
+                    // Skydiver) moves the stolen Equipment itself: the theft's own follow-up too.
+                    is AttachTargetEquipmentToCreatureEffect -> when {
+                        part.creatureTarget in stolen -> { gifts += part; stolenOnto += part.creatureTarget }
+                        part.equipmentTarget in stolen -> gifts += part
+                        else -> stolen.clear()
+                    }
+                    // A gate nobody else decides, with nothing on its other branch, runs its follow-ups
+                    // on the theft before it; a theft inside it justifies nothing after the gate.
+                    is com.wingedsheep.sdk.scripting.effects.GatedEffect -> {
+                        if (part.decisionMaker == null && part.otherwise == null) visit(part.then)
+                        stolen.clear()
+                    }
                     else -> stolen.clear()
                 }
             }
@@ -360,7 +377,15 @@ object TargetPolarityAnalyzer {
         val theftGifts = theftFollowUps(effect)
         val biteSources = mutableSetOf<Int>()
         for (leaf in targetLeaves(effect)) {
-            if (blinks.any { it === leaf } || theftGifts.any { it === leaf }) continue
+            if (blinks.any { it === leaf }) continue
+            if (theftGifts.any { it === leaf }) {
+                // Stolen Uniform attaches the Equipment it took to a creature of ours: the Equipment
+                // slot reads as the theft, the creature slot still as the gift it is.
+                if (leaf is AttachTargetEquipmentToCreatureEffect && leaf.creatureTarget !in stolenOnto) {
+                    slotOf(leaf.creatureTarget, requirements)?.let { perSlot[it] += TargetPolarity.BENEFICIAL }
+                }
+                continue
+            }
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
             // that is every target of that slot, so the body reads as the slot's; with several,
@@ -407,12 +432,17 @@ object TargetPolarityAnalyzer {
             // chosen targets and loops over them, so `IterationEntity` spans several slots and names
             // none. The body's other references keep their own slots (the victim); a bite drawing
             // its damage from the iterated creature lends the power of every own-side slot.
-            if (space is IterationSpace.Collection && space.collection in chosenTargetCollections(effect)) {
+            // A loop over a collection the pipeline gathered without targeting — "attach any number
+            // of Equipment you control to target creature you control" (Beatrix, Loyal General) —
+            // visits untargeted objects as `IterationEntity`, which names no slot either; the body's
+            // other references (the creature) keep theirs.
+            if (space is IterationSpace.Collection) {
+                val chosenTargets = space.collection in chosenTargetCollections(effect)
                 for (inner in EffectWalker.payoffLeaves(leaf.body)) {
                     for ((target, polarity) in classify(inner, definitions, source)) {
                         slotOf(target, requirements)?.let { perSlot[it] += polarity }
                     }
-                    if (inner is DealDamageEffect && inner.damageSource == EffectTarget.IterationEntity) {
+                    if (chosenTargets && inner is DealDamageEffect && inner.damageSource == EffectTarget.IterationEntity) {
                         biteSources += requirements.indices.filter { isOwnSide(requirements[it]) }
                     }
                 }
@@ -484,6 +514,16 @@ object TargetPolarityAnalyzer {
             val untouched = perSlot[slot].isEmpty() &&
                 leaves.none { touchesOtherwise(it, requirements[slot], slot, definitions, source) }
             if (untouched) perSlot[slot] += TargetPolarity.BENEFICIAL
+        }
+        // Equip reaches only its controller's creatures (CR 702.6a), so even an Equipment whose bonus
+        // can't be read one-sidedly — Blade of Shared Souls' copy trigger, a mixed +N/-N — is a
+        // question of which of our creatures wears it best: open for the simulation, which sees each
+        // candidate wearing it. Only when nothing else reads the slot, so a sibling leaf's reading wins.
+        for (equip in leaves.filterIsInstance<AttachEquipmentEffect>()) {
+            val slot = slotOf(equip.target, requirements) ?: continue
+            if (source != null && perSlot[slot].isEmpty() && isOwnSide(requirements[slot])) {
+                perSlot[slot] += TargetPolarity.FLEXIBLE
+            }
         }
         return perSlot.mapIndexed { slot, readings ->
             when {
@@ -976,6 +1016,17 @@ object TargetPolarityAnalyzer {
             is AttachEquipmentEffect -> source?.let { attachmentPolarity(it, definitions) }
                 ?.takeIf { it != TargetPolarity.UNKNOWN }
                 ?.let { leaf.target to it } ?: return emptyList()
+            // "Attach target Equipment you control to target creature you control" (Halvar, Kemba,
+            // Weapons Vendor, Beatrix's "any number of Equipment"): the creature gets whatever the
+            // Equipment does to the creature it equips, and Equipment is built to be worn by its
+            // controller's best creature — so the creature slot is a gift. Which Equipment to move is
+            // the board's question (it may already sit on the creature that wants it most), so that
+            // slot stays open for the simulation. Attaching what a theft just took, or onto what it took,
+            // is the theft's follow-up (see theftFollowUps), so the stolen slot reads as the theft.
+            is AttachTargetEquipmentToCreatureEffect -> return listOf(
+                leaf.creatureTarget to TargetPolarity.BENEFICIAL,
+                leaf.equipmentTarget to TargetPolarity.FLEXIBLE,
+            )
             // The Aura token does to its object what any Aura does to the one it enchants.
             is CreateAuraTokenEffect -> leaf.target to definitions(leaf.tokenName)
                 ?.let { attachmentPolarity(it, definitions) }

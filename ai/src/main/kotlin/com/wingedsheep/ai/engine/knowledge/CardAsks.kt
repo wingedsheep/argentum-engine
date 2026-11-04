@@ -26,6 +26,12 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -93,6 +99,13 @@ internal object CardAsks {
                 val event = replacement.appliesTo as EventPattern.DamageEvent
                 add(event.source, DeckSynergy.FEEDERS_WANTED, spells = false)
             }
+            // "Attach any number of Equipment you control to target creature you control" (Beatrix,
+            // Loyal General), "attach target Equipment you control to …" (Halvar, Weapons Vendor): a
+            // free equip is fuelled only by the deck's own Equipment. One that attaches what it just
+            // stole (Stolen Uniform, Thieving Skydiver) cashes in the opponent's instead.
+            if (EffectWalker.slots(script).any { relocatesOwnEquipment(it.effect) }) {
+                asks.merge(EQUIPMENT, DeckSynergy.FEEDERS_WANTED, ::minOf)
+            }
             // An ability paid for by sacrificing a narrow kind of permanent — Auratog's
             // enchantment, Atog's artifact — is fuelled only by the deck's cards of that kind. A
             // broad sacrifice (a creature, a land) is a sac outlet, which [SynergyAxes] reads, and
@@ -123,10 +136,17 @@ internal object CardAsks {
      * [SynergyAxes] reads the same scope to keep such a trigger off the generic death axis.
      */
     internal fun attachmentAsk(filter: GameObjectFilter): GameObjectFilter? {
-        val states = filter.statePredicates + filter.anyOf.flatMap { it.statePredicates }
+        // "Creatures you control that are enchanted or equipped" (Halvar, God of Battle) is fed by
+        // either kind of attachment.
+        fun flatten(state: StatePredicate): List<StatePredicate> =
+            if (state is StatePredicate.Or) state.predicates.flatMap(::flatten) else listOf(state)
+        val states = (filter.statePredicates + filter.anyOf.flatMap { it.statePredicates }).flatMap(::flatten)
+        val enchanted = states.any { it == StatePredicate.IsEnchanted || it is StatePredicate.IsEnchantedByAura }
+        val equipped = states.any { it == StatePredicate.IsEquipped }
         return when {
-            states.any { it == StatePredicate.IsEnchanted || it is StatePredicate.IsEnchantedByAura } -> AURAS
-            states.any { it == StatePredicate.IsEquipped } -> EQUIPMENT
+            enchanted && equipped -> AURAS or EQUIPMENT
+            enchanted -> AURAS
+            equipped -> EQUIPMENT
             else -> null
         }
     }
@@ -151,6 +171,23 @@ internal object CardAsks {
         is EventPattern.AttackEvent -> listOf(pattern.filter to false)
         else -> emptyList()
     }
+
+    /** Whether [effect] attaches Equipment to a creature without first taking control of it. */
+    private fun relocatesOwnEquipment(effect: Effect): Boolean {
+        val leaves = deepLeaves(effect)
+        return leaves.any { it is AttachTargetEquipmentToCreatureEffect && it.equipmentTarget != EffectTarget.Self } &&
+            leaves.none { it is GainControlEffect }
+    }
+
+    private fun deepLeaves(effect: Effect): List<Effect> =
+        EffectWalker.payoffLeaves(effect).flatMap {
+            when (it) {
+                is ForEachEffect -> deepLeaves(it.body)
+                // "You may pay {1}. When you do, attach target Equipment …" (Weapons Vendor).
+                is ReflexiveTriggerEffect -> deepLeaves(it.reflexiveEffect)
+                else -> listOf(it)
+            }
+        }
 
     /** The permanents an activation cost sacrifices (other than the source itself). */
     private fun sacrificeFilters(cost: AbilityCost): List<GameObjectFilter> = when (cost) {
