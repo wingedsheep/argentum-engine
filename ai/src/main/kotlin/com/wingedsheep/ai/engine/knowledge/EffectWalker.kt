@@ -129,6 +129,22 @@ object EffectWalker {
             (returns.fromZone == null || returns.fromZone == Zone.EXILE) &&
             returns.controllerOverride == null && exile.faceDown == null && returns.faceDown == null
 
+    /**
+     * The two steps of a blink that waits for the end step — "exile target creature you control.
+     * Return it to the battlefield under its owner's control at the beginning of the next end step"
+     * (Liberate, Niko, Light of Hope's exile before its Shards copy the creature): the exile and the
+     * delayed trigger that brings the same object back. Like an immediate blink
+     * ([blinkMoves]) the object comes back, so the exile is no removal of ours.
+     * Returns the exile and the [CreateDelayedTriggerEffect], both members of [leaves].
+     */
+    fun delayedBlinks(leaves: List<Effect>): List<Effect> =
+        leaves.filterIsInstance<CreateDelayedTriggerEffect>().flatMap { delayed ->
+            val returns = delayed.effect as? MoveToZoneEffect ?: return@flatMap emptyList()
+            val exile = leaves.firstOrNull { it is MoveToZoneEffect && isBlinkPair(it, returns) }
+                ?: return@flatMap emptyList()
+            listOf(exile, delayed)
+        }
+
     /** The actual move instances belonging to an immediate blink, preserving branch boundaries. */
     fun blinkMoves(effect: Effect): List<MoveToZoneEffect> = fold(effect, object : Fold<List<MoveToZoneEffect>> {
         override fun leaf(effect: Effect) = emptyList<MoveToZoneEffect>()

@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
@@ -586,7 +587,11 @@ object AiReadingAudit {
             val expiring = if (leaf is ForEachEffect) EffectWalker.leaves(leaf.body).firstOrNull(::endsThisTurn) else leaf.takeIf(::endsThisTurn)
             expiring ?: continue
             val label = if (leaf is ForEachEffect) "ForEach>${label(expiring)}" else label(leaf)
-            if (isRead(leaf) || (leaf is MarkExileOnDeathEffect && removal)) {
+            // "Return target creature to its owner's hand. You may have Shapeshifters you control
+            // become copies of that creature until end of turn" (Absorb Identity): the copies ride
+            // on the bounce in the same way, so when to cast it is the removal's question too.
+            val ridesOnRemoval = (leaf is MarkExileOnDeathEffect || expiring is EachPermanentBecomesCopyOfTargetEffect) && removal
+            if (isRead(leaf) || ridesOnRemoval) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),
@@ -649,6 +654,7 @@ object AiReadingAudit {
         IntentTag.EVASION_GRANT -> "grants evasion"
         IntentTag.COMBAT_ENHANCEMENT -> "makes a creature better in combat"
         IntentTag.EQUIPMENT_RELOCATION -> "moves Equipment onto a creature"
+        IntentTag.PERMANENT_COPY -> "turns a permanent into a copy of another"
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"

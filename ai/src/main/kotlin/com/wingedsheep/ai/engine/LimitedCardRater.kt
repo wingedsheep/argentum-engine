@@ -793,6 +793,8 @@ object LimitedCardRater {
         // A free equip: worth a little on its own, more beside the Equipment it moves (the synergy
         // ask for Equipment carries that).
         IntentTag.EQUIPMENT_RELOCATION to 0.2,
+        // Becoming a copy: worth the best thing on the board it can copy, which only play shows.
+        IntentTag.PERMANENT_COPY to 0.2,
         IntentTag.PROTECTION to 0.3,
         IntentTag.SACRIFICE_OUTLET to 0.2,
         // A turn of no spells from the opponent: real tempo, but it answers nothing already on the

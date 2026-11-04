@@ -280,6 +280,7 @@ object CardIntentAnalyzer {
                 pumpToughness = maxOf(pumpToughness, expiringToughnessOf(effect))
             }
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
+            if (isExpiringCopy(effect)) expiringPump = true
         }
 
         var anthemBonus = 0
@@ -327,8 +328,8 @@ object CardIntentAnalyzer {
             flashPermanent = card.typeLine.isPermanent && Keyword.FLASH in card.keywords,
             hasHaste = Keyword.HASTE in card.keywords,
             targetsOnlyOurPermanents = targetsOnlyOurPermanents(scripts),
-            protectionOnlyFromBlink = roots.any { EffectWalker.blinkMoves(it).isNotEmpty() } &&
-                leaves.none { IntentTag.PROTECTION in tagsOf(it) } &&
+            protectionOnlyFromBlink = (roots.any { EffectWalker.blinkMoves(it).isNotEmpty() } || leaves.any { it === DELAYED_BLINK }) &&
+                leaves.none { it !== DELAYED_BLINK && IntentTag.PROTECTION in tagsOf(it) } &&
                 scripts.flatMap { it.staticAbilities }.none { IntentTag.PROTECTION in tagsOf(it) },
             expiringGroupPump = expiringGroupPump,
             selectsIntoHand = (gathersLibraryTop || wishFilters.isNotEmpty()) && movesToHand,
@@ -428,9 +429,17 @@ object CardIntentAnalyzer {
      * step" — is left out, as a gate's cost is.
      */
     private fun readingLeaves(effect: Effect, requirements: List<TargetRequirement> = emptyList()): List<Effect> {
-        val blinks = EffectWalker.blinkMoves(effect)
-        val payoff = EffectWalker.payoffLeaves(effect).filterNot { leaf -> blinks.any { it === leaf } }
-        return payoff.flatMap { leaf ->
+        val leaves = EffectWalker.payoffLeaves(effect)
+        // "Exile target creature you control. Return it at the beginning of the next end step"
+        // (Liberate, Niko): a blink of ours too, only slower — [DELAYED_BLINK], not removal. Aimed at
+        // anyone's creature (Galepowder Mage) it still takes a blocker away for the turn, so it stays
+        // the removal it reads as.
+        val delayed = EffectWalker.delayedBlinks(leaves).chunked(2)
+            .filter { (exile, _) -> TargetPolarityAnalyzer.targetsOwnSide((exile as MoveToZoneEffect).target, requirements) }
+            .flatten()
+        val blinks = EffectWalker.blinkMoves(effect) + delayed
+        val payoff = leaves.filterNot { leaf -> blinks.any { it === leaf } }
+        return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) + payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
@@ -914,7 +923,12 @@ object CardIntentAnalyzer {
      */
     internal fun leafTags(effect: Effect): Set<IntentTag> = tagsOf(effect)
 
-    private fun tagsOf(effect: Effect): Set<IntentTag> = when (effect) {
+    private fun tagsOf(effect: Effect): Set<IntentTag> = when {
+        effect === DELAYED_BLINK -> setOf(IntentTag.PROTECTION)
+        else -> leafTagsOf(effect)
+    }
+
+    private fun leafTagsOf(effect: Effect): Set<IntentTag> = when (effect) {
         is ReflexiveTriggerEffect -> analyzeEffect(effect.reflexiveEffect, effect.reflexiveTargetRequirements).tags
         is MoveToZoneEffect -> when {
             // A group-targeted move is a wrath; a single-target one is spot removal. Both only
@@ -1048,6 +1062,9 @@ object CardIntentAnalyzer {
         // An Equipment attaching only itself (Pre-War Formalwear) moves no other Equipment.
         is AttachTargetEquipmentToCreatureEffect ->
             if (effect.equipmentTarget == EffectTarget.Self) emptySet() else setOf(IntentTag.EQUIPMENT_RELOCATION)
+        // "This becomes a copy of target creature", "each other creature you control becomes a copy
+        // of it": see [IntentTag.PERMANENT_COPY].
+        is EachPermanentBecomesCopyOfTargetEffect -> setOf(IntentTag.PERMANENT_COPY)
         // "Creatures your opponents control can't block this turn" / "creatures you control can't be
         // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
         is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)
@@ -1367,6 +1384,17 @@ object CardIntentAnalyzer {
         if (effect.duration != Duration.EndOfTurn) return false
         return raises(effect.powerModifier) || raises(effect.toughnessModifier)
     }
+
+    /**
+     * One permanent turned into a copy until end of turn — "until end of turn, it becomes a copy of
+     * up to one other target creature" (Fleeting Reflection). Like [isExpiringPump] it is a body for
+     * this turn's fight, so an instant carrying one is a combat trick, with no toughness of its own
+     * to count. The group form ("each Shapeshifter you control becomes a copy", Absorb Identity)
+     * rides on whatever else the spell does.
+     */
+    private fun isExpiringCopy(effect: Effect): Boolean =
+        effect is EachPermanentBecomesCopyOfTargetEffect && effect.duration == Duration.EndOfTurn &&
+            effect.affected != null
 
     /**
      * A protective keyword granted until end of turn — "target creature gains indestructible until
@@ -1750,6 +1778,15 @@ object CardIntentAnalyzer {
     private val UNTAP_OUR_LANDS: Effect = ForEachEffect(
         IterationSpace.Group(GroupFilter(GameObjectFilter.Land.youControl())),
         TapUntapEffect(EffectTarget.IterationEntity, tap = false),
+    )
+
+    /**
+     * What [readingLeaves] reads an exile-then-return-at-the-end-step of our own permanent as
+     * (Liberate, Niko, Light of Hope): the blink an immediate exile-and-return is
+     * ([pipelineTags]'s PROTECTION), only coming back later. Compared by identity.
+     */
+    private val DELAYED_BLINK: Effect = CompositeEffect(
+        listOf(MoveToZoneEffect(EffectTarget.Self, Zone.EXILE), MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD)),
     )
 
     private val OPPONENT_FACING = setOf(

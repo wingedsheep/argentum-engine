@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
+import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -945,6 +946,12 @@ internal object ExpiringGrantWindow {
                 // "Until end of turn, this land becomes a 2/1": a body that fights this turn or not at all.
                 leaf is BecomeCreatureEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, animates = true)
+                // "Until end of turn, this becomes a copy of target creature" (Mirage Mirror, Hall of
+                // Echoes, Oko the Trickster), "each other creature you control becomes a copy of it
+                // until end of turn" (Naga Fleshcrafter): the same body-for-this-fight — the copy is
+                // gone at cleanup. The group form lands on our creatures, as a team pump does.
+                leaf is EachPermanentBecomesCopyOfTargetEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.affected ?: EffectTarget.IterationEntity, animates = true)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
                 leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)

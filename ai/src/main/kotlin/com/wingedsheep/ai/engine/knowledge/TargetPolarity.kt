@@ -64,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
@@ -334,8 +335,8 @@ object TargetPolarityAnalyzer {
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
-        val blinks = EffectWalker.blinkMoves(effect)
-        for (move in blinks) slotOf(move.target, requirements)?.let { slot ->
+        val blinks = EffectWalker.blinkMoves(effect) + EffectWalker.delayedBlinks(targetLeaves(effect))
+        for (move in blinks.filterIsInstance<MoveToZoneEffect>()) slotOf(move.target, requirements)?.let { slot ->
             // An unrestricted blink can remove their token or recover a stolen permanent.
             // Only an own-side requirement makes protection a safe target-side restriction.
             perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL
@@ -484,6 +485,10 @@ object TargetPolarityAnalyzer {
                 recursions += recursion
             } else if (copy != null) {
                 perSlot[copy] += TargetPolarity.BENEFICIAL
+                // What becomes the copy of our best permanent is still the board's question.
+                if (leaf is EachPermanentBecomesCopyOfTargetEffect) {
+                    leaf.affected?.let { slotOf(it, requirements) }?.let { perSlot[it] += TargetPolarity.FLEXIBLE }
+                }
             } else if (gift != null) {
                 perSlot[gift.first] += gift.second
             } else {
@@ -687,10 +692,14 @@ object TargetPolarityAnalyzer {
      * question the two-sided simulation answers. Read off the requirement, not the leaf, as
      * [recursionSlot] does — the leaf names only the slot.
      */
-    private fun ownCopySlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+    private fun ownCopySlot(leaf: Effect, requirements: List<TargetRequirement>): Int? = when {
         // "Target player creates a copy" (Echocasting Symposium): the copy is not ours to gain.
-        if (leaf !is CreateTokenCopyOfTargetEffect || leaf.controller != null) return null
-        return ownSideSlot(leaf.target, requirements)
+        leaf is CreateTokenCopyOfTargetEffect && leaf.controller == null -> ownSideSlot(leaf.target, requirements)
+        // "Equipped creature becomes a copy of up to one other target creature you control" (Blade of
+        // Shared Souls), "each other creature you control becomes a copy of target creature you
+        // control" (Naga Fleshcrafter): the same gain without a token — the best of ours to copy.
+        leaf is EachPermanentBecomesCopyOfTargetEffect -> ownSideSlot(leaf.target, requirements)
+        else -> null
     }
 
     /**
@@ -1026,6 +1035,17 @@ object TargetPolarityAnalyzer {
             is AttachTargetEquipmentToCreatureEffect -> return listOf(
                 leaf.creatureTarget to TargetPolarity.BENEFICIAL,
                 leaf.equipmentTarget to TargetPolarity.FLEXIBLE,
+            )
+            // "This becomes a copy of target creature" (Vesuvan Doppelganger), "target artifact or
+            // creature becomes a copy of another target artifact or creature" (True Polymorph): the
+            // copy does nothing to what it copies, and the best thing to copy may sit on either side
+            // of the table — as may the permanent that is best turned into it (ours into a bomb,
+            // theirs into a 1/1). Both slots are open for the simulation, which sees the copied
+            // characteristics on the receiving permanent. A copy source our filter keeps on our side
+            // is [ownCopySlot]'s gift.
+            is EachPermanentBecomesCopyOfTargetEffect -> return listOfNotNull(
+                leaf.target to TargetPolarity.FLEXIBLE,
+                leaf.affected?.let { it to TargetPolarity.FLEXIBLE },
             )
             // The Aura token does to its object what any Aura does to the one it enchants.
             is CreateAuraTokenEffect -> leaf.target to definitions(leaf.tokenName)
