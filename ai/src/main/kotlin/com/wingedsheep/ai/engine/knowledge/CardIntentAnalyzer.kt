@@ -1099,6 +1099,16 @@ object CardIntentAnalyzer {
             setOf(IntentTag.GAME_WIN)
         } else emptySet()
 
+        // A gate another player decides (Clash of Elements: "its owner may put it on top of their
+        // library … if they didn't, they put it on the bottom") is their call, so the card does
+        // only what both branches do: here, tuck the permanent. Branches that share nothing (Risk
+        // Factor's damage to them or cards for us) leave it unread.
+        is GatedEffect -> {
+            val otherwise = effect.otherwise
+            if (effect.decisionMaker == null || otherwise == null) emptySet()
+            else effectTags(effect.then) intersect effectTags(otherwise)
+        }
+
         // "Choose one —": the card can do whatever any one mode does, so it carries every mode's
         // tags — a charm with a removal mode is removal in hand, as a ForEach body is read above.
         // A tag *also* answers "is this card dead here?" for exactly one consumer: a counterspell
