@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Values a creature whose repeatable activation grows it through its own trigger (Inspired Tethermage's {6} Empower Jace → +1/+1 counter) by that growth, so its removal and lockdown Auras (Infinite Coursework) take the growing Tethermage instead of a 4/4 trample Beast token beside it
 - #4411 Fights with its best creature ("target creature you control fights …": Prey Upon, Pounce, Yoshimaru) instead of its weakest, and reads a granted modal trigger (Hunter's Axe's trample-or-deathtouch) so it equips its best attacker
 - #4410 Values self-fight creatures (Atzocan Archer) by their damage reach, puts its best card back when returning one from its own graveyard to its library (Mortuary Mire) while still reading any-graveyard tucks as graveyard hate, and weighs both sides for a chosen tap-or-untap or a copied base power and toughness
 - #4409 Reads an edict on a target player (Diabolic Edict, Liliana of the Veil, Break Under Pressure) and an opponent's choice between two tucks (Clash of Elements) as harmful, so it no longer casts them at its own side when the opponent can't be targeted
