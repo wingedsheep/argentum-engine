@@ -1114,7 +1114,7 @@ Ayara, Widow of the Realm	intent: ForEach>GrantKeywordEffect; intent: Pipeline(C
 Ayesha Tanaka
 Ayli, Eternal Pilgrim
 Ayula's Influence
-Ayula, Queen Among Bears	polarity: FightEffect
+Ayula, Queen Among Bears
 Azami, Lady of Scrolls
 Aziza, Mage Tower Captain	intent: CopyTargetSpellEffect
 Azog, Moria's Ruin
@@ -2138,7 +2138,7 @@ Brightmare
 Brightspear Zealot
 Brightstone Ritual
 Brightwood Tracker
-Brigid's Command	polarity: FightEffect
+Brigid's Command
 Brigid, Clachan's Heart
 Brigid, Hero of Kinsbaile
 Brilliance Unleashed
@@ -2303,7 +2303,7 @@ Burst of Energy	intent: TapUntapEffect
 Bury in Books
 Bushi Tenderfoot	intent: FlipEffect
 Bushmeat Poacher
-Bushwhack	polarity: FightEffect
+Bushwhack
 Bushy Bodyguard	intent: ForagedEffect; intent: Pipeline(graveyard→exile); intent: SacrificeEffect
 Buster Sword
 Butch DeLoria, Tunnel Snake
@@ -2956,7 +2956,7 @@ Clarion Conqueror
 Clarion Spirit
 Clash of Elements
 Clash of Titans
-Clash of the Eikons	polarity: AddCountersEffect; polarity: FightEffect; polarity: RemoveCountersEffect
+Clash of the Eikons	polarity: AddCountersEffect; polarity: RemoveCountersEffect
 Class-F Shuttlecraft
 Clattering Skeletons	intent: VentureIntoTheDungeonEffect
 Clavileño, First of the Blessed
@@ -3294,7 +3294,7 @@ Contaminated Bond
 Contaminated Drink
 Contaminated Landscape
 Contentious Plan
-Contested Cliffs	polarity: FightEffect
+Contested Cliffs
 Contested Game Ball	intent: GainControlByActivePlayerEffect
 Contortionist Troupe
 Contraband Kingpin
@@ -3983,7 +3983,7 @@ Deceptive Frostkite
 Deceptive Landscape
 Decimate
 Decimator of the Provinces
-Decisive Denial	polarity: FightEffect
+Decisive Denial
 Declare Dominance
 Decode Transmissions
 Deconstruct
@@ -4432,7 +4432,7 @@ Dominion Saboteur
 Dominion Supervisor
 Domri's Ambush
 Domri's Nodorog
-Domri, Anarch of Bolas	polarity: FightEffect
+Domri, Anarch of Bolas
 Domri, Chaos Bringer
 Domri, City Smasher
 Don & Leo, Problem Solvers	polarity: MoveToZoneEffect
@@ -5285,7 +5285,7 @@ Ephara's Warden
 Ephemeral Shields
 Epic Confrontation
 Epic Downfall
-Epic Fight	polarity: FightEffect
+Epic Fight
 Epic Proportions
 Epicure of Blood
 Epitaph Golem
@@ -6968,8 +6968,8 @@ Gnottvold Recluse
 Gnottvold Slumbermound
 Go Blank
 Go Ninja Go
-Go Nuts!	polarity: FightEffect
-Go for Blood	polarity: FightEffect
+Go Nuts!
+Go for Blood
 Go for the Throat
 Go-Shintai of Ancient Wars
 Go-Shintai of Boundless Vigor
@@ -8176,7 +8176,7 @@ Hunted Witness
 Hunter Sliver
 Hunter of Eyeblights
 Hunter's Ambush
-Hunter's Axe	polarity: AttachEquipmentEffect
+Hunter's Axe
 Hunter's Blowgun
 Hunter's Edge
 Hunter's Mark
@@ -8501,7 +8501,7 @@ Insatiable Harpy
 Insatiable Hemophage
 Insatiable Skittermaw
 Inscribed Tablet
-Inscription of Abundance	polarity: FightEffect
+Inscription of Abundance
 Inscription of Insight
 Inscription of Ruin
 Insectoid Exterminator
@@ -9195,7 +9195,7 @@ Key to the Side-Door
 Keys to the House	intent: LockDoorEffect; intent: UnlockDoorEffect; polarity: LockDoorEffect; polarity: UnlockDoorEffect
 Khaaaaaaaaaaaannn!
 Khabál Ghoul
-Khalni Ambush	polarity: FightEffect
+Khalni Ambush
 Khalni Garden
 Khalni Heart Expedition
 Khan, Despot by Design
@@ -9957,7 +9957,7 @@ Long-Forgotten Gohei
 Long-Term Plans
 Longhorn Sharpshooter
 Longshot Squad
-Longstalk Brawl	polarity: FightEffect
+Longstalk Brawl
 Lookout's Dispersal
 Looming Altisaur
 Looming Hoverguard
@@ -12523,7 +12523,7 @@ Plaza of Heroes
 Pledge of Loyalty	polarity: Aura>GrantProtectionFromControlledColors
 Pledge of Unity
 Plover Knights
-Plow Through	polarity: FightEffect
+Plow Through
 Plumb the Forbidden	intent: CopyTargetSpellEffect
 Plumecreed Escort
 Plumecreed Mentor
@@ -12593,7 +12593,7 @@ Pothole Mole
 Potion of Healing
 Potioner's Trove
 Poultice Sliver
-Pounce	polarity: FightEffect
+Pounce
 Pouncing Cheetah
 Pouncing Kavu
 Pouncing Lynx
@@ -12663,7 +12663,7 @@ Preston Garvey, Minuteman	intent: CreateAuraTokenEffect; intent: ForEach>TapUnta
 Preston, the Vanisher
 Presumed Dead	polarity: GrantTriggeredAbilityEffect
 Pretending Poxbearers
-Prey Upon	polarity: FightEffect
+Prey Upon
 Prey's Vengeance
 Price of Betrayal	intent: RemoveAnyNumberOfCountersEffect; polarity: RemoveAnyNumberOfCountersEffect
 Price of Fame
@@ -12739,7 +12739,7 @@ Pristine Talisman
 Private Eye
 Privileged Position
 Prized Griffin
-Prizefight	polarity: FightEffect
+Prizefight
 Prizefighter Construct
 Probe
 Procrastinate
@@ -17280,7 +17280,7 @@ The Kenriths' Royal Funeral	polarity: DrawCardsEffect; polarity: LoseLifeEffect;
 The Key to the Vault	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library); polarity: AttachEquipmentEffect
 The Kingpin of Crime	intent: GrantStaticAbilityEffect
 The Lady of the Mountain
-The Last Agni Kai	polarity: FightEffect
+The Last Agni Kai
 The Last Ride
 The Last Ronin
 The Last Ronin's Technique
@@ -17726,7 +17726,7 @@ Titania, Gaea Incarnate
 Titania, Protector of Argoth
 Titania, Rugged Rumbler
 Titania, Voice of Gaea	intent: MeldEffect
-Titanic Brawl	polarity: FightEffect
+Titanic Brawl
 Titanic Bulvox
 Titanic Growth
 Titanic Ultimatum
@@ -17849,7 +17849,7 @@ Tough Cookie	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Tourach's Chant
 Tourach's Gate	polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
 Tournament Grounds
-Tovolar's Huntmaster	polarity: FightEffect
+Tovolar's Huntmaster
 Tovolar, Dire Overlord	intent: ForEach>TransformEffect; intent: Pipeline(ControlledPermanents→?); intent: SetDayNightEffect
 Towashi Guide-Bot
 Towashi Songshaper
@@ -18291,7 +18291,7 @@ Undercity Sewers
 Undercity Shade
 Undercity Troll
 Undercity Upheaval	intent: DistributeCountersAmongTargetsEffect; intent: ForEach>GrantKeywordEffect; polarity: DistributeCountersAmongTargetsEffect; polarity: ForEachEffect
-Undercity Uprising	polarity: FightEffect
+Undercity Uprising
 Undercity's Embrace
 Undercover Crocodelf
 Undercover Operative
@@ -18369,7 +18369,7 @@ Unlucky Cabbage Merchant
 Unlucky Drop	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositionOfChoiceEffect
 Unlucky Witness	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Unmoored Ego
-Unnatural Aggression	polarity: FightEffect
+Unnatural Aggression
 Unnatural Growth
 Unnatural Moonrise
 Unnatural Restoration
@@ -19825,7 +19825,7 @@ Yorvo, Lord of Garenbrig
 Yosei, the Morning Star	polarity: SkipStepOrPhaseEffect
 Yoshimaru, Beloved Companion
 Yoshimaru, Ever Faithful
-Yoshimaru, Scrappy Stray	polarity: FightEffect
+Yoshimaru, Scrappy Stray
 Yotia Declares War
 Yotian Dissident
 Yotian Frontliner
