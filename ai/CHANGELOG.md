@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- Reads casting spells exiled off library tops for free (Etali, Primal Storm) as card draw, reads setting a life total (Form of the Dinosaur) as needing no intent, and aims a pump Aura that pings its host on entry (Tilonalli's Crown) by which creature survives the damage
+- #4397 Reads casting spells exiled off library tops for free (Etali, Primal Storm) as card draw, reads setting a life total (Form of the Dinosaur) as needing no intent, and aims a pump Aura that pings its host on entry (Tilonalli's Crown) by which creature survives the damage
 
 - Treats damage paid on its own creatures as a cost when choosing and drafting support spells, and rates temporary theft below permanent control.
 
