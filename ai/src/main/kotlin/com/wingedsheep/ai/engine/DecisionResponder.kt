@@ -492,7 +492,7 @@ class DecisionResponder(
                 TargetPolarity.BENEFICIAL -> legal.filter { TargetSelection.isOurs(state, it, playerId) }
                     .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
                 TargetPolarity.HARMFUL -> legal.filterNot { TargetSelection.isOurs(state, it, playerId) }
-                TargetPolarity.UNKNOWN, null -> legal
+                TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN, null -> legal
             }
         }
         if (polarity != TargetPolarity.BENEFICIAL) return legal
@@ -1309,7 +1309,8 @@ class DecisionResponder(
         val ours = listOf(playerId)
         val theirs = state.getOpponents(playerId)
         val (mine, opposing) = if (creatureTypes) {
-            priors.creatureTypeWeights(state, ours) to priors.creatureTypeWeights(state, theirs)
+            (priors.chosenTribeWeights(state, playerId, sourceId)
+                ?: priors.creatureTypeWeights(state, ours)) to priors.creatureTypeWeights(state, theirs)
         } else {
             priors.nameWeights(state, ours) to priors.nameWeights(state, theirs)
         }

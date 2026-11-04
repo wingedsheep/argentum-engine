@@ -9,13 +9,15 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * "Target player creates a 1/1 … creature token" ([com.wingedsheep.sdk.scripting.effects.CreateTokenEffect]
  * with its `controller` on a target slot) hands that player a body, so the slot is
  * [TargetPolarity.BENEFICIAL] — the same reading a Treasure for a target player already had. Baffling
- * End's "target opponent creates a 3/3 Dinosaur" is the drawback half of the same reading.
+ * End's "target opponent creates a 3/3 Dinosaur" has no side to pick: it is the card's price and
+ * reads [TargetPolarity.FLEXIBLE], so it neither prunes nor vetoes.
  *
  * Unread, Emeritus of Truce's enter trigger took the removal ranking, which puts an opponent first,
  * and handed them the flier.
@@ -33,8 +35,11 @@ class TokenForTargetPlayerReadingAiTest : ScenarioTestBase() {
     init {
         test("a token for a target player reads as a gift to that player") {
             triggerPolarities("Emeritus of Truce", 0) shouldBe listOf(TargetPolarity.BENEFICIAL)
-            withClue("Baffling End: the leaves trigger's opponent slot is the one helped by the Dinosaur") {
-                triggerPolarities("Baffling End", 1) shouldBe listOf(TargetPolarity.BENEFICIAL)
+            withClue("Baffling End: the Dinosaur for a target opponent is the card's price — read, but it prunes nothing") {
+                triggerPolarities("Baffling End", 1) shouldBe listOf(TargetPolarity.FLEXIBLE)
+            }
+            withClue("Necromentia: a 'target opponent' spell must not read as a gift, which would veto casting it") {
+                intents.spellTargetPolarities("Necromentia") shouldNotBe listOf(TargetPolarity.BENEFICIAL)
             }
         }
 

@@ -123,8 +123,13 @@ enum class TargetPolarity {
     BENEFICIAL,
 
     /**
-     * Mixed, unread, or genuinely either-way (a bounce can save your own creature; a flicker is
-     * an ETB engine). Every consumer keeps its pre-polarity behaviour on this, which is the
+     * Understood, but useful on either side: bounce can rescue our creature and blink can
+     * remove their token. Keep both sides eligible and let simulation choose the target.
+     */
+    FLEXIBLE,
+
+    /**
+     * Mixed or unread. Every consumer keeps its pre-polarity behaviour on this, which is the
      * "no better than before, never confidently wrong" contract [CardIntentAnalyzer] keeps.
      */
     UNKNOWN,
@@ -141,10 +146,14 @@ enum class TargetPolarity {
  * without naming it — a [CounterEffect] or [ExileTargetSpellEffect] whose spell is the chosen one —
  * and are attributed only when there is exactly one requirement for them to mean.
  *
- * A slot whose matched leaves all agree takes that polarity; any disagreement, any leaf this file
- * does not classify, or no matched leaf at all, reads [TargetPolarity.UNKNOWN]. That makes the
+ * A slot whose matched leaves all agree takes that polarity. A flexible step alongside other
+ * understood steps remains flexible; opposing one-sided readings, any unread matched leaf, or
+ * no matched leaf at all reads [TargetPolarity.UNKNOWN]. That makes the
  * classification table below an allow-list of *confident* readings, not a list of special cases:
  * an effect missing from it degrades to the old behaviour rather than to a wrong one.
+ * A recognized two-sided effect reads [TargetPolarity.FLEXIBLE]: unlike UNKNOWN it is understood,
+ * but neither polarity may prune candidates. Ranking retains the offensive default, bounded
+ * simulation includes candidates from both sides, and optional slots may still be left empty.
  *
  * ## Auras
  *
@@ -228,8 +237,8 @@ object TargetPolarityAnalyzer {
     }
 
     /** Polarity of each target slot of one [mode] of a modal spell or triggered ability. */
-    fun forMode(mode: Mode, definitions: CardLookup = NO_DEFINITIONS, triggered: Boolean = false): List<TargetPolarity> =
-        forRequirements(mode.effect, mode.targetRequirements, definitions, triggered = triggered)
+    fun forMode(mode: Mode, definitions: CardLookup = NO_DEFINITIONS): List<TargetPolarity> =
+        forRequirements(mode.effect, mode.targetRequirements, definitions)
 
     /** Polarity of each target slot of the activated [ability] printed on [card]. */
     fun forAbility(
@@ -265,20 +274,32 @@ object TargetPolarityAnalyzer {
         requirements: List<TargetRequirement>,
         definitions: CardLookup = NO_DEFINITIONS,
         source: CardDefinition? = null,
-        triggered: Boolean = false,
     ): List<TargetPolarity> {
         if (requirements.isEmpty()) return emptyList()
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
+        val blinks = EffectWalker.blinkMoves(effect)
+        for (move in blinks) slotOf(move.target, requirements)?.let { slot ->
+            // An unrestricted blink can remove their token or recover a stolen permanent.
+            // Only an own-side requirement makes protection a safe target-side restriction.
+            perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL
+                else TargetPolarity.FLEXIBLE
+        }
         val biteSources = mutableSetOf<Int>()
         for (leaf in EffectWalker.payoffLeaves(effect)) {
+            if (blinks.any { it === leaf }) continue
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
             // that is every target of that slot, so the body reads as the slot's; with several,
             // `ContextTarget(0)` walks all of them and names no one slot.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
-                if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions, source, triggered)
+                if (requirements.size == 1) {
+                    // A bounce can save our creature from removal even when the spell can
+                    // choose several targets. Preserve the body's either-way reading so target
+                    // simulation can compare rescue against offensive tempo.
+                    perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
+                }
                 continue
             }
             // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
@@ -325,15 +346,30 @@ object TargetPolarityAnalyzer {
                 }
                 continue
             }
+            if (leaf is GatherCardsEffect) {
+                val top = leaf.source as? CardSource.TopOfLibrary
+                if (top?.isMill == true) {
+                    val slot = when (val player = top.player) {
+                        Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
+                            requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
+                        }.singleOrNull()
+                        is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
+                        is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }
+                            .takeIf { it >= 0 }
+                        else -> null
+                    }
+                    slot?.let { perSlot[it] += TargetPolarity.HARMFUL }
+                }
+            }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
-            val bounce = if (triggered) triggeredBounceSlot(leaf, requirements) else null
+            val gift = tokenGiftSlot(leaf, requirements)
             if (recursion != null) {
                 recursions += recursion
             } else if (copy != null) {
                 perSlot[copy] += TargetPolarity.BENEFICIAL
-            } else if (bounce != null) {
-                perSlot[bounce] += TargetPolarity.HARMFUL
+            } else if (gift != null) {
+                perSlot[gift.first] += gift.second
             } else {
                 for ((target, polarity) in classify(leaf, definitions, source)) {
                     val slot = slotOf(target, requirements) ?: continue
@@ -361,8 +397,14 @@ object TargetPolarityAnalyzer {
     }
 
     /** One polarity for a slot, from every leaf that acts on it. */
-    private fun combine(readings: List<TargetPolarity>): TargetPolarity =
-        readings.distinct().singleOrNull() ?: TargetPolarity.UNKNOWN
+    private fun combine(readings: List<TargetPolarity>): TargetPolarity = when {
+        // Flexible is a known two-sided operation, not an unread one. Adding a known boon or
+        // harm still needs both sides compared; it cannot make the slot safely one-sided.
+        // An unread step must stay unread, even beside an understood flexible operation.
+        readings.isEmpty() || TargetPolarity.UNKNOWN in readings -> TargetPolarity.UNKNOWN
+        TargetPolarity.FLEXIBLE in readings -> TargetPolarity.FLEXIBLE
+        else -> readings.distinct().singleOrNull() ?: TargetPolarity.UNKNOWN
+    }
 
     /** Whether two bound handles are picks of the same count-N requirement (`t0[0]` and `t0[1]`). */
     private fun sameRequirement(a: EffectTarget, b: EffectTarget): Boolean =
@@ -402,24 +444,21 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * The slot a **triggered bounce** names — "when this creature enters, return target creature to
-     * its owner's hand" (Deadeye Rig-Hauler, Man-o'-War, Aether Adept) — or null.
+     * The player slot a **token for a target player** names — "target player creates a 1/1 …
+     * creature token" (Emeritus of Truce, Verdant Command) — with its reading, or null.
      *
-     * [classify] leaves a bounce unread because it is genuinely either-way *at instant speed*:
-     * returning your own creature in response to removal is a real play (`lastchance-05`). A
-     * triggered ability offers no such window — it fires on its event's schedule, not in answer to
-     * the opponent's spell — so its bounce is tempo removal aimed at the other side. A slot whose
-     * filter keeps it on our side ("return another target creature you control") is the rebuy shape
-     * and stays unread, as does a move out of a graveyard ([recursionSlot]'s business).
+     * A creature is a body on its controller's side of the table, so a slot that may be either
+     * player is [TargetPolarity.BENEFICIAL]: the token is ours to take. A slot only an opponent can
+     * fill ("target opponent creates a 3/3 Dinosaur", Baffling End, Necromentia, the Hunted cycle)
+     * is the card's price, not a side to pick — it reads [TargetPolarity.FLEXIBLE], which is
+     * understood but prunes nothing. Read as a gift, it would veto casting a spell whose every legal
+     * target is an opponent ([com.wingedsheep.ai.engine.TargetSelection.aimsOnlyAtTheWrongSide]).
      */
-    private fun triggeredBounceSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
-        if (leaf !is MoveToZoneEffect || leaf.destination != Zone.HAND || leaf.faceDown != null) return null
-        if (leaf.fromZone != null && leaf.fromZone != Zone.BATTLEFIELD) return null
-        val slot = slotOf(leaf.target, requirements) ?: return null
-        val requirement = requirements[slot]
-        val zone = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter?.zone
-        if (zone != null && zone != Zone.BATTLEFIELD) return null
-        return slot.takeUnless { isOwnSide(requirement) }
+    private fun tokenGiftSlot(leaf: Effect, requirements: List<TargetRequirement>): Pair<Int, TargetPolarity>? {
+        if (leaf !is CreateTokenEffect) return null
+        val controller = leaf.controller?.takeIf { it.isSlot() } ?: return null
+        val slot = slotOf(controller, requirements) ?: return null
+        return slot to if (requirements[slot] is TargetOpponent) TargetPolarity.FLEXIBLE else TargetPolarity.BENEFICIAL
     }
 
     /**
@@ -530,9 +569,9 @@ object TargetPolarityAnalyzer {
         if (filter.anyOf.isNotEmpty()) return null
         return when (val controller = filter.controllerPredicate) {
             is ControllerPredicate.ControlledByReferencedPlayer -> slotOf(controller.target, requirements)
-                ?.takeIf { requirements[it] is TargetPlayer }
-            ControllerPredicate.ControlledByTargetPlayer ->
-                requirements.indices.filter { requirements[it] is TargetPlayer }.singleOrNull()
+                ?.takeIf { (requirements[it] is TargetPlayer || requirements[it] is TargetOpponent) }
+            ControllerPredicate.ControlledByTargetPlayer, ControllerPredicate.ControlledByTargetOpponent ->
+                requirements.indices.filter { (requirements[it] is TargetPlayer || requirements[it] is TargetOpponent) }.singleOrNull()
             else -> null
         }
     }
@@ -588,14 +627,14 @@ object TargetPolarityAnalyzer {
         source: CardDefinition? = null,
     ): List<Pair<EffectTarget, TargetPolarity>> {
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
-            // Off the battlefield to a graveyard or exile is removal. To hand or library is *not*
-            // classified: bouncing your own creature in response to removal is a real play
-            // (`lastchance-05`), and a move *onto* the battlefield or out of a graveyard is
-            // recursion, whose polarity is about the card's owner rather than a controller. A
-            // *triggered* bounce has no such window and is read in [triggeredBounceSlot].
+            // Off the battlefield to a graveyard or exile is removal. To hand is flexible:
+            // bouncing your own creature in response to removal is a real play (`lastchance-05`).
+            // A move onto the battlefield or out of a graveyard is
+            // recursion, whose polarity is about the card's owner rather than a controller.
             is MoveToZoneEffect -> leaf.target to when {
                 leaf.fromZone != null && leaf.fromZone != Zone.BATTLEFIELD -> null
                 leaf.destination == Zone.GRAVEYARD || leaf.destination == Zone.EXILE -> TargetPolarity.HARMFUL
+                leaf.destination == Zone.HAND -> TargetPolarity.FLEXIBLE
                 else -> null
             }
             is MoveUntilSourceLeavesEffect -> leaf.target to TargetPolarity.HARMFUL
@@ -705,11 +744,6 @@ object TargetPolarityAnalyzer {
             // Clue or Gold is the controller's to use, and the board evaluator does not price one —
             // so without this the slot is a coin toss between giving it to us or to them.
             is CreatePredefinedTokenEffect -> leaf.controller?.takeIf { it.isSlot() }
-                ?.let { it to TargetPolarity.BENEFICIAL } ?: return emptyList()
-            // "Target opponent creates a 3/3 green Dinosaur creature token" (Baffling End, Forbidden
-            // Orchard): a creature is a body on its controller's side of the table, so the slot
-            // that gets it is the side it helps — a drawback when the slot is an opponent's.
-            is CreateTokenEffect -> leaf.controller?.takeIf { it.isSlot() }
                 ?.let { it to TargetPolarity.BENEFICIAL } ?: return emptyList()
             else -> return emptyList()
         }

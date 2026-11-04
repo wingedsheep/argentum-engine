@@ -96,6 +96,8 @@ object GraveyardSynergy {
             if (node is Enum<*>) return false
             if (seen.put(node, Unit) != null) return false
             if (node is KeywordAbility && node.keyword in GRAVEYARD_KEYWORDS) return true
+            // A destination fills a graveyard; it never consumes that resource.
+            if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             return when (node) {
                 is Collection<*> -> node.any(::visit)
                 is Map<*, *> -> node.keys.any(::visit) || node.values.any(::visit)

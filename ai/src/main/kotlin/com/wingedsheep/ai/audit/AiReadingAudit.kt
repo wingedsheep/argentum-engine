@@ -368,8 +368,8 @@ object AiReadingAudit {
         script.triggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
             val reqs = listOfNotNull(trigger.targetRequirement) + trigger.additionalTargetRequirements
-            abilityPolarity(trigger.effect, reqs, lookup, sink, triggered = true) {
-                TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card, triggered = true)
+            abilityPolarity(trigger.effect, reqs, lookup, sink) {
+                TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card)
             }
             // "When this leaves the battlefield, return the exiled card" (O-Ring, Fiend Hunter, champion)
             // needs no intent: it never stands alone — it is the price of the entry's exile, with no
@@ -418,12 +418,11 @@ object AiReadingAudit {
         reqs: List<TargetRequirement>,
         lookup: CardLookup,
         sink: Sink,
-        triggered: Boolean = false,
         read: () -> List<TargetPolarity>,
     ) {
         if (effect is ModalEffect && reqs.isEmpty()) {
             effect.modes.forEachIndexed { m, mode ->
-                polarity(mode.effect, mode.targetRequirements, TargetPolarityAnalyzer.forMode(mode, lookup, triggered), lookup, sink, m + 1)
+                polarity(mode.effect, mode.targetRequirements, TargetPolarityAnalyzer.forMode(mode, lookup), lookup, sink, m + 1)
             }
         } else if (reqs.isNotEmpty()) {
             polarity(effect, reqs, read(), lookup, sink, null)
@@ -594,6 +593,7 @@ object AiReadingAudit {
     private fun polarityPhrase(polarity: TargetPolarity): String = when (polarity) {
         TargetPolarity.HARMFUL -> "reads as harmful — aimed at an opponent's side"
         TargetPolarity.BENEFICIAL -> "reads as helpful — aimed at your own side"
+        TargetPolarity.FLEXIBLE -> "can help either side; compare targets by simulation"
         TargetPolarity.UNKNOWN -> "can't tell if this helps or hurts"
     }
 
@@ -606,6 +606,7 @@ object AiReadingAudit {
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
         IntentTag.CAST_BAN -> "stops opponents casting spells"
+        IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"

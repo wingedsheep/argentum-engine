@@ -291,8 +291,7 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     /**
      * [TargetPolarity] of each of [requirements], read off [effect] — a triggered ability being put
      * on the stack, whose effect and requirements travel on its continuation rather than on a card
-     * the catalog can look up, so it is read as a trigger (a bounce there is tempo removal). Empty
-     * when the catalog is off.
+     * the catalog can look up. Empty when the catalog is off.
      *
      * [sourceName] names the permanent the ability comes from, when known: Embercleave's "attach it
      * to target creature you control" is read off what that Equipment does to the creature it equips.
@@ -304,7 +303,7 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     ): List<TargetPolarity> =
         if (!isEnabled) emptyList()
         else TargetPolarityAnalyzer.forRequirements(
-            effect, requirements, ::tokenDefinition, source = sourceName?.let(::tokenDefinition), triggered = true,
+            effect, requirements, ::tokenDefinition, source = sourceName?.let(::tokenDefinition),
         )
 
     /**

@@ -427,10 +427,7 @@ object LimitedCardRater {
      * its size: on the creature it is attached to like a pump, battlefield-wide like an anthem.
      */
     private fun staticScore(static: StaticAbility): Double {
-        // "As long as you have the city's blessing, this creature has flying" (ascend), "… has
-        // vigilance as long as you control another Dinosaur": the ability's worth some of the time,
-        // priced at half of what it would be worth unconditionally.
-        if (static is ConditionalStaticAbility) return staticScore(static.ability) * CONDITIONAL_SHARE
+        if (static is ConditionalStaticAbility) return staticScore(static.ability) * 0.6
         // A keyword the creature grants itself is a keyword on its body, priced like a printed one.
         if (static is GrantKeyword && static.filter.scope == Scope.Self) {
             val keyword = runCatching { Keyword.valueOf(static.keyword.uppercase()) }.getOrNull()
@@ -502,6 +499,8 @@ object LimitedCardRater {
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private object LimitedScoreFold : EffectWalker.Fold<Double> {
+        override fun blink(exile: MoveToZoneEffect, returns: MoveToZoneEffect): Double = 0.3
+
         /**
          * A pipeline's "if those cards include …" branch scores as a conditional over both sides —
          * the same reading [EffectWalker.payoffLeaves] gives the intent and polarity readers.
@@ -532,6 +531,15 @@ object LimitedCardRater {
      */
     private fun scoreEffect(effect: Effect): Double {
         return when (effect) {
+            // Mill spends no opposing board material. Give its library pressure a small term;
+            // full library-depletion valuation belongs to the board evaluator.
+            is GatherCardsEffect -> {
+                val top = effect.source as? CardSource.TopOfLibrary
+                if (top?.isMill == true) {
+                    val amount = (top.count as? DynamicAmount.Fixed)?.amount ?: 4
+                    (amount.coerceAtLeast(0) * 0.05).coerceAtMost(0.4)
+                } else tagValue(CardIntentAnalyzer.leafTags(effect))
+            }
             // Removal — the most valuable effect type in limited
             is MoveToZoneEffect -> when {
                 effect.byDestruction -> DESTROY_SCORE     // destroy
@@ -668,9 +676,6 @@ object LimitedCardRater {
     private const val COMPOSITE_CAP = 2.5
     private const val MODAL_FLEXIBILITY = 0.2
     private const val PUMP_PER_STAT = 0.15
-
-    /** The share of its value a static ability gated on a condition keeps. */
-    private const val CONDITIONAL_SHARE = 0.5
     private const val ANTHEM_PER_STAT = 0.4
     private const val ANTHEM_CAP = 1.6
 
@@ -705,6 +710,7 @@ object LimitedCardRater {
         // A trigger lock shuts off enter triggers on both sides — in Limited, where most decks run
         // a few, it is a sideboard hoser more than a maindeck card.
         IntentTag.TRIGGER_LOCK to 0.1,
+        IntentTag.TRIBAL_ENABLER to 0.1,
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
         IntentTag.TOKEN_THEFT to 0.2,

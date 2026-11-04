@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
@@ -81,6 +82,8 @@ data class SynergyProfile(
     val tribes: Set<Subtype> = emptySet(),
     val tribesRewarded: Set<Subtype> = emptySet(),
     val everyTribe: Boolean = false,
+    /** Converts our creatures to one chosen tribe; it is not itself a member of every tribe. */
+    val grantsChosenTribe: Boolean = false,
     val asks: List<CardAsk> = emptyList(),
     val card: CardDefinition? = null,
     val standsAlone: Boolean = false,
@@ -90,10 +93,10 @@ data class SynergyProfile(
     /** No synergy reading at all — though [card] may still match another card's [asks]. */
     val isEmpty: Boolean
         get() = feeds.isEmpty() && rewards.isEmpty() && tribes.isEmpty() && tribesRewarded.isEmpty() &&
-            !everyTribe && asks.isEmpty() && punishes.isEmpty()
+            !everyTribe && !grantsChosenTribe && asks.isEmpty() && punishes.isEmpty()
 
     /** Rewards an axis or asks for a kind of card: a card whose value hangs on the rest of the deck. */
-    val isPayoff: Boolean get() = rewards.isNotEmpty() || tribesRewarded.isNotEmpty() || asks.isNotEmpty()
+    val isPayoff: Boolean get() = grantsChosenTribe || rewards.isNotEmpty() || tribesRewarded.isNotEmpty() || asks.isNotEmpty()
 
     /** Feeds an axis, is (or makes) some creature type, or is a printed card some ask can match. */
     val isFeeder: Boolean get() = feeds.isNotEmpty() || tribes.isNotEmpty() || everyTribe || card != null
@@ -167,6 +170,7 @@ object SynergyAxes {
             tribes = CreatureTypeSynergy.fed(card),
             tribesRewarded = CreatureTypeSynergy.rewarded(card),
             everyTribe = CreatureTypeSynergy.everyType(card),
+            grantsChosenTribe = CreatureTypeSynergy.grantsChosenTribe(card),
             asks = CardAsks.of(card),
             card = card,
             standsAlone = CardIntentAnalyzer.analyze(card).tags.any { it in ANSWERS },
@@ -266,6 +270,12 @@ object SynergyAxes {
                 addAll(effectFeeds(leaf.body))
                 continue
             }
+            // A global trigger produces the same resources when its event happens, including
+            // discards from a combat-damage loot. The event is a condition, not a new resource.
+            if (leaf is CreateGlobalTriggeredAbilityEffect) {
+                addAll(effectFeeds(leaf.ability.effect))
+                continue
+            }
             addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
             if (IntentTag.LIFEGAIN in tags) add(SynergyAxis.LIFEGAIN)
@@ -280,6 +290,12 @@ object SynergyAxes {
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
         is SurveilEffect -> setOf(SynergyAxis.GRAVEYARD)
+        is com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect -> {
+            val destination = leaf.destination as? com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone
+            if (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard && destination?.player == Player.You) {
+                setOf(SynergyAxis.GRAVEYARD)
+            } else emptySet()
+        }
         is GatherCardsEffect -> {
             val source = leaf.source
             if (source is CardSource.TopOfLibrary && source.isMill && source.player == Player.You) {

@@ -6,6 +6,8 @@ import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.xln.cards.FleetSwallower
+import com.wingedsheep.mtg.sets.definitions.xln.cards.ShipwreckLooter
 import com.wingedsheep.mtg.sets.definitions.tsp.cards.ThinkTwice
 import com.wingedsheep.mtg.sets.definitions.vow.cards.DiregrafScavenger
 import com.wingedsheep.mtg.sets.definitions.vow.cards.ScreamingSwarm
@@ -28,7 +30,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class MillAndGraveyardTargetChoiceTest : FunSpec({
 
-    val cards = TestCards.all + listOf(ScreamingSwarm, ThinkTwice, DiregrafScavenger)
+    val cards = TestCards.all + listOf(ScreamingSwarm, ThinkTwice, DiregrafScavenger, FleetSwallower, ShipwreckLooter)
     val registry = CardRegistry().apply { register(cards) }
 
     fun newGame(): GameTestDriver = GameTestDriver().apply {
@@ -65,6 +67,22 @@ class MillAndGraveyardTargetChoiceTest : FunSpec({
         val (d, decision) = swarmTrigger()
         decision.legalTargets.getValue(0).toSet() shouldBe setOf(d.player1, d.player2)
         GraveyardSynergy.benefitsFromGraveyard(d.state, d.player1, registry) shouldBe false
+        answer(d, decision) shouldBe listOf(d.player2)
+    }
+
+    test("looters fill a graveyard but do not make milling ourselves a payoff") {
+        val (d, decision) = swarmTrigger { repeat(5) { putCardInHand(player1, "Shipwreck Looter") } }
+        GraveyardSynergy.benefitsFromGraveyard(d.state, d.player1, registry) shouldBe false
+        answer(d, decision) shouldBe listOf(d.player2)
+    }
+
+    test("a half-library attack trigger mills the opponent") {
+        val d = newGame()
+        val fish = d.putCreatureOnBattlefield(d.player1, "Fleet Swallower")
+        d.removeSummoningSickness(fish)
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(d.player1, listOf(fish), d.player2)
+        val decision = awaitTargets(d)
         answer(d, decision) shouldBe listOf(d.player2)
     }
 

@@ -28,9 +28,13 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #TBD Aims a triggered "return target creature to its owner's hand" (Deadeye Rig-Hauler, Man-o'-War, Aethersnipe) at the opponent's side, gives a "target player creates a token" (Emeritus of Truce) to itself, reads abilities gated on a condition (ascend's "flying as long as you have the city's blessing") as the ability inside them, and prices those conditional statics in draft ratings at half their unconditional worth
+- #TBD Gives a "target player creates a token" (Emeritus of Truce) to itself, reads a creature's own conditional penalty ("-2/-2 as long as …") as a drawback rather than a pump, and prices a keyword a creature grants itself (ascend's flying with the city's blessing) in draft ratings like a printed one
+- Reads chosen-type grants as tribal enablers, drafts them with off-tribe creatures and tribal payoffs, and chooses the type those payoffs reward instead of the most common existing type.
+
 - Reads "each token that would be created under an opponent's control this turn is created under your control instead" (Crafty Cutpurse) as taking the opponent's tokens rather than as an unrecognised ability, and prices it in draft ratings above the bare body
+- Reads immediate blinks as protection, keeps friendly bounce rescues and offensive blinks available, chooses additional profitable bounce targets, targets opponent-controlled groups offensively, prices conditional statics and mill abilities, and no longer treats looters as graveyard payoffs when choosing mill targets.
 - Drafts Clone-style cards (enter as a copy of a creature) above their printed body; a raid-gated copy (Protean Raider) counts half
+
 - Reads statics that stop permanents entering or dying from triggering abilities (Torpor Orb, Tocatli Honor Guard, Hushbringer, Elesh Norn, Mother of Machines) as trigger locks: values a lock permanent on the board above an unreadable one and prices the lock in draft ratings
 - Reads +1/+1 counters put on each creature you control (Bellowing Aegisaur, Victory's Envoy) as feeding a +1/+1-counter deck, so it drafts those cards alongside counter payoffs
 - #4374 Reads bans on an opponent's spells (Silence, Sphinx's Decree, Azor, Orim's Chant, Xantid Swarm) as disruption: stops in the opponent's upkeep to cast an instant ban that covers their whole turn, casts a sorcery-speed one like Sphinx's Decree with mana nothing else wants while they hold cards, aims a "target player" ban at the opponent, and rates the effect in draft

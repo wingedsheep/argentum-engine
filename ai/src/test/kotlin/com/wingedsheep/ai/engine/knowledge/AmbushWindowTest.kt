@@ -77,23 +77,21 @@ class AmbushWindowTest : ScenarioTestBase() {
         // ── 1. Scope ──
 
         test("Restoration Angel reads as a flash body that only ever touches our own board") {
-            // The card that started this, read by the real analyzer. Three things are load-bearing
-            // for the puzzles, and the third is the surprising one:
-            //
-            //  - `flashPermanent` is what gets it into the policy at all.
-            //  - It carries none of the tags that pay off before the ambush.
-            //  - It IS tagged REMOVAL/EXILE_REMOVAL, for blinking a creature *we control* — the
-            //    `hitsAnotherPermanent` fail-open that [CardIntent.targetsOnlyOurPermanents]
-            //    exists to work around. Pinned here so the workaround's premise is visible: if a
-            //    later analyzer change makes the tag honest, this assertion fails and the field
-            //    can be deleted rather than quietly kept forever.
+            // A blink now reads honestly as protection. Unlike a granted combat shield, it
+            // pays off by responding to removal; without that response window the body waits.
             val angel = intentFor("Restoration Angel")
             angel.flashPermanent shouldBe true
             angel.hasHaste shouldBe false
             angel.speed shouldBe Speed.INSTANT
-            angel.tags.filter { it in PAYS_OFF_BEFORE_THE_AMBUSH }.shouldBeEmpty()
-            angel.tags.filter { it in ANSWERS_THEIR_BOARD }.shouldNotBeEmpty()
+            (IntentTag.PROTECTION in angel.tags) shouldBe true
+            angel.protectionOnlyFromBlink shouldBe true
+            angel.tags.filter { it in ANSWERS_THEIR_BOARD }.shouldBeEmpty()
             angel.targetsOnlyOurPermanents shouldBe true
+        }
+
+        test("a real protection shield still releases the floor before combat") {
+            val angelWithShield = intentFor("Restoration Angel").copy(protectionOnlyFromBlink = false)
+            position().floors(angelWithShield, step = Step.PRECOMBAT_MAIN, activeSeat = 1) shouldBe false
         }
 
         test("an instant and an ordinary creature are out of scope") {

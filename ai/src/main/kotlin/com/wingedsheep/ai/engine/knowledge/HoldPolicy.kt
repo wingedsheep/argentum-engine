@@ -441,6 +441,7 @@ class HoldPolicy(
         ability: ActivatedAbility,
     ): TimingVerdict? {
         if (ability.isManaAbility || ability.timing != TimingRule.InstantSpeed) return null
+        if (createsTemporaryTrigger(ability.effect)) return null
         val tags = CardIntentAnalyzer.analyzeEffect(ability.effect).tags
         if (tags.isEmpty() || !tags.all { it in ACTIVATION_FLOW_TAGS }) return null
         // A copy-and-cast (Isochron Scepter) also reads as DRAW, but the copy is a spell that wants
@@ -461,6 +462,19 @@ class HoldPolicy(
         if (!holdsInstantSpeedCard(state, playerId)) return null
         if (Patience.releasedOutright(state, state.projectedState, playerId)) return null
         return TimingVerdict.NoWindow
+    }
+
+    private fun createsTemporaryTrigger(effect: com.wingedsheep.sdk.scripting.effects.Effect): Boolean =
+        EffectWalker.payoffLeaves(effect).any {
+            it is com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect &&
+                it.duration != com.wingedsheep.sdk.scripting.Duration.Permanent
+        }
+
+    private fun castCreatesTemporaryTrigger(state: GameState, cast: CastSpell?): Boolean {
+        if (cast == null) return false
+        val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
+        val definition = intents.definition(name) ?: return false
+        return castEffects(definition, cast)?.any(::createsTemporaryTrigger) == true
     }
 
     /** Whether [cost] spends only mana and untapped permanents — what the turn's cleanup takes back anyway. */
@@ -498,6 +512,7 @@ class HoldPolicy(
         if ((intent.tags - IntentTag.CARD_SELECTION).isEmpty() && !intent.selectsIntoHand) return false
         val card = state.getEntity(cast.cardId)?.get<CardComponent>() ?: return false
         if (card.typeLine.isPermanent) return false
+        if (intents.definition(card.name)?.script?.spellEffect?.let(::createsTemporaryTrigger) == true) return false
         if (intent.wishFilters.isNotEmpty() && !holdsWishableCard(state, playerId, intent)) return false
         return state.isActiveTurnFor(playerId) && state.step == Step.POSTCOMBAT_MAIN &&
             state.stack.isEmpty() && !holdsInstantSpeedCard(state, playerId)
@@ -653,6 +668,7 @@ class HoldPolicy(
             // removal branch gives at length: rewarding the better window is a comparison, and
             // charging the worse one is a preference a constant cannot price.
             cashCantripsInTheEndStep && IntentTag.DRAW in intent.tags &&
+                !castCreatesTemporaryTrigger(state, cast) &&
                 isOpponentEndStep(state, playerId) -> TimingVerdict.Adjust(END_STEP_WINDOW)
 
             else -> TimingVerdict.Neutral

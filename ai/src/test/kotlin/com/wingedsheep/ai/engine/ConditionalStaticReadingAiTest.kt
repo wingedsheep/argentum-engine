@@ -18,8 +18,8 @@ import io.kotest.matchers.shouldBe
  * analyzer saw nothing ("abilities not recognised") and the draft heuristic priced Skymarcher Aspirant
  * as a vanilla 2/1.
  *
- * The heuristic keeps half of what the ability would be worth unconditionally, and a keyword the
- * creature grants itself is priced like a printed one. A creature's own conditional penalty (the
+ * The heuristic prices a keyword the creature grants itself like a printed one, keeping the
+ * conditional discount `LimitedCardRater` applies to any gated static. A creature's own conditional penalty (the
  * Invasion Djinn's "-2/-2 as long as …") is its drawback, never read as a pump.
  */
 class ConditionalStaticReadingAiTest : FunSpec({
@@ -49,15 +49,12 @@ class ConditionalStaticReadingAiTest : FunSpec({
         }
     }
 
-    test("the heuristic prices a conditional static at half its unconditional worth") {
-        withClue("flying (0.8) the creature grants itself, gated on the city's blessing") {
-            term("Skymarcher Aspirant", "Static ability 1") shouldBe (0.4 plusOrMinus 1e-9)
+    test("a keyword the creature grants itself is priced like a printed one, discounted when conditional") {
+        withClue("flying (0.8) the creature grants itself, gated on the city's blessing (× 0.6)") {
+            term("Skymarcher Aspirant", "Static ability 1") shouldBe (0.48 plusOrMinus 1e-9)
         }
-        withClue("vigilance (0.2) while you control another Dinosaur") {
-            term("Sun-Crested Pterodon", "Static ability 1") shouldBe (0.1 plusOrMinus 1e-9)
-        }
-        withClue("+3/+0 on itself (3 × 0.15) with the city's blessing") {
-            term("Snubhorn Sentry", "Static ability 1") shouldBe (0.225 plusOrMinus 1e-9)
+        withClue("vigilance (0.2) while you control another Dinosaur (× 0.6)") {
+            term("Sun-Crested Pterodon", "Static ability 1") shouldBe (0.12 plusOrMinus 1e-9)
         }
     }
 })

@@ -120,28 +120,18 @@ data class CardIntent(
     /**
      * Whether every permanent this card targets is one **we control** — and there is at least one.
      *
-     * This exists because [IntentTag.REMOVAL] cannot answer the question. `hitsAnotherPermanent`
-     * decides "does this take *someone else's* permanent off the battlefield" from the
-     * [com.wingedsheep.sdk.scripting.effects.EffectTarget] alone, and a bound or context target
-     * carries no filter — so it falls through to `else -> true` and every "exile a creature **you
-     * control**" reads as spot removal. Restoration Angel is tagged `REMOVAL, EXILE_REMOVAL` for
-     * blinking our own creature.
-     *
-     * That fail-open is harmless where the tag is only a prior, and wrong where a consumer needs to
-     * know which side of the table an effect points at. [AmbushWindow] is the second kind: "this ETB
-     * clears a blocker before we attack" and "this ETB blinks our own creature" are opposite
-     * answers, and the tag gives the same one for both.
-     *
-     * Fixing `hitsAnotherPermanent` to resolve bound targets against their requirement is the real
-     * repair, and it is deliberately *not* done here: `REMOVAL` feeds `staticPriorValue`'s ladder
-     * and [RemovalPatience]'s bar, so re-tagging every "target creature you control" card is an
-     * evaluation change that needs its own flag and its own arena run. This field is additive, read
-     * by exactly one consumer, and changes nothing for anyone else.
+     * A bound or context target does not itself carry its filter, so the effect's intent tag
+     * cannot say whose board it touches. [AmbushWindow] needs that distinction: a bounce aimed
+     * at an opposing blocker pays off before attacking, while an own-side bounce or blink can
+     * wait for the opponent to act. Immediate blinks read as [IntentTag.PROTECTION]; the
+     * [protectionOnlyFromBlink] field distinguishes them from combat shields.
      *
      * `false` when the card targets no permanent at all, which keeps a vanilla body — the case the
      * ambush policy most wants — from being mistaken for one that aims at us.
      */
     val targetsOnlyOurPermanents: Boolean = false,
+    /** Protection comes only from an immediate blink, not a shield improving the next combat. */
+    val protectionOnlyFromBlink: Boolean = false,
     /**
      * Whether the card carries an **untargeted group pump that expires** — "creatures you control
      * get +2/+1 until end of turn" (Rabbit Response), which `Patterns.Group.modifyStatsForAll`
@@ -308,6 +298,9 @@ enum class IntentTag {
 
     /** A continuous P/T bonus to a group of creatures — a lord or an anthem. */
     ANTHEM,
+
+    /** Grants a chosen creature type, enabling tribal payoffs without making a body or a stat bonus. */
+    TRIBAL_ENABLER,
 
     /** A P/T bonus to one creature: an Aura/Equipment, or a one-shot pump. */
     PUMP,

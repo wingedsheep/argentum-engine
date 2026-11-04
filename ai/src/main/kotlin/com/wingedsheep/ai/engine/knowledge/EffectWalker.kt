@@ -2,6 +2,8 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
@@ -62,6 +64,10 @@ object EffectWalker {
         /** An effect with no interior this walk descends into. */
         fun leaf(effect: Effect): T
 
+        /** An immediate exile and return of the same object: a blink, not exile removal. */
+        fun blink(exile: MoveToZoneEffect, returns: MoveToZoneEffect): T =
+            composite(listOf(leaf(exile), leaf(returns)))
+
         /** A [CompositeEffect]'s children, already folded, in printed order. */
         fun composite(parts: List<T>): T
 
@@ -78,12 +84,59 @@ object EffectWalker {
             return f.conditional(fold(branch.then, f), branch.otherwise?.let { fold(it, f) })
         }
         effect.asMayDecide()?.let { return f.may(fold(it.then, f)) }
-        if (effect is CompositeEffect) return f.composite(effect.effects.map { fold(it, f) })
+        if (effect is CompositeEffect) {
+            val parts = mutableListOf<T>()
+            var index = 0
+            while (index < effect.effects.size) {
+                val exile = effect.effects[index] as? MoveToZoneEffect
+                val returns = effect.effects.getOrNull(index + 1) as? MoveToZoneEffect
+                if (exile != null && returns != null && isBlinkPair(exile, returns)) {
+                    parts += f.blink(exile, returns)
+                    index += 2
+                } else {
+                    // A successful-exile guard is bookkeeping for the same blink. Require the
+                    // exact target/zone check and an immediate return, never an arbitrary condition.
+                    val guarded = effect.effects.getOrNull(index + 1)?.asConditional()
+                    val guardedParts = guarded?.then?.let {
+                        if (it is CompositeEffect) it.effects else listOf(it)
+                    }.orEmpty()
+                    val guardedReturn = guardedParts.firstOrNull() as? MoveToZoneEffect
+                    if (exile != null && guardedReturn != null && guarded?.otherwise == null &&
+                        guarded?.condition == EntityMatches(exile.target, GameObjectFilter.Any.currentlyIn(Zone.EXILE)) &&
+                        guardedReturn.fromZone == Zone.EXILE && isBlinkPair(exile, guardedReturn)) {
+                        parts += f.blink(exile, guardedReturn)
+                        if (guardedParts.size > 1) {
+                            parts += f.conditional(f.composite(guardedParts.drop(1).map { fold(it, f) }), null)
+                        }
+                        index += 2
+                    } else {
+                        parts += fold(effect.effects[index++], f)
+                    }
+                }
+            }
+            return f.composite(parts)
+        }
         if (effect is CreateTokenBatchEffect) return f.composite(effect.groups.map { fold(it, f) })
         if (effect is ConniveEffect) return fold(effect.body, f)
         if (effect is LearnEffect) return fold(effect.body, f)
         return f.leaf(effect)
     }
+
+    private fun isBlinkPair(exile: MoveToZoneEffect, returns: MoveToZoneEffect): Boolean =
+        exile.destination == Zone.EXILE && returns.destination == Zone.BATTLEFIELD &&
+            exile.target == returns.target && (exile.fromZone == null || exile.fromZone == Zone.BATTLEFIELD) &&
+            (returns.fromZone == null || returns.fromZone == Zone.EXILE) &&
+            returns.controllerOverride == null && exile.faceDown == null && returns.faceDown == null
+
+    /** The actual move instances belonging to an immediate blink, preserving branch boundaries. */
+    fun blinkMoves(effect: Effect): List<MoveToZoneEffect> = fold(effect, object : Fold<List<MoveToZoneEffect>> {
+        override fun leaf(effect: Effect) = emptyList<MoveToZoneEffect>()
+        override fun blink(exile: MoveToZoneEffect, returns: MoveToZoneEffect) = listOf(exile, returns)
+        override fun composite(parts: List<List<MoveToZoneEffect>>) = parts.flatten()
+        override fun conditional(thenValue: List<MoveToZoneEffect>, elseValue: List<MoveToZoneEffect>?) =
+            thenValue + elseValue.orEmpty()
+        override fun may(thenValue: List<MoveToZoneEffect>) = thenValue
+    })
 
     /**
      * Where in a card's script an effect lives, and how much a scorer should discount it for that.
