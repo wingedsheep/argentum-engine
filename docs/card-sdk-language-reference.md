@@ -633,6 +633,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   "Discard two cards at random").
 - `Costs.DiscardHand` — discard your entire hand.
 - `Costs.DiscardSelf` — discard this card (cycling-style).
+- `Costs.RevealSelf` — reveal this card from your hand (Tetzimoc, Primal Death: "{B}, Reveal Tetzimoc
+  from your hand: …"), with `activateFromZone = Zone.HAND`. Payable only while the card is in its
+  owner's hand; no selection; emits a `CardsRevealedEvent`. The card stays in hand, so the ability can
+  be activated again. (`Costs.additional.RevealFromHand` is the spell-cost choose-N-from-hand reveal.)
 - `Costs.PutFromHandOnTopOfLibrary(count = 1, filter = Any)` — "put a card from your hand on top of
   your library" (Leashling). `Atom(CostAtom.PutFromHandOnTopOfLibrary)`. Not a discard — no discard
   trigger or madness. Unpayable with fewer than `count` matching hand cards; `ActivateAbilityHandler`
@@ -13849,6 +13853,7 @@ enumerated as legal actions today, each by its own `ActionEnumerator`:
   of Misery, Urban Retreat's return-a-creature put-onto-battlefield, etc. Pair `activateFromZone =
   Zone.HAND` with a `Costs.Composite(Costs.Mana(…), Costs.DiscardSelf)` (or a `ReturnToHand` cost)
   — `Costs.DiscardSelf` is always payable because the source card is the object being discarded.
+  `Costs.RevealSelf` is the stay-in-hand variant (Tetzimoc, Primal Death).
   **Hand mana abilities** — Simian Spirit Guide's "Exile this card from your hand: Add {R}." is
   `activatedAbility { cost = Costs.ExileSelf; effect = Effects.AddMana(Color.RED); manaAbility = true;
   activateFromZone = Zone.HAND }` (CR 605.1a: still a mana ability). It resolves immediately like any
@@ -20390,6 +20395,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `phylactery` (`CounterType.PHYLACTERY`): M19 — Phylactery Lich. A pure marker with no inherent rule: `EntersWithChoice(CREATURE_ON_BATTLEFIELD, permanentFilter = Artifact.youControl(), then = AddCounters(PHYLACTERY, 1, ChosenCreature))` places it as the Lich enters, and a `stateTriggeredAbility` over `Not(YouControl(Permanent.withCounter(PHYLACTERY)))` sacrifices the Lich. The passive-counter badge displays its count.
 - `peace` (`CounterType.PEACE`): TRK — Peace in Our Time. Passive tally with no inherent rule: each player's beginning-of-combat trigger adds one when that player draws instead of attacking (`Effects.May(DrawCards then CantAttackGroup(creatures controlledByActivePlayer) then AddCounters(PEACE, 1, Self))`), and an upkeep trigger with `interveningIf = SourceCounterCountAtLeast(PEACE, 12)` wins the game. The passive-counter badge displays its count.
 - `promotion` (`CounterType.PROMOTION`): TRK — Beckett Mariner, Impetuous Ensign. Passive tally with no inherent rule: `Triggers.self.becomesTapped()` adds one, then `Effects.If(SourceCounterCountAtLeast(PROMOTION, 3), RemoveAllCountersOfType(PROMOTION, Self) then DealDamage(2, PlayerRef(EachOpponent)))`. The passive-counter badge displays its count.
+- `prey` (`CounterType.PREY`): RIX — Tetzimoc, Primal Death. A pure marker with no inherent rule: the hand ability `Costs.Composite(Mana("{B}"), RevealSelf)` puts one on target creature (`activateFromZone = Zone.HAND`, `OnlyDuringYourTurn`), and its ETB trigger runs `DestroyAll(Creature.opponentControls().withCounter(PREY))`. The passive-counter badge displays its count.
 - `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,

@@ -954,6 +954,13 @@ value class CounterType(val name: String) {
          */
         val PROMOTION = CounterType("PROMOTION")
 
+        /**
+         * Prey counter (RIX — Tetzimoc, Primal Death). A pure marker with no inherent rule: the
+         * hand-activated ability puts one on a creature, and Tetzimoc's entry trigger
+         * destroys each opponent's creature that has one.
+         */
+        val PREY = CounterType("PREY")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1121,6 +1128,7 @@ value class CounterType(val name: String) {
             PHYLACTERY,
             PEACE,
             PROMOTION,
+            PREY,
         )
 
         /**

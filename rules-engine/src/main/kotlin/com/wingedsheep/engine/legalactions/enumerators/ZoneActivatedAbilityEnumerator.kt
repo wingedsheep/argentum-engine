@@ -215,9 +215,9 @@ class ZoneActivatedAbilityEnumerator(
                                     // Other atoms — engine validates at payment.
                                     else -> {}
                                 }
-                                // Self-removal costs are always payable — the card is in [zone].
+                                // Costs paid with the card itself are always payable — the card is in [zone].
                                 is AbilityCost.ExileSelf, is AbilityCost.DiscardSelf,
-                                is AbilityCost.PutSelfIntoLibrary -> {}
+                                is AbilityCost.PutSelfIntoLibrary, is AbilityCost.RevealSelf -> {}
                                 is AbilityCost.Blight -> {
                                     blightCost = subCost
                                     blightCreatures = context.projected.getBattlefieldControlledBy(playerId)

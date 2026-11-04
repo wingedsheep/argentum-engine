@@ -1110,8 +1110,17 @@ object CardIntentAnalyzer {
             }
         }
         if (type == CounterType.SHIELD) return setOf(IntentTag.PROTECTION)
+        // A marker whose only meaning is "this one gets destroyed" picks the victim of the card's
+        // removal: marking it is the targeting half of that removal.
+        if (type in MARKED_FOR_REMOVAL_COUNTERS) return setOf(IntentTag.REMOVAL)
         return keywordTags(type.name)
     }
+
+    /**
+     * Counter kinds with no rule of their own that the cards placing them destroy their holders by
+     * (Tetzimoc, Primal Death's prey counters). Harmful to their holder; placing one is removal.
+     */
+    val MARKED_FOR_REMOVAL_COUNTERS: Set<CounterType> = setOf(CounterType.PREY)
 
     private fun canMillOpponent(player: Player): Boolean = when (player) {
         Player.EachOpponent, Player.TargetOpponent, Player.TargetPlayer,
