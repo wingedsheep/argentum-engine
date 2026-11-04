@@ -3,6 +3,7 @@ package com.wingedsheep.ai.audit
 import com.wingedsheep.ai.audit.AiReadingAudit.AbilityKind
 import com.wingedsheep.ai.audit.AiReadingAudit.Check
 import com.wingedsheep.mtg.sets.MtgSetCatalog
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
@@ -118,6 +119,17 @@ class AiReadingByAbilityTest : FunSpec({
         djinn.abilities.single { it.ability.kind == AbilityKind.TRIGGERED }
             .findings.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
         AiReadingAudit.audit(card("Rhystic Study")).map { it.key } shouldBe listOf("intent: PayOrSufferEffect")
+    }
+
+    test("setting a player's life total needs no intent, like the gain or loss it is") {
+        // Rule 119.5: the player gains or loses the difference — the same life the evaluator
+        // prices on resolution as it does a life loss or damage to a player.
+        for (name in listOf("Form of the Dinosaur", "Form of the Dragon", "Biorhythm")) {
+            withClue(name) {
+                AiReadingAudit.audit(card(name)).map { it.key }.filter { "SetLifeTotalEffect" in it } shouldBe emptyList()
+            }
+        }
+        AiReadingAudit.read(card("Form of the Dinosaur")).readFully shouldBe true
     }
 
     test("a permanent removing counters from itself needs no intent, but removing them from a target stays flagged") {
