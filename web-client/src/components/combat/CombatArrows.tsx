@@ -522,8 +522,9 @@ export function CombatArrows() {
         setArrows(keepIfEqual<ArrowData[]>([]))
         // Still compute attacker arrows below
       } else if (isDeclaringBlockers && combatState) {
-        // Use local blocker assignments (real-time feedback during declaration)
-        for (const [blockerIdStr, attackerIds] of Object.entries(combatState.blockerAssignments)) {
+        // Prior team choices stay visible while a different player chooses the remaining blocks.
+        const displayedAssignments = { ...combatState.proposedBlockerAssignments, ...combatState.blockerAssignments }
+        for (const [blockerIdStr, attackerIds] of Object.entries(displayedAssignments)) {
           const blockerId = blockerIdStr as EntityId
           const blockerPos = resolvePos(blockerId)
 

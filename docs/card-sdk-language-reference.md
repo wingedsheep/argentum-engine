@@ -12062,7 +12062,11 @@ in the declare-blockers step, even before the turn-based block action has comple
 - `CantBlockUnlessCoBlocker(coBlockerFilter, filter = source)` — the blocking sibling: "This
   creature can't block unless [a creature matching coBlockerFilter] also blocks." Validated against
   the whole proposed blocker group at declaration time (CR 509.1b, `BlockPhaseManager`); the
-  co-blocker need not block the same attacker, and self never counts as its own co-blocker. Pass
+  co-blocker need not block the same attacker, and self never counts as its own co-blocker. In
+  shared-team turns the whole team's blockers form one declaration, so a teammate's creature can
+  satisfy it; ordinary Team vs. Team turns keep declarations separate. Blocking requirements are
+  maximized across that combined set, while player-specific caps and blocking costs remain per
+  creature controller. A face-down creature or one that lost all abilities has no printed restriction. Pass
   `GameObjectFilter.Creature` for the bare "can't block alone" form. Combined with
   `CantAttackUnlessCoAttacker` it models "can't attack or block alone" (Toby, Beastie Befriender's
   Beast token). Both restriction families are read from the card definition *and* from

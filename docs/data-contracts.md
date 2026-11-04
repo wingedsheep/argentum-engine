@@ -542,7 +542,15 @@ sealed, or premade), then one N-player game".
   seat-order grouping if the manual assignment can't form two equal teams. The result flows to
   `GameSession.teams` → `GameConfig.teams`. The two modes differ only in the engine `Format` chosen:
   - `TWO_HEADED_GIANT` — exactly four players (`Format.TwoHeadedGiant`): teams share one 30-life
-    total, take shared turns, fight combined combat, and win/lose together.
+    total, take shared turns, fight combined combat, and win/lose together. A single
+    `DeclareBlockers` submission covers both teammates: `validBlockers` includes eligible
+    creatures across their boards, and `blockableAttackers` names attacks that this declaration
+    may block. The client uses these lists directly rather than inferring eligibility from
+    card ownership or the attacked seat; confirming completes the whole team's declaration.
+    If effects assign teammates' choices to different input actors, each owner submits separately
+    and `proposedBlockerAssignments` carries the prior choices for display only. The engine applies
+    the declaration atomically after validating the combined map; an illegal aggregate restarts
+    the choices with an explanatory action description, without firing block triggers.
   - `TEAM_VS_TEAM` — an even pod of 4/6/8 (`Format.TeamVsTeam`, i.e. 2v2/3v3/4v4): **nothing is
     shared** (CR 808.5). Each player keeps their own 20 life and their own turn, is eliminated
     individually (CR 104.3b), and a team loses only once all its members have left (CR 104.2c).

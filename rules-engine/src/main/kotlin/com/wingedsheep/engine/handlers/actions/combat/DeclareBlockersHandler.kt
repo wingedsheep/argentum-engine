@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.actions.combat
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.mechanics.combat.CombatDefenders
+import com.wingedsheep.engine.mechanics.combat.SharedTeamBlockChoices
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
@@ -33,8 +34,8 @@ class DeclareBlockersHandler(
         if (state.getEntity(action.playerId)?.has<BlockersDeclaredThisCombatComponent>() == true) {
             return "Blockers have already been declared"
         }
-        // Additional validation is done by CombatManager
-        return null
+        // Additional validation is done by CombatManager.
+        return SharedTeamBlockChoices.validateInput(state, action.playerId, action.blockers)
     }
 
     override fun execute(state: GameState, action: DeclareBlockers): ExecutionResult {
@@ -43,8 +44,11 @@ class DeclareBlockersHandler(
         val result = if (com.wingedsheep.engine.mechanics.combat.RandomizedBlockerPiles.isActive(state)) {
             if (action.blockers.isNotEmpty()) return ExecutionResult.error(state, "Choose piles instead of specific blockers")
             combatManager.beginBlockerPiles(state, action.playerId)
-        } else combatManager.declareBlockers(state, action.playerId, action.blockers)
-        if (result.error != null || result.pendingDecision != null) return result
+        } else SharedTeamBlockChoices.submit(state, action.playerId, action.blockers) { combinedState, combined ->
+            combatManager.declareBlockers(combinedState, action.playerId, combined)
+        } ?: combatManager.declareBlockers(state, action.playerId, action.blockers)
+        if (result.error != null || result.pendingDecision != null ||
+            result.events.any { it is com.wingedsheep.engine.core.TeamBlockerChoiceEvent }) return result
         return ExecutionResult.success(handToNextUndeclaredDefender(result.newState), result.events)
     }
 

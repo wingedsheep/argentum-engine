@@ -106,6 +106,9 @@ data class LegalAction(
      */
     val attackTargetsByAttacker: Map<EntityId, List<EntityId>>? = null,
     override val validBlockers: List<EntityId>? = null,
+    val blockableAttackers: List<EntityId>? = null,
+    /** Previously submitted teammate choices, displayed but not part of this player's input. */
+    val proposedBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
 

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.combat.LoneAttackers
+import com.wingedsheep.engine.mechanics.combat.SharedTeamBlockChoices
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.sdk.core.Step
@@ -97,6 +98,8 @@ class CombatEnumerator : ActionEnumerator {
             val blockersAlreadyDeclared = state.getEntity(playerId)
                 ?.get<BlockersDeclaredThisCombatComponent>() != null
             if (!blockersAlreadyDeclared) {
+                val separateChoices = SharedTeamBlockChoices.requiresSeparateChoices(state, playerId)
+                if (separateChoices && state.priorityPlayerId != playerId) return emptyList()
                 if (com.wingedsheep.engine.mechanics.combat.RandomizedBlockerPiles.isActive(state)) {
                     return listOf(LegalAction(
                         actionType = "DeclareBlockers",
@@ -105,18 +108,25 @@ class CombatEnumerator : ActionEnumerator {
                         validBlockers = emptyList(),
                     ))
                 }
-                val validBlockers = context.turnManager.getValidBlockers(state, playerId)
+                val validBlockers = context.turnManager.getValidBlockers(state, playerId).filter {
+                    !separateChoices || context.projected.getController(it) == playerId
+                }
                 val blockRules = com.wingedsheep.engine.mechanics.combat.BlockStaticRules(
                     state, context.cardRegistry, context.predicateEvaluator)
                 val blockerMaxBlockCounts = validBlockers.mapNotNull { blocker ->
                     blockRules.maxBlocks(blocker).takeIf { it > 1 }?.let { blocker to it }
                 }.toMap()
                 val mandatoryAssignments = context.turnManager.getMandatoryBlockerAssignments(state, playerId)
+                    .filterKeys { it in validBlockers }
                 return listOf(LegalAction(
                     actionType = "DeclareBlockers",
-                    description = "Declare blockers",
+                    description = SharedTeamBlockChoices.problem(state, playerId)?.let { "Choose blockers again: $it" }
+                        ?: if (separateChoices) "Choose this player's blockers — the team declares together"
+                        else "Declare blockers",
                     action = DeclareBlockers(playerId, emptyMap()),
                     validBlockers = validBlockers,
+                    proposedBlockerAssignments = SharedTeamBlockChoices.proposals(state, playerId).ifEmpty { null },
+                    blockableAttackers = com.wingedsheep.engine.mechanics.combat.CombatDefenders.blockableAttackers(state, playerId),
                     blockerMaxBlockCounts = blockerMaxBlockCounts.ifEmpty { null },
                     mandatoryBlockerAssignments = mandatoryAssignments.ifEmpty { null }
                 ))

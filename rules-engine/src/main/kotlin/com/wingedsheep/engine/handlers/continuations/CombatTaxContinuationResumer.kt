@@ -174,18 +174,42 @@ class CombatTaxContinuationResumer(
         if (response !is ManaSourcesSelectedResponse) {
             return ExecutionResult.error(state, "Expected mana sources selected response for block tax")
         }
-        if (response.isDecline(floatingCovers(state, continuation.blockingPlayer, continuation.manaCost))) {
-            return ExecutionResult.success(state)
+        if (response.isDecline(floatingCovers(state, continuation.payingPlayer, continuation.manaCost))) {
+            return ExecutionResult.success(state.withPriority(continuation.blockingPlayer))
         }
 
-        val paid = payTax(state, continuation.blockingPlayer, continuation.manaCost, continuation.availableSources, response)
-            ?: return ExecutionResult.error(state, "Cannot pay block tax of ${continuation.manaCost}")
-
+        val selections = continuation.selections + com.wingedsheep.engine.core.BlockTaxSelection(
+            continuation.payingPlayer, continuation.manaCost, continuation.availableSources, response)
+        // Simulate the selected payments together, without exposing a partially paid declaration.
+        // Explicit mana abilities used inside the window remain in `state` if the team cancels.
+        var paidState = state
+        val events = mutableListOf<GameEvent>()
+        for (selection in selections) {
+            if (!selection.response.autoPay &&
+                !floatingCovers(paidState, selection.playerId, selection.manaCost)) {
+                val currentSources = services.manaSolver.findAvailableManaSources(paidState, selection.playerId)
+                    .mapTo(mutableSetOf()) { it.entityId }
+                if (selection.response.selectedSources.distinct().size != selection.response.selectedSources.size ||
+                    selection.response.selectedSources.any { it !in currentSources }) {
+                    return ExecutionResult.error(state, "Selected block-tax mana source is no longer available")
+                }
+            }
+            val paid = payTax(paidState, selection.playerId, selection.manaCost,
+                selection.availableSources, selection.response)
+                ?: return ExecutionResult.error(state, "Cannot pay block tax of ${selection.manaCost}")
+            paidState = paid.state
+            events.addAll(paid.events)
+        }
+        if (continuation.remainingTaxes.isNotEmpty()) {
+            return services.combatManager.blockPhase.pauseForBlockTaxConfirmation(
+                state, continuation.blockingPlayer, continuation.blockers,
+                continuation.remainingTaxes, selections)
+        }
         return services.combatManager.blockPhase.commitBlockDeclaration(
-            state = paid.state,
+            state = paidState.withPriority(continuation.blockingPlayer),
             blockingPlayer = continuation.blockingPlayer,
             blockers = continuation.blockers,
-            taxEvents = paid.events,
+            taxEvents = events,
         )
     }
 

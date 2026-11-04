@@ -104,7 +104,19 @@ data class BlockTaxManaSelectionContinuation(
     val manaCost: ManaCost,
     val availableSources: List<ManaSourceOption>,
     val autoPaySuggestion: List<EntityId>,
+    val payingPlayer: EntityId = blockingPlayer,
+    val remainingTaxes: Map<EntityId, Int> = emptyMap(),
+    val selections: List<BlockTaxSelection> = emptyList(),
 ) : AnswerContinuation
+
+/** Team payments are collected before any tax is paid, so cancelling never strands a prior payment. */
+@Serializable
+data class BlockTaxSelection(
+    val playerId: EntityId,
+    val manaCost: ManaCost,
+    val availableSources: List<ManaSourceOption>,
+    val response: ManaSourcesSelectedResponse,
+)
 
 /** One chosen instance of enlist; the same attacker may appear several times. */
 @Serializable

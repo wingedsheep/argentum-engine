@@ -79,16 +79,22 @@ object CombatTaxBudget {
         if (declared.isEmpty()) return blockers
         val predicateEvaluator = PredicateEvaluator(cardRegistry)
         val solver = ManaSolver(cardRegistry, predicateEvaluator)
-        val payable = { plan: Map<EntityId, List<EntityId>> ->
-            payable(state, playerId, solver, CombatTaxes.blockTax(state, cardRegistry, plan.keys, projected, predicateEvaluator))
-        }
-        if (payable(declared)) return blockers
+        fun unpaidControllers(plan: Map<EntityId, List<EntityId>>): Set<EntityId> =
+            plan.keys.groupBy { projected.getController(it) ?: playerId }.filter { (controller, ownedBlockers) ->
+                !payable(state, controller, solver,
+                    CombatTaxes.blockTax(state, cardRegistry, ownedBlockers.toSet(), projected, predicateEvaluator))
+            }.keys
 
         var plan = declared
-        for (blockerId in cheapestFirst(state, projected, declared.keys - mandatory)) {
-            plan = plan - blockerId
-            if (plan.isEmpty()) return emptyMap()
-            if (payable(plan)) return plan
+        var unpaid = unpaidControllers(plan)
+        if (unpaid.isEmpty()) return blockers
+        while (unpaid.isNotEmpty()) {
+            val removable = (plan.keys - mandatory).filterTo(mutableSetOf()) {
+                (projected.getController(it) ?: playerId) in unpaid
+            }
+            val next = cheapestFirst(state, projected, removable).firstOrNull() ?: break
+            plan = plan - next
+            unpaid = unpaidControllers(plan)
         }
         return plan
     }

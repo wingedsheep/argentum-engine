@@ -32,9 +32,8 @@ import { PostGamePanel } from '@/components/tableTalk/PostGamePanel'
 import { useTableTalkStore } from '@/store/tableTalkStore'
 import { LearnCoach } from '@/components/learn/LearnCoach'
 import { useViewingPlayer, useBattlefieldCards, selectTeamMap } from './store/selectors'
-import type { ClientAttacker, EntityId } from './types'
+import type { EntityId } from './types'
 import { GameOverReason } from './types'
-import { defendingPlayerOf } from './utils/combatTargets'
 
 // Limited-format and spectator screens are a minority of sessions but about a third of this
 // chunk, so they load on demand. Each keeps its own <Suspense> — the one in main.tsx would blank
@@ -235,18 +234,28 @@ export default function App() {
           (a) => a.actionType === 'DeclareBlockers' || a.action.type === 'DeclareBlockers'
         )
         const updatedValidCreatures = blockersAction?.validBlockers ?? []
-        if (JSON.stringify(updatedValidCreatures) !== JSON.stringify([...combatState.validCreatures])) {
+        const updatedAttackers = blockersAction?.blockableAttackers ?? []
+        if (JSON.stringify(updatedValidCreatures) !== JSON.stringify([...combatState.validCreatures]) ||
+            JSON.stringify(updatedAttackers) !== JSON.stringify([...combatState.attackingCreatures]) ||
+            JSON.stringify(blockersAction?.proposedBlockerAssignments ?? {}) !== JSON.stringify(combatState.proposedBlockerAssignments ?? {})) {
           // Clean stale blocker assignments for creatures no longer in valid list
           const validSet = new Set(updatedValidCreatures)
+          const attackerSet = new Set(updatedAttackers)
           const cleanedAssignments: Record<EntityId, EntityId[]> = {}
           for (const [blockerId, attackerIds] of Object.entries(combatState.blockerAssignments)) {
             if (validSet.has(blockerId as EntityId)) {
-              cleanedAssignments[blockerId as EntityId] = attackerIds
+              const remaining = attackerIds.filter((id) => attackerSet.has(id))
+              if (remaining.length > 0) cleanedAssignments[blockerId as EntityId] = remaining
             }
           }
           startCombat({
             ...combatState,
             validCreatures: [...updatedValidCreatures],
+            attackingCreatures: [...updatedAttackers],
+            proposedBlockerAssignments: blockersAction?.proposedBlockerAssignments ?? {},
+            mustBeBlockedAttackers: (gameState?.combat?.attackers ?? [])
+              .filter((attacker) => attackerSet.has(attacker.creatureId) && attacker.mustBeBlockedByAll)
+              .map((attacker) => attacker.creatureId),
             blockerAssignments: cleanedAssignments,
           })
         }
@@ -326,22 +335,12 @@ export default function App() {
         ? [...blockersAction.validBlockers]
         : []
 
-      // Attacking creatures come from the server's authoritative combat state rather than
-      // "the viewing player's opponent" — in single-client hotseat the seat we control (the
-      // defender) can be the top row, so the attackers are the viewer's own creatures.
-      // In multiplayer a defender may only block attackers attacking *them* or their
-      // planeswalkers (CR 509.1b) — scope to the acting defender's slice of the combat.
-      // In a 2-player game every attacker attacks the sole defender, so this keeps all.
-      const defendingSeat = blockersAction?.action.type === 'DeclareBlockers'
-        ? blockersAction.action.playerId
-        : null
-      const attacksSeat = (a: ClientAttacker): boolean => {
-        if (!defendingSeat) return true
-        if (a.attackingTarget.type === 'Player') return a.attackingTarget.playerId === defendingSeat
-        return defendingPlayerOf(a.attackingTarget.permanentId, gameState?.cards) === defendingSeat
-      }
-      const relevantAttackers = (gameState?.combat?.attackers ?? []).filter(attacksSeat)
-      const attackingCreatures: EntityId[] = relevantAttackers.map((a) => a.creatureId)
+      // The engine scopes this list to the defender or shared-turn team, including attacks
+      // on teammates' permanents. The client only selects the matching combat presentation.
+      const attackingCreatures = [...(blockersAction?.blockableAttackers ?? [])]
+      const blockableSet = new Set(attackingCreatures)
+      const relevantAttackers = (gameState?.combat?.attackers ?? [])
+        .filter((attacker) => blockableSet.has(attacker.creatureId))
 
       // Find attackers that must be blocked by all (from combat state in game state)
       const mustBeBlockedAttackers: EntityId[] = relevantAttackers
@@ -372,6 +371,7 @@ export default function App() {
         validAttackTargets: [],
         attackTargetsByAttacker: {},
         blockerAssignments,
+        proposedBlockerAssignments: blockersAction?.proposedBlockerAssignments ?? {},
         validCreatures,
         mandatoryAttackers: [],
         attackingCreatures,

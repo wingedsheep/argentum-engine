@@ -89,13 +89,29 @@ describe('selectCardInteraction', () => {
     expect(selectCardInteraction(hotseat, input('bear', { isCreature: false })).isValidAttacker).toBe(false)
   })
 
-  it("lets you pick an opponent's blockers when the server routed their declaration to you", () => {
+  it('lets you pick every server-listed blocker regardless of its board row', () => {
     // Brutal Hordechief / Master Warcraft: the legal action is the opponent's DeclareBlockers.
     const routed = combat({ mode: 'declareBlockers', actingSeat: id('p2'), validCreatures: [id('giant')] })
     const mine = combat({ mode: 'declareBlockers', actingSeat: id('p1'), validCreatures: [id('giant')] })
     const theirGiant = input('giant', { isOpponentCard: true })
     expect(selectCardInteraction(store({ playerId: id('p1'), combatState: routed }), theirGiant).isValidBlocker).toBe(true)
-    expect(selectCardInteraction(store({ playerId: id('p1'), combatState: mine }), theirGiant).isValidBlocker).toBe(false)
+    // A shared-turn teammate's creature is selectable in our joint declaration, too.
+    expect(selectCardInteraction(store({ playerId: id('p1'), combatState: mine }), theirGiant).isValidBlocker).toBe(true)
+    expect(selectCardInteraction(store({ playerId: id('p1'), combatState: mine }), input('other', { isOpponentCard: true })).isValidBlocker).toBe(false)
+  })
+
+  it('shows a submitted teammate block without making it editable by the next chooser', () => {
+    const state = store({ combatState: combat({
+      mode: 'declareBlockers',
+      validCreatures: [id('mine')],
+      attackingCreatures: [id('attacker')],
+      proposedBlockerAssignments: { ally: [id('attacker')] },
+    }) })
+    expect(selectCardInteraction(state, input('ally', { isOpponentCard: true }))).toMatchObject({
+      isSelectedAsBlocker: true,
+      isValidBlocker: false,
+    })
+    expect(selectCardInteraction(state, input('attacker'))).toMatchObject({ isAttackingInBlockerMode: true })
   })
 
   it('reads hotseat and server combat from the spectated game when spectating', () => {

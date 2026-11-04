@@ -425,3 +425,10 @@ data class GoadedComponent(
 /** Object identities that have blocked this attacker during the current combat, even after departure. */
 @Serializable
 data class BlockersThisCombatComponent(val blockers: Set<com.wingedsheep.engine.state.ObjectRef>) : Component
+
+/** Provisional per-player choices; no creature is blocking until the combined declaration is legal. */
+@Serializable
+data class TeamBlockerChoicesComponent(
+    val choices: Map<EntityId, Map<EntityId, List<EntityId>>> = emptyMap(),
+    val error: String? = null,
+) : Component

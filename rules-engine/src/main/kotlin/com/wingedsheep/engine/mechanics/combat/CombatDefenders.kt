@@ -53,6 +53,16 @@ object CombatDefenders {
             .flatMap { state.sharedTurnTeam(it) }
             .toSet()
 
+    /** Attackers aimed at this defending side, including its planeswalkers and battles. */
+    fun blockableAttackers(state: GameState, playerId: EntityId): List<EntityId> {
+        val defendingSide = state.sharedTurnTeam(playerId)
+        val projected = state.projectedState
+        return state.getBattlefield().filter { id ->
+            val attack = state.getEntity(id)?.get<AttackingComponent>() ?: return@filter false
+            defendingPlayerOf(state, attack, projected) in defendingSide
+        }
+    }
+
     /** Combat's defending seats, including before attack declaration. */
     fun isCombatDefender(state: GameState, playerId: EntityId?): Boolean =
         state.step.phase == com.wingedsheep.sdk.core.Phase.COMBAT &&

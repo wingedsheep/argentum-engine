@@ -1605,7 +1605,7 @@ class TurnManager(
             val controller = projected.getController(entityId)
             val projectedTypes = projected.getProjectedValues(entityId)?.types ?: emptySet()
 
-            if ("CREATURE" !in projectedTypes || controller != playerId) {
+            if ("CREATURE" !in projectedTypes || projected.isBattle(entityId) || controller !in state.sharedTurnTeam(playerId)) {
                 return@filter false
             }
 
