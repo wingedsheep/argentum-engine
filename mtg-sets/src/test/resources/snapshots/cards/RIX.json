@@ -1034,6 +1034,223 @@
     ]
 }
 
+// Awakened Amalgam
+{
+    "name": "Awakened Amalgam",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Awakened Amalgam's power and toughness are each equal to the number of differently named lands you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_NAMES"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_NAMES"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "flavorText": "\"The fools have done it.\"\n—Tishana",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d24b14ea-04f0-4d4b-970e-efc65d64945e.jpg?1783935268",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "The ability that defines Awakened Amalgam's power and toughness works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "To determine the number of differently named lands you control, count each land you control once, but only if its English name isn't exactly the same as another land you've already counted this way. For example, if you control four lands named Plains, two named Island, and one named Drowned Catacomb, Awakened Amalgam is a 3/3 creature."
+            }
+        ]
+    }
+}
+
+// Azor's Gateway
+{
+    "name": "Azor's Gateway",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{1}, {T}: Draw a card, then exile a card from your hand. If cards with five or more different mana values are exiled with Azor's Gateway, you gain 5 life, untap Azor's Gateway, and transform it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Azor's Gateway:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a card to exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateZone",
+                                        "player": "OwnersOfLinkedExile",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "ExiledWithSource"
+                                            ]
+                                        },
+                                        "aggregation": "DISTINCT_VALUES",
+                                        "property": "MANA_VALUE"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        }
+                                    },
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "Self",
+                                        "tap": false
+                                    },
+                                    "Transform"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, {T}: Draw a card, then exile a card from your hand. If cards with five or more different mana values are exiled with Azor's Gateway, you gain 5 life, untap Azor's Gateway, and transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Sanctum of the Sun",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Azor's Gateway.)\n{T}: Add X mana of any one color, where X is your life total.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Sanctum of the Sun:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "amount": "YourLifeTotal"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "176",
+            "rarity": "MYTHIC",
+            "artist": "Yeong-Hao Han",
+            "flavorText": "As soon as Jace laid eyes on the great sphinx's chamber, the shards of memory began sliding into place.",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/0/303d51ab-b9c4-4647-950f-291daabe7b81.jpg?1783935273",
+            "rulings": [
+                {
+                    "date": "2018-01-19",
+                    "text": "The ability of Sanctum of the Sun is a mana ability. It doesn't use the stack and can't be responded to."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "MYTHIC",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/303d51ab-b9c4-4647-950f-291daabe7b81.jpg?1783935273",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "The cards you exile from your hand are exiled face up."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "The mana value of a split card, such as a card with aftermath from the Amonkhet block, is based on the combined mana cost of its two halves. A split card doesn't have two mana values."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If a card in exile has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If an object has no mana cost, its mana value is 0. A mana value of 0 can still help unlock Azor's Gateway."
+            }
+        ]
+    }
+}
+
 // Azor, the Lawbringer
 {
     "name": "Azor, the Lawbringer",

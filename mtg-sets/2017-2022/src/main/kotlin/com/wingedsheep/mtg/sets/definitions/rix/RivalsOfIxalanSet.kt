@@ -17,7 +17,6 @@ object RivalsOfIxalanSet : MtgSet {
     override val code = "RIX"
     override val displayName = "Rivals of Ixalan"
     override val releaseDate = "2018-01-19"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
