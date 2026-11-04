@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4431 Reads "change the target of target spell" (Bolt Bend, Misdirection, Spellskite, Hydroelectric Specimen): a redirected spell now goes where its own effect pays off — their removal onto their creature, their pump onto our best one — instead of onto our own best creature, redirects count as their own kind of interaction rather than protection, and "copy target spell" slots stay open to both sides
 - #4429 Reads standing cast-from-graveyard permissions ("you may cast … from your graveyard" permanents such as Abandoned Sarcophagus) as recursion and a graveyard payoff, so it drafts and builds them toward a deck that fills its graveyard instead of pricing them as blanks
 - #4428 Reads "becomes a copy of" (Blade of Shared Souls, Lazav, True Polymorph, Mirage Mirror): a copy of a creature of its own now copies its best one instead of the weakest, other copy targets are left to simulation instead of the removal ranking, an instant that makes a creature a copy until end of turn (Fleeting Reflection) is held for a fight like a combat trick, an until-end-of-turn copy ability isn't spent once no fight is left, and exiling its own creature until the end step (Liberate, Niko, Light of Hope) reads as a blink rather than removal
 - #4427 Stops sending a small attacker beside a real threat when the opponent can block it for free and decline the costly blocks — it now prices that reply too

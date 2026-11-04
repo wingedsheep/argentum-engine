@@ -143,6 +143,7 @@ class DecisionResponder(
     private val lookDigsForLand: Boolean = false,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
+    private val spellRedirect = SpellRedirectChoice(simulator.cardRegistry, intents)
 
     var forcedPlayPicker: (GameState, EntityId) -> GameAction = simulator::completeForcedPlay
 
@@ -603,6 +604,15 @@ class DecisionResponder(
                     }) keep.add(id)
             }
             return CardsSelectedResponse(decision.id, options.filter { it in keep })
+        }
+
+        // A redirect ("change the target of target spell"): the new target — or, with the new
+        // target fixed, the target to change — is read off what the redirected object does to
+        // that slot. The generic "keep the best" ranking below sent an opponent's Shock onto our
+        // own best creature.
+        ((state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
+            ?.answer as? ChangeSpellTargetContinuation)?.let { redirect ->
+            spellRedirect.choose(state, decision, playerId, redirect)?.let { return CardsSelectedResponse(decision.id, it) }
         }
 
         // Proliferate: each recipient is its own yes/no. The generic branches below answer an

@@ -340,6 +340,18 @@ enum class IntentTag {
     /** Counters a spell. */
     COUNTERSPELL,
 
+    /**
+     * Changes the target of a spell or ability on the stack — "change the target of target spell
+     * with a single target" (Bolt Bend, Misdirection), "change a target of target spell or ability
+     * to this creature" (Spellskite, Hydroelectric Specimen). Like [COUNTERSPELL] it answers only
+     * something already on the stack — an instant one needs a spell to target before it can be
+     * cast at all. It is not [PROTECTION]: that tag releases a flash body's ambush hold before
+     * combat, and a redirect on arrival is worth nothing without a spell to catch. Where the
+     * spell goes is the decision's question, read off what the redirected object does to the slot
+     * (`SpellRedirectChoice`).
+     */
+    SPELL_REDIRECT,
+
     /** Gains life. */
     LIFEGAIN,
 
