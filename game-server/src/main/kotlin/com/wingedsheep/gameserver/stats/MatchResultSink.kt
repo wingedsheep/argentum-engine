@@ -51,6 +51,8 @@ data class RecordedParticipant(
      * the cards the deck pinned to one (a Limited pool card, a chosen art). Absent = default printing.
      */
     val deckPrintings: Map<String, String> = emptyMap(),
+    /** The seat made a play of its own past the mulligan — see [StatsEligibility]. Null = unknown. */
+    val tookAction: Boolean? = null,
 )
 
 /** A starting deck split into the per-name copy counts and printings [RecordedParticipant] stores. */
@@ -110,6 +112,7 @@ class JdbcMatchResultSink(private val matchResults: MatchResultRepository) : Mat
 
     override fun record(match: RecordedMatch) {
         if (match.participants.none { !it.isAi }) return
+        val counts = StatsEligibility.countsInStats(match.participants.withIndex().associate { it.index to it.value.tookAction })
         matchResults.save(
             MatchResultRow(
                 gameId = match.gameId,
@@ -122,7 +125,7 @@ class JdbcMatchResultSink(private val matchResults: MatchResultRepository) : Mat
                 turnCount = match.turnCount,
                 startedAt = match.startedAt,
                 endedAt = match.endedAt,
-                participants = match.participants.map {
+                participants = match.participants.mapIndexed { index, it ->
                     MatchParticipantRow(
                         userId = it.userId,
                         playerName = it.playerName,
@@ -131,6 +134,8 @@ class JdbcMatchResultSink(private val matchResults: MatchResultRepository) : Mat
                         setCodes = it.setCodes,
                         isAi = it.isAi,
                         clientIp = it.clientIp,
+                        tookAction = it.tookAction,
+                        countsInStats = counts.getValue(index),
                         cards = it.deckCards.map { (name, copies) ->
                             MatchCardRow(cardName = name, copies = copies, printing = it.deckPrintings[name])
                         }.toSet(),

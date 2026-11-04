@@ -15,6 +15,7 @@
  * Every number opens onto the games behind it: the recent games list, the recent-form pips and each
  * human in the humans table lead to the decks that were played (see {@link AiVsHumanGames}).
  */
+import { NotCountedNote } from '@/components/stats/StatsFilterBar'
 import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
 import {
@@ -165,6 +166,12 @@ export function AdminAiVsHuman({ auth, onBack }: { auth: AdminAuth; onBack: () =
             onPickMode={pickMode}
           />
         )}
+        {report != null && (report.notCounted ?? 0) > 0 && (
+          <p style={cellStyle.muted}>
+            <NotCountedNote count={report.notCounted ?? 0} /> in this range: the person never took an action, so
+            the AI’s “win” says nothing about how it plays.
+          </p>
+        )}
         {report == null ? (
           !error && <Panel><p style={cellStyle.muted}>Loading…</p></Panel>
         ) : report.overall.games === 0 ? (
@@ -185,7 +192,8 @@ export function AdminAiVsHuman({ auth, onBack }: { auth: AdminAuth; onBack: () =
                   <p className={css.emptyTitle}>No AI-vs-human games {range.days ? `in the last ${range.label}` : 'yet'}</p>
                   <p className={css.emptyText}>
                     A game counts once it has at least one AI seat and one human seat — a Quick Game against the AI,
-                    or a tournament or pod with an AI filling a seat.
+                    or a tournament or pod with an AI filling a seat — and the person took an action in it. Games
+                    between AI seats are never counted.
                   </p>
                 </>
               )}

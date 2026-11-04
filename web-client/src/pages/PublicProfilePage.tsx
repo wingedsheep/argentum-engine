@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { type PublicProfile, ProfileNotFoundError, fetchPublicProfile } from '@/api/account'
 import { StatsDashboard } from '@/components/profile/StatsDashboard'
+import { useStatsFilterParam } from '@/components/stats/StatsFilterBar'
 import { AccountPage, Avatar, MessageCard, accountStyles as a } from '@/components/profile/accountUi'
 import { pageStyles as p } from '@/components/ui/PageShell'
 import { useAuthStore } from '@/store/authStore'
@@ -24,12 +25,18 @@ export function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>()
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'notfound' | 'error'>('loading')
+  const [filter, setFilter] = useStatsFilterParam()
+
+  // A new profile starts from a loading state; a new filter keeps the page up and swaps the numbers.
+  useEffect(() => {
+    setState('loading')
+    setProfile(null)
+  }, [userId])
 
   useEffect(() => {
     if (!userId) return
     let live = true
-    setState('loading')
-    fetchPublicProfile(userId)
+    fetchPublicProfile(userId, filter)
       .then((p) => {
         if (!live) return
         setProfile(p)
@@ -42,7 +49,7 @@ export function PublicProfilePage() {
     return () => {
       live = false
     }
-  }, [userId])
+  }, [userId, filter])
 
   // Friend control — only meaningful for a signed-in viewer looking at someone else's profile.
   const authUser = useAuthStore((s) => s.user)
@@ -174,6 +181,8 @@ export function PublicProfilePage() {
             opponents={profile.opponents}
             tournaments={profile.tournaments}
             recentGames={profile.recentGames}
+            filter={filter}
+            onFilterChange={setFilter}
           />
         </>
       )}

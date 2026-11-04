@@ -21,7 +21,7 @@ import java.sql.DriverManager
 
 /**
  * Proves the migrations are valid PostgreSQL and the schema supports the account/deck/stats/friends
- * round-trips — including the win-count query backing [MatchResultRepository.countWinsForUser], the
+ * round-trips — including the per-user win-count query the stats read, the
  * V4 BIGINT→UUID account-id swap (which must preserve existing rows and re-point every foreign key),
  * and the V5 friends schema.
  *

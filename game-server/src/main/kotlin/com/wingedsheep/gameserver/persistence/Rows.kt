@@ -117,6 +117,13 @@ data class MatchParticipantRow(
     val isAi: Boolean = false,
     /** Raw connecting IP, admin-only; never sent to clients. Null for AI / unknown. */
     val clientIp: String? = null,
+    /**
+     * The seat made a play of its own past the mulligan — see
+     * [com.wingedsheep.gameserver.stats.StatsEligibility]. Null = recorded before this was tracked.
+     */
+    val tookAction: Boolean? = null,
+    /** This seat's result counts toward win/loss stats — see [com.wingedsheep.gameserver.stats.StatsEligibility]. */
+    val countsInStats: Boolean = true,
     /** This seat's deck contents — one row per distinct card — for card-level stats. */
     @MappedCollection(idColumn = "participant_id")
     val cards: Set<MatchCardRow> = emptySet(),
@@ -224,6 +231,10 @@ data class TournamentParticipantRow(
     val wins: Int = 0,
     val losses: Int = 0,
     val draws: Int = 0,
+    /** Of [wins], the matches won because the opponent left the tournament — never played. */
+    val forfeitWins: Int = 0,
+    /** Of [losses], the matches lost because this player left the tournament — never played. */
+    val forfeitLosses: Int = 0,
 )
 
 /**

@@ -27,6 +27,8 @@ import {
   fetchTournamentHistory,
 } from '@/api/account'
 import { StatsDashboard } from '@/components/profile/StatsDashboard'
+import { describeFilter, isAllGames } from '@/api/statsFilter'
+import { useStatsFilterParam } from '@/components/stats/StatsFilterBar'
 import { AccountPage, MessageCard, accountStyles as a } from '@/components/profile/accountUi'
 import { pageStyles as p } from '@/components/ui/PageShell'
 import { useAuthStore } from '@/store/authStore'
@@ -49,26 +51,44 @@ export function StatsPage() {
   const [tournaments, setTournaments] = useState<UserTournamentEntry[]>([])
   const [ratings, setRatings] = useState<RatingEntry[]>([])
   const [ratingHistory, setRatingHistory] = useState<RatingPoint[]>([])
+  const [filter, setFilter] = useStatsFilterParam()
 
   useEffect(() => {
     if (status === 'idle') void init()
   }, [status, init])
 
+  // Ratings and tournaments are their own records; the filter doesn't apply to them.
   useEffect(() => {
     if (status !== 'authenticated') return
-    void fetchStats().then(setStats).catch(() => setStats(null))
-    void fetchColorStats().then(setColors).catch(() => setColors([]))
-    void fetchCardTypes().then(setCardTypes).catch(() => setCardTypes([]))
-    void fetchManaCurve().then(setCurve).catch(() => setCurve([]))
-    void fetchCreatureTypes(12).then(setCreatureTypes).catch(() => setCreatureTypes([]))
-    void fetchSetStats().then(setSets).catch(() => setSets([]))
-    void fetchModeStats().then(setModes).catch(() => setModes([]))
-    void fetchOpponents().then(setOpponents).catch(() => setOpponents([]))
-    void fetchTopCards(24).then(setTopCards).catch(() => setTopCards([]))
     void fetchTournamentHistory(15).then(setTournaments).catch(() => setTournaments([]))
     void fetchRatings().then(setRatings).catch(() => setRatings([]))
     void fetchRatingsHistory().then(setRatingHistory).catch(() => setRatingHistory([]))
   }, [status])
+
+  // Everything game-derived follows the filter. A response that lands after the filter moved on is
+  // dropped, so a fast click-through never leaves an older slice on screen.
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    let live = true
+    function load<T>(request: Promise<T>, set: (value: T) => void, fallback: T) {
+      request.then(
+        (value) => live && set(value),
+        () => live && set(fallback),
+      )
+    }
+    load<AccountStats | null>(fetchStats(filter), setStats, null)
+    load(fetchColorStats(filter), setColors, [])
+    load(fetchCardTypes(filter), setCardTypes, [])
+    load(fetchManaCurve(filter), setCurve, [])
+    load(fetchCreatureTypes(12, filter), setCreatureTypes, [])
+    load(fetchSetStats(filter), setSets, [])
+    load(fetchModeStats(filter), setModes, [])
+    load(fetchOpponents(filter), setOpponents, [])
+    load(fetchTopCards(24, filter), setTopCards, [])
+    return () => {
+      live = false
+    }
+  }, [status, filter])
 
   if (status !== 'authenticated') {
     const resolving = status === 'idle' || status === 'loading'
@@ -94,13 +114,20 @@ export function StatsPage() {
   }
 
   const empty = (stats?.games ?? 0) === 0
+  const filtered = !isAllGames(filter)
 
   return (
     <AccountPage title="Stats" width="wide" plain>
       <div>
         <h1 className={p.h1}>Your stats</h1>
         <p className={p.lede}>
-          {empty ? 'Play some games to start building your stats.' : 'Everything you play, at a glance.'}
+          {empty && filtered
+            ? `No games ${describeFilter(filter)}.`
+            : empty
+              ? 'Play some games to start building your stats.'
+              : filtered
+                ? `Your games ${describeFilter(filter)}.`
+                : 'Everything you play, at a glance.'}
         </p>
       </div>
       <StatsDashboard
@@ -116,8 +143,10 @@ export function StatsPage() {
         topCards={topCards}
         opponents={opponents}
         tournaments={tournaments}
+        filter={filter}
+        onFilterChange={setFilter}
       />
-      {empty && (
+      {empty && !filtered && (
         <section className={p.panel}>
           <div className={a.emptyHero}>
             <h2 className={a.sectionTitle}>Nothing to chart yet</h2>

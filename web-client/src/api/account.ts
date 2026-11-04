@@ -8,6 +8,7 @@
  * and is sent as `Authorization: Bearer <token>` on authenticated calls. It is also picked up by the
  * WebSocket connect handshake (see connectionSlice) to attribute games to the account.
  */
+import { ALL_GAMES, type StatsFilter, filterQuery } from './statsFilter'
 import type { SharedDeck } from '@/components/deckbuilder/shareDeck'
 import type { CubeBoosterStyle, CubeRarity } from '@/types'
 
@@ -390,12 +391,29 @@ export function sharedCubePath(code: string): string {
 
 // ----- Stats -----
 
-export interface AccountStats {
+/** A win/loss count. */
+export interface WinLoss {
   readonly games: number
   readonly wins: number
   readonly losses: number
   readonly winRate: number
 }
+
+/**
+ * A player's record under a {@link StatsFilter}: the counted games, the same period split by who they
+ * were against (whatever the filter's opponents), and how many games in the slice don't count —
+ * someone never took an action past the mulligan.
+ */
+export interface AccountStats extends WinLoss {
+  /** Counted games in the period where every opponent was a person. */
+  readonly vsHumans: WinLoss
+  /** Counted games in the period where every opponent was the AI. */
+  readonly vsAi: WinLoss
+  readonly notCounted: number
+}
+
+/** Why a listed game is left out of the record. */
+export type NotCountedReason = 'NO_ACTION' | 'OPPONENT_NO_ACTION'
 
 /** A `(label, count)` bucket — used for color / set / mode breakdowns. */
 export interface StatBucket {
@@ -440,6 +458,8 @@ export interface GameHistoryEntry {
   readonly gameId: string
   /** True when a compact replay was stored for this game and can be watched/shared. */
   readonly hasReplay: boolean
+  /** Why this game is left out of the record; null/absent when it counts. */
+  readonly notCounted?: NotCountedReason | null
 }
 
 export interface CardStat {
@@ -472,6 +492,10 @@ export interface UserTournamentEntry {
   readonly wins: number
   readonly losses: number
   readonly draws: number
+  /** Of `wins`, matches won because the opponent left — never played. */
+  readonly forfeitWins?: number
+  /** Of `losses`, matches lost because this player left — never played. */
+  readonly forfeitLosses?: number
 }
 
 /** One player's final standing in a tournament. */
@@ -483,6 +507,10 @@ export interface TournamentStanding {
   readonly wins: number
   readonly losses: number
   readonly draws: number
+  /** Of `wins`, matches won because the opponent left — never played. */
+  readonly forfeitWins?: number
+  /** Of `losses`, matches lost because this player left — never played. */
+  readonly forfeitLosses?: number
 }
 
 /** One seat within a single tournament game. */
@@ -604,21 +632,24 @@ export interface RatingPoint {
   readonly result: string
 }
 
-export const fetchStats = () => getStats<AccountStats>('/me')
-export const fetchColorStats = () => getStats<StatBucket[]>('/me/colors')
-export const fetchSetStats = () => getStats<StatBucket[]>('/me/sets')
-export const fetchModeStats = () => getStats<StatBucket[]>('/me/modes')
-export const fetchOpponents = () => getStats<HeadToHead[]>('/me/opponents')
+// Every game-derived endpoint takes the same optional slice (see `statsFilter.ts`).
+const q = (f: StatsFilter) => filterQuery(f).replace(/^&/, '?')
+export const fetchStats = (f: StatsFilter = ALL_GAMES) => getStats<AccountStats>(`/me${q(f)}`)
+export const fetchColorStats = (f: StatsFilter = ALL_GAMES) => getStats<StatBucket[]>(`/me/colors${q(f)}`)
+export const fetchSetStats = (f: StatsFilter = ALL_GAMES) => getStats<StatBucket[]>(`/me/sets${q(f)}`)
+export const fetchModeStats = (f: StatsFilter = ALL_GAMES) => getStats<StatBucket[]>(`/me/modes${q(f)}`)
+export const fetchOpponents = (f: StatsFilter = ALL_GAMES) => getStats<HeadToHead[]>(`/me/opponents${q(f)}`)
 export const fetchHistory = (limit = 25) => getStats<GameHistoryEntry[]>(`/me/history?limit=${limit}`)
-export const fetchTopCards = (limit = 30) => getStats<CardStat[]>(`/me/cards?limit=${limit}`)
+export const fetchTopCards = (limit = 30, f: StatsFilter = ALL_GAMES) =>
+  getStats<CardStat[]>(`/me/cards?limit=${limit}${filterQuery(f)}`)
 export const fetchTournamentHistory = (limit = 25) =>
   getStats<UserTournamentEntry[]>(`/me/tournaments?limit=${limit}`)
 export const fetchRatings = () => getStats<RatingEntry[]>('/me/ratings')
 export const fetchRatingsHistory = () => getStats<RatingPoint[]>('/me/ratings/history')
-export const fetchCreatureTypes = (limit = 15) =>
-  getStats<StatBucket[]>(`/me/creature-types?limit=${limit}`)
-export const fetchCardTypes = () => getStats<StatBucket[]>('/me/card-types')
-export const fetchManaCurve = () => getStats<StatBucket[]>('/me/curve')
+export const fetchCreatureTypes = (limit = 15, f: StatsFilter = ALL_GAMES) =>
+  getStats<StatBucket[]>(`/me/creature-types?limit=${limit}${filterQuery(f)}`)
+export const fetchCardTypes = (f: StatsFilter = ALL_GAMES) => getStats<StatBucket[]>(`/me/card-types${q(f)}`)
+export const fetchManaCurve = (f: StatsFilter = ALL_GAMES) => getStats<StatBucket[]>(`/me/curve${q(f)}`)
 
 /** Everything a read-only public profile shows for another player, bundled into one response. */
 export interface PublicProfile {
@@ -645,16 +676,16 @@ export interface PublicProfile {
 export class ProfileNotFoundError extends Error {}
 
 /** Fetch another player's public, read-only profile by user id. */
-export async function fetchPublicProfile(userId: string): Promise<PublicProfile> {
-  const res = await fetch(`/api/stats/users/${encodeURIComponent(userId)}`, { headers: authHeaders() })
+export async function fetchPublicProfile(userId: string, f: StatsFilter = ALL_GAMES): Promise<PublicProfile> {
+  const res = await fetch(`/api/stats/users/${encodeURIComponent(userId)}${q(f)}`, { headers: authHeaders() })
   if (res.status === 404) throw new ProfileNotFoundError()
   if (!res.ok) throw new Error(`Failed to load profile (${res.status})`)
   return (await res.json()) as PublicProfile
 }
 
 /** One page of recent games, with the total count read from `X-Total-Count` for the pager. */
-export async function fetchHistoryPage(limit: number, offset: number): Promise<HistoryPage> {
-  const res = await fetch(`/api/stats/me/history?limit=${limit}&offset=${offset}`, {
+export async function fetchHistoryPage(limit: number, offset: number, f: StatsFilter = ALL_GAMES): Promise<HistoryPage> {
+  const res = await fetch(`/api/stats/me/history?limit=${limit}&offset=${offset}${filterQuery(f)}`, {
     headers: authHeaders(),
   })
   if (res.status === 401) throw new UnauthorizedError()

@@ -17,7 +17,11 @@ data class PlayerStanding(
     var draws: Int = 0,
     var gamesWon: Int = 0,
     var gamesLost: Int = 0,
-    var lifeDifferential: Int = 0
+    var lifeDifferential: Int = 0,
+    /** Of [wins], the matches won because the opponent left the tournament — never played. */
+    var forfeitWins: Int = 0,
+    /** Of [losses], the matches lost because this player left the tournament — never played. */
+    var forfeitLosses: Int = 0,
 ) {
     val points: Int get() = wins * 3 + draws * 1
 }
@@ -320,9 +324,15 @@ class TournamentManager(
                     val opponentId = if (match.player1Id == playerId) match.player2Id else match.player1Id
                     if (opponentId != null) {
                         match.winnerId = opponentId
-                        standings[opponentId]?.wins = (standings[opponentId]?.wins ?: 0) + 1
+                        standings[opponentId]?.let {
+                            it.wins++
+                            it.forfeitWins++
+                        }
                     }
-                    standings[playerId]?.losses = (standings[playerId]?.losses ?: 0) + 1
+                    standings[playerId]?.let {
+                        it.losses++
+                        it.forfeitLosses++
+                    }
                 }
             }
         }

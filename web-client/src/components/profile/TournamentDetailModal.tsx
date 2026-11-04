@@ -41,6 +41,7 @@ export function TournamentDetailModal({
   }
 
   const mode = detail ? gameModeLabel(detail.gameMode, detail.format) : null
+  const hasForfeits = !!detail?.standings.some((s) => (s.forfeitWins ?? 0) + (s.forfeitLosses ?? 0) > 0)
   const title = detail?.name?.trim() || [detail?.setCodes, mode?.variant ?? mode?.primary].filter(Boolean).join(' ') || 'Tournament'
 
   return (
@@ -65,6 +66,7 @@ export function TournamentDetailModal({
       ) : (
         <>
           <h3 className={a.dialogSection}>{detail.status === 'COMPLETED' ? 'Final standings' : 'Standings so far'}</h3>
+          {/* W/L are the matches played; a leaver's forfeits sit in their own column (placement counts them). */}
           <div className={a.tableWrap}>
             <table className={a.table}>
               <thead>
@@ -74,6 +76,11 @@ export function TournamentDetailModal({
                   <th className={a.num}>W</th>
                   <th className={a.num}>L</th>
                   <th className={a.num}>D</th>
+                  {hasForfeits && (
+                    <th className={a.num} title="Matches decided because a player left the tournament — not played">
+                      Forfeits
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -86,14 +93,20 @@ export function TournamentDetailModal({
                     <td>
                       <PlayerName name={s.playerName} userId={s.userId} isAi={s.isAi} onClick={goProfile} />
                     </td>
-                    <td className={a.num}>{s.wins}</td>
-                    <td className={a.num}>{s.losses}</td>
+                    <td className={a.num}>{s.wins - (s.forfeitWins ?? 0)}</td>
+                    <td className={a.num}>{s.losses - (s.forfeitLosses ?? 0)}</td>
                     <td className={a.num}>{s.draws}</td>
+                    {hasForfeits && <td className={`${a.num} ${a.forfeits}`}>{forfeitLabel(s.forfeitWins, s.forfeitLosses)}</td>}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {hasForfeits && (
+            <p className={a.subtle} style={{ marginTop: 8 }}>
+              Wins and losses are matches played. Forfeits — matches a player left before playing — still count toward placement.
+            </p>
+          )}
 
           <h3 className={a.dialogSection}>Games</h3>
           {detail.games.length === 0 ? (
@@ -138,6 +151,12 @@ export function TournamentDetailModal({
 }
 
 /** A player name that links to their public profile when signed in, with an AI tag otherwise. */
+/** A standing's forfeits, e.g. "+1 W" or "+3 L"; a dash when it has none. */
+function forfeitLabel(wins = 0, losses = 0): string {
+  const parts = [wins > 0 ? `+${wins} W` : null, losses > 0 ? `+${losses} L` : null].filter(Boolean)
+  return parts.length > 0 ? parts.join(' ') : '—'
+}
+
 function PlayerName({
   name,
   userId,

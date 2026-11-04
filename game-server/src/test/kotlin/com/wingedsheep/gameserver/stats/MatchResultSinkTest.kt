@@ -55,6 +55,23 @@ class MatchResultSinkTest : FunSpec({
         alice.cards.first { it.cardName == "Plains" }.copies shouldBe 10
     }
 
+    test("a seat that never took an action doesn't count, and neither does the win it hands over") {
+        val repo = mockk<MatchResultRepository>(relaxed = true)
+        val saved = slot<MatchResultRow>()
+        every { repo.save(capture(saved)) } answers { saved.captured }
+        JdbcMatchResultSink(repo).record(
+            match(
+                RecordedParticipant(userId = SOME_USER, playerName = "Alice", won = false, tookAction = false),
+                RecordedParticipant(userId = null, playerName = "Bob", won = true, tookAction = true),
+            )
+        )
+        // Recorded (the game happened, and lists show it), but neither result counts.
+        val seats = saved.captured.participants.associateBy { it.playerName }
+        seats.getValue("Alice").tookAction shouldBe false
+        seats.getValue("Alice").countsInStats shouldBe false
+        seats.getValue("Bob").countsInStats shouldBe false
+    }
+
     test("guest-only games (no AI, no account) are still recorded for global stats") {
         val repo = mockk<MatchResultRepository>(relaxed = true)
         every { repo.save(any()) } answers { firstArg() }

@@ -5,6 +5,7 @@
  */
 import type { GameDecks, StatBucket } from './account'
 import { type AdminAuth, adminAuthHeaders } from './adminAuth'
+import { ALL_GAMES, type OpponentFilter, type StatsFilter, filterQuery } from './statsFilter'
 
 export interface GlobalOverview {
   readonly totalGames: number
@@ -13,11 +14,21 @@ export interface GlobalOverview {
   readonly totalTournaments: number
   readonly gamesLast24h: number
   readonly gamesLast7d: number
+  /** Counted games in the filter's period with no AI seat. */
+  readonly gamesVsHumans: number
+  /** Counted games in the filter's period where one person played the AI. */
+  readonly gamesVsAi: number
+  /** Games in the slice no seat's result counts in — a no-show or an instant concession. */
+  readonly notCountedGames: number
 }
 
 export interface DailyCount {
   readonly day: string
   readonly count: number
+  /** Of `count`, games with no AI seat. */
+  readonly vsHumans: number
+  /** Of `count`, games where one person played the AI. */
+  readonly vsAi: number
 }
 
 /** One table's row count and on-disk footprint in the accounts database. */
@@ -93,6 +104,10 @@ export interface AdminGamePlayer {
   /** The seat's deck colours, WUBRG ("" colourless); null when no deck was recorded. */
   readonly colors: string | null
   readonly location: PlayerLocation | null
+  /** The seat never took an action past the mulligan. */
+  readonly noAction?: boolean
+  /** This seat's result counts toward win/loss stats. */
+  readonly counted?: boolean
 }
 
 /** A recorded game in the admin global game list, with every seat. */
@@ -123,19 +138,25 @@ async function getAdminStats<T>(auth: AdminAuth, path: string): Promise<T> {
   return (await res.json()) as T
 }
 
-export const fetchOverview = (auth: AdminAuth) => getAdminStats<GlobalOverview>(auth, '/overview')
-export const fetchGamesPerDay = (auth: AdminAuth, days = 30) =>
-  getAdminStats<DailyCount[]>(auth, `/games-per-day?days=${days}`)
-export const fetchModeDistribution = (auth: AdminAuth) => getAdminStats<StatBucket[]>(auth, '/modes')
+// The game-derived panels take the dashboard's slice; their period parameter is `period` because
+// games-per-day already uses `days` for its chart window.
+const fq = (f: StatsFilter) => filterQuery(f, 'period').replace(/^&/, '?')
+export const fetchOverview = (auth: AdminAuth, f: StatsFilter = ALL_GAMES) =>
+  getAdminStats<GlobalOverview>(auth, `/overview${fq(f)}`)
+export const fetchGamesPerDay = (auth: AdminAuth, days = 30, vs: OpponentFilter = 'all') =>
+  getAdminStats<DailyCount[]>(auth, `/games-per-day?days=${days}${vs === 'all' ? '' : `&vs=${vs}`}`)
+export const fetchModeDistribution = (auth: AdminAuth, f: StatsFilter = ALL_GAMES) =>
+  getAdminStats<StatBucket[]>(auth, `/modes${fq(f)}`)
 /** Sets played most across recorded tournaments (counted once per tournament that used each set). */
 export const fetchTournamentSets = (auth: AdminAuth) =>
   getAdminStats<StatBucket[]>(auth, '/tournament-sets')
-export const fetchColorDistribution = (auth: AdminAuth) => getAdminStats<StatBucket[]>(auth, '/colors')
+export const fetchColorDistribution = (auth: AdminAuth, f: StatsFilter = ALL_GAMES) =>
+  getAdminStats<StatBucket[]>(auth, `/colors${fq(f)}`)
 export const fetchGeo = (auth: AdminAuth) => getAdminStats<GeoBucket[]>(auth, '/geo')
-export const fetchTopCards = (auth: AdminAuth, limit = 50) =>
-  getAdminStats<CardStat[]>(auth, `/cards?limit=${limit}`)
-export const fetchCardWinRates = (auth: AdminAuth, minDecks = 10, limit = 50) =>
-  getAdminStats<CardWinRate[]>(auth, `/cards/win-rates?minDecks=${minDecks}&limit=${limit}`)
+export const fetchTopCards = (auth: AdminAuth, limit = 50, f: StatsFilter = ALL_GAMES) =>
+  getAdminStats<CardStat[]>(auth, `/cards?limit=${limit}${filterQuery(f, 'period')}`)
+export const fetchCardWinRates = (auth: AdminAuth, minDecks = 10, limit = 50, f: StatsFilter = ALL_GAMES) =>
+  getAdminStats<CardWinRate[]>(auth, `/cards/win-rates?minDecks=${minDecks}&limit=${limit}${filterQuery(f, 'period')}`)
 /** Per-table row counts + sizes. Exact counts server-side, so fetch on demand rather than polling. */
 export const fetchDatabaseStats = (auth: AdminAuth) => getAdminStats<DatabaseStats>(auth, '/database')
 export const fetchTournaments = (auth: AdminAuth, limit = 50) =>
@@ -219,6 +240,8 @@ export interface AiVsHumanReport {
   readonly recent: AiRecentGame[]
   /** Humans who played the AI most, from the human's side. */
   readonly topHumans: AiHumanRecord[]
+  /** AI-vs-human games in the range left out of every figure: the person never took an action. */
+  readonly notCounted?: number
   /** The filter the report was computed under, with the humans it left out. */
   readonly filter: {
     readonly gameMode: string | null

@@ -39,6 +39,8 @@ import { HoverCardPreview } from '@/components/ui/HoverCardPreview'
 import { pageStyles as p } from '@/components/ui/PageShell'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
 import { GameHistoryList, TournamentList } from '@/components/profile/accountUi'
+import type { StatsFilter } from '@/api/statsFilter'
+import { NotCountedNote, OpponentSplit, StatsFilterBar } from '@/components/stats/StatsFilterBar'
 import a from './account.module.css'
 
 export interface StatsDashboardData {
@@ -56,6 +58,9 @@ export interface StatsDashboardData {
   tournaments: UserTournamentEntry[]
   /** When provided, a compact read-only recent-games list is appended (public profiles). */
   recentGames?: GameHistoryEntry[]
+  /** The slice every game-derived panel shows; with [onFilterChange], the filter bar is drawn. */
+  filter?: StatsFilter
+  onFilterChange?: (next: StatsFilter) => void
 }
 
 const MODE_LABELS: Record<RankedModeName, string> = {
@@ -82,21 +87,33 @@ const PALETTE = ['#7d9bff', '#5bd1a0', '#d15b9a', '#d1b85b', '#5bb8d1', '#d18b5b
 const paletteColor = (i: number): string => PALETTE[i % PALETTE.length]!
 
 export function StatsDashboard(props: StatsDashboardData) {
-  const { stats, ratings, ratingHistory, colors, cardTypes, curve, creatureTypes, modes, sets, topCards, opponents, tournaments, recentGames } = props
+  const { stats, ratings, ratingHistory, colors, cardTypes, curve, creatureTypes, modes, sets, topCards, opponents, tournaments, recentGames, filter, onFilterChange } = props
   const navigate = useNavigate()
   const hasData = (stats?.games ?? 0) > 0
   const [openTournament, setOpenTournament] = useState<number | null>(null)
 
   return (
     <>
-      {/* Overview: record + win-rate donut */}
+      {filter && onFilterChange && <StatsFilterBar filter={filter} onChange={onFilterChange} />}
+
+      {/* Overview: record + win-rate donut, the period's split by opponent, and what isn't counted */}
       <section className={p.panel}>
         <div className={a.overview} data-donut={hasData}>
-          <div className={a.tiles}>
-            <Stat label="Games" value={stats?.games ?? 0} />
-            <Stat label="Wins" value={stats?.wins ?? 0} />
-            <Stat label="Losses" value={stats?.losses ?? 0} />
-            <Stat label="Win rate" value={stats ? `${Math.round(stats.winRate * 100)}%` : '—'} />
+          <div className={a.overviewMain}>
+            <div className={a.tiles}>
+              <Stat label="Games" value={stats?.games ?? 0} />
+              <Stat label="Wins" value={stats?.wins ?? 0} />
+              <Stat label="Losses" value={stats?.losses ?? 0} />
+              <Stat label="Win rate" value={stats && hasData ? `${Math.round(stats.winRate * 100)}%` : '—'} />
+            </div>
+            {stats && (
+              <div className={a.overviewFoot}>
+                {filter && onFilterChange && (stats.vsHumans.games > 0 || stats.vsAi.games > 0) && (
+                  <OpponentSplit vsHumans={stats.vsHumans} vsAi={stats.vsAi} filter={filter} onChange={onFilterChange} />
+                )}
+                <NotCountedNote count={stats.notCounted} />
+              </div>
+            )}
           </div>
           {hasData && stats && (
             <div className={a.donut}>

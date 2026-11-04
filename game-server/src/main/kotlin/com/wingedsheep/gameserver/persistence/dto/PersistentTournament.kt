@@ -28,7 +28,9 @@ data class PersistentStanding(
     val draws: Int,
     val gamesWon: Int = 0,
     val gamesLost: Int = 0,
-    val lifeDifferential: Int = 0
+    val lifeDifferential: Int = 0,
+    val forfeitWins: Int = 0,
+    val forfeitLosses: Int = 0,
 )
 
 /**

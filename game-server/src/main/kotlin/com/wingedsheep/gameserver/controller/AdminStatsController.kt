@@ -3,7 +3,9 @@ package com.wingedsheep.gameserver.controller
 import com.wingedsheep.gameserver.auth.AdminAuthService
 import com.wingedsheep.gameserver.stats.AiBucket
 import com.wingedsheep.gameserver.stats.AiVsHumanFilter
+import com.wingedsheep.gameserver.stats.GameFilter
 import com.wingedsheep.gameserver.stats.GeoIpService
+import com.wingedsheep.gameserver.stats.OpponentFilter
 import com.wingedsheep.gameserver.stats.StatsQueryService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpHeaders
@@ -39,19 +41,28 @@ class AdminStatsController(
         val games: Long,
     )
 
+    // The game-derived panels take an optional slice: `vs` = all / humans / ai and `period` days
+    // (absent or 0 = all time) — see [GameFilter]. Games no seat's result counts in are
+    // left out; the overview reports how many.
+
     @GetMapping("/overview")
     fun overview(
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
-    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) { ResponseEntity.ok(statsQuery.overview()) }
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) period: Int?,
+    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
+        ResponseEntity.ok(statsQuery.overview(GameFilter.of(vs, period)))
+    }
 
     @GetMapping("/games-per-day")
     fun gamesPerDay(
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
         @RequestParam(defaultValue = "30") days: Int,
+        @RequestParam(required = false) vs: String?,
     ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
-        ResponseEntity.ok(statsQuery.gamesPerDay(days.coerceIn(1, 365)))
+        ResponseEntity.ok(statsQuery.gamesPerDay(days.coerceIn(1, 365), OpponentFilter.parse(vs)))
     }
 
     /**
@@ -123,7 +134,11 @@ class AdminStatsController(
     fun modes(
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
-    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) { ResponseEntity.ok(statsQuery.modeDistribution()) }
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) period: Int?,
+    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
+        ResponseEntity.ok(statsQuery.modeDistribution(GameFilter.of(vs, period)))
+    }
 
     @GetMapping("/tournament-sets")
     fun tournamentSets(
@@ -137,15 +152,21 @@ class AdminStatsController(
     fun colors(
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
-    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) { ResponseEntity.ok(statsQuery.colorDistribution()) }
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) period: Int?,
+    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
+        ResponseEntity.ok(statsQuery.colorDistribution(GameFilter.of(vs, period)))
+    }
 
     @GetMapping("/cards")
     fun cards(
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
         @RequestParam(defaultValue = "50") limit: Int,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) period: Int?,
     ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
-        ResponseEntity.ok(statsQuery.topCards(limit.coerceIn(1, 500)))
+        ResponseEntity.ok(statsQuery.topCards(limit.coerceIn(1, 500), GameFilter.of(vs, period)))
     }
 
     @GetMapping("/cards/win-rates")
@@ -154,8 +175,10 @@ class AdminStatsController(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
         @RequestParam(defaultValue = "10") minDecks: Int,
         @RequestParam(defaultValue = "50") limit: Int,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) period: Int?,
     ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
-        ResponseEntity.ok(statsQuery.cardWinRates(minDecks.coerceAtLeast(1), limit.coerceIn(1, 500)))
+        ResponseEntity.ok(statsQuery.cardWinRates(minDecks.coerceAtLeast(1), limit.coerceIn(1, 500), GameFilter.of(vs, period)))
     }
 
     @GetMapping("/tournaments")

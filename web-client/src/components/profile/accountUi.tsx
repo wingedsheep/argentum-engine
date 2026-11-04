@@ -5,7 +5,7 @@
  */
 import { useEffect } from 'react'
 import type React from 'react'
-import type { GameHistoryEntry, UserTournamentEntry } from '@/api/account'
+import type { GameHistoryEntry, NotCountedReason, UserTournamentEntry } from '@/api/account'
 import { colorForIdentity, colorLabel, gameModeLabel } from '@/components/admin/statFormat'
 import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
 import { PageShell, pageStyles } from '@/components/ui/PageShell'
@@ -89,13 +89,27 @@ export function GameHistoryList({
         const mode = gameModeLabel(g.gameMode, g.format)
         return (
           <li key={`${g.gameId}-${i}`} className={a.gameRow} data-compact={!renderActions}>
-            <span className={a.result} data-won={g.won}>{g.won ? 'Win' : 'Loss'}</span>
+            <span
+              className={a.result}
+              data-won={g.won}
+              data-counted={!g.notCounted}
+              title={g.notCounted ? NOT_COUNTED_TITLE[g.notCounted] : undefined}
+            >
+              {g.won ? 'Win' : 'Loss'}
+            </span>
             <span className={a.cellStack}>
               <span className={a.cellMain}>
                 {mode.primary}
                 {mode.variant ? <span className={a.dim}> › {mode.variant}</span> : null}
               </span>
-              <span className={a.cellSub}>{formatDateTime(g.endedAt)}</span>
+              <span className={a.cellSub}>
+                {formatDateTime(g.endedAt)}
+                {g.notCounted && (
+                  <span className={a.notCounted} title={NOT_COUNTED_TITLE[g.notCounted]}>
+                    Not counted
+                  </span>
+                )}
+              </span>
             </span>
             <span className={a.cellStack}>
               <span className={a.cellMain}>
@@ -124,6 +138,50 @@ export function GameHistoryList({
   )
 }
 
+/** Why a listed game is left out of the record, as the row's tooltip. */
+const NOT_COUNTED_TITLE: Record<NotCountedReason, string> = {
+  NO_ACTION: 'Not counted in your record: you never took an action in this game.',
+  OPPONENT_NO_ACTION: 'Not counted in your record: your opponent never took an action in this game.',
+}
+
+/**
+ * A match record without the matches nobody played: forfeits (a player left the tournament) are
+ * counted in the standings but split out here, as a dim "+N forfeited" beside the played record.
+ */
+export function PlayedRecord({
+  wins,
+  losses,
+  draws,
+  forfeitWins = 0,
+  forfeitLosses = 0,
+}: {
+  wins: number
+  losses: number
+  draws: number
+  forfeitWins?: number | undefined
+  forfeitLosses?: number | undefined
+}) {
+  const forfeits = forfeitWins + forfeitLosses
+  const played = `${wins - forfeitWins}–${losses - forfeitLosses}${draws ? `–${draws}` : ''}`
+  const forfeitTitle = [
+    forfeitWins > 0 ? `${forfeitWins} won because the opponent left` : null,
+    forfeitLosses > 0 ? `${forfeitLosses} lost by leaving the tournament` : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
+  return (
+    <span className={a.dim} title="Matches played (wins–losses–draws)">
+      {played}
+      {forfeits > 0 && (
+        <span className={a.forfeits} title={`Forfeited, not played: ${forfeitTitle}`}>
+          {' '}
+          +{forfeits} forfeited
+        </span>
+      )}
+    </span>
+  )
+}
+
 /**
  * Tournaments as clickable rows: name + mode and date, match record, placement. A live tournament
  * shows its status instead of a record; an abandoned one is shown by the games it got through, with
@@ -142,7 +200,6 @@ export function TournamentList({
         const mode = gameModeLabel(t.gameMode, t.format)
         const live = t.status === 'IN_PROGRESS'
         const won = t.status === 'COMPLETED' && t.placement === 1
-        const record = `${t.wins}–${t.losses}${t.draws ? `–${t.draws}` : ''}`
         return (
           <li key={`${t.id}-${i}`}>
             <button type="button" className={a.tournamentRow} onClick={() => onOpen(t.id)}>
@@ -156,9 +213,13 @@ export function TournamentList({
                 {live ? (
                   <TournamentStatusBadge status={t.status} />
                 ) : (
-                  <span className={a.dim} title="Match record (wins–losses–draws)">
-                    {record}
-                  </span>
+                  <PlayedRecord
+                    wins={t.wins}
+                    losses={t.losses}
+                    draws={t.draws}
+                    forfeitWins={t.forfeitWins}
+                    forfeitLosses={t.forfeitLosses}
+                  />
                 )}
               </span>
               <span className={a.place} data-first={won}>

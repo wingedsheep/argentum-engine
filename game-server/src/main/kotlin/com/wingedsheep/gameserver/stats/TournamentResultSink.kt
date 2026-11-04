@@ -38,6 +38,10 @@ data class RecordedTournamentParticipant(
     val wins: Int,
     val losses: Int,
     val draws: Int,
+    /** Of [wins], matches won because the opponent left — never played. */
+    val forfeitWins: Int = 0,
+    /** Of [losses], matches lost because this player left — never played. */
+    val forfeitLosses: Int = 0,
 )
 
 /**
@@ -153,6 +157,8 @@ class JdbcTournamentResultSink(private val tournaments: TournamentRepository) : 
                 wins = it.wins,
                 losses = it.losses,
                 draws = it.draws,
+                forfeitWins = it.forfeitWins,
+                forfeitLosses = it.forfeitLosses,
             )
         }.toSet(),
     )
