@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PRNUM Expects the opponent to answer a removal spell with its visible abilities (a hexproof or indestructible granter, a regeneration shield): it aims removal at the protector first (Liliana the Faultless before what she can shield) and no longer fires spells into an untapped answer
 - #4428 Reads "becomes a copy of" (Blade of Shared Souls, Lazav, True Polymorph, Mirage Mirror): a copy of a creature of its own now copies its best one instead of the weakest, other copy targets are left to simulation instead of the removal ranking, an instant that makes a creature a copy until end of turn (Fleeting Reflection) is held for a fight like a combat trick, an until-end-of-turn copy ability isn't spent once no fight is left, and exiling its own creature until the end step (Liberate, Niko, Light of Hope) reads as a blink rather than removal
 - #4427 Stops sending a small attacker beside a real threat when the opponent can block it for free and decline the costly blocks — it now prices that reply too
 - #4421 Reads free equips (Beatrix, Loyal General, Halvar, Weapons Vendor) as moving Equipment: their "target creature you control" now gets the Equipment on a creature that fights instead of the weakest one, they ask the deck for Equipment when drafting and building, and equipping an Equipment whose bonus it can't read one-sidedly is left to simulation instead of the removal ranking

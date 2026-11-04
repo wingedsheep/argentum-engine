@@ -1347,6 +1347,20 @@ data class AiProfile(
      */
     val anticipateCombatResponses: Boolean = false,
     /**
+     * Expect the opponent to answer a spell aimed at its permanents with what its board can do.
+     * A candidate that targets an opponent's permanents is scored with that opponent given
+     * priority while it is on the stack, offered the activated abilities its permanents can afford
+     * that save a target the spell would remove — a hexproof or indestructible granter, a
+     * regeneration shield — and taking the one that leaves the AI worst off when it beats letting
+     * the spell resolve. [com.wingedsheep.ai.engine.TargetResponses] does the playing;
+     * it is [anticipateCombatResponses]' counterpart on the stack.
+     *
+     * Off game `74644ce0` turn 16 (2026-11-04, Reality Fracture draft): Prophesied End at Kiora of
+     * Fire and Ashes with Liliana the Faultless untapped beside it — Kiora got hexproof, the spell
+     * fizzled. With this on the removal goes at Liliana, which cannot protect itself.
+     */
+    val anticipateTargetResponses: Boolean = false,
+    /**
      * Hold an end-of-turn **lifelink** grant until blockers are declared, on either side's turn.
      *
      * 2026-10-19 logs, `LIVE` — Hardened Academic (`Discard a card: This creature gains lifelink
@@ -2530,6 +2544,7 @@ data class AiProfile(
             taxCountersReadTheirMana = true,
             refuseWastedPayoffs = true,
             anticipateCombatResponses = true,
+            anticipateTargetResponses = true,
             pressWhenAhead = true,
             lifelinkWaitsForBlocks = true,
             tapToGrowAtTheirEndStep = true,

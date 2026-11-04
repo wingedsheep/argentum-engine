@@ -242,6 +242,11 @@ class Strategist(
      */
     private val recastBouncedPermanents: Boolean = false,
     /**
+     * [AiProfile.anticipateTargetResponses] — a candidate aimed at an opponent's permanents is
+     * scored with that opponent's visible answer already used against it. See [TargetResponses].
+     */
+    anticipateTargetResponses: Boolean = false,
+    /**
      * [AiProfile.precombatPumpsForThePlan] — in our precombat main, a pump that changes who the
      * attack plan sends is priced by the attack it buys. See [pumpThatBuysTheAttack].
      */
@@ -507,6 +512,10 @@ class Strategist(
             if (recastBouncedPermanents && !forcedPlay) {
                 addAll(bouncedPermanentFollowUps(evaluationState, leaves, leafStates, playerId, budget))
             }
+            // ── Pass 1f: what a line that takes away an opponent's answer lets through — see [answerBreakerFollowUps] ──
+            if (!forcedPlay) {
+                addAll(answerBreakerFollowUps(evaluationState, leaves, leafStates, playerId, budget))
+            }
         }
 
         // ── Pass 2: score every leaf at once ──
@@ -744,7 +753,7 @@ class Strategist(
         here: Long,
     ): Pair<GameAction, SimulationResult> {
         val materialized = chooseCommittedTargets(state, action, playerId, budget)
-        val simulation = simulator.simulate(state, materialized)
+        val simulation = simulateAnswered(state, materialized, playerId)
         // Ordered so the budget that already refines pays nothing at all here — no digest, no
         // second simulation. `chooseAction` digests the leaf it keeps either way.
         if (budget.allowances.refineTargetsBySimulation) return materialized to simulation
@@ -761,7 +770,20 @@ class Strategist(
 
         val refined = chooseCommittedTargets(state, action, playerId, budget, forceTargetRefinement = true)
         if (refined == materialized) return materialized to simulation
-        return refined to simulator.simulate(state, refined)
+        return refined to simulateAnswered(state, refined, playerId)
+    }
+
+    /** See [anticipateTargetResponses]; null when off. */
+    private val targetResponses: TargetResponses? =
+        if (anticipateTargetResponses) TargetResponses(simulator, evaluator) else null
+
+    /**
+     * [action] simulated to its quiet state — or, under [anticipateTargetResponses], to the state
+     * the opponent's best visible answer to it leads to, when it has one worth using.
+     */
+    private fun simulateAnswered(state: GameState, action: GameAction, playerId: EntityId): SimulationResult {
+        val resolved = simulator.simulate(state, action)
+        return targetResponses?.answered(state, action, playerId, resolved) ?: resolved
     }
 
     /**
@@ -1603,6 +1625,59 @@ class Strategist(
     }
 
     /**
+     * Under [anticipateTargetResponses]: for each leaf aimed at an opponent's permanents that takes
+     * away one of that opponent's answers — kills the hexproof granter, or draws out its activation
+     * — the targeted plays it then lets through, so the line scores as at least its follow-up.
+     *
+     * A removal spell on Liliana the Faultless alone trades a card for a 1/1 and a card drawn, and
+     * reads worse than holding it; what it buys is the next removal spell resolving on the Dragon
+     * Liliana would otherwise have protected. Each [TargetResponses]-answered candidate is scored
+     * one ply deep, so without this pass the AI sees every target as either protected or not worth
+     * a card, and holds both spells — or fires one into the answer. Off game `74644ce0` turn 16.
+     */
+    private fun answerBreakerFollowUps(
+        root: GameState,
+        leaves: List<LegalAction>,
+        leafStates: List<GameState>,
+        playerId: EntityId,
+        budget: DecisionBudget,
+    ): List<LandFollowUp> {
+        val responses = targetResponses ?: return emptyList()
+        val responders = responses.respondersAt(root, playerId)
+        if (responders.isEmpty()) return emptyList()
+        val answersAtRoot = responders.associateWith { responses.answerSources(root, it) }
+        val followUps = mutableListOf<LandFollowUp>()
+        for (i in leaves.indices) {
+            if (budget.expired()) return followUps
+            val action = leaves[i].action
+            if (action !is CastSpell && action !is ActivateAbility) continue
+            if (!responses.targetsPermanentOf(root, action, responders)) continue
+            val after = leafStates[i]
+            if (after.gameOver || after.pendingDecision != null || after.stack.isNotEmpty() ||
+                after.priorityPlayerId != playerId
+            ) continue
+            val broken = responders.any { responder ->
+                (answersAtRoot.getValue(responder) - responses.answerSources(after, responder)).isNotEmpty()
+            }
+            if (!broken) continue
+            val here = StateProgress.digest(after)
+            val next = candidatesFrom(simulator.getLegalActions(after, playerId)).filter {
+                (it.action is CastSpell || it.action is ActivateAbility) && it.requiresTargets &&
+                    !it.hasUnfillableTargetRequirement &&
+                    !(targetPolarityFromEffect && TargetSelection.aimsOnlyAtTheWrongSide(after, it, playerId, intents))
+            }
+            for (follow in next) {
+                if (budget.expired()) return followUps
+                val (materialized, simulation) = materialize(after, follow, playerId, budget, here)
+                if (simulation !is SimulationResult.Terminal) continue
+                if (!responses.targetsPermanentOf(after, materialized, responders)) continue
+                followUps += LandFollowUp(i, follow.copy(action = materialized), simulation.state, note = "then lets through")
+            }
+        }
+        return followUps
+    }
+
+    /**
      * The best static score among the plays that put back what [leaf] returned from our
      * battlefield to our hand — a land played again, a permanent spell recast — or
      * `-Infinity` when there is none. [chooseCommittedTargets] takes it over the leaf's own score,
@@ -1994,7 +2069,7 @@ class Strategist(
                 val trial = chosenTargets.toMutableList()
                 trial[i] = TargetSelection.toChosenTarget(state, info, candidate, playerId)
                 val trialAction = TargetSelection.applyTargets(baseAction, trial)
-                val result = simulator.simulate(state, trialAction)
+                val result = simulateAnswered(state, trialAction, playerId)
                 // A target that resolves back into the position we are standing in is not a target
                 // choice, it is a no-op wearing one — Aphetto Alchemist untapping itself. Rank it
                 // below every real option, so `chooseAction` only ever drops the whole ability as
