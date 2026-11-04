@@ -53,6 +53,36 @@ class ChosenTribeAiTest : ScenarioTestBase() {
             support("Goblin King", "Lord of Atlantis", "Grizzly Bears") shouldBe 0.4
         }
 
+        test("hidden changelings do not create demand for a tribe the ordinary creatures already have") {
+            val d = GameTestDriver()
+            d.registerCards(TestCards.all + listOf(
+                card("Arcane Adaptation"), card("Dragon Tempest"), card("Goblin King"), card("Changeling Outcast")
+            ))
+            d.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true)
+            d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            val me = d.activePlayer!!
+            d.putCreatureOnBattlefield(me, "Raging Goblin")
+            repeat(4) {
+                d.putCardInHand(me, "Goblin King")
+                d.putCardInHand(me, "Changeling Outcast")
+                d.putCardOnTopOfLibrary(me, "Changeling Outcast")
+            }
+            d.putCardInHand(me, "Dragon Tempest")
+            val adaptation = d.putCardInHand(me, "Arcane Adaptation")
+            d.giveMana(me, Color.BLUE, 3)
+            d.castSpell(me, adaptation)
+            d.bothPass()
+            val decision = d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+            // Four Goblin payoffs used to claim eight new members each from these changelings.
+            // They already have that type; only Dragon connects the five ordinary Goblins.
+            val weights = ChoicePriors(cardRegistry).chosenTribeWeights(d.state, me, decision.context.sourceId)!!
+            weights.getValue("goblin") shouldBe 0.0
+            weights.getValue("dragon") shouldBeGreaterThan 0.0
+            val response = AIPlayer.create(cardRegistry, me, AiProfile.PRODUCTION_CHOICES)
+                .respondToDecision(d.state, decision).shouldBeInstanceOf<OptionChosenResponse>()
+            decision.options[response.optionIndex] shouldBe "Dragon"
+        }
+
         test("the AI chooses a payoff's absent type instead of the majority creature type") {
             val d = GameTestDriver()
             d.registerCards(TestCards.all + listOf(card("Arcane Adaptation"), card("Dragon Tempest")))

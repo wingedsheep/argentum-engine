@@ -4,6 +4,7 @@ import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -158,7 +159,7 @@ internal class ChoicePriors(private val cardRegistry: CardRegistry) {
         val projected = state.projectedState
         val bodies = state.controlledBattlefield(player).filter { projected.isCreature(it) }
             .map { projected.getSubtypes(it).map(String::lowercase).toSet() } +
-            hiddenCards(state, player).filter { it.typeLine.isCreature }
+            hiddenCards(state, player).filter { it.typeLine.isCreature && Keyword.CHANGELING !in it.baseKeywords }
                 .map { it.typeLine.subtypes.map { t -> t.value.lowercase() }.toSet() }
         val demand = HashMap<String, Double>()
         for (card in hiddenCards(state, player) + battlefieldCards(state, player)) {
