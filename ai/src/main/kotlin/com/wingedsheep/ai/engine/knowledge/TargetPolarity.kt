@@ -496,9 +496,38 @@ object TargetPolarityAnalyzer {
                         slotOf(target, requirements) == slot && polarity == TargetPolarity.HARMFUL
                     } }.let { harmful -> harmful.isNotEmpty() && harmful.all { it is DealDamageEffect } } ->
                     TargetPolarity.FLEXIBLE
+                drawsForItsLife(slot, readings, leaves, requirements, definitions, source) -> TargetPolarity.BENEFICIAL
                 else -> combine(readings)
             }
         }
+    }
+
+    /**
+     * "Target player draws N cards and loses N life" (Sign in Blood, Vault Plunderer, Blood Pact):
+     * the life is the price of the cards, as the discard is a loot's ([lossSlots]), so the slot is a
+     * gift aimed at ourselves. Read two-sided, a triggered draw — scored with the ability still on
+     * the stack, both seats alike — fell to the removal tie-break and handed the opponent the cards.
+     * Only a draw beside nothing but life loss qualifies; any other harm keeps the slot mixed.
+     */
+    private fun drawsForItsLife(
+        slot: Int,
+        readings: List<TargetPolarity>,
+        leaves: List<Effect>,
+        requirements: List<TargetRequirement>,
+        definitions: CardLookup,
+        source: CardDefinition?,
+    ): Boolean {
+        if (readings.toSet() != setOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL)) return false
+        val onSlot = leaves.mapNotNull { leaf ->
+            classify(leaf, definitions, source)
+                .filter { (target, _) -> slotOf(target, requirements) == slot }
+                .takeIf { it.isNotEmpty() }
+                ?.let { leaf to it.map { (_, polarity) -> polarity } }
+        }
+        val beneficial = onSlot.filter { (_, polarities) -> TargetPolarity.BENEFICIAL in polarities }.map { it.first }
+        val harmful = onSlot.filter { (_, polarities) -> TargetPolarity.HARMFUL in polarities }.map { it.first }
+        return beneficial.isNotEmpty() && beneficial.all { it is DrawCardsEffect } &&
+            harmful.isNotEmpty() && harmful.all { it is LoseLifeEffect }
     }
 
     /**
