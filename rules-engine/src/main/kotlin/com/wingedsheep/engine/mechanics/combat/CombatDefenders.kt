@@ -129,6 +129,18 @@ object CombatDefenders {
     }
 
     /**
+     * Whether a creature put onto the battlefield attacking under [playerId]'s control can be
+     * attacking at all: only an attacking player — the active player, or under shared team turns
+     * any player on the active team — controls attackers. A token created "tapped and attacking"
+     * under anyone else (Crafty Cutpurse taking an attacker's token) enters tapped, not attacking.
+     * True when no turn is running (bare test states), which keeps the old default.
+     */
+    fun isAttackingPlayer(state: GameState, playerId: EntityId): Boolean {
+        val active = state.activePlayerId ?: return true
+        return playerId in state.sharedTurnTeam(active)
+    }
+
+    /**
      * Everything a creature [controllerId] puts onto the battlefield attacking could be attacking
      * (CR 508.4) — the defending players, then their planeswalkers, then the battles they protect.
      * Empty outside the combat phase or when [controllerId] isn't an attacking player — the active

@@ -70,7 +70,13 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         val equippedCard = equippedContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
-        val controllerId = context.controllerId
+        // "Created under your control instead" (Crafty Cutpurse) before any other token replacement.
+        val controllerId = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, context.controllerId, context, effect, predicateEvaluator
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
 
         // Copy the equipped creature's CardComponent. `isDoubleFaced` is cleared, not inherited:
         // a token is not a card (CR 111.1) — see CreateTokenCopyOfTargetExecutor.

@@ -375,6 +375,18 @@ enum class IntentTag {
      * heuristic prices it low. It is not opponent-facing: a static has no target to aim, and the symmetric lock hits its own side too.
      */
     TRIGGER_LOCK,
+
+    /**
+     * Takes the tokens an opponent would create — Crafty Cutpurse's "each token that would be
+     * created under an opponent's control this turn is created under your control instead".
+     *
+     * Tagged apart from [TOKEN_MAKER] because it makes nothing on its own: its payoff is the
+     * opponent's token-making, which may never come, so counting it as a token source would feed
+     * the token-synergy and card-or-token reads with tokens that don't exist. Without the tag the
+     * ability read as unrecognised and the card as its bare body. It has no target to aim, so it
+     * is not opponent-facing either.
+     */
+    TOKEN_THEFT,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */

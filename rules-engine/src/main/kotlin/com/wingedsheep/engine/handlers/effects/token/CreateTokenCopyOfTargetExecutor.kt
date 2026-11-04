@@ -99,9 +99,14 @@ class CreateTokenCopyOfTargetExecutor(
         // Who creates (controls + owns) the token. Defaults to the effect's controller; a player
         // target (e.g. "Target player creates a token …" — Echocasting Symposium) puts the token
         // under that player's control instead. A named player who resolves to nobody creates nothing.
-        val controllerId = effect.controller
-            ?.let { context.resolvePlayerTargets(it, state).firstOrNull() ?: return EffectResult.success(state) }
-            ?: context.controllerId
+        val wouldBeControllerId = wouldBeController(state, effect, context) ?: return EffectResult.success(state)
+        // "Created under your control instead" (Crafty Cutpurse) before any other token replacement.
+        val controllerId = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, wouldBeControllerId, context, effect, amountEvaluator.predicates
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
 
         // Token-count replacements (Doubling Season, Parallel Lives, Mondrak) apply to token copies
         // exactly as to any other token creation, before a substitution gets a look — the order
@@ -411,7 +416,7 @@ class CreateTokenCopyOfTargetExecutor(
                 // it is still in the game and one of the creator's opponents; otherwise the copy
                 // enters but never attacking (CR 508.4a). Unspecified, the token joins the
                 // source's attack (CR 802.2a) — see CreateTokenExecutor.
-                val defenderId = if (chosenDefenders != null) {
+                val wouldAttack = if (chosenDefenders != null) {
                     chosenDefenders[index]
                 } else if (effect.attackedPlayer != null) {
                     com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
@@ -420,6 +425,10 @@ class CreateTokenCopyOfTargetExecutor(
                 } else {
                     com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
                         .defenderForEnteringAttacker(context, newState, controllerId)
+                }
+                // Only an attacking player's creature can enter attacking (a redirected token).
+                val defenderId = wouldAttack?.takeIf {
+                    com.wingedsheep.engine.mechanics.combat.CombatDefenders.isAttackingPlayer(newState, controllerId)
                 }
                 if (defenderId != null) {
                     components.add(AttackingComponent(defenderId, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, defenderId)))
@@ -643,6 +652,16 @@ class CreateTokenCopyOfTargetExecutor(
     }
 
     /**
+     * The player the effect creates the copies for, before any redirect: the effect's controller,
+     * or the named player ("target player creates …"); null when that named player resolves to
+     * nobody, and nothing is created.
+     */
+    private fun wouldBeController(state: GameState, effect: CreateTokenCopyOfTargetEffect, context: EffectContext): EntityId? =
+        effect.controller
+            ?.let { context.resolvePlayerTargets(it, state).firstOrNull() }
+            ?: context.controllerId.takeIf { effect.controller == null }
+
+    /**
      * The copy's "sacrifice / exile it at the beginning of the next end step" riders: a delayed
      * trigger per token in [createdTokens]. Also installed on the substitutes when a
      * `ReplaceTokenCreationWithToken` replaced the copies — the riders still apply to them.
@@ -653,10 +672,14 @@ class CreateTokenCopyOfTargetExecutor(
         sourceState: GameState,
         effect: CreateTokenCopyOfTargetEffect,
         context: EffectContext,
-        controllerId: EntityId,
+        tokenControllerId: EntityId,
         createdTokens: List<EntityId>
     ): GameState {
         var newState = state
+        // The riders belong to the creating effect's player even when the copies were created
+        // under someone else's control (Crafty Cutpurse's ruling) — so "your next end step" is
+        // theirs, and a "sacrifice it" they control does nothing to a token they don't.
+        val controllerId = wouldBeController(sourceState, effect, context) ?: tokenControllerId
         // If sacrificeAtStep is set, create a delayed trigger to sacrifice each created token
         // copy at that step (e.g. Mardu Siegebreaker: "at the beginning of your next end step,
         // sacrifice those tokens"). Mirrors CreateTokenExecutor's sacrificeAtStep handling.

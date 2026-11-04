@@ -25,7 +25,13 @@ data class TokenCreationReplacementContinuation(
     val attachedPermanentId: EntityId,
     val originalEffect: Effect,
     val tokenCount: Int,
-    val effectContext: EffectContext
+    val effectContext: EffectContext,
+    /**
+     * The player the copies are created under — the token creator after any controller redirect
+     * (Crafty Cutpurse), which needn't be [effectContext]'s controller. Null on frames paused
+     * before this field existed, which fall back to the context's controller.
+     */
+    val tokenControllerId: EntityId? = null
 ) : AnswerContinuation
 
 /**

@@ -57,7 +57,13 @@ class CreateTokenCopyOfSourceExecutor(
         effect: CreateTokenCopyOfSourceEffect,
         context: EffectContext
     ): EffectResult {
-        val controllerId = context.controllerId
+        // "Created under your control instead" (Crafty Cutpurse) before any other token replacement.
+        val controllerId = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, context.controllerId, context, effect, predicateEvaluator
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
         // Token-count replacements (Doubling Season, Parallel Lives) apply to token copies too.
         // Applied once here, never by the token-by-token resume that re-enters createTokens.
         val count = TokenCreationReplacementHelper.applyCountReplacements(
@@ -259,7 +265,8 @@ class CreateTokenCopyOfSourceExecutor(
                         sourceId = sourceId,
                         objectReferences = context.objectReferences,
                         sourceName = sourceCard.name,
-                        controllerId = controllerId
+                        // The creating ability's controller, even when the copy went to someone else.
+                        controllerId = context.controllerId
                     )
                 )
             }

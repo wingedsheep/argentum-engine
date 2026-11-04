@@ -20,9 +20,19 @@ import kotlin.reflect.KClass
 internal object TokenCreationBatch {
     const val BEFORE = "__tokenCreationBatchBefore"
     const val SOURCES = "__tokenCreationBatchSources"
+    /** The player the batch was for before a controller redirect (Crafty Cutpurse). */
+    const val WOULD_BE_CONTROLLER = "__tokenCreationBatchWouldBeController"
     fun sources(context: EffectContext): Set<com.wingedsheep.sdk.model.EntityId>? =
         context.pipeline.storedCollections[SOURCES]?.toSet()
     fun active(context: EffectContext): Boolean = BEFORE in context.pipeline.storedCollections
+
+    /**
+     * Who controls the delayed triggers a batch group sets up ("sacrifice it at the beginning of the
+     * next end step"): the creating effect's player, even when the batch was redirected to someone
+     * else — the groups themselves run under the redirected controller.
+     */
+    fun wouldBeController(context: EffectContext): com.wingedsheep.sdk.model.EntityId? =
+        context.pipeline.storedCollections[WOULD_BE_CONTROLLER]?.singleOrNull()
 }
 
 class CreateTokenBatchExecutor(
@@ -53,8 +63,16 @@ class CreateTokenBatchExecutor(
             return EffectResult(after, events, updatedCollections = mapOf(CREATED_TOKENS to created))
         }
         check(!TokenCreationBatch.active(context)) { "Token creation batches cannot nest" }
-        val controller = effect.controller?.let { context.resolvePlayerTarget(it, state) }
+        val wouldBeController = effect.controller?.let { context.resolvePlayerTarget(it, state) }
             ?: if (effect.controller == null) context.controllerId else return EffectResult.success(state)
+        // One event, one redirect (Crafty Cutpurse) — before the count replacements below, and the
+        // groups then run under the new controller without redirecting again.
+        val controller = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, wouldBeController, context, effect, amountEvaluator.predicates
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
         val counts = effect.groups.map {
             when (it) {
                 is CreateTokenEffect -> amountEvaluator.evaluate(state, it.count, context).coerceAtLeast(0)
@@ -109,6 +127,7 @@ class CreateTokenBatchExecutor(
             storedCollections = context.pipeline.storedCollections + mapOf(
                 TokenCreationBatch.BEFORE to state.getBattlefield(),
                 TokenCreationBatch.SOURCES to com.wingedsheep.engine.replacement.ActiveReplacements.all(state).map { it.sourceId }.distinct(),
+                TokenCreationBatch.WOULD_BE_CONTROLLER to listOf(wouldBeController),
             ),
         ))
         val finish = CreateTokenBatchEffect(emptyList())

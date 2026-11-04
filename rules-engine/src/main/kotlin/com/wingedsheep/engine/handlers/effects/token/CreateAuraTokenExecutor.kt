@@ -54,7 +54,14 @@ class CreateAuraTokenExecutor(
             ?.takeIf { it in state.getBattlefield() }
             ?: return EffectResult.success(state)
 
-        val tokenControllerId = context.controllerId
+        // "Created under your control instead" (Crafty Cutpurse) before any other token
+        // replacement; the Role's "you control" checks below then read the new controller.
+        val tokenControllerId = when (val redirect = TokenCreationReplacementHelper.redirectController(
+            state, context.controllerId, context, effect, zones.predicateEvaluator
+        )) {
+            is TokenControllerRedirect.Resolved -> redirect.controllerId
+            is TokenControllerRedirect.Ask -> return redirect.result
+        }
         val tokenComponent = CardComponent(
             cardDefinitionId = effect.tokenName,
             name = effect.tokenName,
