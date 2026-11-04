@@ -97,6 +97,11 @@ class AiReadingByAbilityTest : FunSpec({
         trigger.findings.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
     }
 
+    test("a loyalty counter on each planeswalker we control needs no intent") {
+        AiReadingAudit.read(card("Way of the Mentor")).readFully shouldBe true
+        AiReadingAudit.read(card("Way of the Necromancer")).readFully shouldBe true
+    }
+
     test("a permanent untapping itself needs no intent, but untapping a chosen target stays flagged") {
         val monolith = AiReadingAudit.read(card("Basalt Monolith"))
         monolith.readFully shouldBe true
