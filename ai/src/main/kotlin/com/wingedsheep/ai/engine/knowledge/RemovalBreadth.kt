@@ -80,18 +80,28 @@ object RemovalBreadth {
      * cards off the table (a graveyard, hand or library): there is no breadth to speak of, and the
      * removal reading itself is suspect.
      */
-    fun ofSlot(slot: EffectWalker.Slot): Double? {
+    fun ofSlot(slot: EffectWalker.Slot): Double? = ofSlot(slot, noncreatureWeight = 1.0)
+
+    /**
+     * Limited decks mostly win with creatures. Noncreature-only answers remain useful, but hitting
+     * every artifact/enchantment probe must not price Naturalize like unrestricted creature removal.
+     * Keep role classification ([ofSlot]) separate: these cards still fill a noncreature-answer slot.
+     * Spell targets retain their breadth because counters can stop instants and sorceries as well.
+     */
+    fun forLimitedSlot(slot: EffectWalker.Slot): Double? = ofSlot(slot, noncreatureWeight = 0.25)
+
+    private fun ofSlot(slot: EffectWalker.Slot, noncreatureWeight: Double): Double? {
         val aimed = slot.targets.filterIsInstance<TargetObject>().filterNot { ours(it.filter) }
         val swept = EffectWalker.leaves(slot.effect).mapNotNull(::sweptGroup).filterNot(::ours)
         if (aimed.isEmpty() && swept.isEmpty()) return 1.0
         val breadths = aimed.mapNotNull { target ->
             val filters = listOf(target.filter.baseFilter) + target.filter.alternatives.map { it.baseFilter }
             when (target.filter.zone) {
-                Zone.BATTLEFIELD -> breadth(filters, PERMANENT_PROBES)
+                Zone.BATTLEFIELD -> breadth(filters, PERMANENT_PROBES, noncreatureWeight)
                 Zone.STACK -> breadth(filters, SPELL_PROBES)
                 else -> null
             }
-        } + swept.map { breadth(listOf(it), PERMANENT_PROBES) }
+        } + swept.map { breadth(listOf(it), PERMANENT_PROBES, noncreatureWeight) }
         return breadths.maxOrNull()
     }
 
@@ -116,13 +126,13 @@ object RemovalBreadth {
 
     /**
      * The share of [probes] any of [filters] can hit (a union: "creature or planeswalker"): the
-     * larger of the creature share and the noncreature share.
+     * larger of the creature share and the weighted noncreature share.
      */
-    private fun breadth(filters: List<GameObjectFilter>, probes: Probes): Double {
+    private fun breadth(filters: List<GameObjectFilter>, probes: Probes, noncreatureWeight: Double = 1.0): Double {
         fun hits(probe: CardDefinition): Boolean = filters.any { PrintedFilter.matches(probe, it) != false }
         val creatures = probes.creatures.count(::hits).toDouble() / probes.creatures.size
         val others = probes.others.count(::hits).toDouble() / probes.others.size
-        return maxOf(creatures, others)
+        return maxOf(creatures, others * noncreatureWeight)
     }
 
     private class Probes(val creatures: List<CardDefinition>, val others: List<CardDefinition>)

@@ -3172,6 +3172,7 @@ Common Crook
 Common Goal
 Communal Brewing
 Commune with Beavers
+Commune with Dinosaurs
 Commune with Evil
 Commune with Lava
 Commune with Nature
@@ -15410,6 +15411,7 @@ Sleight of Hand
 Sleight of Mind	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
 Slice and Dice
 Slice from the Shadows	timing: ModifyStatsEffect
+Slice in Twain
 Slick Imitator	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
 Slick Sequence
 Slickshot Lockpicker
