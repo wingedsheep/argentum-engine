@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import java.util.concurrent.ConcurrentHashMap
+import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 
 /**
  * A board whose attackers end the game on contact — [com.wingedsheep.ai.engine.AiProfile.finishersEndTheGame].
@@ -35,8 +35,12 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class FinisherStrike(private val intents: IntentCatalog) : BoardFeature {
 
-    /** Per ability: whether it is a self-bound damage trigger whose payoff is a [IntentTag.GAME_WIN]. */
-    private val finishers = ConcurrentHashMap<TriggeredAbility, Boolean>()
+    /**
+     * Per ability, by identity (a definition's abilities are shared instances, and hashing the data
+     * class would walk its whole effect tree on every evaluation): whether it is a finisher.
+     */
+    private val finishers: MutableMap<TriggeredAbility, Boolean> =
+        java.util.Collections.synchronizedMap(java.util.IdentityHashMap())
 
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
         if (!intents.isEnabled || state.step !in BEFORE_ATTACKS) return 0.0
@@ -63,6 +67,8 @@ class FinisherStrike(private val intents: IntentCatalog) : BoardFeature {
 
     private fun canAttackNow(state: GameState, projected: ProjectedState, id: EntityId): Boolean {
         if (!projected.isCreature(id) || projected.cantAttack(id)) return false
+        // No power, no damage: the trigger never fires (CR 510.1a assigns damage equal to power).
+        if ((projected.getPower(id) ?: 0) <= 0) return false
         val entity = state.getEntity(id) ?: return false
         if (entity.has<TappedComponent>()) return false
         return !entity.has<SummoningSicknessComponent>() ||
@@ -79,10 +85,15 @@ class FinisherStrike(private val intents: IntentCatalog) : BoardFeature {
         return intents.definition(name)?.script?.triggeredAbilities.orEmpty().any(::isFinisher)
     }
 
-    private fun isFinisher(ability: TriggeredAbility): Boolean = finishers.getOrPut(ability) {
-        ability.binding == TriggerBinding.SELF &&
-            ability.trigger is EventPattern.DealsDamageEvent &&
-            IntentTag.GAME_WIN in CardIntentAnalyzer.analyzeEffect(ability.effect).tags
+    /**
+     * A self-bound damage trigger whose whole effect is the opponent losing — unconditionally.
+     * Atemsis, All-Seeing (a may and a reveal count), Frodo, Sauron's Bane (the Ring's tempt count)
+     * and Hidetsugu's Vessel (an intervening "if") win only sometimes, so they are no strike.
+     */
+    private fun isFinisher(ability: TriggeredAbility): Boolean {
+        if (ability.binding != TriggerBinding.SELF || ability.trigger !is EventPattern.DealsDamageEvent) return false
+        if (ability.interveningIf != null || ability.effect !is LoseGameEffect) return false
+        return finishers.getOrPut(ability) { IntentTag.GAME_WIN in CardIntentAnalyzer.analyzeEffect(ability.effect).tags }
     }
 
     companion object {

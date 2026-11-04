@@ -91,6 +91,13 @@ class FinisherReadingAiTest : ScenarioTestBase() {
             playOutTurn(game) shouldBe game.player1Id
         }
 
+        test("Vraska at 10 with only 0-power creatures keeps her loyalty: they deal no damage") {
+            val thopters = listOf("Ornithopter", "Ornithopter", "Ornithopter")
+            val game = vraskaBoard(10, ours = thopters, theirs = listOf("Grizzly Bears"))
+            val (action, options) = choose(game)
+            withClue("chose $action\n${options.joinToString("\n")}") { (game.loyaltyChange(action) == -10) shouldBe false }
+        }
+
         test("Vraska at 10 with as many blockers as attackers keeps her loyalty") {
             val game = vraskaBoard(10, ours = threeBears, theirs = threeBears)
             val (action, options) = choose(game)
