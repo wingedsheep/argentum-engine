@@ -583,6 +583,7 @@ class ZoneTransitionService(
                 // Read by `TriggeringEntityWas` ("if it wasn't a Demon" — Infernal Vessel),
                 // which must see continuous-effect-granted types, not just printed ones.
                 subtypes = lastKnownTypeLine?.subtypes?.mapTo(mutableSetOf()) { it.value } ?: emptySet(),
+                supertypes = state.projectedState.getSupertypes(entityId),
                 controllerId = controllerId,
                 ownerId = cardComponent.ownerId,
                 counters = lastKnownCounters,
@@ -603,6 +604,7 @@ class ZoneTransitionService(
                 wasEnchanted = lastKnownWasEnchanted,
                 wasModified = lastKnownWasModified,
                 wasCast = container.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>(),
+                wasRingBearer = com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isRingBearer(state, entityId),
                 castFromZone = com.wingedsheep.engine.state.components.stack.castFromZoneOf(container),
                 enteredFromZone = container.get<
                     com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent

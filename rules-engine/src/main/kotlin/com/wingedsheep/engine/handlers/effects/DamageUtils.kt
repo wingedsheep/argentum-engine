@@ -34,6 +34,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.components.stack.attachmentIdsOf
 import com.wingedsheep.engine.state.components.stack.captureLastKnown
 import com.wingedsheep.engine.state.components.stack.damagedBySourcesOf
@@ -248,7 +249,8 @@ object DamageUtils {
         cantBePrevented: Boolean = false,
         isCombatDamage: Boolean = false,
         excessToController: Boolean = false,
-        damageSourceRef: com.wingedsheep.engine.state.ObjectRef? = sourceId?.let(state::objectRef)
+        damageSourceRef: com.wingedsheep.engine.state.ObjectRef? = sourceId?.let(state::objectRef),
+        sourceSnapshot: EntitySnapshot? = null
     ): EffectResult {
         if (amount <= 0) return EffectResult.success(state)
         var effectiveAmount = amount
@@ -265,18 +267,18 @@ object DamageUtils {
         // Infect works from any zone (CR 702.90e): a spell reaches it through the spell-grant
         // channels as well, the same split lifelink and deathtouch make.
         val hasInfect = sourceId != null && (
-            sourceHasInfect(state, projected, sourceId) ||
-                sourceHasGrantedDamageKeyword(zones.cardRegistry, state, sourceId, Keyword.INFECT)
+            sourceHasInfect(state, projected, sourceId, sourceSnapshot) ||
+                (sourceSnapshot == null && sourceHasGrantedDamageKeyword(zones.cardRegistry, state, sourceId, Keyword.INFECT))
         )
         if (lifeComponent != null && sourceId != null && hasInfect) {
             // CR 120.3b / 702.90b: damage to a player by a source with infect doesn't cause life
             // loss; its controller gives the player that many poison counters instead. It is
             // still damage dealt to the player, so the damage tallies (and lifelink below) apply.
             newState = trackDamageReceivedByPlayer(
-                newState, targetId, effectiveAmount, sourceId, isCombatDamage, causedLifeLoss = false
+                newState, targetId, effectiveAmount, sourceId, isCombatDamage, causedLifeLoss = false, sourceSnapshot = sourceSnapshot
             )
             newState = givePoisonCounters(
-                newState, targetId, effectiveAmount, damageSourceController(newState, projected, sourceId),
+                newState, targetId, effectiveAmount, damageSourceController(newState, projected, sourceId, sourceSnapshot),
                 events, zones.predicateEvaluator
             )
         } else if (lifeComponent != null) {
@@ -293,14 +295,14 @@ object DamageUtils {
             val (written, newLife) = writeLifeReduction(newState, targetId, currentLife, currentLife - lifeLossAmount, zones.predicateEvaluator)
             // A loss a floor or replacement cancelled isn't a loss: it mustn't spend "first time this turn".
             newState = trackDamageReceivedByPlayer(
-                written, targetId, effectiveAmount, sourceId, isCombatDamage, causedLifeLoss = newLife < currentLife
+                written, targetId, effectiveAmount, sourceId, isCombatDamage, causedLifeLoss = newLife < currentLife, sourceSnapshot = sourceSnapshot
             )
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE, firstLoss))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
             if (sourceId != null) {
-                newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
-                newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount)
+                if (sourceSnapshot == null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
+                newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount, sourceSnapshot)
             }
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             val currentLoyalty = counters.getCount(CounterType.LOYALTY)
@@ -345,8 +347,8 @@ object DamageUtils {
         } else {
             // It's a creature - mark damage (or place -1/-1 counters if source has wither)
             val hasWither = sourceId != null && (
-                sourceHasKeyword(state, projected, sourceId, Keyword.WITHER) ||
-                state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true ||
+                sourceHasKeyword(state, projected, sourceId, Keyword.WITHER, sourceSnapshot) ||
+                (sourceSnapshot == null && state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true) ||
                 hasInfect
             )
             if (hasWither) {
@@ -355,7 +357,7 @@ object DamageUtils {
                 // It is still damage, so the excess (CR 120.4a) is measured against lethal damage
                 // exactly as for marked damage, before the counters change the toughness.
                 val witherLethalNeeded =
-                    if (sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId)) 1
+                    if (sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId, sourceSnapshot)) 1
                     else (projected.lethalDamageThreshold(targetId) -
                         (newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(0)
                 creatureExcessDamage = (effectiveAmount - witherLethalNeeded).coerceAtLeast(0)
@@ -385,7 +387,7 @@ object DamageUtils {
                 // dealt damage by this source, so a deathtouch source still marks it for
                 // destruction as an SBA (CR 702.2b / 704.5h) even though nothing is marked as
                 // normal damage. Record the deathtouch flag without marking damage.
-                if (sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId)) {
+                if (sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId, sourceSnapshot)) {
                     newState = newState.updateEntity(targetId) { container ->
                         val existing = container.get<DamageComponent>()
                         container.with(DamageComponent(
@@ -397,7 +399,7 @@ object DamageUtils {
             } else {
                 val existingDamage = newState.getEntity(targetId)?.get<DamageComponent>()
                 val currentDamage = existingDamage?.amount ?: 0
-                val hasDeathtouch = sourceId != null && sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId)
+                val hasDeathtouch = sourceId != null && sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId, sourceSnapshot)
                 // Excess damage (CR 120.4a) — damage in excess of what was needed to be
                 // lethal. With deathtouch, any amount of damage greater than 1 is excess —
                 // lethal collapses to a flat 1 regardless of marked damage (CR 120.4a refs
@@ -420,26 +422,27 @@ object DamageUtils {
             val dealtToCreature = effectiveAmount
             // Track damage source for "creature dealt damage by this dies" triggers
             if (sourceId != null) {
-                newState = trackDamageDealtToCreature(newState, sourceId, targetId)
-                newState = trackDamageSourceLki(newState, sourceId, targetId, dealtToCreature)
-                newState = applyDoomedRidersToDamagedCreature(newState, sourceId, targetId)
+                if (sourceSnapshot == null) newState = trackDamageDealtToCreature(newState, sourceId, targetId)
+                newState = trackDamageSourceLki(newState, sourceId, targetId, dealtToCreature, sourceSnapshot)
+                if (sourceSnapshot == null) newState = applyDoomedRidersToDamagedCreature(newState, sourceId, targetId)
             }
             // Track per-player damage dealt to this entity this turn (Grothama LTB).
             if (sourceId != null) {
-                newState = trackDamageDealtByPlayer(newState, sourceId, targetId, dealtToCreature)
+                newState = trackDamageDealtByPlayer(newState, sourceId, targetId, dealtToCreature, sourceSnapshot)
             }
         }
 
         newState = newState.updateEntity(targetId) { WasDealtDamageThisTurnComponent.markedOn(it, isCombatDamage) }
-        newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage)
+        if (sourceSnapshot == null) newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage)
         // Record the source on its controller's per-turn set of damage sources. Unlike the stamp
         // above this is not battlefield-only: a resolving burn spell is a source that dealt damage
         // just as much as a creature is (Case of the Burning Masks).
         if (sourceId != null && effectiveAmount > 0) {
-            newState = trackDamageSourceForController(newState, sourceId)
+            newState = trackDamageSourceForController(newState, sourceId, sourceSnapshot)
         }
 
-        val sourceName = sourceId?.let { id ->
+        val sourceName = if (sourceSnapshot != null) sourceSnapshot.name.takeUnless { sourceSnapshot.wasFaceDown }
+        else sourceId?.let { id ->
             state.getEntity(id)?.get<CardComponent>()?.name?.let { nameVisibleToAll(state, id, it) }
         }
         val targetContainer = newState.getEntity(targetId)
@@ -457,7 +460,7 @@ object DamageUtils {
         // ORIGINAL state's projection, before this damage marked the creature / SBAs could move it.
         // Read by "damage equal to that creature's toughness" triggers (Taii Wakeen).
         val targetToughnessAtDamage = if (targetWasCreature) projected.getToughness(targetId) else null
-        val sourceTargetIds = sourceId
+        val sourceTargetIds = sourceId.takeIf { sourceSnapshot == null }
             ?.let(newState::getEntity)
             ?.get<TargetsComponent>()
             ?.targets
@@ -483,8 +486,8 @@ object DamageUtils {
                 excessAmount = creatureExcessDamage,
                 targetToughnessAtDamage = targetToughnessAtDamage,
                 sourceTargetIdsAtDamage = sourceTargetIds,
-                sourceAttachmentIds = attachmentIdsOf(state, sourceId),
-                sourceLastKnown = sourceId
+                sourceAttachmentIds = sourceSnapshot?.attachmentIds ?: attachmentIdsOf(state, sourceId),
+                sourceLastKnown = sourceSnapshot ?: sourceId
                     ?.takeIf { state.getEntity(it) != null }
                     ?.let { captureLastKnown(state, it) },
             )
@@ -509,12 +512,10 @@ object DamageUtils {
         if (sourceId != null && !isCombatDamage && effectiveAmount > 0) {
             // Projected colors on the battlefield (a granted-red source counts), the card's own (or an
             // off-battlefield SetColors') for a spell on the stack.
-            val sourceColors = projected.colorsOf(sourceId)
+            val sourceColors = if (sourceSnapshot != null) sourceSnapshot.colors.orEmpty() else projected.colorsOf(sourceId)
             val sourceIsRed = Color.RED.name in sourceColors
             if (sourceIsRed) {
-                val sourceControllerId = projected.getController(sourceId)
-                    ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: state.getEntity(sourceId)?.get<SpellOnStackComponent>()?.casterId
+                val sourceControllerId = damageSourceController(state, projected, sourceId, sourceSnapshot)
                 if (sourceControllerId != null) {
                     newState = newState.updateEntity(sourceControllerId) { container ->
                         val prior = container.get<RedNoncombatDamageDealtThisTurnComponent>()?.amount ?: 0
@@ -529,10 +530,10 @@ object DamageUtils {
         // (Alhammarret's Archive, Leyline of Hope) replaces the actual amount gained.
         if (sourceId != null) {
             val projected = newState.projectedState
-            if (sourceHasKeyword(newState, projected, sourceId, Keyword.LIFELINK) ||
-                sourceHasGrantedDamageKeyword(zones.cardRegistry, newState, sourceId, Keyword.LIFELINK)
+            if (sourceHasKeyword(newState, projected, sourceId, Keyword.LIFELINK, sourceSnapshot) ||
+                (sourceSnapshot == null && sourceHasGrantedDamageKeyword(zones.cardRegistry, newState, sourceId, Keyword.LIFELINK))
             ) {
-                val controllerId = damageSourceController(newState, projected, sourceId)
+                val controllerId = damageSourceController(newState, projected, sourceId, sourceSnapshot)
                 if (controllerId != null) {
                     val (gainedState, gainEvent) = gainLife(newState, controllerId, effectiveAmount, predicateEvaluator = zones.predicateEvaluator)
                     newState = gainedState
@@ -561,20 +562,21 @@ object DamageUtils {
         sourceId: EntityId? = null,
         isCombatDamage: Boolean = false,
         /** False for damage from a source with infect, which gives poison counters instead (CR 702.90b). */
-        causedLifeLoss: Boolean = true
+        causedLifeLoss: Boolean = true,
+        sourceSnapshot: EntitySnapshot? = null
     ): GameState {
         if (amount <= 0) return state
         // Every path that deals damage to a player — combat and noncombat alike — funnels through
         // here, so it is the one place to record the source's "has dealt damage to this player this
         // game" memory (The Fallen). Planeswalkers are recorded separately, at their own two
         // loyalty-removal sites.
-        val marked = sourceId?.let { markDealtDamageToThisGame(state, it, playerId, amount) } ?: state
+        val marked = sourceId?.takeIf { sourceSnapshot == null }?.let { markDealtDamageToThisGame(state, it, playerId, amount) } ?: state
         // Is the source an artifact at the moment it dealt the damage? For a source still on the
         // battlefield, its projected types are authoritative (a continuous effect may have added or
         // stripped artifact-ness). Only for a source that has already left do we fall back to its
         // base card types as last-known information. Powers the artifact-source damage accumulator
         // (Reverse Polarity).
-        val sourceIsArtifact = sourceId?.let { sid ->
+        val sourceIsArtifact = if (sourceSnapshot != null) sourceSnapshot.typeLine?.isArtifact == true else sourceId?.let { sid ->
             if (sid in marked.getBattlefield()) {
                 marked.projectedState.hasType(sid, "ARTIFACT")
             } else {
@@ -583,7 +585,7 @@ object DamageUtils {
         } ?: false
         // "Dealt combat damage by three or more Pirates this turn" (Admiral Beckett Brass) judges each
         // source as it was when it dealt the damage, so freeze it now.
-        val combatSource = if (isCombatDamage) sourceId?.let { damageSourceLki(marked, it, amount) } else null
+        val combatSource = if (isCombatDamage) sourceId?.let { damageSourceLki(marked, it, amount, sourceSnapshot) } else null
         return marked.updateEntity(playerId) { container ->
             val existing = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent()
@@ -769,52 +771,42 @@ object DamageUtils {
         cardRegistry: CardRegistry,
         state: GameState,
         projected: ProjectedState,
-        sourceId: EntityId
+        sourceId: EntityId,
+        sourceSnapshot: EntitySnapshot? = null
     ): Boolean =
-        sourceHasKeyword(state, projected, sourceId, Keyword.DEATHTOUCH) ||
-            sourceHasGrantedDamageKeyword(cardRegistry, state, sourceId, Keyword.DEATHTOUCH)
+        sourceHasKeyword(state, projected, sourceId, Keyword.DEATHTOUCH, sourceSnapshot) ||
+            (sourceSnapshot == null && sourceHasGrantedDamageKeyword(cardRegistry, state, sourceId, Keyword.DEATHTOUCH))
 
-    /**
-     * Does the permanent source [sourceId] have [keyword]? Its projected keywords while it is on
-     * the battlefield; once it has left (a creature that died before its "it deals damage" trigger
-     * resolved — Wrathful Red Dragon, Warstorm Surge), its keywords as it last existed there
-     * (CR 608.2h), so its lifelink, deathtouch and wither still apply to the damage it deals.
-     * Read off the battlefield-exit snapshot the card carries; a token already deleted as a
-     * state-based action has none, so its keywords are not seen.
-     */
+    /** A supplied snapshot names a departed object, even if its card has since returned. */
     private fun sourceHasKeyword(
         state: GameState,
         projected: ProjectedState,
         sourceId: EntityId,
-        keyword: Keyword
+        keyword: Keyword,
+        sourceSnapshot: EntitySnapshot? = null
     ): Boolean {
+        if (sourceSnapshot != null) return keyword.name in sourceSnapshot.keywords
         if (projected.hasKeyword(sourceId, keyword)) return true
         val lastKnown = state.getEntity(sourceId)?.get<LastKnownPermanentComponent>() ?: return false
         return keyword.name in lastKnown.snapshot.keywords && sourceId !in state.getBattlefield()
     }
 
-    /**
-     * The controller of a damage source: a permanent's projected controller, a spell's caster, or
-     * — for a permanent that has left the battlefield — its controller as it last existed there.
-     */
-    internal fun damageSourceController(state: GameState, projected: ProjectedState, sourceId: EntityId): EntityId? =
+    /** The damage object's controller, using its frozen characteristics after departure. */
+    internal fun damageSourceController(
+        state: GameState, projected: ProjectedState, sourceId: EntityId,
+        sourceSnapshot: EntitySnapshot? = null
+    ): EntityId? = if (sourceSnapshot != null) sourceSnapshot.controllerId else
         projected.getController(sourceId)
-            // A spell's controller is its caster (or whoever took control of it). Checked before
-            // ControllerComponent, which a spell only carries as a leftover from its hand card — a
-            // prepare-spell copy minted in exile has none, and a stolen spell's is stale.
             ?: state.getEntity(sourceId)?.get<SpellOnStackComponent>()?.casterId
             ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
             ?: state.getEntity(sourceId)?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
 
-    /**
-     * Does [sourceId] have infect for the damage it is dealing right now (CR 702.90)? Projected
-     * keywords for a battlefield source, last-known keywords for one that has left (CR 702.90d),
-     * and the one-shot spell grant for a spell on the stack — infect works from any zone
-     * (CR 702.90e). Public so combat damage reads the same answer.
-     */
-    fun sourceHasInfect(state: GameState, projected: ProjectedState, sourceId: EntityId): Boolean =
-        sourceHasKeyword(state, projected, sourceId, Keyword.INFECT) ||
-            state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.INFECT.name) == true
+    fun sourceHasInfect(
+        state: GameState, projected: ProjectedState, sourceId: EntityId,
+        sourceSnapshot: EntitySnapshot? = null
+    ): Boolean =
+        sourceHasKeyword(state, projected, sourceId, Keyword.INFECT, sourceSnapshot) ||
+            (sourceSnapshot == null && state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.INFECT.name) == true)
 
     /**
      * [placerId] gives [playerId] [amount] poison counters as the result of damage — infect
@@ -1232,17 +1224,17 @@ object DamageUtils {
      * new object it is (CR 400.7). A source that isn't a permanent — a spell resolving off the
      * stack — carries no timestamp and is identified by its entity alone.
      */
-    fun trackDamageSourceForController(state: GameState, sourceId: EntityId): GameState {
-        val container = state.getEntity(sourceId) ?: return state
-        val controllerId = state.projectedState.getController(sourceId)
-            ?: container.get<ControllerComponent>()?.playerId
-            ?: container.get<SpellOnStackComponent>()?.casterId
-            ?: container.get<CardComponent>()?.ownerId
+    fun trackDamageSourceForController(state: GameState, sourceId: EntityId, sourceSnapshot: EntitySnapshot? = null): GameState {
+        val container = state.getEntity(sourceId).takeIf { sourceSnapshot == null }
+        val controllerId = damageSourceController(state, state.projectedState, sourceId, sourceSnapshot)
+            ?: container?.get<ControllerComponent>()?.playerId
+            ?: container?.get<SpellOnStackComponent>()?.casterId
+            ?: container?.get<CardComponent>()?.ownerId
             ?: return state
         val identity = DamageSourceIdentity(
             entityId = sourceId,
-            incarnation = container
-                .get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
+            incarnation = sourceSnapshot?.battlefieldEntryTimestamp ?: container
+                ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
                 ?.timestamp
                 ?: 0L
         )
@@ -1265,9 +1257,9 @@ object DamageUtils {
      * evaluated against its damage-time state (CR 608.2i). [amount] accumulates per source, so a
      * dies trigger can sum the damage from matching sources ("by other sources named Blazing Effigy").
      */
-    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetId: EntityId, amount: Int): GameState {
+    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetId: EntityId, amount: Int, sourceSnapshot: EntitySnapshot? = null): GameState {
         if (targetId !in state.getBattlefield()) return state
-        val snapshot = damageSourceLki(state, sourceId, amount) ?: return state
+        val snapshot = damageSourceLki(state, sourceId, amount, sourceSnapshot) ?: return state
         return state.updateEntity(targetId) { container ->
             val existing = container.get<DamagedBySourcesThisTurnComponent>()
                 ?: DamagedBySourcesThisTurnComponent()
@@ -1280,7 +1272,17 @@ object DamageUtils {
      * damaged-permanent record and a player's combat-damage-source record keep. Null for a source with
      * no controller or owner to name.
      */
-    fun damageSourceLki(state: GameState, sourceId: EntityId, amount: Int): DamageSourceLki? {
+    fun damageSourceLki(state: GameState, sourceId: EntityId, amount: Int, sourceSnapshot: EntitySnapshot? = null): DamageSourceLki? {
+        if (sourceSnapshot != null) return DamageSourceLki(
+            sourceControllerId = sourceSnapshot.controllerId ?: return null,
+            sourceId = sourceId,
+            sourceSubtypes = sourceSnapshot.subtypes.map { com.wingedsheep.sdk.core.Subtype(it) }.toSet(),
+            sourceWasCreature = sourceSnapshot.typeLine?.isCreature == true,
+            sourceWasLegendary = sourceSnapshot.typeLine?.isLegendary == true,
+            sourceCardTypes = sourceSnapshot.typeLine?.cardTypes.orEmpty(),
+            sourceName = sourceSnapshot.name.takeUnless { sourceSnapshot.wasFaceDown },
+            amount = amount,
+        )
         val projected = state.projectedState
         val controllerId = projected.getController(sourceId)
             ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
@@ -1377,12 +1379,13 @@ object DamageUtils {
         sourceId: EntityId,
         targetId: EntityId,
         amount: Int,
+        sourceSnapshot: EntitySnapshot? = null,
     ): GameState {
         if (amount <= 0) return state
         if (targetId !in state.getBattlefield()) return state
-        val controllerId = state.projectedState.getController(sourceId)
-            ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-            ?: state.getEntity(sourceId)?.get<CardComponent>()?.ownerId
+        val controllerId = damageSourceController(state, state.projectedState, sourceId, sourceSnapshot)
+            ?: state.getEntity(sourceId)?.takeIf { sourceSnapshot == null }?.get<ControllerComponent>()?.playerId
+            ?: state.getEntity(sourceId)?.takeIf { sourceSnapshot == null }?.get<CardComponent>()?.ownerId
             ?: return state
         return state.updateEntity(targetId) { container ->
             val existing = container.get<DamageDealtByPlayersThisTurnComponent>()
@@ -1468,7 +1471,8 @@ object DamageUtils {
         recipientId: EntityId? = null,
         sourceId: EntityId? = null,
         isCombatDamage: Boolean? = null,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        sourceSnapshot: EntitySnapshot? = null
     ): Boolean {
         // Turn-scoped "Damage can't be prevented this turn" (Fear, Fire, Foes!).
         if (state.damageCantBePreventedThisTurn) return true
@@ -1505,7 +1509,7 @@ object DamageUtils {
                 if (!damageSourceMatches(
                         state, projected, pattern.source, sourceId,
                         hostId = entityId, hostControllerId = hostControllerId, recipientId = recipient,
-                        predicateEvaluator = predicateEvaluator
+                        predicateEvaluator = predicateEvaluator, sourceSnapshot = sourceSnapshot
                     )
                 ) {
                     continue
@@ -2185,18 +2189,15 @@ object DamageUtils {
         hostId: EntityId,
         hostControllerId: EntityId,
         recipientId: EntityId,
-        predicateEvaluator: PredicateEvaluator
-    ): Boolean = filter == GameObjectFilter.Any || (
-        sourceId != null && predicateEvaluator.matches(
-            state, projected, sourceId, filter,
-            // The host answers "this permanent" / "enchanted creature" (sourceItself(),
-            // attachedToBySource()), its controller "a source you control" — for a spell on the
-            // stack or a source that has left the battlefield too, through the controller
-            // predicate's stack and last-known fallbacks — and the recipient
-            // sharingColorWithRecipient().
-            PredicateContext(controllerId = hostControllerId, sourceId = hostId, recipientId = recipientId),
-        )
-    )
+        predicateEvaluator: PredicateEvaluator,
+        sourceSnapshot: EntitySnapshot? = null
+    ): Boolean {
+        if (filter == GameObjectFilter.Any) return true
+        if (sourceId == null) return false
+        val context = PredicateContext(controllerId = hostControllerId, sourceId = hostId, recipientId = recipientId)
+        return if (sourceSnapshot != null) predicateEvaluator.matchesSnapshot(state, sourceSnapshot, filter, context, onBattlefield = true)
+        else predicateEvaluator.matches(state, projected, sourceId, filter, context)
+    }
 
     /**
      * Whether the recipient of a damage instance matches a damage replacement's [Recipient].

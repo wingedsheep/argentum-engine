@@ -8,6 +8,8 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.DamageUtils.dealDamageToTarget
+import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
@@ -82,6 +84,22 @@ class DealDamageExecutor(
                 ?: sourceId?.let(state::objectRef)
         }
 
+        // Resolve characteristics by object identity, never by a returned card's newer visit.
+        val sourceReference = (damageSourceTarget ?: EffectTarget.Self) as? EffectTarget.SingleEntity
+        val sourceSnapshot = sourceId?.let { id ->
+            // A spell resolving on the stack is still its current object. Its cast-time
+            // snapshot must not hide keywords or colors granted since it was cast.
+            val departed = if (damageSourceRef != null) !state.isCurrentObject(damageSourceRef)
+            else state.getEntity(id) == null || (id !in state.getBattlefield() &&
+                state.getEntity(id)?.get<LastKnownPermanentComponent>() != null)
+            if (!departed) null else {
+                state.getEntity(id)?.get<LastKnownPermanentComponent>()?.snapshot
+                    ?.takeIf { damageSourceRef == null || it.objectRef == damageSourceRef }
+                    ?: sourceReference?.let { context.lkiSnapshotFor(it, id) }
+                        ?.takeIf { damageSourceRef == null || it.objectRef == null || it.objectRef == damageSourceRef }
+            }
+        }
+
         val recipients = when (effect.target) {
             EffectTarget.EachDamagedBySourceThisGame -> resolveDamagedThisGame(state, sourceId, context)
             is EffectTarget.PlayerRef -> context.resolvePlayerTargets(effect.target, state)
@@ -90,7 +108,7 @@ class DealDamageExecutor(
         if (recipients.isEmpty()) return EffectResult.success(state)
         val result = DamageReplacementChain.deal(zones, state,
             recipients.map { DamageReplacementChain.Instance(sourceId, it, amount,
-                cantBePrevented = effect.cantBePrevented, sourceRef = damageSourceRef) },
+                cantBePrevented = effect.cantBePrevented, sourceRef = damageSourceRef, sourceSnapshot = sourceSnapshot) },
             effect, context, effect.excessToController)
         if (result.outcome is Outcome.Paused) return result
         val targetId = recipients.first()

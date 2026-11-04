@@ -1057,7 +1057,14 @@ for the ordinary damage-marking code. Damage-to-counter and damage-to-mill resul
 all surviving damage has been marked, so their future counters and graveyards do not change another
 instance's replacement choices. Chosen face-up replacements are the exception: they reveal the object
 before the next question, with a small original-entity journal preventing repeated turn-up events
-and preserving the announced damage amount on replay. Redirection retains applied identities.
+and preserving the announced damage amount on replay. An instance with no candidates is only
+provisionally complete: a later reveal requeues it with its applied identities intact, so newly visible
+global replacements see the whole surviving event. Candidates are cached until a replacement changes
+the event or resource state; ordinary damage with no candidates skips cross-instance choice scans.
+Peer instances are inspected lazily only when a finite shield needs a shared-resource label.
+Redirection retains applied identities. A departed source carries its object reference and frozen
+`EntitySnapshot` through replay, replacement matching, protection and final damage application;
+a later incarnation of the same entity cannot supply its controller, colors or damage keywords.
 When simultaneous sources share a finite resource or competing noncommuting replacements, the
 player can choose which source to modify next. Finite shields, counter-based prevention and limited
 redirection share an exact-total allocation sequence: bounded number decisions divide the resource

@@ -12,6 +12,7 @@ import com.wingedsheep.engine.mechanics.targeting.*
 import com.wingedsheep.engine.replacement.PendingReplacementRider
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ObjectRef
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.identity.*
@@ -34,7 +35,10 @@ object DamageReplacementChain {
     data class Instance(
         val sourceId: EntityId?, val targetId: EntityId, val amount: Int,
         val isCombatDamage: Boolean = false, val cantBePrevented: Boolean = false,
-        val sourceRef: ObjectRef? = null
+        val sourceRef: ObjectRef? = null,
+        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+        @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+        val sourceSnapshot: EntitySnapshot? = null
     )
     data class DeferredResult(val damage: Instance, val host: EntityId, val controller: EntityId, val effect: ReplacementEffect)
     data class AppliedResults(val state: GameState, val events: List<GameEvent>)
@@ -64,7 +68,7 @@ object DamageReplacementChain {
             val controller = projected.getController(damage.targetId)
             if (!projected.isCreature(damage.targetId) || controller == null) listOf(damage)
             else {
-                val deathtouch = damage.sourceId?.let { DamageUtils.sourceHasDeathtouch(zones.cardRegistry, state, projected, it) } == true
+                val deathtouch = damage.sourceId?.let { DamageUtils.sourceHasDeathtouch(zones.cardRegistry, state, projected, it, sourceSnapshot = damage.sourceSnapshot) } == true
                 val marked = state.getEntity(damage.targetId)?.get<DamageComponent>()?.amount ?: 0
                 val lethal = if (deathtouch) 1 else (projected.lethalDamageThreshold(damage.targetId) - marked).coerceAtLeast(0)
                 val retained = minOf(damage.amount, lethal)
@@ -82,7 +86,7 @@ object DamageReplacementChain {
                 val events = result.events.toMutableList()
                 for (damage in result.instances) {
                     val dealt = DamageUtils.applyReplacedDamage(zones, working, damage.targetId, damage.amount, damage.sourceId,
-                        damage.cantBePrevented, damage.isCombatDamage, false, damage.sourceRef)
+                        damage.cantBePrevented, damage.isCombatDamage, false, damage.sourceRef, sourceSnapshot = damage.sourceSnapshot)
                     working = dealt.state
                     events += dealt.events
                 }
@@ -141,7 +145,8 @@ object DamageReplacementChain {
             val player = if (it.targetId in state.turnOrder) it.targetId else state.projectedState.getController(it.targetId)
             apnap.indexOf(player).let { index -> if (index < 0) Int.MAX_VALUE else index }
         }.map(::Pending))
-        val final = mutableListOf<Instance>()
+        val final = mutableListOf<Pending>()
+        val candidateCache = java.util.IdentityHashMap<Pending, List<Candidate>>()
         val events = mutableListOf<GameEvent>()
         val gains = linkedMapOf<EntityId, Int>()
         val results = mutableListOf<DeferredResult>()
@@ -154,7 +159,7 @@ object DamageReplacementChain {
             return ask.copy(state = publicState, events = revealed)
         }
         fun ask(damage: Instance, options: List<Candidate>, decider: EntityId, prompt: String): Result.Ask {
-            val sourceName = damage.sourceId?.let { name(working, it) } ?: "A source"
+            val sourceName = sourceName(working, damage)
             val targetName = if (damage.targetId == decider) "you" else name(working, damage.targetId)
             return publish(Result.Ask(state, { id -> ChooseOptionDecision(
                 id = id, playerId = decider,
@@ -164,18 +169,21 @@ object DamageReplacementChain {
             ) }, choiceIndex.toString(), options.map { it.key }))
         }
         while (pending.isNotEmpty()) {
-            pending.removeAll { it.damage.amount <= 0 }
-            if (pending.isEmpty()) break
+            if (pending.first().damage.amount <= 0) { pending.removeFirst(); continue }
             fun decider(incoming: Instance): EntityId =
                 if (incoming.targetId in working.turnOrder) incoming.targetId
                 else working.projectedState.getController(incoming.targetId)
                     ?: working.getEntity(incoming.targetId)?.get<OwnerComponent>()?.playerId ?: working.activePlayerId!!
-            fun available(item: Pending): List<Candidate> = candidates(zones, working, item.damage, inBatch,
-                batchShieldTargets, batchRedirects,
-                pending.filter { it !== item }.map { it.damage }, matchingState)
-                .filter { identity(it.key) !in item.applied }
+            fun available(item: Pending): List<Candidate> = candidateCache.getOrPut(item) {
+                if (item.damage.amount <= 0) emptyList() else candidates(zones, working, item.damage, inBatch, batchShieldTargets, batchRedirects,
+                    { pending.asSequence().filter { it !== item }.map { it.damage } }, matchingState)
+                    .filter { identity(it.key) !in item.applied }
+            }
             val first = pending.first()
             val firstChoices = available(first)
+            // No replacement can affect this instance until a reveal changes the matching state.
+            // In ordinary combat this avoids scanning all the other assignments for every source.
+            if (firstChoices.isEmpty()) { final += pending.removeFirst(); continue }
             // Shared resources and noncommuting replacements may span simultaneous sources.
             // Let the affected player choose across them before committing any one source.
             val samePlayer = pending.withIndex().filter { decider(it.value.damage) == decider(first.damage) }
@@ -194,13 +202,13 @@ object DamageReplacementChain {
                     if (batchKey != null && !seenShields.add(batchKey)) null else index to option
                 } }
             } else firstChoices.map { 0 to it }
-            if (actions.isEmpty()) { final += pending.removeFirst().damage; continue }
+            if (actions.isEmpty()) { final += pending.removeFirst(); continue }
             val picked = if (actions.size == 1 || !sharedShield && actions.first().second.commute != null &&
                 actions.all { it.second.commute == actions.first().second.commute }) actions.first() else {
                 val options = actions.map { (index, option) ->
                     if (!sharedShield) option else {
                         val incoming = pending[index].damage
-                        val source = incoming.sourceId?.let { name(working, it) } ?: "A source"
+                        val source = sourceName(working, incoming)
                         val recipient = if (incoming.targetId == decider(incoming)) "you" else name(working, incoming.targetId)
                         option.copy(key = "instance:$index:${option.key}", label = if (option.allocation != null || option.batch != null)
                             option.label else "${option.label} — $source's ${incoming.amount} damage to $recipient")
@@ -216,6 +224,7 @@ object DamageReplacementChain {
             val current = pending.removeAt(picked.first)
             val damage = current.damage
             val selected = picked.second
+            val eventStart = events.size
             if (selected.batch != null) {
                 val whole = listOf(current) + pending.toList()
                 val eligible = whole.indices.filter { index ->
@@ -248,7 +257,7 @@ object DamageReplacementChain {
                             val answer = state.damageReplacementChoices.getOrNull(choiceIndex)
                             if (answer == null) return publish(Result.Ask(state, { id -> YesNoDecision(
                                 id = id, playerId = candidate.optionalController,
-                                prompt = "${item.damage.sourceId?.let { name(working, it) } ?: "A source"} would deal ${item.damage.amount} damage to ${name(working, item.damage.targetId)}. ${candidate.label}?",
+                                prompt = "${sourceName(working, item.damage)} would deal ${item.damage.amount} damage to ${name(working, item.damage.targetId)}. ${candidate.label}?",
                                 context = DecisionContext(sourceId = candidate.host, phase = DecisionPhase.RESOLUTION),
                                 yesText = "Redirect it", noText = "Let it through"
                             ) }, choiceIndex.toString(), listOf(yes, no)))
@@ -273,7 +282,7 @@ object DamageReplacementChain {
                         val answer = state.damageReplacementChoices.getOrNull(choiceIndex)
                         if (answer == null) {
                             val decider = decider(damage)
-                            val sourceName = incoming.sourceId?.let { name(working, it) } ?: "this source"
+                            val sourceName = sourceName(working, incoming)
                             val recipientName = if (incoming.targetId == decider) "you" else name(working, incoming.targetId)
                             return publish(Result.Ask(state, { id -> ChooseNumberDecision(
                                 id = id, playerId = decider,
@@ -311,29 +320,35 @@ object DamageReplacementChain {
                 val answer = state.damageReplacementChoices.getOrNull(choiceIndex)
                 if (answer == null) return publish(Result.Ask(state, { id -> YesNoDecision(
                     id = id, playerId = selected.optionalController,
-                    prompt = "${damage.sourceId?.let { name(working, it) } ?: "A source"} would deal ${damage.amount} damage to ${name(working, damage.targetId)}. ${selected.label}?",
+                    prompt = "${sourceName(working, damage)} would deal ${damage.amount} damage to ${name(working, damage.targetId)}. ${selected.label}?",
                     context = DecisionContext(sourceId = selected.host, phase = DecisionPhase.RESOLUTION),
                     yesText = "Redirect it", noText = "Let it through"
                 ) }, choiceIndex.toString(), listOf(yes.key, no.key)))
                 choiceIndex++
                 val result = if (answer == yes.key) yes.apply() else no.apply()
                 working = result.state; events += result.events; results += result.results
-                matchingState = FaceUpInstead.turnFaceUpAll(matchingState,
-                    result.events.filterIsInstance<TurnFaceUpEvent>().map { it.entityId }).first
                 result.gains.forEach { (id, amount) -> gains.merge(id, amount, Int::plus) }
                 result.damage.asReversed().forEach { pending.addFirst(Pending(it, current.applied + identity(selected.key))) }
             } else {
                 val result = selected.apply()
                 working = result.state; events += result.events; results += result.results
-                matchingState = FaceUpInstead.turnFaceUpAll(matchingState,
-                    result.events.filterIsInstance<TurnFaceUpEvent>().map { it.entityId }).first
                 result.gains.forEach { (id, amount) -> gains.merge(id, amount, Int::plus) }
                 result.damage.asReversed().forEach { pending.addFirst(Pending(it, current.applied + identity(selected.key))) }
             }
+            val revealed = events.subList(eventStart, events.size).filterIsInstance<TurnFaceUpEvent>()
+            if (revealed.isNotEmpty()) {
+                matchingState = FaceUpInstead.turnFaceUpAll(matchingState, revealed.map { it.entityId }).first
+                // All surviving damage is still one pending event. A newly visible global effect
+                // must see earlier instances too, without reapplying their previous replacements.
+                final.asReversed().forEach(pending::addFirst)
+                final.clear()
+            }
+            // Candidate closures capture the resource state and amounts for this application.
+            candidateCache.clear()
         }
         if (batchRedirects.isNotEmpty()) working = working.copy(floatingEffects = working.floatingEffects.filterNot { it.id in batchRedirects })
         val (finished, finalEvents) = DamageReplacementReveals.finish(working.copy(damageReplacementChoices = emptyList()), events)
-        return Result.Done(finished, final, finalEvents, gains, results)
+        return Result.Done(finished, final.map { it.damage }, finalEvents, gains, results)
     }
 
     private fun identity(key: String): String = key.substringBefore(":amount:")
@@ -341,24 +356,28 @@ object DamageReplacementChain {
     private fun name(state: GameState, id: EntityId): String =
         state.getEntity(id)?.get<CardComponent>()?.name?.let { nameVisibleToAll(state, id, it) } ?: "Permanent"
 
+    private fun sourceName(state: GameState, damage: Instance): String =
+        if (damage.sourceSnapshot != null) damage.sourceSnapshot.name.takeUnless { damage.sourceSnapshot.wasFaceDown } ?: "A source"
+        else damage.sourceId?.let { name(state, it) } ?: "A source"
+
     private fun candidates(zones: ZoneTransitionService, state: GameState, d: Instance, inBatch: Boolean,
-                           batchShields: MutableSet<EntityId>, batchRedirects: MutableSet<EntityId>, later: List<Instance>, viewState: GameState): List<Candidate> {
+                           batchShields: MutableSet<EntityId>, batchRedirects: MutableSet<EntityId>, later: () -> Sequence<Instance>, viewState: GameState): List<Candidate> {
         val out = mutableListOf<Candidate>()
         val projected = viewState.projectedState
         val evaluator = zones.predicateEvaluator
-        val disabled = d.cantBePrevented || DamageUtils.isDamagePreventionDisabled(viewState, d.targetId, d.sourceId, d.isCombatDamage, evaluator)
+        val disabled = d.cantBePrevented || DamageUtils.isDamagePreventionDisabled(viewState, d.targetId, d.sourceId, d.isCombatDamage, evaluator, sourceSnapshot = d.sourceSnapshot)
         val redirectDisabled = state.getEntity(d.targetId)?.has<DamageUnpreventableThisTurnComponent>() == true
         fun matches(pattern: EventPattern.DamageEvent, host: EntityId, controller: EntityId): Boolean =
             (pattern.damageType == DamageType.Any || (pattern.damageType == DamageType.Combat) == d.isCombatDamage) &&
                 pattern.amount.matches(d.amount) &&
-                DamageUtils.damageSourceMatches(viewState, projected, pattern.source, d.sourceId, host, controller, d.targetId, evaluator) &&
+                DamageUtils.damageSourceMatches(viewState, projected, pattern.source, d.sourceId, host, controller, d.targetId, evaluator, sourceSnapshot = d.sourceSnapshot) &&
                 DamageUtils.damageRecipientMatches(viewState, projected, pattern.recipient, d.targetId, host, controller, evaluator)
         fun amount(key: String, label: String, host: EntityId?, next: Int, commute: String? = null) {
             out += Candidate(key, label, host, commute = commute) { Step(state, listOf(d.copy(amount = next.coerceAtLeast(0)))) }
         }
         fun prevent(key: String, label: String, host: EntityId?) { if (!disabled) amount(key, label, host, 0, "prevent-all") }
 
-        for (id in listOfNotNull(d.sourceId, d.targetId).distinct()) {
+        for (id in listOfNotNull(d.sourceId.takeIf { d.sourceSnapshot == null }, d.targetId).distinct()) {
             if (FaceUpInstead.applies(viewState, id)) out += Candidate("face-up:$id", "Turn face-down permanent face up", id) {
                 val turned = FaceUpInstead.turnFaceUp(state, id)
                 Step(turned.first, listOf(d), listOfNotNull(turned.second))
@@ -367,16 +386,18 @@ object DamageReplacementChain {
 
         if (!disabled && d.sourceId != null) {
             val source = d.sourceId
-            val colors = projected.colorsOf(source)
-            val color = (state.getEntity(source)?.get<CardComponent>() != null || colors.isNotEmpty()) && ColorProtection.isProtected(projected, d.targetId, colors)
-            val quality = TypeQualityProtection.matchedQuality(projected, d.targetId, source) != null
-            val type = projected.getTypes(source).any { projected.hasKeyword(d.targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}") }
+            val colors = d.sourceSnapshot?.colors ?: if (d.sourceSnapshot == null) projected.colorsOf(source) else emptySet()
+            val types = d.sourceSnapshot?.typeLine?.cardTypes?.map { it.name } ?: if (d.sourceSnapshot == null) projected.getTypes(source) else emptySet()
+            val color = (d.sourceSnapshot != null || state.getEntity(source)?.get<CardComponent>() != null || colors.isNotEmpty()) && ColorProtection.isProtected(projected, d.targetId, colors)
+            val quality = (d.sourceSnapshot?.let { TypeQualityProtection.matchedQuality(projected, d.targetId, it.subtypes, it.supertypes, types) }
+                ?: if (d.sourceSnapshot == null) TypeQualityProtection.matchedQuality(projected, d.targetId, source) else null) != null
+            val type = types.any { projected.hasKeyword(d.targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}") }
             val opponent = projected.hasKeyword(d.targetId, "PROTECTION_FROM_EACH_OPPONENT") &&
-                DamageUtils.damageSourceController(state, projected, source)?.let { from ->
+                DamageUtils.damageSourceController(state, projected, source, sourceSnapshot = d.sourceSnapshot)?.let { from ->
                     projected.getController(d.targetId)?.let { state.isOpponentOf(from, it) }
                 } == true
-            if (color || quality || type || opponent || SourceKindProtection.isProtectedFromObject(state, d.targetId, source) ||
-                PlayerProtectionRules.isProtectedFromSource(state, d.targetId, source, casterId = null, predicateEvaluator = evaluator)) {
+            if (color || quality || type || opponent || SourceKindProtection.isProtectedFromObject(viewState, d.targetId, source, d.sourceSnapshot) ||
+                PlayerProtectionRules.isProtectedFromSource(viewState, d.targetId, source, casterId = null, predicateEvaluator = evaluator, sourceSnapshot = d.sourceSnapshot)) {
                 prevent("protection:${d.targetId}", "Protection — prevent all damage", d.targetId)
             }
         }
@@ -468,7 +489,7 @@ object DamageReplacementChain {
                                 }
                                 BatchStep(Step(next, emptyList(), removedEvents), incoming.map { item ->
                                     if (item.cantBePrevented || DamageUtils.isDamagePreventionDisabled(viewState, item.targetId, item.sourceId,
-                                            item.isCombatDamage, evaluator)) listOf(item) else emptyList()
+                                            item.isCombatDamage, evaluator, sourceSnapshot = item.sourceSnapshot)) listOf(item) else emptyList()
                                 })
                             }) { error("Counter-removal prevention applies to the simultaneous event") }
                     }
@@ -503,12 +524,14 @@ object DamageReplacementChain {
 
     private fun floatingCandidates(zones: ZoneTransitionService, state: GameState, d: Instance, disabled: Boolean,
                                    redirectDisabled: Boolean, inBatch: Boolean, batchRedirects: MutableSet<EntityId>,
-                                   out: MutableList<Candidate>, later: List<Instance>, viewState: GameState, matches: (EventPattern.DamageEvent, EntityId, EntityId) -> Boolean) {
+                                   out: MutableList<Candidate>, later: () -> Sequence<Instance>, viewState: GameState, matches: (EventPattern.DamageEvent, EntityId, EntityId) -> Boolean) {
         val evaluator = zones.predicateEvaluator
         val projected = viewState.projectedState
         fun sourceMatches(floating: ActiveFloatingEffect, filter: GameObjectFilter): Boolean =
-            d.sourceId != null && evaluator.matches(viewState, projected, d.sourceId, filter,
-                PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId))
+            d.sourceId != null && (d.sourceSnapshot?.let {
+                evaluator.matchesSnapshot(viewState, it, filter, PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId), onBattlefield = true)
+            } ?: evaluator.matches(viewState, projected, d.sourceId, filter,
+                PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId)))
         fun replace(floating: ActiveFloatingEffect, replacement: SerializableModification?): GameState = state.copy(
             floatingEffects = state.floatingEffects.mapNotNull { old ->
                 if (old.id != floating.id) old else replacement?.let { old.copy(effect = old.effect.copy(modification = it)) }
@@ -538,7 +561,7 @@ object DamageReplacementChain {
                 is SerializableModification.PreventNextDamage -> if (!disabled && targetMatches &&
                     (mod.onlyFromSource == null || mod.onlyFromSource == d.sourceId) && (!mod.combatOnly || d.isCombatDamage) && mod.remainingAmount > 0) {
                     val maximum = minOf(mod.remainingAmount, d.amount)
-                    val shared = later.any { it.amount > 0 && it.targetId in floating.effect.affectedEntities &&
+                    val shared = later().any { it.amount > 0 && it.targetId in floating.effect.affectedEntities &&
                         (mod.onlyFromSource == null || mod.onlyFromSource == it.sourceId) && (!mod.combatOnly || it.isCombatDamage) }
                     out += Candidate(key, "$hostName — prevent ${if (shared) "up to ${mod.remainingAmount}" else maximum.toString()} damage", floating.sourceId,
                         allocation = Allocation(key, mod.remainingAmount, "Prevent") { current, prevented ->
@@ -561,7 +584,7 @@ object DamageReplacementChain {
                     (mod.sourceFilter == null || sourceMatches(floating, mod.sourceFilter!!))) preventAll()
                 is SerializableModification.PreventNextDamageFromMatching -> if (targetMatches && sourceMatches(floating, mod.filter)) preventAll(consume = true)
                 is SerializableModification.PreventAllDamageFromSource -> if (targetMatches && d.sourceId == mod.damageSourceId) {
-                    val gains = d.sourceId != null && projected.colorsOf(d.sourceId).any { it in mod.gainLifeFromColors }
+                    val gains = d.sourceId != null && (d.sourceSnapshot?.colors ?: if (d.sourceSnapshot == null) projected.colorsOf(d.sourceId) else emptySet()).any { it in mod.gainLifeFromColors }
                     preventAll(gainTo = if (gains) d.targetId else null)
                 }
                 is SerializableModification.PreventAllDamageFromGroup -> if ((!mod.combatOnly || d.isCombatDamage) && sourceMatches(floating, mod.filter)) {
@@ -592,7 +615,7 @@ object DamageReplacementChain {
                     out += Candidate(key, "$hostName — ${if (mod.preventDamage) "prevent" else "reflect"} damage", floating.sourceId) {
                         val prevented = if (disabled && mod.preventDamage) 0 else d.amount
                         val event = DamagePreventedEvent(d.sourceId, d.targetId, prevented, mod.linkId,
-                            sourceName = name(state, d.sourceId), sourceControllerId = DamageUtils.damageSourceController(state, projected, d.sourceId))
+                            sourceName = sourceName(state, d), sourceControllerId = DamageUtils.damageSourceController(state, projected, d.sourceId, sourceSnapshot = d.sourceSnapshot))
                         Step(replace(floating, null), if (mod.preventDamage && !disabled) emptyList() else listOf(d), if (prevented > 0) listOf(event) else emptyList())
                     }
                 }
@@ -627,7 +650,7 @@ object DamageReplacementChain {
                     }
                 }
                 SerializableModification.RedirectCombatDamageToController -> if (!redirectDisabled && d.isCombatDamage && d.sourceId in floating.effect.affectedEntities) {
-                    val controller = d.sourceId?.let(projected::getController)
+                    val controller = d.sourceId?.let { DamageUtils.damageSourceController(state, projected, it, sourceSnapshot = d.sourceSnapshot) }
                     if (controller != null && controller != d.targetId) out += Candidate(key, "$hostName — redirect damage to its controller", floating.sourceId) {
                         if (inBatch) batchRedirects += floating.id
                         Step(if (inBatch) state else replace(floating, null), listOf(d.copy(targetId = controller)))
@@ -638,10 +661,11 @@ object DamageReplacementChain {
         }
         // Legacy additive sources still participate as individual replacements.
         if (d.sourceId != null) {
-            val controller = DamageUtils.damageSourceController(state, projected, d.sourceId)
+            val controller = DamageUtils.damageSourceController(state, projected, d.sourceId, sourceSnapshot = d.sourceSnapshot)
             if (controller != null) {
                 state.getEntity(controller)?.get<DamageBonusComponent>()?.let { bonus ->
-                    if (evaluator.matches(viewState, projected, d.sourceId, bonus.sourceFilter, PredicateContext(controllerId = controller))) {
+                    if (d.sourceSnapshot?.let { evaluator.matchesSnapshot(viewState, it, bonus.sourceFilter, PredicateContext(controllerId = controller), onBattlefield = true) }
+                        ?: evaluator.matches(viewState, projected, d.sourceId, bonus.sourceFilter, PredicateContext(controllerId = controller))) {
                         out += Candidate("player-bonus:$controller", "Damage bonus — add ${bonus.bonusAmount} damage", commute = "add") {
                             Step(state, listOf(d.copy(amount = (d.amount + bonus.bonusAmount).coerceAtLeast(0))))
                         }

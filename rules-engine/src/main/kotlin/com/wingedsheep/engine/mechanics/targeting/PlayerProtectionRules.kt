@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.targeting
 
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
+
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.state.ComponentContainer
@@ -33,14 +35,15 @@ object PlayerProtectionRules {
         playerId: EntityId,
         sourceId: EntityId?,
         casterId: EntityId?,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        sourceSnapshot: EntitySnapshot? = null
     ): Boolean {
         // Player-level protection comes from two sources, unioned:
         //  1. A one-shot [PlayerProtectionComponent] on the player (e.g. The One Ring).
         //  2. Continuous statics ([GrantProtectionToController]) on permanents the player
         //     controls, stamped as [GrantsControllerProtectionComponent] (Absolute Virtue).
         val ownScopes = state.getEntity(playerId)?.get<PlayerProtectionComponent>()?.scopes.orEmpty()
-        if (ownScopes.any { scopeMatchesSource(state, playerId, it, sourceId, casterId) }) return true
+        if (ownScopes.any { scopeMatchesSource(state, playerId, it, sourceId, casterId, sourceSnapshot = sourceSnapshot) }) return true
 
         return state.getBattlefield().any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
@@ -53,7 +56,7 @@ object PlayerProtectionRules {
                 ?.any {
                     val scope = ProtectionKeywords.resolveChosen(it.scope, container) ?: return@any false
                     ControllerGrants.isActive(state, entityId, it.condition, predicateEvaluator = predicateEvaluator) &&
-                        scopeMatchesSource(state, playerId, scope, sourceId, casterId, granter = container)
+                        scopeMatchesSource(state, playerId, scope, sourceId, casterId, granter = container, sourceSnapshot = sourceSnapshot)
                 } == true
         }
     }
@@ -98,7 +101,8 @@ object PlayerProtectionRules {
         scope: ProtectionScope,
         sourceId: EntityId?,
         casterId: EntityId?,
-        granter: ComponentContainer? = null
+        granter: ComponentContainer? = null,
+        sourceSnapshot: EntitySnapshot? = null
     ): Boolean {
         if (scope is ProtectionScope.Everything) return true
         if (sourceId == null) return false
@@ -107,10 +111,11 @@ object PlayerProtectionRules {
         // Attachment choices inspect an Aura before entry; spells likewise need their current
         // off-battlefield characteristics rather than an absent battlefield projection.
         val card = state.getEntity(sourceId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-        val onBattlefield = sourceId in state.getBattlefield()
+        val onBattlefield = sourceSnapshot == null && sourceId in state.getBattlefield()
         // Projected on the battlefield, the card's own (or an off-battlefield SetColors') elsewhere.
-        fun colors(): Set<String> = if (card == null && !onBattlefield) emptySet() else projected.colorsOf(sourceId)
-        fun hasCardType(cardType: String): Boolean = if (onBattlefield) projected.hasType(sourceId, cardType.uppercase())
+        fun colors(): Set<String> = if (sourceSnapshot != null) sourceSnapshot.colors.orEmpty() else if (card == null && !onBattlefield) emptySet() else projected.colorsOf(sourceId)
+        fun hasCardType(cardType: String): Boolean = if (sourceSnapshot != null)
+            sourceSnapshot.typeLine?.cardTypes?.any { it.name.equals(cardType, ignoreCase = true) } == true else if (onBattlefield) projected.hasType(sourceId, cardType.uppercase())
             else card?.typeLine?.cardTypes?.any { it.name.equals(cardType, ignoreCase = true) } == true
         return when (scope) {
             is ProtectionScope.Color -> scope.color.name in colors()
@@ -118,29 +123,29 @@ object PlayerProtectionRules {
             is ProtectionScope.NonColor -> scope.color.name !in colors()
             ProtectionScope.Multicolored -> colors().size >= 2
             ProtectionScope.Monocolored -> colors().size == 1
-            is ProtectionScope.Subtype -> (if (onBattlefield)
+            is ProtectionScope.Subtype -> (if (sourceSnapshot != null) sourceSnapshot.subtypes.any { it.equals(scope.subtype, ignoreCase = true) } else if (onBattlefield)
                 projected.getSubtypes(sourceId).any { it.equals(scope.subtype, ignoreCase = true) }
                 else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true) &&
                 (scope.cardType?.let { hasCardType(it) } ?: true)
-            is ProtectionScope.Supertype -> (if (onBattlefield)
+            is ProtectionScope.Supertype -> (if (sourceSnapshot != null) sourceSnapshot.supertypes.any { it.equals(scope.supertype, ignoreCase = true) } else if (onBattlefield)
                 projected.getSupertypes(sourceId).any { it.equals(scope.supertype, ignoreCase = true) }
                 else card?.typeLine?.supertypes?.any { it.name.equals(scope.supertype, ignoreCase = true) } == true) &&
                 (scope.cardType?.let { hasCardType(it) } ?: true)
             is ProtectionScope.CardType -> hasCardType(scope.cardType)
             is ProtectionScope.EachOpponent -> {
-                val sourceController = casterId
+                val sourceController = if (sourceSnapshot != null) sourceSnapshot.controllerId else casterId
                     ?: projected.getController(sourceId)
                     ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
                 sourceController != null && sourceController != protectedPlayerId
             }
             ProtectionScope.Everything -> true
-            ProtectionScope.Spells -> SourceKindProtection.isSpell(state, sourceId)
-            ProtectionScope.PermanentsCastThisTurn -> SourceKindProtection.isPermanentCastThisTurn(state, sourceId)
-            ProtectionScope.RingBearers -> SourceKindProtection.isRingBearer(state, sourceId)
+            ProtectionScope.Spells -> sourceSnapshot == null && SourceKindProtection.isSpell(state, sourceId)
+            ProtectionScope.PermanentsCastThisTurn -> if (sourceSnapshot != null) sourceSnapshot.wasCast && sourceSnapshot.enteredOnTurn == state.turnNumber else SourceKindProtection.isPermanentCastThisTurn(state, sourceId)
+            ProtectionScope.RingBearers -> if (sourceSnapshot != null) sourceSnapshot.wasRingBearer else SourceKindProtection.isRingBearer(state, sourceId)
             is ProtectionScope.ManaValueParity ->
-                SourceKindProtection.manaValue(state, sourceId)?.let(scope.parity::matches) == true
+                (if (sourceSnapshot != null) sourceSnapshot.manaValue else SourceKindProtection.manaValue(state, sourceId))?.let(scope.parity::matches) == true
             is ProtectionScope.ManaValueOtherThan ->
-                SourceKindProtection.manaValue(state, sourceId)?.let { it != scope.value } == true
+                (if (sourceSnapshot != null) sourceSnapshot.manaValue else SourceKindProtection.manaValue(state, sourceId))?.let { it != scope.value } == true
             // An ability kind is a property of the targeting spell-or-ability, not of the source
             // object this reading is given; no player-protection grant names one.
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> false
@@ -152,9 +157,9 @@ object PlayerProtectionRules {
             // elsewhere — and never a face-down source, which has no name (CR 708.2a).
             is ProtectionScope.ChosenCardName -> {
                 val chosen = ProtectionKeywords.chosenCardName(granter, scope.slot) ?: return false
-                val faceDown = if (onBattlefield) projected.isFaceDown(sourceId)
+                val faceDown = if (sourceSnapshot != null) sourceSnapshot.wasFaceDown else if (onBattlefield) projected.isFaceDown(sourceId)
                     else state.getEntity(sourceId)?.has<FaceDownComponent>() == true
-                val name = (if (onBattlefield) projected.getName(sourceId) else null) ?: card?.name
+                val name = if (sourceSnapshot != null) sourceSnapshot.name else (if (onBattlefield) projected.getName(sourceId) else null) ?: card?.name
                 !faceDown && name.equals(chosen, ignoreCase = true)
             }
         }

@@ -161,6 +161,62 @@ class DamageReplacementOrderTest : FunSpec({
         submitDecision(player, OptionChosenResponse(choice.id, index)).error shouldBe null
     }
 
+    for (scope in listOf(ProtectionScope.Color(Color.RED), ProtectionScope.EachOpponent,
+        ProtectionScope.ManaValueParity(com.wingedsheep.sdk.scripting.Parity.ODD))) {
+        test("departed source protection uses its snapshot instead of a later incarnation ($scope)") {
+            val d = driver()
+            // The current entity is green, even-costed, and controlled by the protected player.
+            val source = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+            val snapshot = com.wingedsheep.engine.state.components.stack.captureLastKnown(d.state, source)
+                .copy(colors = setOf("RED"), manaValue = 3, controllerId = d.player1)
+            d.replaceState(d.state.updateEntity(d.player2) {
+                it.with(PlayerProtectionComponent(scopes = listOf(scope)))
+            })
+            val done = DamageReplacementChain.resolve(d.zones, d.state, listOf(
+                DamageReplacementChain.Instance(source, d.player2, 3, sourceSnapshot = snapshot)
+            )).shouldBeInstanceOf<DamageReplacementChain.Result.Done>()
+            done.instances shouldBe emptyList()
+        }
+    }
+
+    for (alreadyModified in listOf(false, true)) {
+        test("later global doubler reveal revisits earlier simultaneous damage with applied identities ($alreadyModified)") {
+            val d = driver()
+            val marauders = card("Reveal Marauders") {
+                typeLine = "Creature — Human Pirate"
+                power = 4
+                toughness = 4
+                replacementEffect(DoubleDamage(appliesTo = EventPattern.DamageEvent()))
+            }
+            d.registerCards(listOf(marauders))
+            val earlier = d.putCreatureOnBattlefield(d.player2, sturdy.name)
+            val later = d.putCreatureOnBattlefield(d.player2, marauders.name)
+            val handler = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler(d.cardRegistry)
+            d.replaceState(d.state.updateEntity(later) { c ->
+                com.wingedsheep.engine.mechanics.FaceUpInstead.stamp(c, handler)
+                    .without<com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent>()
+                    .without<com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent>()
+                    .with(com.wingedsheep.engine.state.components.identity.FaceDownComponent)
+            })
+            if (alreadyModified) d.putPermanentOnBattlefield(d.player1, double.name)
+            val damage = listOf(earlier, later).map { DamageReplacementChain.Instance(null, it, 2) }
+            var state = d.state
+            var result = DamageReplacementChain.resolve(d.zones, state, damage, inBatch = true)
+            while (result is DamageReplacementChain.Result.Ask) {
+                val question = result.question("test").shouldBeInstanceOf<ChooseOptionDecision>()
+                // Apply the original doubler before the reveal, so it must not run again when
+                // the newly visible global replacement reopens the earlier instance.
+                val choice = question.options.indexOfFirst { it.contains(double.name) }.coerceAtLeast(0)
+                state = DamageReplacementChain.record(result.state, result.choiceKey, result.optionKeys[choice])
+                result = DamageReplacementChain.resolve(d.zones, state, damage, inBatch = true)
+            }
+            val done = result.shouldBeInstanceOf<DamageReplacementChain.Result.Done>()
+            done.instances.associate { it.targetId to it.amount } shouldBe
+                mapOf(earlier to if (alreadyModified) 8 else 4, later to if (alreadyModified) 8 else 4)
+            done.state.getEntity(later)!!.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() shouldBe false
+        }
+    }
+
     test("excess damage is split before doubling either recipient's share") {
         val d = driver()
         d.putPermanentOnBattlefield(d.player1, "Order Doubler")

@@ -4,6 +4,9 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
@@ -30,8 +33,8 @@ class HarshJusticeScenarioTest : ScenarioTestBase() {
         .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
         .build()
 
-    private fun TestGame.castJusticeAndDealCombat() {
-        declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
+    private fun TestGame.castJusticeAndDealCombat(attacker: String = "Grizzly Bears") {
+        declareAttackers(mapOf(attacker to 2)).error shouldBe null
         passPriority().error shouldBe null
         castSpell(2, "Harsh Justice").error shouldBe null
         resolveStack()
@@ -105,5 +108,51 @@ class HarshJusticeScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 18
             game.getLifeTotal(2) shouldBe 18
         }
+
+        for (keyword in listOf(Keyword.LIFELINK, Keyword.INFECT)) {
+            val attacker = "Justice ${keyword.name} Token"
+            cardRegistry.register(card(attacker) {
+                typeLine = "Creature — Vampire"
+                power = 2
+                toughness = 2
+                keywords(keyword)
+            })
+            test("a departed ${keyword.name} token retains its damage characteristics through a replacement choice") {
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, attacker, summoningSickness = false, isToken = true)
+                    .withCardOnBattlefield(1, "Justice Damage Doubler")
+                    .withCardOnBattlefield(1, "Justice Noncombat Barrier")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(2, "Harsh Justice")
+                    .withLandsOnBattlefield(2, "Plains", 3)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS).build()
+                val source = game.findPermanent(attacker)!!
+                game.castJusticeAndDealCombat(attacker)
+                game.castSpell(1, "Lightning Bolt", source).error shouldBe null
+                game.resolveStack()
+                game.state.getEntity(source) shouldBe null
+                val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+                decision.playerId shouldBe game.player1Id
+                val preventFirst = decision.options.indexOfFirst { it.contains("prevent", ignoreCase = true) }
+                (preventFirst >= 0) shouldBe true
+                game.submitDecision(OptionChosenResponse(decision.id, preventFirst)).error shouldBe null
+                game.resolveStack()
+                // Combat dealt four; prevention before doubling reflects six. The old
+                // token still supplies its controller, keyword and "you control" match.
+                if (keyword == Keyword.LIFELINK) {
+                    game.getLifeTotal(1) shouldBe 24
+                    game.getLifeTotal(2) shouldBe 16
+                } else {
+                    game.getLifeTotal(1) shouldBe 20
+                    game.getLifeTotal(2) shouldBe 20
+                    game.state.getEntity(game.player1Id)?.get<CountersComponent>()?.getCount(CounterType.POISON) shouldBe 6
+                    game.state.getEntity(game.player2Id)?.get<CountersComponent>()?.getCount(CounterType.POISON) shouldBe 4
+                }
+            }
+        }
+
     }
 }
