@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-rix',
+    date: '2026-11-04',
+    kind: 'set',
+    setCode: 'RIX',
+    title: 'Rivals of Ixalan is complete',
+    body: 'Race Pirates, Dinosaurs, Merfolk and Vampires to the golden city of Orazca. Ascend rewards a wide board with the city\'s blessing, enrage Dinosaurs punish every block, and its four tribes spread across the ten two-colour decks.',
+    tryIf: 'tribal decks and building a wide board',
+  },
+  {
     id: 'set-trk',
     date: '2026-11-03',
     kind: 'set',

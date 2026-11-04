@@ -82,7 +82,8 @@
         "rarity": "UNCOMMON",
         "artist": "David Palumbo",
         "flavorText": "Orcs have been enemies of the Legion of Dusk since it was formed, and the entire race has been declared anathema.",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48181263-11fd-444e-9fef-02ccfe016c8c.jpg?1783935257"
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48181263-11fd-444e-9fef-02ccfe016c8c.jpg?1783935257",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -504,7 +505,8 @@
                 "date": "2018-01-19",
                 "text": "Any abilities of the destroyed creatures that trigger when the player is dealt damage won't trigger."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
@@ -9888,7 +9890,8 @@
         "collectorNumber": "203",
         "artist": "Josu Hernaiz",
         "flavorText": "Though small, goblins can hold their own in a fight. Foolhardy confidence goes a long way.",
-        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0403b8e5-29c5-4a4a-b9e7-1e79a7452f14.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0403b8e5-29c5-4a4a-b9e7-1e79a7452f14.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED"
@@ -10873,7 +10876,8 @@
         "collectorNumber": "198",
         "artist": "Craig J Spearing",
         "flavorText": "\"These pirates must answer for their ancestors, who renounced the Church of Dusk and sailed from Torrezon as heretics.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d47f91ff-c916-4938-8e01-2c684004dd9a.jpg?1783935258"
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d47f91ff-c916-4938-8e01-2c684004dd9a.jpg?1783935258",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -11159,7 +11163,8 @@
         "rarity": "UNCOMMON",
         "artist": "Sidharth Chaturvedi",
         "flavorText": "Abandoning both queen and church, he chose to follow power.",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d890a17-ffd4-4bda-bef3-2c116f7bf66f.jpg?1783935259"
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d890a17-ffd4-4bda-bef3-2c116f7bf66f.jpg?1783935259",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -11485,7 +11490,8 @@
                 "date": "2018-01-19",
                 "text": "The triggered ability Vraska grants to creatures with her third ability triggers on any damage those creatures deal, including noncombat damage. If multiple players are dealt damage simultaneously by affected creatures, you choose the order in which those triggers resolve. If all your opponents have lost the game, you'll win the game before any more of the triggers resolve."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [

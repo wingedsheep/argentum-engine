@@ -72,6 +72,7 @@ val AngrathMinotaurPirate = card("Angrath, Minotaur Pirate") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "201"
+        inBooster = false
         artist = "Chris Rahn"
         imageUri = "https://cards.scryfall.io/normal/front/f/1/f17103dd-f31b-4f6e-b2ea-4ea91815bdd6.jpg?1783935257"
         ruling(

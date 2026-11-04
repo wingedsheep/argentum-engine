@@ -43,6 +43,7 @@ val AngrathsAmbusher = card("Angrath's Ambusher") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "202"
+        inBooster = false
         artist = "David Palumbo"
         flavorText = "Orcs have been enemies of the Legion of Dusk since it was formed, and the " +
             "entire race has been declared anathema."

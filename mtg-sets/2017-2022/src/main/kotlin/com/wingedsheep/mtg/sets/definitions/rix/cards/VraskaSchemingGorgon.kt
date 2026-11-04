@@ -74,6 +74,7 @@ val VraskaSchemingGorgon = card("Vraska, Scheming Gorgon") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "197"
+        inBooster = false
         artist = "Grzegorz Rutkowski"
         imageUri = "https://cards.scryfall.io/normal/front/9/1/91685732-c118-4f52-ac77-f96866a687a3.jpg?1783935259"
         ruling(

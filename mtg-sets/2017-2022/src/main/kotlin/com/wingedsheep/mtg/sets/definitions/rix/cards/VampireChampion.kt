@@ -24,6 +24,7 @@ val VampireChampion = card("Vampire Champion") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "198"
+        inBooster = false
         artist = "Craig J Spearing"
         flavorText = "\"These pirates must answer for their ancestors, who renounced the Church of Dusk and sailed from Torrezon as heretics.\""
         imageUri = "https://cards.scryfall.io/normal/front/d/4/d47f91ff-c916-4938-8e01-2c684004dd9a.jpg?1783935258"

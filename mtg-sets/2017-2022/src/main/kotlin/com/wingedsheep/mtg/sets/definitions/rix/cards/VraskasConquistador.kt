@@ -47,6 +47,7 @@ val VraskasConquistador = card("Vraska's Conquistador") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "199"
+        inBooster = false
         artist = "Sidharth Chaturvedi"
         flavorText = "Abandoning both queen and church, he chose to follow power."
         imageUri = "https://cards.scryfall.io/normal/front/4/d/4d890a17-ffd4-4bda-bef3-2c116f7bf66f.jpg?1783935259"
