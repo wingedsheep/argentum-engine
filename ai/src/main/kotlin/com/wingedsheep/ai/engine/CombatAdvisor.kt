@@ -1840,21 +1840,35 @@ class CombatAdvisor(
         playerId: EntityId,
         opponentId: EntityId,
         attackerMap: Map<EntityId, EntityId>,
-        /** False: every defending player declares no blocks, instead of the heuristic's. */
-        defenderBlocks: Boolean = true,
+        /**
+         * Null: every defending player declares the heuristic's blocks. Otherwise each declares
+         * exactly these (blocker -> attackers), each defender the entries for its own creatures —
+         * `emptyMap()` declines every block. A reply that turns out illegal (a creature that must
+         * block, a menace attacker left one blocker) makes the plan unscorable: null.
+         */
+        fixedBlocks: Map<EntityId, List<EntityId>>? = null,
+        /** Collects the blocks the heuristic declared, when [fixedBlocks] is null. */
+        declaredBlocks: MutableMap<EntityId, List<EntityId>>? = null,
     ): GameState? {
         val attackAction = DeclareAttackers(playerId, attackerMap)
+        val declareBlocks = { current: GameState, offer: LegalAction, defender: EntityId ->
+            if (fixedBlocks == null) {
+                chooseBlockers(current, offer, defender, useSimulation = false).also { chosen ->
+                    if (chosen is DeclareBlockers) declaredBlocks?.putAll(chosen.blockers)
+                }
+            } else {
+                val own = current.projectedState.getBattlefieldControlledBy(defender).toSet()
+                DeclareBlockers(defender, fixedBlocks.filterKeys { it in own })
+            }
+        }
         val responders = responses?.respondersAt(state, playerId).orEmpty()
         if (responses != null && responders.isNotEmpty()) {
             val declared = simulator.simulate(state, attackAction, stopBeforeCombatDamage = true)
             if (declared is SimulationResult.Illegal || declared is SimulationResult.StoppedAtLimit) return null
             return responses.playOut(
                 declared.state, playerId, responders,
-                declareBlocks = { current, offer, defender ->
-                    if (defenderBlocks) chooseBlockers(current, offer, defender, useSimulation = false)
-                    else DeclareBlockers(defender, emptyMap())
-                },
-                emptyBlocksMustBeLegal = !defenderBlocks,
+                declareBlocks = declareBlocks,
+                emptyBlocksMustBeLegal = fixedBlocks != null,
             )
         }
         val simResult = simulator.simulate(state, attackAction)
@@ -1874,16 +1888,11 @@ class CombatAdvisor(
                 val legalActions = simulator.getLegalActions(current, priorityPlayer)
                 val blockAction = legalActions.find { it.actionType == "DeclareBlockers" }
                 if (blockAction != null) {
-                    val blockerAction = if (defenderBlocks) {
-                        chooseBlockers(current, blockAction, priorityPlayer, useSimulation = false)
-                    } else {
-                        DeclareBlockers(priorityPlayer, emptyMap())
-                    }
-                    val transition = simulator.simulate(current, blockerAction)
+                    val transition = simulator.simulate(current, declareBlocks(current, blockAction, priorityPlayer))
                     if (transition is SimulationResult.StoppedAtLimit) return null
-                    // Declining every block can be illegal (a creature that must block); then
-                    // there is no such response to score.
-                    if (!defenderBlocks && transition is SimulationResult.Illegal) return null
+                    // A fixed reply can be illegal (a creature that must block); then there is no
+                    // such response to score.
+                    if (fixedBlocks != null && transition is SimulationResult.Illegal) return null
                     current = transition.state
                     blocked += priorityPlayer
                     continue
@@ -1919,17 +1928,32 @@ class CombatAdvisor(
          */
         settleExpiring: Boolean = false,
     ): Double? {
-        val simulated = simulateFullAttack(state, playerId, opponentId, attackerMap)
+        val declared = mutableMapOf<EntityId, List<EntityId>>()
+        val simulated = simulateFullAttack(state, playerId, opponentId, attackerMap, declaredBlocks = declared)
             ?: return null
         val predicted = scoreAttackOutcome(state, simulated, playerId, attackerMap, settleExpiring)
         if (!attacksReadTheRace || attackerMap.isEmpty() || !defenderLostACreature(state, simulated, playerId)) {
             return predicted
         }
         // The predicted blocks cost the defender a creature. Not blocking is also on offer, and it
-        // keeps that creature for the swing back: the plan is worth the worse of the two.
-        val unblocked = simulateFullAttack(state, playerId, opponentId, attackerMap, defenderBlocks = false)
-            ?: return predicted
-        return minOf(predicted, scoreAttackOutcome(state, unblocked, playerId, attackerMap, settleExpiring))
+        // keeps that creature for the swing back: the plan is worth the worst of the replies.
+        var worst = predicted
+        simulateFullAttack(state, playerId, opponentId, attackerMap, fixedBlocks = emptyMap())?.let { unblocked ->
+            worst = minOf(worst, scoreAttackOutcome(state, unblocked, playerId, attackerMap, settleExpiring))
+        }
+        // So is declining only the blocks that cost a creature while keeping the ones that come
+        // free. Without it, declining everything was the only alternative priced, and an attacker
+        // any blocker eats for nothing improved that reply — a 2/2 sent beside a flier into an
+        // 11/10 (game a9d25bc3) put the opponent one point lower if nothing blocked, and nothing
+        // charged it for the block that would have killed it.
+        val survivors = simulated.getBattlefield().toSet()
+        val freeBlocks = declared.filterKeys { it in survivors }
+        if (freeBlocks.isNotEmpty() && freeBlocks.size < declared.size) {
+            simulateFullAttack(state, playerId, opponentId, attackerMap, fixedBlocks = freeBlocks)?.let { kept ->
+                worst = minOf(worst, scoreAttackOutcome(state, kept, playerId, attackerMap, settleExpiring))
+            }
+        }
+        return worst
     }
 
     /** Some creature an opponent controlled before the attack is gone after it. */
