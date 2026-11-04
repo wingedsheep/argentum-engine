@@ -307,8 +307,12 @@ internal object ExpiringGrantWindow {
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
                 PayoffKind.SHRINK, PayoffKind.SET_BASE -> affected.any { id ->
+                    // A set replaces the base (layer 7b) only: counters and pumps (7c, 7d) still
+                    // apply on top, so the toughness lost is the old base less the new one.
                     val toughnessLoss = payoff.setToughness
-                        ?.let { set -> (projected.getToughness(id) ?: return@any true) - set }
+                        ?.let { set ->
+                            (projected.getBaseToughness(id) ?: projected.getToughness(id) ?: return@any true) - set
+                        }
                         ?: payoff.toughnessLoss
                     killedBy(state, projected, id, toughnessLoss) ||
                         if (fightMustBeOn) {
@@ -828,9 +832,11 @@ internal object ExpiringGrantWindow {
          * left, the set wears off in cleanup having changed nothing (2026-11-02 user report: the AI
          * made an opposing creature 1/1 "whenever it feels like it, achieving nothing").
          *
-         * The kill test reads the new base toughness against marked damage and ignores the layer-7c
-         * modifiers that still apply on top. A pump on the creature makes that over-report a kill,
-         * which hands the cast back to the leaf — the fail-safe direction.
+         * The kill test swaps the creature's projected base toughness for the new one and keeps
+         * everything layered on top — +1/+1 counters, pumps, anthems — then reads marked damage.
+         * Reading the new base alone called "0/0" a kill on a 2/2 with a +1/+1 counter, which
+         * stays a 1/1 (2026-11-04 user report: Multiply by Zero cast on countered creatures it
+         * could not kill).
          */
         SET_BASE,
 
