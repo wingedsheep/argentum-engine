@@ -22,6 +22,7 @@ import com.wingedsheep.engine.handlers.actions.spell.optionalCostsAdditionalPaid
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostOffer
+import com.wingedsheep.engine.mechanics.cost.spell.PutCountersOnPermanentCostKind
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
 import com.wingedsheep.engine.mechanics.cost.spell.VariablePermanentsCostKind
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
@@ -2944,6 +2945,10 @@ class CastSpellEnumerator(
                     validRevealTargets = offer.revealTargets,
                     revealCount = offer.revealCount
                 ))
+            }
+            val counterPlacementCost = offer.counterPlacementCost
+            if (counterPlacementCost != null && offer.counterPlacementTargets.isNotEmpty()) {
+                add(PutCountersOnPermanentCostKind.data(counterPlacementCost, offer.counterPlacementTargets))
             }
             if (offer.beholdTargets.isNotEmpty()) {
                 val flatCosts = additionalCosts.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }

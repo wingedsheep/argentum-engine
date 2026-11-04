@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PRNUM Pays "put a counter on a creature you control" spell costs (Lethal Sting) with its least valuable creature, so it can cast them at all
 - #4429 Reads standing cast-from-graveyard permissions ("you may cast … from your graveyard" permanents such as Abandoned Sarcophagus) as recursion and a graveyard payoff, so it drafts and builds them toward a deck that fills its graveyard instead of pricing them as blanks
 - #4428 Reads "becomes a copy of" (Blade of Shared Souls, Lazav, True Polymorph, Mirage Mirror): a copy of a creature of its own now copies its best one instead of the weakest, other copy targets are left to simulation instead of the removal ranking, an instant that makes a creature a copy until end of turn (Fleeting Reflection) is held for a fight like a combat trick, an until-end-of-turn copy ability isn't spent once no fight is left, and exiling its own creature until the end step (Liberate, Niko, Light of Hope) reads as a blink rather than removal
 - #4427 Stops sending a small attacker beside a real threat when the opponent can block it for free and decline the costly blocks — it now prices that reply too

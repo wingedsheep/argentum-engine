@@ -1872,6 +1872,53 @@
     ]
 }
 
+// Lethal Sting
+{
+    "name": "Lethal Sting",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, put a -1/-1 counter on a creature you control.\nDestroy target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomPutCountersOnPermanent",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Randy Vargas",
+        "flavorText": "Initiates once believed defeat was the worst fate possible—a sentiment they quickly abandoned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/eaded6bf-2db7-4b1d-93cc-4b7b571cd2de.jpg?1783936039"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Life Goes On
 {
     "name": "Life Goes On",
