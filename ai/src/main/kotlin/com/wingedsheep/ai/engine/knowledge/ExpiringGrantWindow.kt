@@ -35,6 +35,11 @@ import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
+import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
@@ -945,6 +950,9 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
                 leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+                    firesOnlyInAFight(leaf.ability) ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
                 leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     (isPump(leaf) || leaf.target == EffectTarget.Self) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
@@ -1013,6 +1021,27 @@ internal object ExpiringGrantWindow {
      * damage ([PreventionDirection.FromTarget], a Maze of Ith) is a different payoff and stays
      * unread, as does a "shield" that lets the damage through ([PreventDamageEffect.preventDamage]).
      */
+    /**
+     * Whether a granted trigger fires only when the creature that holds it fights — "until end of
+     * turn, whenever this creature deals combat damage to a player, draw two cards" (Lyra, Tolarian
+     * Archangel; Herd Heirloom; The Pride of Hull Clade), or attacks, blocks, is blocked or isn't.
+     * Like a pump, it is spent in this turn's combat or wears off unused at cleanup, so it reads as
+     * a [PayoffKind.CREATURE] grant on that creature.
+     *
+     * Bound to the holder itself ([TriggerBinding.SELF]) only: a trigger granted to an Equipment
+     * about the creature it equips (Vorpal Sword's) names a different creature than the grant's
+     * target, and "is dealt damage" can be spent outside combat, so both stay unread.
+     */
+    private fun firesOnlyInAFight(ability: TriggeredAbility): Boolean {
+        if (ability.binding != TriggerBinding.SELF) return false
+        return when (val pattern = ability.trigger) {
+            is EventPattern.AttackEvent, is EventPattern.BlockEvent, is EventPattern.BecomesBlockedEvent,
+            EventPattern.BecomesUnblockedEvent, is EventPattern.BlocksOrBecomesBlockedByEvent -> true
+            is EventPattern.DealsDamageEvent -> pattern.damageType == DamageType.Combat
+            else -> false
+        }
+    }
+
     private fun isShield(effect: Effect): Boolean =
         effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&
             effect.direction == PreventionDirection.ToTarget && effect.recipientGroup == null
