@@ -1101,6 +1101,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * cleanup-step hand-size discard. The causing controller is "that player" in the effect:
          * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Trigger-only — the
          * replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
+         * [ZoneChangeCause.NotCycled] admits every discard except one paid as a cycling cost.
          */
         val cause: ZoneChangeCause = ZoneChangeCause.Any
     ) : EventPattern {

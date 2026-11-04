@@ -100,6 +100,8 @@ object GraveyardSynergy {
             if (node is Enum<*>) return false
             if (seen.put(node, Unit) != null) return false
             if (node is KeywordAbility && node.keyword in GRAVEYARD_KEYWORDS) return true
+            // A standing cast-from-graveyard permission names no zone field: the zone is its type.
+            if (node is com.wingedsheep.sdk.scripting.MayCastFromGraveyard) return true
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false

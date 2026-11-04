@@ -79,6 +79,14 @@ enum class ZoneChangeCause {
      * spell or ability.
      */
     DiscardedByOpponentEffect,
+
+    /**
+     * The move is anything **but** the card being cycled — "and it wasn't cycled" (Abandoned
+     * Sarcophagus). A card is cycled when it is discarded to pay a cycling cost (CR 702.29c);
+     * typecycling costs are cycling costs (CR 702.29f). Every other route — a discard to an effect,
+     * to hand size or to another cost, milling, dying, resolving or being countered — satisfies it.
+     */
+    NotCycled,
 }
 
 @Serializable
@@ -622,6 +630,8 @@ data class CapCounterPlacementThisTurn(
  * from/to zones. `DiscardedByOpponentEffect` + `selfOnly` + `newDestination = Zone.BATTLEFIELD` is
  * Wilt-Leaf Liege / Loxodon Smiter: "if a spell or ability an opponent controls causes you to
  * discard this card, put it onto the battlefield instead of putting it into your graveyard".
+ * `NotCycled` exempts the cycling-cost discard: Abandoned Sarcophagus's "if a card that has cycling
+ * would be put into your graveyard from anywhere and it wasn't cycled, exile it instead".
  */
 @SerialName("RedirectZoneChange")
 @Serializable
@@ -639,6 +649,7 @@ data class RedirectZoneChange(
             ZoneChangeCause.Any -> append("If ${appliesTo.description}, ")
             ZoneChangeCause.DiscardedByOpponentEffect ->
                 append("If a spell or ability an opponent controls causes you to discard this card, ")
+            ZoneChangeCause.NotCycled -> append("If ${appliesTo.description} and it wasn't cycled, ")
         }
         if (reveal) append("reveal it and ")
         if (shuffleIntoLibrary && newDestination == Zone.LIBRARY) {

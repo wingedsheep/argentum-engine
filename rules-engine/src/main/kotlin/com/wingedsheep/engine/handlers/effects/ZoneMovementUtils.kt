@@ -793,6 +793,7 @@ object ZoneMovementUtils {
      * both that a spell/ability caused this discard at all and that its controller is an opponent of
      * the discarding player (the card's owner — you only ever discard from your own hand). That
      * rules out the cleanup-step hand-size discard, cost payments, and your own Faithless Looting.
+     * `NotCycled` reads [GameState.pendingCyclingDiscardIds]: only the cycling-cost discard fails it.
      */
     private fun causeSatisfied(
         state: GameState,
@@ -808,6 +809,7 @@ object ZoneMovementUtils {
                 container.get<CardComponent>()?.ownerId
             )
         }
+        ZoneChangeCause.NotCycled -> entityId !in state.pendingCyclingDiscardIds
     }
 
     /**
@@ -1150,6 +1152,11 @@ object ZoneMovementUtils {
                 CardPredicate.IsSnow -> cardComponent.typeLine.isSnow
                 CardPredicate.IsNonlegendary -> !cardComponent.typeLine.isLegendary
                 CardPredicate.IsDoubleFaced -> cardComponent.isDoubleFaced
+                // "A card that has a cycling ability" (Abandoned Sarcophagus) — printed cycling or
+                // typecycling, unless the permanent lost its abilities on the battlefield (ruling:
+                // a permanent that lost cycling goes to the graveyard).
+                CardPredicate.HasCycling ->
+                    cardComponent.hasCycling && !state.projectedState.hasLostAllAbilities(entityId)
                 else -> true // For unhandled predicates, don't filter out
             }
             if (!matches) return false

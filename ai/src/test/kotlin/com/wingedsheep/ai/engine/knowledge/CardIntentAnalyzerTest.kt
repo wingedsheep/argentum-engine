@@ -41,6 +41,12 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
     )
 
     init {
+        test("a standing cast-from-graveyard permission reads as recursion and a graveyard payoff") {
+            val sarcophagus = cardRegistry.requireCard("Abandoned Sarcophagus")
+            CardIntentAnalyzer.analyze(sarcophagus).tags shouldContain IntentTag.RECURSION
+            GraveyardSynergy.isPayoff(sarcophagus) shouldBe true
+        }
+
         test("a repeatable tapper reads as a repeatable tapper") {
             val intent = intentOf("Icy Manipulator")
             intent.tags shouldContain IntentTag.TAPPER

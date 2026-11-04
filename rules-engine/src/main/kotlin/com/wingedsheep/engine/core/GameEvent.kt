@@ -1964,7 +1964,7 @@ data class CardsDiscardedEvent(
     /**
      * True when the discard is the cost of a cycling/typecycling ability (CR 702.29a). Triggers
      * ignore this — cycling really is a discard and "whenever you discard" payoffs must see it —
-     * but the client suppresses the "You discarded X" log line, because the accompanying
+     * except a `DiscardEvent(cause = ZoneChangeCause.NotCycled)`, which skips it; the client suppresses the "You discarded X" log line, because the accompanying
      * [CardCycledEvent] already narrates the same action.
      */
     val asCyclingCost: Boolean = false,

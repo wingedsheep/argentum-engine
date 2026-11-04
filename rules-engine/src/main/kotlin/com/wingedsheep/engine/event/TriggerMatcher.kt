@@ -1313,6 +1313,7 @@ class TriggerMatcher(
     fun discardCauseMatches(state: GameState, cause: ZoneChangeCause, event: CardsDiscardedEvent): Boolean =
         when (cause) {
             ZoneChangeCause.Any -> true
+            ZoneChangeCause.NotCycled -> !event.asCyclingCost
             ZoneChangeCause.DiscardedByOpponentEffect -> com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 .isDiscardCausedByOpponent(state, event.causeControllerId, event.playerId)
         }

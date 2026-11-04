@@ -1,3 +1,66 @@
+// Abandoned Sarcophagus
+{
+    "name": "Abandoned Sarcophagus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "You may cast spells that have a cycling ability from your graveyard.\nIf a card that has a cycling ability would be put into your graveyard from anywhere and it wasn't cycled, exile it instead.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": {
+                    "cardPredicates": [
+                        "HasCycling"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "HasCycling",
+                            "IsNontoken"
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "to": "Graveyard"
+                },
+                "requiredCause": "NotCycled"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "Although long since dead, the banished dissenters finally took their vengeance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c191fb87-f111-4ac2-a52a-3af103a9314e.jpg?1783936003",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "A token permanent with cycling will go to your graveyard before ceasing to exist. It won't be exiled. Similarly, a nontoken permanent that lost cycling while it was on the battlefield will also go to your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you cycle an instant card, you may cast it from your graveyard right away before any player may take any other action. If you do, that spell will resolve before the cycling ability. If you cycle a noninstant card without flash, you can't cast it until after the cycling ability has resolved."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Abandoned Sarcophagus doesn't grant you permission to do anything with those cards except cast them. For example, you can't cycle nonland cards with cycling from your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Certain older cards have variants of cycling, such as basic landcycling or Wizardcycling. Abandoned Sarcophagus's effect lets you cast these cards and exiles them if they weren't discarded for their cycling variant's ability."
+            }
+        ]
+    }
+}
+
 // Abrade
 {
     "name": "Abrade",
