@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Drafts artifact/enchantment-only removal below broad creature removal when using fallback ratings, including cantrips whose draw needs a legal target.
+
 - Values extra blocking capacity and considers assigning one creature to multiple attackers when the full combat improves.
 
 - #4397 Reads casting spells exiled off library tops for free (Etali, Primal Storm) as card draw, reads setting a life total (Form of the Dinosaur) as needing no intent, and aims a pump Aura that pings its host on entry (Tilonalli's Crown) by which creature survives the damage

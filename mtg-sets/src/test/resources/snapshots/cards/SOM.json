@@ -4189,6 +4189,62 @@
     ]
 }
 
+// Slice in Twain
+{
+    "name": "Slice in Twain",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Efrem Palacios",
+        "flavorText": "\"The hypocrisy of these elves is thicker than steel—destroying 'unnatural metal' with their own enchanted swords.\"\n—Kara Vrist, Neurok agent",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de9c572a-6dc0-432f-92e9-c52fb0efddb5.jpg?1783941716",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If the target artifact or enchantment is an illegal target by the time Slice in Twain resolves, the entire spell doesn’t resolve. You won’t draw a card. If, on the other hand, the target is a legal target but isn’t destroyed (most likely because it has indestructible), you’ll draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Snapsail Glider
 {
     "name": "Snapsail Glider",
