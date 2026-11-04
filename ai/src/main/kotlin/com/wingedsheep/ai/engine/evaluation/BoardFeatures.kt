@@ -5,6 +5,7 @@ import com.wingedsheep.ai.engine.OpponentAggregate
 import com.wingedsheep.ai.engine.PlaneswalkerThreat
 import com.wingedsheep.ai.engine.knowledge.CardIntent
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.lifePoolsOf
 import com.wingedsheep.ai.engine.sidesFor
@@ -81,18 +82,46 @@ object LifeDifferential : BoardFeature {
  * empty library is most of the way to a loss. Symmetric, in life units, folded over the field like
  * life: milling ourselves out is bad, milling an opponent out is good.
  *
- * Zero from [SAFE_CARDS] up, so a 40- or 60-card game far from the end of its library scores
- * exactly as it did without it.
+ * The tactical penalty is zero from [SAFE_CARDS] up. [Bound] also prices gradual depletion
+ * while a live opposing repeatable mill engine threatens that library; games without such a
+ * threat retain the original draw and search evaluation.
  */
 object LibraryClock : BoardFeature {
-    override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        val sides = state.sidesFor(playerId) ?: return 0.0
-        val mine = sideValue(state, sides.mine)
-        return sides.against(OpponentAggregate.FIELD) { opponent -> mine - sideValue(state, opponent) }
+    override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double =
+        score(state, projected, playerId, IntentCatalog.NONE)
+
+    class Bound(private val intents: IntentCatalog) : BoardFeature {
+        override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double =
+            LibraryClock.score(state, projected, playerId, intents)
     }
 
-    private fun sideValue(state: GameState, side: List<EntityId>): Double =
-        side.sumOf { libraryValue(state.getLibrary(it).size) }
+    private fun score(state: GameState, projected: ProjectedState, playerId: EntityId, intents: IntentCatalog): Double {
+        val sides = state.sidesFor(playerId) ?: return 0.0
+        val ourMill = hasMillEngine(state, projected, sides.mine, intents)
+        return sides.against(OpponentAggregate.FIELD) { opponent ->
+            sideValue(state, sides.mine, hasMillEngine(state, projected, opponent, intents)) -
+                sideValue(state, opponent, ourMill)
+        }
+    }
+
+    private fun hasMillEngine(state: GameState, projected: ProjectedState, side: List<EntityId>, intents: IntentCatalog): Boolean =
+        intents.isEnabled && state.getBattlefield().any { id ->
+            if (projected.getController(id) !in side) return@any false
+            val entity = state.getEntity(id) ?: return@any false
+            val card = entity.get<CardComponent>() ?: return@any false
+            intents.forPermanent(entity, card.name, entrySpent = true).any {
+                it.repeatable && IntentTag.MILL in it.tags
+            }
+        }
+
+    private fun sideValue(state: GameState, side: List<EntityId>, threatened: Boolean): Double =
+        side.sumOf {
+            val size = state.getLibrary(it).size
+            libraryValue(size) + if (threatened) depletionValue(size) else 0.0
+        }
+
+    /** Small, smooth progress toward decking, only while the opposing side has a mill engine. */
+    fun depletionValue(cards: Int): Double = -6.0 / (1.0 + cards.coerceAtLeast(0) / 8.0)
 
     /**
      * Cards left from which the library scores nothing. Three draws is three turns of game still
@@ -263,6 +292,9 @@ data class CreatureValuation(
  * side, so their permanents defend each other).
  */
 object BoardPresence : BoardFeature {
+    /** Extra value carried by a creature with a recurring opponent-mill ability. */
+    const val MILL_ENGINE_VALUE = 0.75
+
     /**
      * Score with no card knowledge — the pre-Phase-6 behaviour, and what every caller that has no
      * [IntentCatalog] to hand still gets.
@@ -485,7 +517,11 @@ object BoardPresence : BoardFeature {
             } else {
                 0.0
             }
-            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth)
+            val millEngine = intents.forPermanent(container, card.name, entrySpent = true).any {
+                it.repeatable && IntentTag.MILL in it.tags
+            }
+            val millValue = if (millEngine) MILL_ENGINE_VALUE else 0.0
+            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth + millValue)
                 .coerceAtLeast(0.1)
         }
 

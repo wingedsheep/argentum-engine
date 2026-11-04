@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Recognizes repeatable mill engines as win conditions and values library-depletion progress against them before the last few cards, without penalizing ordinary draws in games without a mill threat.
+
 - Reads chosen-type grants as tribal enablers, drafts them with off-tribe creatures and tribal payoffs, and chooses the type those payoffs reward instead of the most common existing type.
 
 - Reads "each token that would be created under an opponent's control this turn is created under your control instead" (Crafty Cutpurse) as taking the opponent's tokens rather than as an unrecognised ability, and prices it in draft ratings above the bare body

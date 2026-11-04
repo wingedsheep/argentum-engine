@@ -193,3 +193,16 @@ Each step:
 
 The loop stops when the top groups are all in the ledger, in flight, judgment calls, or too small to
 matter (under five cards).
+
+## Mill intent and library pressure
+
+Explicit `TopOfLibrary(isMill = true)` effects that can reach an opponent read `MILL`.
+Self-mill remains graveyard fuel, not an offensive win condition; non-mill library gathers do not
+receive this tag. The existing Limited heuristic prices the mill amount, and the graveyard synergy
+reader still distinguishes self-mill from milling opponents.
+
+Repeatable mill permanents earn a board prior (or a small ability bonus on creatures). With card
+knowledge and the library clock enabled, a live opposing mill engine also makes library depletion
+worth incremental progress before the near-empty tactical penalty starts. This long-range term uses
+only public battlefield threats and library sizes; ordinary draws and searches in games without such
+a threat keep their previous evaluation. An enter trigger already spent is not an ongoing threat.
