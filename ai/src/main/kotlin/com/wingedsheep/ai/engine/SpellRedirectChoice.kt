@@ -9,6 +9,8 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -45,8 +47,8 @@ internal class SpellRedirectChoice(
         redirect: ChangeSpellTargetContinuation,
     ): List<EntityId>? {
         if (decision.options.isEmpty() || decision.maxSelections < 1) return null
-        val polarities = slotPolarities(state, redirect.spellEntityId) ?: return null
         val targets = state.getEntity(redirect.spellEntityId)?.get<TargetsComponent>()?.targets ?: return null
+        val polarities = targetPolarities(state, redirect.spellEntityId, targets.size) ?: return null
         return if (redirect.fixedNewTarget == null) {
             // A chosen new target exists only for an object with exactly one target.
             val polarity = polarities.singleOrNull()?.takeIf { it.isOneSided() } ?: return null
@@ -57,11 +59,19 @@ internal class SpellRedirectChoice(
         }
     }
 
-    /** Per-slot polarity of the spell or ability on the stack at [stackId], or null when unread. */
-    internal fun slotPolarities(state: GameState, stackId: EntityId): List<TargetPolarity>? {
+    /**
+     * Polarity of each chosen target of the spell or ability on the stack at [stackId], one entry
+     * per target — a requirement for two targets covers two entries, aligned the way the engine's
+     * redirect aligns them — or null when unread.
+     */
+    private fun targetPolarities(state: GameState, stackId: EntityId, targetCount: Int): List<TargetPolarity>? {
         val container = state.getEntity(stackId) ?: return null
         val requirements = container.get<TargetsComponent>()?.targetRequirements?.takeIf { it.isNotEmpty() }
             ?: return null
+        // A modal spell or ability holds only its chosen modes' requirements, which the whole
+        // modal effect's leaves can't be lined up against.
+        if (container.get<SpellOnStackComponent>()?.chosenModes?.isNotEmpty() == true) return null
+        if (container.get<TriggeredAbilityOnStackComponent>()?.chosenModes?.isNotEmpty() == true) return null
         val effect: Effect = container.get<ActivatedAbilityOnStackComponent>()?.effect
             ?: container.get<TriggeredAbilityOnStackComponent>()?.effect
             ?: container.get<SpellOnStackComponent>()?.let {
@@ -70,7 +80,16 @@ internal class SpellRedirectChoice(
                 definition?.takeIf { d -> d.cardFaces.isEmpty() }?.script?.spellEffect
             }
             ?: return null
-        return TargetPolarityAnalyzer.forRequirements(effect, requirements).takeIf { it.size == requirements.size }
+        val perRequirement = TargetPolarityAnalyzer.forRequirements(effect, requirements)
+            .takeIf { it.size == requirements.size } ?: return null
+        // Each requirement covers up to its count of targets, the last one whatever is left — the
+        // alignment the engine's own redirect (ChangeTargetExecutor) uses.
+        var left = targetCount
+        return requirements.indices.flatMap { group ->
+            val covered = if (group == requirements.lastIndex) left else minOf(requirements[group].count, left)
+            left -= covered
+            List(covered.coerceAtLeast(0)) { perRequirement[group] }
+        }.takeIf { it.size == targetCount }
     }
 
     private fun newTarget(
@@ -101,8 +120,22 @@ internal class SpellRedirectChoice(
         (polarity == TargetPolarity.HARMFUL && ours) || (polarity == TargetPolarity.BENEFICIAL && !ours)
     }.maxByOrNull { value(state, it) + if (it in state.turnOrder) PLAYER_VALUE else 0.0 }
 
-    private fun isOurs(state: GameState, id: EntityId, playerId: EntityId): Boolean =
-        if (id in state.turnOrder) id == playerId else state.projectedState.getController(id) == playerId
+    /**
+     * Whether [id] is on our side: a player is themself; a permanent goes by its projected
+     * controller; a spell or ability on the stack by its controller, and a card elsewhere by its
+     * owner — the projection holds only the battlefield.
+     */
+    private fun isOurs(state: GameState, id: EntityId, playerId: EntityId): Boolean {
+        if (id in state.turnOrder) return id == playerId
+        val container = state.getEntity(id) ?: return false
+        val holder = state.projectedState.getController(id)
+            ?: container.get<SpellOnStackComponent>()?.casterId
+            ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
+            ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
+            ?: container.get<ControllerComponent>()?.playerId
+            ?: container.get<OwnerComponent>()?.playerId
+        return holder == playerId
+    }
 
     private fun value(state: GameState, id: EntityId): Double {
         val card = state.getEntity(id)?.get<CardComponent>() ?: return 0.0
