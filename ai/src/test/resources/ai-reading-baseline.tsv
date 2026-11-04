@@ -2737,7 +2737,7 @@ Chandra's Pyrohelix	polarity: DividedDamageEffect
 Chandra's Regulator	intent: CopyTargetSpellOrAbilityEffect
 Chandra's Spitfire
 Chandra's Triumph
-Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: ForEach>AddCountersEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Chandra, Awakened Inferno
 Chandra, Chill of Compliance
 Chandra, Dressed to Kill	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -10717,7 +10717,7 @@ Mijae Djinn	intent: FlipCoinEffect
 Mikaeus, the Unhallowed
 Mikey & Don, Party Planners
 Mikey & Leo, Chaos & Order
-Mila, Crafty Companion	intent: ForEach>AddCountersEffect; polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Mila, Crafty Companion	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
 Mild-Mannered Librarian
 Miles Morales	combat: GrantEvasionKeywordEffect; intent: ForEach>DoubleCountersEffect; timing: ChangeColorEffect
 Miles O'Brien, Transporter Ops
@@ -19281,9 +19281,9 @@ Waxen Shapethief
 Way of the Cryomancer
 Way of the Deathbringer
 Way of the Healer
-Way of the Mentor	intent: ForEach>AddCountersEffect
+Way of the Mentor
 Way of the Mind Sculptor
-Way of the Necromancer	intent: ForEach>AddCountersEffect
+Way of the Necromancer
 Way of the Paradox
 Way of the Pyromancer
 Way of the Warlord

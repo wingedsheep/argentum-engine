@@ -521,9 +521,16 @@ object AiReadingAudit {
             // Over the targets, though, `ContextTarget(0)` is each declared target in turn, so an
             // untap of it is our own permanent when every declaration is on our side.
             val ownTargets = each.space == IterationSpace.Targets && reqs.isNotEmpty() && reqs.all(TargetPolarityAnalyzer::isOwnSide)
+            // "Put a loyalty counter on each planeswalker you control" (Way of the Mentor, Mila) is the
+            // own-source loyalty counter spread over our side: no target, nothing to hold, and the
+            // loyalty it adds is on the board the simulation prices when it next activates them.
+            val ownGroup = (each.space as? IterationSpace.Group)?.filter?.baseFilter?.controllerPredicate ==
+                ControllerPredicate.ControlledByYou
             val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot {
                 needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
-                    (ownTargets && it is TapUntapEffect && !it.tap && it.target is EffectTarget.ContextTarget)
+                    (ownTargets && it is TapUntapEffect && !it.tap && it.target is EffectTarget.ContextTarget) ||
+                    (ownGroup && it is AddCountersEffect && it.counterType == CounterType.LOYALTY &&
+                        it.target == EffectTarget.IterationEntity)
             }
             // Over each player, "you" in the body is the player iterated (ControllerOfTriggeringEntity's
             // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
