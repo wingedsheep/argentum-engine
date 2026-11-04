@@ -239,6 +239,9 @@ data class CardIntent(
  * with no claim about whether doing so is good right now. Consumers combine tags with board state.
  */
 enum class IntentTag {
+    /** A restriction on the source creature attacking or blocking; a drawback, not a payoff. */
+    COMBAT_RESTRICTION,
+
     /** Destroys, bounces or otherwise removes a single permanent. */
     REMOVAL,
 

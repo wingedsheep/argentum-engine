@@ -528,7 +528,13 @@ object BoardPresence : BoardFeature {
             }
             val millEngine = hasRepeatableMill(state, projected, entityId, intents)
             val millValue = if (millEngine) MILL_ENGINE_VALUE else 0.0
-            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth + millValue)
+            val abilityValue = if (intents.isEnabled && !container.has<FaceDownComponent>() &&
+                !projected.hasLostAllAbilities(entityId)) {
+                ((intents.forPermanent(container, card.name, entrySpent = true).maxOfOrNull { it.staticPriorValue }
+                    ?: CardIntent.UNKNOWN.staticPriorValue) - CardIntent.UNKNOWN.staticPriorValue)
+                    .coerceAtLeast(0.0)
+            } else 0.0
+            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth + millValue + abilityValue)
                 .coerceAtLeast(0.1)
         }
 

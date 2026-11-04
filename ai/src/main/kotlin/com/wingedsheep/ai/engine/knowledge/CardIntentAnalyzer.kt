@@ -18,6 +18,8 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -325,7 +327,7 @@ object CardIntentAnalyzer {
             counterTax = counterTaxOf(leaves),
             cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) { effectTags(it.effect) },
         )
-        return intent.copy(staticPriorValue = priorValueOf(card, intent))
+        return intent.copy(staticPriorValue = priorValueOf(card, intent, scripts))
     }
 
     /**
@@ -1203,7 +1205,10 @@ object CardIntentAnalyzer {
 
         is GrantKeyword -> keywordTags(static.keyword)
         is CantAttack -> neutralizeTags(static.filter)
-        is CantBlock -> neutralizeTags(static.filter)
+        is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
+            else neutralizeTags(static.filter)
+        is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "Spells your opponents cast that target a Merfolk you control cost {2} more" and its
         // activated-ability twin are a ward-like tax on answering our permanents (Kopala, Warden
         // of Waves; Sphinx of New Prahv) — Ward is a [PROTECTIVE_KEYWORDS] member, so the same tag.
@@ -1405,12 +1410,19 @@ object CardIntentAnalyzer {
      * against the card-advantage cost of *casting removal* at the permanent, not against sibling
      * targets — see [CardIntent.staticPriorValue].
      */
-    private fun priorValueOf(card: CardDefinition, intent: CardIntent): Double {
+    private fun priorValueOf(card: CardDefinition, intent: CardIntent, scripts: List<CardScript>): Double {
         if (!card.typeLine.isPermanent) return 0.0
         if (card.typeLine.isCreature) {
-            // Creatures are priced from their projected stats, which the evaluator can already
-            // see; a prior on top would double-count them.
-            return CardIntent.UNKNOWN.staticPriorValue
+            // Projected stats price the body, but not an activated removal engine. Entry effects
+            // have already paid out; only repeatable removal retains this additional value.
+            val repeatableRemoval = scripts.any { script ->
+                script.activatedAbilities.any {
+                    !it.isManaAbility && !consumesSource(it.cost) && IntentTag.REMOVAL in analyzeEffect(it.effect).tags
+                } || script.triggeredAbilities.any {
+                    canFireMoreThanOnce(it) && IntentTag.REMOVAL in analyzeEffect(it.effect).tags
+                }
+            }
+            return CardIntent.UNKNOWN.staticPriorValue + if (repeatableRemoval) 1.5 else 0.0
         }
         return priorLadder(intent).maxOfOrNull { it.value } ?: CardIntent.UNKNOWN.staticPriorValue
     }

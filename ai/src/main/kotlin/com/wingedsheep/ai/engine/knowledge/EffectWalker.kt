@@ -163,6 +163,7 @@ object EffectWalker {
         val effect: Effect,
         val origin: Origin,
         val targets: List<TargetRequirement> = emptyList(),
+        val activationManaValue: Int = 0,
     )
 
     /**
@@ -181,7 +182,14 @@ object EffectWalker {
         }
         script.activatedAbilities
             .filterNot { it.isManaAbility }
-            .forEach { add(Slot(it.effect, Origin.ACTIVATED, it.targetRequirements)) }
+            .forEach { add(Slot(it.effect, Origin.ACTIVATED, it.targetRequirements, activationManaValue(it.cost))) }
+    }
+
+    private fun activationManaValue(cost: com.wingedsheep.sdk.scripting.AbilityCost): Int = when (cost) {
+        is com.wingedsheep.sdk.scripting.AbilityCost.Atom ->
+            (cost.atom as? com.wingedsheep.sdk.scripting.costs.CostAtom.Mana)?.cost?.cmc ?: 0
+        is com.wingedsheep.sdk.scripting.AbilityCost.Composite -> cost.costs.sumOf(::activationManaValue)
+        else -> 0
     }
 
     /**

@@ -286,9 +286,27 @@ object TargetPolarityAnalyzer {
             perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL
                 else TargetPolarity.FLEXIBLE
         }
+        // Only an unconditional sequence proves the creature is ours before its follow-up gifts.
+        // Do not flatten conditionals: a theft in one branch cannot justify a gift in another.
+        val stolen = mutableSetOf<EffectTarget>()
+        fun theftFollowUps(node: Effect): List<Effect> {
+            val gifts = mutableListOf<Effect>()
+            fun visit(part: Effect) {
+                when (part) {
+                    is com.wingedsheep.sdk.scripting.effects.CompositeEffect -> part.effects.forEach(::visit)
+                    is GainControlEffect -> stolen += part.target
+                    is TapUntapEffect -> if (!part.tap && part.target in stolen) gifts += part else stolen.clear()
+                    is GrantKeywordEffect -> if (part.keyword == Keyword.HASTE.name && part.target in stolen) gifts += part else stolen.clear()
+                    else -> stolen.clear()
+                }
+            }
+            visit(node)
+            return gifts
+        }
+        val theftGifts = theftFollowUps(effect)
         val biteSources = mutableSetOf<Int>()
         for (leaf in EffectWalker.payoffLeaves(effect)) {
-            if (blinks.any { it === leaf }) continue
+            if (blinks.any { it === leaf } || theftGifts.any { it === leaf }) continue
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
             // that is every target of that slot, so the body reads as the slot's; with several,
