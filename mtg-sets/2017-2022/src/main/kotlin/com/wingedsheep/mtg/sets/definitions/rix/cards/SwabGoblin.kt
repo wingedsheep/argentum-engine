@@ -23,6 +23,7 @@ val SwabGoblin = card("Swab Goblin") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "203"
+        inBooster = false
         artist = "Josu Hernaiz"
         flavorText = "Though small, goblins can hold their own in a fight. Foolhardy confidence goes a long way."
         imageUri = "https://cards.scryfall.io/normal/front/0/4/0403b8e5-29c5-4a4a-b9e7-1e79a7452f14.jpg"

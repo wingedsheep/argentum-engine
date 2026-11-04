@@ -26,6 +26,39 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Rivals of Ixalan exposes its ten signpost colour pairs" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("rix"))
+
+        synergies.setName shouldBe "Rivals of Ixalan"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Ascend Flyers",
+            "Pirate Ascend",
+            "Pirate Raiders",
+            "Dinosaur Stompy",
+            "Dinosaur Ramp",
+            "Vampire Lifegain",
+            "Pirate Tempo",
+            "Graveyard Value",
+            "Dinosaur Aggro",
+            "Merfolk Counters",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLUE),
+            setOf(Color.BLUE, Color.BLACK),
+            setOf(Color.BLACK, Color.RED),
+            setOf(Color.RED, Color.GREEN),
+            setOf(Color.GREEN, Color.WHITE),
+            setOf(Color.WHITE, Color.BLACK),
+            setOf(Color.BLUE, Color.RED),
+            setOf(Color.BLACK, Color.GREEN),
+            setOf(Color.RED, Color.WHITE),
+            setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.creatureTypes.single() } shouldContainExactly listOf(
+            "Pirate", "Pirate", "Dinosaur", "Dinosaur", "Vampire", "Pirate", "Dinosaur", "Merfolk",
+        )
+    }
+
     "War of the Spark exposes its ten signpost colour pairs" {
         val synergies = requireNotNull(SetArchetypes.getForSet("war"))
 
