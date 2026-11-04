@@ -7979,7 +7979,7 @@ Honden of Night's Reach
 Honden of Seeing Winds
 Honed Khopesh
 Honest Rutstein
-Honest Work
+Honest Work	polarity: Aura>GrantActivatedAbility; polarity: Aura>LoseAllAbilities; polarity: Aura>RemoveAllCountersEffect; polarity: Aura>SetBasePowerToughnessStatic; polarity: Aura>SetName; polarity: Aura>TapUntapEffect; polarity: Aura>TransformPermanent
 Honey Mammoth
 Honeymoon Hearse
 Honor

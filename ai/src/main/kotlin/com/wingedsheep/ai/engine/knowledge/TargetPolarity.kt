@@ -936,7 +936,11 @@ object TargetPolarityAnalyzer {
         // Chest's whole card is a dies trigger for its controller) the enchant slot is aimed at an
         // opponent's creature, the removal ranking's side.
         val aura = card.script.auraTarget
-        if (reading == TargetPolarity.UNKNOWN && aura != null && isOpponentSide(aura)) return TargetPolarity.HARMFUL
+        // Only when nothing at all reads the host — an UNKNOWN from an unread host effect
+        // (Honest Work, Relic Bind) stays a gap rather than hiding behind the enchant restriction.
+        if (reading == TargetPolarity.UNKNOWN && aura != null && isOpponentSide(aura) &&
+            attachmentReadings(card, definitions, hostIs = null).isEmpty()
+        ) return TargetPolarity.HARMFUL
         return reading
     }
 
