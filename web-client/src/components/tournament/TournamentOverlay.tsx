@@ -479,7 +479,7 @@ export function TournamentOverlay({
       )}
 
       {/* ── Last round results ── */}
-      {tournamentState.lastRoundResults && (
+      {tournamentState.lastRoundResults && tournamentState.lastRoundResults.length > 0 && (
         <div className={`${styles.resultsSection} ${styles.trnSection}`}>
           <h3 className={styles.resultsSectionTitle}>
             Round {tournamentState.currentRound} Results

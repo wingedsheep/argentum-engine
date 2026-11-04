@@ -76,6 +76,7 @@ class ScenarioSessionFactory(
             tokenArtRegistry = tokenArtRegistry,
         )
         gameSession.injectStateForDevScenario(build.state)
+        gameSession.isScenario = true
 
         // Per-step stop overrides (prevents auto-pass at specified steps). The stop
         // fields are two-seat tooling; they keep applying to the first two seats.
@@ -204,6 +205,7 @@ class ScenarioSessionFactory(
             tokenArtRegistry = tokenArtRegistry,
         )
         gameSession.injectStateForDevScenario(state)
+        gameSession.isScenario = true
         gameRepository.save(gameSession)
 
         fun preRegister(token: String, playerId: com.wingedsheep.sdk.model.EntityId, name: String) =

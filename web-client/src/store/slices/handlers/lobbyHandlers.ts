@@ -234,7 +234,11 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
                 ...state.tournamentState,
                 currentRound: msg.round,
                 standings: msg.standings,
-                lastRoundResults: msg.results.length > 0 ? msg.results : state.tournamentState.lastRoundResults,
+                // A reconnect snapshot carries no results (the server sends it to say "you are between
+                // matches", not to report one). Still mark the player between matches — `[]`, not
+                // null — or `deriveRoundPhase` hides the Ready button and the player can never start
+                // their next match. A rejoin re-sends `TournamentStarted` first, which resets this.
+                lastRoundResults: msg.results.length > 0 ? msg.results : (state.tournamentState.lastRoundResults ?? []),
                 ...(inActiveGame ? {} : {
                   currentMatchGameSessionId: null,
                   currentMatchOpponentName: null,

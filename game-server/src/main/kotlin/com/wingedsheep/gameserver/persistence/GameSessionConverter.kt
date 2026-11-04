@@ -36,6 +36,7 @@ fun GameSession.toPersistent(
             )
         },
         lobbyId = lobbyId,
+        isScenario = isScenario,
     )
 }
 
@@ -96,6 +97,7 @@ fun restoreGameSession(
         )
     }
     session.restorePlayerPersistenceInfo(playerInfo)
+    session.isScenario = persistent.isScenario
 
     // Create PlayerIdentity objects for each persisted player
     val playerIdentities = persistent.playerInfos.map { info ->

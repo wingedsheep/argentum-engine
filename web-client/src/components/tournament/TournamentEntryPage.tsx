@@ -57,14 +57,22 @@ export function TournamentEntryPage() {
     }
   }, [connectionStatus, connect, connectName, sessionReplaced])
 
+  // Already seated in this tournament: this route was reached by going Back from another page (a
+  // replay), because App stamps `/tournament/<id>` into the history entry it sits on. The store
+  // already holds the live tournament, so there is nothing to join. Re-sending JoinLobby makes the
+  // server replay the whole rejoin snapshot, which resets the standings screen mid-round.
+  const alreadyHere =
+    lobbyId != null && (tournamentState?.lobbyId === lobbyId || lobbyState?.lobbyId === lobbyId)
+
   // Auto-join lobby once connected
   useEffect(() => {
+    if (alreadyHere) return
     if (connectionStatus === 'connected' && lobbyId && !hasJoinedRef.current) {
       hasJoinedRef.current = true
       setJoining(true)
       joinLobby(lobbyId)
     }
-  }, [connectionStatus, lobbyId, joinLobby])
+  }, [alreadyHere, connectionStatus, lobbyId, joinLobby])
 
   // Navigate to "/" once lobby or tournament state is received
   useEffect(() => {

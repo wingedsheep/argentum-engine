@@ -1800,6 +1800,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Custom cards: paste a Scryfall card object and play a card that does not exist.',
       ] },
       { kind: 'p', text: 'A replay frame can be opened here directly with Share as scenario, which is the quickest way to reproduce something odd that happened in a real game.' },
+      { kind: 'p', text: 'Scenario games are practice: they are not saved as replays and do not count toward your match history or stats.' },
     ],
     shortcuts: ['scenario-undo'],
     related: ['lab-tools', 'replays', 'assay-custom-cards'],
