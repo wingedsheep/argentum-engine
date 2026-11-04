@@ -491,17 +491,20 @@ object TargetPolarityAnalyzer {
         }
     }
 
-    /** Keep a known two-way choice as one operation instead of mixing its mutually exclusive leaves. */
+    /**
+     * [EffectWalker.payoffLeaves], except that a known two-way tap-or-untap choice stays one
+     * operation instead of splitting into its mutually exclusive leaves.
+     */
     private fun targetLeaves(effect: Effect): List<Effect> = EffectWalker.leaves(effect).flatMap { leaf ->
         when {
             tapOrUntapTargets(leaf).isNotEmpty() -> listOf(leaf)
-            leaf is ChooseActionEffect && EffectWalker.choosesOwnBranch(leaf) ->
-                leaf.choices.flatMap { targetLeaves(it.effect) }
             leaf is com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect ->
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap(::targetLeaves)
-            leaf is com.wingedsheep.sdk.scripting.effects.GatedEffect && leaf.decisionMaker == null ->
-                listOfNotNull(leaf.then, leaf.otherwise).flatMap(::targetLeaves)
-            else -> listOf(leaf)
+            leaf is com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect -> targetLeaves(leaf.body)
+            leaf is ChooseActionEffect && EffectWalker.choosesOwnBranch(leaf) ->
+                leaf.choices.flatMap { targetLeaves(it.effect) }
+            leaf !is com.wingedsheep.sdk.scripting.effects.GatedEffect || leaf.decisionMaker != null -> listOf(leaf)
+            else -> listOfNotNull(leaf.then, leaf.otherwise).flatMap(::targetLeaves)
         }
     }
 

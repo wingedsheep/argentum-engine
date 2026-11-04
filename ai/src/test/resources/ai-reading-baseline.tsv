@@ -158,6 +158,7 @@ Aerial Boost
 Aerial Caravan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Aerial Doombot
 Aerial Engineer
+Aerial Guide
 Aerial Modification
 Aerial Predation
 Aerial Responder
@@ -521,6 +522,7 @@ Angel of Serenity	intent: Pipeline(ChosenTargets→exile); intent: Pipeline(From
 Angel of Suffering
 Angel of Vitality
 Angel of the Dawn
+Angel of the God-Pharaoh
 Angel of the Ruins
 Angel's Feather
 Angel's Mercy
@@ -1059,6 +1061,7 @@ Aven Interrupter	intent: ExileTargetSpellEffect
 Aven Liberator	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Aven Mindcensor
 Aven Redeemer
+Aven Reedstalker
 Aven Riftwatcher
 Aven Sentry
 Aven Smokeweaver
@@ -1068,6 +1071,7 @@ Aven Trailblazer
 Aven Trooper
 Aven Warhawk
 Aven Wind Mage
+Aven of Enduring Hope
 Avenger of Zendikar
 Avenger of the Fallen
 Avengers Assemble!
@@ -1557,6 +1561,7 @@ Bitter Triumph
 Bitter Work	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Bitterbloom Bearer
 Bitterblossom
+Bitterbow Sharpshooters
 Black Cat
 Black Cat, Cunning Thief	polarity: Pipeline(TopOfLibrary→exile|library)
 Black Dragon
@@ -2049,6 +2054,7 @@ Bramblefort Fink	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Brambleguard Captain
 Brambleguard Veteran
 Bramblesnap
+Brambleweft Behemoth
 Bramblewood Paragon
 Branch of Vitu-Ghazi
 Branchblight Stalker
@@ -2508,6 +2514,7 @@ Carrion Grub
 Carrion Howler
 Carrion Imp	polarity: MoveToZoneEffect
 Carrion Locust
+Carrion Screecher
 Carrion Wall
 Carrot Cake
 Carth the Lion
@@ -11853,6 +11860,7 @@ Ooze Patrol
 Ooze Spill
 Opaline Unicorn
 Open Communications
+Open Fire
 Open the Armory
 Open the Gates
 Open the Graves
@@ -12853,6 +12861,7 @@ Pulse of Murasa
 Pummeler for Hire
 Pumpkin Bombardment
 Pumpkin Bombs
+Puncturing Blow
 Puncturing Light
 Punishing Punch
 Punk Frogs
@@ -16355,6 +16364,7 @@ Strife Scholar
 Strike It Rich
 Striking Sliver
 Strip Mine
+Striped Riverwinder
 Strix Lookout
 Strix Serenade
 Strixhaven Skycoach
