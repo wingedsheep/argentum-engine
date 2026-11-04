@@ -183,6 +183,10 @@ data class HostSplit(val subtype: Subtype, val whenIs: TargetPolarity, val other
  * the unread Auras are curses (Imprison, Brainwash) as often as gifts (Curiosity, Spirit Link), so
  * neither side of the table is the safer default.
  *
+ * An Aura whose only harm to its host is damage beside a lasting gift (Tilonalli's Crown's "deals 1
+ * damage to enchanted creature" and "+3/+0 and trample") reads [TargetPolarity.FLEXIBLE]: a buff on
+ * a creature that survives the damage, removal on one that doesn't, which the simulation compares.
+ *
  * An Aura whose statics turn on the enchanted creature's type ("as long as it's a Pirate …
  * Otherwise, …") is read twice, once for a host of that type and once for any other host. Two
  * opposite one-sided readings make the slot [TargetPolarity.FLEXIBLE] and give it a [HostSplit],
@@ -962,7 +966,19 @@ object TargetPolarityAnalyzer {
     }
 
     private fun hostReading(card: CardDefinition, definitions: CardLookup): TargetPolarity {
-        if (hostSubtype(card) == null) return combine(attachmentReadings(card, definitions, hostIs = null))
+        if (hostSubtype(card) == null) {
+            val readings = attachmentReadings(card, definitions, hostIs = null)
+            // "When this Aura enters, it deals 1 damage to enchanted creature. Enchanted creature
+            // gets +3/+0 and has trample" (Tilonalli's Crown): the lasting gift is the point on a
+            // creature that survives the damage, and the damage is the point on one that doesn't —
+            // their X/1 dies with the Crown on it. Both sides are understood, so the slot is
+            // FLEXIBLE and the simulation, which sees who survives, picks the host. Any other harm
+            // (a -N/-N, a "can't block") still makes the gift a contradiction and stays unread.
+            if (readings.toSet() == setOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL) && hostHarmIsOnlyDamage(card, definitions)) {
+                return TargetPolarity.FLEXIBLE
+            }
+            return combine(readings)
+        }
         // Read once per kind of host; a world where nothing applies takes the other's reading.
         val (whenIs, otherwise) = hostWorlds(card, definitions)
         return when {
@@ -1039,6 +1055,21 @@ object TargetPolarityAnalyzer {
         // instead") moves the Aura itself and never touches the creature, so it is no veto either.
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
         return readings
+    }
+
+    /**
+     * Whether every harm [card] does to its host is damage from one of its triggered or activated
+     * abilities — no static of it reads as a curse, and no harmful host leaf is anything but a
+     * [DealDamageEffect].
+     */
+    private fun hostHarmIsOnlyDamage(card: CardDefinition, definitions: CardLookup): Boolean {
+        if (card.script.staticAbilities.any { staticPolarity(it) == TargetPolarity.HARMFUL }) return false
+        val harmful = (card.script.triggeredAbilities.map { it.effect } + card.script.activatedAbilities.map { it.effect })
+            .flatMap(EffectWalker::payoffLeaves)
+            .filter { leaf ->
+                classify(leaf, definitions).any { (target, polarity) -> target in HOST_TARGETS && polarity == TargetPolarity.HARMFUL }
+            }
+        return harmful.isNotEmpty() && harmful.all { it is DealDamageEffect }
     }
 
     private fun choosesOwnBranchSomewhere(effect: Effect): Boolean =

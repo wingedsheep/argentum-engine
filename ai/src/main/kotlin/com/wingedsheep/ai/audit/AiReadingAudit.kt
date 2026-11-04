@@ -54,6 +54,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -525,7 +526,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 
@@ -727,6 +728,12 @@ object AiReadingAudit {
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
+        // "Your life total becomes 15" (Form of the Dinosaur), "becomes half your starting life
+        // total", "the defending player's life total becomes 1" (Master of Cruelties): a life total
+        // set is a gain or a loss by the total it replaces (rule 119.5), so it is the same clock or
+        // drawback as the two above, and the evaluator prices the new total on resolution. Whether
+        // a targeted one aims at the right player is the polarity check's question, not intent's.
+        if (leaf is SetLifeTotalEffect) return true
         // A cast ban that binds its controller too — "you can't cast spells this turn" (Conduit of
         // Worlds), "each player can't cast noncreature spells this turn" (Calamity's Wake) — is the
         // price of the card's payoff, not its point. A ban on an opponent reads CAST_BAN.

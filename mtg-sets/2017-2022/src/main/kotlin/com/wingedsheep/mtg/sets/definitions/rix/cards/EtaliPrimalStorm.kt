@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.rix.cards
 
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -12,7 +12,7 @@ val EtaliPrimalStorm = card("Etali, Primal Storm") {
     manaCost = "{4}{R}{R}"
     colorIdentity = "R"
     typeLine = "Legendary Creature — Elder Dinosaur"
-    oracleText = "Whenever Etali, Primal Storm attacks, exile the top card of each player's library, then you may cast any number of spells from among those cards without paying their mana costs."
+    oracleText = "Whenever Etali attacks, exile the top card of each player's library, then you may cast any number of spells from among those cards without paying their mana costs."
     power = 6
     toughness = 6
 
@@ -35,10 +35,10 @@ val EtaliPrimalStorm = card("Etali, Primal Storm") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "196"
+        collectorNumber = "100"
         artist = "Raymond Swanland"
         flavorText = "The storm rages and the earth breaks."
-        imageUri = "https://cards.scryfall.io/normal/front/8/d/8dd1b0e5-b197-4e8a-a34f-e0b16a928fb0.jpg?1721429153"
+        imageUri = "https://cards.scryfall.io/normal/front/1/d/1d3d8bb4-0430-45bb-930d-5d6db6521945.jpg?1783935299"
         ruling("2021-03-19", "If you cast any of the exiled cards, you do so as part of the resolution of the triggered ability. You can't wait to cast them later in the turn.")
         ruling("2021-03-19", "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can, however, pay additional costs.")
         ruling("2021-03-19", "Any cards not cast, including land cards, remain in exile. They can't be cast on later turns, even if Etali attacks again.")

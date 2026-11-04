@@ -756,6 +756,12 @@ object CardIntentAnalyzer {
      * its power from the top of its owner's library; you may cast spells from among them" (Dead
      * Man's Chest, an opponent's library) hands us cards as surely as an impulse off our own does.
      * A move into a hand stays own-library only: whose hand the cards land in is the question there.
+     *
+     * So does casting them on the spot: "exile the top card of each player's library, then you may
+     * cast any number of spells from among those cards without paying their mana costs" (Etali,
+     * Primal Storm; Gix's and Kotis's spins on it) puts spells on the stack that never cost a card
+     * from hand — the impulse with its window closed at resolution instead of at cleanup, which is
+     * no loss, since nothing waits to be spent later.
      */
     private fun digTags(root: Effect): Set<IntentTag> {
         val leaves = readingLeaves(root)
@@ -766,7 +772,8 @@ object CardIntentAnalyzer {
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
         }
         val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromAnyTop && isLastingImpulse(it) }
-        return if (movesThemToOurHand || grantsThemToUs) setOf(IntentTag.DRAW) else emptySet()
+        val castsThemNow = leaves.any { it is CastAnyNumberFromCollectionWithoutPayingCostEffect && it.from in fromAnyTop }
+        return if (movesThemToOurHand || grantsThemToUs || castsThemNow) setOf(IntentTag.DRAW) else emptySet()
     }
 
     /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
