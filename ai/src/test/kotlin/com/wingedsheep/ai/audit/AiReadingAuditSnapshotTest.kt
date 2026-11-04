@@ -46,11 +46,11 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Essence Burn" to emptyList(),
         // "Proliferate X times" reads as proliferate, which needs no intent tag.
         "Tam, the Possibility" to emptyList(),
+        // A chosen-source silence on an activation: spent only on damage still to come this turn.
+        "Burrenton Forge-Tender" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         // A draw beside the trample outlasts the turn, so the keyword floor does not read the spell.
         "Charge Through" to listOf("timing: GrantKeywordEffect"),
-        // The spell-only prevention rule stops at activations: a sacrifice-for-a-shield stays unread.
-        "Burrenton Forge-Tender" to listOf("timing: PreventDamageEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         "Alchemist's Vial" to listOf(

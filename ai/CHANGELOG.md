@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PR Reads "prevent all damage a source of your choice would deal this turn" (Mourner's Shield, Burrenton Forge-Tender, Safeguard): names the threat — an opposing spell on the stack, then the hardest-hitting opposing creature in combat — instead of one of its own creatures, waits for blocks to raise it, and no longer spends it when no damage is left to come this turn
 - #4433 Pays "put a counter on a creature you control" spell costs (Lethal Sting) with its least valuable creature, so it can cast them at all
 - #4431 Reads "change the target of target spell" (Bolt Bend, Misdirection, Spellskite, Hydroelectric Specimen): a redirected spell now goes where its own effect pays off — their removal onto their creature, their pump onto our best one — instead of onto our own best creature, redirects count as their own kind of interaction rather than protection, and "copy target spell" slots stay open to both sides
 - #4429 Reads standing cast-from-graveyard permissions ("you may cast … from your graveyard" permanents such as Abandoned Sarcophagus) as recursion and a graveyard payoff, so it drafts and builds them toward a deck that fills its graveyard instead of pricing them as blanks

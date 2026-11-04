@@ -2295,7 +2295,7 @@ Burning-Yard Trainer
 Burnished Hart
 Burnout Bashtronaut
 Burr Grafter
-Burrenton Forge-Tender	timing: PreventDamageEffect
+Burrenton Forge-Tender
 Burrog Banemaker
 Burrog Barrage
 Burrog Befuddler	intent: ModifyStatsEffect
@@ -8065,7 +8065,7 @@ Horizon Explorer
 Horizon Scholar
 Horizon Seed
 Horizon Seeker
-Horn of Deafening	timing: PreventDamageEffect
+Horn of Deafening
 Horn of Gondor
 Horn of Ramos
 Horn of the Mark
@@ -9489,7 +9489,7 @@ Kruin Striker
 Krumar Bond-Kin
 Krumar Initiate
 Kruphix, God of Horizons
-Kry Shield	polarity: mixed(ModifyStatsEffect+PreventDamageEffect); timing: PreventDamageEffect
+Kry Shield	polarity: mixed(ModifyStatsEffect+PreventDamageEffect)
 Krydle of Baldur's Gate
 Kudo, King Among Bears
 Kudzu	polarity: Aura>ForEachEffect; polarity: Aura>MoveToZoneEffect
@@ -9539,7 +9539,7 @@ Labyrinth of Skophos	intent: RemoveFromCombatEffect; polarity: RemoveFromCombatE
 Lace with Moonglove	timing: GrantKeywordEffect
 Lacerate Flesh
 Lady Caleria
-Lady Evangela	timing: PreventDamageEffect
+Lady Evangela
 Lady Octopus, Inspired Inventor	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(hand→?)
 Lady Orca
 Lady Sun
@@ -11125,7 +11125,7 @@ Mountain Stronghold
 Mountain Valley
 Mountain Yeti
 Mounted Dreadknight
-Mourner's Shield	timing: PreventDamageEffect
+Mourner's Shield
 Mourner's Surprise
 Mournful Zombie
 Mourning
@@ -14190,7 +14190,7 @@ Sadistic Shell Game	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: P
 Sadistic Skymarcher
 Safe Haven	intent: Pipeline(FromLinkedExile→battlefield)
 Safe Passage
-Safeguard	timing: PreventDamageEffect
+Safeguard
 Safehold Duo
 Safehold Elite
 Safehold Sentry
@@ -15018,7 +15018,7 @@ Shield of Kaldra
 Shield of the Ages
 Shield of the Realm
 Shield-Wall Sentinel
-Shieldmage Elder	timing: PreventDamageEffect
+Shieldmage Elder
 Shieldmate's Blessing
 Shields Up!	timing: GrantKeywordEffect
 Shields of Velis Vel	polarity: ForEachEffect
