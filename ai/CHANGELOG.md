@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4409 Reads an edict on a target player (Diabolic Edict, Liliana of the Veil, Break Under Pressure) and an opponent's choice between two tucks (Clash of Elements) as harmful, so it no longer casts them at its own side when the opponent can't be targeted
+
 - Reads "exile target permanent; its owner may cast it" (Airbend, Release to the Wind, Suspend Aggression) as a bounce: aims it at the opponent's best permanent as tempo removal, or at its own to save it
 
 - #4403 Reads explore as card selection that feeds +1/+1-counter and graveyard decks (and a pump when another creature explores), its own extra turn as a payoff the draft heuristic prices, an opposing creature losing all abilities or shrunk to a 0/1 base as neutralized (Warkite Marauder), and a helpful trigger granted for good as the ability it grants (Cherished Hatchling's fighting Dinosaurs)
