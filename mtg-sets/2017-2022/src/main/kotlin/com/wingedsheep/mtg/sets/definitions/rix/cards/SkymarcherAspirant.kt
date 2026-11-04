@@ -41,6 +41,7 @@ val SkymarcherAspirant = card("Skymarcher Aspirant") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "21"
         artist = "Winona Nelson"
+        flavorText = "\"I was born to glory.\""
         imageUri = "https://cards.scryfall.io/normal/front/9/4/9473190f-5e96-4cf7-a0fa-a77d916acc2e.jpg?1783935332"
         ruling(
             "2018-01-19",

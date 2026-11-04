@@ -38,6 +38,9 @@ class ConditionalStaticReadingAiTest : FunSpec({
         withClue("Ruham Djinn's conditional -2/-2 on itself is a drawback") {
             tags("Ruham Djinn") shouldNotContain IntentTag.PUMP
         }
+        withClue("Ruham Djinn's own penalty is part of its body, not an unrecognised ability") {
+            AiCardRating.of(card("Ruham Djinn"), listOf("INV")).intent.unrecognised shouldBe false
+        }
     }
 
     test("a static granting only the creature itself a keyword is body, not an unrecognised ability") {

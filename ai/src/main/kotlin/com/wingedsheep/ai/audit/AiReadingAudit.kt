@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -213,10 +214,13 @@ object AiReadingAudit {
      * A static whose whole effect is a keyword on the creature that has it — printed plainly or
      * gated on a condition (ascend's "has flying as long as you have the city's blessing").
      */
-    private fun grantsOnlyItselfAKeyword(static: StaticAbility): Boolean = when (static) {
+    private fun isBodyStatic(static: StaticAbility): Boolean = when (static) {
         is GrantKeyword -> static.filter.scope == Scope.Self
-        is ConditionalStaticAbility -> grantsOnlyItselfAKeyword(static.ability)
-        is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::grantsOnlyItselfAKeyword)
+        // A creature's own printed penalty ("this creature gets -2/-2 as long as …") is part of its
+        // body, read by the evaluator through projected P/T — not an ability a reader missed.
+        is ModifyStats -> static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0
+        is ConditionalStaticAbility -> isBodyStatic(static.ability)
+        is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::isBodyStatic)
         else -> false
     }
 
@@ -400,7 +404,7 @@ object AiReadingAudit {
         script.staticAbilities.forEachIndexed { i, static ->
             out += AbilityReading(
                 AbilityRef(AbilityKind.STATIC, i + 1, faceName, describe { static.description }), emptyList(),
-                body = grantsOnlyItselfAKeyword(static),
+                body = isBodyStatic(static),
             )
         }
         // Closest to Oracle's own order — a permanent's triggers usually precede its activated

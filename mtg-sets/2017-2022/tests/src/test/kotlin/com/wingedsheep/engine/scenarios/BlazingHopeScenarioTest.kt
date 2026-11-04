@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -52,6 +53,20 @@ class BlazingHopeScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Blazing Hope", bears).error shouldNotBe null
             }
             game.isOnBattlefield("Grizzly Bears") shouldBe true
+        }
+
+        test("the target is rechecked on resolution: gaining life above its power fizzles the spell") {
+            val game = board()
+            val giant = game.findPermanent("Hill Giant")!!
+            game.castSpell(1, "Blazing Hope", giant).error shouldBe null
+
+            // Before it resolves, the caster's life rises to 4 — above Hill Giant's 3 power, so the
+            // only target is illegal on resolution (CR 608.2b) and the spell does nothing.
+            game.state = game.state.updateEntity(game.player1Id) { it.with(LifeTotalComponent(4)) }
+            game.resolveStack()
+
+            game.isOnBattlefield("Hill Giant") shouldBe true
+            game.isInGraveyard(1, "Blazing Hope") shouldBe true
         }
     }
 }

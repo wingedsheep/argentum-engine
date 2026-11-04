@@ -41,6 +41,7 @@ val SnubhornSentry = card("Snubhorn Sentry") {
         rarity = Rarity.COMMON
         collectorNumber = "23"
         artist = "Aaron Miller"
+        flavorText = "They're fun to train—if you like stubborn, aggressive, and fiercely territorial."
         imageUri = "https://cards.scryfall.io/normal/front/3/e/3ee111e7-5309-46d5-b3ea-a049b3962c23.jpg?1783935332"
         ruling(
             "2018-01-19",

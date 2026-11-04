@@ -431,7 +431,7 @@ object LimitedCardRater {
         // A keyword the creature grants itself is a keyword on its body, priced like a printed one.
         if (static is GrantKeyword && static.filter.scope == Scope.Self) {
             val keyword = runCatching { Keyword.valueOf(static.keyword.uppercase()) }.getOrNull()
-            if (keyword != null) return keywordValue(keyword)
+            keyword?.let { KEYWORD_BONUS[it] }?.let { return it }
         }
         if (static is ModifyStats) {
             val total = static.powerBonus + static.toughnessBonus
