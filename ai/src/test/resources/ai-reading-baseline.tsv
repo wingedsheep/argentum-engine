@@ -3178,6 +3178,7 @@ Common Crook
 Common Goal
 Communal Brewing
 Commune with Beavers
+Commune with Dinosaurs
 Commune with Evil
 Commune with Lava
 Commune with Nature
@@ -4719,6 +4720,7 @@ Dryad of the Ilysian Grove
 Dryad's Caress
 Dryad's Favor
 Dryad's Revival
+Dual Shot
 Dual Strike	intent: CopyNextSpellCastEffect
 Dual-Sun Adepts
 Dual-Sun Technique	timing: GrantKeywordEffect
@@ -15433,6 +15435,7 @@ Sleight of Hand
 Sleight of Mind	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
 Slice and Dice
 Slice from the Shadows	timing: ModifyStatsEffect
+Slice in Twain
 Slick Imitator	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
 Slick Sequence
 Slickshot Lockpicker
@@ -15836,6 +15839,7 @@ Spidersilk Net
 Spiderwig Boggart
 Spidery Grasp
 Spike Drone
+Spike-Tailed Ceratops
 Spiked Corridor // Torture Pit
 Spiked Pit Trap
 Spiked Ripsaw
@@ -17507,6 +17511,7 @@ Thranduil's Decree
 Thranduil, Sindarin Liege
 Thranduil, the Elvenking
 Thrash // Threat
+Thrash of Raptors
 Thrashing Brontodon
 Thrashing Frontliner
 Thrashing Mudspawn

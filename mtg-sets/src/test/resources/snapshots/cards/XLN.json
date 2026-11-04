@@ -1404,6 +1404,81 @@
     ]
 }
 
+// Commune with Dinosaurs
+{
+    "name": "Commune with Dinosaurs",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. You may reveal a Dinosaur or land card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "Dinosaur|land",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal a Dinosaur or land card and put it into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Jonathan Kuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de4b9a07-6631-477a-8c77-3b04f211439d.jpg?1783935729",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If an effect refers to a \"[subtype] spell\" or \"[subtype] card,\" it refers only to a spell or card that has that subtype. For example, March of the Drowned is a card that benefits Pirates and features Pirates in its illustration, but it isn't a Pirate card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Contract Killing
 {
     "name": "Contract Killing",
@@ -9112,6 +9187,38 @@
     ]
 }
 
+// Spike-Tailed Ceratops
+{
+    "name": "Spike-Tailed Ceratops",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This creature can block an additional creature each combat.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "artist": "Lius Lasahido",
+        "flavorText": "The conquistadors surrounded the dinosaur only to find that it had outflanked them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41a3b5f2-0b0b-42e0-a15b-4bb2fce05927.jpg?1783935717"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spreading Rot
 {
     "name": "Spreading Rot",
@@ -9859,6 +9966,68 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Thrash of Raptors
+{
+    "name": "Thrash of Raptors",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "As long as you control another Dinosaur, this creature gets +2/+0 and has trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Dinosaur",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Dinosaur",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Jonathan Kuo",
+        "flavorText": "They glide through the undergrowth, drawn to sounds of disturbance. They attack in unison and all share in the kill. And then they move on.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a03b859-811c-45ff-8d8a-9e87e4bbf113.jpg?1783935735"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

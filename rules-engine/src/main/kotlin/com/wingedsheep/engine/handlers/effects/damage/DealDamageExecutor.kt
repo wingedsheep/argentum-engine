@@ -35,24 +35,40 @@ class DealDamageExecutor(
         effect: DealDamageEffect,
         context: EffectContext
     ): EffectResult {
-        val result = dealDamage(state, effect, context)
-        val dealtVariable = effect.damageDealtVariable
-        if (dealtVariable == null || result.outcome is Outcome.Paused) return result
-        // "The damage dealt this way": the total this instruction actually dealt, summed
-        // over every recipient off the DamageDealtEvents, so prevention, redirection and a source
-        // that already left the battlefield are all accounted for. 0 when nothing was dealt.
-        val dealt = result.events.filterIsInstance<DamageDealtEvent>().sumOf { it.amount }
-        return result.copy(updatedStoredNumbers = result.updatedStoredNumbers + (dealtVariable to dealt))
+        return executeSimultaneously(state, effect, listOf(context), effect, context)
     }
 
-    private fun dealDamage(
+    /** Prepare every member against the same state, then replace and commit one damage event. */
+    fun executeSimultaneously(
+        state: GameState,
+        effect: DealDamageEffect,
+        contexts: List<EffectContext>,
+        replayEffect: com.wingedsheep.sdk.scripting.effects.Effect,
+        replayContext: EffectContext,
+        aggregateExcess: Boolean = false
+    ): EffectResult {
+        val instances = contexts.flatMap { prepare(state, effect, it) }
+        val result = if (instances.isEmpty()) EffectResult.success(state) else
+            DamageReplacementChain.deal(zones, state, instances, replayEffect, replayContext, effect.excessToController)
+        if (result.outcome is Outcome.Paused) return result
+        val damage = result.events.filterIsInstance<DamageDealtEvent>()
+        var numbers = result.updatedStoredNumbers
+        effect.damageDealtVariable?.let { numbers = numbers + (it to damage.sumOf { event -> event.amount }) }
+        effect.excessDamageVariable?.let { name ->
+            val recipients = (if (aggregateExcess) instances else instances.take(1)).map { it.targetId }.toSet()
+            numbers = numbers + (name to damage.filter { it.targetId in recipients }.sumOf { it.excessAmount })
+        }
+        return result.copy(updatedStoredNumbers = numbers)
+    }
+
+    private fun prepare(
         state: GameState,
         effect: DealDamageEffect,
         context: EffectContext
-    ): EffectResult {
+    ): List<DamageReplacementChain.Instance> {
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
         if (amount <= 0) {
-            return EffectResult.success(state)
+            return emptyList()
         }
 
         // Use damageSource override if specified (e.g., EnchantedCreature for Lavamancer's Skill)
@@ -71,7 +87,7 @@ class DealDamageExecutor(
             // ability whose own source died still deals its damage.
             context.resolveTarget(damageSourceTarget, state)
                 ?: departedObjectSource(damageSourceTarget, state, context)?.first
-                ?: return EffectResult.success(state)
+                ?: return emptyList()
         } else {
             context.sourceId
         }
@@ -105,21 +121,8 @@ class DealDamageExecutor(
             is EffectTarget.PlayerRef -> context.resolvePlayerTargets(effect.target, state)
             else -> listOfNotNull(context.resolveTarget(effect.target, state))
         }
-        if (recipients.isEmpty()) return EffectResult.success(state)
-        val result = DamageReplacementChain.deal(zones, state,
-            recipients.map { DamageReplacementChain.Instance(sourceId, it, amount,
-                cantBePrevented = effect.cantBePrevented, sourceRef = damageSourceRef, sourceSnapshot = sourceSnapshot) },
-            effect, context, effect.excessToController)
-        if (result.outcome is Outcome.Paused) return result
-        val targetId = recipients.first()
-        val excessVariable = effect.excessDamageVariable ?: return result
-        // Excess damage (CR 120.4a) dealt to this target by this instruction, read off the actual
-        // DamageDealtEvent so prevention, deathtouch, marked damage and loyalty are all accounted.
-        val excess = result.events
-            .filterIsInstance<DamageDealtEvent>()
-            .filter { it.targetId == targetId }
-            .sumOf { it.excessAmount }
-        return result.copy(updatedStoredNumbers = result.updatedStoredNumbers + (excessVariable to excess))
+        return recipients.map { DamageReplacementChain.Instance(sourceId, it, amount,
+            cantBePrevented = effect.cantBePrevented, sourceRef = damageSourceRef, sourceSnapshot = sourceSnapshot) }
     }
 
     /**

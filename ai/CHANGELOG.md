@@ -28,9 +28,14 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- Reads a creature's own "attacks or blocks each combat if able" as a combat drawback (Relentless Raptor), a +1/+1 counter it puts on itself as a pump (Resplendent Griffin), and putting a card from a permanent's exile pile onto its own battlefield as recursion (Tomb of the Dusk Rose)
+- #4400 Reads a creature's own "attacks or blocks each combat if able" as a combat drawback (Relentless Raptor), a +1/+1 counter it puts on itself as a pump (Resplendent Griffin), and putting a card from a permanent's exile pile onto its own battlefield as recursion (Tomb of the Dusk Rose)
+
+- Drafts artifact/enchantment-only removal below broad creature removal when using fallback ratings, including cantrips whose draw needs a legal target.
+
+- Values extra blocking capacity and considers assigning one creature to multiple attackers when the full combat improves.
 
 - #4397 Reads casting spells exiled off library tops for free (Etali, Primal Storm) as card draw, reads setting a life total (Form of the Dinosaur) as needing no intent, and aims a pump Aura that pings its host on entry (Tilonalli's Crown) by which creature survives the damage
+- #4398 Adds profitable extra targets to multi-target removal and support spells instead of stopping after the first target.
 
 - Treats damage paid on its own creatures as a cost when choosing and drafting support spells, and rates temporary theft below permanent control.
 

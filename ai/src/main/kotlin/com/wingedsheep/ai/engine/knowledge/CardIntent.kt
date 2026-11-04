@@ -242,6 +242,9 @@ enum class IntentTag {
     /** A restriction on the source creature attacking or blocking; a drawback, not a payoff. */
     COMBAT_RESTRICTION,
 
+    /** Lets a creature block more attackers in one combat. */
+    EXTRA_BLOCKING,
+
     /** Destroys, bounces or otherwise removes a single permanent. */
     REMOVAL,
 

@@ -4857,6 +4857,8 @@ object Effects {
     /**
      * Run [effects] once per target of the spell or ability, each iteration seeing only its own
      * target as `ContextTarget(0)` ("put a +1/+1 counter on each of up to two target creatures").
+     * A single DealDamage body deals damage simultaneously to the chosen targets; a multi-effect
+     * body executes its sequence per target.
      */
     fun ForEachTarget(vararg effects: Effect): Effect = ForEachTarget(effects.toList())
 

@@ -12,6 +12,8 @@ import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.Speed
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 /**
  * How the engine AI **rates** a card — the companion to [AiReadingAudit]'s "what does it read". Two
@@ -140,6 +142,9 @@ object AiCardRating {
                 BoardPresence.creatureBodyValue(p, t, keywords, diminishingReturns = true)
             val inPlayIntent = CardIntentAnalyzer.analyzeInPlay(card)
             val parts = buildList {
+                val extraBlocks = card.script.staticAbilities.filterIsInstance<CanBlockAdditionalForCreatureGroup>()
+                    .filter { it.filter.scope == Scope.Self }.sumOf { it.count }
+                if (extraBlocks > 0) add(Part("Additional blocks", BoardPresence.extraBlockingValue(extraBlocks)))
                 if (inPlayIntent.repeatable && IntentTag.MILL in inPlayIntent.tags) {
                     add(Part("Repeatable mill", BoardPresence.MILL_ENGINE_VALUE))
                 }
@@ -244,6 +249,7 @@ object AiCardRating {
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
+        IntentTag.EXTRA_BLOCKING to "Blocks additional creatures",
     )
 
     private val SPEED_LABEL = mapOf(

@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.MustAttack
@@ -1289,6 +1290,8 @@ object CardIntentAnalyzer {
 
     private fun tagsOf(static: StaticAbility): Set<IntentTag> = when (static) {
         is ConditionalStaticAbility -> tagsOf(static.ability)
+        is CanBlockAdditionalForCreatureGroup ->
+            if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
         is ModifyStats -> when {
             // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
