@@ -312,6 +312,7 @@ class AIPlayer(
                 oneShotManaIsMana = profile.oneShotManaIsMana,
                 payoffsReadTheirFuel = profile.payoffsReadTheirFuel,
                 finishersEndTheGame = profile.finishersEndTheGame,
+                marksBeforeTheSweep = profile.marksBeforeTheSweep,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,
@@ -396,6 +397,7 @@ class AIPlayer(
                     libraryClock = profile.libraryClock,
                     activatedPumpsNeedAPlannedAttack = profile.activatedPumpsNeedAPlannedAttack,
                     enablersFirst = profile.enablersFirst,
+                    setupFromHandFirst = profile.marksBeforeTheSweep,
                     fetchedLandDropFollowUp = profile.fetchedLandDropFollowUp,
                     recastBouncedPermanents = profile.recastBouncedPermanents,
                     precombatPumpsForThePlan = profile.precombatPumpsForThePlan,

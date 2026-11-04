@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- The AI marks opposing creatures for a sweep it holds before casting the sweeper (Tetzimoc, Primal Death: {B} prey counters first, then cast), and prices a marked creature as mostly gone
 - #4393 Reads a prey counter (Tetzimoc, Primal Death) as a mark for removal: aims it at the opponent's creatures and won't spend mana marking its own
 - Uses a "that player loses the game" grant (Vraska, Scheming Gorgon's −10) when its attackers outnumber the blockers, then attacks for the win; reads Phage-style and "you win the game" effects as win conditions rather than blanks
 - #4390 Reads putting a permanent from the battlefield onto its owner's library (Expel from Orazca, Chaos Warp, Griptide) as removal, aims an "enchant creature an opponent controls" Aura with nothing on its host (Dead Man's Chest) at the opponent's creatures, reads a lasting "you may cast those cards" off an opponent's library top (Dead Man's Chest, Thief of Sanity) as card draw, and reads a search of your library and graveyard (Vraska's Scorn) as a tutor

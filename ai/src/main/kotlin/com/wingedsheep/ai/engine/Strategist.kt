@@ -226,6 +226,11 @@ class Strategist(
      */
     private val enablersFirst: Boolean = false,
     /**
+     * [AiProfile.marksBeforeTheSweep] — an ability activated from a card in our hand that keeps it
+     * there scores as at least casting that card right after. See [enablerFollowUps].
+     */
+    private val setupFromHandFirst: Boolean = false,
+    /**
      * [AiProfile.fetchedLandDropFollowUp] — a line that puts a land in hand with the land drop
      * unused scores as at least playing that land. See [fetchedLandFollowUps].
      */
@@ -491,7 +496,7 @@ class Strategist(
                 addAll(landDropFollowUps(evaluationState, legalActions, leaves, leafStates, playerId, budget))
             }
             // ── Pass 1c: what each spell makes cheaper — see [enablerFollowUps] ──
-            if (enablersFirst && !forcedPlay) {
+            if ((enablersFirst || setupFromHandFirst) && !forcedPlay) {
                 addAll(enablerFollowUps(evaluationState, legalActions, leaves, leafStates, playerId, budget))
             }
             // ── Pass 1d: the land drop a line puts in hand — see [fetchedLandFollowUps] ──
@@ -555,6 +560,7 @@ class Strategist(
                     unlocked.first.note != null -> unlocked.first.note
                     leaves[i].action is PlayLand -> "land first: unlocks"
                     unlocked.first.action.action is PlayLand -> "then plays"
+                    leaves[i].action is ActivateAbility -> "first: sets up"
                     else -> "first: discounts"
                 }
                 AdjustedScore(
@@ -1426,6 +1432,12 @@ class Strategist(
      * cantrip as if it had been known. Our own main phase with an empty stack, a quiet leaf where we
      * still hold priority — the shape [landDropFollowUps] uses, whose credit this shares. Stops when
      * the budget does.
+     *
+     * Under [setupFromHandFirst] an ability activated from a card in our hand that leaves it there
+     * is followed by casting that card, whatever its price: the ability is the card's own setup.
+     * Tetzimoc, Primal Death's "{B}, reveal this card: put a prey counter on target creature" is
+     * worth the creature its entry then destroys — a pair the one-ply search scored as {B} spent on
+     * a counter, so it cast Tetzimoc bare.
      */
     private fun enablerFollowUps(
         root: GameState,
@@ -1447,18 +1459,31 @@ class Strategist(
         }
         val followUps = mutableListOf<LandFollowUp>()
         for (i in leaves.indices) {
-            val enabler = leaves[i].action as? CastSpell ?: continue
             val after = leafStates[i]
+            // A spell, or an ability activated from a card in our hand that keeps it there
+            // (Tetzimoc, Primal Death's "{B}, reveal this card: put a prey counter") — the card's
+            // own setup, so the follow-up is casting that card at the same price.
+            val (enablerCard, setsUp) = when (val action = leaves[i].action) {
+                is CastSpell -> if (enablersFirst) action.cardId to null else continue
+                is ActivateAbility -> if (setupFromHandFirst && action.sourceId in hand && action.sourceId in after.getZone(ZoneKey(playerId, Zone.HAND))) {
+                    action.sourceId to action.sourceId
+                } else {
+                    continue
+                }
+                else -> continue
+            }
             if (after.pendingDecision != null || after.stack.isNotEmpty() ||
                 after.step != root.step || after.priorityPlayerId != playerId
             ) continue
             val discounted = candidatesFrom(simulator.getLegalActions(after, playerId)).filter { action ->
                 val cast = action.action as? CastSpell ?: return@filter false
-                if (cast.cardId == enabler.cardId || cast.cardId !in hand) return@filter false
+                if (cast.cardId !in hand) return@filter false
+                if (cast.cardId == enablerCard && setsUp == null) return@filter false
                 if (action.hasUnfillableTargetRequirement) return@filter false
                 if (targetPolarityFromEffect && TargetSelection.aimsOnlyAtTheWrongSide(after, action, playerId, intents)) {
                     return@filter false
                 }
+                if (cast.cardId == setsUp) return@filter true
                 val price = priceOf(action) ?: return@filter false
                 val before = rootPrice[cast.cardId]
                 before == null || price < before

@@ -21,8 +21,8 @@ import io.kotest.matchers.shouldBe
  * A counter whose only meaning is "the card that placed it destroys its holder" (Tetzimoc, Primal
  * Death's prey counter) is harmful to its holder, and placing one is the targeting half of removal.
  *
- * Not yet read: the *value* of a prey counter on the board (so the AI marks before casting Tetzimoc,
- * rather than casting it bare) — a new evaluator term, split out as RIX gap G15.
+ * The *value* of a prey counter on the board — marking before casting Tetzimoc rather than casting
+ * it bare — is `MarkedForRemovalValueAiTest`'s.
  */
 class MarkedForRemovalCounterAiTest : ScenarioTestBase() {
     init {
