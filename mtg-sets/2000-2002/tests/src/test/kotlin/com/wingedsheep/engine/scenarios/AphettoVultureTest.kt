@@ -73,7 +73,7 @@ class AphettoVultureTest : FunSpec({
         // Vulture should be dead
         driver.findPermanent(activePlayer, "Aphetto Vulture") shouldBe null
 
-        // The death trigger asks for its target; choosing one is the "you may" answer.
+        // The death trigger announces targets before resolution consent.
         driver.isPaused shouldBe true
         driver.pendingDecision.shouldNotBeNull()
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
@@ -147,13 +147,13 @@ class AphettoVultureTest : FunSpec({
         // Resolve bolt
         driver.bothPass()
 
-        // Choosing the zombie as target is the yes — no second prompt at resolution.
+        // Announce the zombie as target, then accept at resolution.
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
         driver.submitTargetSelection(activePlayer, listOf(zombieInGraveyard))
 
         // Resolve the trigger
         driver.bothPass()
-        driver.pendingDecision shouldBe null
+        driver.submitYesNo(activePlayer, true).error shouldBe null
 
         // The zombie should no longer be in the graveyard
         driver.getGraveyardCardNames(activePlayer) shouldNotContain "Festering Goblin"

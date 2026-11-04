@@ -50,19 +50,16 @@ class HydroelectricSpecimenScenarioTest : ScenarioTestBase() {
     }
 
     /**
-     * Answer the trigger's "you may" at its target prompt — targeting [spell] accepts (the trigger
-     * then resolves with no second yes/no), an empty selection declines (the trigger never goes on
-     * the stack) — leaving [spell] alone on the stack.
+     * Announce [spell] as the target, then answer the optional choice at resolution,
+     * leaving [spell] alone on the stack.
      */
     private fun TestGame.useTriggerOn(spell: com.wingedsheep.sdk.model.EntityId, accept: Boolean = true) {
-        val prompt = getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
-        prompt.targetRequirements.single().minTargets shouldBe 0
-        selectTargets(if (accept) listOf(spell) else emptyList()).error shouldBe null
+        getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+        selectTargets(listOf(spell)).error shouldBe null
         var guard = 0
         while (state.stack.size > 1 && getPendingDecision() == null && guard++ < 10) passPriority()
-        withClue("no second may-prompt on resolution") {
-            (getPendingDecision() is YesNoDecision) shouldBe false
-        }
+        getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+        answerYesNo(accept).error shouldBe null
         state.stack shouldBe listOf(spell)
     }
 

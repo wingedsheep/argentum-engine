@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -17,9 +18,6 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *   Whenever this creature deals combat damage to a player, you may return target creature card
  *   from your graveyard to your hand.
  *
- * The "you may" is answered at the trigger's target prompt: choosing a card accepts, an empty
- * selection declines (and the trigger never goes on the stack).
- *
  * Covers the accept path, the declined "may", and the graveyard-ownership restriction (only *your*
  * graveyard is a legal source, so an opponent's creature card never becomes a target).
  */
@@ -33,9 +31,12 @@ class WoebearerScenarioTest : ScenarioTestBase() {
         }
         passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
         resolveStack()
-        // Anything that is not already the trigger's own target prompt (which carries its "you may")
+        // Anything that is not already the trigger's own decision (its target, then its "you may")
         // is a combat-damage assignment still owed.
-        if (hasPendingDecision() && getPendingDecision() !is ChooseTargetsDecision) {
+        if (hasPendingDecision() &&
+            getPendingDecision() !is ChooseTargetsDecision &&
+            getPendingDecision() !is YesNoDecision
+        ) {
             submitDefaultCombatDamage()
             resolveStack()
         }
@@ -59,7 +60,7 @@ class WoebearerScenarioTest : ScenarioTestBase() {
                     game.getLifeTotal(2) shouldBe 18
                 }
 
-                // Choosing the target is the "you may" yes; no consent question follows.
+                // The target is announced now; the "you may" is answered as the trigger resolves.
                 val decision = game.getPendingDecision()
                 withClue("The trigger should ask for a target; got $decision") {
                     decision.shouldBeInstanceOf<ChooseTargetsDecision>()
@@ -69,6 +70,8 @@ class WoebearerScenarioTest : ScenarioTestBase() {
                     (decision as ChooseTargetsDecision).legalTargets[0].orEmpty() shouldContain bears
                 }
                 game.selectTargets(listOf(bears))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 withClue("Grizzly Bears should be back in Alice's hand") {
@@ -88,15 +91,15 @@ class WoebearerScenarioTest : ScenarioTestBase() {
 
                 game.connectWithWoebearer()
 
-                // The decline is an empty selection at the target prompt — no picking a card you
-                // mean to leave behind, and the trigger never goes on the stack.
+                // The target is announced when the trigger goes on the stack; the decline is the
+                // separate yes/no asked as it resolves.
+                game.selectTargets(listOf(game.findCardsInGraveyard(1, "Grizzly Bears").single())).error shouldBe null
+                game.resolveStack()
                 val decision = game.getPendingDecision()
-                withClue("The trigger should ask for an optional target; got $decision") {
-                    decision.shouldBeInstanceOf<ChooseTargetsDecision>()
-                    decision.targetRequirements.single().minTargets shouldBe 0
+                withClue("The trigger should ask the may; got $decision") {
+                    decision.shouldBeInstanceOf<YesNoDecision>()
                 }
-                game.selectTargets(emptyList()).error shouldBe null
-                game.state.stack.isEmpty() shouldBe true
+                game.answerYesNo(false).error shouldBe null
 
                 withClue("Grizzly Bears should still be in the graveyard") {
                     game.isInGraveyard(1, "Grizzly Bears") shouldBe true
@@ -116,6 +119,7 @@ class WoebearerScenarioTest : ScenarioTestBase() {
 
                 game.connectWithWoebearer()
 
+                // The target is announced now; the "you may" is answered as the trigger resolves.
                 val decision = game.getPendingDecision()
                 withClue("The trigger should ask for a target; got $decision") {
                     decision.shouldBeInstanceOf<ChooseTargetsDecision>()

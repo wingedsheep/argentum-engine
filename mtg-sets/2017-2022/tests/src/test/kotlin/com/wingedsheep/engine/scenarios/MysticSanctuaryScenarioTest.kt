@@ -42,6 +42,7 @@ class MysticSanctuaryScenarioTest : ScenarioTestBase() {
             decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(bolt)
             game.selectTargets(listOf(bolt)).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(true).error shouldBe null
 
             game.state.getLibrary(game.player1Id).first() shouldBe bolt
             game.findCardsInGraveyard(1, "Lightning Bolt").size shouldBe 0

@@ -48,7 +48,7 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
 
                 game.advanceToOurUpkeep()
 
-                // The optional trigger's target prompt is also its "you may": picking one accepts.
+                // Announce the optional trigger target before it goes on the stack.
                 val decision = game.getPendingDecision()
                 decision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val legal = decision.legalTargets[0] ?: emptyList()
@@ -58,6 +58,8 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
                     legal shouldNotContain giant
                 }
                 game.selectTargets(listOf(bear))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 withClue("two creatures you control: the 2/2 becomes a 4/4") {
@@ -75,7 +77,7 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("declining at the target prompt neither pumps nor sacrifices the creature") {
+            test("declining neither pumps nor sacrifices the creature") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Junkyo Bell")
@@ -90,11 +92,9 @@ class JunkyoBellScenarioTest : ScenarioTestBase() {
 
                 game.advanceToOurUpkeep()
 
-                val decision = game.getPendingDecision()
-                decision.shouldBeInstanceOf<ChooseTargetsDecision>()
-                decision.targetRequirements.single().minTargets shouldBe 0
-                game.selectTargets(emptyList()).error shouldBe null
-                game.state.stack.isEmpty() shouldBe true
+                game.selectTargets(listOf(bear)).error shouldBe null
+                game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.state.projectedState.getPower(bear) shouldBe 2
 

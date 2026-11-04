@@ -1266,7 +1266,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'When a spell or ability needs an answer — a mode, a value for X, a target, how to split damage, the order of cards — a prompt says what is being asked and by which card. Most prompts have View Battlefield to look at the table before answering.',
     body: [
       { kind: 'ul', items: [
-        'Yes / No — “may” abilities. With several identical triggers, “Yes to all” answers them together.',
+        'Yes / No — choose whether to perform a “may” ability as it resolves. If it targets something, choose the target first; the ability then waits on the stack for responses before asking Yes / No.',
         'Choose mode — pick the required number of modes; escalate and similar costs are shown as you go.',
         'Choose X — a slider with − and + buttons, capped at the most you can pay.',
         'Targets — click a highlighted card or a player’s life total, then Confirm. Optional targets can be declined.',

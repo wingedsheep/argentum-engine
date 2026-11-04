@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The Island subtype supplies the {T}: Add {U} ability. "Enters untapped" is the `untapped()`
  * state predicate on the self enters trigger, which the trigger matcher reads off how the land
  * *entered* — a land that entered tapped never triggers, even if untapped later in the same
- * resolution. The "you may" is answered at targeting, as on Mortuary Mire.
+ * resolution. The "you may" is answered on resolution, as on Mortuary Mire.
  */
 val MysticSanctuary = card("Mystic Sanctuary") {
     manaCost = ""

@@ -21,8 +21,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *
  * Pins the flash window (Dinosaurs only, only after the Hatchling dies), that the fight ability
  * granted to the *spell* survives onto the permanent and targets another creature, and the
- * "you may" — which the engine asks once, on the target picker ("you may <verb> target X":
- * choosing a target is yes, declining is no; see TriggerProcessor.consentAnswerableAtTargeting).
+ * resolution-time "you may" after the mandatory target is announced.
  */
 class CherishedHatchlingScenarioTest : ScenarioTestBase() {
 
@@ -57,7 +56,7 @@ class CherishedHatchlingScenarioTest : ScenarioTestBase() {
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
 
-        /** Leaves the granted ETB trigger waiting on its target / "you may" decision. */
+        /** Leaves the granted ETB trigger waiting on its mandatory target decision. */
         fun TestGame.killHatchlingThenFlashDinosaurAtEndStep() {
             castSpell(1, "Doom Blade", findPermanent("Cherished Hatchling")!!).error shouldBe null
             resolveStack()
@@ -86,6 +85,7 @@ class CherishedHatchlingScenarioTest : ScenarioTestBase() {
 
             game.selectTargets(listOf(game.findPermanent("Grizzly Bears")!!)).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(true).error shouldBe null
 
             game.state.pendingDecision shouldBe null
             game.isInGraveyard(2, "Grizzly Bears") shouldBe true
@@ -96,8 +96,9 @@ class CherishedHatchlingScenarioTest : ScenarioTestBase() {
             val game = builder().build()
             game.killHatchlingThenFlashDinosaurAtEndStep()
 
-            game.selectTargets(emptyList()).error shouldBe null
+            game.selectTargets(listOf(game.findPermanent("Grizzly Bears")!!)).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(false).error shouldBe null
 
             game.state.pendingDecision shouldBe null
             game.isOnBattlefield("Grizzly Bears") shouldBe true
@@ -123,6 +124,7 @@ class CherishedHatchlingScenarioTest : ScenarioTestBase() {
             game.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
             game.selectTargets(listOf(game.findPermanent("Grizzly Bears")!!)).error shouldBe null
             game.resolveStack()
+            game.answerYesNo(true).error shouldBe null
 
             game.isInGraveyard(2, "Grizzly Bears") shouldBe true
         }

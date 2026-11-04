@@ -29,8 +29,7 @@ private val DinosaurSpell = GameObjectFilter.Any.withSubtype(Subtype.DINOSAUR)
  *   [Duration.Permanent]) — it lands on the permanent spell on the stack and carries onto the
  *   creature it becomes. It covers every Dinosaur spell cast this turn, flashed or not.
  * - The granted trigger is `optional = true` (lowered to `Effects.May`) over one mandatory target —
- *   the engine's one-question "you may <verb> target X" shape: the target picker offers Decline
- *   and a chosen target answers the "you may" (Affectionate Indrik, Frontier Siege).
+ *   the target is announced on the stack, and whether to fight is chosen on resolution.
  */
 val CherishedHatchling = card("Cherished Hatchling") {
     manaCost = "{1}{G}"

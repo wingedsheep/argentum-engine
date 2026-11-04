@@ -533,6 +533,10 @@ class DecisionResponder(
         val projected = state.projectedState
         val value = if (projected.isCreature(targetId)) {
             (projected.getPower(targetId) ?: 0) + (projected.getToughness(targetId) ?: 0).toDouble()
+        } else if (targetId !in state.getBattlefield() && state.getEntity(targetId)?.get<CardComponent>() != null) {
+            // A recursion's graveyard card has no board presence; it is worth what it would be
+            // once it lands (TargetSelection.rank's off-battlefield reading, sign flipped back).
+            -TargetSelection.rank(state, targetId, playerId, intents)
         } else {
             0.0
         }

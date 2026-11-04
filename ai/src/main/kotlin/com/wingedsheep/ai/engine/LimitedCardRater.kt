@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
@@ -246,7 +247,7 @@ object LimitedCardRater {
         }
         // The same slots [effectBonus] sums ([EffectWalker.slots]).
         fun slot(part: String, slot: EffectWalker.Slot) {
-            val value = slotValue(slot)
+            val value = slotValue(slot, card)
             if (value == 0.0) return
             val breadth = narrowDiscount(slot)
             val detail = listOfNotNull(
@@ -418,15 +419,15 @@ object LimitedCardRater {
      * which [EffectWalker.leaves] keeps whole.
      */
     private fun effectBonus(card: CardDefinition): Double =
-        EffectWalker.slots(card.script).sumOf(::slotValue)
+        EffectWalker.slots(card.script).sumOf { slotValue(it, card) }
 
     /**
      * One slot's effect value — its leaves folded, plus what its pipelines add up to — discounted
      * for where it lives and, when it is removal that can aim
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
-    private fun slotValue(slot: EffectWalker.Slot): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets)) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+    private fun slotValue(slot: EffectWalker.Slot, card: CardDefinition): Double =
+        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
 
     // Four-mana activations are already slow; above that, retain only the share likely to be used.
     private fun activationDiscount(slot: EffectWalker.Slot): Double =
@@ -554,7 +555,10 @@ object LimitedCardRater {
     }
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
-    private class LimitedScoreFold(private val targets: List<TargetRequirement> = emptyList()) : EffectWalker.Fold<Double> {
+    private class LimitedScoreFold(
+        private val targets: List<TargetRequirement> = emptyList(),
+        private val source: CardDefinition? = null,
+    ) : EffectWalker.Fold<Double> {
         override fun blink(exile: MoveToZoneEffect, returns: MoveToZoneEffect): Double = 0.3
 
         /**
@@ -572,7 +576,7 @@ object LimitedCardRater {
                 // but it makes the cantrip less broadly usable than a free draw.
                 -0.2
             } else {
-                scoreEffect(effect, targets)
+                scoreEffect(effect, targets, source)
             }
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
@@ -589,7 +593,7 @@ object LimitedCardRater {
     /**
      * Score one leaf effect for limited value.
      */
-    private fun scoreEffect(effect: Effect, targets: List<TargetRequirement>): Double {
+    private fun scoreEffect(effect: Effect, targets: List<TargetRequirement>, source: CardDefinition?): Double {
         return when (effect) {
             // Mill spends no opposing board material. Give its library pressure a small term;
             // full library-depletion valuation belongs to the board evaluator.
@@ -622,7 +626,26 @@ object LimitedCardRater {
             is DealDamageEffect ->
                 damageScore((effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 3)
             is DividedDamageEffect -> 1.3
-            is FightEffect -> 1.0
+            is FightEffect -> {
+                // A self-fight can only kill within this creature's damage reach. A spell that
+                // chooses both fighters, or a variable-power source, keeps the generic estimate.
+                val selfFights = effect.target1 == EffectTarget.Self || effect.target2 == EffectTarget.Self
+                val power = source?.creatureStats?.basePower
+                // Extra effects or static/replacement abilities can change the fighter before
+                // damage (entry counters, a pump, a transform). Keep the existing estimate unless
+                // this is the simple body-plus-fight shape whose printed reach we can price.
+                val simpleFighter = source != null && source.script.staticAbilities.isEmpty() &&
+                    source.script.replacementEffects.isEmpty() &&
+                    EffectWalker.slots(source.script).all { slot ->
+                        EffectWalker.leaves(slot.effect).all { it is FightEffect }
+                    }
+                when {
+                    !selfFights || power == null || !simpleFighter -> 1.0
+                    power <= 0 -> 0.0
+                    Keyword.DEATHTOUCH in source?.keywords.orEmpty() -> 1.0
+                    else -> damageScore(power).coerceAtMost(1.0)
+                }
+            }
 
             // Card advantage
             is DrawCardsEffect -> {
@@ -644,11 +667,11 @@ object LimitedCardRater {
                 if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE
                 // Iteration can rebind context targets; do not mistake an outer own-side
                 // slot for the object visited by the loop.
-                else EffectWalker.fold(effect.body, LimitedScoreFold())
+                else EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
 
             // "Choose one —" is worth its best mode(s), plus a little for the choice.
             is ModalEffect -> {
-                val modes = effect.modes.map { EffectWalker.fold(it.effect, LimitedScoreFold(it.targetRequirements)) }.sortedDescending()
+                val modes = effect.modes.map { EffectWalker.fold(it.effect, LimitedScoreFold(it.targetRequirements, source)) }.sortedDescending()
                 val chosen = modes.take(effect.chooseCount.coerceAtLeast(1)).sum()
                 val flexibility = if (modes.size > effect.chooseCount) MODAL_FLEXIBILITY else 0.0
                 (chosen + flexibility).coerceAtMost(COMPOSITE_CAP)
@@ -661,7 +684,7 @@ object LimitedCardRater {
             is BudgetModalEffect -> {
                 var remaining = effect.budget
                 var chosen = 0.0
-                effect.modes.map { it.cost to EffectWalker.fold(it.effect, LimitedScoreFold(targets)) }
+                effect.modes.map { it.cost to EffectWalker.fold(it.effect, LimitedScoreFold(targets, source)) }
                     .sortedByDescending { it.second }
                     .forEach { (cost, value) ->
                         if (cost <= remaining && value > 0.0) { chosen += value; remaining -= cost.coerceAtLeast(0) }
@@ -677,7 +700,7 @@ object LimitedCardRater {
                 if (!EffectWalker.choosesOwnBranch(effect)) 0.0
                 // A pipeline inside a branch is already priced by the slot's pipelineScore, which
                 // reads through the choice (payoffLeaves).
-                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold(targets)) }
+                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold(targets, source)) }
                     ?.coerceAtMost(COMPOSITE_CAP) ?: 0.0
 
             // Card selection — scry and surveil see cards but draw none
