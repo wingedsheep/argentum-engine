@@ -1786,10 +1786,15 @@ object Effects {
      * Grant "play without paying mana cost" permission to all cards in a named collection.
      * Card must still be in a playable zone (hand, or exile with GrantMayPlayFromExile).
      * Lasts this turn unless [expiry] says otherwise — match the paired grant's expiry for
-     * "until the end of your next turn … without paying their mana costs".
+     * "until the end of your next turn … without paying their mana costs". Set [ownerControls]
+     * for "its owner may cast it without paying its mana cost", alongside the paired
+     * [GrantMayPlayFromExile]`(ownerControls = true)`.
      */
-    fun GrantPlayWithoutPayingCost(from: String, expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn): Effect =
-        GrantPlayWithoutPayingCostEffect(from, expiry)
+    fun GrantPlayWithoutPayingCost(
+        from: String,
+        expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
+        ownerControls: Boolean = false
+    ): Effect = GrantPlayWithoutPayingCostEffect(from, expiry, ownerControls)
 
     /**
      * Require [additionalCost] when casting cards in a named collection. Compose with
@@ -5181,9 +5186,15 @@ object Effects {
     fun MakePlotted(from: CollectionSlot, ownerControls: Boolean = false): Effect =
         MakePlottedEffect(from.key, ownerControls)
 
-    /** The cards in [from] may be played without paying their mana costs — this turn, or until [expiry]. */
-    fun GrantPlayWithoutPayingCost(from: CollectionSlot, expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn): Effect =
-        GrantPlayWithoutPayingCostEffect(from.key, expiry)
+    /**
+     * The cards in [from] may be played without paying their mana costs — this turn, or until
+     * [expiry]; [ownerControls] gives each card's waiver to its owner ("its owner may cast it").
+     */
+    fun GrantPlayWithoutPayingCost(
+        from: CollectionSlot,
+        expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
+        ownerControls: Boolean = false
+    ): Effect = GrantPlayWithoutPayingCostEffect(from.key, expiry, ownerControls)
 
     /** Casting the cards in [from] this turn requires [additionalCost]. */
     fun GrantPlayWithAdditionalCost(from: CollectionSlot, additionalCost: AdditionalCost): Effect =

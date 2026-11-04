@@ -18,10 +18,10 @@ A.I.M. Scientists
 A.I.M. Synthoids
 Aang's Iceberg
 Aang's Journey
-Aang, Airbending Master	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
-Aang, Swift Savior	intent: EmitBendEventEffect; intent: ExileTargetSpellEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile)
+Aang, Airbending Master
+Aang, Swift Savior
 Aang, at the Crossroads	intent: Pipeline(TopOfLibrary→battlefield|library); polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Aang, the Last Airbender	intent: EmitBendEventEffect; intent: GrantKeywordEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Aang, the Last Airbender	intent: GrantKeywordEffect
 Aarakocra Sneak	intent: TakeDesignationEffect
 Aatchik, Emerald Radian
 Abandon Attachments
@@ -260,9 +260,9 @@ Air Nomad Legacy
 Air Response Unit
 Air Servant
 Air-Cult Elemental
-Airbender Ascension	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
-Airbender's Reversal	polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
-Airbending Lesson	polarity: DrawCardsEffect; polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Airbender Ascension
+Airbender's Reversal
+Airbending Lesson
 Airborne Aid
 Airdrop Condor
 Airlift Chaplain
@@ -631,8 +631,8 @@ Apostle of Purifying Light
 Apothecary Geist
 Apothecary Initiate
 Apothecary Stomper
-Appa, Loyal Sky Bison	polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
-Appa, Steadfast Guardian	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Appa, Loyal Sky Bison
+Appa, Steadfast Guardian
 Appeal to Eirdu	timing: ForEach>ModifyStatsEffect
 Appendage Amalgam
 Appetite for Brains
@@ -5511,7 +5511,7 @@ Extra Arms	polarity: Aura>DealDamageEffect
 Extract a Confession
 Extract the Truth	polarity: ForceSacrificeEffect
 Extraction Specialist	intent: CantAttackEffect; intent: CantBlockEffect; intent: Pipeline(ChosenTargets→battlefield); polarity: CantAttackEffect; polarity: CantBlockEffect; polarity: Pipeline(ChosenTargets→battlefield)
-Extraordinary Journey	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Extraordinary Journey
 Extraplanar Lens
 Extrapolate the Impossible	intent: Pipeline(FromVariable→hand)
 Extravagant Replication
@@ -6862,7 +6862,7 @@ Glen Elendra Pranksters
 Glen Elendra's Answer
 Glidedive Duo
 Glider Kids
-Glider Staff	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Glider Staff
 Glimmer Seeker
 Glimmer of Genius
 Glimmerbell
@@ -13447,6 +13447,7 @@ Rekindling Phoenix
 Reknit
 Relearn
 Release the Dogs
+Release to the Wind
 Relentless Advance
 Relentless Assault	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>TapUntapEffect
 Relentless Dead
@@ -16601,7 +16602,7 @@ Survey the Wreckage
 Survivor of Korlis
 Survivor's Med Kit	polarity: RemoveAllCountersOfTypeEffect
 Survivors' Bond
-Suspend Aggression	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets|TopOfLibrary→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets|TopOfLibrary→exile)
+Suspend Aggression
 Suspended Sentence
 Suspension Field
 Suspicious Bookcase
@@ -17271,7 +17272,7 @@ The Last Ronin's Technique
 The Legend of Kuruk
 The Legend of Kyoshi
 The Legend of Roku
-The Legend of Yangchen	intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+The Legend of Yangchen
 The Lion-Turtle
 The Locust God
 The Lonely Mountain
