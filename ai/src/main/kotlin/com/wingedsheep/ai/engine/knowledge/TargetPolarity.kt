@@ -84,6 +84,8 @@ import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
@@ -367,6 +369,20 @@ object TargetPolarityAnalyzer {
                 }
                 continue
             }
+            // A gate another player decides (Clash of Elements: "its owner may put it on top of
+            // their library … if they didn't, they put it on the bottom") is their call, so neither
+            // branch alone is what the card does to a slot. What both branches do to it happens
+            // either way, so a slot both read the same way reads that way.
+            if (leaf is GatedEffect && leaf.decisionMaker != null) {
+                val otherwise = leaf.otherwise ?: continue
+                val taken = forRequirements(leaf.then, requirements, definitions, source)
+                val declined = forRequirements(otherwise, requirements, definitions, source)
+                for (slot in requirements.indices) {
+                    val reading = taken[slot]
+                    if (reading != TargetPolarity.UNKNOWN && reading == declined[slot]) perSlot[slot] += reading
+                }
+                continue
+            }
             // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
             // targets as `IterationEntity`; the body's other references keep their own slots.
             val space = (leaf as? ForEachEffect)?.space
@@ -451,7 +467,7 @@ object TargetPolarityAnalyzer {
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = EffectWalker.payoffLeaves(effect)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
-        for (slot in handDisruptionSlots(leaves, requirements)) {
+        for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
         for (slot in biteSources) {
@@ -576,22 +592,29 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * The player slots whose **hand** a pipeline among [leaves] takes cards out of — "target player
-     * discards two cards" (Mind Rot), "target opponent reveals their hand; you choose a nonland
-     * card from it; exile that card" (Null Summoner): a gather from the slot's hand whose cards, or
-     * the ones picked from among them, go to a graveyard, exile or a library. Losing cards from hand
-     * is bad for the player who held them, so the slot reads harmful.
+     * The player slots whose **hand** or **permanents** a pipeline among [leaves] takes cards out
+     * of — "target player discards two cards" (Mind Rot), "target opponent reveals their hand; you
+     * choose a nonland card from it; exile that card" (Null Summoner), "target opponent sacrifices a
+     * creature or planeswalker with the greatest mana value" (Break Under Pressure), Liliana of the
+     * Veil's piles: a gather from the slot's hand, or from the permanents the slot controls, whose
+     * cards, or the ones picked from among them, go to a graveyard, exile or a library. Losing cards
+     * from hand or permanents from the battlefield is bad for the player who held them, so the slot
+     * reads harmful.
      *
      * A slot that also draws keeps its draw's reading ([forRequirements] adds this only when it has
      * none): "target player draws three cards, then discards a card" is a loot aimed at ourselves,
      * and calling it two-sided would undo what the draw already reads right.
      */
-    private fun handDisruptionSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> {
+    private fun lossSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> {
         val slotOfHand = HashMap<String, Int>()
         for (leaf in leaves) {
-            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: continue
-            if (source.zone != Zone.HAND) continue
-            val slot = when (val player = source.player) {
+            if (leaf !is GatherCardsEffect) continue
+            val player = when (val source = leaf.source) {
+                is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.HAND }
+                is CardSource.ControlledPermanents -> source.player
+                else -> null
+            } ?: continue
+            val slot = when (player) {
                 is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
                 is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }.takeIf { it >= 0 }
                 Player.TargetPlayer, Player.TargetOpponent ->
@@ -879,6 +902,9 @@ object TargetPolarityAnalyzer {
             // "Target player can't cast spells this turn" (Orim's Chant, Xanathar): a ban is only ever
             // worth putting on someone else.
             is CantCastSpellsEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
+            // "Target player sacrifices a creature" (Diabolic Edict, Liliana of the Veil's −2): an
+            // edict costs the player it names a permanent, whichever one they pick.
+            is ForceSacrificeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
             // "Exchange life totals with target player" (Psychic Transfer, Mister Negative): swapping
             // with yourself does nothing, so the slot is the opponent the controller trades with.
             // "Two target players exchange life totals" only pays its controller off when they are

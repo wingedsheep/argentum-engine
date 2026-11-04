@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.references.Player
@@ -213,6 +214,9 @@ object EffectWalker {
      * the punisher shape — "its owner may put it on top of their library") stays a leaf: which branch
      * happens is the opponent's call, so neither branch is what the card does.
      *
+     * "Proliferate X times" ([RepeatDynamicTimesEffect], Tam, the Possibility) opens onto its body:
+     * doing a thing N times is for what the thing is for, and N is only how much.
+     *
      * The static readers that ask what a card is *for* ([CardIntentAnalyzer], [TargetPolarityAnalyzer])
      * read this walk. [leaves] keeps stopping at the gate, because widening it would move the rater's
      * numbers — the same reason it stops at modes and `ForEach` bodies.
@@ -221,6 +225,7 @@ object EffectWalker {
         when {
             leaf is ConditionalOnCollectionEffect ->
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap { payoffLeaves(it) }
+            leaf is RepeatDynamicTimesEffect -> payoffLeaves(leaf.body)
             leaf is ChooseActionEffect && choosesOwnBranch(leaf) ->
                 leaf.choices.flatMap { payoffLeaves(it.effect) }
             leaf !is GatedEffect || leaf.decisionMaker != null -> listOf(leaf)

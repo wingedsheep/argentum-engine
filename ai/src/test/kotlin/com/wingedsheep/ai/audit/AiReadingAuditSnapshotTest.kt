@@ -41,6 +41,10 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Angelsong" to emptyList(),
         // A keyword-only end-of-turn grant spell is floored where no fight is left this turn.
         "Defy Gravity" to emptyList(),
+        // "If it would die this turn, exile it instead" rides on removal: no window of its own.
+        "Essence Burn" to emptyList(),
+        // "Proliferate X times" reads as proliferate, which needs no intent tag.
+        "Tam, the Possibility" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         // A draw beside the trample outlasts the turn, so the keyword floor does not read the spell.
         "Charge Through" to listOf("timing: GrantKeywordEffect"),

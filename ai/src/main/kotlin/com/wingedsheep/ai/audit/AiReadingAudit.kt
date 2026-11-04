@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
@@ -559,11 +560,16 @@ object AiReadingAudit {
     /** Report each top-level until-end-of-turn leaf of [effect], read when [isRead] reads it. */
     private fun timing(effect: Effect, sink: Sink, isRead: (Effect) -> Boolean) {
         val leaves = EffectWalker.leaves(effect)
+        // "If that creature would die this turn, exile it instead" rides on removal (Essence Burn,
+        // Scorchmark, Bleed Dry): the creature dies as the effect resolves, so the rider's turn is
+        // spent the moment it is cast and has no window of its own to wait for. When to cast it is
+        // the removal's question, which the removal readers answer.
+        val removal by lazy { IntentTag.REMOVAL in CardIntentAnalyzer.analyzeEffect(effect).tags }
         for (leaf in leaves) {
             val expiring = if (leaf is ForEachEffect) EffectWalker.leaves(leaf.body).firstOrNull(::endsThisTurn) else leaf.takeIf(::endsThisTurn)
             expiring ?: continue
             val label = if (leaf is ForEachEffect) "ForEach>${label(expiring)}" else label(leaf)
-            if (isRead(leaf)) {
+            if (isRead(leaf) || (leaf is MarkExileOnDeathEffect && removal)) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

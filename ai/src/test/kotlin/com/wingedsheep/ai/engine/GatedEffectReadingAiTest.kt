@@ -60,10 +60,14 @@ class GatedEffectReadingAiTest : ScenarioTestBase() {
             }
         }
 
-        test("a punisher's branches are the opponent's call and stay unread") {
-            // Clash of Elements: "its owner may put it on top of their library" — which branch
-            // happens is decided by the permanent's owner, not by us.
-            TargetPolarityAnalyzer.forSpell(card("Clash of Elements")) shouldBe listOf(TargetPolarity.UNKNOWN)
+        test("a punisher's branches are the opponent's call: only what both do is read") {
+            // Risk Factor: "target opponent may have it deal 4 damage to them; if they don't, you
+            // draw three cards" — which branch happens is the opponent's call, and only one of them
+            // touches the slot, so it stays unread.
+            TargetPolarityAnalyzer.forSpell(card("Risk Factor")) shouldBe listOf(TargetPolarity.UNKNOWN)
+            // Clash of Elements: "its owner may put it on top of their library … if they didn't,
+            // the bottom" — either branch tucks it (PunisherGateReadingAiTest).
+            TargetPolarityAnalyzer.forSpell(card("Clash of Elements")) shouldBe listOf(TargetPolarity.HARMFUL)
         }
 
         // The heuristic fill is the AI's cheap path: the baseline every committed cast starts from,
