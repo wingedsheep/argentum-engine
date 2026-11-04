@@ -6170,31 +6170,25 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "EachOpponent"
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
                     },
-                    "body": {
-                        "type": "ForceSacrifice",
-                        "filter": "creature",
-                        "target": {
-                            "type": "PlayerRef",
-                            "player": "You"
+                    "dynamicCount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
                         },
-                        "dynamicCount": {
-                            "type": "Divide",
-                            "numerator": {
-                                "type": "AggregateBattlefield",
-                                "player": "You",
-                                "filter": "creature"
-                            },
-                            "denominator": {
-                                "type": "Fixed",
-                                "amount": 10
-                            }
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 10
                         }
-                    }
+                    },
+                    "countPerPlayer": true
                 }
             },
             {

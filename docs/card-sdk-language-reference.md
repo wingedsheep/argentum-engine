@@ -3983,6 +3983,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   player reference counts the chosen player's permanents. With a multi-player target (`Player.Each`,
   `Player.EachOpponent`) every player chooses in APNAP order and all the chosen permanents are
   sacrificed together once the last player has chosen (CR 101.4) — Benalish Sleeper, Plaguecrafter.
+  `countPerPlayer = true` evaluates the dynamic count **once per sacrificing player**, with
+  `Player.You` bound to that player: "each opponent sacrifices half the creatures they control,
+  rounded up" (Vona's Hunger) is `Effects.Sacrifice(Creature, battlefield(Player.You,
+  Creature).count() divRoundedUp 2, PlayerRef(EachOpponent), countPerPlayer = true)` — also Legate
+  Lanius, Zodiark, Pox Plague's sacrifice stage. Every count is read before anyone sacrifices and the
+  sacrifices stay one event; don't wrap a single-player edict in `ForEachPlayer` for this, which
+  sacrifices player by player.
 - `Effects.SacrificeOwn(filter, count?)` (= `SacrificeEffect(filter, count)`) — the bare imperative,
   "Sacrifice a creature.": the **ability's controller** sacrifices and no player is named. Distinct
   from `Effects.Sacrifice`, which is the edict and names the player who must sacrifice — writing the

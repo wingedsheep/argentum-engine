@@ -26,10 +26,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever a player sacrifices another creature, put a +1/+1 counter on Zodiark.
  *
  * Modeling:
- *  - The enter trigger is a per-player edict composed from existing primitives — no new effect.
- *    [ForEachPlayerEffect] with `Player.Each` rebinds the iterated player as the controller, so
- *    inside the loop `Player.You` means *that* player. Each player force-sacrifices, of their own
- *    choice, `Effects.Sacrifice` with a dynamic count of `Divide(<their non-God creatures>, 2,
+ *  - The enter trigger is a per-player edict: `Effects.Sacrifice(target = Each,
+ *    countPerPlayer = true)` reads the count once per player with `Player.You` bound to *that*
+ *    player, and every player's sacrifice is one simultaneous event (CR 101.4). Each player
+ *    sacrifices, of their own choice, a dynamic count of `Divide(<their non-God creatures>, 2,
  *    roundUp = false)` — the same shape Rush of Dread uses for "half … rounded up", flipped to
  *    round down. The non-God filter is `Creature.notSubtype(GOD)`, so a player's own Gods (and
  *    Zodiark) are never sacrificed and don't count toward the half.
@@ -56,16 +56,14 @@ val ZodiarkUmbralGod = card("Zodiark, Umbral God") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.ForEachPlayer(
-            players = Player.Each,
-            effect = Effects.Sacrifice(
-                filter = GameObjectFilter.Creature.notSubtype(Subtype.GOD),
-                count = DynamicAmounts.battlefield(
-                    Player.You,
-                    GameObjectFilter.Creature.notSubtype(Subtype.GOD)
-                ).count() / 2,
-                target = EffectTarget.PlayerRef(Player.You)
-            )
+        effect = Effects.Sacrifice(
+            filter = GameObjectFilter.Creature.notSubtype(Subtype.GOD),
+            count = DynamicAmounts.battlefield(
+                Player.You,
+                GameObjectFilter.Creature.notSubtype(Subtype.GOD)
+            ).count() / 2,
+            target = EffectTarget.PlayerRef(Player.Each),
+            countPerPlayer = true
         )
     }
 

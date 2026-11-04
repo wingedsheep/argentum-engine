@@ -27095,48 +27095,42 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "Each"
+                    "type": "ForceSacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "God"
+                            }
+                        ]
                     },
-                    "body": {
-                        "type": "ForceSacrifice",
-                        "filter": {
-                            "cardPredicates": [
-                                "IsCreature",
-                                {
-                                    "type": "NotSubtype",
-                                    "subtype": "God"
-                                }
-                            ]
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    },
+                    "dynamicCount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "God"
+                                    }
+                                ]
+                            }
                         },
-                        "target": {
-                            "type": "PlayerRef",
-                            "player": "You"
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
                         },
-                        "dynamicCount": {
-                            "type": "Divide",
-                            "numerator": {
-                                "type": "AggregateBattlefield",
-                                "player": "You",
-                                "filter": {
-                                    "cardPredicates": [
-                                        "IsCreature",
-                                        {
-                                            "type": "NotSubtype",
-                                            "subtype": "God"
-                                        }
-                                    ]
-                                }
-                            },
-                            "denominator": {
-                                "type": "Fixed",
-                                "amount": 2
-                            },
-                            "roundUp": false
-                        }
-                    }
+                        "roundUp": false
+                    },
+                    "countPerPlayer": true
                 }
             },
             {

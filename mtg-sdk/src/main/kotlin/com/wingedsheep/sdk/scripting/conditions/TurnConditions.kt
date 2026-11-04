@@ -872,7 +872,7 @@ data object YouDiscardedThisCardThisTurn : Condition {
 @SerialName("PlayerHasCitysBlessing")
 @Serializable
 data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
-    override val description: String = "if ${player.description} has the city's blessing"
+    override val description: String = "if ${player.description} ${if (player.description.equals("you", ignoreCase = true)) "have" else "has"} the city's blessing"
 }
 
 // =============================================================================

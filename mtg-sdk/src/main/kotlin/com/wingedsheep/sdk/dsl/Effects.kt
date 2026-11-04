@@ -6221,9 +6221,20 @@ object Effects {
      * "sacrifices half the creatures they control, rounded up" (Rush of Dread). The amount is
      * evaluated at resolution against the resolving context, so a per-target player reference
      * (`Player.ContextPlayer(0)` / `Player.TargetOpponent`) counts the chosen player's permanents.
+     *
+     * [countPerPlayer] evaluates [count] separately for each player [target] names, with
+     * [Player.You] bound to that player — "each opponent sacrifices half the creatures they control,
+     * rounded up" (Vona's Hunger) is
+     * `Sacrifice(Creature, battlefield(Player.You, Creature).count() divRoundedUp 2, EachOpponent, countPerPlayer = true)`.
+     * All counts are read first and every player's sacrifice is one simultaneous event (CR 101.4).
      */
-    fun Sacrifice(filter: GameObjectFilter, count: DynamicAmount, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
-        ForceSacrificeEffect(filter = filter, target = target, dynamicCount = count)
+    fun Sacrifice(
+        filter: GameObjectFilter,
+        count: DynamicAmount,
+        target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
+        countPerPlayer: Boolean = false,
+    ): Effect =
+        ForceSacrificeEffect(filter = filter, target = target, dynamicCount = count, countPerPlayer = countPerPlayer)
 
     /**
      * "Sacrifice a creature." — the *ability's controller* sacrifices, with no player named.

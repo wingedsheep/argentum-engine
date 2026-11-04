@@ -894,7 +894,7 @@ Families:
 - `ForceBlockEffect(target: EffectTarget, attacker: EffectTarget)` — Force a target creature to block a specific attacker this combat if able.
 - `ForceExileMultiZoneEffect(count: DynamicAmount, target: EffectTarget)` — Force a player to exile cards from multiple zones (battlefield, hand, graveyard).
 - `ForcePlayEffect(from: String, player: EffectTarget, storePlayedTo: String?)` — Instruct a player to play the first gathered card if able, paying its costs.
-- `ForceSacrificeEffect(filter: GameObjectFilter, count: Int, target: EffectTarget, dynamicCount: DynamicAmount?)` — Force sacrifice effect: Target player sacrifices permanents matching a filter.
+- `ForceSacrificeEffect(filter: GameObjectFilter, count: Int, target: EffectTarget, dynamicCount: DynamicAmount?, countPerPlayer: Boolean)` — Force sacrifice effect: Target player sacrifices permanents matching a filter.
 - `GainAllActivatedAbilitiesOfEffect(donor: EffectTarget, target: EffectTarget, duration: Duration)` — The permanent target names **gains all activated abilities of the object donor names**, for duration.
 - `GainCitysBlessingEffect(target: EffectTarget)` — Grants the city's blessing to a player (CR 702.131 / 700.5).
 - `GainControlByActivePlayerEffect(target: EffectTarget)` — Gain control of target permanent for the active player (whoever's turn it is).
