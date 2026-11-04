@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads chosen-type grants as tribal enablers, drafts them with off-tribe creatures and tribal payoffs, and chooses the type those payoffs reward instead of the most common existing type.
+
 - Reads "each token that would be created under an opponent's control this turn is created under your control instead" (Crafty Cutpurse) as taking the opponent's tokens rather than as an unrecognised ability, and prices it in draft ratings above the bare body
 - Reads immediate blinks as protection, keeps friendly bounce rescues and offensive blinks available, chooses additional profitable bounce targets, targets opponent-controlled groups offensively, prices conditional statics and mill abilities, and no longer treats looters as graveyard payoffs when choosing mill targets.
 - Drafts Clone-style cards (enter as a copy of a creature) above their printed body; a raid-gated copy (Protean Raider) counts half

@@ -134,6 +134,15 @@ pays per body. A static that *shrinks* a type ("all Goblins get -1/-1") doesn't 
 **punishes** it, and every member of that type beside it counts against the deck. A hoser that names
 a type in an effect ("tap target Wall") still reads as asking for it; such cards are rare.
 
+Broad chosen-type grants (`GrantChosenSubtype` over all creatures you control) are **tribal
+enablers**, not changelings: the enchantment is not a creature of every type. Their synergy needs
+both a tribal payoff and creatures that do not already feed that payoff. The deck reader scores
+the best single tribe, reaching full support at five off-tribe creatures; no payoff or only
+already-matching creatures gives no support. The choice prior shortlists types the controller's
+payoffs actually reward, weighted by how many creatures would newly connect to them. A simulation
+that sees an immediate benefit still outranks the prior. Self-only type choices, including basic
+land-type choices, retain their existing reading.
+
 How fed a payoff is counts in proportion to its **strength** (`SynergyStrength`): what it gives back
 per feeder, priced with the heuristic's own effect and keyword values, and divided by Goblin King's
 +1/+1 and mountainwalk (1.0). A +2/+2 lord is worth more fed than a +1/+0 one, and a "draw a card
