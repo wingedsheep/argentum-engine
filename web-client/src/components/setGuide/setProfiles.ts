@@ -472,6 +472,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Outlast', inPlay: 'Sorcery-speed +1/+1 counters give Abzan a mana sink that slowly out-grows the board.' },
     ],
   },
+  RIX: {
+    tagline: 'A fast, tribal format where Dinosaurs, Merfolk, Pirates and Vampires race for the golden city. Curve out, attack, and make every combat count.',
+    setting: 'The jungles and seas of Ixalan, where four tribes race to claim the golden city of Orazca.',
+    gameplay: 'Games are aggressive and decided in combat. Raid rewards attacking every turn, enrage Dinosaurs punish bad blocks, and explore smooths draws while growing creatures. Common removal like Bombard, Moment of Craving and Luminous Bonds is efficient, so tempo and a good curve matter more than bombs. Ascend gives wide boards a permanent bonus once you control ten permanents, and Treasure tokens fuel splashes and early Elder Dinosaurs.',
+    tips: [
+      'Pick a tribe early. Each colour pair is built around one of the four tribes, and tribal payoffs make on-type commons much better.',
+      'Bombard, Moment of Craving and Luminous Bonds are the commons to take; cheap removal keeps the races on your side.',
+      'Count to ten for ascend: tokens, Treasure and lands all add up, so the city\'s blessing comes sooner than it looks.',
+    ],
+    tryIf: 'tribal decks, Dinosaurs and fast combat-heavy games',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['tribal', 'aggro', 'counters'],
+    mechanics: [
+      { name: 'Ascend', inPlay: 'Controlling ten permanents gives you the city\'s blessing for the rest of the game, rewarding wide boards and Treasure.' },
+      { name: 'Enrage', inPlay: 'Dinosaurs trigger whenever they are dealt damage, so blocking or burning them often backfires.' },
+      { name: 'Explore', inPlay: 'Creatures reveal the top card: a land goes to hand, anything else grows the creature, smoothing draws either way.' },
+      { name: 'Raid', inPlay: 'Bonuses for having attacked this turn push you to attack before casting, even with a small creature.' },
+      { name: 'Treasure', inPlay: 'One-shot mana tokens ramp, fix splashes and count toward ascend.' },
+    ],
+  },
   DOM: {
     tagline: 'A slow, value-driven format with weak two-drops and plenty of common removal. Sagas, kicker and strong uncommons reward patient, card-advantage decks.',
     setting: 'A return to Dominaria, Magic\'s home plane, with Sagas retelling its history.',
