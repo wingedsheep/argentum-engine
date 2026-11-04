@@ -776,7 +776,8 @@ object TokenCreationReplacementHelper {
                         attachedPermanentId = attachedTo.targetId,
                         originalEffect = effect,
                         tokenCount = tokenCount,
-                        effectContext = context
+                        effectContext = context,
+                        tokenControllerId = controllerId
                     )
 
                     return EffectResult.from(newState.suspendForDecision(decision, continuation, emptyList()))

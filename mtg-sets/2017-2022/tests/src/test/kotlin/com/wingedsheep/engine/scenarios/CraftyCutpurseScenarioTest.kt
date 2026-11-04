@@ -51,6 +51,36 @@ class CraftyCutpurseScenarioTest : ScenarioTestBase() {
             game.soldiersOf(game.player2Id).shouldBeEmpty()
         }
 
+        test("killed in response to its enters trigger, it still takes the tokens — the grant outlives it") {
+            val game = scenario()
+                .withPlayers("Alice", "Bob")
+                .withCardInHand(1, "Crafty Cutpurse")
+                .withLandsOnBattlefield(1, "Island", 4)
+                .withCardInHand(2, "Raise the Alarm")
+                .withCardInHand(2, "Lightning Bolt")
+                .withLandsOnBattlefield(2, "Plains", 2)
+                .withLandsOnBattlefield(2, "Mountain", 1)
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(2, "Raise the Alarm").error shouldBe null
+            game.passPriority().error shouldBe null // Bob passes; Alice responds
+            game.castSpell(1, "Crafty Cutpurse").error shouldBe null
+            game.passPriority().error shouldBe null // Alice
+            game.passPriority().error shouldBe null // Bob — Cutpurse resolves, its trigger goes on the stack
+            val cutpurse = game.findPermanent("Crafty Cutpurse")!!
+            withClue("Raise the Alarm and the Cutpurse trigger are on the stack") { game.state.stack.size shouldBe 2 }
+
+            // Bob kills the Cutpurse with its enters trigger still on the stack.
+            game.castSpell(2, "Lightning Bolt", cutpurse).error shouldBe null
+            game.resolveStack()
+
+            withClue("the Cutpurse died") { game.findPermanent("Crafty Cutpurse") shouldBe null }
+            game.soldiersOf(game.player1Id).size shouldBe 2
+            game.soldiersOf(game.player2Id).shouldBeEmpty()
+        }
+
         test("the opponent's Anointed Procession no longer applies to the stolen tokens") {
             val game = scenario()
                 .withPlayers("Alice", "Bob")

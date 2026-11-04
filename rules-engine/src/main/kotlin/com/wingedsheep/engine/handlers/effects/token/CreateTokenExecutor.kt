@@ -188,6 +188,11 @@ class CreateTokenExecutor(
         delayedTriggerControllerId: EntityId = wouldBeControllerId
     ): EffectResult {
         val substituted = appliedSubstitutions.isNotEmpty()
+        // Inside a redirected batch the groups already run under the new controller; the batch
+        // remembers who it was for, and that player keeps the delayed triggers.
+        val delayedController =
+            (if (TokenCreationBatch.active(context)) TokenCreationBatch.wouldBeController(context) else null)
+                ?: delayedTriggerControllerId
         // "Created under your control instead" (Crafty Cutpurse) comes before every other token
         // replacement, so the doublers and substitutions below judge the event under the new
         // controller. Substitutes belong to an event already redirected, and a batch redirected
@@ -243,7 +248,7 @@ class CreateTokenExecutor(
             return when (lookup) {
                 is TokenSubstitution -> createSubstituteTokens(
                     state, lookup, context, count, tokenControllerId, TokenRiders.of(effect), rootEffect, appliedSubstitutions,
-                    delayedTriggerControllerId
+                    delayedController
                 )
                 is TokenSubstitutionChoice ->
                     TokenCreationReplacementHelper.askForSubstitution(state, lookup, rootEffect, context, count)
@@ -424,7 +429,7 @@ class CreateTokenExecutor(
                     objectReferences = context.objectReferences,
                     sourceName = sourceName,
                     // The creating effect's player, even when the token went to someone else.
-                    controllerId = delayedTriggerControllerId
+                    controllerId = delayedController
                 )
                 newState = newState.addDelayedTrigger(delayedTrigger)
             }
@@ -450,7 +455,7 @@ class CreateTokenExecutor(
                     objectReferences = context.objectReferences,
                     sourceName = sourceName,
                     // The creating effect's player, even when the token went to someone else.
-                    controllerId = delayedTriggerControllerId
+                    controllerId = delayedController
                 )
                 newState = newState.addDelayedTrigger(delayedTrigger)
             }

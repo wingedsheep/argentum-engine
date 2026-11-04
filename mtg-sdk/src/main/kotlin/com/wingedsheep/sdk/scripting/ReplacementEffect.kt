@@ -235,6 +235,13 @@ data class RedirectTokenCreationController(
         controller = Player.EachOpponent
     )
 ) : ReplacementEffect {
+    init {
+        require((appliesTo as? EventPattern.TokenCreationEvent)?.controller != Player.You) {
+            "RedirectTokenCreationController can't apply to your own tokens (Player.You): they're already " +
+                "created under your control — use Player.EachOpponent or another player"
+        }
+    }
+
     override val description: String
         get() {
             val whose = when (val player = (appliesTo as? EventPattern.TokenCreationEvent)?.controller) {

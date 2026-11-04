@@ -41,13 +41,25 @@ class GrantReplacementEffectExecutor(
         effect: GrantReplacementEffectEffect,
         context: EffectContext
     ): EffectResult {
+        // A floating rider granted by its own source ("when this creature enters, each token that
+        // would be created under an opponent's control this turn is created under your control
+        // instead" — Crafty Cutpurse) doesn't need the source to still exist: it is read through its
+        // controllerId + filter alone, so a source that died in response (a new object, CR 400.7,
+        // or a token that ceased to exist) still leaves the rider in force. Only a self-scoped grant
+        // is an ability of the object itself and lapses with it.
+        val floatingFromSource = effect.target == EffectTarget.Self &&
+            (effect.replacement as? com.wingedsheep.sdk.scripting.RedirectZoneChange)?.selfOnly != true
         val targetId = context.resolveTarget(effect.target)
+            ?: context.sourceId?.takeIf { floatingFromSource }
             ?: return EffectResult.error(state, "No valid target for replacement effect grant")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return EffectResult.error(state, "Target no longer exists")
-        targetContainer.get<CardComponent>()
-            ?: return EffectResult.error(state, "Target is not a card")
+        if (targetContainer == null && !floatingFromSource) {
+            return EffectResult.error(state, "Target no longer exists")
+        }
+        if (targetContainer != null && targetContainer.get<CardComponent>() == null) {
+            return EffectResult.error(state, "Target is not a card")
+        }
 
         val onBattlefield = state.getBattlefield().contains(targetId)
         // A resolving instant/sorcery (its `EffectTarget.Self` is the spell on the stack, not a
@@ -64,7 +76,7 @@ class GrantReplacementEffectExecutor(
 
         val controllerId = if (onBattlefield) {
             state.projectedState.getController(targetId)
-                ?: targetContainer.get<ControllerComponent>()?.playerId ?: context.controllerId
+                ?: targetContainer?.get<ControllerComponent>()?.playerId ?: context.controllerId
         } else {
             context.controllerId
         }

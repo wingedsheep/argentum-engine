@@ -65,7 +65,7 @@ class TokenContinuationResumer(
             val created = TokenCreationReplacementHelper.createAttachedPermanentCopies(
                 state,
                 continuation.attachedPermanentId,
-                context.controllerId,
+                continuation.tokenControllerId ?: context.controllerId,
                 continuation.tokenCount,
                 cardRegistry = services.cardRegistry,
                 staticAbilityHandler = StaticAbilityHandler(services.cardRegistry),

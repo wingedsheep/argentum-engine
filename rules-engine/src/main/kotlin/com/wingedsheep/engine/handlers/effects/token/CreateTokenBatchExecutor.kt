@@ -20,9 +20,19 @@ import kotlin.reflect.KClass
 internal object TokenCreationBatch {
     const val BEFORE = "__tokenCreationBatchBefore"
     const val SOURCES = "__tokenCreationBatchSources"
+    /** The player the batch was for before a controller redirect (Crafty Cutpurse). */
+    const val WOULD_BE_CONTROLLER = "__tokenCreationBatchWouldBeController"
     fun sources(context: EffectContext): Set<com.wingedsheep.sdk.model.EntityId>? =
         context.pipeline.storedCollections[SOURCES]?.toSet()
     fun active(context: EffectContext): Boolean = BEFORE in context.pipeline.storedCollections
+
+    /**
+     * Who controls the delayed triggers a batch group sets up ("sacrifice it at the beginning of the
+     * next end step"): the creating effect's player, even when the batch was redirected to someone
+     * else — the groups themselves run under the redirected controller.
+     */
+    fun wouldBeController(context: EffectContext): com.wingedsheep.sdk.model.EntityId? =
+        context.pipeline.storedCollections[WOULD_BE_CONTROLLER]?.singleOrNull()
 }
 
 class CreateTokenBatchExecutor(
@@ -117,6 +127,7 @@ class CreateTokenBatchExecutor(
             storedCollections = context.pipeline.storedCollections + mapOf(
                 TokenCreationBatch.BEFORE to state.getBattlefield(),
                 TokenCreationBatch.SOURCES to com.wingedsheep.engine.replacement.ActiveReplacements.all(state).map { it.sourceId }.distinct(),
+                TokenCreationBatch.WOULD_BE_CONTROLLER to listOf(wouldBeController),
             ),
         ))
         val finish = CreateTokenBatchEffect(emptyList())

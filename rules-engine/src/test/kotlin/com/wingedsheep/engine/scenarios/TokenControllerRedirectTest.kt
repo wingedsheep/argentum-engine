@@ -2,6 +2,8 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -22,6 +24,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.MultiplyTokenCreation
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
+import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -89,6 +92,10 @@ class TokenControllerRedirectTest : FunSpec({
     val investigate = spell("Test Redirect Investigate", Effects.Investigate())
     val batch = spell("Test Redirect Batch", Effects.CreateTokensTogether(Effects.CreateTreasure(), soldier))
     val mobilized = spell("Test Redirect Mobilized Soldier", soldier.copy(sacrificeAtStep = Step.END))
+    val mobilizedBatch = spell(
+        "Test Redirect Mobilized Batch",
+        Effects.CreateTokensTogether(Effects.CreateTreasure(), soldier.copy(sacrificeAtStep = Step.END))
+    )
     val copyCreature = card("Test Redirect Copy") {
         manaCost = "{0}"
         typeLine = "Sorcery"
@@ -108,9 +115,14 @@ class TokenControllerRedirectTest : FunSpec({
         }
     }
 
+    val crown = card("Test Redirect Copy Crown") {
+        typeLine = "Artifact — Equipment"
+        replacementEffect(ReplaceTokenCreationWithAttachedCopy(attachmentVerb = "equipped"))
+    }
+
     val testCards = listOf(
-        redirector, doubler, cutpurse, twoSoldiers, opponentsSoldier, treasure, investigate, batch,
-        mobilized, copyCreature, captain, PredefinedTokens.Treasure, PredefinedTokens.Clue
+        crown, redirector, doubler, cutpurse, twoSoldiers, opponentsSoldier, treasure, investigate, batch,
+        mobilized, mobilizedBatch, copyCreature, captain, PredefinedTokens.Treasure, PredefinedTokens.Clue
     )
 
     fun driver(): GameTestDriver = GameTestDriver().also { d ->
@@ -201,6 +213,28 @@ class TokenControllerRedirectTest : FunSpec({
         d.state.tokensOf(d.player1).shouldBeEmpty()
     }
 
+    test("an attached-copy offer the redirecting player accepts makes the copies under them, owned by them") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player2, redirector.name)
+        val lions = d.putCreatureOnBattlefield(d.player2, "Savannah Lions")
+        val crownId = d.putPermanentOnBattlefield(d.player2, crown.name)
+        d.replaceState(d.state.updateEntity(crownId) { it.with(AttachedToComponent(lions)) })
+        d.castAndResolve(d.player1, twoSoldiers.name)
+        withClue("the redirected player is the one offered the Mirrormind-style replacement") {
+            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().playerId shouldBe d.player2
+        }
+        d.submitYesNo(d.player2, true).error.shouldBeNull()
+        d.resolveStack()
+        d.pendingDecision.shouldBeNull()
+        d.state.tokensOf(d.player1).shouldBeEmpty()
+        val copies = d.state.tokensOf(d.player2)
+        copies.size shouldBe 2
+        copies.forEach { id ->
+            d.state.getEntity(id)!!.get<CardComponent>()!!.name shouldBe "Savannah Lions"
+            d.state.ownerOf(id) shouldBe d.player2
+        }
+    }
+
     test("the creator's own doubler no longer applies once the tokens are redirected") {
         val d = driver()
         d.putPermanentOnBattlefield(d.player1, doubler.name)
@@ -252,6 +286,14 @@ class TokenControllerRedirectTest : FunSpec({
         withClue("player 1 controls the \"sacrifice it\" trigger but not the token, so it stays") {
             d.state.getBattlefield().contains(token) shouldBe true
         }
+    }
+
+    test("inside a redirected batch, the delayed trigger also stays with the creating effect's controller") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player2, redirector.name)
+        d.castAndResolve(d.player1, mobilizedBatch.name)
+        d.state.tokensOf(d.player2).size shouldBe 2
+        d.state.delayedTriggers.single().controllerId shouldBe d.player1
     }
 
     test("a granted redirect lasts the turn and ends in the cleanup step") {
