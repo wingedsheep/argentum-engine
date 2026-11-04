@@ -603,6 +603,14 @@ data class GameState(
      */
     val optionalDamageRedirectChoices: Map<String, Boolean> = emptyMap(),
 
+    /** Choices replayed while resolving one simultaneous damage event, cleared when it completes. */
+    val damageReplacementChoices: List<String> = emptyList(),
+
+    /** Original face-down components retained only while a damage replacement choice is pending. */
+    val damageReplacementRevealOriginals: Map<EntityId, ComponentContainer> = emptyMap(),
+    val damageReplacementRevealTimestamp: Long? = null,
+
+
     /**
      * The controller's orderings of granted entry copies (CR 616.1, two Mystic Reflections) for
      * entrants inserted with no pause before their entry — tokens, played lands, effect moves. An

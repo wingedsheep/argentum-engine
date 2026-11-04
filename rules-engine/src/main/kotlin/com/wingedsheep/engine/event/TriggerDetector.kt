@@ -1365,6 +1365,17 @@ class TriggerDetector(
                         specEvent is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent ||
                             specEvent is com.wingedsheep.sdk.scripting.EventPattern.NthSpellCastEvent
                     }
+                // Match the battlefield observer's binding: a source-filtered damage trigger's
+                // "it" is the damage source, while the recipient remains a separate trigger fact.
+                val eventContext = TriggerContext.fromEvent(event).let { context ->
+                    if (specEvent is com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent &&
+                        specEvent.sourceFilter != null && event is DamageDealtEvent && event.sourceId != null
+                    ) context.copy(
+                        triggeringEntityId = event.sourceId,
+                        triggeringPlayerId = event.targetId.takeIf { it in state.turnOrder },
+                        triggeringLastKnownSnapshot = event.sourceLastKnown,
+                    ) else context
+                }
                 if (delayed.fireOnce) firedOnceIds.add(delayed.id)
                 val pending = PendingTrigger(
                     ability = TriggeredAbility.create(
@@ -1376,12 +1387,11 @@ class TriggerDetector(
                         additionalTargetRequirements = delayed.additionalTargetRequirements
                     ),
                     sourceId = delayed.sourceId,
-                    objectReferences = referencesFor(watchedTriggering ?: TriggerContext.fromEvent(event).triggeringEntityId),
+                    objectReferences = referencesFor(watchedTriggering ?: eventContext.triggeringEntityId),
                     sourceName = delayed.sourceName,
                     controllerId = delayed.controllerId,
-                    triggerContext = TriggerContext.fromEvent(event).copy(
-                        triggeringEntityId = watchedTriggering
-                            ?: TriggerContext.fromEvent(event).triggeringEntityId,
+                    triggerContext = eventContext.copy(
+                        triggeringEntityId = watchedTriggering ?: eventContext.triggeringEntityId,
                         capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
                     ).withAttackersAgainstYou(specEvent, event, delayed.sourceId, delayed.controllerId, state),
                     consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,

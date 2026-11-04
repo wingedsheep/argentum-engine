@@ -7,6 +7,9 @@ import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -17,7 +20,6 @@ import com.wingedsheep.sdk.scripting.effects.GrantAttackBlockTaxPerCreatureTypeE
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
-import com.wingedsheep.sdk.scripting.effects.ReflectCombatDamageEffect
 import com.wingedsheep.sdk.scripting.effects.SkipCombatPhasesEffect
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TauntEffect
@@ -454,7 +456,14 @@ object Combat {
             "this turn, whenever an attacking creature deals combat damage to you, it deals that " +
                 "much damage to its controller",
             "reflect combat damage",
-            ReflectCombatDamageEffect(),
+            Effects.CreateDelayedTrigger(
+                trigger = Triggers.a(GameObjectFilter.Creature.attacking()).dealsCombatDamage(to = Recipient.You),
+                effect = Effects.DealDamage(
+                    DynamicAmounts.triggerDamageAmount(), EffectTarget.ControllerOfTriggeringEntity,
+                    damageSource = EffectTarget.TriggeringEntity,
+                ),
+                fireOnce = false,
+            ),
         ),
     ) + restrictionsOnTargets
 }

@@ -48,53 +48,13 @@ class FightEffectExecutor(private val zones: ZoneTransitionService) : EffectExec
         val power1 = projected.getPower(target1Id) ?: 0
         val power2 = projected.getPower(target2Id) ?: 0
 
-        // A fight is one instruction — each creature deals damage equal to its power to the other
-        // (CR 701.14a) — so an optional redirection shield is asked about both halves before either
-        // is dealt (Blood of the Martyr).
-        val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-            state,
-            listOf(
-                OptionalDamageRedirect.Instance(target1Id, target2Id, power1),
-                OptionalDamageRedirect.Instance(target2Id, target1Id, power2)
-            ),
-            effect,
-            context,
-            zones.predicateEvaluator
-        )
-        if (pause != null) return pause
-
-        // Creature 1 deals damage equal to its power to creature 2
-        var currentState = readyState
-        val allEvents = mutableListOf<GameEvent>()
-
-        // Excess damage (CR 120.4a) that target1 deals to target2 — the "creature an opponent
-        // controls" half of the fight. Captured from the actual DamageDealtEvent (deathtouch- and
-        // marked-damage-aware) so a following effect can read it as a pipeline number (The Last
-        // Agni Kai). Stays 0 when target1 has no power or deals only lethal/sub-lethal damage.
-        var excessToTarget2 = 0
-
-        if (power1 > 0) {
-            val result1 = dealDamageToTarget(zones, currentState, target2Id, power1, target1Id)
-            currentState = result1.newState
-            allEvents.addAll(result1.events)
-            excessToTarget2 = result1.events
-                .filterIsInstance<DamageDealtEvent>()
-                .filter { it.targetId == target2Id }
-                .sumOf { it.excessAmount }
-        }
-
-        // Creature 2 deals damage equal to its power to creature 1
-        if (power2 > 0) {
-            val result2 = dealDamageToTarget(zones, currentState, target1Id, power2, target2Id)
-            currentState = result2.newState
-            allEvents.addAll(result2.events)
-        }
-
-        val storedNumbers = effect.excessDamageVariable
-            ?.let { mapOf(it to excessToTarget2) }
-            ?: emptyMap()
-
-        return EffectResult.success(currentState, allEvents)
-            .copy(updatedStoredNumbers = storedNumbers)
+        val result = DamageReplacementChain.deal(zones, state, listOf(
+            DamageReplacementChain.Instance(target1Id, target2Id, power1),
+            DamageReplacementChain.Instance(target2Id, target1Id, power2)
+        ), effect, context)
+        if (result.outcome is com.wingedsheep.engine.core.Outcome.Paused) return result
+        val excess = result.events.filterIsInstance<DamageDealtEvent>()
+            .filter { it.sourceId == target1Id && it.targetId == target2Id }.sumOf { it.excessAmount }
+        return result.copy(updatedStoredNumbers = effect.excessDamageVariable?.let { mapOf(it to excess) } ?: emptyMap())
     }
 }

@@ -21,7 +21,6 @@ class CombatExecutors(
         GrantCantBeBlockedExceptByColorExecutor(predicateEvaluator = amountEvaluator.predicates),
         GrantCantBeBlockedExceptByExecutor(),
         GrantCantBeBlockedExceptByCollectionExecutor(),
-        ReflectCombatDamageExecutor(),
         TauntExecutor(),
         CantAttackGroupExecutor(amountEvaluator),
         MustAttackGroupExecutor(amountEvaluator),

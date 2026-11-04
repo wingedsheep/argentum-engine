@@ -82,73 +82,18 @@ class DealDamageExecutor(
                 ?: sourceId?.let(state::objectRef)
         }
 
-        // "Each opponent and planeswalker it has dealt damage to this game" (The Fallen): a set
-        // that mixes players and permanents, read off the damage source's accumulated memory.
-        // Empty is a legal no-op, not an error — a Fallen that has damaged nobody yet does nothing.
-        if (effect.target is EffectTarget.EachDamagedBySourceThisGame) {
-            val recipients = resolveDamagedThisGame(state, sourceId, context)
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                recipients.map { OptionalDamageRedirect.Instance(sourceId, it, amount) },
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-            var newState = readyState
-            val events = mutableListOf<EngineGameEvent>()
-            for (recipientId in recipients) {
-                val result = dealDamageToTarget(zones, newState, recipientId, amount, sourceId, effect.cantBePrevented, damageSourceRef = damageSourceRef)
-                newState = result.newState
-                events.addAll(result.events)
-            }
-            return EffectResult.success(newState, events)
+        val recipients = when (effect.target) {
+            EffectTarget.EachDamagedBySourceThisGame -> resolveDamagedThisGame(state, sourceId, context)
+            is EffectTarget.PlayerRef -> context.resolvePlayerTargets(effect.target, state)
+            else -> listOfNotNull(context.resolveTarget(effect.target, state))
         }
-
-        // For PlayerRef targets, resolve to potentially multiple players
-        if (effect.target is EffectTarget.PlayerRef) {
-            val playerIds = context.resolvePlayerTargets(effect.target, state)
-            if (playerIds.isEmpty()) {
-                return EffectResult.error(state, "No valid target for damage")
-            }
-
-            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-                state,
-                playerIds.map { OptionalDamageRedirect.Instance(sourceId, it, amount) },
-                effect,
-                context,
-                zones.predicateEvaluator
-            )
-            if (pause != null) return pause
-            var newState = readyState
-            val events = mutableListOf<EngineGameEvent>()
-            for (playerId in playerIds) {
-                val result = dealDamageToTarget(zones, newState, playerId, amount, sourceId, effect.cantBePrevented, damageSourceRef = damageSourceRef)
-                newState = result.newState
-                events.addAll(result.events)
-            }
-            return EffectResult.success(newState, events)
-        }
-
-        // Single target resolution
-        val targetId = context.resolveTarget(effect.target, state)
-            ?: return EffectResult.error(state, "No valid target for damage")
-
-        // "You may have that damage dealt to you instead" (Blood of the Martyr) — ask before dealing.
-        val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
-            state,
-            listOf(OptionalDamageRedirect.Instance(sourceId, targetId, amount)),
-            effect,
-            context,
-            zones.predicateEvaluator
-        )
-        if (pause != null) return pause
-
-        val result = dealDamageToTarget(
-            zones,
-            readyState, targetId, amount, sourceId, effect.cantBePrevented,
-            excessToController = effect.excessToController, damageSourceRef = damageSourceRef
-        )
+        if (recipients.isEmpty()) return EffectResult.success(state)
+        val result = DamageReplacementChain.deal(zones, state,
+            recipients.map { DamageReplacementChain.Instance(sourceId, it, amount,
+                cantBePrevented = effect.cantBePrevented, sourceRef = damageSourceRef) },
+            effect, context, effect.excessToController)
+        if (result.outcome is Outcome.Paused) return result
+        val targetId = recipients.first()
         val excessVariable = effect.excessDamageVariable ?: return result
         // Excess damage (CR 120.4a) dealt to this target by this instruction, read off the actual
         // DamageDealtEvent so prevention, deathtouch, marked damage and loyalty are all accounted.

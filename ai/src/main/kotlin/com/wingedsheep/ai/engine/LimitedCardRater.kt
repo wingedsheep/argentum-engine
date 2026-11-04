@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
+import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
@@ -461,9 +462,8 @@ object LimitedCardRater {
     }
 
     /**
-     * What the card's printed replacement effects are worth. Only the as-enters copy (Clone,
-     * Protean Raider, Superior Spider-Man) is priced today: entering as a copy of the best creature is
-     * most of such a card's value, and its own printed body (often 0/0) is what the base saw.
+     * Printed replacement payoffs: entering as a copy of the best creature, and multiplying
+     * damage from our sources. Neither payoff is reflected in the printed body.
      */
     private fun replacementBonus(card: CardDefinition): Double =
         card.script.replacementEffects.sumOf { replacementScore(it) }
@@ -473,7 +473,7 @@ object LimitedCardRater {
             replacement.copyFilter.cardPredicates.any { it == CardPredicate.IsCreature } ->
             // A gate (raid) means it often enters as its printed self: half the value.
             ENTRY_COPY_VALUE * (if (replacement.condition != null) 0.5 else 1.0)
-        else -> 0.0
+        else -> DamageAmplifiers.pickValue(replacement)
     }
 
     /** A copy of the best creature in play, chosen as it enters — about a solid playable's worth. */

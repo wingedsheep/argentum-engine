@@ -137,6 +137,7 @@ class ExileFromTopRepeatingExecutor(private val zones: ZoneTransitionService) : 
                 zones,
                 currentState, controllerId, totalDamage, sourceId, damageSourceRef = context.objectReferences.origin ?: sourceId?.let(state::objectRef)
             )
+            if (damageResult.outcome is Outcome.Paused) return damageResult.copy(events = allEvents + damageResult.events)
             currentState = damageResult.state
             allEvents.addAll(damageResult.events)
         }

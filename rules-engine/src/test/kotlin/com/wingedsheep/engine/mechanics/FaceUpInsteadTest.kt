@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.engineSerializersModule
@@ -22,11 +24,16 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.DoubleDamage
+import com.wingedsheep.sdk.scripting.HalveDamage
+import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
 
 /**
@@ -52,8 +59,35 @@ class FaceUpInsteadTest : FunSpec({
         staticAbility { ability = ModifyStats(1, 1, GroupFilter.OtherCreaturesYouControl) }
     }
 
+    val doubler = card("Reveal Test Doubler") {
+        typeLine = "Enchantment"
+        replacementEffect(DoubleDamage(appliesTo = EventPattern.DamageEvent()))
+    }
+    val halver = card("Reveal Test Halver") {
+        typeLine = "Enchantment"
+        replacementEffect(HalveDamage(appliesTo = EventPattern.DamageEvent()))
+    }
+    val barrier = card("Reveal Test Barrier") {
+        typeLine = "Enchantment"
+        replacementEffect(PreventDamage(appliesTo = EventPattern.DamageEvent()))
+    }
+    val dummy = card("Reveal Test Dummy") {
+        typeLine = "Creature — Test"
+        power = 1
+        toughness = 10
+    }
+    val fight = card("Reveal Test Fight") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        spell {
+            val first = target(TargetFilter.Creature)
+            val second = target(TargetFilter.Creature)
+            effect = Effects.Fight(first, second)
+        }
+    }
+
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(tapPulse, anthemBeast))
+        it.registerCards(TestCards.all + listOf(tapPulse, anthemBeast, doubler, halver, barrier, dummy, fight))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -75,6 +109,69 @@ class FaceUpInsteadTest : FunSpec({
     fun GameTestDriver.faceDown(id: EntityId) = state.getEntity(id)!!.has<FaceDownComponent>()
     fun GameTestDriver.hasRider(id: EntityId) = state.getEntity(id)!!.has<TurnsFaceUpInsteadComponent>()
     fun GameTestDriver.damageOn(id: EntityId) = state.getEntity(id)?.get<DamageComponent>()?.amount ?: 0
+
+    fun choose(d: GameTestDriver, text: String) = run {
+        val question = d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        val index = question.options.indexOfFirst { it.contains(text, ignoreCase = true) }
+        (index >= 0) shouldBe true
+        d.submitDecision(question.playerId, OptionChosenResponse(question.id, index)).also {
+            it.error shouldBe null
+        }
+    }
+
+    test("prevention chosen before turning up leaves the damaged permanent face down") {
+        val d = driver()
+        val id = masked(d, d.player2, "Centaur Courser")
+        d.putPermanentOnBattlefield(d.player1, barrier.name)
+        val pending = DamageUtils.dealDamageToTarget(d.zones, d.state, id, 2, sourceId = null)
+        d.replaceState(pending.state)
+        val result = choose(d, barrier.name)
+        d.faceDown(id) shouldBe true
+        d.damageOn(id) shouldBe 0
+        result.events.filterIsInstance<TurnFaceUpEvent>().size shouldBe 0
+    }
+
+    test("a chosen turn-up is visible before the next replacement choice and emitted once") {
+        val d = driver()
+        val id = masked(d, d.player2, "Centaur Courser")
+        d.putPermanentOnBattlefield(d.player1, doubler.name)
+        d.putPermanentOnBattlefield(d.player1, halver.name)
+        val timestamp = d.state.timestamp
+        val pending = DamageUtils.dealDamageToTarget(d.zones, d.state, id, 2, sourceId = null)
+        d.replaceState(pending.state)
+        val revealed = choose(d, "face up")
+        d.faceDown(id) shouldBe false
+        d.state.timestamp shouldBe timestamp + 1
+        revealed.events.filterIsInstance<TurnFaceUpEvent>().size shouldBe 1
+        d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        // The pending state remains serializable even though replay retains the old components.
+        val json = Json { serializersModule = engineSerializersModule; allowStructuredMapKeys = true }
+        d.replaceState(json.decodeFromString<GameState>(json.encodeToString(GameState.serializer(), d.state)))
+        val finished = choose(d, doubler.name)
+        d.faceDown(id) shouldBe false
+        d.damageOn(id) shouldBe 2
+        d.state.timestamp shouldBe timestamp + 1
+        finished.events.filterIsInstance<TurnFaceUpEvent>().size shouldBe 0
+        d.state.damageReplacementRevealOriginals shouldBe emptyMap()
+    }
+
+    test("fight keeps its original face-down power when a reveal pauses the replacement chain") {
+        val d = driver()
+        val fighter = masked(d, d.player1, "Centaur Courser")
+        val other = d.putCreatureOnBattlefield(d.player2, dummy.name)
+        d.putPermanentOnBattlefield(d.player1, doubler.name)
+        d.putPermanentOnBattlefield(d.player1, halver.name)
+        val spell = d.putCardInHand(d.player1, fight.name)
+        d.castSpell(d.player1, spell, listOf(fighter, other)).error shouldBe null
+        d.bothPass()
+        choose(d, "face up")
+        d.faceDown(fighter) shouldBe false
+        choose(d, doubler.name)
+        choose(d, doubler.name)
+        d.pendingDecision shouldBe null
+        d.damageOn(other) shouldBe 2
+        d.damageOn(fighter) shouldBe 1
+    }
 
     // ---------------------------------------------------------------- becomes tapped
 

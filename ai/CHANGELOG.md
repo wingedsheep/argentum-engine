@@ -29,7 +29,10 @@ Format — newest first, one bullet each:
 ## Changes
 
 - #4388 Aims an Aura whose bonus turns on the enchanted creature's type (Sea Legs, Gift of Fangs, Bonds of Faith) at its own creatures of that type or the opponent's others, and holds it when only the wrong ones are left; reads a "-X/-X" Aura (Dead Weight) as removal rather than a pump
+- Values one-sided damage multipliers beyond their printed bodies and drafts narrow multipliers with the sources they amplify.
+
 - #4386 Gives a "target player creates a token" (Emeritus of Truce) to itself, reads a creature's own conditional penalty ("-2/-2 as long as …") as a drawback rather than a pump, and prices a keyword a creature grants itself (ascend's flying with the city's blessing) in draft ratings like a printed one
+
 - Aims theft followed by haste and untapping at opposing creatures, values repeatable targeted-removal activations on creatures beyond their bodies, and discounts expensive activations and combat drawbacks when drafting.
 
 - Recognizes repeatable mill engines as win conditions and values library-depletion progress against them before the last few cards, without penalizing ordinary draws in games without a mill threat.

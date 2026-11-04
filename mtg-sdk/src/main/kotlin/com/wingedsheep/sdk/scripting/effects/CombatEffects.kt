@@ -357,26 +357,6 @@ data class TauntEffect(
 }
 
 /**
- * Creates a delayed trigger for the rest of the turn that reflects combat damage.
- * "This turn, whenever an attacking creature deals combat damage to you,
- *  it deals that much damage to its controller."
- * Used for Harsh Justice.
- *
- * The engine implements this by creating a temporary triggered ability that
- * listens for combat damage events and applies reflection.
- */
-@SerialName("ReflectCombatDamage")
-@Serializable
-data class ReflectCombatDamageEffect(
-    val target: EffectTarget = EffectTarget.Controller
-) : Effect {
-    override val description: String =
-        "This turn, whenever an attacking creature deals combat damage to you, " +
-                "it deals that much damage to its controller"
-}
-
-
-/**
  * Grant evasion to a group of creatures until end of turn.
  * "Black creatures you control can't be blocked this turn except by black creatures."
  * Used for Dread Charge.

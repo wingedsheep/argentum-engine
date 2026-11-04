@@ -1581,7 +1581,6 @@ serialized shape; the facade for each is:
 | `RedirectCombatDamageToControllerEffect` | `Effects.RedirectCombatDamageToController` |
 | `RedirectNextDamageEffect` | `Effects.RedirectNextDamage` |
 | `RedirectDamageFromChosenSourceEffect` | `Effects.RedirectDamageFromChosenSource` |
-| `ReflectCombatDamageEffect` | `Effects.ReflectCombatDamage` |
 | `ReflexiveTriggerEffect` | `Effects.ReflexiveTrigger` |
 | `RegenerateEffect` | `Effects.Regenerate` |
 | `RemoveAllAbilitiesEffect` | `Effects.RemoveAllAbilities` |
@@ -1652,8 +1651,10 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   `GainLife(n)`, which ignores prevention and the opponent count.
 - `DamageCantBePreventedThisTurn(target)` — the per-recipient form of the turn-wide shutoff (Whippoorwill).
 - `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, protectedFilter?, optional, fromSource?, duration = EndOfTurn)`,
-  `RedirectCombatDamageToController(target = Self)`, `ReflectCombatDamage(target = Controller)`,
-  `RemoveDamageShield(target)` — the redirect / reflect / shield-removal effects.
+  `RedirectCombatDamageToController(target = Self)`,
+  `RemoveDamageShield(target)` — the redirect / shield-removal effects.
+- Harsh Justice composes `CreateDelayedTrigger` with a combat-damage observer and `DealDamage` from
+  `TriggeringEntity` to its controller; the returned damage is a separate, noncombat event.
 - `DealDamageExcessToController(amount, target, damageSource?)` — deal damage to a creature; any amount beyond
   lethal (CR 120.4a) is dealt to that creature's controller instead (the creature is marked only with
   the lethal portion). Backed by `DealDamageEffect.excessToController`. `damageSource` names another
@@ -19242,15 +19243,24 @@ The priority groups are (CR 616.1a–f):
   Goldnight: `PreventDamage(half = true, appliesTo = DamageEvent(recipient = Recipient.AnyOf(listOf(
   Recipient.You, Recipient.PermanentYouControl))))`. Unlike `HalveDamage` it is a prevention effect, so
   "damage can't be prevented" passes the damage through in full. Each host applies once (two hosts
-  take 3 to 1, then 0 rounded up), and halves go before any fixed-amount prevention (the order that
-  leaves the recipient least damage; CR 616.1 lets them choose).
+  take 3 to 1, then 0 rounded up). The affected player chooses its order relative to other
+  applicable replacement and prevention effects.
   `allBut = N` prevents **all but N** of the damage that reaches it (`amount` null, `half` false) —
   damage of N or less is untouched. Temple Altisaur: `PreventDamage(allBut = 1, appliesTo =
   DamageEvent(recipient = Recipient.Object(GameObjectFilter.Creature.withSubtype("Dinosaur").youControl()
-  .notSourceItself())))`. It applies before any half or fixed prevention (again the least-damage order);
+  .notSourceItself())))`. The affected player can apply it before or after half or fixed prevention;
   the one-shot "prevent all but N of the next damage" is `PreventNextDamageLeavingAmountEffect`.
-  The engine runs every `DoubleDamage` / `HalveDamage` /
-  `ModifyDamageAmount` pass before prevention rather than letting the affected player order them.
+  Combat and effect damage use the same `DamageReplacementChain`. The affected player (or the
+  affected permanent's current controller) chooses the next applicable replacement or prevention
+  effect. Each ability applies at most once to an instance, including its redirected descendants;
+  source, recipient, amount, conditions and prevention prohibitions are checked again after each
+  application. Choices suspend the whole damage instruction before any damage or shield consumption
+  is committed. Simultaneous finite shields, per-counter prevention and limited redirection can be
+  allocated among incoming sources. Whole-event counter-removal prevention aggregates its removal and
+  rider once per recipient; unbounded continuous redirection moves the eligible batch together.
+  The affected player may modify a later source first before
+  allocating a shared resource; bounded number choices assign the exact available total. Pure
+  equivalent orders, such as two unconditional doublers, need no question.
 - `ReplacementEffect.ExileCounteredSpellInstead(then?, appliesTo = EventPattern.CounterSpellEvent(counterer = You))`
   — "If a spell or ability you control would counter a spell, instead exile that spell and you may
   play that card without paying its mana cost" (Guile). Applied inside every `StackResolver` counter
@@ -19263,17 +19273,16 @@ The priority groups are (CR 616.1a–f):
 - `ReplacementEffect.PreventDamageByRemovingCounter(counterType = PlusOnePlusOne, removalAmount = CounterRemovalAmount.One, requiresCounter = false, appliesTo = DamageEvent(recipient = Self))`
   — "If this creature would be dealt damage, prevent that damage and remove a +1/+1 counter from it"
   (Unbreathing Horde). The printed twin of the shield counter's prevention half (CR 122.1c), wired at
-  the same two chokepoints (`DamageUtils.dealDamageToTarget` and
-  `CombatDamageManager.applyShieldCountersToCombatDamage`) and inheriting its scoping: exactly **one**
+  the shared damage replacement chain and inheriting its scoping: exactly **one**
   counter per damage *event*, however large the damage and however many counters are on the permanent —
   a creature blocking two attackers is dealt damage once (CR 510.2), and the first-strike and regular
   damage steps are two events. One deliberate difference from the shield counter: the prevention does
   **not** depend on having a counter to spend, because it is a printed ability rather than a rule made
   of counters. A separate type rather than a flag on `PreventDamage` — the counter removal is what the
   ability *is*, and it needs a state-returning application path where plain prevention is pure
-  arithmetic. Only self-recipient patterns are honoured; a card shielding *other* permanents this way
-  would need a battlefield-wide scan. A permanent carrying both this and a shield counter spends only
-  the shield counter (once the shield prevents the damage there is nothing left to replace).
+  arithmetic. Source and recipient patterns use the shared projected-state matchers. A permanent
+  carrying both this and a shield counter lets its controller choose which one applies; preventing
+  all damage leaves no damage event for the other to replace.
   Both printed rules above are **defaults**, and `removalAmount` / `requiresCounter` are the axes that
   invert them for **Magma Pummeler** ("If damage would be dealt to this creature *while it has a +1/+1
   counter on it*, prevent that damage and remove *that many* +1/+1 counters from it"):
@@ -19307,19 +19316,17 @@ The priority groups are (CR 616.1a–f):
   `byDamagePrevention = true`, including when damage cannot be prevented; face-down recipients use
   their public label in counter events. Combat consumes counters
   across assignments without intervening state-based actions; only surviving damage is marked,
-  triggers damage abilities, or supplies lifelink. Floating prevention shields apply first, so
-  Rock Hydra's paid one-point shields preserve its counters. Uses the existing damage pipeline's
-  fixed prevention ordering; choosing arbitrary orders among different prevention families remains
-  a shared limitation. Distinct from `PreventDamageByRemovingCounter` because its removal and
+  triggers damage abilities, or supplies lifelink. The affected player may apply a floating
+  prevention shield first to preserve counters, or choose the counter prevention first. Distinct from `PreventDamageByRemovingCounter` because its removal and
   prevention are both bounded per point; Magma Pummeler prevents the whole event even when counters
   run out. New Assay grammar coverage belongs to a measured grammar band.
 - `CapDamage(maxAmount, appliesTo)` — clamp matching damage to `maxAmount` (a *replacement* distinct
-  from prevent/modify; applied after all amplification). Divine Presence: `CapDamage(3, DamageEvent(recipient = Any))`.
+  from prevent/modify; ordered by the affected player). Divine Presence: `CapDamage(3, DamageEvent(recipient = Any))`.
 - `SetMinimumDamage(minAmount = 0, dynamicMinimum?, appliesTo)` — the **floor** mirror of `CapDamage`:
   raise matching damage *up to* a minimum (larger amounts unchanged; a zero would-be amount is not
   raised — a source only "deals damage" once it deals a positive amount). `dynamicMinimum` (a
   `DynamicAmount`, else the flat `minAmount`) is evaluated against the **replacement's source**
-  permanent, like `ModifyDamageAmount.dynamicModifier`. Applied after all amplification/capping. Ojer
+  permanent, like `ModifyDamageAmount.dynamicModifier`. Ordered with amplification and capping. Ojer
   Axonil, Deepest Might: `SetMinimumDamage(dynamicMinimum = DynamicAmounts.sourcePower(), appliesTo =
   DamageEvent(recipient = Opponent, source = GameObjectFilter.Any.withColor(RED).youControl(),
   damageType = NonCombat))`.
@@ -19343,8 +19350,8 @@ The priority groups are (CR 616.1a–f):
   creatures and players, the host's own controller included, are all halved. Its own type rather than
   a negative `ModifyDamageAmount` because the reduction is *multiplicative* and no `DynamicAmount` can
   read the incoming amount. Half of 1 rounded down is 0, so a 1-damage source deals nothing; each
-  hosting permanent applies once (CR 616.1), so three copies take 14 to 7, 3, then 1. It runs after
-  the `DoubleDamage` pass and shares its `restrictions` / `damageType` / source / recipient handling.
+  hosting permanent applies once, so three copies take 14 to 7, 3, then 1. Its order relative to
+  doubling is chosen by the affected player; it shares the same scope and restriction handling.
   It is **not** a prevention effect, so `DamageCantBePrevented` (Excruciator) does not switch it off.
   A player who is a legal recipient sees a "Damage Doubled" badge on their life orb — **except** when
   the source filter is attachment-scoped (`GameObjectFilter.Any.attachedToBySource()` / `EnchantedCreature`), which
@@ -19360,8 +19367,8 @@ The priority groups are (CR 616.1a–f):
   DynamicAmounts.countersOnSelf(CounterType.FIRE)` with `appliesTo = DamageEvent(source =
   GameObjectFilter.Any.youControl(), recipient = Recipient.OpponentOrPermanentTheyControl)` — "a source you
   control deals that much damage plus the number of fire counters on this enchantment to an opponent or
-  a permanent an opponent controls". Applied in `DamageUtils.applyStaticDamageAmplification` (both the
-  general and combat damage paths), once per damage event, after `DoubleDamage`. `restrictions` (a
+  a permanent an opponent controls". Applied by `DamageReplacementChain` in both damage paths,
+  once per instance, in the order chosen by the affected player. `restrictions` (a
   `List<Condition>`, ALL must hold) gates *when* the bonus applies; like the rest of the damage family
   — and unlike the draw / life-total replacements, whose restrictions read the *affected* player — each
   entry is evaluated against the **replacement source's controller**. That asymmetry is what lets Far
@@ -19419,7 +19426,7 @@ The priority groups are (CR 616.1a–f):
   **can't be prevented** is still dealt in full and the mill still happens (both cards' rulings);
   preventable damage is replaced once however many copies apply. Wired in both damage paths
   (`DamageUtils.applyReplaceDamageWithMill` for the general path, `CombatDamageManager` for combat).
-  Damage-type filtering is not applied (matches any type).
+  Damage-type filtering is honored just like every other damage replacement.
 - `HealOtherDamage(appliesTo = DamageEvent(recipient = Self))` — the damage is dealt **in full**, but
   as part of the same replacement all *other* damage already marked on the recipient is **healed**
   (CR 701.69a: "If an effect states that damage already dealt to a permanent 'is healed,' that
@@ -19433,9 +19440,9 @@ The priority groups are (CR 616.1a–f):
   Applied **once per damage event, not per instance**: all combat damage in a step is dealt
   simultaneously (CR 510.2), so a double-blocked Wolverine heals what was marked before the step and
   then takes both blockers' damage; the first-strike and regular combat damage steps are separate
-  events and each heal in turn. Fires *after* every prevention/redirection/replacement has had its
-  say, so fully prevented or redirected damage heals nothing; a deathtouch source still kills, and a
-  wither source still triggers the heal (wither only changes the *form* of the damage, CR 702.80a).
+  events and each heal in turn. The affected player orders healing alongside prevention and
+  redirection. If prevention consumes the damage first, healing does not apply. A deathtouch source
+  still kills, and wither still allows healing because it changes the form of damage.
   Players, planeswalkers and battles have no marked damage, so it is a no-op on them. The threading
   that enforces once-per-event and the engine entry points (`DamageUtils.applyHealOtherDamage`,
   `DamageUtils.healMarkedDamage`) are documented on the `HealOtherDamage` KDoc and

@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -43,6 +46,14 @@ class RockHydraScenarioTest : ScenarioTestBase() {
             .get<DamageComponent>()?.amount ?: 0
         fun activate(game: TestGame, index: Int) = game.execute(ActivateAbility(game.player1Id,
             game.findPermanent("Rock Hydra")!!, cardRegistry.getCard("Rock Hydra")!!.script.activatedAbilities[index].id))
+        fun choosePaidPrevention(game: TestGame) {
+            while (game.getPendingDecision() is ChooseOptionDecision) {
+                val decision = game.getPendingDecision() as ChooseOptionDecision
+                val shield = decision.options.indexOfFirst { it.contains("prevent", true) && !it.contains("counter", true) }
+                (shield >= 0) shouldBe true
+                game.submitDecision(OptionChosenResponse(decision.id, shield)).error shouldBe null
+            }
+        }
         test("X is captured as entry counters and zero X dies") {
             for (x in listOf(0, 4)) {
                 val game = scenario().withPlayers("One", "Two").withCardInHand(1, "Rock Hydra")
@@ -90,6 +101,7 @@ class RockHydraScenarioTest : ScenarioTestBase() {
             repeat(2) { activate(game, 0).error shouldBe null; game.resolveStack() }
             game.castSpell(1, "Lightning Bolt", game.findPermanent("Rock Hydra")!!).error shouldBe null
             game.resolveStack()
+            choosePaidPrevention(game)
             count(game) shouldBe 3
             damage(game) shouldBe 0
         }
@@ -105,6 +117,7 @@ class RockHydraScenarioTest : ScenarioTestBase() {
             game.state = game.state.updateEntity(id) { it.without<
                 com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent>() }
             game.castSpell(1, "Lightning Bolt", id).error shouldBe null; game.resolveStack()
+            choosePaidPrevention(game)
             count(game) shouldBe 0
             damage(game) shouldBe 2
         }
@@ -145,6 +158,9 @@ class RockHydraScenarioTest : ScenarioTestBase() {
             game.declareAttackers(mapOf("Rock Hydra" to 2)).error shouldBe null
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
             game.declareBlockers(mapOf("Grizzly Bears" to listOf("Rock Hydra"))).error shouldBe null
+            repeat(8) { if (!game.hasPendingDecision() && game.state.step != Step.END_COMBAT) game.passPriority().error shouldBe null }
+            if (game.getPendingDecision() is CombatResolutionDecision) game.submitDefaultCombatDamage().error shouldBe null
+            choosePaidPrevention(game)
             game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
             count(game) shouldBe 3
             damage(game) shouldBe 0
@@ -181,6 +197,10 @@ class RockHydraScenarioTest : ScenarioTestBase() {
             game.declareBlockers(mapOf("Grizzly Bears" to listOf("Rock Hydra"), "Centaur Courser" to listOf("Rock Hydra"))).error shouldBe null
             repeat(12) {
                 if (game.state.pendingDecision is CombatResolutionDecision) game.submitDefaultCombatDamage().error shouldBe null
+                else if (game.state.pendingDecision is ChooseNumberDecision) {
+                    // Choose which simultaneous source consumes the remaining counters.
+                    game.chooseNumber((game.state.pendingDecision as ChooseNumberDecision).maxValue).error shouldBe null
+                }
                 else if (game.state.step != Step.END_COMBAT) game.passPriority().error shouldBe null
             }
             count(game) shouldBe 0

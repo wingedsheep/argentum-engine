@@ -283,6 +283,10 @@ object CardIntentAnalyzer {
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
 
+        if (scripts.any { script -> script.replacementEffects.any(DamageAmplifiers::reads) }) {
+            tags += IntentTag.DAMAGE_AMPLIFIER
+        }
+
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
         if (activated.any { !it.isManaAbility && sacrificesOthers(it.cost) }) {
@@ -838,9 +842,13 @@ object CardIntentAnalyzer {
 
         // Damage to a *player* is a clock, not an answer — a permanent that pings the opponent for
         // 1 each upkeep must not be priced as repeatable removal.
-        is DealDamageEffect ->
-            if (!hitsAnotherPermanent(effect.target)) emptySet()
-            else removalTags(effect.target)
+        is DealDamageEffect -> when (effect.target) {
+            is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+            EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource ->
+                setOf(IntentTag.DAMAGE_TO_PLAYERS)
+            EffectTarget.Self -> emptySet()
+            else -> removalTags(effect.target)
+        }
 
         is DividedDamageEffect -> setOf(IntentTag.REMOVAL)
 
@@ -1337,7 +1345,8 @@ object CardIntentAnalyzer {
         }
         if (Keyword.FLASH in card.keywords) return Speed.INSTANT
         if (scripts.any { script -> script.activatedAbilities.any { !it.isManaAbility } }) return Speed.ACTIVATED
-        if (scripts.any { it.staticAbilities.isNotEmpty() } || IntentTag.ANTHEM in tags) return Speed.STATIC
+        if (scripts.any { it.staticAbilities.isNotEmpty() } || IntentTag.ANTHEM in tags ||
+            IntentTag.DAMAGE_AMPLIFIER in tags) return Speed.STATIC
         return Speed.SORCERY
     }
 
@@ -1439,7 +1448,8 @@ object CardIntentAnalyzer {
                             }
                 }
             }
-            return CardIntent.UNKNOWN.staticPriorValue + if (repeatableRemoval) 1.5 else 0.0
+            val amplifier = if (IntentTag.DAMAGE_AMPLIFIER in intent.tags) 1.5 else 0.0
+            return CardIntent.UNKNOWN.staticPriorValue + maxOf(if (repeatableRemoval) 1.5 else 0.0, amplifier)
         }
         return priorLadder(intent).maxOfOrNull { it.value } ?: CardIntent.UNKNOWN.staticPriorValue
     }
@@ -1469,6 +1479,7 @@ object CardIntentAnalyzer {
             if (repeatable && IntentTag.DRAW in tags) add(PriorRung("repeatable card draw", 3.0))
             if (repeatable && IntentTag.TOKEN_MAKER in tags) add(PriorRung("repeatable token maker", 3.0))
             if (IntentTag.ANTHEM in tags) add(PriorRung("anthem", 3.0))
+            if (IntentTag.DAMAGE_AMPLIFIER in tags) add(PriorRung("amplifies our damage", 2.0))
             if (IntentTag.SACRIFICE_OUTLET in tags) add(PriorRung("sacrifice outlet", 1.5))
             if (IntentTag.EVASION_GRANT in tags || IntentTag.PROTECTION in tags) add(PriorRung("grants evasion or protection", 1.5))
             // A mana rock is worth about a land, and an untapped land is 0.6.

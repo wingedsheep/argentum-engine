@@ -1,0 +1,70 @@
+{
+  "player1Name": "Damage source",
+  "player2Name": "Affected player",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Angrath's Marauders"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Centaur Courser"
+      }
+    ],
+    "library": [
+      "Mountain",
+      "Mountain",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Samite Healer"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "PRECOMBAT_MAIN",
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS",
+    "COMBAT_DAMAGE",
+    "POSTCOMBAT_MAIN"
+  ],
+  "player2StopAtSteps": [
+    "PRECOMBAT_MAIN",
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS",
+    "COMBAT_DAMAGE",
+    "POSTCOMBAT_MAIN"
+  ],
+  "mode": "SELF",
+  "player2OpponentStopAtSteps": [
+    "PRECOMBAT_MAIN",
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS",
+    "COMBAT_DAMAGE",
+    "POSTCOMBAT_MAIN"
+  ],
+  "player1OpponentStopAtSteps": [
+    "PRECOMBAT_MAIN",
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS",
+    "COMBAT_DAMAGE",
+    "POSTCOMBAT_MAIN"
+  ]
+}

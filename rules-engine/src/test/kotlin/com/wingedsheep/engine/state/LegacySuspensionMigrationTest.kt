@@ -37,6 +37,9 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 var state = json.decodeFromString<GameState>(original.toString())
                 state.zoneReturns shouldBe emptyList()
                 state.playerActionPermissions shouldBe emptyList()
+                state.damageReplacementChoices shouldBe emptyList()
+                state.damageReplacementRevealOriginals shouldBe emptyMap()
+                state.damageReplacementRevealTimestamp shouldBe null
                 state.nextRoutingId shouldBe original.getValue("nextRoutingId").jsonPrimitive.content.toLong()
                 state.pendingDecision shouldBe json.decodeFromString<PendingDecision>(original.getValue("pendingDecision").toString())
 
@@ -466,6 +469,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             "playersWithPermanentDealtExcessDamageThisTurn",
             "pendingReplacementRiders", "playersDealtCombatDamageSinceTheirLastTurn", "roundNumber", "monarch",
             "initiative", "pendingAnyManaTypeSpells", "departedSpells", "departedAbilities",
+            "damageReplacementChoices", "damageReplacementRevealOriginals", "damageReplacementRevealTimestamp",
         )
     }
 }

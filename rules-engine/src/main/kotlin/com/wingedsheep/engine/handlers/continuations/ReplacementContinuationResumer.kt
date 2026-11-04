@@ -21,8 +21,31 @@ class ReplacementContinuationResumer(
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ReplacementChoiceContinuation::class, ::resumeReplacementChoice),
+        resumer(DamageReplacementContinuation::class, ::resumeDamageReplacement),
         resumer(KeywordActionInsteadContinuation::class, ::resumeKeywordActionInstead)
     )
+
+    private fun resumeDamageReplacement(state: GameState, continuation: DamageReplacementContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore): ExecutionResult {
+        val answer = if (continuation.numberPrefix != null && continuation.numberMax != null) {
+            (response as? NumberChosenResponse)?.number?.takeIf { it in continuation.numberMin..continuation.numberMax }
+                ?.let { continuation.numberPrefix + it }
+        } else when (response) {
+                is OptionChosenResponse -> continuation.optionKeys.getOrNull(response.optionIndex)
+                is YesNoResponse -> continuation.optionKeys.getOrNull(if (response.choice) 0 else 1)
+                else -> null
+            }
+        if (answer == null) return ExecutionResult.error(state, "Expected a valid damage replacement answer")
+        val recorded = com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain.record(state, continuation.choiceKey, answer)
+        val replay = com.wingedsheep.engine.handlers.effects.damage.DamageReplacementReveals.begin(recorded)
+        val result = if (continuation.effect != null && continuation.context != null)
+            services.effectExecutorRegistry.execute(replay, continuation.effect, continuation.context)
+        else com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain.deal(
+            services.zones, replay, continuation.instances, excessToController = continuation.excessToController)
+        if (result.outcome is Outcome.Paused) return ExecutionResult.propagatePause(result.state, result.events)
+        val published = exposeCollectionsToNextFrame(result.state, emptyMap(), numbers = result.updatedStoredNumbers)
+        return checkForMore(published, result.events)
+    }
 
     override fun autoResumers(): List<AutoResumer<*>> = listOf(
         autoResumer(ReplacementRidersContinuation::class) { state, continuation, events, checkForMore ->

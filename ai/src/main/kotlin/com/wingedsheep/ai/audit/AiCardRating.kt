@@ -142,7 +142,11 @@ object AiCardRating {
                     add(Part("Repeatable mill", BoardPresence.MILL_ENGINE_VALUE))
                 }
                 val abilityValue = (inPlayIntent.staticPriorValue - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
-                if (abilityValue > 0.0) add(Part("Repeatable removal", abilityValue))
+                if (abilityValue > 0.0) {
+                    val label = if (IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags) "Damage amplification"
+                        else "Repeatable removal"
+                    add(Part(label, abilityValue))
+                }
                 add(Part("Power", body(power, 0, none), statDetail(power, 1.0, StatRelevance.POWER_KNEE)))
                 add(Part("Toughness", body(0, toughness, none), statDetail(toughness, 0.4, StatRelevance.TOUGHNESS_KNEE)))
                 val base = body(power, toughness, none)
@@ -155,7 +159,7 @@ object AiCardRating {
                 BoardKind.CREATURE, parts.sumOf { it.value }, parts,
                 "In a game it is also worth more for each fight it wins on size — power that kills their " +
                     "biggest creature, toughness that survives it or the damage removal they have shown. " +
-                    "Repeatable mill and removal include their ability priors; other abilities are valued when they trigger or are activated.",
+                    "Repeatable mill, removal and damage amplification include their ability priors; other abilities are valued when they trigger or are activated.",
             )
         }
         val ladder = CardIntentAnalyzer.priorLadder(intent)
@@ -232,6 +236,8 @@ object AiCardRating {
         IntentTag.CAST_BAN to "Stops opponents casting spells",
         IntentTag.MILL to "Mills opponents toward running out of cards",
         IntentTag.TRIBAL_ENABLER to "Enables a chosen creature type",
+        IntentTag.DAMAGE_AMPLIFIER to "Amplifies damage from our sources",
+        IntentTag.DAMAGE_TO_PLAYERS to "Deals damage to players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",

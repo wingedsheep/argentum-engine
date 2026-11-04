@@ -52,7 +52,7 @@ class DistributeDamageAmongCollectionExecutor(
 
         val dealerRef = state.objectRef(dealerId)
         if (recipients.size == 1) {
-            return dealDamageToTarget(zones, state, recipients.single(), total, dealerId, damageSourceRef = dealerRef)
+            return DamageReplacementChain.deal(zones, state, listOf(DamageReplacementChain.Instance(dealerId, recipients.single(), total, sourceRef = dealerRef)), effect, context)
         }
 
         val deciderId = when (val outcome = ChooserResolution.resolve(state, effect.chooser, context, recipients)) {
