@@ -51,7 +51,7 @@ class ForceSacrificeExecutor(
         }
 
         // A dynamic count ("sacrifices half the creatures they control, rounded up") is evaluated
-        // once at resolution; otherwise fall back to the fixed edict count. The amount is resolved
+        // once at resolution, unless `countPerPlayer`, which is read per player below; otherwise fall back to the fixed edict count. The amount is resolved
         // against the same context so a per-target reference (e.g. Player.ContextPlayer / TargetOpponent)
         // counts the chosen player's permanents.
         val count = effect.dynamicCount

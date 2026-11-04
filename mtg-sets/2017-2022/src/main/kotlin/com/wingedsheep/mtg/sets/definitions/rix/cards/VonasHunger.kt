@@ -55,5 +55,17 @@ val VonasHunger = card("Vona's Hunger") {
         collectorNumber = "90"
         artist = "Zack Stella"
         imageUri = "https://cards.scryfall.io/normal/front/a/a/aab958d5-9c1f-420f-b358-ec0325f22f84.jpg?1783935304"
+        ruling(
+            "2018-01-19",
+            "When Vona's Hunger resolves, first the player whose turn it is (if that player is an opponent) chooses " +
+                "which creature or creatures they will sacrifice, then each other opponent in turn order does the " +
+                "same, then all chosen creatures are sacrificed at the same time. Players will know choices made by " +
+                "earlier players when making their choices."
+        )
+        ruling(
+            "2018-01-19",
+            "If you cast a spell with ascend, you don't get the city's blessing until it resolves. Players may " +
+                "respond to that spell by trying to change whether you get the city's blessing."
+        )
     }
 }
