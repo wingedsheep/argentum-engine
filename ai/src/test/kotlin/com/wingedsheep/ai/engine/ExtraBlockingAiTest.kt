@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.ons.cards.TauntingElf
 import com.wingedsheep.mtg.sets.definitions.xln.cards.SpikeTailedCeratops
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -23,6 +24,30 @@ class ExtraBlockingAiTest : FunSpec({
         rating.limited.explanation.heuristic.filter { it.part.startsWith("Static") }
             .sumOf { it.value } shouldBeGreaterThan 0.0
         rating.board.parts.single { it.label == "Additional blocks" }.value shouldBeGreaterThan 0.0
+    }
+
+    test("AI preserves a required block and uses its extra block to prevent lethal damage") {
+        val game = GameTestDriver().apply {
+            registerCards(TestCards.all + SpikeTailedCeratops + TauntingElf)
+            initMirrorMatch(Deck.of("Forest" to 40))
+            passPriorityUntil(Step.PRECOMBAT_MAIN)
+            setLifeTotal(player2, 1)
+        }
+        val blocker = game.putCreatureOnBattlefield(game.player2, "Spike-Tailed Ceratops")
+        val elf = game.putCreatureOnBattlefield(game.player1, "Taunting Elf")
+        val lethalAttacker = game.putCreatureOnBattlefield(game.player1, "Llanowar Elves")
+        val attackers = listOf(elf, lethalAttacker)
+        attackers.forEach(game::removeSummoningSickness)
+        game.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        game.declareAttackers(game.player1, attackers, game.player2).error shouldBe null
+        game.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        val legal = LegalActionEnumerator.create(game.cardRegistry).enumerate(game.state, game.player2)
+            .single { it.actionType == "DeclareBlockers" }
+        legal.mandatoryBlockerAssignments?.get(blocker) shouldBe listOf(elf)
+        val action = AIPlayer.create(game.cardRegistry, game.player2)
+            .chooseFrom(game.state, listOf(legal)).action as DeclareBlockers
+        action.blockers[blocker]?.toSet() shouldBe attackers.toSet()
+        game.submit(action).error shouldBe null
     }
 
     for ((name, number, expected) in listOf(

@@ -882,8 +882,9 @@ class CombatAdvisor(
 
         // A multi-blocker has capacity left after its first assignment. Compare the complete
         // combat through the engine: two individually safe blocks can kill it together.
+        // Adding targets preserves required blocks; earlier teammates' saved choices stay fixed.
         for ((blocker, targets) in currentPlan.entries.filter {
-            it.key !in mandatoryBlockerIds &&
+            it.key in validBlockers &&
                 it.value.size < 1L + projected.getAdditionalBlockCount(it.key).coerceAtLeast(0)
         }.take(3)) {
             for (attacker in unblockedAttackers.take(3)) {
