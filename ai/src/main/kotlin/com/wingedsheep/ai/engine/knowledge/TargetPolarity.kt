@@ -381,10 +381,13 @@ object TargetPolarityAnalyzer {
             }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
+            val gift = tokenGiftSlot(leaf, requirements)
             if (recursion != null) {
                 recursions += recursion
             } else if (copy != null) {
                 perSlot[copy] += TargetPolarity.BENEFICIAL
+            } else if (gift != null) {
+                perSlot[gift.first] += gift.second
             } else {
                 for ((target, polarity) in classify(leaf, definitions, source)) {
                     val slot = slotOf(target, requirements) ?: continue
@@ -456,6 +459,24 @@ object TargetPolarityAnalyzer {
         val fromGraveyard = leaf.fromZone == Zone.GRAVEYARD ||
             (leaf.fromZone == null && (requirements[slot] as? TargetObject)?.filter?.zone == Zone.GRAVEYARD)
         return slot.takeIf { fromGraveyard }
+    }
+
+    /**
+     * The player slot a **token for a target player** names — "target player creates a 1/1 …
+     * creature token" (Emeritus of Truce, Verdant Command) — with its reading, or null.
+     *
+     * A creature is a body on its controller's side of the table, so a slot that may be either
+     * player is [TargetPolarity.BENEFICIAL]: the token is ours to take. A slot only an opponent can
+     * fill ("target opponent creates a 3/3 Dinosaur", Baffling End, Necromentia, the Hunted cycle)
+     * is the card's price, not a side to pick — it reads [TargetPolarity.FLEXIBLE], which is
+     * understood but prunes nothing. Read as a gift, it would veto casting a spell whose every legal
+     * target is an opponent ([com.wingedsheep.ai.engine.TargetSelection.aimsOnlyAtTheWrongSide]).
+     */
+    private fun tokenGiftSlot(leaf: Effect, requirements: List<TargetRequirement>): Pair<Int, TargetPolarity>? {
+        if (leaf !is CreateTokenEffect) return null
+        val controller = leaf.controller?.takeIf { it.isSlot() } ?: return null
+        val slot = slotOf(controller, requirements) ?: return null
+        return slot to if (requirements[slot] is TargetOpponent) TargetPolarity.FLEXIBLE else TargetPolarity.BENEFICIAL
     }
 
     /**

@@ -96,7 +96,7 @@ private fun report(card: CardDefinition, reading: AiReadingAudit.CardReading, ra
     val parts = buildList {
         if (creature) add("creature body")
         addAll(rating.intent.tags.map { it.label })
-        if (rating.intent.tags.isEmpty() && reading.abilities.isNotEmpty()) add("! abilities not recognised")
+        if (rating.intent.unrecognised) add("! abilities not recognised")
         if (isEmpty()) add("nothing to read")
         if (rating.intent.speed != "Sorcery speed") add(rating.intent.speed.lowercase())
     }

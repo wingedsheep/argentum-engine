@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
@@ -1194,6 +1195,9 @@ object CardIntentAnalyzer {
         is ConditionalStaticAbility -> tagsOf(static.ability)
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
         is ModifyStats -> when {
+            // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
+            // of Invasion) is its drawback, never a pump or an answer.
+            static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> emptySet()
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
             static.powerBonus > 0 || static.toughnessBonus > 0 -> setOf(IntentTag.ANTHEM)
             static.powerBonus < 0 || static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)
@@ -1234,6 +1238,9 @@ object CardIntentAnalyzer {
         is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
             setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
+        // A composite static is each of its parts (a conditional one is read above, by the
+        // ability it gates).
+        is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
         else -> emptySet()
     }
 

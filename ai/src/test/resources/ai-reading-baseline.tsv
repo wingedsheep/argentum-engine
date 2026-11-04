@@ -949,7 +949,7 @@ Atemsis, All-Seeing	intent: LoseGameEffect; intent: RevealHandEffect
 Athreos, God of Passage	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
 Athreos, Shroud-Veiled	intent: AddCountersEffect; intent: MoveToZoneEffect; polarity: AddCountersEffect
 Atlantean Cavalry
-Atlantis Attacks	polarity: CreateTokenEffect
+Atlantis Attacks
 Atmosphere Surgeon
 Atmospheric Greenhouse
 Atog
@@ -1140,6 +1140,7 @@ Badgermole	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Badgermole Cub	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Badlands
 Badlands Revival
+Baffling End
 Bag End Porter
 Bag of Holding	intent: Pipeline(FromLinkedExile→hand)
 Bagel and Schmear
@@ -1531,6 +1532,7 @@ Birth of the Imperium
 Birthday Escape
 Birthing Boughs
 Birthing Ritual	intent: Pipeline(BattlefieldMatching|TopOfLibrary→battlefield|graveyard|library)
+Bishop of Binding
 Bishop of Rebirth
 Bishop of Wings
 Bishop's Soldier
@@ -1620,6 +1622,7 @@ Blazing Crescendo
 Blazing Effigy
 Blazing Firesinger
 Blazing Hellhound
+Blazing Hope
 Blazing Rootwalla
 Blazing Specter	intent: Pipeline(hand→graveyard)
 Blazing Torch
@@ -2119,7 +2122,7 @@ Brightmare
 Brightspear Zealot
 Brightstone Ritual
 Brightwood Tracker
-Brigid's Command	polarity: CreateTokenEffect; polarity: FightEffect
+Brigid's Command	polarity: FightEffect
 Brigid, Clachan's Heart
 Brigid, Hero of Kinsbaile
 Brilliance Unleashed
@@ -2918,7 +2921,7 @@ Civic Stalwart
 Civic Wayfinder
 Civil Servant
 Clachan Festival
-Clackbridge Troll	intent: AnyPlayerMayPayEffect; polarity: CreateTokenEffect
+Clackbridge Troll	intent: AnyPlayerMayPayEffect
 Claim Jumper
 Claim the Firstborn
 Claim the Kingdom
@@ -3405,6 +3408,7 @@ Cradle Clearcutter
 Cradle of Safety
 Cradle of the Accursed
 Craftwork Crusher
+Crafty Cutpurse
 Crafty Pathmage
 Cragcrown Pathway
 Cragplate Baloth
@@ -3613,6 +3617,7 @@ Curious Colossus	intent: ForEach>AddCreatureTypeEffect; intent: ForEach>RemoveAl
 Curious Farm Animals
 Curious Forager
 Curious Inquiry	polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
+Curious Obsession
 Curious Pair
 Curse Artifact	polarity: Aura>PayOrSufferEffect
 Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantMayPlayFromExileEffect; polarity: Aura>MoveCollectionEffect
@@ -3872,6 +3877,7 @@ Deadeye Duelist
 Deadeye Navigator	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
 Deadeye Plunderers
 Deadeye Quartermaster
+Deadeye Rig-Hauler
 Deadeye Tormentor
 Deadfall
 Deadly Alliance
@@ -5121,7 +5127,7 @@ Emeria, the Sky Ruin
 Emeritus of Abundance
 Emeritus of Conflict
 Emeritus of Ideation
-Emeritus of Truce	polarity: CreateTokenEffect
+Emeritus of Truce
 Emeritus of Woe
 Emet-Selch of the Third Seat	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Emet-Selch, Unsundered
@@ -5370,6 +5376,7 @@ Even the Score
 Evendo Brushrazer	intent: Pipeline(TopOfLibrary→exile)
 Evendo, Waking Haven
 Evercoat Ursine	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile|library)
+Everdawn Champion
 Everflowing Chalice
 Everglove Courier
 Evernight Shade
@@ -6168,7 +6175,7 @@ Foratog
 Foray of Orcs
 Forbidden Alchemy
 Forbidden Friendship
-Forbidden Orchard	polarity: CreateTokenEffect
+Forbidden Orchard
 Forbidding Spirit	intent: GrantStaticAbilityEffect
 Force Away
 Force Bubble
@@ -7211,7 +7218,7 @@ Graveblade Marauder
 Graveborn Muse
 Gravebreaker Lamia
 Gravecrawler
-Gravedig	polarity: CreateTokenEffect
+Gravedig
 Gravedigger
 Gravel Slinger
 Gravel-Hide Goblin
@@ -8106,19 +8113,19 @@ Hungering Puppetbeast
 Hungry Flames
 Hungry Ghoul
 Hungry Graffalon
-Hungry Lynx	polarity: CreateTokenEffect
+Hungry Lynx
 Hungry Ridgewolf
 Hungry Spriggan
 Hungry for More
 Hunt Down	intent: ForceBlockEffect; polarity: ForceBlockEffect
 Hunt for Specimens
-Hunted Bonebrute	polarity: CreateTokenEffect
-Hunted Dragon	polarity: CreateTokenEffect
-Hunted Horror	polarity: CreateTokenEffect
-Hunted Lammasu	polarity: CreateTokenEffect
+Hunted Bonebrute
+Hunted Dragon
+Hunted Horror
+Hunted Lammasu
 Hunted Nightmare	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?); polarity: Pipeline(ControlledPermanents→?)
-Hunted Phantasm	polarity: CreateTokenEffect
-Hunted Troll	polarity: CreateTokenEffect
+Hunted Phantasm
+Hunted Troll
 Hunted Witness
 Hunter Sliver
 Hunter of Eyeblights
@@ -8448,7 +8455,7 @@ Insatiable Hemophage
 Insatiable Skittermaw
 Inscribed Tablet
 Inscription of Abundance	polarity: FightEffect
-Inscription of Insight	polarity: CreateTokenEffect
+Inscription of Insight
 Inscription of Ruin
 Insectoid Exterminator
 Inside Information	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile); polarity: GrantMayPlayFromExileEffect; polarity: GrantPlayWithAdditionalCostEffect; polarity: GrantPlayWithoutPayingCostEffect; polarity: Pipeline(TopOfLibrary→exile)
@@ -11296,7 +11303,7 @@ Necrogen Spellbomb
 Necromancer's Stockpile
 Necromantic Thirst	polarity: Aura>MoveToZoneEffect
 Necromaster Dragon
-Necromentia	polarity: CreateTokenEffect; polarity: Pipeline(FromMultipleZones→exile)
+Necromentia
 Necropanther
 Necroplasm
 Necropolis	intent: Pipeline(ExiledAsCost→?)
@@ -12030,6 +12037,7 @@ Paladin Class
 Paladin Danse, Steel Maverick
 Paladin Elizabeth Taggerdy
 Paladin en-Vec
+Paladin of Atonement
 Paladin of Predation
 Paladin of the Bloodstained
 Paladin's Arms
@@ -12609,6 +12617,7 @@ Price of Loyalty	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStat
 Prickly Marmoset
 Prickly Pair
 Pride Sovereign
+Pride of Conquerors
 Pride of Lions
 Pride of the Perfect
 Pride of the Road	intent: GrantKeywordEffect
@@ -12961,6 +12970,7 @@ Radha's Firebrand	intent: CantBlockEffect
 Radha, Coalition Warlord
 Radha, Heart of Keld
 Radha, Heir to Keld
+Radiant Destiny
 Radiant Fountain
 Radiant Grace	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
 Radiant Grove
@@ -13871,7 +13881,7 @@ Root Snare
 Root-Kin Ally
 Rootbound Crag
 Rootbreaker Wurm
-Rootcast Apprenticeship	polarity: CreateTokenEffect; polarity: ForceSacrificeEffect
+Rootcast Apprenticeship	polarity: ForceSacrificeEffect
 Rootcoil Creeper
 Rootgrapple
 Rootha, Mercurial Artist	intent: CopyTargetSpellEffect; polarity: CopyTargetSpellEffect
@@ -14501,6 +14511,7 @@ Sea Gate Restoration
 Sea Gate Stormcaller	intent: CopyNextSpellCastEffect
 Sea God's Scorn
 Sea Kings' Blessing	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect; timing: ForEach>ChangeColorEffect
+Sea Legs	polarity: Aura>ConditionalStaticAbility
 Sea Monster
 Sea Scryer
 Sea Serpent
@@ -14803,7 +14814,7 @@ Shadows' Verdict	intent: Pipeline(BattlefieldMatching|graveyard→exile)
 Shadowspear	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
 Shadowstorm
 Shadowy Backstreet
-Shadrix Silverquill	polarity: CreateTokenEffect; polarity: mixed(DrawCardsEffect+LoseLifeEffect)
+Shadrix Silverquill	polarity: mixed(DrawCardsEffect+LoseLifeEffect)
 Shady Informant
 Shady Traveler
 Shagrat, Loot Bearer	polarity: AttachTargetEquipmentToCreatureEffect
@@ -15312,6 +15323,7 @@ Skyknight Vanguard
 Skyline Predator
 Skyline Scout
 Skymarch Bloodletter
+Skymarcher Aspirant
 Skyraker Giant
 Skyrider Patrol
 Skyscanner
@@ -15358,6 +15370,7 @@ Slate of Ancestry
 Slaughter Cry
 Slaughter Singer
 Slaughter Specialist
+Slaughter the Strong
 Slaughter-Priest of Mogis	intent: GrantKeywordEffect
 Slavering Branchsnapper
 Slay
@@ -15487,6 +15500,7 @@ Snowfield Sinkhole
 Snowhorn Rider
 Snowmelt Stag
 Snowslope Hunter
+Snubhorn Sentry
 Snuff Out
 So Tiny
 Soaring Drake
@@ -15815,6 +15829,7 @@ Spire Golem
 Spire Mangler
 Spire Mechcycle
 Spire Owl	intent: Pipeline(TopOfLibrary→library)
+Spire Winder
 Spire of Industry
 Spirebluff Canal
 Spirit Bonds
@@ -16399,6 +16414,7 @@ Sun-Blessed Guardian
 Sun-Blessed Healer
 Sun-Blessed Peak
 Sun-Collared Raptor
+Sun-Crested Pterodon
 Sun-Crowned Hunters
 Sun-Dappled Celebrant
 Sun-Spider, Nimble Webber
@@ -18575,7 +18591,7 @@ Venser, Corpse Puppet
 Venus, Torn Between Worlds
 Verazol, the Split Current	intent: CopyTargetSpellEffect
 Verdant Catacombs
-Verdant Command	polarity: CreateTokenEffect
+Verdant Command
 Verdant Force
 Verdant Kraken
 Verdant Mastery

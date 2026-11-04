@@ -73,7 +73,9 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
   above destroy above bounce), damage by amount, card draw, scry and surveil, tokens, pumps, control
   magic, counters. A composite is capped, a "may" is discounted; a modal spell is worth its best
   mode(s) plus 0.2 for the choice, and a `ForEach` its body. Static abilities count too (an Aura's
-  or Equipment's bonus by its size, an anthem, a granted keyword, a Pacifism lock), and a non-land
+  or Equipment's bonus by its size, an anthem, a granted keyword, a Pacifism lock; a keyword a
+  creature grants itself like a printed one; a static gated on a condition at 0.6 of its worth),
+  and a non-land
   card with a mana ability adds a ramp term. Removal that can only aim at a sliver of the table —
   Execute's "white creature", Perish's "destroy all green creatures", Choking Sands' "non-Swamp
   land" — keeps a share of its slot's value by how much it can reach (`RemovalBreadth`: the vanilla

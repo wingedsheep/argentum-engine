@@ -1936,6 +1936,13 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST)
 
     /**
+     * If you lost life last turn — the turn before this one, whoever's it was (Paladin of Atonement).
+     * Only *losing* life counts, not a net decrease.
+     */
+    val YouLostLifeLastTurn: ConditionInterface =
+        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST_LAST_TURN)
+
+    /**
      * If you gained or lost life this turn.
      * Used for Star Charter and similar Bloomburrow cards.
      */

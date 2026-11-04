@@ -14,8 +14,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
-import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -435,6 +436,11 @@ object LimitedCardRater {
      */
     private fun staticScore(static: StaticAbility): Double {
         if (static is ConditionalStaticAbility) return staticScore(static.ability) * 0.6
+        // A keyword the creature grants itself is a keyword on its body, priced like a printed one.
+        if (static is GrantKeyword && static.filter.scope == Scope.Self) {
+            val keyword = runCatching { Keyword.valueOf(static.keyword.uppercase()) }.getOrNull()
+            keyword?.let { KEYWORD_BONUS[it] }?.let { return it }
+        }
         when (static) {
             is CantBlock -> if (static.filter.scope == Scope.Self) return -0.3
             is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) return -0.3
