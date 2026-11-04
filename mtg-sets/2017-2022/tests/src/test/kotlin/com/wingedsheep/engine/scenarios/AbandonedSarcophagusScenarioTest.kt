@@ -76,6 +76,8 @@ class AbandonedSarcophagusScenarioTest : FunSpec({
         d.getExile(d.player1) shouldContain mine
         d.getGraveyard(d.player1) shouldNotContain mine
         d.getGraveyard(d.player2) shouldContain theirs
+        // Murder has no cycling, so it resolves into the graveyard as usual.
+        d.getGraveyardCardNames(d.player1) shouldContain "Murder"
     }
 
     test("it grants casting only — a land with cycling can't be played from the graveyard") {

@@ -17,6 +17,8 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.ZoneChangeCause
 import io.kotest.core.spec.style.FunSpec
@@ -68,6 +70,11 @@ class NotCycledZoneChangeCauseTest : FunSpec({
             effect = Effects.GainLife(3)
         }
     }
+    val blanker = card("Creatures Lose Abilities Test") {
+        manaCost = "{2}"
+        typeLine = "Enchantment"
+        staticAbility { ability = LoseAllAbilities(filter = GroupFilter.AllCreatures) }
+    }
     val typecycler = card("Islandcycling Test") {
         manaCost = "{4}"
         typeLine = "Sorcery"
@@ -77,7 +84,7 @@ class NotCycledZoneChangeCauseTest : FunSpec({
     fun newDriver(withExiler: Boolean = true): GameTestDriver {
         val d = GameTestDriver()
         d.registerCards(TestCards.all)
-        listOf(exiler, discardOne, millTwo, payoff, typecycler).forEach(d::registerCard)
+        listOf(exiler, discardOne, millTwo, payoff, typecycler, blanker).forEach(d::registerCard)
         d.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         if (withExiler) d.putPermanentOnBattlefield(d.player1, exiler.name)
@@ -124,6 +131,25 @@ class NotCycledZoneChangeCauseTest : FunSpec({
         d.bothPass()
         d.getExile(d.player1) shouldContain angel
         d.getGraveyard(d.player1) shouldContain bears
+    }
+
+    test("a cycling creature that dies is exiled — unless it lost all its abilities first (ruling)") {
+        val d = newDriver()
+        val angel = d.putCreatureOnBattlefield(d.player1, "Angel of the God-Pharaoh")
+        val murder = d.putCardInHand(d.player1, "Murder")
+        d.giveMana(d.player1, Color.BLACK, 3)
+        d.castSpell(d.player1, murder, listOf(angel)).outcome shouldBe Outcome.Done
+        d.bothPass()
+        d.getExile(d.player1) shouldContain angel
+
+        d.putPermanentOnBattlefield(d.player1, blanker.name)
+        val blanked = d.putCreatureOnBattlefield(d.player1, "Angel of the God-Pharaoh")
+        val murder2 = d.putCardInHand(d.player1, "Murder")
+        d.giveMana(d.player1, Color.BLACK, 3)
+        d.castSpell(d.player1, murder2, listOf(blanked)).outcome shouldBe Outcome.Done
+        d.bothPass()
+        d.getGraveyard(d.player1) shouldContain blanked
+        d.getExile(d.player1) shouldNotContain blanked
     }
 
     test("only cards its controller owns — another player's milled cycling card is untouched") {

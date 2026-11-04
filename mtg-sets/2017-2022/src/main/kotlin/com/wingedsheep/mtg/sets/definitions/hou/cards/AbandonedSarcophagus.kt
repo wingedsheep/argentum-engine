@@ -23,8 +23,8 @@ import com.wingedsheep.sdk.scripting.ZoneChangeCause
  *   [ZoneChangeCause.NotCycled]: the card discarded to pay its own cycling (or typecycling) cost
  *   still reaches the graveyard; every other route there — discard to an effect, mill, dying,
  *   resolving, countered — is exiled. Tokens aren't cards, so a token with cycling goes to the
- *   graveyard (ruling); `withCycling()` reads printed cycling, so a permanent that lost its
- *   abilities goes there too.
+ *   graveyard (ruling); in a zone-change filter `withCycling()` fails for a permanent that lost all
+ *   its abilities or is face down, so it goes there too.
  */
 val AbandonedSarcophagus = card("Abandoned Sarcophagus") {
     manaCost = "{3}"

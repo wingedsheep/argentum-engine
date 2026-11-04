@@ -19629,7 +19629,7 @@ The priority groups are (CR 616.1a–f):
   ZoneChangeCause.NotCycled)` — mills, deaths, effect discards and resolving spells are exiled, the
   cycled card isn't. The cycling handlers stamp the transient `GameState.pendingCyclingDiscardIds` via
   `discardCards(asCyclingCost = true)`. `withCycling()` in a zone-change filter reads printed cycling
-  and fails for a permanent that lost all its abilities. The trigger form is
+  and fails for a permanent that lost all its abilities or is face down. The trigger form is
   `Triggers.self.isDiscarded(cause = ZoneChangeCause.NotCycled)`, which skips the cycling discard.
 
 

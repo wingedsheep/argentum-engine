@@ -1153,10 +1153,12 @@ object ZoneMovementUtils {
                 CardPredicate.IsNonlegendary -> !cardComponent.typeLine.isLegendary
                 CardPredicate.IsDoubleFaced -> cardComponent.isDoubleFaced
                 // "A card that has a cycling ability" (Abandoned Sarcophagus) — printed cycling or
-                // typecycling, unless the permanent lost its abilities on the battlefield (ruling:
-                // a permanent that lost cycling goes to the graveyard).
-                CardPredicate.HasCycling ->
-                    cardComponent.hasCycling && !state.projectedState.hasLostAllAbilities(entityId)
+                // typecycling, unless the permanent has no abilities on the battlefield — it lost
+                // them, or it is face down (ruling: a permanent that lost cycling goes to the
+                // graveyard).
+                CardPredicate.HasCycling -> cardComponent.hasCycling &&
+                    !state.projectedState.hasLostAllAbilities(entityId) &&
+                    !state.projectedState.isFaceDown(entityId)
                 else -> true // For unhandled predicates, don't filter out
             }
             if (!matches) return false

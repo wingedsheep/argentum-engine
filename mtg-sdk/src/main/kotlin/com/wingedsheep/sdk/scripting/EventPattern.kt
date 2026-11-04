@@ -1127,6 +1127,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(if (batch) "cards" else "a card")
             }
             if (firstTimeEachTurn) append(" for the first time each turn")
+            if (cause == ZoneChangeCause.NotCycled) append(" and it wasn't cycled")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
