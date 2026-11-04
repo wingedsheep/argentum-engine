@@ -252,8 +252,7 @@ object TargetPolarityAnalyzer {
                 return@getOrPut emptyList()
             }
             val subtype = hostSubtype(card) ?: return@getOrPut emptyList()
-            val whenIs = attachmentReadings(card, definitions, hostIs = true).takeIf { it.isNotEmpty() }?.let(::combine)
-            val otherwise = attachmentReadings(card, definitions, hostIs = false).takeIf { it.isNotEmpty() }?.let(::combine)
+            val (whenIs, otherwise) = hostWorlds(card, definitions)
             val oneSided = setOf(TargetPolarity.BENEFICIAL, TargetPolarity.HARMFUL)
             if (whenIs in oneSided && otherwise in oneSided && whenIs != otherwise) {
                 listOf(HostSplit(subtype, whenIs!!, otherwise!!))
@@ -899,14 +898,23 @@ object TargetPolarityAnalyzer {
     private fun attachmentPolarity(card: CardDefinition, definitions: CardLookup): TargetPolarity {
         if (hostSubtype(card) == null) return combine(attachmentReadings(card, definitions, hostIs = null))
         // Read once per kind of host; a world where nothing applies takes the other's reading.
-        val whenIs = attachmentReadings(card, definitions, hostIs = true).takeIf { it.isNotEmpty() }?.let(::combine)
-        val otherwise = attachmentReadings(card, definitions, hostIs = false).takeIf { it.isNotEmpty() }?.let(::combine)
+        val (whenIs, otherwise) = hostWorlds(card, definitions)
         return when {
             whenIs == null || otherwise == null -> whenIs ?: otherwise ?: TargetPolarity.UNKNOWN
             whenIs == otherwise -> whenIs
             TargetPolarity.UNKNOWN in listOf(whenIs, otherwise) -> TargetPolarity.UNKNOWN
             else -> TargetPolarity.FLEXIBLE
         }
+    }
+
+    /**
+     * [card]'s attachment reading for a host of its [hostSubtype], and for any other host — null
+     * for a world in which none of its abilities applies.
+     */
+    private fun hostWorlds(card: CardDefinition, definitions: CardLookup): Pair<TargetPolarity?, TargetPolarity?> {
+        fun world(hostIs: Boolean) =
+            attachmentReadings(card, definitions, hostIs).takeIf { it.isNotEmpty() }?.let(::combine)
+        return world(hostIs = true) to world(hostIs = false)
     }
 
     /**

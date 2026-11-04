@@ -54,6 +54,12 @@ class HostSubtypeAuraPolarityAiTest : ScenarioTestBase() {
             }
         }
 
+        test("an Aura gated on a type with no otherwise keeps its one-sided reading") {
+            val skill = cardRegistry.getCard("Lavamancer's Skill")!!
+            TargetPolarityAnalyzer.forSpell(skill) shouldBe listOf(TargetPolarity.BENEFICIAL)
+            TargetPolarityAnalyzer.hostSplit(skill) shouldBe null
+        }
+
         test("the type the Aura is gated on is a tribe it asks for, and a -X/-X Aura is removal") {
             CreatureTypeSynergy.rewarded(cardRegistry.getCard("Sea Legs")!!) shouldContain Subtype("Pirate")
             val deadWeight = CardIntentAnalyzer.analyze(cardRegistry.getCard("Dead Weight")!!).tags
