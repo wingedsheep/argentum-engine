@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4400 Reads a creature's own "attacks or blocks each combat if able" as a combat drawback (Relentless Raptor), a +1/+1 counter it puts on itself as a pump (Resplendent Griffin), and putting a card from a permanent's exile pile onto its own battlefield as recursion (Tomb of the Dusk Rose)
+
 - Drafts artifact/enchantment-only removal below broad creature removal when using fallback ratings, including cantrips whose draw needs a legal target.
 
 - Values extra blocking capacity and considers assigning one creature to multiple attackers when the full combat improves.

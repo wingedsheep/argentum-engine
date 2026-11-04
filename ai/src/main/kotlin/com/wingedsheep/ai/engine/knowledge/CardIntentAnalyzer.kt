@@ -22,6 +22,8 @@ import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -520,7 +522,11 @@ object CardIntentAnalyzer {
      * battlefield or into our hand — reads as [IntentTag.RECURSION], as the single-card
      * `MoveToZoneEffect` spelling of the same return does in [tagsOf].
      *
-     * Only our graveyard and only to our side: reanimating an opponent's creature is a steal, and
+     * The source's linked-exile pile counts as that stock too, onto our battlefield only: "put a
+     * creature card exiled with this permanent onto the battlefield under your control" (Tomb of the
+     * Dusk Rose).
+     *
+     * Only our graveyard (or that pile) and only to our side: reanimating an opponent's creature is a steal, and
      * a graveyard exiled is graveyard hate, both read (or not) elsewhere.
      */
     private fun regrowthTags(root: Effect): Set<IntentTag> {
@@ -529,15 +535,39 @@ object CardIntentAnalyzer {
             val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
             leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && source.player == Player.You }
         }
-        if (ourGraveyard.isEmpty()) return emptySet()
-        do {
-            val before = ourGraveyard.size
-            for (leaf in leaves) ourGraveyard += derivedCollections(leaf, ourGraveyard)
-        } while (ourGraveyard.size != before)
+        // The pile this permanent exiled is a stock to bring back too, whoever owned the cards — but
+        // only onto our battlefield (Tomb of the Dusk Rose). A hand is always its owner's, so
+        // "return the exiled cards to their owners' hands" (Angel of Serenity, Ashiok's Erasure) can
+        // hand an opponent their card back: an exile-until's release, not a recursion.
+        // A pile the same resolution fills is an exile-and-return (Ghostly Flicker, Another Round):
+        // a blink of what was just exiled, not a recursion of what was stored earlier.
+        val fillsThePile = leaves.any { leaf ->
+            (leaf is MoveCollectionEffect && leaf.linkToSource) || (leaf is MoveToZoneEffect && leaf.linkToSource)
+        }
+        val linkedExile = if (fillsThePile) HashSet() else
+            leaves.mapNotNullTo(HashSet()) { leaf ->
+                (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
+            }
+        if (ourGraveyard.isEmpty() && linkedExile.isEmpty()) return emptySet()
+        fun closed(seed: MutableSet<String>): Set<String> {
+            do {
+                val before = seed.size
+                for (leaf in leaves) seed += derivedCollections(leaf, seed)
+            } while (seed.size != before)
+            return seed
+        }
+        val fromGraveyard = closed(ourGraveyard)
+        val fromLinkedExile = closed(linkedExile)
         val returnsThem = leaves.any { leaf ->
-            val move = (leaf as? MoveCollectionEffect)?.takeIf { it.from in ourGraveyard && it.faceDown == null }
-            val to = move?.destination as? CardDestination.ToZone
-            to != null && to.player == Player.You && (to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD)
+            val move = (leaf as? MoveCollectionEffect)?.takeIf { it.faceDown == null } ?: return@any false
+            val to = move.destination as? CardDestination.ToZone ?: return@any false
+            if (to.player != Player.You) return@any false
+            when (move.from) {
+                in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD
+                // "Under their owners' control" (Lagrella, Safe Haven) hands the pile back.
+                in fromLinkedExile -> to.zone == Zone.BATTLEFIELD && !move.underOwnersControl
+                else -> false
+            }
         }
         return if (returnsThem) setOf(IntentTag.RECURSION) else emptySet()
     }
@@ -1286,6 +1316,10 @@ object CardIntentAnalyzer {
             else neutralizeTags(static.filter)
         is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature attacks or blocks each combat if able" (Relentless Raptor, Juggernaut) binds
+        // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
+        is MustAttack -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        is MustBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "Spells your opponents cast that target a Merfolk you control cost {2} more" and its
         // activated-ability twin are a ward-like tax on answering our permanents (Kopala, Warden
         // of Waves; Sphinx of New Prahv) — Ward is a [PROTECTIVE_KEYWORDS] member, so the same tag.

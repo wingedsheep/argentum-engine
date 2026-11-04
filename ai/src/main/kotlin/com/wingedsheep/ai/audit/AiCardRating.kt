@@ -70,7 +70,9 @@ object AiCardRating {
     /**
      * [unrecognised]: the card has abilities and the intent analyzer placed none of them. A static
      * that only grants its own creature a keyword is part of the creature body, like a printed
-     * keyword, and never makes a card unrecognised ([AiReadingAudit.AbilityReading.body]). The one
+     * keyword, and never makes a card unrecognised ([AiReadingAudit.AbilityReading.body]); nor does
+     * an ability every reader understood, including one that needs no intent (Resplendent Griffin's
+     * "put a +1/+1 counter on it" — [AiReadingAudit.AbilityReading.readFully]). The one
      * rule both `just ai-card` and the explorer's "Abilities not recognised" chip show.
      */
     data class Intent(val tags: List<Tag>, val speed: String, val facts: List<String>, val unrecognised: Boolean = false)
@@ -89,7 +91,7 @@ object AiCardRating {
         return Rating(
             limited = Limited(LimitedCardRater.explain(card), setCodes.distinct().map { setPick(card, it) }),
             board = board(card, intent),
-            intent = intent(intent, AiReadingAudit.read(card).abilities.any { !it.body }),
+            intent = intent(intent, AiReadingAudit.read(card).abilities.any { !it.body && !it.readFully }),
             advisor = liveAdvisors.getAdvisor(card.name)?.let { it::class.simpleName },
         )
     }

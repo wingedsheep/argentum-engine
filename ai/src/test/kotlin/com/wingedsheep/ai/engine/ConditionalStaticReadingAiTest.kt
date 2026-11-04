@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.audit.AiCardRating
+import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.mtg.sets.MtgSetCatalog
@@ -48,7 +49,11 @@ class ConditionalStaticReadingAiTest : FunSpec({
             AiCardRating.of(card("Sun-Crested Pterodon"), listOf("RIX")).intent.unrecognised shouldBe false
         }
         withClue("Juggernaut's attack requirement and blocking restriction are no keyword on its body") {
-            AiCardRating.of(card("Juggernaut"), listOf("LEA")).intent.unrecognised shouldBe true
+            AiReadingAudit.read(card("Juggernaut")).abilities.none { it.body } shouldBe true
+        }
+        withClue("Juggernaut's own attack requirement reads as a combat restriction, so the card is recognised") {
+            tags("Juggernaut") shouldContain IntentTag.COMBAT_RESTRICTION
+            AiCardRating.of(card("Juggernaut"), listOf("LEA")).intent.unrecognised shouldBe false
         }
     }
 

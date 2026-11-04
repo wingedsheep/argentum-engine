@@ -342,7 +342,7 @@ enum class IntentTag {
     /** Makes a player discard. */
     DISCARD,
 
-    /** Returns cards from a graveyard. */
+    /** Returns cards from a graveyard, or onto our battlefield from the pile a permanent exiled. */
     RECURSION,
 
     /** Creates tokens. */
