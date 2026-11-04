@@ -752,6 +752,7 @@ object CardIntentAnalyzer {
     private fun groupTargetOf(effect: Effect): EffectTarget? = when (effect) {
         is MoveToZoneEffect -> effect.target
         is MoveUntilSourceLeavesEffect -> effect.target
+        is PutOnLibraryPositionOfChoiceEffect -> effect.target
         is DealDamageEffect -> effect.target
         is ModifyStatsEffect -> effect.target
         is SetBaseStatsEffect -> effect.target
@@ -897,6 +898,10 @@ object CardIntentAnalyzer {
             else -> removalTags(effect.target)
         }
         is ExileUntilLeavesEffect -> setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL)
+        // A tuck whose owner picks the top or bottom of their library (Dire Downdraft, Aether
+        // Gust) takes the permanent away like the tuck above: removal, paid back at most as a draw.
+        is PutOnLibraryPositionOfChoiceEffect ->
+            if (hitsAnotherPermanent(effect.target)) removalTags(effect.target) else emptySet()
         is PhaseOutUntilLeavesEffect -> setOf(IntentTag.REMOVAL)
         is ForceSacrificeEffect -> setOf(IntentTag.REMOVAL)
         is SacrificeTargetEffect -> setOf(IntentTag.REMOVAL)
