@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
+
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -8,6 +11,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Ghosts of the Innocent (RAV #20) — {5}{W}{W} Creature — Spirit, 4/5.
@@ -145,6 +149,12 @@ class GhostsOfTheInnocentScenarioTest : ScenarioTestBase() {
                     .build()
 
                 game.attackWith("Craw Wurm")
+                val order = game.getPendingDecision().shouldBeInstanceOf<ChooseOptionDecision>()
+                order.playerId shouldBe game.player2Id
+                order.options.size shouldBe 2
+                game.submitDecision(OptionChosenResponse(order.id, 0)).error shouldBe null
+                game.getPendingDecision() shouldBe null
+
 
                 withClue("each replacement applies once (CR 616.1): 6 → 3 → 1, not 6 → 3") {
                     game.getLifeTotal(2) shouldBe 19

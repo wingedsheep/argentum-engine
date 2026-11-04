@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.DistributeDecision
-import com.wingedsheep.engine.core.DistributionResponse
+import com.wingedsheep.engine.core.CombatResolutionDecision
+
+import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.support.GameTestDriver
@@ -127,11 +129,15 @@ class CandlesGlowScenarioTest : FunSpec({
         d.declareNoBlockers(p2).outcome shouldBe Outcome.Done
 
         d.passPriorityUntil(Step.COMBAT_DAMAGE)
+        if (d.pendingDecision is CombatResolutionDecision) d.confirmCombatDamage().error shouldBe null
         // 4 damage from two sources against a 3-point shield: the protected player splits it.
         val decision = d.pendingDecision
-        decision.shouldBeInstanceOf<DistributeDecision>()
+        decision.shouldBeInstanceOf<ChooseNumberDecision>()
         decision.playerId shouldBe p2
-        d.submitDecision(p2, DistributionResponse(decision.id, mapOf(bears1 to 2, bears2 to 1))).error shouldBe null
+        decision.minValue shouldBe 1
+        decision.maxValue shouldBe 2
+        d.submitDecision(p2, NumberChosenResponse(decision.id, 2)).error shouldBe null
+        d.pendingDecision shouldBe null
         d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         d.assertLifeTotal(p2, 19)

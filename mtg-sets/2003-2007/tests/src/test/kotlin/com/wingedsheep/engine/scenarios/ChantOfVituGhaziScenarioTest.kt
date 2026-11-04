@@ -1,5 +1,10 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CombatResolutionDecision
+
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
+
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.support.GameTestDriver
@@ -14,6 +19,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Chant of Vitu-Ghazi (RAV #7) — "Prevent all damage that would be dealt by creatures this turn.
@@ -127,6 +133,14 @@ class ChantOfVituGhaziScenarioTest : FunSpec({
         d.declareAttackers(p1, listOf(giant), p2)
         d.bothPass()
         d.declareNoBlockers(p2)
+        d.passPriorityUntil(Step.COMBAT_DAMAGE)
+        if (d.pendingDecision is CombatResolutionDecision) d.confirmCombatDamage().error shouldBe null
+        val order = d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        order.playerId shouldBe p2
+        val doubleFirst = order.options.indexOfFirst { it.contains("Gratuitous Violence") }
+        (doubleFirst >= 0) shouldBe true
+        d.submitDecision(p2, OptionChosenResponse(order.id, doubleFirst)).error shouldBe null
+        d.pendingDecision shouldBe null
         d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
 
         // Hill Giant would deal 3 doubled to 6; all 6 is prevented and gained.
