@@ -1413,13 +1413,18 @@ object CardIntentAnalyzer {
     private fun priorValueOf(card: CardDefinition, intent: CardIntent, scripts: List<CardScript>): Double {
         if (!card.typeLine.isPermanent) return 0.0
         if (card.typeLine.isCreature) {
-            // Projected stats price the body, but not an activated removal engine. Entry effects
-            // have already paid out; only repeatable removal retains this additional value.
+            // Price targeted removal activations that remain available on the battlefield.
+            // Off-zone abilities and self-consuming costs cannot keep answering opposing threats.
             val repeatableRemoval = scripts.any { script ->
-                script.activatedAbilities.any {
-                    !it.isManaAbility && !consumesSource(it.cost) && IntentTag.REMOVAL in analyzeEffect(it.effect).tags
-                } || script.triggeredAbilities.any {
-                    canFireMoreThanOnce(it) && IntentTag.REMOVAL in analyzeEffect(it.effect).tags
+                script.activatedAbilities.any { ability ->
+                    ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
+                        !consumesSource(ability.cost) &&
+                        IntentTag.REMOVAL in analyzeEffect(ability.effect, ability.targetRequirements).tags &&
+                        TargetPolarityAnalyzer.forRequirements(ability.effect, ability.targetRequirements)
+                            .withIndex().any { (index, polarity) ->
+                                !TargetPolarityAnalyzer.isOwnSide(ability.targetRequirements[index]) &&
+                                    (polarity == TargetPolarity.HARMFUL || polarity == TargetPolarity.FLEXIBLE)
+                            }
                 }
             }
             return CardIntent.UNKNOWN.staticPriorValue + if (repeatableRemoval) 1.5 else 0.0

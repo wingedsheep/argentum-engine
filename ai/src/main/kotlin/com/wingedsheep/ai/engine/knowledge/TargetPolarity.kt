@@ -580,7 +580,7 @@ object TargetPolarityAnalyzer {
     }
 
     /** Whether [requirement]'s filter keeps its target on our side of the table ("… you control"). */
-    private fun isOwnSide(requirement: TargetRequirement): Boolean {
+    internal fun isOwnSide(requirement: TargetRequirement): Boolean {
         val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
             ?: return false
         return filter.alternatives.isEmpty() &&

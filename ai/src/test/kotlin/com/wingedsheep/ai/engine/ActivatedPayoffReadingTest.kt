@@ -5,6 +5,12 @@ import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.mtg.sets.definitions.xln.cards.*
+import com.wingedsheep.mtg.sets.definitions.bng.cards.LoyalPegasus
+import com.wingedsheep.mtg.sets.definitions.one.cards.EvolvedSpinoderm
+import com.wingedsheep.mtg.sets.definitions.fra.cards.FrostbitePyromental
+import com.wingedsheep.mtg.sets.definitions.mmq.cards.Undertaker
+import com.wingedsheep.mtg.sets.definitions.lgn.cards.GempalmIncinerator
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.core.TypeLine
 import io.kotest.core.spec.style.FunSpec
@@ -34,7 +40,7 @@ class ActivatedPayoffReadingTest : FunSpec({
     }
 
     test("self combat restrictions are read as drawbacks and discounted") {
-        for (card in listOf(BondedHorncrest, HeadstrongBrute)) {
+        for (card in listOf(LoyalPegasus, HeadstrongBrute)) {
             val intent = CardIntentAnalyzer.analyze(card)
             intent.tags shouldContain IntentTag.COMBAT_RESTRICTION
             intent.tags shouldNotContain IntentTag.NEUTRALIZE
@@ -43,9 +49,19 @@ class ActivatedPayoffReadingTest : FunSpec({
             }
             drawbacks.sumOf { it.value } shouldBeLessThan 0.0
         }
-        LimitedCardRater.explain(BondedHorncrest).heuristic.filter {
+        LimitedCardRater.explain(LoyalPegasus).heuristic.filter {
             it.part.startsWith("Static ability")
         }.sumOf { it.value } shouldBe -0.5
+    }
+
+    test("self-sacrifice triggers recursion and cycling are not repeatable battlefield removal") {
+        for (card in listOf(EvolvedSpinoderm, FrostbitePyromental, Undertaker, GempalmIncinerator)) {
+            CardIntentAnalyzer.analyzeInPlay(card).staticPriorValue shouldBe 0.5
+        }
+        val graveyardTheft = CaptivatingCrew.copy(name = "Graveyard theft", script = CaptivatingCrew.script.copy(
+            activatedAbilities = CaptivatingCrew.script.activatedAbilities.map { it.copy(activateFromZone = Zone.GRAVEYARD) }
+        ))
+        CardIntentAnalyzer.analyzeInPlay(graveyardTheft).staticPriorValue shouldBe 0.5
     }
 
     test("repeatable theft retains board value but entry damage and sacrifice damage do not") {
