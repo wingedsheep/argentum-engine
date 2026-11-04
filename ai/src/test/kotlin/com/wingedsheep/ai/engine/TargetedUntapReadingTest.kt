@@ -41,6 +41,12 @@ class TargetedUntapReadingTest : ScenarioTestBase() {
             unread("Dauntless Aven") shouldBe emptyList()
         }
 
+        test("an untap that sets up another step on the land is not read as ramp") {
+            // Wakeroot Elemental: "Untap target land you control. It becomes a 5/5 Elemental creature
+            // with haste." Reading the untap as ramp would hide the animation from the audit.
+            unread("Wakeroot Elemental").mapNotNull { it.effectType } shouldContain "BecomeCreatureEffect"
+        }
+
         test("untapping any creature is not ramp") {
             val untap = TapUntapEffect(EffectTarget.ContextTarget(0), tap = false)
             CardIntentAnalyzer.analyzeEffect(untap, listOf(TargetObject(filter = TargetFilter.Creature))).tags shouldNotContain

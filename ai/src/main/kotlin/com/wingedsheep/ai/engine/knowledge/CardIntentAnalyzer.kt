@@ -442,10 +442,15 @@ object CardIntentAnalyzer {
                     else listOf(leaf)
                 is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
                 // "Untap target land" / "untap two target lands" (Arbor Elf, Hope Tender): see [untapsATargetLand].
-                is TapUntapEffect -> if (untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
-                is ForEachEffect -> if (leaf.space == IterationSpace.Targets &&
-                    EffectWalker.payoffLeaves(leaf.body).any { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
-                ) listOf(leaf, UNTAP_OUR_LANDS) else listOf(leaf)
+                // Only when the untap is the ability's whole payoff: beside another step on the same
+                // land (Wakeroot Elemental's "untap target land you control. It becomes a 5/5
+                // Elemental"), the untap sets that step up, and reading it as ramp would hide it.
+                is TapUntapEffect -> if (payoff.size == 1 && untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
+                is ForEachEffect -> if (payoff.size == 1 && leaf.space == IterationSpace.Targets &&
+                    EffectWalker.payoffLeaves(leaf.body).let { body ->
+                        body.size == 1 && body.all { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
+                    }
+                ) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
                 is GatherCardsEffect -> {
                     val source = leaf.source as? CardSource.TopOfLibrary
                     val slot = when (val player = source?.player) {
@@ -479,7 +484,8 @@ object CardIntentAnalyzer {
         if (untap.tap) return false
         val slots = when (val target = untap.target) {
             is EffectTarget.ContextTarget -> if (eachTarget) requirements else listOfNotNull(requirements.getOrNull(target.index))
-            is EffectTarget.BoundVariable -> listOfNotNull(requirements.firstOrNull { it.id == target.name })
+            // A count-N requirement's handles are `id[0]`, `id[1]`, …: each is a pick of that slot.
+            is EffectTarget.BoundVariable -> listOfNotNull(requirements.firstOrNull { it.id == target.name.substringBefore('[') })
             else -> emptyList()
         }
         return slots.isNotEmpty() && slots.all { requirement ->

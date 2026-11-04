@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * When this land is put into a graveyard from the battlefield, create a 2/2 black Zombie creature token.
  *
  * "Put into a graveyard from the battlefield" is the same battlefield → graveyard zone change
- * [Triggers.self]`.dies()` matches (CR 700.4 only names it "dies" for creatures).
+ * [Triggers.self]`.dies()` matches.
  */
 val DunesOfTheDead = card("Dunes of the Dead") {
     manaCost = ""
