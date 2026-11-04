@@ -619,16 +619,22 @@ object TargetPolarityAnalyzer {
      * damage equal to its power to target creature you don't control" (Rabid Bite, Chandra's
      * Ignition) — or null.
      *
-     * Unlike a fight's fighter ([FightEffect], left unread) the source is dealt nothing back: it
-     * only lends its power, so the best creature is the one to bite with and the slot reads
-     * beneficial — when no other leaf names it ([forRequirements] applies that last). Unread, the removal ranking ordered our own creatures worst first and bit with
-     * the weakest. Only a source whose filter keeps it on our side: Breaking of the Fellowship
-     * turns an opponent's creature on its teammate, where which one is a board question.
+     * The source only lends its power, so the best creature is the one to bite with and the slot
+     * reads beneficial — when no other leaf names it ([forRequirements] applies that last).
+     * Unread, the removal ranking ordered our own creatures worst first and bit with the weakest.
+     * Only a source whose filter keeps it on our side: Breaking of the Fellowship turns an
+     * opponent's creature on its teammate, where which one is a board question.
+     *
+     * A fight's fighter ([FightEffect.target1]: "target creature you control fights …", Prey Upon,
+     * Yoshimaru) lends its power the same way. It is dealt damage back, but that is the fight's
+     * own price, and the creature that hits hardest is also the one likeliest to survive it — the
+     * weakest, which the removal ranking put first, dies for nothing. A fighter any player's
+     * creature can be stays unread.
      */
-    private fun biteSourceSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
-        if (leaf !is DealDamageEffect) return null
-        val damageSource = leaf.damageSource?.takeIf { it.isSlot() } ?: return null
-        return ownSideSlot(damageSource, requirements)
+    private fun biteSourceSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? = when (leaf) {
+        is DealDamageEffect -> leaf.damageSource?.takeIf { it.isSlot() }?.let { ownSideSlot(it, requirements) }
+        is FightEffect -> ownSideSlot(leaf.target1, requirements)
+        else -> null
     }
 
     /**
@@ -881,9 +887,9 @@ object TargetPolarityAnalyzer {
                 ?: (if (listOfNotNull(leaf.power, leaf.toughness).any { it !is DynamicAmount.Fixed })
                     TargetPolarity.FLEXIBLE else return emptyList()))
             // "<fighter> fights target creature": the creature fought is dealt damage, the victim's
-            // half of the fight. The fighter's half names nothing: its power is the weapon and the
-            // damage dealt back is the price, so which creature of ours fights best is a board
-            // question, not a side of the table.
+            // half of the fight. The fighter's half names nothing here: its power is the weapon and
+            // the damage dealt back is the price. A fighter kept on our side reads like a bite's
+            // source ([biteSourceSlot]).
             is FightEffect -> leaf.target2 to TargetPolarity.HARMFUL
             is RegenerateEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is HealDamageEffect -> leaf.target to TargetPolarity.BENEFICIAL
@@ -1222,6 +1228,15 @@ object TargetPolarityAnalyzer {
             // optional action is a price the controller opts into, the reflexive effect the payoff.
             if (leaf is ReflexiveTriggerEffect && leaf.optional) {
                 readings += grantedEffectPolarity(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
+                continue
+            }
+            // "Whenever this creature attacks, it gains your choice of trample or deathtouch"
+            // (Hunter's Axe): the trigger's controller picks the mode, so it does what its modes
+            // do — when they agree. Each mode's slots are its own.
+            if (leaf is ModalEffect) {
+                readings += leaf.modes.map { mode ->
+                    grantedEffectPolarity(mode.effect, mode.targetRequirements)
+                }
                 continue
             }
             val classified = classify(leaf)
