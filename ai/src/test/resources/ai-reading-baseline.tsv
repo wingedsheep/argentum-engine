@@ -51,9 +51,9 @@ Absolute Law
 Absolute Virtue
 Absolving Lammasu	intent: ForEach>RemoveSuspectedEffect; polarity: SuspectEffect
 Absorb
-Absorb Identity	timing: EachPermanentBecomesCopyOfTargetEffect
+Absorb Identity
 Absorb Vis
-Absorbing Man	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Absorbing Man
 Abstract Paintmage
 Abstruse Appropriation	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
 Abu Ja'far	intent: Pipeline(LastKnownCombatPairedWithSource→graveyard)
@@ -986,7 +986,7 @@ Audacious Thief
 Audacity
 Audience with Trostani
 Auger Spree	polarity: ModifyStatsEffect
-Augmenter Pugilist	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Augmenter Pugilist
 Augur of Autumn
 Augur of Bolas
 Augury Owl
@@ -1598,7 +1598,7 @@ Blade Juggler
 Blade Sliver
 Blade Splicer
 Blade of Selves
-Blade of Shared Souls	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Blade of Shared Souls
 Blade of the Bloodchief
 Blade of the Oni	intent: UnattachEquipmentEffect
 Blade of the Sixth Pride
@@ -3633,7 +3633,7 @@ Curate
 Curator of Destinies
 Curator of Sun's Creation	intent: DiscoverEffect
 Curator's Ward
-Curie, Emergent Intelligence	intent: EachPermanentBecomesCopyOfTargetEffect
+Curie, Emergent Intelligence
 Curio Vendor
 Curiosity	polarity: Aura>DrawCardsEffect
 Curiosity Crafter
@@ -4020,7 +4020,7 @@ Deep-Cavern Bat	intent: Pipeline(FromLinkedExile→hand)
 Deep-Sea Serpent
 Deep-Slumber Titan
 Deepchannel Duelist
-Deepfathom Echo	intent: EachPermanentBecomesCopyOfTargetEffect; intent: SelectTargetEffect
+Deepfathom Echo
 Deepglow Skate	intent: ForEach>DoubleCountersEffect; polarity: ForEachEffect
 Deepmuck Desperado
 Deeproot Champion
@@ -4260,7 +4260,7 @@ Dimensional Exile	polarity: Aura>ExileUntilLeavesEffect; polarity: Aura>GatherCa
 Diminisher Witch	intent: CreateAuraTokenEffect
 Dimir Aqueduct
 Dimir Cutpurse
-Dimir Doppelganger	polarity: EachPermanentBecomesCopyOfTargetEffect; polarity: MoveToZoneEffect
+Dimir Doppelganger	polarity: MoveToZoneEffect
 Dimir Guildgate
 Dimir Guildmage
 Dimir House Guard
@@ -6091,7 +6091,7 @@ Fleeting Distraction
 Fleeting Effigy
 Fleeting Flight	timing: GrantKeywordEffect
 Fleeting Image
-Fleeting Reflection	polarity: EachPermanentBecomesCopyOfTargetEffect; timing: EachPermanentBecomesCopyOfTargetEffect; timing: GrantEvasionKeywordEffect
+Fleeting Reflection
 Fleeting Spirit
 Flensing Raptor
 Flesh Burrower
@@ -7522,7 +7522,7 @@ Gwen Stacy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→
 Gwendlyn Di Corci
 Gwenna, Eyes of Gaea
 Gwenom, Remorseless	intent: GrantStaticAbilityEffect
-Gwyndala, the Progeny	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect; timing: EachPermanentBecomesCopyOfTargetEffect
+Gwyndala, the Progeny
 Gyome, Master Chef	polarity: mixed(GrantKeywordEffect+TapUntapEffect)
 Gyre Engineer
 Gyre Sage	intent: EmitKeywordCounterEventEffect
@@ -7560,7 +7560,7 @@ Halfdane	polarity: SetBaseStatsEffect
 Haliya, Ascendant Cadet
 Haliya, Guided by Light
 Hall Monitor	combat: CantBlockEffect; intent: CantBlockEffect; timing: CantBlockEffect
-Hall of Echoes	intent: EachPermanentBecomesCopyOfTargetEffect; intent: GrantStaticAbilityEffect; polarity: EachPermanentBecomesCopyOfTargetEffect; timing: EachPermanentBecomesCopyOfTargetEffect; timing: GrantStaticAbilityEffect
+Hall of Echoes	timing: GrantStaticAbilityEffect
 Hall of Heliod's Generosity
 Hall of Oracles
 Hall of Storm Giants	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
@@ -9133,7 +9133,7 @@ Kaya, Bane of the Dead
 Kaya, Geist Hunter	intent: GrantReplacementEffectEffect
 Kaya, Intangible Slayer
 Kaya, Orzhov Usurper	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
-Kaya, Spirits' Justice	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipeline(?→?); intent: Pipeline(graveyard→exile); polarity: EachPermanentBecomesCopyOfTargetEffect; polarity: ForEachEffect
+Kaya, Spirits' Justice	intent: Pipeline(graveyard→exile); polarity: ForEachEffect
 Kayla's Command
 Kayla's Reconstruction	intent: Pipeline(TopOfLibrary→battlefield|library)
 Kaza, Roil Chaser	intent: ModifySpellCostsEffect; timing: ModifySpellCostsEffect
@@ -9638,9 +9638,9 @@ Lay Claim
 Lay Down Arms
 Lay Waste
 Lay of the Land
-Lazav, Familiar Stranger	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipeline(graveyard→exile)
-Lazav, Wearer of Faces	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipeline(FromLinkedExile→?)
-Lazav, the Multifarious	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Lazav, Familiar Stranger
+Lazav, Wearer of Faces
+Lazav, the Multifarious
 Lazotep Behemoth
 Lazotep Plating	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
 Lazotep Reaver
@@ -9829,7 +9829,7 @@ Lightshield Parry
 Lightstall Inquisitor
 Lightwheel Enhancements
 Lignify
-Likeness Looter	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Likeness Looter
 Lilah, Undefeated Slickshot	intent: MarkSpellExileOnResolveEffect
 Liliana Vess	intent: Pipeline(graveyard→battlefield)
 Liliana of the Dark Realms	intent: CreatePermanentEmblemEffect; polarity: mixed(ModifyStatsEffect)
@@ -10478,7 +10478,7 @@ Master's Councillors
 Master's Guide-Mural
 Master's Rebuke
 Masterful Flourish
-Masterful Replication	polarity: EachPermanentBecomesCopyOfTargetEffect
+Masterful Replication
 Mastermind's Acquisition
 Masterwork of Ingenuity
 Masticore
@@ -10730,7 +10730,7 @@ Militia Rallier	intent: TapUntapEffect
 Militia's Pride
 Millikin
 Millstone
-Mimeoplasm, Revered One	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Mimeoplasm, Revered One
 Mimic
 Mina and Denn, Wildborn
 Minamo, School at Water's Edge	intent: TapUntapEffect
@@ -10762,7 +10762,7 @@ Mindful Biomancer
 Mindleech Ghoul
 Mindleech Mass	intent: CastFromCollectionWithoutPayingCostEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Mindless Conscription
-Mindlink Mech	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Mindlink Mech
 Mindmoil
 Mindseeker Oculus
 Mindslaver	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
@@ -10802,7 +10802,7 @@ Minwu, White Mage
 Miracle Worker
 Miraculous Recovery
 Mirage Mesa
-Mirage Mirror	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect; timing: EachPermanentBecomesCopyOfTargetEffect
+Mirage Mirror
 Mirari's Wake
 Mire Blight
 Mire Boa
@@ -10838,7 +10838,7 @@ Mirror Universe
 Mirror Universe Intrusion	polarity: CreateTokenCopyOfTargetEffect
 Mirror of Galadriel
 Mirror-Shield Hoplite	intent: CopyTargetTriggeredAbilityEffect
-Mirrorform	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Mirrorform
 Mirrorhall Mimic
 Mirrormade
 Mirrormere Guardian	intent: TheRingTemptsYouEffect
@@ -11790,8 +11790,8 @@ Oko's Accomplices
 Oko's Hospitality
 Oko, Lorwyn Liege	intent: GrantKeywordEffect; intent: ModifyStatsEffect; polarity: GrantKeywordEffect
 Oko, Thief of Crowns	intent: ExchangeControlEffect; polarity: BecomeArtifactEffect; polarity: ExchangeControlEffect
-Oko, the Ringleader	polarity: EachPermanentBecomesCopyOfTargetEffect
-Oko, the Trickster	polarity: EachPermanentBecomesCopyOfTargetEffect
+Oko, the Ringleader
+Oko, the Trickster
 Okoye, Dora Milaje Leader
 Old Fat Spider
 Old Fat Spider Can't See Me
@@ -12812,7 +12812,7 @@ Prosperous Thief
 Prosthetic Injector
 Protean Hulk
 Protean Raider
-Protean Thaumaturge	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Protean Thaumaturge
 Protect the Negotiators
 Protective Bubble
 Protective Parents	intent: CreateAuraTokenEffect
@@ -14220,7 +14220,7 @@ Saheeli's Silverwing	intent: Pipeline(TopOfLibrary→?); polarity: Pipeline(TopO
 Saheeli, Consul of Oversight
 Saheeli, Filigree Master
 Saheeli, Jewel of Avishkar
-Saheeli, Sublime Artificer	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Saheeli, Sublime Artificer
 Saheeli, the Sun's Brilliance
 Sai, Master Thopterist
 Saiba Cryptomancer
@@ -14345,7 +14345,7 @@ Sarkhan's Whelp
 Sarkhan, Dragon Ascendant	intent: BeholdEffect
 Sarkhan, Dragonsoul
 Sarkhan, Fireblood
-Sarkhan, Soul Aflame	intent: EachPermanentBecomesCopyOfTargetEffect
+Sarkhan, Soul Aflame
 Sarkhan, the Dragonspeaker
 Sarpadian Simulacrum
 Saru, Unthreatened
@@ -14485,7 +14485,7 @@ Scion of Oona
 Scion of Stygia
 Scion of Ugin
 Scion of the Swarm
-Scion of the Ur-Dragon	timing: EachPermanentBecomesCopyOfTargetEffect
+Scion of the Ur-Dragon
 Scion of the Wild
 Scolding Administrator
 Scorch Rider
@@ -14940,7 +14940,7 @@ Shantotto, Tactician Magician
 Shape the Sands
 Shaper Apprentice
 Shaper Guildmage
-Shapesharer	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Shapesharer
 Shapeshifter	intent: ChooseNumberForSourceEffect
 Sharae of Numbing Depths
 Shardless Agent	intent: CascadeEffect
@@ -15022,7 +15022,7 @@ Shields of Velis Vel	polarity: ForEachEffect
 Shifting Ceratops
 Shifting Grift	intent: ModalEffect; polarity: ExchangeControlEffect
 Shifting Sliver
-Shifting Woodland	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect; timing: EachPermanentBecomesCopyOfTargetEffect
+Shifting Woodland
 Shigeki, Jukai Visionary	intent: Pipeline(ChosenTargets→hand); intent: Pipeline(TopOfLibrary→battlefield|graveyard); polarity: Pipeline(ChosenTargets→hand)
 Shiko, Paragon of the Way
 Shilgengar, Sire of Famine
@@ -15131,7 +15131,7 @@ Shu Foot Soldiers
 Shu General
 Shu Grain Caravan
 Shu Soldier-Farmers
-Shuri, Wakandan Inventor	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Shuri, Wakandan Inventor
 Shuttle Ace
 Sibling Rivalry
 Sibsig Appraiser
@@ -15194,7 +15194,7 @@ Silent Clearing
 Silent Dart
 Silent Departure
 Silent Gravestone
-Silent Hallcreeper	polarity: EachPermanentBecomesCopyOfTargetEffect
+Silent Hallcreeper
 Silent Observer
 Silent Specter	intent: Pipeline(hand→graveyard)
 Silent Submersible
@@ -16928,7 +16928,7 @@ Tarrian's Soulcleaver
 Tasha Yar, Out of Time
 Tasha's Hideous Laughter	intent: ExileLibraryUntilManaValueEffect
 Task Force
-Taskmaster, Mercenary Mimic	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Taskmaster, Mercenary Mimic
 Tasseled Dromedary
 Taste of Death
 Taster of Wares
@@ -17273,7 +17273,7 @@ The Endstone
 The Enigma Jewel	intent: CopyTargetSpellOrAbilityEffect
 The Eternal Wanderer
 The Eternity Elevator
-The Everflowing Well	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+The Everflowing Well
 The Fair Basilica
 The Fall of Kroog
 The Fall of Lord Konda
@@ -17346,7 +17346,7 @@ The Monumental Facade	intent: AddCountersEffect; polarity: AddCountersEffect
 The Motherlode, Excavator	polarity: AddDynamicCountersEffect
 The Mountain-king's Return
 The Mouth of Sauron
-The Mycosynth Gardens	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+The Mycosynth Gardens
 The Mycotyrant
 The Naked Time
 The Necrobloom
@@ -17451,7 +17451,7 @@ There's Coffee in that Nebula
 Thermal Glider
 Thermal Navigator
 Thermo-Alchemist
-Thespian's Stage	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Thespian's Stage
 They Went This Way
 Thickest in the Thicket
 Thicket Basilisk
@@ -18101,7 +18101,7 @@ Truck Toss
 True Ancestry
 True Believer
 True Love's Kiss
-True Polymorph	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+True Polymorph
 Truefire Captain
 Trufflesnout
 Trumpet Blast
@@ -18548,7 +18548,7 @@ Valiant Guard
 Valiant Knight
 Valiant Rescuer
 Valiant Veteran
-Valki, God of Lies	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile)
+Valki, God of Lies	intent: Pipeline(TopOfLibrary→exile)
 Valkyrie Aerial Unit
 Valkyrie Harbinger
 Valkyrie's Call
@@ -18728,7 +18728,7 @@ Vessel of Volatility
 Vestige of Emrakul
 Vesuva
 Vesuvan Doppelganger
-Vesuvan Drifter	intent: EachPermanentBecomesCopyOfTargetEffect; intent: Pipeline(TopOfLibrary→?)
+Vesuvan Drifter
 Vesuvan Duplimancy
 Veteran Adventurer
 Veteran Armorer

@@ -381,6 +381,18 @@ enum class IntentTag {
      */
     EQUIPMENT_RELOCATION,
 
+    /**
+     * Turns a permanent into a copy of another permanent or card — "this becomes a copy of target
+     * creature" (Lazav, the Multifarious), "equipped creature becomes a copy of up to one other
+     * target creature you control" (Blade of Shared Souls), "target artifact or creature becomes a
+     * copy of another target artifact or creature" (True Polymorph), "each other creature you
+     * control becomes a copy of it until end of turn" (Naga Fleshcrafter). Worth the best thing it
+     * can copy, which is a board question: the polarity reader keeps the copy source on our side
+     * when its filter does and leaves the rest to the simulation, which sees the copied
+     * characteristics and abilities on the receiving permanent.
+     */
+    PERMANENT_COPY,
+
     /** An activated ability whose cost is sacrificing a permanent — a sacrifice outlet. */
     SACRIFICE_OUTLET,
 
