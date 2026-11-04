@@ -189,7 +189,7 @@ class InvertedIcebergScenarioTest : FunSpec({
 
         // Announce the target, then answer consent at resolution.
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
-        driver.submitTargetSelection(p1, listOf(victim))
+        driver.submitTargetSelection(p1, listOf(victim)).error shouldBe null
 
         driver.bothPass() // resolve to optional consent
         driver.submitYesNo(p1, true).error shouldBe null // then the tap-or-untap choice

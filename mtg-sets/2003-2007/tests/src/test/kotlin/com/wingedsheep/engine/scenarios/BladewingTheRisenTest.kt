@@ -66,8 +66,8 @@ class BladewingTheRisenTest : FunSpec({
         driver.castSpell(activePlayer, bladewing)
         driver.bothPass() // resolve Bladewing
 
-        // The ETB trigger announces a target before consent.
-        driver.submitTargetSelection(activePlayer, listOf(dragonInGraveyard))
+        // The ETB trigger announces its target now; the "you may" is answered on resolution.
+        driver.submitTargetSelection(activePlayer, listOf(dragonInGraveyard)).error shouldBe null
 
         // Trigger on stack — resolve it
         driver.bothPass()
@@ -103,6 +103,7 @@ class BladewingTheRisenTest : FunSpec({
 
         // Dragon should remain in graveyard
         driver.findPermanent(activePlayer, "Test Dragon") shouldBe null
+        driver.getGraveyardCardNames(activePlayer).contains("Test Dragon") shouldBe true
     }
 
     test("activated ability gives all Dragons +1/+1") {

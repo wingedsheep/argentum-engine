@@ -561,10 +561,19 @@ object TargetPolarityAnalyzer {
         if (leaf !is MoveToZoneEffect || leaf.faceDown != null) return null
         if (leaf.destination != Zone.HAND && leaf.destination != Zone.BATTLEFIELD && leaf.destination != Zone.LIBRARY) return null
         val slot = slotOf(leaf.target, requirements) ?: return null
+        val filter = (requirements[slot] as? TargetObject)?.filter
         val fromGraveyard = leaf.fromZone == Zone.GRAVEYARD ||
-            (leaf.fromZone == null && (requirements[slot] as? TargetObject)?.filter?.zone == Zone.GRAVEYARD)
+            (leaf.fromZone == null && filter?.zone == Zone.GRAVEYARD)
+        // Into a library is recursion only out of our own graveyard (Mortuary Mire); from any
+        // graveyard it is graveyard hate (Junktroller, Sundering Archaic) that may hit either side.
+        if (leaf.destination == Zone.LIBRARY && !ownGraveyardOnly(filter)) return null
         return slot.takeIf { fromGraveyard }
     }
+
+    internal fun ownGraveyardOnly(filter: com.wingedsheep.sdk.scripting.filters.unified.TargetFilter?): Boolean =
+        filter?.baseFilter?.controllerPredicate.let {
+            it == ControllerPredicate.OwnedByYou || it == ControllerPredicate.ControlledByYou
+        }
 
     /**
      * The player slot a **token for a target player** names — "target player creates a 1/1 …

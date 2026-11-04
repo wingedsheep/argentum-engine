@@ -60,11 +60,9 @@ class TrygonPredatorScenarioTest : FunSpec({
 
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
-        // Announce the destruction target.
-
-        // Choose the target artifact.
-        val choose = driver.pendingDecision as ChooseTargetsDecision
-        driver.submitTargetSelection(attacker, listOf(artifact))
+        // The target is announced now; the "you may" is answered as the trigger resolves.
+        driver.pendingDecision as ChooseTargetsDecision
+        driver.submitTargetSelection(attacker, listOf(artifact)).error shouldBe null
         driver.bothPass()
         driver.submitYesNo(attacker, true).error shouldBe null
 
@@ -90,8 +88,8 @@ class TrygonPredatorScenarioTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        val choose = driver.pendingDecision as ChooseTargetsDecision
-        driver.submitTargetSelection(attacker, listOf(enchantment))
+        driver.pendingDecision as ChooseTargetsDecision
+        driver.submitTargetSelection(attacker, listOf(enchantment)).error shouldBe null
         driver.bothPass()
         driver.submitYesNo(attacker, true).error shouldBe null
 
@@ -145,9 +143,9 @@ class TrygonPredatorScenarioTest : FunSpec({
         driver.submitTargetSelection(attacker, listOf(artifact)).error shouldBe null
         driver.bothPass().error shouldBe null
         val yesNo = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNo.playerId, false)
+        driver.submitYesNo(yesNo.playerId, false).error shouldBe null
 
-        driver.findPermanent(defender, "Test Artifact") shouldNotBe null
+        driver.findPermanent(defender, "Test Artifact") shouldBe artifact
         driver.assertLifeTotal(defender, 18)
     }
 

@@ -475,7 +475,10 @@ object CardIntentAnalyzer {
             is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
             else -> null
         } ?: return move
-        val zone = (slot as? TargetObject)?.filter?.zone ?: return move
+        val filter = (slot as? TargetObject)?.filter
+        val zone = filter?.zone ?: return move
+        // Into a library from any graveyard is graveyard hate, not getting our card back.
+        if (move.destination == Zone.LIBRARY && !TargetPolarityAnalyzer.ownGraveyardOnly(filter)) return move
         return if (zone == Zone.GRAVEYARD) move.copy(fromZone = zone) else move
     }
 

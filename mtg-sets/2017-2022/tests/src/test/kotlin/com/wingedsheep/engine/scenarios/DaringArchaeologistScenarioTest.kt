@@ -70,7 +70,7 @@ class DaringArchaeologistScenarioTest : FunSpec({
         // that spelling makes this 0, i.e. "up to one target artifact card".
         decision.targetRequirements.single().minTargets shouldBe 1
 
-        d.submitTargetSelection(you, listOf(golem))
+        d.submitTargetSelection(you, listOf(golem)).error shouldBe null
         d.bothPass().error shouldBe null
         d.submitYesNo(you, true).error shouldBe null
 

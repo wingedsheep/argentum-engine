@@ -59,7 +59,7 @@ class AffectionateIndrikScenarioTest : FunSpec({
         driver.castSpell(driver.player1, indrik).outcome shouldBe Outcome.Done
         driver.bothPass()
 
-        driver.submitTargetSelection(driver.player1, listOf(theirs))
+        driver.submitTargetSelection(driver.player1, listOf(theirs)).error shouldBe null
         driver.bothPass() // resolve the triggered ability
         driver.submitYesNo(driver.player1, true).error shouldBe null
 

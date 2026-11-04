@@ -2868,7 +2868,7 @@ Chromatic Lantern
 Chromatic Orrery
 Chromatic Sphere
 Chrome Cat
-Chrome Companion
+Chrome Companion	polarity: MoveToZoneEffect
 Chrome Dome
 Chrome Host Seedshark
 Chrome Mox	intent: Pipeline(hand→exile)
@@ -3092,7 +3092,7 @@ Coerced to Kill	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKe
 Coercion
 Coeurl
 Coffin Purge
-Cogwork Archivist
+Cogwork Archivist	polarity: MoveToZoneEffect
 Cogwork Assembler	polarity: CreateTokenCopyOfTargetEffect
 Cogwork Wrestler	intent: ModifyStatsEffect
 Coiled Tinviper
@@ -7959,7 +7959,7 @@ Hoarder's Overflow
 Hoarding Broodlord
 Hoarding Dragon	intent: Pipeline(FromLinkedExile→hand)
 Hoarding Ogre
-Hoarding Recluse
+Hoarding Recluse	polarity: MoveToZoneEffect
 Hobbit Hole
 Hobbit's Sting
 Hobblefiend
@@ -8090,7 +8090,7 @@ Hovel Hurler
 Hover Barrier
 Hoverguard Observer
 Hoverguard Sweepers
-Hoverstone Pilgrim
+Hoverstone Pilgrim	polarity: MoveToZoneEffect
 How to Start a Riot	timing: GrantKeywordEffect
 Howl from Beyond
 Howl of the Horde	intent: CopyNextSpellCastEffect
@@ -8785,7 +8785,7 @@ Jade Monolith	intent: RedirectDamageFromChosenSourceEffect; polarity: RedirectDa
 Jade Orb of Dragonkind
 Jade Seedstones	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Jade Statue
-Jade-Cast Sentinel
+Jade-Cast Sentinel	polarity: MoveToZoneEffect
 Jadecraft Artisan
 Jaded Analyst	intent: GrantKeywordEffect; intent: RemoveKeywordEffect
 Jaded Sell-Sword	intent: GrantKeywordEffect
@@ -8960,7 +8960,7 @@ Junk Jet
 Junk Winder
 Junkblade Bruiser
 Junktown
-Junktroller
+Junktroller	polarity: MoveToZoneEffect
 Junkyard Genius
 Junkyo Bell
 Juntu Stakes
@@ -9137,7 +9137,7 @@ Keep Safe
 Keep Watch
 Keeper of Fables
 Keeper of the Accord
-Keeper of the Cadence
+Keeper of the Cadence	polarity: MoveToZoneEffect
 Keeper of the Nine Gales
 Keeper of the Quiet Hour
 Keepers of the Faith
@@ -10249,7 +10249,7 @@ Malcolm, Alluring Scoundrel
 Malcolm, the Eyes
 Malefic Scythe	polarity: AttachEquipmentEffect
 Malevolent Awakening
-Malevolent Chandelier
+Malevolent Chandelier	polarity: MoveToZoneEffect
 Malevolent Hermit
 Malevolent Noble
 Malevolent Rumble
@@ -11594,7 +11594,7 @@ Norwood Riders
 Norwood Warrior
 Nosy Goblin
 Not Dead After All	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
-Not Forgotten
+Not Forgotten	polarity: MoveToZoneEffect
 Not on My Watch
 Notion Rain
 Notorious Assassin
@@ -11616,7 +11616,7 @@ Noxious Ghoul
 Noxious Grasp
 Noxious Groodion
 Noxious Newt
-Noxious Revival
+Noxious Revival	polarity: MoveToZoneEffect
 Noxious Toad
 Nuclear Fallout
 Nuisance Engine
@@ -12326,7 +12326,7 @@ Phylactery Lich
 Phylath, World Sculptor
 Phyresis Outbreak
 Phyrexian Altar
-Phyrexian Archivist
+Phyrexian Archivist	polarity: MoveToZoneEffect
 Phyrexian Arena
 Phyrexian Atlas
 Phyrexian Awakening
@@ -13440,8 +13440,8 @@ Reincarnation	intent: Pipeline(graveyard→battlefield); polarity: CreateDelayed
 Reinforced Bulwark
 Reinforced Ronin
 Reiterating Bolt
-Reito Lantern
-Reito Sentinel
+Reito Lantern	polarity: MoveToZoneEffect
+Reito Sentinel	polarity: MoveToZoneEffect
 Reiver Demon
 Reject
 Reject Imperfection
@@ -16499,7 +16499,7 @@ Suncleanser	intent: ModalEffect; polarity: GrantKeywordEffect; polarity: RemoveA
 Sunder Shaman
 Sunder the Gateway
 Sunderflock	intent: Pipeline(BattlefieldMatching→hand)
-Sundering Archaic
+Sundering Archaic	polarity: MoveToZoneEffect
 Sundering Eruption
 Sundering Stroke
 Sundering Vitae
@@ -16661,7 +16661,7 @@ Swift Response
 Swift Warden
 Swiftblade Vindicator
 Swiftfoot Boots
-Swiftgear Drake
+Swiftgear Drake	polarity: MoveToZoneEffect
 Swiftwater Cliffs
 Swiftwing Assailant
 Swimmer in Nightmares
@@ -19613,7 +19613,7 @@ Withstand Death
 Witness Protection
 Witness of Tomorrows
 Witness of the Ages
-Witness the Future
+Witness the Future	polarity: ForEachEffect
 Witty Roastmaster
 Wizard Class
 Wizard Mentor

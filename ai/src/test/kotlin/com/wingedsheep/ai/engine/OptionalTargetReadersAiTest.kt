@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class OptionalTargetReadersAiTest : ScenarioTestBase() {
@@ -35,6 +36,14 @@ class OptionalTargetReadersAiTest : ScenarioTestBase() {
             val answer = AIPlayer.create(d.cardRegistry, d.player1, AiProfile.LIVE)
                 .respondToDecision(d.state, decision).shouldBeInstanceOf<TargetsResponse>()
             answer.selectedTargets.values.flatten().single() shouldBe angel
+        }
+
+        test("putting a card from any graveyard into a library is graveyard hate, not recursion") {
+            val definition = cardRegistry.getCard("Junktroller")!!
+            (IntentTag.RECURSION in CardIntentAnalyzer.analyze(definition).tags) shouldBe false
+            val ability = definition.script.activatedAbilities.single { it.targetRequirements.isNotEmpty() }
+            TargetPolarityAnalyzer.forRequirements(ability.effect, ability.targetRequirements)
+                .single() shouldNotBe TargetPolarity.BENEFICIAL
         }
 
         test("graveyard topdeck effects read as recursion rather than removal") {

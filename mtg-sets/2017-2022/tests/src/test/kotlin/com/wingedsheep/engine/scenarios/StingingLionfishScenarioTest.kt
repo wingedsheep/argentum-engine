@@ -82,7 +82,7 @@ class StingingLionfishScenarioTest : ScenarioTestBase() {
 
                 game.resolveStack()
                 game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
+                game.answerYesNo(true).error shouldBe null
                 game.chooseMode("Tap")
                 game.resolveStack()
 
@@ -114,7 +114,7 @@ class StingingLionfishScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Flash Probe").error shouldBe null
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
-                game.answerYesNo(true)
+                game.answerYesNo(true).error shouldBe null
                 game.chooseMode("Untap")
                 game.resolveStack()
 

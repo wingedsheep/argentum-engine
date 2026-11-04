@@ -112,7 +112,7 @@ class DawningPuristTest : FunSpec({
         driver.submitTargetSelection(attacker, listOf(enchantment)).error shouldBe null
         driver.bothPass().error shouldBe null
         val yesNoDecision = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNoDecision.playerId, false)
+        driver.submitYesNo(yesNoDecision.playerId, false).error shouldBe null
 
         // Enchantment should still be on the battlefield
         driver.findPermanent(defender, "Test Enchantment") shouldNotBe null

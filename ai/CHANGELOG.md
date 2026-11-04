@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #4410 Values self-fight creatures by their damage reach, recognizes graveyard-to-library recovery, and considers either side for optional tap-or-untap choices after opponents respond.
+- #4410 Values self-fight creatures (Atzocan Archer) by their damage reach, puts its best card back when returning one from its own graveyard to its library (Mortuary Mire) while still reading any-graveyard tucks as graveyard hate, and weighs both sides for a chosen tap-or-untap or a copied base power and toughness
 - #4409 Reads an edict on a target player (Diabolic Edict, Liliana of the Veil, Break Under Pressure) and an opponent's choice between two tucks (Clash of Elements) as harmful, so it no longer casts them at its own side when the opponent can't be targeted
 
 - Reads "exile target permanent; its owner may cast it" (Airbend, Release to the Wind, Suspend Aggression) as a bounce: aims it at the opponent's best permanent as tempo removal, or at its own to save it
