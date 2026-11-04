@@ -11,6 +11,9 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
@@ -239,6 +242,7 @@ object LimitedCardRater {
             val breadth = narrowDiscount(slot)
             val detail = listOfNotNull(
                 slot.effect.description.takeIf { it.isNotBlank() },
+                "activation costs ${slot.activationManaValue} mana, ×${activationDiscount(slot)}".takeIf { activationDiscount(slot) < 1.0 },
                 "narrow removal, ×${"%.2f".format(java.util.Locale.ROOT, breadth)}".takeIf { breadth < 1.0 },
             ).joinToString(" — ").takeIf { it.isNotEmpty() }
             add(Term(part, value, detail))
@@ -383,7 +387,11 @@ object LimitedCardRater {
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+
+    // Four-mana activations are already slow; above that, retain only the share likely to be used.
+    private fun activationDiscount(slot: EffectWalker.Slot): Double =
+        if (slot.origin == EffectWalker.Origin.ACTIVATED) 4.0 / slot.activationManaValue.coerceAtLeast(4) else 1.0
 
     /**
      * 1.0 for removal that can aim at most of the table ([RemovalBreadth] of [FULL_BREADTH] or more)
@@ -427,6 +435,12 @@ object LimitedCardRater {
      */
     private fun staticScore(static: StaticAbility): Double {
         if (static is ConditionalStaticAbility) return staticScore(static.ability) * 0.6
+        when (static) {
+            is CantBlock -> if (static.filter.scope == Scope.Self) return -0.3
+            is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) return -0.3
+            is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) return -0.2
+            else -> Unit
+        }
         if (static is ModifyStats) {
             val total = static.powerBonus + static.toughnessBonus
             if (total > 0) {

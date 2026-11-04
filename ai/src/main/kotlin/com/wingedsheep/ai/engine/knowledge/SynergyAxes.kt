@@ -159,7 +159,7 @@ object SynergyAxes {
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
         }
         val feeds = buildSet {
-            scripts.forEach { addAll(feedsOf(it)) }
+            scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }
             if (card.typeLine.isCreature) add(SynergyAxis.CREATURES_ENTER)
             if (card.typeLine.isInstant || card.typeLine.isSorcery) add(SynergyAxis.SPELLS)
             if (Keyword.LIFELINK in card.keywords) add(SynergyAxis.LIFEGAIN)
@@ -252,12 +252,12 @@ object SynergyAxes {
 
     // ── Feeds ──────────────────────────────────────────────────────────────────
 
-    private fun feedsOf(script: CardScript): Set<SynergyAxis> = buildSet {
+    private fun feedsOf(script: CardScript, creatureSource: Boolean): Set<SynergyAxis> = buildSet {
         script.spellEffect?.let { addAll(effectFeeds(it)) }
         script.triggeredAbilities.forEach { addAll(effectFeeds(it.effect)) }
         for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
             addAll(effectFeeds(ability.effect))
-            if (sacrifices(ability.cost)) add(SynergyAxis.DEATH)
+            if (sacrifices(ability.cost, creatureSource)) add(SynergyAxis.DEATH)
         }
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
     }
@@ -310,9 +310,10 @@ object SynergyAxes {
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =
         if (type == CounterType.PLUS_ONE_PLUS_ONE) setOf(SynergyAxis.PLUS_COUNTERS) else emptySet()
 
-    private fun sacrifices(cost: AbilityCost): Boolean = when (cost) {
+    private fun sacrifices(cost: AbilityCost, creatureSource: Boolean): Boolean = when (cost) {
         is AbilityCost.Atom -> cost.atom is CostAtom.Sacrifice
-        is AbilityCost.Composite -> cost.costs.any(::sacrifices)
+        is AbilityCost.Composite -> cost.costs.any { sacrifices(it, creatureSource) }
+        AbilityCost.SacrificeSelf -> creatureSource
         else -> false
     }
 

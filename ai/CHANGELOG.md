@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Aims theft followed by haste and untapping at opposing creatures, values repeatable targeted-removal activations on creatures beyond their bodies, and discounts expensive activations and combat drawbacks when drafting.
+
 - Recognizes repeatable mill engines as win conditions and values library-depletion progress against them before the last few cards, without penalizing ordinary draws in games without a mill threat.
 
 - Reads chosen-type grants as tribal enablers, drafts them with off-tribe creatures and tribal payoffs, and chooses the type those payoffs reward instead of the most common existing type.

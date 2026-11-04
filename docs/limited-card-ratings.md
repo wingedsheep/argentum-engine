@@ -86,6 +86,9 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
   scores like N damage (a dynamic -X/-X like unknown-X damage), a gather → move pipeline it reads
   as a wrath or a picked destroy scores like a destroy, and one it reads as card draw ("look at the
   top, put one into your hand") like a card drawn.
+- **Activation costs and drawbacks** — activated payoffs costing more than four mana retain a
+  `4 / mana value` share of their usual value. Self-only blocking restrictions and requirements
+  to attack or block alongside another creature reduce the static score.
 - **Rarity and curve** — small nudges (mythic +0.8, a 2-drop +0.3, a 6-drop −0.2).
 
 It reads what a card *does*, so it tells removal from a vanilla body, but it can't see synergy or

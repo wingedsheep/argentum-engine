@@ -39,6 +39,14 @@ class AiCardRatingTest : FunSpec({
         r.board.value.shouldNotBeNull() shouldBe (r.board.parts.sumOf { it.value } plusOrMinus 1e-9)
     }
 
+    test("repeatable removal is included in the reported creature value but spent entry damage is not") {
+        val crew = AiCardRating.of(card("Captivating Crew"), listOf("XLN"))
+        crew.board.value.shouldNotBeNull() shouldBe (6.7 plusOrMinus 1e-9)
+        crew.board.parts.map { it.label } shouldContain "Repeatable removal"
+        val avatar = AiCardRating.of(card("Burning Sun's Avatar"), listOf("XLN"))
+        avatar.board.value.shouldNotBeNull() shouldBe (8.4 plusOrMinus 1e-9)
+    }
+
     test("an instant has no board value and reads as removal") {
         val r = AiCardRating.of(card("Lightning Bolt"), listOf("LEA"))
         r.board.kind shouldBe AiCardRating.BoardKind.SPELL
