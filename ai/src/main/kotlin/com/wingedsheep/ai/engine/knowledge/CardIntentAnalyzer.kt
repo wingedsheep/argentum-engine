@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -440,6 +441,11 @@ object CardIntentAnalyzer {
                 is TakeExtraTurnEffect -> if (namesAnOpponentSlot(leaf.target, requirements)) emptyList()
                     else listOf(leaf)
                 is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
+                // "Untap target land" / "untap two target lands" (Arbor Elf, Hope Tender): see [untapsATargetLand].
+                is TapUntapEffect -> if (untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
+                is ForEachEffect -> if (leaf.space == IterationSpace.Targets &&
+                    EffectWalker.payoffLeaves(leaf.body).any { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
+                ) listOf(leaf, UNTAP_OUR_LANDS) else listOf(leaf)
                 is GatherCardsEffect -> {
                     val source = leaf.source as? CardSource.TopOfLibrary
                     val slot = when (val player = source?.player) {
@@ -456,6 +462,33 @@ object CardIntentAnalyzer {
                 }
                 else -> listOf(leaf)
             }
+        }
+    }
+
+    /**
+     * Whether [untap] untaps a target land: its slot's requirement is a land on the battlefield
+     * that any player — or we — control. The slot is ours to aim, and the land we aim it at is our
+     * own: it taps for mana again, which is the payoff of "untap all lands you control" one land at
+     * a time, so [readingLeaves] reads it as [UNTAP_OUR_LANDS]. A land an opponent controls, or a
+     * slot that can hold a creature too, stays unread: that untap is a tempo or combat play.
+     *
+     * Under a for-each over the targets ([eachTarget]), `ContextTarget(0)` is bound to each chosen
+     * target in turn, so every declared slot has to be a land.
+     */
+    private fun untapsATargetLand(untap: TapUntapEffect, requirements: List<TargetRequirement>, eachTarget: Boolean = false): Boolean {
+        if (untap.tap) return false
+        val slots = when (val target = untap.target) {
+            is EffectTarget.ContextTarget -> if (eachTarget) requirements else listOfNotNull(requirements.getOrNull(target.index))
+            is EffectTarget.BoundVariable -> listOfNotNull(requirements.firstOrNull { it.id == target.name })
+            else -> emptyList()
+        }
+        return slots.isNotEmpty() && slots.all { requirement ->
+            val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+                ?: return@all false
+            val base = filter.baseFilter
+            filter.zone == Zone.BATTLEFIELD && filter.alternatives.isEmpty() && base.anyOf.isEmpty() &&
+                (CardPredicate.IsLand in base.cardPredicates || CardPredicate.IsBasicLand in base.cardPredicates) &&
+                (base.controllerPredicate == null || base.controllerPredicate == ControllerPredicate.ControlledByYou)
         }
     }
 
@@ -1697,6 +1730,16 @@ object CardIntentAnalyzer {
             if (IntentTag.PUMP in tags) add(PriorRung("pump", 1.0))
         }
     }
+
+    /**
+     * "Untap all lands you control", the shape [untapsOurLands] reads as ramp. [readingLeaves] reads
+     * an untap aimed at a target land ([untapsATargetLand]) as this: the land is ours, and it taps
+     * for mana again — one land of the group, the same payoff.
+     */
+    private val UNTAP_OUR_LANDS: Effect = ForEachEffect(
+        IterationSpace.Group(GroupFilter(GameObjectFilter.Land.youControl())),
+        TapUntapEffect(EffectTarget.IterationEntity, tap = false),
+    )
 
     private val OPPONENT_FACING = setOf(
         IntentTag.CAST_BAN,

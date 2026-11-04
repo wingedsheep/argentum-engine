@@ -496,7 +496,8 @@ object AiReadingAudit {
             needsNoIntent(leaf) || countsOnAPlayerSlot(leaf, playerSlots) ||
                 // Damage confined to our creatures is a drawback, not offensive removal.
                 // Polarity still reads the harm; simulation prices the damaged board.
-                (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs))
+                (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)) ||
+                untapsOwnTarget(leaf, reqs)
         }
         val tags = CardIntentAnalyzer.analyzeEffect(root, reqs).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
@@ -517,8 +518,12 @@ object AiReadingAudit {
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
             // A loop can rebind target slots; the outer own-side filter proves nothing here.
+            // Over the targets, though, `ContextTarget(0)` is each declared target in turn, so an
+            // untap of it is our own permanent when every declaration is on our side.
+            val ownTargets = each.space == IterationSpace.Targets && reqs.isNotEmpty() && reqs.all(TargetPolarityAnalyzer::isOwnSide)
             val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot {
-                needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots)
+                needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
+                    (ownTargets && it is TapUntapEffect && !it.tap && it.target is EffectTarget.ContextTarget)
             }
             // Over each player, "you" in the body is the player iterated (ControllerOfTriggeringEntity's
             // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
@@ -718,7 +723,7 @@ object AiReadingAudit {
         // A permanent untapping itself (a mana rock untapping for more, a boast's "untap it") has no
         // target and nothing to hold: the untap is worth what tapping it again buys (another mana
         // ability, or a blocker after it attacked), which the simulation already sees on the board.
-        // Untapping a *chosen* target stays flagged.
+        // Untapping a *chosen* target stays flagged unless it is our own ([untapsOwnTarget]) or a land (ramp).
         if (leaf is TapUntapEffect && !leaf.tap && leaf.target == EffectTarget.Self) return true
         // A permanent transforming itself (a werewolf, a DFC's "transform this") has no target and is
         // no spell to time: its payoff is the face it becomes, which the simulation sees on the board.
@@ -828,6 +833,16 @@ object AiReadingAudit {
         if (target != EffectTarget.Self) return false
         return Keyword.entries.none { it.name == counter.name }
     }
+
+    /**
+     * Untapping a target confined to our own side ("untap target creature you control", Dauntless
+     * Aven) needs no intent for the reason untapping the source itself doesn't (see [needsNoIntent]):
+     * the untap is worth what tapping that permanent again buys — another attack's blocker, another
+     * activation — which the simulation sees on the board. Untapping a target land reads as ramp
+     * (CardIntentAnalyzer); an untap that can land on an opponent's permanent stays flagged.
+     */
+    private fun untapsOwnTarget(leaf: Effect, reqs: List<TargetRequirement>): Boolean =
+        leaf is TapUntapEffect && !leaf.tap && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)
 
     /** A counter placed on a bound target slot that only a player can fill (see [needsNoIntent]'s player counters). */
     private fun countsOnAPlayerSlot(leaf: Effect, playerSlots: Set<String>): Boolean {

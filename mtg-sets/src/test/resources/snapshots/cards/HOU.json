@@ -213,6 +213,71 @@
     ]
 }
 
+// Beneath the Sands
+{
+    "name": "Beneath the Sands",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Though buried and muffled, nature's whisper still called to Nissa.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e92c0cf0-df4a-4e50-8396-53713f925b53.jpg?1783936022"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bitterbow Sharpshooters
 {
     "name": "Bitterbow Sharpshooters",
@@ -260,6 +325,66 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Burning-Fist Minotaur
+{
+    "name": "Burning-Fist Minotaur",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Minotaur Wizard",
+    "oracleText": "First strike\n{1}{R}, Discard a card: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Burning-Fist Minotaur:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"There is no afterlife. Not for me, and not for you. So think again before getting in my way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52f191fb-eaf6-432f-a668-37ad48ffabaf.jpg?1783936033"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -413,6 +538,172 @@
     ]
 }
 
+// Crypt of the Eternals
+{
+    "name": "Crypt of the Eternals",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, you gain 1 life.\n{T}: Add {C}.\n{1}, {T}: Add {U}, {B}, or {R}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crypt of the Eternals:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Crypt of the Eternals:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Crypt of the Eternals:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Crypt of the Eternals:4",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Crypt of the Eternals:5",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "flavorText": "The dead entered as worthy. They exited as Eternals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/cab5b199-e79d-4ca9-970c-cfd9df8fd1e4.jpg?1783935999"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Dauntless Aven
+{
+    "name": "Dauntless Aven",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird Warrior",
+    "oracleText": "Flying\nWhenever this creature attacks, untap target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dauntless Aven:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Zack Stella",
+        "flavorText": "In the chaos brought by the new gods, swift-winged aven served as pathfinders, leading the last of the people away from the ruins of Naktamun.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01e6320c-6f8b-4582-ad11-9b868bff08a1.jpg?1783936067"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Defiant Khenra
 {
     "name": "Defiant Khenra",
@@ -430,6 +721,123 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Desert of the Fervent
+{
+    "name": "Desert of the Fervent",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "This land enters tapped.\n{T}: Add {R}.\nCycling {1}{R} ({1}{R}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Desert of the Fervent:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f547d664-25ce-4a24-b3ae-7bf3cbdf4703.jpg?1783935999"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Desert of the Glorified
+{
+    "name": "Desert of the Glorified",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "This land enters tapped.\n{T}: Add {B}.\nCycling {1}{B} ({1}{B}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Desert of the Glorified:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04a19aea-209d-4354-8c59-d08244185eb8.jpg?1783935997"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Desert of the Indomitable
+{
+    "name": "Desert of the Indomitable",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "This land enters tapped.\n{T}: Add {G}.\nCycling {1}{G} ({1}{G}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Desert of the Indomitable:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d42aa0c-0408-4b0d-bec5-9861dbcf9ee1.jpg?1783935999"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -476,6 +884,207 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Desert of the True
+{
+    "name": "Desert of the True",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "This land enters tapped.\n{T}: Add {W}.\nCycling {1}{W} ({1}{W}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{W}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Desert of the True:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2d9308c-8af4-4587-b740-aea874d5ccae.jpg?1783935998"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Devotee of Strength
+{
+    "name": "Devotee of Strength",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Wizard",
+    "oracleText": "{4}{G}: Target creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Devotee of Strength:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "When Rhonas fell, his followers stirred with newfound strength—a final gift from a god they thought indomitable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/977698ab-3b64-41f2-a214-ac95e04c9956.jpg?1783936021"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Djeru's Renunciation
+{
+    "name": "Djeru's Renunciation",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures.\nCycling {W} ({W}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "TapUntap",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"I was promised an afterlife, not this. Samut was right. The God-Pharaoh lied.\"\n—Djeru, former Tah-crop initiate",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03f005de-7971-4f22-ad1f-5d0667f68113.jpg?1783936062"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Dunes of the Dead
+{
+    "name": "Dunes of the Dead",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\nWhen this land is put into a graveyard from the battlefield, create a 2/2 black Zombie creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dunes of the Dead:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5bd6905-79be-4d2c-a343-f6e6a181b3e6.jpg?1783936411"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dunes of the Dead:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "E. M. Gist",
+        "flavorText": "The Curse of Wandering permeated Amonkhet long before Nicol Bolas. He simply harnessed it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/326c7483-2c45-4804-85c4-d40ecdba4fc7.jpg?1783935996"
+    },
+    "colorIdentityOverride": []
 }
 
 // Dutiful Servants
@@ -536,6 +1145,83 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fervent Paincaster
+{
+    "name": "Fervent Paincaster",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: This creature deals 1 damage to target player or planeswalker.\n{T}, Exert this creature: It deals 1 damage to target creature. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fervent Paincaster:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Fervent Paincaster:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExert"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Everyone here is a honed fighter. We'll respond the only way we know how.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3c78708-254c-446f-b6eb-8839faf08790.jpg?1783936030"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -753,6 +1439,36 @@
     ]
 }
 
+// Granitic Titan
+{
+    "name": "Granitic Titan",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Menace\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Yohann Schepacz",
+        "flavorText": "\"That one's not mine. Run!\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/607bdb54-a956-4a9c-89cf-af6f1163b856.jpg?1783936028"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Harrier Naga
 {
     "name": "Harrier Naga",
@@ -767,6 +1483,104 @@
         "artist": "Filip Burburan",
         "flavorText": "She trusts that the potent poisons of her darts will reach the enemy before the enemy reaches her.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcdc68c9-f5f3-4c5b-80df-85508cf15f84.jpg?1783936019"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Hope Tender
+{
+    "name": "Hope Tender",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "{1}, {T}: Untap target land.\n{1}, {T}, Exert this creature: Untap two target lands. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hope Tender:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Hope Tender:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExert"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Some refused to leave their shattered homes, vowing to rebuild at any cost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9ffb676d-54b7-4d30-9c84-ff9b48030705.jpg?1783936018"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -847,6 +1661,49 @@
     ]
 }
 
+// Inferno Jet
+{
+    "name": "Inferno Jet",
+    "manaCost": "{5}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Inferno Jet deals 6 damage to target opponent or planeswalker.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 6
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponentOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"When the whole world is crazy, it's important to find something you can rely on.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c6a43fe-369d-4943-a825-570eb3cceba4.jpg?1783936026"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Life Goes On
 {
     "name": "Life Goes On",
@@ -890,6 +1747,33 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Lurching Rotbeast
+{
+    "name": "Lurching Rotbeast",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Beast",
+    "oracleText": "Cycling {B} ({B}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{B}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Jason A. Engle",
+        "flavorText": "The dead that swept across Naktamun came in all shapes and sizes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f06be97-71c8-46c8-a1c2-5da3af25e6de.jpg?1783936039"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -989,6 +1873,82 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Moaning Wall
+{
+    "name": "Moaning Wall",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Wall",
+    "oracleText": "Defender\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Piotr Jabłoński",
+        "flavorText": "Before the monuments, before the first trials, before Naktamun itself, Bolas culled the plane of its adults in order to rebuild it for his own designs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef494f81-638a-4e5d-b987-0dde7f2a135c.jpg?1783936037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mummy Paramount
+{
+    "name": "Mummy Paramount",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Whenever another Zombie you control enters, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mummy Paramount:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Zombie ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"It appears some mummies have begun to observe a hierarchy all their own.\"\n—Elekh, vizier of embalming",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8b1a3e5-cf77-439d-8e0d-cf6571f6891c.jpg?1783936060"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Nicol Bolas, God-Pharaoh
@@ -1185,6 +2145,57 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Oasis Ritualist
+{
+    "name": "Oasis Ritualist",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Snake Druid",
+    "oracleText": "{T}: Add one mana of any color.\n{T}, Exert this creature: Add two mana of any one color. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oasis Ritualist:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Oasis Ritualist:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExert"
+                    ]
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"It's only the end if we allow it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a30bb49b-956e-44bc-8a32-46d4c9c13245.jpg?1783936017"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1494,6 +2505,36 @@
     ]
 }
 
+// Rampaging Hippo
+{
+    "name": "Rampaging Hippo",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Hippo",
+    "oracleText": "Trample\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Aaron Miller",
+        "flavorText": "\"Respect is earned through deeds—or the capacity to bite someone in half.\"\n—Sana, former Ahn-crop initiate",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c97229f-2fc8-439a-a18b-efa09b366b70.jpg?1783936015"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ramunap Excavator
 {
     "name": "Ramunap Excavator",
@@ -1528,6 +2569,70 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Razaketh's Rite
+{
+    "name": "Razaketh's Rite",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a card, put that card into your hand, then shuffle.\nCycling {B} ({B}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"The blood ritual is complete. The end approaches.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd36987a-48c3-477b-b859-0268e84b7e7b.jpg?1783936036"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1709,6 +2814,65 @@
     ]
 }
 
+// River Hoopoe
+{
+    "name": "River Hoopoe",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\n{3}{G}{U}: You gain 2 life and draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "River Hoopoe:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"It's a cruel thing to give such a sad song to such a colorful creature.\"\n—Sana, former Ahn-crop initiate",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/585ec4c2-aae2-403e-af32-3324122c472a.jpg?1783936009"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Scavenger Grounds
 {
     "name": "Scavenger Grounds",
@@ -1801,6 +2965,165 @@
     "colorIdentityOverride": []
 }
 
+// Scrounger of Souls
+{
+    "name": "Scrounger of Souls",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Zezhou Chen",
+        "flavorText": "Yell for help, and that may answer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d66f3c4-5a11-4e28-a4ae-673b3b36d3ec.jpg?1783936037"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Seer of the Last Tomorrow
+{
+    "name": "Seer of the Last Tomorrow",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Snake Cleric",
+    "oracleText": "{U}, {T}, Discard a card: Target player mills three cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Seer of the Last Tomorrow:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Sara Winters",
+        "flavorText": "\"The truth? It's been here all along. The Hours as we understood them are lies.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e897f14-8775-4bc3-a3b2-b149f79ec702.jpg?1783936049"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Steward of Solidarity
+{
+    "name": "Steward of Solidarity",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "{T}, Exert this creature: Create a 1/1 white Warrior creature token with vigilance. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Steward of Solidarity:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExert"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d1446ed-f114-421d-bb60-9aeb655e5adb.jpg?1783936412"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "In the midst of disaster, heroic acts became almost ordinary, and ordinary warriors became heroes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/eda3cd3b-d4c5-4537-8c81-5ccf269f810e.jpg?1783936058"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Striped Riverwinder
 {
     "name": "Striped Riverwinder",
@@ -1829,6 +3152,136 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Sunset Pyramid
+{
+    "name": "Sunset Pyramid",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with three brick counters on it.\n{2}, {T}, Remove a brick counter from this artifact: Draw a card.\n{2}, {T}: Scry 1.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sunset Pyramid:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "BRICK",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Sunset Pyramid:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "BRICK",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "flavorText": "Decades to build. Hours to demolish.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/377a4e80-0f28-42a2-9972-47ab66baee63.jpg?1783936000"
+    },
+    "colorIdentityOverride": []
+}
+
+// Survivors' Encampment
+{
+    "name": "Survivors' Encampment",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{T}, Tap an untapped creature you control: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Survivors' Encampment:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Survivors' Encampment:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"What will happen to us?\" they asked. The vizier paused. \"I think . . . I think that's up to us now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7b0404e-0f42-456b-91ce-f960195c4951.jpg?1783935993"
+    },
+    "colorIdentityOverride": []
 }
 
 // The Locust God
@@ -2254,5 +3707,98 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Without Weakness
+{
+    "name": "Without Weakness",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it. If its toughness is 0 or less, it still dies.)\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "GrantKeyword",
+            "keyword": "INDESTRUCTIBLE",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Alex Konstad",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6695fa8-881c-407c-91d9-3ac770372d35.jpg?1783936035"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Zealot of the God-Pharaoh
+{
+    "name": "Zealot of the God-Pharaoh",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Archer",
+    "oracleText": "{4}{R}: This creature deals 2 damage to target opponent or planeswalker.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zealot of the God-Pharaoh:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponentOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "artist": "Gabor Szikszai",
+        "flavorText": "The God-Pharaoh's most devoted took it upon themselves to follow his example.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/180d1cd4-7d0d-4279-bc2a-59bb21b06904.jpg?1783935984"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }

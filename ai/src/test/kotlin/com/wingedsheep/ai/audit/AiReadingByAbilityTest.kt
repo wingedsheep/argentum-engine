@@ -102,7 +102,9 @@ class AiReadingByAbilityTest : FunSpec({
         monolith.readFully shouldBe true
         monolith.abilities.filter { it.ability.kind == AbilityKind.ACTIVATED }
             .flatMap { it.findings }.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
-        AiReadingAudit.audit(card("Arbor Elf")).map { it.key } shouldBe listOf("intent: TapUntapEffect")
+        // Arbor Elf's "untap target Forest" now reads as ramp (TargetedUntapReadingTest); an untap of any
+        // player's artifact or creature (Aphetto Alchemist) is still unread.
+        AiReadingAudit.audit(card("Aphetto Alchemist")).map { it.key } shouldBe listOf("intent: TapUntapEffect")
     }
 
     test("a creature shifting its own P/T needs no intent, but a -N/-0 on a target stays flagged") {

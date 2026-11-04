@@ -1758,6 +1758,58 @@
     ]
 }
 
+// Sandblast
+{
+    "name": "Sandblast",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Sandblast deals 5 damage to target attacking or blocking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsAttacking",
+                                    "IsBlocking"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Min Yum",
+        "flavorText": "In the Shifting Wastes, more are killed by sand than by steel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7305cd4-a9f1-4801-bdfe-b07869ed5b56.jpg?1783938710"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shamanic Revelation
 {
     "name": "Shamanic Revelation",
