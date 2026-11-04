@@ -52,10 +52,9 @@ class ShaunFatherOfSynthsScenarioTest : ScenarioTestBase() {
                 null -> resolveStack()
                 is YesNoDecision -> submitDecision(YesNoResponse(decision.id, create)).error shouldBe null
                 is ChooseTargetsDecision -> {
-                    // The "you may" is answered on the target prompt: declining picks no target.
+                    // Choose the original before the resolution-time may question.
                     val pick = if (defender in decision.legalTargets[0].orEmpty()) listOf(defender)
-                    else if (create) listOf(findPermanents("Isamaru, Hound of Konda").first())
-                    else emptyList()
+                    else listOf(findPermanents("Isamaru, Hound of Konda").first())
                     submitDecision(TargetsResponse(decision.id, mapOf(0 to pick))).error shouldBe null
                 }
                 else -> error("unexpected decision $decision")

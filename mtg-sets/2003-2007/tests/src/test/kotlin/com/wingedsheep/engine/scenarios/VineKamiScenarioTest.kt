@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -58,6 +59,8 @@ class VineKamiScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(lunacy, hunt)
                 }
                 game.selectTargets(listOf(lunacy))
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Kami of Lunacy") shouldBe true

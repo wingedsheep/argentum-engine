@@ -354,7 +354,7 @@ object TargetPolarityAnalyzer {
         }
         val theftGifts = theftFollowUps(effect)
         val biteSources = mutableSetOf<Int>()
-        for (leaf in EffectWalker.payoffLeaves(effect)) {
+        for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf } || theftGifts.any { it === leaf }) continue
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
@@ -465,7 +465,7 @@ object TargetPolarityAnalyzer {
         // A bite's source only lends its power while nothing else touches it: Self-Destruct deals
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
-        val leaves = EffectWalker.payoffLeaves(effect)
+        val leaves = targetLeaves(effect)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
@@ -489,6 +489,34 @@ object TargetPolarityAnalyzer {
                 else -> combine(readings)
             }
         }
+    }
+
+    /** Keep a known two-way choice as one operation instead of mixing its mutually exclusive leaves. */
+    private fun targetLeaves(effect: Effect): List<Effect> = EffectWalker.leaves(effect).flatMap { leaf ->
+        when {
+            tapOrUntapTargets(leaf).isNotEmpty() -> listOf(leaf)
+            leaf is ChooseActionEffect && EffectWalker.choosesOwnBranch(leaf) ->
+                leaf.choices.flatMap { targetLeaves(it.effect) }
+            leaf is com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect ->
+                listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap(::targetLeaves)
+            leaf is com.wingedsheep.sdk.scripting.effects.GatedEffect && leaf.decisionMaker == null ->
+                listOfNotNull(leaf.then, leaf.otherwise).flatMap(::targetLeaves)
+            else -> listOf(leaf)
+        }
+    }
+
+    /** A controller-chosen tap/untap pair can help either side; sequential tap then untap cannot. */
+    private fun tapOrUntapTargets(effect: Effect): List<EffectTarget> {
+        val branches = when (effect) {
+            is ChooseActionEffect -> if (EffectWalker.choosesOwnBranch(effect)) effect.choices.map { it.effect } else return emptyList()
+            is ModalEffect -> if (effect.chooseCount == 1 && !effect.chooseAtRandom && !effect.chooseAllIfBlightPaid &&
+                effect.dynamicChooseCount == null && effect.modes.all { it.targetRequirements.isEmpty() })
+                effect.modes.map { it.effect } else return emptyList()
+            else -> return emptyList()
+        }
+        val taps = branches.map { it as? TapUntapEffect ?: return emptyList() }
+        return if (taps.size == 2 && taps[0].target == taps[1].target && taps[0].tap != taps[1].tap)
+            listOf(taps[0].target) else emptyList()
     }
 
     /** One polarity for a slot, from every leaf that acts on it. */
@@ -520,7 +548,7 @@ object TargetPolarityAnalyzer {
 
     /**
      * The slot a **recursion** names — a card moved out of a graveyard into a hand or onto the
-     * battlefield ("return target creature card from your graveyard to your hand") — or null.
+     * battlefield, or back into its library — or null.
      *
      * Read here rather than in [classify] because the move alone often cannot say where the card
      * comes from: `Effects.ReturnToHand` leaves `fromZone` unset and the *requirement* is what puts
@@ -531,7 +559,7 @@ object TargetPolarityAnalyzer {
      */
     private fun recursionSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
         if (leaf !is MoveToZoneEffect || leaf.faceDown != null) return null
-        if (leaf.destination != Zone.HAND && leaf.destination != Zone.BATTLEFIELD) return null
+        if (leaf.destination != Zone.HAND && leaf.destination != Zone.BATTLEFIELD && leaf.destination != Zone.LIBRARY) return null
         val slot = slotOf(leaf.target, requirements) ?: return null
         val fromGraveyard = leaf.fromZone == Zone.GRAVEYARD ||
             (leaf.fromZone == null && (requirements[slot] as? TargetObject)?.filter?.zone == Zone.GRAVEYARD)
@@ -794,6 +822,8 @@ object TargetPolarityAnalyzer {
         definitions: CardLookup = NO_DEFINITIONS,
         source: CardDefinition? = null,
     ): List<Pair<EffectTarget, TargetPolarity>> {
+        val tapChoices = tapOrUntapTargets(leaf)
+        if (tapChoices.isNotEmpty()) return tapChoices.map { it to TargetPolarity.FLEXIBLE }
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
             // library (Expel from Orazca's "on top of its owner's library instead", Chaos Warp): it
@@ -831,10 +861,13 @@ object TargetPolarityAnalyzer {
             is TapUntapEffect -> leaf.target to
                 if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
             is ModifyStatsEffect -> leaf.target to statsPolarity(leaf.powerModifier, leaf.toughnessModifier)
-            // "Target creature has base power and toughness 0/0 until end of turn" (Multiply by
-            // Zero). A larger base names nothing, so the slot's other effects decide it: "becomes a
-            // 4/4 and gains indestructible" on a creature of ours is the indestructible's call.
-            is SetBaseStatsEffect -> leaf.target to (baseStatsPolarity(leaf.power, leaf.toughness) ?: return emptyList())
+            // "Target creature has base power and toughness 0/0" (Multiply by Zero) is removal. A
+            // larger fixed base names nothing, so the slot's other effects decide it (Taranika's
+            // 4/4 + indestructible). A dynamic base (Exuberant Wolfbear copies its own power) can
+            // grow or shrink the target, so both sides stay open.
+            is SetBaseStatsEffect -> leaf.target to (baseStatsPolarity(leaf.power, leaf.toughness)
+                ?: (if (listOfNotNull(leaf.power, leaf.toughness).any { it !is DynamicAmount.Fixed })
+                    TargetPolarity.FLEXIBLE else return emptyList()))
             // "<fighter> fights target creature": the creature fought is dealt damage, the victim's
             // half of the fight. The fighter's half names nothing: its power is the weapon and the
             // damage dealt back is the price, so which creature of ours fights best is a board

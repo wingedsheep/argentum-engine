@@ -16,11 +16,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-/**
- * Simultaneous optional instances announce targets individually. For the one-target "you may"
- * shape the target prompt is also the consent: a target is yes, Decline skips the instance. A
- * remembered yield, or a shape with more than one target, keeps consent at resolution.
- */
+/** Optional triggered effects announce targets before priority, then ask consent as they resolve. */
 class BatchMayQuestionTest : FunSpec({
     val pinger = card("Batch Pinger") {
         manaCost = "{1}"; typeLine = "Creature — Test"; power = 1; toughness = 1
@@ -58,29 +54,39 @@ class BatchMayQuestionTest : FunSpec({
         d.state.stack.map { d.state.getEntity(it)!!.get<TargetsComponent>()!!.targets.single() }
             .all { it == chosen } shouldBe true
     }
-    test("identical optional triggers each target, then resolve in their own priority window without a second ask") {
+    test("identical optional triggers each target, then ask consent in their own resolution") {
         val d = game(2)
         targetAll(d, 2)
         d.bothPass().error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        d.assertLifeTotal(d.player2, 20)
+        d.submitYesNo(d.player1, true).error shouldBe null
         d.pendingDecision shouldBe null
         d.assertLifeTotal(d.player2, 19)
         d.state.stack.size shouldBe 1
         d.bothPass().error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        d.submitYesNo(d.player1, true).error shouldBe null
         d.pendingDecision shouldBe null
         d.assertLifeTotal(d.player2, 18)
         d.state.stack.size shouldBe 0
     }
-    test("the target prompt offers decline, and declining an instance keeps it off the stack") {
+    test("mandatory targets cannot be declined, but each resolving instance can") {
         val d = game(3)
-        repeat(3) { index ->
+        repeat(3) {
             val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
-            decision.targetRequirements.single().minTargets shouldBe 0
-            val targets = if (index == 1) listOf(d.player2) else emptyList()
-            d.submitTargetSelection(d.player1, targets).error shouldBe null
+            decision.targetRequirements.single().minTargets shouldBe 1
+            (d.submitTargetSelection(d.player1, emptyList()).error != null) shouldBe true
+            d.pendingDecision shouldBe decision
+            d.submitTargetSelection(d.player1, listOf(d.player2)).error shouldBe null
         }
         d.pendingDecision shouldBe null
-        d.state.stack.size shouldBe 1
-        d.bothPass().error shouldBe null
+        d.state.stack.size shouldBe 3
+        repeat(3) { index ->
+            d.bothPass().error shouldBe null
+            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+            d.submitYesNo(d.player1, index == 1).error shouldBe null
+        }
         d.assertLifeTotal(d.player2, 19)
         d.state.stack.size shouldBe 0
     }
@@ -107,15 +113,17 @@ class BatchMayQuestionTest : FunSpec({
         d.assertLifeTotal(d.player2, 18)
     }
     test("all invalid targets fizzle before remembered answers or consent") {
-        val d = game(2, YieldKind.ALWAYS_ANSWER_YES)
-        val target = d.findPermanent(d.player1, bear.name)!!
-        targetAll(d, 2, target)
-        d.moveToGraveyard(target)
-        repeat(2) {
-            val result = d.bothPass()
-            result.error shouldBe null
-            result.events.any { it is AbilityAutoAnsweredEvent } shouldBe false
-            d.pendingDecision shouldBe null
+        listOf(null, YieldKind.ALWAYS_ANSWER_YES).forEach { yield ->
+            val d = game(2, yield)
+            val target = d.findPermanent(d.player1, bear.name)!!
+            targetAll(d, 2, target)
+            d.moveToGraveyard(target)
+            repeat(2) {
+                val result = d.bothPass()
+                result.error shouldBe null
+                result.events.any { it is AbilityAutoAnsweredEvent } shouldBe false
+                d.pendingDecision shouldBe null
+            }
         }
     }
     test("resolution consent identifies every locked player and permanent target after serialization") {
@@ -150,11 +158,14 @@ class BatchMayQuestionTest : FunSpec({
         d.submitYesNo(d.player1, true).error shouldBe null
         d.assertLifeTotal(d.player2, 19)
     }
-    test("one optional instance waits for priority and resolves on the target alone") {
+    test("one optional instance waits for priority before asking consent") {
         val d = game(1)
         targetAll(d, 1)
         d.assertLifeTotal(d.player2, 20)
         d.bothPass().error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        d.assertLifeTotal(d.player2, 20)
+        d.submitYesNo(d.player1, true).error shouldBe null
         d.pendingDecision shouldBe null
         d.assertLifeTotal(d.player2, 19)
     }

@@ -27,14 +27,15 @@ class ExuberantWolfbearScenarioTest : ScenarioTestBase() {
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
         .build()
 
-    /** The "you may" is the optional target: choosing the Human accepts, choosing no target declines. */
+    /** Announce the Human, then accept or decline the effect on resolution. */
     private fun TestGame.attackAndTargetHuman(accept: Boolean) {
         passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
         declareAttackers(mapOf("Exuberant Wolfbear" to 2)).error shouldBe null
         val human = findPermanent("Elite Vanguard")!!
-        withClue("the attack trigger asks for its optional target") { hasPendingDecision() shouldBe true }
-        if (accept) selectTargets(listOf(human)).error shouldBe null else skipTargets().error shouldBe null
+        withClue("the attack trigger asks for its target") { hasPendingDecision() shouldBe true }
+        selectTargets(listOf(human)).error shouldBe null
         resolveStack()
+        answerYesNo(accept).error shouldBe null
     }
 
     private fun TestGame.humanStats(): Pair<Int, Int> {

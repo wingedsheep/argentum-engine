@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
@@ -51,10 +52,10 @@ class WispweaverAngelScenarioTest : ScenarioTestBase() {
                 withClue("only other creatures you control are legal — not the Angel, not an opponent's creature") {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(bears, giant)
                 }
-                // Choosing the target is the "you may" answer — no second yes/no at resolution.
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
-                game.hasPendingDecision() shouldBe false
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bears)
+                game.answerYesNo(true).error shouldBe null
 
                 val returned = game.findPermanent("Grizzly Bears")
                 withClue("the exiled creature returns to the battlefield") { returned shouldNotBe null }
@@ -67,7 +68,7 @@ class WispweaverAngelScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("declining the may at the target prompt leaves the creature where it is") {
+            test("declining the may leaves the target where it is") {
                 val game = angelGame()
                 val bears = game.findPermanent("Grizzly Bears")!!
 
@@ -75,10 +76,10 @@ class WispweaverAngelScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
-                    .targetRequirements.single().minTargets shouldBe 0
-                // An empty target selection declines: the trigger never goes on the stack.
-                game.selectTargets(emptyList()).error shouldBe null
-                game.state.stack.isEmpty() shouldBe true
+                game.selectTargets(listOf(bears)).error shouldBe null
+                game.resolveStack()
+                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bears)
+                game.answerYesNo(false).error shouldBe null
                 game.hasPendingDecision() shouldBe false
 
                 withClue("the same object stays on the battlefield, still tapped") {

@@ -112,8 +112,11 @@ class VenerableWarsingerScenarioTest : ScenarioTestBase() {
                 game.finishCombat()
 
                 game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
-                game.selectTargets(emptyList()).error shouldBe null
+                val bears = game.findCardsInGraveyard(1, "Grizzly Bears").single()
+                game.selectTargets(listOf(bears)).error shouldBe null
+                // The target is announced now; the "you may" is answered as the trigger resolves.
                 game.resolveStack()
+                game.answerYesNo(false).error shouldBe null
 
                 game.isInGraveyard(1, "Grizzly Bears") shouldBe true
                 game.isInGraveyard(1, "Gray Ogre") shouldBe true

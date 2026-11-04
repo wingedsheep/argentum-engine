@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The Wolfbear's *actual* (projected) power and toughness are read once, as the ability resolves,
  * and set as the Human's layer-7b base values; later changes to the Wolfbear don't follow. If the
  * Wolfbear has left the battlefield, the source reads use its last-known information. The "may"
- * is folded into the optional target: choosing no Human declines.
+ * is chosen on resolution after the Human target is announced.
  */
 val ExuberantWolfbear = card("Exuberant Wolfbear") {
     manaCost = "{3}{G}"

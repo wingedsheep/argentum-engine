@@ -44,8 +44,7 @@ class IanTheRecklessScenarioTest : FunSpec({
         return ian
     }
 
-    // The lone target prompt also answers the "you may" (choosing a target is yes, none is no),
-    // so no separate yes/no follows on resolution.
+    // Targets are announced before priority; consent is chosen when the trigger resolves.
     fun attackAndTarget(driver: GameTestDriver, me: EntityId, ian: EntityId, targets: List<EntityId>) {
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
         driver.declareAttackers(me, listOf(ian), defendingPlayer = driver.getOpponent(me)).error shouldBe null
@@ -61,18 +60,21 @@ class IanTheRecklessScenarioTest : FunSpec({
 
         attackAndTarget(driver, me, ian, listOf(opponent))
         driver.bothPass()
+        driver.submitYesNo(me, true).error shouldBe null
 
         driver.getLifeTotal(me) shouldBe 17
         driver.getLifeTotal(opponent) shouldBe 17
     }
 
-    test("choosing no target declines: no damage") {
+    test("declining on resolution deals no damage") {
         val driver = createDriver()
         val me = driver.activePlayer!!
         val opponent = driver.getOpponent(me)
         val ian = ianWithCounter(driver, me)
 
-        attackAndTarget(driver, me, ian, emptyList())
+        attackAndTarget(driver, me, ian, listOf(opponent))
+        driver.bothPass()
+        driver.submitYesNo(me, false).error shouldBe null
         driver.stackSize shouldBe 0
 
         driver.getLifeTotal(me) shouldBe 20
@@ -109,6 +111,7 @@ class IanTheRecklessScenarioTest : FunSpec({
         driver.getGraveyard(me).contains(ian) shouldBe true
 
         driver.bothPass()
+        driver.submitYesNo(me, true).error shouldBe null
 
         driver.getLifeTotal(me) shouldBe 17
         driver.getLifeTotal(opponent) shouldBe 17

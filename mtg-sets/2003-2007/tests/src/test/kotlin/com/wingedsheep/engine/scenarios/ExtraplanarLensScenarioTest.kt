@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -40,15 +41,15 @@ class ExtraplanarLensScenarioTest : FunSpec({
     }
 
     /**
-     * Cast the Lens from hand so its imprint trigger fires, and answer its "you may" at the target
-     * prompt: choosing [land] is the yes, an empty selection (when not [accept]) is the decline.
+     * Cast the Lens from hand so its imprint trigger fires, target [land] (when accepting), and
+     * answer the "you may" with [accept].
      */
     fun GameTestDriver.castLens(land: EntityId, accept: Boolean) {
         val inHand = putCardInHand(player1, "Extraplanar Lens")
         giveColorlessMana(player1, 3)
         castSpell(player1, inHand).error shouldBe null
 
-        // The imprint's target prompt carries the "you may"; there is no resolution yes/no.
+        // Announce the land target first. The first resolution yes/no is the imprint gate.
         //
         // Stop once the ability has left the stack — the exile happens on resolution, and passing
         // beyond it would carry the turn over and take priority away from the player who then needs
@@ -56,8 +57,9 @@ class ExtraplanarLensScenarioTest : FunSpec({
         repeat(24) {
             val decision = state.pendingDecision
             when {
+                decision is YesNoDecision -> submitYesNo(player1, accept).error shouldBe null
                 decision is ChooseTargetsDecision ->
-                    submitTargetSelection(player1, if (accept) listOf(land) else emptyList()).error shouldBe null
+                    submitTargetSelection(player1, listOf(land)).error shouldBe null
                 decision != null -> error("unexpected decision ${decision::class.simpleName}")
                 stackSize == 0 && findPermanent(player1, "Extraplanar Lens") != null -> return
                 else -> bothPass()

@@ -37,9 +37,9 @@ class AiReadingByAbilityTest : FunSpec({
     }
 
     test("a polarity gap names the target slot and the step that left it unread") {
-        // A graveyard card put on top of its owner's library still has no polarity reading (a tuck
-        // off the battlefield reads as removal; hand bounce is understood as flexible).
-        val reading = AiReadingAudit.read(card("False Mourning"))
+        // A flicker of one of our own creatures (exile it, then return it) still has no polarity
+        // reading: the exile half alone would read as removal aimed at the wrong side.
+        val reading = AiReadingAudit.read(card("Cloudshift"))
         val gaps = reading.abilities.single { it.ability.kind == AbilityKind.SPELL }
             .findings.filter { it.check == Check.POLARITY && !it.read }
         gaps.map { it.effectType } shouldContainExactly listOf("MoveToZoneEffect")

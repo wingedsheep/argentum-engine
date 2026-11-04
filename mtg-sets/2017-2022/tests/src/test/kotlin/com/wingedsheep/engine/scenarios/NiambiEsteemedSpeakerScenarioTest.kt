@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.m21.cards.NiambiEsteemedSpeaker
@@ -20,8 +21,7 @@ import io.kotest.matchers.shouldBe
  * control to its owner's hand. If you do, you gain life equal to that creature's mana value."
  *
  * Pins the may-wrapped pipeline: the targeted creature's mana value is read before the bounce, the
- * life gain only happens when the player accepts (the "you may" is answered at targeting, where
- * choosing no target declines), and Niambi can't target herself.
+ * life gain only happens when the player accepts on resolution, and Niambi cannot target herself.
  */
 class NiambiEsteemedSpeakerScenarioTest : FunSpec({
 
@@ -41,15 +41,17 @@ class NiambiEsteemedSpeakerScenarioTest : FunSpec({
         while (guard++ < 20 && (d.state.stack.isNotEmpty() || d.pendingDecision != null)) {
             when (val pd = d.pendingDecision) {
                 is ChooseTargetsDecision -> {
-                    // The lone "you may" is answered at targeting: a target is yes, none is decline.
-                    offeredDecline = pd.targetRequirements.single().minTargets == 0
+                    pd.targetRequirements.single().minTargets shouldBe 1
                     val legal = pd.legalTargets.getValue(0)
                     legal shouldContain target
                     withClue("Niambi can't target herself") {
                         legal shouldNotContain d.findPermanent(d.player1, NiambiEsteemedSpeaker.name)!!
                     }
-                    val chosen = if (accept) listOf(target) else emptyList()
-                    d.submitTargetSelection(pd.playerId, chosen).error shouldBe null
+                    d.submitTargetSelection(pd.playerId, listOf(target)).error shouldBe null
+                }
+                is YesNoDecision -> {
+                    offeredDecline = true
+                    d.submitYesNo(pd.playerId, accept).error shouldBe null
                 }
                 null -> d.bothPass()
                 else -> error("unexpected decision $pd")

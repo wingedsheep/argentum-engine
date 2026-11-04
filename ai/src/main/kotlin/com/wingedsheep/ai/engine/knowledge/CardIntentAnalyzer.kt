@@ -467,9 +467,9 @@ object CardIntentAnalyzer {
      * recursion it is; unread, it was no move [tagsOf] could call.
      */
     private fun withSourceZone(move: MoveToZoneEffect, requirements: List<TargetRequirement>): MoveToZoneEffect {
-        // Only a move out to a hand or the battlefield: exiling a graveyard card is graveyard hate,
+        // Only a return to hand, battlefield or library: exiling a graveyard card is graveyard hate,
         // which [tagsOf] must not read as getting the card back.
-        if (move.fromZone != null || (move.destination != Zone.HAND && move.destination != Zone.BATTLEFIELD)) return move
+        if (move.fromZone != null || (move.destination != Zone.HAND && move.destination != Zone.BATTLEFIELD && move.destination != Zone.LIBRARY)) return move
         val slot = when (val target = move.target) {
             is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name }
             is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)

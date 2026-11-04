@@ -1,0 +1,54 @@
+{
+  "player1Name": "Archer",
+  "player2Name": "Responder",
+  "mode": "SELF",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Atzocan Archer"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Giant Growth"
+    ],
+    "battlefield": [
+      {
+        "name": "Llanowar Elves"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

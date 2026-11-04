@@ -393,6 +393,76 @@
     ]
 }
 
+// Atzocan Archer
+{
+    "name": "Atzocan Archer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Archer",
+    "oracleText": "Reach\nWhen this creature enters, you may have it fight another target creature. (Each deals damage equal to its power to the other.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atzocan Archer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Fight",
+                        "target1": "Self",
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Naomi Baker",
+        "flavorText": "His arrows are fletched with feathers from the greatest of the winged dinosaurs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e214e0d-bd3d-467b-83fb-d8a232e166e4.jpg?1783935733",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You must choose another target creature (if able) as Atzocan Archer’s triggered ability is put on the stack. You choose as that ability resolves whether those creatures fight."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If Atzocan Archer isn’t on the battlefield as its triggered ability resolves, or if the target of that ability is illegal, no creature will deal or be dealt damage."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Atzocan Archer’s ability can target another creature you control (such as a Dinosaur with an enrage ability)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Axis of Mortality
 {
     "name": "Axis of Mortality",

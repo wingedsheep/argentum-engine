@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -708,6 +709,7 @@ object AiReadingAudit {
         // no spell to time: its payoff is the face it becomes, which the simulation sees on the board.
         // Transforming another permanent stays flagged.
         if (leaf is TransformEffect && leaf.target == EffectTarget.Self) return true
+        if (leaf is ReturnSelfFromExileTransformedEffect) return true
         // A permanent animating itself (a manland, "this artifact becomes a 3/3 until end of turn") has
         // no target and is no spell to hold: when to activate it is the timing check's question and
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
@@ -906,7 +908,8 @@ object AiReadingAudit {
 
     /**
      * Whether the pipeline labelled [label], made of [stages], needs no intent tag: one of
-     * [NO_INTENT_PIPELINES], or a return of its controller's own permanents to hand. "Return a land
+     * [NO_INTENT_PIPELINES], or a return of its controller's own permanents to hand or their exile. An own-side exile
+     * is a drawback (Shaun takes back its tokens), not offensive removal. "Return a land
      * you control" (a karoo), "return a creature you control" (Whitemane Lion, Kazandu Stomper),
      * "return each other creature you control" (Denizen of the Deep) choose on resolution among
      * their own permanents: no target, a drawback or a re-buy of an enters trigger the simulation
@@ -916,7 +919,7 @@ object AiReadingAudit {
      */
     private fun noIntentPipeline(label: String, stages: List<Effect>): Boolean {
         if (label in NO_INTENT_PIPELINES) return true
-        if (label != "Pipeline(BattlefieldMatching→hand)") return false
+        if (label != "Pipeline(BattlefieldMatching→hand)" && label != "Pipeline(BattlefieldMatching→exile)") return false
         val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
         return sources.isNotEmpty() && sources.all { source ->
             source is CardSource.BattlefieldMatching &&
