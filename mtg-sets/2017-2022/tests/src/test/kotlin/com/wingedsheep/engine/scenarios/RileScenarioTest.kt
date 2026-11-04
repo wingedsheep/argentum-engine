@@ -38,6 +38,25 @@ class RileScenarioTest : ScenarioTestBase() {
             (game.state.getEntity(bears)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
         }
 
+        test("prevented damage still grants trample and draws a card") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Rile")
+                .withCardOnBattlefield(1, "Dawn Elemental")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withCardInLibrary(1, "Forest")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val elemental = game.findPermanent("Dawn Elemental")!!
+            game.castSpell(1, "Rile", elemental).error shouldBe null
+            game.resolveStack()
+            (game.state.getEntity(elemental)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+            game.state.projectedState.hasKeyword(elemental, Keyword.TRAMPLE) shouldBe true
+            game.isInHand(1, "Forest") shouldBe true
+        }
+
         test("lethal damage does not stop the draw and the creature dies after the draw") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")
