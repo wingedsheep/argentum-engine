@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -422,6 +423,20 @@ object CardIntentAnalyzer {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
                 is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
+                is GatherCardsEffect -> {
+                    val source = leaf.source as? CardSource.TopOfLibrary
+                    val slot = when (val player = source?.player) {
+                        is Player.BoundVariable -> requirements.firstOrNull { it.id == player.name }
+                        is Player.ContextPlayer -> requirements.getOrNull(player.index)
+                        Player.TargetPlayer -> requirements.firstOrNull { it is TargetPlayer }
+                        else -> null
+                    }
+                    // A restriction can confine an otherwise generic player target to our own
+                    // side. Do not claim an offensive clock without understanding that condition.
+                    if (source?.isMill == true && slot is TargetPlayer && slot.restriction != null) {
+                        listOf(leaf.copy(source = source.copy(player = Player.You)))
+                    } else listOf(leaf)
+                }
                 else -> listOf(leaf)
             }
         }
@@ -903,9 +918,13 @@ object CardIntentAnalyzer {
             else -> emptySet()
         }
 
-        is GatherCardsEffect ->
-            if ((effect.source as? CardSource.FromZone)?.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR)
-            else emptySet()
+        is GatherCardsEffect -> when (val source = effect.source) {
+            is CardSource.FromZone -> if (source.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR) else emptySet()
+            is CardSource.TopOfLibrary -> if (source.isMill && canMillOpponent(source.player) &&
+                ((source.count as? DynamicAmount.Fixed)?.amount ?: 1) > 0
+            ) setOf(IntentTag.MILL) else emptySet()
+            else -> emptySet()
+        }
 
         is EachPlayerDiscardsOrLoseLifeEffect -> setOf(IntentTag.DISCARD)
         is ReturnSameNamedFromGraveyardEffect -> setOf(IntentTag.RECURSION)
@@ -1042,6 +1061,12 @@ object CardIntentAnalyzer {
         }
         if (type == CounterType.SHIELD) return setOf(IntentTag.PROTECTION)
         return keywordTags(type.name)
+    }
+
+    private fun canMillOpponent(player: Player): Boolean = when (player) {
+        Player.EachOpponent, Player.TargetOpponent, Player.TargetPlayer,
+        Player.EachTargetedPlayer, is Player.ContextPlayer, is Player.BoundVariable -> true
+        else -> false
     }
 
     /** Spot removal or a wrath, depending on whether the effect names a group. */
@@ -1418,6 +1443,7 @@ object CardIntentAnalyzer {
             // are things you spend a Disenchant on.
             if (repeatable && IntentTag.TAPPER in tags) add(PriorRung("repeatable tapper", 3.5))
             if (removal) add(PriorRung("removal", 3.5))
+            if (repeatable && IntentTag.MILL in tags) add(PriorRung("repeatable mill win condition", 2.0))
             if (repeatable && IntentTag.DRAW in tags) add(PriorRung("repeatable card draw", 3.0))
             if (repeatable && IntentTag.TOKEN_MAKER in tags) add(PriorRung("repeatable token maker", 3.0))
             if (IntentTag.ANTHEM in tags) add(PriorRung("anthem", 3.0))
@@ -1447,6 +1473,7 @@ object CardIntentAnalyzer {
 
     private val OPPONENT_FACING = setOf(
         IntentTag.CAST_BAN,
+        IntentTag.MILL,
         IntentTag.REMOVAL,
         IntentTag.EXILE_REMOVAL,
         IntentTag.SWEEPER,

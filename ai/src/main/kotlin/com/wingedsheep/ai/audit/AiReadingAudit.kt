@@ -610,6 +610,7 @@ object AiReadingAudit {
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
         IntentTag.CAST_BAN -> "stops opponents casting spells"
+        IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
@@ -852,11 +853,9 @@ object AiReadingAudit {
     }
 
     /**
-     * Whole pipelines that need no intent tag. Milling — the top of a library put into its owner's
-     * graveyard — always lands on a player, like life loss: on an opponent it is a slow clock
-     * (LibraryClock prices it once the library nears empty), on you it is fuel for whatever later
-     * reads the graveyard. It answers nothing on the board and has no window to hold for; which
-     * player a mill aims at is GraveyardSynergy's and the polarity check's question, not intent's.
+     * Library-to-graveyard pipelines without an offensive mill reading remain fuel, not a
+     * win-condition claim: self-mill and incidental discarded library cards need no intent.
+     * Explicit opponent-capable mills now read MILL before this exemption is consulted.
      */
     private val NO_INTENT_PIPELINES = setOf("Pipeline(TopOfLibrary→graveyard)")
 

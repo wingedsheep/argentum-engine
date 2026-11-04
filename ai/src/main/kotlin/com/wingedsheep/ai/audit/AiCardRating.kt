@@ -136,7 +136,11 @@ object AiCardRating {
             // knees; the fight thresholds need a board, so the note names them instead.
             fun body(p: Int, t: Int, keywords: Set<String>) =
                 BoardPresence.creatureBodyValue(p, t, keywords, diminishingReturns = true)
+            val millIntent = CardIntentAnalyzer.analyzeInPlay(card)
             val parts = buildList {
+                if (millIntent.repeatable && IntentTag.MILL in millIntent.tags) {
+                    add(Part("Repeatable mill", BoardPresence.MILL_ENGINE_VALUE))
+                }
                 add(Part("Power", body(power, 0, none), statDetail(power, 1.0, StatRelevance.POWER_KNEE)))
                 add(Part("Toughness", body(0, toughness, none), statDetail(toughness, 0.4, StatRelevance.TOUGHNESS_KNEE)))
                 val base = body(power, toughness, none)
@@ -149,7 +153,7 @@ object AiCardRating {
                 BoardKind.CREATURE, parts.sumOf { it.value }, parts,
                 "In a game it is also worth more for each fight it wins on size — power that kills their " +
                     "biggest creature, toughness that survives it or the damage removal they have shown. " +
-                    "Abilities add nothing here: the AI values what they do when they trigger or are activated.",
+                    "Repeatable mill includes its ability prior; other abilities are valued when they trigger or are activated.",
             )
         }
         val ladder = CardIntentAnalyzer.priorLadder(intent)
@@ -224,6 +228,7 @@ object AiCardRating {
         IntentTag.EVASION_GRANT to "Grants evasion",
         IntentTag.SACRIFICE_OUTLET to "Sacrifice outlet",
         IntentTag.CAST_BAN to "Stops opponents casting spells",
+        IntentTag.MILL to "Mills opponents toward running out of cards",
         IntentTag.TRIBAL_ENABLER to "Enables a chosen creature type",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",

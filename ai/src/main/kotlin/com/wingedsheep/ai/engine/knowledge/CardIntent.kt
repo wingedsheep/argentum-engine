@@ -302,6 +302,9 @@ enum class IntentTag {
     /** Grants a chosen creature type, enabling tribal payoffs without making a body or a stat bonus. */
     TRIBAL_ENABLER,
 
+    /** Mills a player who can be an opponent, advancing a library-depletion win condition. */
+    MILL,
+
     /** A P/T bonus to one creature: an Aura/Equipment, or a one-shot pump. */
     PUMP,
 
