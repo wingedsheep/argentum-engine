@@ -635,6 +635,7 @@ object AiReadingAudit {
         IntentTag.TOKEN_MAKER -> "makes tokens"
         IntentTag.COMBAT_TRICK -> "combat trick"
         IntentTag.EVASION_GRANT -> "grants evasion"
+        IntentTag.COMBAT_ENHANCEMENT -> "makes a creature better in combat"
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"

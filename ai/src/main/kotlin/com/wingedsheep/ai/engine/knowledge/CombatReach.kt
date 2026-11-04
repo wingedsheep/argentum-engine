@@ -49,9 +49,10 @@ internal enum class CombatReach {
     BLOCKER;
 
     companion object {
-        /** [IntentTag]s whose effect reshapes a fight: the analyzer's removal and protection reads. */
+        /** [IntentTag]s whose effect reshapes a fight: the analyzer's removal, pump, protection and combat-enhancement reads. */
         private val FIGHT_TAGS = setOf(
             IntentTag.REMOVAL, IntentTag.SWEEPER, IntentTag.FIGHT, IntentTag.PUMP, IntentTag.PROTECTION,
+            IntentTag.COMBAT_ENHANCEMENT,
         )
 
         /** Abilities come from card definitions and grants, so the reading is cached by identity. */

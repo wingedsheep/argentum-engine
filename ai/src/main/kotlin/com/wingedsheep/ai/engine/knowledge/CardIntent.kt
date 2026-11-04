@@ -361,6 +361,16 @@ enum class IntentTag {
     /** Grants evasion (flying, menace, unblockable, …). */
     EVASION_GRANT,
 
+    /**
+     * Makes a creature better in a fight without adding to its power and toughness — one-shot or
+     * static, and whichever creature the polarity reader says it lands on: a granted first strike,
+     * double strike, deathtouch, lifelink, vigilance or haste, a
+     * "must be blocked" that drags a blocker in, or a base power and toughness it takes from
+     * something bigger (Exuberant Wolfbear). Not a [PUMP]: nothing here is a +N/+N a simulation
+     * or a precombat plan may add to the creature's stats.
+     */
+    COMBAT_ENHANCEMENT,
+
     /** An activated ability whose cost is sacrificing a permanent — a sacrifice outlet. */
     SACRIFICE_OUTLET,
 
