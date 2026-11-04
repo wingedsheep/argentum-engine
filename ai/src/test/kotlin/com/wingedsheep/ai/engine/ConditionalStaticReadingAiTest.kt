@@ -51,6 +51,10 @@ class ConditionalStaticReadingAiTest : FunSpec({
         withClue("Juggernaut's attack requirement and blocking restriction are no keyword on its body") {
             AiReadingAudit.read(card("Juggernaut")).abilities.none { it.body } shouldBe true
         }
+        withClue("Juggernaut's own attack requirement reads as a combat restriction, so the card is recognised") {
+            tags("Juggernaut") shouldContain IntentTag.COMBAT_RESTRICTION
+            AiCardRating.of(card("Juggernaut"), listOf("LEA")).intent.unrecognised shouldBe false
+        }
     }
 
     test("a keyword the creature grants itself is priced like a printed one, discounted when conditional") {

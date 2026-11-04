@@ -595,7 +595,7 @@ Anointed Procession
 Anointer of Champions
 Anointer of Valor
 Another Chance
-Another Round
+Another Round	intent: Pipeline(BattlefieldMatching|FromLinkedExile→battlefield|exile); intent: RepeatDynamicTimesEffect
 Ant Queen
 Ant-Man's Army
 Ant-Man, Colony Commander
@@ -3100,7 +3100,7 @@ Cold-Blooded Crew
 Cold-Water Snapper
 Coldsteel Heart
 Colfenor's Plans	intent: Pipeline(TopOfLibrary→exile)
-Colfenor's Urn
+Colfenor's Urn	intent: Pipeline(FromLinkedExile→battlefield)
 Coliseum Behemoth
 Collapsing Borders
 Collar the Culprit
@@ -6260,7 +6260,7 @@ Fortress Crab
 Fortress Kin-Guard
 Fortuitous Find
 Fortune Teller's Talent
-Fortune, Loyal Steed
+Fortune, Loyal Steed	intent: Pipeline(CreaturesThatCrewedOrSaddledSource|Entity|FromLinkedExile→battlefield|exile)
 Forum Familiar
 Forum Necroscribe
 Forum of Amity
@@ -6688,7 +6688,7 @@ Ghostform
 Ghosthelm Courier
 Ghostly Changeling
 Ghostly Dancers	polarity: UnlockDoorEffect
-Ghostly Flicker	polarity: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
+Ghostly Flicker	intent: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile); polarity: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
 Ghostly Keybearer	intent: UnlockDoorEffect; polarity: UnlockDoorEffect
 Ghostly Pilferer
 Ghostly Prison
@@ -9513,13 +9513,13 @@ Lagomos, Hand of Hatred
 Lagonna-Band Elder
 Lagonna-Band Storyteller	polarity: GainLifeEffect; polarity: MoveToZoneEffect
 Lagorin, Soul of Alacria
-Lagrella, the Magpie
+Lagrella, the Magpie	intent: Pipeline(FromLinkedExile→battlefield); intent: ReflexiveTriggerEffect
 Laid to Rest
 Lair of the Hydra
 Lairwatch Giant	intent: GrantKeywordEffect
 Lake-town
 Lake-town Lookout
-Lake-town Mariners	polarity: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
+Lake-town Mariners	intent: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile); polarity: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
 Lake-town Toymaker
 Lakeshore Apothecary
 Lakeside Shack
@@ -14136,7 +14136,7 @@ Sadistic Augermage	intent: ForEach>Pipeline(hand→library)
 Sadistic Hypnotist
 Sadistic Shell Game	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: Pipeline(?→graveyard)
 Sadistic Skymarcher
-Safe Haven
+Safe Haven	intent: Pipeline(FromLinkedExile→battlefield)
 Safe Passage
 Safeguard	timing: PreventDamageEffect
 Safehold Duo	intent: GrantKeywordEffect

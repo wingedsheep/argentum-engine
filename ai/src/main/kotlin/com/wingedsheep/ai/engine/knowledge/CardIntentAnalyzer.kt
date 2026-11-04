@@ -538,9 +538,15 @@ object CardIntentAnalyzer {
         // only onto our battlefield (Tomb of the Dusk Rose). A hand is always its owner's, so
         // "return the exiled cards to their owners' hands" (Angel of Serenity, Ashiok's Erasure) can
         // hand an opponent their card back: an exile-until's release, not a recursion.
-        val linkedExile = leaves.mapNotNullTo(HashSet()) { leaf ->
-            (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
+        // A pile the same resolution fills is an exile-and-return (Ghostly Flicker, Another Round):
+        // a blink of what was just exiled, not a recursion of what was stored earlier.
+        val fillsThePile = leaves.any { leaf ->
+            (leaf is MoveCollectionEffect && leaf.linkToSource) || (leaf is MoveToZoneEffect && leaf.linkToSource)
         }
+        val linkedExile = if (fillsThePile) HashSet() else
+            leaves.mapNotNullTo(HashSet()) { leaf ->
+                (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
+            }
         if (ourGraveyard.isEmpty() && linkedExile.isEmpty()) return emptySet()
         fun closed(seed: MutableSet<String>): Set<String> {
             do {
@@ -557,7 +563,8 @@ object CardIntentAnalyzer {
             if (to.player != Player.You) return@any false
             when (move.from) {
                 in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD
-                in fromLinkedExile -> to.zone == Zone.BATTLEFIELD
+                // "Under their owners' control" (Lagrella, Safe Haven) hands the pile back.
+                in fromLinkedExile -> to.zone == Zone.BATTLEFIELD && !move.underOwnersControl
                 else -> false
             }
         }

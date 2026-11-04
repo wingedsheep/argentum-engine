@@ -21,8 +21,9 @@ import io.kotest.matchers.shouldBe
  *  - "Put a creature card exiled with this permanent onto the battlefield under your control"
  *    (Tomb of the Dusk Rose) returns a card from the source's linked-exile pile — the same stock a
  *    graveyard return draws on, so it reads as recursion instead of "no intent". Only onto our
- *    battlefield: a hand is its owner's, so returning that pile to hand can give an opponent their
- *    card back (Ashiok's Erasure).
+ *    battlefield and never under its owners' control: a hand is its owner's, so returning that pile
+ *    to hand can give an opponent their card back (Ashiok's Erasure), as "under its owner's control"
+ *    does (Lagrella, Safe Haven); and a pile the same resolution fills is a blink (Ghostly Flicker).
  */
 class SelfGrowthAndExilePileReadingAiTest : FunSpec({
 
@@ -43,8 +44,10 @@ class SelfGrowthAndExilePileReadingAiTest : FunSpec({
         withClue("the Tomb's put-onto-the-battlefield ability now reads fully") {
             AiReadingAudit.read(procession).abilities.filter { it.checked }.all { it.readFully } shouldBe true
         }
-        withClue("Ashiok's Erasure hands the exiled spell back to its owner: a release, not a recursion") {
-            CardIntentAnalyzer.analyze(card("Ashiok's Erasure")).tags shouldNotContain IntentTag.RECURSION
+        for (name in listOf("Ashiok's Erasure", "Lagrella, the Magpie", "Safe Haven", "Ghostly Flicker", "Another Round")) {
+            withClue("$name hands the pile back to its owners or blinks what it just exiled: not a recursion") {
+                CardIntentAnalyzer.analyze(card(name)).tags shouldNotContain IntentTag.RECURSION
+            }
         }
     }
 })
