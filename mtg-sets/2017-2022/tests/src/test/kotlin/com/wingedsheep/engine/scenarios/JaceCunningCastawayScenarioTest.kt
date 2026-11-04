@@ -1,10 +1,15 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.OrderTriggersDecision
+import com.wingedsheep.engine.core.TriggerOrderResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
@@ -70,6 +75,89 @@ class JaceCunningCastawayScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(1, "Shock") shouldBe true
                 game.handSize(1) shouldBe 2
                 game.librarySize(1) shouldBe 1
+            }
+        }
+
+        test("+1: double strike loots once in each combat damage step") {
+            val game = scenario().withPlayers("Alice", "Bob")
+                .withCardOnBattlefield(1, name)
+                .withCardOnBattlefield(1, "Fencing Ace", summoningSickness = false)
+                .withCardInHand(1, "Shock")
+                .withCardInLibrary(1, "Island").withCardInLibrary(1, "Island")
+                .withCardInLibrary(1, "Island").withCardInLibrary(2, "Island")
+                .withActivePlayer(1).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            activate(game, 0, loyalty = 3)
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Fencing Ace" to 2)).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            game.declareNoBlockers().error shouldBe null
+
+            for ((index, step) in listOf(Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE).withIndex()) {
+                game.passUntilPhase(Phase.COMBAT, step)
+                game.getLifeTotal(2) shouldBe 19 - index
+                game.resolveStack()
+                val discard = game.getPendingDecision() as? SelectCardsDecision
+                    ?: error("expected loot during $step; got ${game.getPendingDecision()}")
+                discard.options.size shouldBe 2
+                game.selectCards(listOf(discard.options.first())).error shouldBe null
+                game.resolveStack()
+                game.hasPendingDecision() shouldBe false
+                game.handSize(1) shouldBe 1
+                game.librarySize(1) shouldBe 2 - index
+            }
+        }
+
+        test("+1: simultaneous damage to two players loots once per damaged player") {
+            val driver = GameTestDriver()
+            val jace = cardRegistry.getCard(name)!!
+            driver.registerCards(TestCards.all + listOf(jace))
+            val (controller, opponent1, opponent2) = driver.initMultiplayer(List(3) { Deck.of("Plains" to 40) })
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            val source = driver.putPermanentOnBattlefield(controller, name)
+            driver.replaceState(driver.state.updateEntity(source) {
+                it.with(CountersComponent().withAdded(CounterType.LOYALTY, 3))
+            })
+            val attackers = List(3) {
+                driver.putCreatureOnBattlefield(controller, "Grizzly Bears").also {
+                    driver.removeSummoningSickness(it)
+                }
+            }
+            driver.submit(ActivateAbility(controller, source, jace.script.activatedAbilities[0].id)).error shouldBe null
+            while (driver.stackSize > 0) driver.bothPass().error shouldBe null
+            val initialHandSize = driver.getHandSize(controller)
+            driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+            driver.declareAttackers(controller, mapOf(
+                attackers[0] to opponent1, attackers[1] to opponent1, attackers[2] to opponent2,
+            )).error shouldBe null
+            driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+            driver.declareBlockers(opponent1, emptyMap()).error shouldBe null
+            driver.declareBlockers(opponent2, emptyMap()).error shouldBe null
+            driver.passPriorityUntil(Step.COMBAT_DAMAGE)
+            driver.getLifeTotal(opponent1) shouldBe 16
+            driver.getLifeTotal(opponent2) shouldBe 18
+
+            var loots = 0
+            var passes = 0
+            while (driver.stackSize > 0 || driver.pendingDecision != null) {
+                check(passes++ < 30) { "combat triggers failed to finish" }
+                val decision = driver.pendingDecision
+                when {
+                    decision is SelectCardsDecision -> {
+                        decision.playerId shouldBe controller
+                        driver.getHandSize(controller) shouldBe initialHandSize + 1
+                        driver.submitCardSelection(controller, listOf(decision.options.first())).error shouldBe null
+                        loots++
+                    }
+                    decision is OrderTriggersDecision -> driver.submitDecision(
+                        decision.playerId, TriggerOrderResponse(decision.id, decision.triggers.indices.toList()),
+                    ).error shouldBe null
+                    decision != null -> error("unexpected decision: $decision")
+                    else -> driver.bothPass().error shouldBe null
+                }
+            }
+            withClue("two recipients mean two loots, even though three creatures connected") {
+                loots shouldBe 2
+                driver.getHandSize(controller) shouldBe initialHandSize
             }
         }
 

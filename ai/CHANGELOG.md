@@ -29,8 +29,8 @@ Format — newest first, one bullet each:
 ## Changes
 
 - Reads "each token that would be created under an opponent's control this turn is created under your control instead" (Crafty Cutpurse) as taking the opponent's tokens rather than as an unrecognised ability, and prices it in draft ratings above the bare body
+- Reads immediate blinks as protection, keeps friendly bounce rescues and offensive blinks available, chooses additional profitable bounce targets, targets opponent-controlled groups offensively, prices conditional statics and mill abilities, and no longer treats looters as graveyard payoffs when choosing mill targets.
 - Drafts Clone-style cards (enter as a copy of a creature) above their printed body; a raid-gated copy (Protean Raider) counts half
-- Reads immediate blinks as protection, targets mass bounce and opponent-controlled groups offensively, prices conditional statics and mill abilities, and no longer treats looters as graveyard payoffs when choosing mill targets.
 
 - Reads statics that stop permanents entering or dying from triggering abilities (Torpor Orb, Tocatli Honor Guard, Hushbringer, Elesh Norn, Mother of Machines) as trigger locks: values a lock permanent on the board above an unreadable one and prices the lock in draft ratings
 - Reads +1/+1 counters put on each creature you control (Bellowing Aegisaur, Victory's Envoy) as feeding a +1/+1-counter deck, so it drafts those cards alongside counter payoffs

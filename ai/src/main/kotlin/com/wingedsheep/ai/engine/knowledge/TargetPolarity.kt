@@ -123,8 +123,13 @@ enum class TargetPolarity {
     BENEFICIAL,
 
     /**
-     * Mixed, unread, or genuinely either-way (a bounce can save your own creature; a flicker is
-     * an ETB engine). Every consumer keeps its pre-polarity behaviour on this, which is the
+     * Understood, but useful on either side: bounce can rescue our creature and blink can
+     * remove their token. Keep both sides eligible and let simulation choose the target.
+     */
+    FLEXIBLE,
+
+    /**
+     * Mixed or unread. Every consumer keeps its pre-polarity behaviour on this, which is the
      * "no better than before, never confidently wrong" contract [CardIntentAnalyzer] keeps.
      */
     UNKNOWN,
@@ -141,10 +146,14 @@ enum class TargetPolarity {
  * without naming it — a [CounterEffect] or [ExileTargetSpellEffect] whose spell is the chosen one —
  * and are attributed only when there is exactly one requirement for them to mean.
  *
- * A slot whose matched leaves all agree takes that polarity; any disagreement, any leaf this file
- * does not classify, or no matched leaf at all, reads [TargetPolarity.UNKNOWN]. That makes the
+ * A slot whose matched leaves all agree takes that polarity. A flexible step alongside other
+ * understood steps remains flexible; opposing one-sided readings, any unread matched leaf, or
+ * no matched leaf at all reads [TargetPolarity.UNKNOWN]. That makes the
  * classification table below an allow-list of *confident* readings, not a list of special cases:
  * an effect missing from it degrades to the old behaviour rather than to a wrong one.
+ * A recognized two-sided effect reads [TargetPolarity.FLEXIBLE]: unlike UNKNOWN it is understood,
+ * but neither polarity may prune candidates. Ranking retains the offensive default, bounded
+ * simulation includes candidates from both sides, and optional slots may still be left empty.
  *
  * ## Auras
  *
@@ -271,7 +280,12 @@ object TargetPolarityAnalyzer {
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
         val blinks = EffectWalker.blinkMoves(effect)
-        for (move in blinks) slotOf(move.target, requirements)?.let { perSlot[it] += TargetPolarity.BENEFICIAL }
+        for (move in blinks) slotOf(move.target, requirements)?.let { slot ->
+            // An unrestricted blink can remove their token or recover a stolen permanent.
+            // Only an own-side requirement makes protection a safe target-side restriction.
+            perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL
+                else TargetPolarity.FLEXIBLE
+        }
         val biteSources = mutableSetOf<Int>()
         for (leaf in EffectWalker.payoffLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
@@ -281,13 +295,10 @@ object TargetPolarityAnalyzer {
             // `ContextTarget(0)` walks all of them and names no one slot.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
                 if (requirements.size == 1) {
-                    val reading = forRequirements(leaf.body, requirements, definitions, source)
-                    val body = EffectWalker.payoffLeaves(leaf.body)
-                    // A mass bounce is used offensively; one-target rescues retain UNKNOWN below.
-                    perSlot[0] += if (reading.single() == TargetPolarity.UNKNOWN && body.isNotEmpty() && body.all {
-                        it is MoveToZoneEffect && it.destination == Zone.HAND &&
-                            (it.fromZone == null || it.fromZone == Zone.BATTLEFIELD)
-                    }) listOf(TargetPolarity.HARMFUL) else reading
+                    // A bounce can save our creature from removal even when the spell can
+                    // choose several targets. Preserve the body's either-way reading so target
+                    // simulation can compare rescue against offensive tempo.
+                    perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
                 }
                 continue
             }
@@ -383,8 +394,14 @@ object TargetPolarityAnalyzer {
     }
 
     /** One polarity for a slot, from every leaf that acts on it. */
-    private fun combine(readings: List<TargetPolarity>): TargetPolarity =
-        readings.distinct().singleOrNull() ?: TargetPolarity.UNKNOWN
+    private fun combine(readings: List<TargetPolarity>): TargetPolarity = when {
+        // Flexible is a known two-sided operation, not an unread one. Adding a known boon or
+        // harm still needs both sides compared; it cannot make the slot safely one-sided.
+        // An unread step must stay unread, even beside an understood flexible operation.
+        readings.isEmpty() || TargetPolarity.UNKNOWN in readings -> TargetPolarity.UNKNOWN
+        TargetPolarity.FLEXIBLE in readings -> TargetPolarity.FLEXIBLE
+        else -> readings.distinct().singleOrNull() ?: TargetPolarity.UNKNOWN
+    }
 
     /** Whether two bound handles are picks of the same count-N requirement (`t0[0]` and `t0[1]`). */
     private fun sameRequirement(a: EffectTarget, b: EffectTarget): Boolean =
@@ -589,13 +606,14 @@ object TargetPolarityAnalyzer {
         source: CardDefinition? = null,
     ): List<Pair<EffectTarget, TargetPolarity>> {
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
-            // Off the battlefield to a graveyard or exile is removal. To hand or library is *not*
-            // classified: bouncing your own creature in response to removal is a real play
-            // (`lastchance-05`), and a move *onto* the battlefield or out of a graveyard is
+            // Off the battlefield to a graveyard or exile is removal. To hand is flexible:
+            // bouncing your own creature in response to removal is a real play (`lastchance-05`).
+            // A move onto the battlefield or out of a graveyard is
             // recursion, whose polarity is about the card's owner rather than a controller.
             is MoveToZoneEffect -> leaf.target to when {
                 leaf.fromZone != null && leaf.fromZone != Zone.BATTLEFIELD -> null
                 leaf.destination == Zone.GRAVEYARD || leaf.destination == Zone.EXILE -> TargetPolarity.HARMFUL
+                leaf.destination == Zone.HAND -> TargetPolarity.FLEXIBLE
                 else -> null
             }
             is MoveUntilSourceLeavesEffect -> leaf.target to TargetPolarity.HARMFUL

@@ -567,6 +567,7 @@ object AiReadingAudit {
     private fun polarityPhrase(polarity: TargetPolarity): String = when (polarity) {
         TargetPolarity.HARMFUL -> "reads as harmful — aimed at an opponent's side"
         TargetPolarity.BENEFICIAL -> "reads as helpful — aimed at your own side"
+        TargetPolarity.FLEXIBLE -> "can help either side; compare targets by simulation"
         TargetPolarity.UNKNOWN -> "can't tell if this helps or hurts"
     }
 

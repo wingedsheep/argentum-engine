@@ -155,9 +155,9 @@ class TargetPolarityAiTest : FunSpec({
             TargetPolarityAnalyzer.forSpell(BlackWard) shouldBe listOf(TargetPolarity.BENEFICIAL)
             TargetPolarityAnalyzer.forSpell(Lignify) shouldBe listOf(TargetPolarity.HARMFUL)
         }
-        test("either-way effects stay unknown") {
+        test("known bounce is flexible while mixed effects stay unknown") {
             // Bouncing our own creature in response to removal is a real play.
-            TargetPolarityAnalyzer.forSpell(Unsummon) shouldBe listOf(TargetPolarity.UNKNOWN)
+            TargetPolarityAnalyzer.forSpell(Unsummon) shouldBe listOf(TargetPolarity.FLEXIBLE)
             // "Prevent combat damage dealt to and by": a Fog on their attacker or armour on ours.
             TargetPolarityAnalyzer.forSpell(Sandskin) shouldBe listOf(TargetPolarity.UNKNOWN)
         }

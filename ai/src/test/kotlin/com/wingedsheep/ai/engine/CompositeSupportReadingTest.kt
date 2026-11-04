@@ -52,8 +52,8 @@ class CompositeSupportReadingTest : FunSpec({
         LimitedCardRater.effectValue(effect) shouldBeGreaterThan 0.0
     }
 
-    test("target iteration and opponent-controlled groups carry the offensive reading") {
-        TargetPolarityAnalyzer.forSpell(GraspingCurrent) shouldBe listOf(TargetPolarity.HARMFUL)
+    test("target iteration preserves either-way bounce while opponent-controlled groups are offensive") {
+        TargetPolarityAnalyzer.forSpell(GraspingCurrent) shouldBe listOf(TargetPolarity.FLEXIBLE)
         val ability = TempestCaller.script.triggeredAbilities.single()
         TargetPolarityAnalyzer.forRequirements(ability.effect, listOfNotNull(ability.targetRequirement)) shouldBe
             listOf(TargetPolarity.HARMFUL)

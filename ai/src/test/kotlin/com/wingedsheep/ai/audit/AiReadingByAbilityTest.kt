@@ -36,8 +36,8 @@ class AiReadingByAbilityTest : FunSpec({
     }
 
     test("a polarity gap names the target slot and the step that left it unread") {
-        // A bounce is either side's play (saving our own creature, or tempo on theirs), so it stays unread.
-        val reading = AiReadingAudit.read(card("Unsummon"))
+        // Top-of-library moves still have no polarity reading; hand bounce is understood as flexible.
+        val reading = AiReadingAudit.read(card("Time Ebb"))
         val gaps = reading.abilities.single { it.ability.kind == AbilityKind.SPELL }
             .findings.filter { it.check == Check.POLARITY && !it.read }
         gaps.map { it.effectType } shouldContainExactly listOf("MoveToZoneEffect")
