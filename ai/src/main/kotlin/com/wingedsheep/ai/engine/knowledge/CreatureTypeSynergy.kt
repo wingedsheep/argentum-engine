@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.scripting.GrantChosenSubtype
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
@@ -50,6 +52,11 @@ internal object CreatureTypeSynergy {
                 if (leaf is CreateTokenEffect) leaf.creatureTypes.filter { it in CREATURE_TYPES }.mapTo(this, ::Subtype)
             }
         }
+    }
+
+    /** Broad own-team conversion needs both off-tribe bodies and a tribal payoff. */
+    fun grantsChosenTribe(card: CardDefinition): Boolean = scripts(card).any { script ->
+        script.staticAbilities.any { it is GrantChosenSubtype && it.filter == GroupFilter.AllCreaturesYouControl }
     }
 
     /** A changeling is every creature type, so it feeds every tribe. */

@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -1200,6 +1201,8 @@ object CardIntentAnalyzer {
             } else emptySet()
         // "Creatures entering the battlefield don't cause abilities to trigger" (Torpor Orb, Tocatli
         // Honor Guard, Hushbringer) and its opponents-only form (Elesh Norn, Mother of Machines).
+        is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
+            setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
         else -> emptySet()
     }

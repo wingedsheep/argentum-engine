@@ -299,6 +299,9 @@ enum class IntentTag {
     /** A continuous P/T bonus to a group of creatures — a lord or an anthem. */
     ANTHEM,
 
+    /** Grants a chosen creature type, enabling tribal payoffs without making a body or a stat bonus. */
+    TRIBAL_ENABLER,
+
     /** A P/T bonus to one creature: an Aura/Equipment, or a one-shot pump. */
     PUMP,
 

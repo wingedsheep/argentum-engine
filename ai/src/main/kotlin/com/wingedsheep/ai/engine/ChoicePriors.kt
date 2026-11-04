@@ -1,8 +1,10 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -147,6 +149,28 @@ internal class ChoicePriors(private val cardRegistry: CardRegistry) {
             }
         }
         return weights
+    }
+
+    /** A type-grant wants the tribe with payoffs and bodies it would newly connect, not the majority. */
+    fun chosenTribeWeights(state: GameState, player: EntityId, sourceId: EntityId?): Map<String, Double>? {
+        val source = sourceId?.let { state.getEntity(it)?.get<CardComponent>() } ?: return null
+        val definition = cardRegistry.getCard(source.cardDefinitionId) ?: return null
+        if (!SynergyAxes.of(definition).grantsChosenTribe) return null
+        val projected = state.projectedState
+        val bodies = state.controlledBattlefield(player).filter { projected.isCreature(it) }
+            .map { projected.getSubtypes(it).map(String::lowercase).toSet() } +
+            hiddenCards(state, player).filter { it.typeLine.isCreature && Keyword.CHANGELING !in it.baseKeywords }
+                .map { it.typeLine.subtypes.map { t -> t.value.lowercase() }.toSet() }
+        val demand = HashMap<String, Double>()
+        for (card in hiddenCards(state, player) + battlefieldCards(state, player)) {
+            val payoff = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val profile = SynergyAxes.of(payoff)
+            for (tribe in profile.tribesRewarded) {
+                val key = tribe.value.lowercase()
+                demand.merge(key, profile.strength * bodies.count { key !in it }, Double::plus)
+            }
+        }
+        return demand
     }
 
     private fun ownColorDemand(state: GameState, playerId: EntityId): Map<Color, Double> {

@@ -47,10 +47,21 @@ object DeckSynergy {
         private val members: Map<Subtype, Int>,
         private val everyTribe: Int,
         private val answers: Map<GameObjectFilter, Int>,
+        private val cards: List<SynergyProfile>,
     ) {
         fun feedersOf(axis: SynergyAxis): Int = feeders[axis] ?: 0
         fun membersOf(tribe: Subtype): Int = (members[tribe] ?: 0) + everyTribe
         fun answersTo(ask: CardAsk): Int = answers[ask.filter] ?: 0
+
+        /** One chosen type, scored by the new members it enables beside an actual payoff. */
+        fun chosenTribeShare(enabler: SynergyProfile): Double {
+            val ownIndex = cards.indexOfFirst { it === enabler }
+            val others = cards.filterIndexed { index, _ -> index != ownIndex }
+            return others.flatMap { it.tribesRewarded }.distinct().maxOfOrNull { tribe ->
+                val converts = others.count { it.card?.typeLine?.isCreature == true && !it.feedsTribe(tribe) }
+                min(1.0, converts / TRIBE_MEMBERS_WANTED)
+            } ?: 0.0
+        }
     }
 
     fun counts(cards: List<SynergyProfile>): Counts {
@@ -65,7 +76,7 @@ object DeckSynergy {
         for (ask in cards.flatMap { it.asks }) {
             if (ask.filter !in answers) answers[ask.filter] = cards.count { it.answers(ask) }
         }
-        return Counts(feeders, members, everyTribe, answers)
+        return Counts(feeders, members, everyTribe, answers, cards)
     }
 
     /**
@@ -87,7 +98,7 @@ object DeckSynergy {
             val own = if (payoff.answers(ask)) 1 else 0
             min(1.0, (counts.answersTo(ask) - own).coerceAtLeast(0) / ask.wanted)
         } ?: 0.0
-        return maxOf(axes, tribes, asks)
+        return maxOf(axes, tribes, asks, if (payoff.grantsChosenTribe) counts.chosenTribeShare(payoff) else 0.0)
     }
 
     /**
