@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Treats damage paid on its own creatures as a cost when choosing and drafting support spells, and rates temporary theft below permanent control.
+
 - The AI marks opposing creatures for a sweep it holds before casting the sweeper (Tetzimoc, Primal Death: {B} prey counters first, then cast), and prices a marked creature as mostly gone
 - #4393 Reads a prey counter (Tetzimoc, Primal Death) as a mark for removal: aims it at the opponent's creatures and won't spend mana marking its own
 - Uses a "that player loses the game" grant (Vraska, Scheming Gorgon's −10) when its attackers outnumber the blockers, then attacks for the win; reads Phage-style and "you win the game" effects as win conditions rather than blanks

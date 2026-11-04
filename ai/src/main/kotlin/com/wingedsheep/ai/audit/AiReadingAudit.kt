@@ -484,7 +484,12 @@ object AiReadingAudit {
     private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
-        val noIntent = { leaf: Effect -> needsNoIntent(leaf) || countsOnAPlayerSlot(leaf, playerSlots) }
+        val noIntent = { leaf: Effect ->
+            needsNoIntent(leaf) || countsOnAPlayerSlot(leaf, playerSlots) ||
+                // Damage confined to our creatures is a drawback, not offensive removal.
+                // Polarity still reads the harm; simulation prices the damaged board.
+                (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs))
+        }
         val tags = CardIntentAnalyzer.analyzeEffect(root, reqs).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
@@ -503,7 +508,10 @@ object AiReadingAudit {
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
         for (each in unreadLeaves.filterIsInstance<ForEachEffect>()) {
-            val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot(noIntent)
+            // A loop can rebind target slots; the outer own-side filter proves nothing here.
+            val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot {
+                needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots)
+            }
             // Over each player, "you" in the body is the player iterated (ControllerOfTriggeringEntity's
             // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
             val players = (each.space as? IterationSpace.Players)?.players
@@ -517,7 +525,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, returns its controller's own permanents to hand, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, or is an unless-clause its payer suffers as an upkeep cost or life loss")
         }
     }
 

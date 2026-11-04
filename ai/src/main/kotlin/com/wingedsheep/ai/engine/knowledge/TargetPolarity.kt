@@ -451,7 +451,20 @@ object TargetPolarityAnalyzer {
                 leaves.none { touchesOtherwise(it, requirements[slot], slot, definitions, source) }
             if (untouched) perSlot[slot] += TargetPolarity.BENEFICIAL
         }
-        return perSlot.mapIndexed { slot, readings -> if (slot in recursions) TargetPolarity.BENEFICIAL else combine(readings) }
+        return perSlot.mapIndexed { slot, readings ->
+            when {
+                slot in recursions -> TargetPolarity.BENEFICIAL
+                // Damage paid on our own creature alongside a gift is understood, but still
+                // costs toughness. Simulation must compare survival instead of assuming a boon.
+                isOwnSide(requirements[slot]) &&
+                    readings.toSet() == setOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL) &&
+                    leaves.filter { leaf -> classify(leaf, definitions, source).any { (target, polarity) ->
+                        slotOf(target, requirements) == slot && polarity == TargetPolarity.HARMFUL
+                    } }.let { harmful -> harmful.isNotEmpty() && harmful.all { it is DealDamageEffect } } ->
+                    TargetPolarity.FLEXIBLE
+                else -> combine(readings)
+            }
+        }
     }
 
     /** One polarity for a slot, from every leaf that acts on it. */
@@ -639,6 +652,10 @@ object TargetPolarityAnalyzer {
         val slot = slotOf(target, requirements) ?: return null
         return slot.takeIf { isOwnSide(requirements[slot]) }
     }
+
+    /** The declared slot confines this target to our own permanents. */
+    internal fun targetsOwnSide(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        slotOf(target, requirements)?.let { isOwnSide(requirements[it]) } == true
 
     /** Whether [requirement]'s filter keeps its target on our side of the table ("… you control"). */
     internal fun isOwnSide(requirement: TargetRequirement): Boolean {

@@ -3192,6 +3192,74 @@
     ]
 }
 
+// Hijack
+{
+    "name": "Hijack",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target artifact or creature until end of turn. Untap it. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact",
+                    "alternatives": [
+                        {
+                            "baseFilter": "creature"
+                        }
+                    ]
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Whoa there. Easy. We're just going to take a little detour.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e925954-faa3-4d16-8442-e34af1f85fb6.jpg?1783937193",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You can target and gain control of an untapped artifact or creature this way. You can also untap an artifact or creature you already control and give it haste."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Impeccable Timing
 {
     "name": "Impeccable Timing",
