@@ -2842,6 +2842,63 @@
     }
 }
 
+// Emergent Growth
+{
+    "name": "Emergent Growth",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +5/+5 until end of turn and must be blocked this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"By accepting my smallness I am vast.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e396762-fe76-4b2d-b571-373ab2c240ad.jpg?1783935725"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Emissary of Sunrise
 {
     "name": "Emissary of Sunrise",

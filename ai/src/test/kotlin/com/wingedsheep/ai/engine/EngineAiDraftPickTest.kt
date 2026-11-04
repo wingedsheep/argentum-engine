@@ -81,4 +81,55 @@ class EngineAiDraftPickTest : FunSpec({
         tables.ratings.getValue(DraftsimData.nameKey("Test Murder")) shouldBeGreaterThan
             tables.ratings.getValue(DraftsimData.nameKey("Test Overcosted Rare"))
     }
+
+    test("fallback draft picks a lasting creature over a four-mana sorcery pump") {
+        val pump = card("Test Expensive Sorcery Pump") {
+            manaCost = "{3}{G}"
+            typeLine = "Sorcery"
+            spell {
+                val creature = target(TargetFilter.Creature)
+                effect = Effects.ModifyStats(5, 5, creature) then Effects.MustBeBlocked(creature, allCreatures = false)
+            }
+            metadata { rarity = Rarity.UNCOMMON }
+        }
+        val creature = card("Test Solid Green Creature") {
+            manaCost = "{2}{G}"
+            typeLine = "Creature — Beast"
+            power = 3
+            toughness = 3
+            metadata { rarity = Rarity.COMMON }
+        }
+        bot(pump, creature).chooseDraftPick(
+            pack = listOf(pump.summary(), creature.summary()), pickedSoFar = emptyList(),
+            packNumber = 1, pickNumber = 1,
+        ) shouldContainExactly listOf(creature.name)
+    }
+
+    test("sorcery pump discount excludes instants, lasting effects, cantrips and lure") {
+        fun pump(type: String, duration: com.wingedsheep.sdk.scripting.Duration, rider: String) = card("Test Pump $type $duration $rider") {
+            manaCost = "{3}{G}"
+            typeLine = type
+            spell {
+                val creature = target(TargetFilter.Creature)
+                val stats = Effects.ModifyStats(5, 5, creature, duration)
+                effect = when (rider) {
+                    "draw" -> stats then Effects.DrawCards(1)
+                    "lure" -> stats then Effects.MustBeBlocked(creature, allCreatures = true)
+                    else -> stats
+                }
+            }
+        }
+        val eot = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
+        val plain = pump("Sorcery", eot, "none")
+        LimitedCardRater.explain(plain).heuristic.any { it.part == "Sorcery pump" } shouldBe true
+        for (control in listOf(
+            pump("Instant", eot, "none"),
+            pump("Sorcery", com.wingedsheep.sdk.scripting.Duration.Permanent, "none"),
+            pump("Sorcery", eot, "draw"),
+            pump("Sorcery", eot, "lure"),
+        )) {
+            LimitedCardRater.explain(control).heuristic.any { it.part == "Sorcery pump" } shouldBe false
+        }
+    }
+
 })
