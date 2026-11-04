@@ -6351,7 +6351,7 @@ Frillscare Mentor
 Frodo Baggins	intent: TheRingTemptsYouEffect
 Frodo, Determined Hero	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
 Frodo, Sauron's Bane
-Frog Butler
+Frog Butler	intent: GrantKeywordEffect
 Frog Tongue
 Froghemoth	polarity: AddDynamicCountersEffect; polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
 Frogify
@@ -11038,7 +11038,7 @@ Moonstone Eulogist
 Moonstone Harbinger
 Moonstone, Harsh Mistress	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
 Moonveil Regent
-Moopsy
+Moopsy	intent: GrantKeywordEffect
 Moor Fiend
 Moorish Cavalry
 Moorland Inquisitor
@@ -17985,7 +17985,7 @@ Treeshaker Chimera
 Treespring Lorian
 Treetop Ambusher
 Treetop Bracers
-Treetop Defense
+Treetop Defense	intent: ForEach>GrantKeywordEffect
 Treetop Freedom Fighters
 Treetop Rangers
 Treetop Scout
@@ -19074,7 +19074,7 @@ Wall of Shields
 Wall of Spears
 Wall of Stone
 Wall of Swords
-Wall of Tanglecord
+Wall of Tanglecord	intent: GrantKeywordEffect
 Wall of Tombstones
 Wall of Vapor
 Wall of Vines

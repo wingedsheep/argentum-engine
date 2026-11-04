@@ -1725,11 +1725,12 @@ object CardIntentAnalyzer {
     /**
      * Keywords that win or open a fight without adding power or toughness — see
      * [IntentTag.COMBAT_ENHANCEMENT]. Haste is here because it is spent attacking this turn;
-     * defender, banding and the like are not gifts a controller hands its attacker.
+     * reach (a blocker's keyword), defender, banding and the like are not gifts a controller hands
+     * its attacker.
      */
     private val COMBAT_KEYWORDS = setOf(
         Keyword.FIRST_STRIKE, Keyword.DOUBLE_STRIKE, Keyword.DEATHTOUCH, Keyword.LIFELINK,
-        Keyword.VIGILANCE, Keyword.REACH, Keyword.HASTE,
+        Keyword.VIGILANCE, Keyword.HASTE,
     )
 
     private val PROTECTIVE_KEYWORDS = setOf(
