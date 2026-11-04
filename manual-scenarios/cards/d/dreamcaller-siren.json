@@ -1,0 +1,73 @@
+{
+  "player1Name": "Siren pilot",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Dreamcaller Siren",
+      "Unsummon"
+    ],
+    "battlefield": [
+      {
+        "name": "Siren Stormtamer"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Wind Drake"
+      },
+      {
+        "name": "Sol Ring"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_ATTACKERS"
+  ],
+  "player1OpponentStopAtSteps": [
+    "BEGIN_COMBAT",
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS"
+  ],
+  "player2OpponentStopAtSteps": []
+}

@@ -239,7 +239,7 @@ object TargetSelection {
             info.minTargets > 0 && info.validTargets.isNotEmpty() && when (polarity) {
                 TargetPolarity.HARMFUL -> info.validTargets.all { sideOf(state, it, playerId) == Side.OURS }
                 TargetPolarity.BENEFICIAL -> info.validTargets.all { sideOf(state, it, playerId) == Side.THEIRS }
-                TargetPolarity.UNKNOWN -> false
+                TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN -> false
             }
         }
     }
@@ -275,7 +275,7 @@ object TargetSelection {
         return when (intents.abilityHostPolarity(name, activation.abilityId)) {
             TargetPolarity.HARMFUL -> sideOf(state, host, playerId) == Side.OURS
             TargetPolarity.BENEFICIAL -> sideOf(state, host, playerId) == Side.THEIRS
-            TargetPolarity.UNKNOWN -> false
+            TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN -> false
         }
     }
 
@@ -315,7 +315,7 @@ object TargetSelection {
 
     /**
      * The first [limit] of [ranked] worth simulating for a slot of [polarity] — except that a slot
-     * whose side of the table cannot be read ([TargetPolarity.UNKNOWN], or no reading at all) takes
+     * whose effect can work on either side ([TargetPolarity.FLEXIBLE], [TargetPolarity.UNKNOWN], or no reading) takes
      * the sides in turn, best of each first, so the simulation always gets to compare our best
      * candidate with theirs.
      *
@@ -479,7 +479,7 @@ object TargetSelection {
         return when (polarity) {
             TargetPolarity.BENEFICIAL -> candidates.filterNot { isTheirs(state, it, playerId) }
             TargetPolarity.HARMFUL -> candidates.filterNot { isOurs(state, it, playerId) }
-            TargetPolarity.UNKNOWN, null -> candidates
+            TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN, null -> candidates
         }
     }
 

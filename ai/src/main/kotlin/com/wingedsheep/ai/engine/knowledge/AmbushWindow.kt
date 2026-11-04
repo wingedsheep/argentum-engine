@@ -123,7 +123,12 @@ internal object AmbushWindow {
         // phase is still ahead of the attack: casting there is the same payoff with a card more
         // seen, so neither releases the hold yet (a Little Bear flashed in on our own upkeep).
         val mainPhaseAhead = state.activePlayerId == playerId && state.step in BEFORE_OUR_MAIN
-        if (!mainPhaseAhead && tags.any { it in PAYS_OFF_BEFORE_THE_AMBUSH }) return false
+        // A blink protects by escaping something on the stack; it does not leave a shield for
+        // the next attack. Our-side blink bodies keep waiting for the same ambush window.
+        val combatPayoffs = if (intent.protectionOnlyFromBlink && intent.targetsOnlyOurPermanents) {
+            tags - IntentTag.PROTECTION
+        } else tags
+        if (!mainPhaseAhead && combatPayoffs.any { it in PAYS_OFF_BEFORE_THE_AMBUSH }) return false
 
         // An ETB that answers *their* board wants to happen before we attack. One that points only
         // at our own — a blink, a self-bounce — is worth exactly the same a step later, which is

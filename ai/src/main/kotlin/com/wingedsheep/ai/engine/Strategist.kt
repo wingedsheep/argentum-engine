@@ -1982,11 +1982,11 @@ class Strategist(
             chosenTargetIds[i] = best
         }
         // A lone optional slot ("up to one target creature") is a choice that includes *none*. When
-        // the effect's side of the table can't be read, ask the simulation whether the best target
+        // the effect is flexible or unread, ask the simulation whether the best target
         // beats leaving the slot empty — and only drop it on a strict loss, so a target whose value
         // the evaluator can't see (a "can't block") still gets aimed.
         if (targetPolarityFromEffect && targetInfos.size == 1 && targetInfos[0].minTargets == 0 &&
-            slotPolarities.getOrNull(0).let { it == null || it == TargetPolarity.UNKNOWN } &&
+            slotPolarities.getOrNull(0).let { it == null || it == TargetPolarity.UNKNOWN || it == TargetPolarity.FLEXIBLE } &&
             !budget.expired()
         ) {
             val score = { targets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget> ->
@@ -1996,6 +1996,49 @@ class Strategist(
             val skip = score(emptyList())
             if (skip != Double.NEGATIVE_INFINITY && skip > score(chosenTargets)) {
                 return withSumGatedExilePayment(state, action, TargetSelection.applyTargets(baseAction, emptyList()))
+            }
+        }
+        // A flexible "up to N" slot starts with one target so it never fills unused space
+        // with a harmful friendly bounce. Add further targets only when a completed simulation
+        // improves the position. At most eight candidates and four additions (33 simulations
+        // including the baseline), also bounded by the decision clock; no subset enumeration.
+        val flexibleGroup = targetInfos.singleOrNull()?.takeIf {
+            slotPolarities.singleOrNull() == TargetPolarity.FLEXIBLE &&
+                it.maxTargets > chosenTargets.size && it.minTargets <= 1 &&
+                it.selectionGroups == null && it.exclusiveGroups == null &&
+                it.distinctCategories == null && !it.differentControllers && !it.xConstrainsCount
+        }
+        if (flexibleGroup != null && !budget.expired()) {
+            fun score(targets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>): Double {
+                val result = simulator.simulate(state, TargetSelection.applyTargets(baseAction, targets))
+                return if (result is SimulationResult.Terminal) {
+                    evaluator.evaluate(result.state, result.state.projectedState, playerId)
+                } else Double.NEGATIVE_INFINITY
+            }
+            var bestScore = score(chosenTargets)
+            val candidates = TargetSelection.simulationCandidates(
+                state, flexibleGroup.validTargets.sortedByDescending(rankSlot(0)),
+                minOf(targetCandidates, FLEXIBLE_GROUP_CANDIDATES), playerId, TargetPolarity.FLEXIBLE,
+            ).filterNot { it in chosenTargetIds }.take(FLEXIBLE_GROUP_CANDIDATES).toMutableList()
+            var additions = 0
+            while (chosenTargets.size < flexibleGroup.maxTargets && additions < FLEXIBLE_GROUP_ADDITIONS &&
+                candidates.isNotEmpty() && !budget.expired()
+            ) {
+                var bestId: EntityId? = null
+                for (candidate in candidates) {
+                    if (budget.expired()) break
+                    val target = TargetSelection.toChosenTarget(state, flexibleGroup, candidate, playerId)
+                    val trialScore = score(chosenTargets + target)
+                    if (trialScore > bestScore) {
+                        bestScore = trialScore
+                        bestId = candidate
+                    }
+                }
+                val added = bestId ?: break
+                chosenTargets += TargetSelection.toChosenTarget(state, flexibleGroup, added, playerId)
+                chosenTargetIds += added
+                candidates.remove(added)
+                additions++
             }
         }
         return withSumGatedExilePayment(
@@ -2751,6 +2794,8 @@ class Strategist(
          * 1, so the rescue needs its own floor; this is the legacy cap.
          */
         const val RESCUE_TARGET_CANDIDATES = 8
+        const val FLEXIBLE_GROUP_CANDIDATES = 8
+        const val FLEXIBLE_GROUP_ADDITIONS = 4
 
         /**
          * Most mode-and-target combinations [chooseModesBySimulation] simulates for one choose-N

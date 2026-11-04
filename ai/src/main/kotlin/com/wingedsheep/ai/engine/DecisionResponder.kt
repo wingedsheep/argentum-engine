@@ -492,7 +492,7 @@ class DecisionResponder(
                 TargetPolarity.BENEFICIAL -> legal.filter { TargetSelection.isOurs(state, it, playerId) }
                     .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
                 TargetPolarity.HARMFUL -> legal.filterNot { TargetSelection.isOurs(state, it, playerId) }
-                TargetPolarity.UNKNOWN, null -> legal
+                TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN, null -> legal
             }
         }
         if (polarity != TargetPolarity.BENEFICIAL) return legal
