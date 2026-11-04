@@ -612,11 +612,25 @@ object DamageReplacementChain {
                     (floating.effect.affectedEntities.isEmpty() || targetMatches) &&
                     (d.sourceId == mod.damageSourceId || originOf(state, d.sourceId) == mod.damageSourceId)) {
                     // The rider still happens when prevention is prohibited; the ordinary damage continues.
-                    out += Candidate(key, "$hostName — ${if (mod.preventDamage) "prevent" else "reflect"} damage", floating.sourceId) {
-                        val prevented = if (disabled && mod.preventDamage) 0 else d.amount
-                        val event = DamagePreventedEvent(d.sourceId, d.targetId, prevented, mod.linkId,
-                            sourceName = sourceName(state, d), sourceControllerId = DamageUtils.damageSourceController(state, projected, d.sourceId, sourceSnapshot = d.sourceSnapshot))
-                        Step(replace(floating, null), if (mod.preventDamage && !disabled) emptyList() else listOf(d), if (prevented > 0) listOf(event) else emptyList())
+                    fun preventInstance(incoming: Instance): Pair<List<Instance>, List<GameEvent>> {
+                        val prohibited = incoming.cantBePrevented || DamageUtils.isDamagePreventionDisabled(
+                            viewState, incoming.targetId, incoming.sourceId, incoming.isCombatDamage, evaluator,
+                            sourceSnapshot = incoming.sourceSnapshot)
+                        val prevented = if (prohibited && mod.preventDamage) 0 else incoming.amount
+                        val event = DamagePreventedEvent(requireNotNull(incoming.sourceId), incoming.targetId, prevented, mod.linkId,
+                            sourceName = sourceName(state, incoming), sourceControllerId = DamageUtils.damageSourceController(
+                                state, projected, requireNotNull(incoming.sourceId), sourceSnapshot = incoming.sourceSnapshot))
+                        return (if (mod.preventDamage && !prohibited) emptyList() else listOf(incoming)) to
+                            (if (prevented > 0) listOf(event) else emptyList())
+                    }
+                    out += Candidate(key, "$hostName — ${if (mod.preventDamage) "prevent" else "reflect"} damage", floating.sourceId,
+                        batch = Batch(key) { incoming ->
+                            val prevented = incoming.map(::preventInstance)
+                            BatchStep(Step(replace(floating, null), emptyList(), prevented.flatMap { it.second }),
+                                prevented.map { it.first })
+                        }) {
+                        val (remaining, events) = preventInstance(d)
+                        Step(replace(floating, null), remaining, events)
                     }
                 }
                 is SerializableModification.RedirectNextDamage -> if (!redirectDisabled &&

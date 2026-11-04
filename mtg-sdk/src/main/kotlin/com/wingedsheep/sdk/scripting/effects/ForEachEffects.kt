@@ -23,6 +23,11 @@ import kotlinx.serialization.Serializable
  * body pauses for a decision mid-iteration, the engine resumes the remaining
  * iterations after the decision (one shared continuation frame for all spaces).
  *
+ * An atomic [DealDamageEffect] body over Targets, TargetsOf, Players, Collection or Group is one
+ * simultaneous damage instruction: all amounts and sources are read before replacing any damage.
+ * Replacement choices replay the entire instruction; damage/excess number outputs sum its recipients.
+ * A composite body remains a sequence per item, including any intervening instructions or choices.
+ *
  * Each variant documents its per-iteration context binding and whether pipeline
  * `storedCollections` are wiped per iteration (wiping is right for "fresh sub-pipeline
  * per player/target", wrong for "apply to each gathered card").

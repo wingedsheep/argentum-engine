@@ -13,6 +13,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.blb.cards.SplashLasher
 import com.wingedsheep.mtg.sets.definitions.fra.cards.TamsResistance
+import com.wingedsheep.mtg.sets.definitions.grn.cards.GirdForBattle
 import com.wingedsheep.mtg.sets.definitions.lea.cards.GiantGrowth
 import com.wingedsheep.mtg.sets.definitions.mh1.cards.ForceOfVigor
 import com.wingedsheep.mtg.sets.definitions.usg.cards.GloriousAnthem
@@ -22,6 +23,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -35,7 +37,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class OptionalTargetSlotsTest : FunSpec({
 
     val cards = TestCards.all + listOf(
-        TamsResistance, ForceOfVigor, GloriousAnthem, GiantGrowth, SplashLasher, PredefinedTokens.Jace,
+        TamsResistance, ForceOfVigor, GloriousAnthem, GiantGrowth, SplashLasher, GirdForBattle, PredefinedTokens.Jace,
     )
     val registry = CardRegistry().apply { register(cards) }
     val intents = IntentCatalog.of(registry)
@@ -98,6 +100,20 @@ class OptionalTargetSlotsTest : FunSpec({
             heuristic(d, cast, polarity = true) shouldBe listOf(ours)
             committed(d, listOf(cast)).targets shouldBe listOf(ChosenTarget.Permanent(ours))
         }
+    }
+
+    test("an up-to-two counter spell benefits both friendly creatures without helping the opponent") {
+        val d = driver()
+        val first = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val second = d.putCreatureOnBattlefield(d.player1, "Hill Giant")
+        d.putCreatureOnBattlefield(d.player2, "Savannah Lions")
+        lands(d, d.player1, "Plains", 1)
+        val cast = castOf(d, d.putCardInHand(d.player1, "Gird for Battle"))
+
+        TargetSelection.polarities(d.state, cast, intents) shouldBe listOf(TargetPolarity.BENEFICIAL)
+        committed(d, listOf(cast)).targets.shouldContainExactlyInAnyOrder(
+            ChosenTarget.Permanent(first), ChosenTarget.Permanent(second),
+        )
     }
 
     test("an \"up to two\" destroy aims only at the opponent's permanent") {

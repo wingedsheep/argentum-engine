@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 class CompositeExecutors(
     /** The registry's re-entrant entry point, for the executors that run sub-effects. */
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
+    private val zones: com.wingedsheep.engine.handlers.effects.ZoneTransitionService,
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
     private val targetFinder: TargetFinder,
     private val decisionHandler: DecisionHandler = DecisionHandler(),
@@ -30,7 +31,8 @@ class CompositeExecutors(
 ) : ExecutorModule {
     private val compositeEffectExecutor = CompositeEffectExecutor(plainExecutor)
     private val createDelayedTriggerExecutor = CreateDelayedTriggerExecutor(dynamicAmountEvaluator = amountEvaluator)
-    private val forEachExecutor = ForEachExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates, cardRegistry = cardRegistry)
+    private val forEachExecutor = ForEachExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates, cardRegistry = cardRegistry,
+        damageExecutor = com.wingedsheep.engine.handlers.effects.damage.DealDamageExecutor(zones, amountEvaluator))
     private val forEachCapturedControllerExecutor = ForEachCapturedControllerExecutor(plainExecutor)
     private val mayRevealCardFromHandEffectExecutor = MayRevealCardFromHandEffectExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates)
     private val beholdEffectExecutor = BeholdEffectExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates)

@@ -1657,6 +1657,13 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
 - `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, protectedFilter?, optional, fromSource?, duration = EndOfTurn)`,
   `RedirectCombatDamageToController(target = Self)`,
   `RemoveDamageShield(target)` — the redirect / shield-removal effects.
+- An atomic `DealDamage` body in `ForEachTarget`, `ForEachTargetOf`, `ForEachPlayer`, `ForEachInGroup` or
+  `ForEachInCollection` deals one simultaneous damage instruction. The engine resolves every source,
+  recipient and dynamic amount from the same pre-damage state, then lets affected players order
+  replacements and allocate shared prevention over the complete instruction. Paused choices replay
+  the whole batch; `damageDealtVariable` and `excessDamageVariable` aggregate its actual damage/excess.
+  A composite loop body remains a per-item sequence (for example, reveal a card, deal damage, then
+  move that card). No additional damage effect type is needed.
 - Harsh Justice composes `CreateDelayedTrigger` with a combat-damage observer and `DealDamage` from
   `TriggeringEntity` to its controller; the returned damage is a separate, noncombat event.
 - `DealDamageExcessToController(amount, target, damageSource?)` — deal damage to a creature; any amount beyond

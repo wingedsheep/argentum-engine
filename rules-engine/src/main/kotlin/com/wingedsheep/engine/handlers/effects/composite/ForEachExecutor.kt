@@ -58,7 +58,8 @@ class ForEachExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
     private val predicateEvaluator: PredicateEvaluator,
     /** For the group look-back freeze in [execute]; the continuation resumer needs none. */
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null,
+    private val damageExecutor: com.wingedsheep.engine.handlers.effects.damage.DealDamageExecutor? = null
 ) : EffectExecutor<ForEachEffect> {
 
     override val effectType: KClass<ForEachEffect> = ForEachEffect::class
@@ -83,6 +84,24 @@ class ForEachExecutor(
                     currentState = addCantBeRegenerated(currentState, item.entityId, context)
                 }
             }
+        }
+
+        val damage = effect.body as? com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+        val simultaneousDamage = when (effect.space) {
+            IterationSpace.Targets, is IterationSpace.TargetsOf,
+            is IterationSpace.Group, is IterationSpace.Collection, is IterationSpace.Players -> true
+            else -> false
+        }
+        if (damage != null && simultaneousDamage && damageExecutor != null) {
+            // Atomic damage is one instruction across all recipients. A composite body remains
+            // a per-item sequence; it can contain intervening choices or state-changing effects.
+            // Preparation is already in the paused state. Replaying the damage instruction
+            // must not install another copy of each no-regeneration floating effect.
+            val replayEffect = if (space is IterationSpace.Group && space.noRegenerate) {
+                effect.copy(space = space.copy(noRegenerate = false))
+            } else effect
+            return damageExecutor.executeSimultaneously(currentState, damage,
+                items.map { bindIterationContext(currentState, context, it) }, replayEffect, context, aggregateExcess = true)
         }
 
         // A group loop is one simultaneous event: freeze each member's look-back grants
