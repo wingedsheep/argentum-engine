@@ -74,19 +74,6 @@ class ForEachExecutor(
             return EffectResult.success(state)
         }
 
-        val damage = effect.body as? com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-        val simultaneousDamage = when (effect.space) {
-            IterationSpace.Targets, is IterationSpace.TargetsOf,
-            is IterationSpace.Group, is IterationSpace.Collection, is IterationSpace.Players -> true
-            else -> false
-        }
-        if (damage != null && simultaneousDamage && damageExecutor != null) {
-            // Atomic damage is one instruction across all recipients. A composite body remains
-            // a per-item sequence; it can contain intervening choices or state-changing effects.
-            return damageExecutor.executeSimultaneously(state, damage,
-                items.map { bindIterationContext(state, context, it) }, effect, context, aggregateExcess = true)
-        }
-
         // Group with noRegenerate: mark every matched entity before any iteration
         // applies, so the first iteration's destruction can't be regenerated either.
         var currentState = state
@@ -97,6 +84,24 @@ class ForEachExecutor(
                     currentState = addCantBeRegenerated(currentState, item.entityId, context)
                 }
             }
+        }
+
+        val damage = effect.body as? com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+        val simultaneousDamage = when (effect.space) {
+            IterationSpace.Targets, is IterationSpace.TargetsOf,
+            is IterationSpace.Group, is IterationSpace.Collection, is IterationSpace.Players -> true
+            else -> false
+        }
+        if (damage != null && simultaneousDamage && damageExecutor != null) {
+            // Atomic damage is one instruction across all recipients. A composite body remains
+            // a per-item sequence; it can contain intervening choices or state-changing effects.
+            // Preparation is already in the paused state. Replaying the damage instruction
+            // must not install another copy of each no-regeneration floating effect.
+            val replayEffect = if (space is IterationSpace.Group && space.noRegenerate) {
+                effect.copy(space = space.copy(noRegenerate = false))
+            } else effect
+            return damageExecutor.executeSimultaneously(currentState, damage,
+                items.map { bindIterationContext(currentState, context, it) }, replayEffect, context, aggregateExcess = true)
         }
 
         // A group loop is one simultaneous event: freeze each member's look-back grants

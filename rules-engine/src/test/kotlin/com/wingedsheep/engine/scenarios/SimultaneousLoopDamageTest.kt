@@ -85,6 +85,69 @@ class SimultaneousLoopDamageTest : FunSpec({
         }
     }
 
+    for (noRegenerate in listOf(false, true)) {
+        test("group damage respects noRegenerate=$noRegenerate against a regeneration shield") {
+            val d = driver()
+            val bear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+            val source = d.putPermanentOnBattlefield(d.player1, store.name)
+            val context = EffectContext(source, d.player1)
+            d.replaceState(d.state.addFloatingEffect(Layer.ABILITY,
+                SerializableModification.RegenerationShield, setOf(bear), Duration.EndOfTurn,
+                EffectContext(bear, d.player2)))
+            val result = d.services.effectExecutorRegistry.execute(d.state,
+                Effects.ForEachInGroup(GroupFilter.AllCreatures,
+                    Effects.DealDamage(3, EffectTarget.IterationEntity), noRegenerate = noRegenerate), context)
+            result.error shouldBe null
+            result.state.getEntity(bear)?.get<DamageComponent>()?.amount shouldBe 3
+            // Direct executor calls bypass the action processor's settlement boundary.
+            d.replaceState(d.services.sbaChecker.checkAndApply(result.state).newState)
+            (bear in d.getGraveyard(d.player2)) shouldBe noRegenerate
+            (bear in d.getCreatures(d.player2)) shouldBe !noRegenerate
+            if (!noRegenerate) {
+                (d.state.getEntity(bear)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+                d.state.floatingEffects.any {
+                    it.effect.modification is SerializableModification.RegenerationShield
+                } shouldBe false
+            }
+        }
+    }
+
+    test("group no-regeneration preparation is preserved once when damage replays after a choice") {
+        val d = driver()
+        val bear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val giant = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        val third = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        val source = d.putPermanentOnBattlefield(d.player1, store.name)
+        d.replaceState(d.state.addFloatingEffect(Layer.ABILITY,
+            SerializableModification.PreventNextDamage(1), setOf(bear, giant, third), Duration.EndOfTurn,
+            EffectContext(giant, d.player2)))
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.ForEachInGroup(GroupFilter.AllCreatures,
+                Effects.DealDamage(1, EffectTarget.IterationEntity), noRegenerate = true),
+            EffectContext(source, d.player1))
+        result.outcome.shouldBeInstanceOf<Outcome.Paused>()
+        d.replaceState(result.state)
+        val markers = d.state.floatingEffects.filter {
+            it.effect.modification is SerializableModification.CantBeRegenerated
+        }
+        markers.size shouldBe 3
+        markers.flatMap { it.effect.affectedEntities }.toSet() shouldBe setOf(bear, giant, third)
+        val choice = d.pendingDecision.shouldBeInstanceOf<ChooseNumberDecision>()
+        d.submitDecision(d.player2, NumberChosenResponse(choice.id, 0)).error shouldBe null
+        d.state.floatingEffects.filter {
+            it.effect.modification is SerializableModification.CantBeRegenerated
+        } shouldBe markers
+        val nextChoice = d.pendingDecision.shouldBeInstanceOf<ChooseNumberDecision>()
+        d.submitDecision(d.player2, NumberChosenResponse(nextChoice.id, 0)).error shouldBe null
+        d.pendingDecision shouldBe null
+        d.state.floatingEffects.filter {
+            it.effect.modification is SerializableModification.CantBeRegenerated
+        } shouldBe markers
+        d.state.getEntity(bear)?.get<DamageComponent>()?.amount shouldBe 1
+        d.state.getEntity(giant)?.get<DamageComponent>()?.amount shouldBe 1
+        (d.state.getEntity(third)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+    }
+
     test("shared shield allocation replays the outer loop and publishes total damage after a pause") {
         val d = driver()
         val bear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
