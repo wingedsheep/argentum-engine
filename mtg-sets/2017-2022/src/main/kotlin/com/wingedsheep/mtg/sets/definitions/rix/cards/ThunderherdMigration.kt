@@ -42,6 +42,7 @@ val ThunderherdMigration = card("Thunderherd Migration") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "149"
         artist = "Lars Grant-West"
+        flavorText = "The herds follow as new growth arises."
         imageUri = "https://cards.scryfall.io/normal/front/c/5/c56de4a3-f5ab-469e-ab66-b8187c8c04a0.jpg?1783935278"
     }
 }

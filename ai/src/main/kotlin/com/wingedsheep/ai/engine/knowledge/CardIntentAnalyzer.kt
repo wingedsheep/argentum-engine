@@ -1081,10 +1081,11 @@ object CardIntentAnalyzer {
         // windows must not see it as the payoff — and only a helpful one, which is ours to hold.
         is GrantTriggeredAbilityEffect -> buildSet {
             if (returnsItselfWhenItLeaves(effect.ability)) add(IntentTag.PROTECTION)
-            val granted = effectTags(effect.ability.effect)
+            val ability = effect.ability
+            val granted = analyzeEffect(ability.effect, ability.allTargetRequirements).tags
             if (IntentTag.GAME_WIN in granted) add(IntentTag.GAME_WIN)
             if (effect.duration == Duration.Permanent &&
-                TargetPolarityAnalyzer.grantedTriggerPolarity(effect.ability) == TargetPolarity.BENEFICIAL
+                TargetPolarityAnalyzer.grantedTriggerPolarity(ability) == TargetPolarity.BENEFICIAL
             ) addAll(granted)
         }
 
@@ -1201,7 +1202,6 @@ object CardIntentAnalyzer {
         else -> false
     }
 
-    /** Spot removal or a wrath, depending on whether the effect names a group. */
     /** A base P/T change to fixed values of 1 or less — see [IntentTag.NEUTRALIZE]. */
     private fun setsSmallBase(effect: SetBaseStatsEffect): Boolean {
         val set = listOfNotNull(effect.power, effect.toughness)
@@ -1226,6 +1226,7 @@ object CardIntentAnalyzer {
         target == EffectTarget.Controller || target == EffectTarget.PlayerRef(Player.You) ||
             target is EffectTarget.ContextTarget || target is EffectTarget.BoundVariable
 
+    /** Spot removal or a wrath, depending on whether the effect names a group. */
     private fun removalTags(target: EffectTarget): Set<IntentTag> =
         if (targetsAGroup(target)) setOf(IntentTag.REMOVAL, IntentTag.SWEEPER)
         else setOf(IntentTag.REMOVAL)
