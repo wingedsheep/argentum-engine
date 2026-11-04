@@ -745,23 +745,35 @@ object CardIntentAnalyzer {
      * named collection is followed through every step that splits or narrows it (a selection, a
      * pile, a filter). Grapple with the Past mills and then returns a card from the *graveyard* —
      * a different collection — and stays unread here.
+     *
+     * A lasting impulse grant reads the same off **any** player's library top: "exile cards equal to
+     * its power from the top of its owner's library; you may cast spells from among them" (Dead
+     * Man's Chest, an opponent's library) hands us cards as surely as an impulse off our own does.
+     * A move into a hand stays own-library only: whose hand the cards land in is the question there.
      */
     private fun digTags(root: Effect): Set<IntentTag> {
         val leaves = readingLeaves(root)
-        val fromOurTop = leaves.mapNotNullTo(HashSet()) {
-            (it as? GatherCardsEffect)?.takeIf { g -> (g.source as? CardSource.TopOfLibrary)?.player == Player.You }?.storeAs
-        }
-        if (fromOurTop.isEmpty()) return emptySet()
-        do {
-            val before = fromOurTop.size
-            for (leaf in leaves) fromOurTop += derivedCollections(leaf, fromOurTop)
-        } while (fromOurTop.size != before)
+        val fromOurTop = collectionsFromTop(leaves) { it == Player.You }
+        val fromAnyTop = collectionsFromTop(leaves) { true }
         val movesThemToOurHand = leaves.any {
             it is MoveCollectionEffect && it.from in fromOurTop &&
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
         }
-        val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromOurTop && isLastingImpulse(it) }
+        val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromAnyTop && isLastingImpulse(it) }
         return if (movesThemToOurHand || grantsThemToUs) setOf(IntentTag.DRAW) else emptySet()
+    }
+
+    /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
+    private fun collectionsFromTop(leaves: List<Effect>, whose: (Player) -> Boolean): Set<String> {
+        val names = leaves.mapNotNullTo(HashSet()) {
+            (it as? GatherCardsEffect)?.takeIf { g -> (g.source as? CardSource.TopOfLibrary)?.player?.let(whose) == true }?.storeAs
+        }
+        if (names.isEmpty()) return names
+        do {
+            val before = names.size
+            for (leaf in leaves) names += derivedCollections(leaf, names)
+        } while (names.size != before)
+        return names
     }
 
     /**
@@ -923,6 +935,11 @@ object CardIntentAnalyzer {
 
         is GatherCardsEffect -> when (val source = effect.source) {
             is CardSource.FromZone -> if (source.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR) else emptySet()
+            // "Search your library and/or graveyard for a card named …" (Vraska's Scorn, the
+            // planeswalker-deck tutors): a search of our own zones that reaches the library is a
+            // tutor. Searching an opponent's (Cranial Extraction, Lobotomy) is disruption, not this.
+            is CardSource.FromMultipleZones ->
+                if (Zone.LIBRARY in source.zones && source.player == Player.You) setOf(IntentTag.TUTOR) else emptySet()
             is CardSource.TopOfLibrary -> if (source.isMill && canMillOpponent(source.player) &&
                 ((source.count as? DynamicAmount.Fixed)?.amount ?: 1) > 0
             ) setOf(IntentTag.MILL) else emptySet()
@@ -1366,7 +1383,7 @@ object CardIntentAnalyzer {
         if (!card.typeLine.isPermanent) return false
         return scripts.any { script ->
             script.activatedAbilities.any { !it.isManaAbility && !consumesSource(it.cost) } ||
-                script.triggeredAbilities.any { canFireMoreThanOnce(it) }
+                script.triggeredAbilities.any { canFireMoreThanOnce(it, isAura = script.auraTarget != null) }
         }
     }
 
@@ -1388,7 +1405,14 @@ object CardIntentAnalyzer {
      * is the right way round for a prior: under-reading a rare re-unlock costs the AI nothing it
      * had, while over-reading every spent door as repeatable value is the bug this exists to avoid.
      */
-    private fun canFireMoreThanOnce(ability: TriggeredAbility): Boolean {
+    private fun canFireMoreThanOnce(ability: TriggeredAbility, isAura: Boolean = false): Boolean {
+        // "When enchanted creature dies / leaves the battlefield" (Dead Man's Chest): the host
+        // leaves once and the Aura goes to the graveyard with it, so it never fires again. An
+        // Equipment's "equipped creature dies" can re-equip and fire again, so only an Aura's counts.
+        if (isAura && ability.binding == TriggerBinding.ATTACHED) {
+            val pattern = ability.trigger
+            if (pattern is EventPattern.ZoneChangeEvent && pattern.from == Zone.BATTLEFIELD) return false
+        }
         if (ability.binding != TriggerBinding.SELF) return true
         return when (val pattern = ability.trigger) {
             is EventPattern.ZoneChangeEvent ->

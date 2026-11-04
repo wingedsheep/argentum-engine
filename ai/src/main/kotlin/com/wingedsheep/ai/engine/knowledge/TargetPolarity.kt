@@ -429,7 +429,7 @@ object TargetPolarityAnalyzer {
             } else if (gift != null) {
                 perSlot[gift.first] += gift.second
             } else {
-                for ((target, polarity) in classify(leaf, definitions, source)) {
+                for ((target, polarity) in classify(withRequirementZone(leaf, requirements), definitions, source)) {
                     val slot = slotOf(target, requirements) ?: continue
                     perSlot[slot] += polarity
                 }
@@ -649,6 +649,31 @@ object TargetPolarityAnalyzer {
     }
 
     /**
+     * A move onto a library that leaves its starting zone unsaid, with that zone filled in from its
+     * target's requirement: `Effects.PutOnTopOfLibrary(target)` over "target nonland permanent" is a
+     * tuck off the battlefield, over "target card in your graveyard" a recursion. Only a library move
+     * is filled in: a move to exile or a graveyard already reads as removal from any zone. A tuck
+     * kept on our own side ("put target creature you control on top of its owner's library",
+     * Sunscape Apprentice) is a re-buy, not removal, and stays unread.
+     */
+    private fun withRequirementZone(leaf: Effect, requirements: List<TargetRequirement>): Effect {
+        if (leaf !is MoveToZoneEffect || leaf.fromZone != null || leaf.destination != Zone.LIBRARY) return leaf
+        val slot = slotOf(leaf.target, requirements) ?: return leaf
+        if (isOwnSide(requirements[slot])) return leaf
+        val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+        val zone = (requirement as? TargetObject)?.filter?.zone ?: return leaf
+        return leaf.copy(fromZone = zone)
+    }
+
+    /** Whether [requirement]'s filter keeps its target on an opponent's side ("… an opponent controls"). */
+    private fun isOpponentSide(requirement: TargetRequirement): Boolean {
+        val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+            ?: return false
+        return filter.alternatives.isEmpty() &&
+            filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByOpponent
+    }
+
+    /**
      * The pipeline collections of [effect] that hold its own chosen targets: gathered from
      * [CardSource.ChosenTargets], or filtered out of such a collection.
      */
@@ -685,13 +710,21 @@ object TargetPolarityAnalyzer {
         source: CardDefinition? = null,
     ): List<Pair<EffectTarget, TargetPolarity>> {
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
-            // Off the battlefield to a graveyard or exile is removal. To hand is flexible:
-            // bouncing your own creature in response to removal is a real play (`lastchance-05`).
-            // A move onto the battlefield or out of a graveyard is
+            // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
+            // library (Expel from Orazca's "on top of its owner's library instead", Chaos Warp): it
+            // costs its owner the draw that gets it back, a worse bounce. A tuck counts only when the
+            // move is known to start on the battlefield ([withRequirementZone], or the permanent an
+            // Aura enchants: Dramatic Accusation's "shuffle enchanted creature into its owner's
+            // library") — "put target card
+            // from your graveyard on top of your library" (Academy Ruins) is a recursion. To hand is
+            // flexible: bouncing your own creature in response to removal is a real play
+            // (`lastchance-05`). A move onto the battlefield or out of a graveyard is
             // recursion, whose polarity is about the card's owner rather than a controller.
             is MoveToZoneEffect -> leaf.target to when {
                 leaf.fromZone != null && leaf.fromZone != Zone.BATTLEFIELD -> null
                 leaf.destination == Zone.GRAVEYARD || leaf.destination == Zone.EXILE -> TargetPolarity.HARMFUL
+                leaf.destination == Zone.LIBRARY &&
+                    (leaf.fromZone == Zone.BATTLEFIELD || leaf.target in HOST_TARGETS) -> TargetPolarity.HARMFUL
                 leaf.destination == Zone.HAND -> TargetPolarity.FLEXIBLE
                 else -> null
             }
@@ -896,6 +929,22 @@ object TargetPolarityAnalyzer {
      * counts because the attachment's controller is who can activate it.
      */
     private fun attachmentPolarity(card: CardDefinition, definitions: CardLookup): TargetPolarity {
+        val reading = hostReading(card, definitions)
+        // "Enchant creature an opponent controls" (Dead Man's Chest):
+        // only an opponent's permanent can wear it, so whatever it does pays its controller off
+        // from the opponent's side of the table. With nothing on the host to read (Dead Man's
+        // Chest's whole card is a dies trigger for its controller) the enchant slot is aimed at an
+        // opponent's creature, the removal ranking's side.
+        val aura = card.script.auraTarget
+        // Only when nothing at all reads the host — an UNKNOWN from an unread host effect
+        // (Honest Work, Relic Bind) stays a gap rather than hiding behind the enchant restriction.
+        if (reading == TargetPolarity.UNKNOWN && aura != null && isOpponentSide(aura) &&
+            attachmentReadings(card, definitions, hostIs = null).isEmpty()
+        ) return TargetPolarity.HARMFUL
+        return reading
+    }
+
+    private fun hostReading(card: CardDefinition, definitions: CardLookup): TargetPolarity {
         if (hostSubtype(card) == null) return combine(attachmentReadings(card, definitions, hostIs = null))
         // Read once per kind of host; a world where nothing applies takes the other's reading.
         val (whenIs, otherwise) = hostWorlds(card, definitions)
