@@ -157,6 +157,15 @@ object SynergyAxes {
             }
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
+            // Carrying counters from one permanent to another — The Ozolith banking a leaving
+            // creature's counters and moving them on, Essence Channeler's "put its counters on target
+            // creature you control" — cashes in the +1/+1 counters the deck puts down: with none
+            // placed, the move carries nothing.
+            if (scripts.any { script ->
+                    (script.triggeredAbilities.map { it.effect } + script.activatedAbilities.map { it.effect })
+                        .any(::carriesCounters)
+                }
+            ) add(SynergyAxis.PLUS_COUNTERS)
         }
         val feeds = buildSet {
             scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }
@@ -308,6 +317,11 @@ object SynergyAxes {
             }
         }
         else -> emptySet()
+    }
+
+    private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
+        it is com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect ||
+            it is com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
     }
 
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =

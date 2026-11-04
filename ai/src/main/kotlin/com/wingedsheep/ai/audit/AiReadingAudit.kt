@@ -46,6 +46,10 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -688,7 +692,14 @@ object AiReadingAudit {
      * training) flagged, which errs toward flagging.
      */
     private fun fired(payoff: List<Effect>): List<Effect> = payoff.flatMap { leaf ->
-        if (leaf is CreateDelayedTriggerEffect) fired(EffectWalker.firedLeaves(leaf, payoff)) else listOf(leaf)
+        when (leaf) {
+            is CreateDelayedTriggerEffect -> fired(EffectWalker.firedLeaves(leaf, payoff))
+            // A reflexive trigger is read as the effect it fires, as CardIntentAnalyzer reads it: an
+            // unread one is labelled by its payoff, and a payoff needing no intent reads it. The
+            // action before "when you do" is its price, like a gate's.
+            is ReflexiveTriggerEffect -> fired(EffectWalker.payoffLeaves(leaf.reflexiveEffect))
+            else -> listOf(leaf)
+        }
     }
 
     private fun needsNoIntent(leaf: Effect): Boolean {
@@ -782,6 +793,16 @@ object AiReadingAudit {
         // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
         // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
         if (leaf is RemoveCountersEffect && leaf.target == EffectTarget.Self) return true
+        // Counters moved between permanents or taken off one, whatever their kind — The Ozolith
+        // storing a leaving creature's counters and moving them on, Essence Channeler's "put its
+        // counters on target creature you control", Etched Slith's "remove a counter from another
+        // target permanent or opponent". No counter is made: what the move or removal is worth is the
+        // counters' kinds on the board (+1/+1 and loyalty help their holder, -1/-1 and stun hurt it),
+        // which no fixed tag can say. The polarity check reads the slot FLEXIBLE so the simulation
+        // weighs each candidate's counters, and whether to do it is the simulation's call too.
+        if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
+            leaf is RemoveAnyNumberOfCountersEffect
+        ) return true
         // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
         // counters off its controller's own permanents to pay for a payoff beside it (the doubled
         // counters, read on their own leaf): no target, nothing to hold, and how many to move is the

@@ -86,9 +86,12 @@ import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
@@ -849,6 +852,15 @@ object TargetPolarityAnalyzer {
     ): List<Pair<EffectTarget, TargetPolarity>> {
         val tapChoices = tapOrUntapTargets(leaf)
         if (tapChoices.isNotEmpty()) return tapChoices.map { it to TargetPolarity.FLEXIBLE }
+        // Counters moved or removed whatever their kind — "move all counters from The Ozolith onto
+        // target creature", "put its counters on target creature you control", "remove a counter
+        // from target permanent" (Etched Slith): the counters carry the meaning, and they are only
+        // known on the board. +1/+1, loyalty or keyword counters are a gift where they land and a
+        // loss where they leave; -1/-1, stun or time counters the reverse. Neither side is fixed,
+        // so both stay open and the simulation weighs the counters each candidate holds.
+        if (leaf is MoveAllCountersEffect) {
+            return listOf(leaf.source to TargetPolarity.FLEXIBLE, leaf.destination to TargetPolarity.FLEXIBLE)
+        }
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
             // library (Expel from Orazca's "on top of its owner's library instead", Chaos Warp): it
@@ -925,6 +937,8 @@ object TargetPolarityAnalyzer {
             is ExploreEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AdaptAsThoughNoCountersEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddDynamicCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
+            is MoveAllLastKnownCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            is RemoveAnyNumberOfCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // Equip, fortify, reconfigure: "attach this permanent to target creature" does to that
             // creature whatever this Equipment does to the creature it equips — the same reading an
             // Aura's enchant target gets. When that can't be read (no source card, see
