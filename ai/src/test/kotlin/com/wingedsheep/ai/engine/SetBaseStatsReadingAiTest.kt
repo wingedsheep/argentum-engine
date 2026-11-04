@@ -15,8 +15,10 @@ import io.kotest.matchers.shouldBe
  * "Target creature has base power and toughness 0/0 until end of turn" (Multiply by Zero) is
  * removal: it kills anything not propped up by counters or a pump. Unread, the card had no intent
  * at all, so nothing that holds removal for a response or the end step saw it as removal. A base of
- * 1/1 or smaller is the curse side of the table; a larger base names nothing, and the slot's other
- * effects decide it.
+ * 1/1 or smaller, or one with no power left (Sorceress Queen's 0/2), is the curse side of the table.
+ * A larger fixed base grows a small creature and shrinks a big one: alone it reads flexible (both
+ * sides stay candidates for the simulation), and beside an effect that reads the slot one way, that
+ * effect decides.
  */
 class SetBaseStatsReadingAiTest : ScenarioTestBase() {
 
@@ -30,6 +32,27 @@ class SetBaseStatsReadingAiTest : ScenarioTestBase() {
             }
             withClue("and the card is removal") {
                 intents.forName("Multiply by Zero")!!.tags shouldContain IntentTag.REMOVAL
+            }
+        }
+
+        test("a base with no power left is a curse") {
+            withClue("Sorceress Queen: target creature other than this has base power and toughness 0/2") {
+                val ability = cardRegistry.getCard("Sorceress Queen")!!.script.activatedAbilities.single()
+                TargetPolarityAnalyzer.forRequirements(ability.effect, ability.targetRequirements) shouldBe
+                    listOf(TargetPolarity.HARMFUL)
+            }
+        }
+
+        test("a larger fixed base on its own reads flexible") {
+            withClue("Square Up: target creature has base power and toughness 4/4") {
+                TargetPolarityAnalyzer.forSpell(cardRegistry.getCard("Square Up")!!) shouldBe
+                    listOf(TargetPolarity.FLEXIBLE)
+            }
+            withClue("Perfected Theory: one mode shrinks to 1/1, the other sets 4/5") {
+                val modes = (cardRegistry.getCard("Perfected Theory")!!.script.spellEffect
+                    as com.wingedsheep.sdk.scripting.effects.ModalEffect).modes
+                modes.map { TargetPolarityAnalyzer.forMode(it) } shouldBe
+                    listOf(listOf(TargetPolarity.HARMFUL), listOf(TargetPolarity.FLEXIBLE))
             }
         }
 

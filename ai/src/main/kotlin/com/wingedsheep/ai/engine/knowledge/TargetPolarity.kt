@@ -87,6 +87,8 @@ import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
@@ -469,6 +471,11 @@ object TargetPolarityAnalyzer {
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
+        }
+        for (slot in largeBaseSlots(leaves, requirements)) {
+            val alone = perSlot[slot].isEmpty() &&
+                leaves.none { it !is SetBaseStatsEffect && touchesOtherwise(it, requirements[slot], slot, definitions, source) }
+            if (alone) perSlot[slot] += TargetPolarity.FLEXIBLE
         }
         for (slot in biteSources) {
             val untouched = perSlot[slot].isEmpty() &&
@@ -862,6 +869,14 @@ object TargetPolarityAnalyzer {
                 else -> null
             }
             is MoveUntilSourceLeavesEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Return target spell or creature to its owner's hand" (Fatehold Charm, Unsubstantiate):
+            // the bounce above, reaching the stack too — it rescues our creature from removal as
+            // readily as it sets back their spell or blocker.
+            is ReturnSpellOrPermanentToOwnersHandEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Its owner puts it on their choice of the top or bottom of their library" (Dire
+            // Downdraft, Aether Gust, Plan for All Outcomes): the owner picks the position, so at
+            // best they draw it again in place of a fresh card — the tuck above, a worse bounce.
+            is PutOnLibraryPositionOfChoiceEffect -> leaf.target to TargetPolarity.HARMFUL
             is ExileUntilLeavesEffect -> leaf.target to TargetPolarity.HARMFUL
             is DealDamageEffect -> leaf.target to TargetPolarity.HARMFUL
             is GainControlEffect -> leaf.target to TargetPolarity.HARMFUL
@@ -880,8 +895,8 @@ object TargetPolarityAnalyzer {
                 if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
             is ModifyStatsEffect -> leaf.target to statsPolarity(leaf.powerModifier, leaf.toughnessModifier)
             // "Target creature has base power and toughness 0/0" (Multiply by Zero) is removal. A
-            // larger fixed base names nothing, so the slot's other effects decide it (Taranika's
-            // 4/4 + indestructible). A dynamic base (Exuberant Wolfbear copies its own power) can
+            // larger fixed base names nothing here, so the slot's other effects decide it (Taranika's
+            // 4/4 + indestructible), and alone it reads flexible ([largeBaseSlots]). A dynamic base (Exuberant Wolfbear copies its own power) can
             // grow or shrink the target, so both sides stay open.
             is SetBaseStatsEffect -> leaf.target to (baseStatsPolarity(leaf.power, leaf.toughness)
                 ?: (if (listOfNotNull(leaf.power, leaf.toughness).any { it !is DynamicAmount.Fixed })
@@ -991,16 +1006,35 @@ object TargetPolarityAnalyzer {
     }
 
     /**
+     * The slots a fixed base-P/T change larger than [baseStatsPolarity]'s curse line names. Such a
+     * base grows a small creature and shrinks a big one (Square Up's 4/4, Perfected Theory's 4/5),
+     * so on its own the slot reads [TargetPolarity.FLEXIBLE] and the simulation compares the
+     * sides. Beside an effect that reads the slot one way (Taranika's indestructible) that effect
+     * decides, which is why [classify] leaves the leaf unattributed and this is applied last.
+     */
+    private fun largeBaseSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> =
+        leaves.filterIsInstance<SetBaseStatsEffect>()
+            .filter { leaf ->
+                val set = listOfNotNull(leaf.power, leaf.toughness)
+                set.isNotEmpty() && set.all { it is DynamicAmount.Fixed } && baseStatsPolarity(leaf.power, leaf.toughness) == null
+            }
+            .mapNotNullTo(HashSet()) { slotOf(it.target, requirements) }
+
+    /**
      * A base-P/T change by what it is set to: a 1/1 or smaller shrinks nearly anything it lands on
-     * — the same line [staticPolarity] draws for the Cursed Role's static. A larger base is a gift
-     * or a curse depending on the creature, and a dynamic one depends on the board, so both stay
-     * unread. A side left null is unchanged.
+     * — the same line [staticPolarity] draws for the Cursed Role's static. A larger fixed base is a
+     * gift or a curse depending on the creature ([largeBaseSlots]), and a dynamic one depends on the
+     * board, so neither has a side here. A side left null is unchanged.
      */
     private fun baseStatsPolarity(power: DynamicAmount?, toughness: DynamicAmount?): TargetPolarity? {
         val set = listOfNotNull(power, toughness)
         if (set.isEmpty()) return null
         val small = set.all { (it as? DynamicAmount.Fixed)?.amount?.let { amount -> amount <= 1 } == true }
-        return if (small) TargetPolarity.HARMFUL else null
+        // A base with no power left and little toughness (Sorceress Queen's and Rowan's 0/2) takes
+        // away everything the creature does in combat but block a 2/2 — the same curse.
+        val toothless = (power as? DynamicAmount.Fixed)?.amount == 0 &&
+            (toughness as? DynamicAmount.Fixed)?.amount?.let { it <= 2 } == true
+        return if (small || toothless) TargetPolarity.HARMFUL else null
     }
 
     private fun statsPolarity(power: DynamicAmount, toughness: DynamicAmount): TargetPolarity? {

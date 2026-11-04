@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4416 Reads "its owner puts it on the top or bottom of their library" (Dire Downdraft, Aether Gust, Plan for All Outcomes) as removal aimed at the opponent, and a 0/2 base power and toughness (Sorceress Queen) as a curse, so it no longer offers either to its own creatures
 - #4415 Values a creature whose repeatable activation grows it through its own trigger (Inspired Tethermage's {6} Empower Jace → +1/+1 counter) by that growth, so its removal and lockdown Auras (Infinite Coursework) take the growing Tethermage instead of a 4/4 trample Beast token beside it
 - #4414 No longer casts "base power and toughness 0/0" (Multiply by Zero) outside combat on a creature it does not kill — +1/+1 counters and pumps now count toward what survives the new base
 - #4411 Fights with its best creature ("target creature you control fights …": Prey Upon, Pounce, Yoshimaru) instead of its weakest, and reads a granted modal trigger (Hunter's Axe's trample-or-deathtouch) so it equips its best attacker
