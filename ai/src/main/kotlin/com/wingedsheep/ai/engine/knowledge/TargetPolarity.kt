@@ -343,6 +343,7 @@ object TargetPolarityAnalyzer {
         }
         // Only an unconditional sequence proves the creature is ours before its follow-up gifts.
         // Do not flatten conditionals: a theft in one branch cannot justify a gift in another.
+        val stolenOnto = mutableSetOf<EffectTarget>()
         val stolen = mutableSetOf<EffectTarget>()
         fun theftFollowUps(node: Effect): List<Effect> {
             val gifts = mutableListOf<Effect>()
@@ -354,9 +355,19 @@ object TargetPolarityAnalyzer {
                     is GrantKeywordEffect -> if (part.keyword == Keyword.HASTE.name && part.target in stolen) gifts += part else stolen.clear()
                     // "You may attach an Equipment you control to that creature" (Unexpected Request):
                     // the Equipment rides the stolen creature into the attack, part of the theft.
-                    is AttachTargetEquipmentToCreatureEffect -> if (part.creatureTarget in stolen) gifts += part else stolen.clear()
-                    is com.wingedsheep.sdk.scripting.effects.GatedEffect ->
-                        if (part.decisionMaker == null && part.otherwise == null) visit(part.then) else stolen.clear()
+                    // "If that artifact is an Equipment, attach it to this creature" (Thieving
+                    // Skydiver) moves the stolen Equipment itself: the theft's own follow-up too.
+                    is AttachTargetEquipmentToCreatureEffect -> when {
+                        part.creatureTarget in stolen -> { gifts += part; stolenOnto += part.creatureTarget }
+                        part.equipmentTarget in stolen -> gifts += part
+                        else -> stolen.clear()
+                    }
+                    // A gate nobody else decides, with nothing on its other branch, runs its follow-ups
+                    // on the theft before it; a theft inside it justifies nothing after the gate.
+                    is com.wingedsheep.sdk.scripting.effects.GatedEffect -> {
+                        if (part.decisionMaker == null && part.otherwise == null) visit(part.then)
+                        stolen.clear()
+                    }
                     else -> stolen.clear()
                 }
             }
@@ -366,7 +377,15 @@ object TargetPolarityAnalyzer {
         val theftGifts = theftFollowUps(effect)
         val biteSources = mutableSetOf<Int>()
         for (leaf in targetLeaves(effect)) {
-            if (blinks.any { it === leaf } || theftGifts.any { it === leaf }) continue
+            if (blinks.any { it === leaf }) continue
+            if (theftGifts.any { it === leaf }) {
+                // Stolen Uniform attaches the Equipment it took to a creature of ours: the Equipment
+                // slot reads as the theft, the creature slot still as the gift it is.
+                if (leaf is AttachTargetEquipmentToCreatureEffect && leaf.creatureTarget !in stolenOnto) {
+                    slotOf(leaf.creatureTarget, requirements)?.let { perSlot[it] += TargetPolarity.BENEFICIAL }
+                }
+                continue
+            }
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
             // that is every target of that slot, so the body reads as the slot's; with several,
@@ -1002,7 +1021,8 @@ object TargetPolarityAnalyzer {
             // Equipment does to the creature it equips, and Equipment is built to be worn by its
             // controller's best creature — so the creature slot is a gift. Which Equipment to move is
             // the board's question (it may already sit on the creature that wants it most), so that
-            // slot stays open for the simulation; a theft beside it (Stolen Uniform) keeps its own reading.
+            // slot stays open for the simulation. Attaching what a theft just took, or onto what it took,
+            // is the theft's follow-up (see theftFollowUps), so the stolen slot reads as the theft.
             is AttachTargetEquipmentToCreatureEffect -> return listOf(
                 leaf.creatureTarget to TargetPolarity.BENEFICIAL,
                 leaf.equipmentTarget to TargetPolarity.FLEXIBLE,

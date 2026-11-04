@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -53,6 +54,13 @@ class EquipmentRelocationReadingAiTest : ScenarioTestBase() {
             val equip = blade.script.activatedAbilities.single()
             TargetPolarityAnalyzer.forAbility(blade, equip) shouldBe
                 listOf(TargetPolarity.FLEXIBLE)
+        }
+
+        test("attaching a stolen Equipment is part of the theft, and an Equipment attaching itself moves nothing") {
+            val skydiver = cardRegistry.requireCard("Thieving Skydiver").script.triggeredAbilities.single()
+            TargetPolarityAnalyzer.forRequirements(skydiver.effect, skydiver.allTargetRequirements) shouldBe
+                listOf(TargetPolarity.HARMFUL)
+            tags("Pre-War Formalwear") shouldNotContain IntentTag.EQUIPMENT_RELOCATION
         }
 
         test("Beatrix reads fully") {

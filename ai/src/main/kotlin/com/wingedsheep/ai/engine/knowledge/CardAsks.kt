@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -174,7 +175,8 @@ internal object CardAsks {
     /** Whether [effect] attaches Equipment to a creature without first taking control of it. */
     private fun relocatesOwnEquipment(effect: Effect): Boolean {
         val leaves = deepLeaves(effect)
-        return leaves.any { it is AttachTargetEquipmentToCreatureEffect } && leaves.none { it is GainControlEffect }
+        return leaves.any { it is AttachTargetEquipmentToCreatureEffect && it.equipmentTarget != EffectTarget.Self } &&
+            leaves.none { it is GainControlEffect }
     }
 
     private fun deepLeaves(effect: Effect): List<Effect> =
