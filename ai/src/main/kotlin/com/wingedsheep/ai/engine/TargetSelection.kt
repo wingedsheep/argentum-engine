@@ -118,6 +118,12 @@ object TargetSelection {
         polarityFromEffect: Boolean = false,
     ): (EntityId) -> Double {
         if (polarityFromEffect) {
+            // An Aura that helps one kind of host and hurts the rest (Sea Legs): each candidate is
+            // ranked on its own side — our Pirates as gifts, their non-Pirates as curses — and
+            // every candidate on its wrong side behind all of those.
+            hostSplitPolarity(state, action, intents)?.let { polarityOf ->
+                return { entityId -> sidedRank(state, entityId, playerId, intents, polarityOf(entityId)) }
+            }
             // One polarity per action: a multi-slot action whose slots disagree ("target creature
             // you control fights target creature you don't") reads UNKNOWN here and keeps the
             // removal ranking; [slotRanker] then gives a slot read as beneficial its own order.
@@ -147,6 +153,40 @@ object TargetSelection {
             if (beneficial && state.projectedState.isCreature(entityId)) -value else value
         }
     }
+
+    /**
+     * The polarity of each candidate for [action]'s enchant slot, when it casts an Aura whose effect
+     * turns on the host's creature type ([HostSplit]) — read off the candidate's projected subtypes,
+     * so a changeling or a granted type counts. Null for any other action.
+     */
+    fun hostSplitPolarity(state: GameState, action: LegalAction, intents: IntentCatalog): ((EntityId) -> TargetPolarity)? {
+        if (!intents.isEnabled) return null
+        val cast = action.action as? CastSpell ?: return null
+        if (cast.castFaceDown || cast.faceIndex != null || cast.castFused) return null
+        val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return null
+        val split = intents.spellHostSplit(name) ?: return null
+        val projected = state.projectedState
+        return { entityId -> split.polarityFor(projected.hasSubtype(entityId, split.subtype.value)) }
+    }
+
+    /** [rank] read for a candidate of one-sided [polarity], [RIGHT_SIDE] ahead when it sits on that side. */
+    private fun sidedRank(
+        state: GameState,
+        entityId: EntityId,
+        playerId: EntityId,
+        intents: IntentCatalog,
+        polarity: TargetPolarity,
+    ): Double {
+        val value = rank(state, entityId, playerId, intents)
+        return if (polarity == TargetPolarity.BENEFICIAL) {
+            -value + if (isTheirs(state, entityId, playerId)) 0.0 else RIGHT_SIDE
+        } else {
+            value + if (isOurs(state, entityId, playerId)) 0.0 else RIGHT_SIDE
+        }
+    }
+
+    /** Puts every right-side candidate of a [hostSplitPolarity] slot ahead of every wrong-side one. */
+    private const val RIGHT_SIDE = 1_000.0
 
     /**
      * The ranking for one slot of a multi-slot action. [ranker] reads one polarity per action, so
@@ -232,6 +272,17 @@ object TargetSelection {
         intents: IntentCatalog,
     ): Boolean {
         if (actsOnTheWrongSideOfItsHost(state, action, playerId, intents)) return true
+        // Sea Legs with only our non-Pirates and their Pirates to enchant helps nobody we want helped.
+        hostSplitPolarity(state, action, intents)?.let { polarityOf ->
+            val info = targetInfosFor(action)?.singleOrNull() ?: return false
+            return info.minTargets > 0 && info.validTargets.isNotEmpty() && info.validTargets.all { id ->
+                when (polarityOf(id)) {
+                    TargetPolarity.HARMFUL -> sideOf(state, id, playerId) == Side.OURS
+                    TargetPolarity.BENEFICIAL -> sideOf(state, id, playerId) == Side.THEIRS
+                    TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN -> false
+                }
+            }
+        }
         val polarities = polarities(state, action, intents)
         if (polarities.isEmpty()) return false
         val infos = targetInfosFor(action) ?: autoSelectedPlayerSlot(action) ?: return false

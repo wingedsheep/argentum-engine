@@ -1904,7 +1904,7 @@ Bond of Passion
 Bond of Revival
 Bonded Herdbeast
 Bonders' Enclave
-Bonds of Faith	polarity: Aura>ConditionalStaticAbility
+Bonds of Faith
 Bone Dragon
 Bone Flute	intent: ForEach>ModifyStatsEffect
 Bone Miser
@@ -3044,7 +3044,7 @@ Cloudspire Skycycle	intent: DistributeCountersAmongTargetsEffect; polarity: Dist
 Cloudsteel Kirin	intent: UnattachEquipmentEffect
 Cloudstone Curio
 Cloudthresher
-Clutch of Undeath	polarity: Aura>ConditionalStaticAbility
+Clutch of Undeath
 Clutch of the Undercity
 Coal Golem
 Coalborn Entity
@@ -6730,7 +6730,7 @@ Gideon, Champion of Justice	intent: Pipeline(BattlefieldMatching→exile); polar
 Gideon, the Oathsworn	intent: AddCountersToCollectionEffect; intent: Pipeline(?→?); intent: Pipeline(BattlefieldMatching→exile)
 Gift of Compleation
 Gift of Estates
-Gift of Fangs	polarity: Aura>ConditionalStaticAbility
+Gift of Fangs
 Gift of Growth
 Gift of Paradise
 Gift of Strands
@@ -14511,7 +14511,7 @@ Sea Gate Restoration
 Sea Gate Stormcaller	intent: CopyNextSpellCastEffect
 Sea God's Scorn
 Sea Kings' Blessing	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect; timing: ForEach>ChangeColorEffect
-Sea Legs	polarity: Aura>ConditionalStaticAbility
+Sea Legs
 Sea Monster
 Sea Scryer
 Sea Serpent
