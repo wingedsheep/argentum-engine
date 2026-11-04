@@ -1037,6 +1037,7 @@ object CardIntentAnalyzer {
         // only ever pays off; which creature it readies is the polarity check's question.
         is BecomePreparedEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
+        is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         // An exchange is carried out as a gain for the player whose total goes up (rule 701.12c),
         // and its controller only casts it to be that player: Psychic Transfer at 4 against 9.
