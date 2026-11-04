@@ -1125,6 +1125,18 @@ object Costs {
             filter: GameObjectFilter = GameObjectFilter.Permanent
         ): AdditionalCost = AdditionalCost.Atom(CostAtom.RemoveCounters(counterType, DynamicAmount.XValue, filter))
 
+        /**
+         * Put [count] [counterType] counters on a [filter] permanent you control — "As an additional
+         * cost to cast this spell, put a -1/-1 counter on a creature you control" (Lethal Sting).
+         * The caster picks the permanent; one that can't take the counters can't pay. Not blight:
+         * [com.wingedsheep.sdk.scripting.conditions.BlightWasPaid] stays false.
+         */
+        fun PutCountersOnPermanent(
+            counterType: CounterType,
+            count: Int = 1,
+            filter: GameObjectFilter = GameObjectFilter.Creature,
+        ): AdditionalCost = AdditionalCost.Atom(CostAtom.PutCountersOnPermanent(counterType, count, filter))
+
         /** Tap [count] untapped permanents matching [filter] you control. */
         fun TapPermanents(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Creature): AdditionalCost =
             AdditionalCost.Atom(CostAtom.TapPermanents(count, filter))

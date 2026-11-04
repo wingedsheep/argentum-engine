@@ -175,6 +175,7 @@ internal class JevActions(
             beheldCards = select("Behold for ${c.description}", c.validBeholdTargets, c.beholdCount),
             revealedCards = select("Reveal for ${c.description}", c.validRevealTargets, c.revealCount),
             blightTargets = select("Blight for ${c.description}", c.validBlightTargets, 1),
+            counterPlacementTargets = select("Choose for ${c.description}", c.validCounterPlacementTargets, 1),
             blightAmount = if (c.blightVariableMaxX > 0) q.number("Choose blight X", 0, c.blightVariableMaxX) else 0,
             payXLifeAmount = if (c.payXLifeMaxX > 0) q.number("Choose life to pay", 0, c.payXLifeMaxX) else 0,
             // "Sacrifice X creatures" (Eliminate the Competition) owes exactly the announced X.
@@ -226,6 +227,7 @@ internal class JevActions(
         tappedPermanents = a.tappedPermanents + b.tappedPermanents,
         bouncedPermanents = a.bouncedPermanents + b.bouncedPermanents,
         blightTargets = a.blightTargets + b.blightTargets,
+        counterPlacementTargets = a.counterPlacementTargets + b.counterPlacementTargets,
         blightAmount = a.blightAmount + b.blightAmount,
         payXLifeAmount = a.payXLifeAmount + b.payXLifeAmount,
         distributedCounterRemovals = a.distributedCounterRemovals + b.distributedCounterRemovals,

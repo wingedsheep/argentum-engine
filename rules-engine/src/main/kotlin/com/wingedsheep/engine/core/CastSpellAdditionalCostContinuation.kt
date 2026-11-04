@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * [com.wingedsheep.sdk.scripting.AdditionalCostPayment].
  */
 @Serializable
-enum class AdditionalCostSelectionKind { SACRIFICE, DISCARD, EXILE, TAP, RETURN_TO_HAND }
+enum class AdditionalCostSelectionKind { SACRIFICE, DISCARD, EXILE, TAP, RETURN_TO_HAND, PUT_COUNTERS }
 
 /**
  * Pause/resume frame for choosing how to pay one selection-requiring additional cost during a

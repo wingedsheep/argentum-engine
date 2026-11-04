@@ -82,6 +82,7 @@ export interface AdditionalCostPayment {
     count: number
   }>
   readonly blightTargets?: readonly EntityId[]
+  readonly counterPlacementTargets?: readonly EntityId[]
   /** X chosen for `AdditionalCost.BlightVariable` (e.g., Soul Immolation). */
   readonly blightAmount?: number
   /** X chosen for `AdditionalCost.PayXLife` (e.g., Vicious Rivalry). */

@@ -71,6 +71,10 @@ internal object SelectionCostPayment {
         xValue: Int,
     ): AdditionalCostPayment? = when (info.costType) {
         "Blight" -> existing.copy(blightTargets = info.validBlightTargets.take(1))
+        // "Put a -1/-1 counter on a creature you control" (Lethal Sting): the cheapest creature takes it.
+        "PutCounters" -> existing.copy(
+            counterPlacementTargets = cheapestFirst.permanents(info.validCounterPlacementTargets).take(1)
+        )
         "Behold" -> existing.copy(beheldCards = info.validBeholdTargets.take(info.beholdCount))
         // "Reveal an Elemental card from your hand" (Flamekin Bladewhirl): the cards stay in hand.
         "RevealCard" -> existing.copy(revealedCards = info.validRevealTargets.take(info.revealCount))

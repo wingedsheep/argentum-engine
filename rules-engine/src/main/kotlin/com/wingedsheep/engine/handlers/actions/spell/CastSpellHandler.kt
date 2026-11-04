@@ -105,6 +105,8 @@ import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
 import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.mechanics.mana.AdditionalManaForCounters
 import com.wingedsheep.engine.state.components.stack.AdditionalEntryCounters
+import com.wingedsheep.engine.mechanics.cost.spell.PutCountersOnPermanentCostKind
+import com.wingedsheep.sdk.scripting.util.quantify
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostCheck
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostLedger
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
@@ -1158,6 +1160,12 @@ class CastSpellHandler(
                     costEnumerationUtils.findAbilityBounceTargets(state, action.playerId, atom.filter, atom.youControl)
                         .filter { id -> id != action.cardId }
                 )
+                // Lethal Sting's "put a -1/-1 counter on a creature you control".
+                is CostAtom.PutCountersOnPermanent -> Triple(
+                    AdditionalCostSelectionKind.PUT_COUNTERS,
+                    atom.selectionCount,
+                    PutCountersOnPermanentCostKind.eligible(state, action.playerId, atom, predicateEvaluator)
+                )
                 else -> continue
             }
             if (count <= 0) continue
@@ -1168,6 +1176,7 @@ class CastSpellHandler(
                 AdditionalCostSelectionKind.EXILE -> payment?.exiledCards?.size ?: 0
                 AdditionalCostSelectionKind.TAP -> payment?.tappedPermanents?.size ?: 0
                 AdditionalCostSelectionKind.RETURN_TO_HAND -> payment?.bouncedPermanents?.size ?: 0
+                AdditionalCostSelectionKind.PUT_COUNTERS -> payment?.counterPlacementTargets?.size ?: 0
             }
             if (alreadyPaid >= count) continue // supplied by the caller (normal cast) — nothing to choose
 
@@ -1200,12 +1209,17 @@ class CastSpellHandler(
                 AdditionalCostSelectionKind.EXILE -> "exile"
                 AdditionalCostSelectionKind.TAP -> "tap"
                 AdditionalCostSelectionKind.RETURN_TO_HAND -> "return to hand"
+                AdditionalCostSelectionKind.PUT_COUNTERS -> "put counters on"
             }
-            val prompt = "Choose $count ${if (count > 1) "cards" else "card"} to $verb for $cardName"
+            val prompt = if (atom is CostAtom.PutCountersOnPermanent) {
+                "Choose ${atom.filter.description} to put " +
+                    "${quantify(atom.count, "${atom.counterType.printed} counter")} on for $cardName"
+            } else "Choose $count ${if (count > 1) "cards" else "card"} to $verb for $cardName"
             // Permanents you control are chosen on the battlefield; hidden/zone cards via overlay.
             val useTargetingUI = kind == AdditionalCostSelectionKind.SACRIFICE ||
                 kind == AdditionalCostSelectionKind.TAP ||
-                kind == AdditionalCostSelectionKind.RETURN_TO_HAND
+                kind == AdditionalCostSelectionKind.RETURN_TO_HAND ||
+                kind == AdditionalCostSelectionKind.PUT_COUNTERS
             val continuation = CastSpellAdditionalCostContinuation(
                 cardId = action.cardId,
                 casterId = action.playerId,
@@ -1257,6 +1271,8 @@ class CastSpellHandler(
                 payment.copy(tappedPermanents = payment.tappedPermanents + chosen)
             AdditionalCostSelectionKind.RETURN_TO_HAND ->
                 payment.copy(bouncedPermanents = payment.bouncedPermanents + chosen)
+            AdditionalCostSelectionKind.PUT_COUNTERS ->
+                payment.copy(counterPlacementTargets = payment.counterPlacementTargets + chosen)
         }
         return base.copy(additionalCostPayment = merged)
     }

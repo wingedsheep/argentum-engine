@@ -1254,6 +1254,16 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   castable afterwards; the payment is a `CardsRevealedEvent` and nothing else (read "the revealed
   card" with `EffectTarget.RevealedAsCost`). As a *mandatory*
   cost it fails closed: with no matching card in hand the spell isn't castable at all.
+- `Costs.additional.PutCountersOnPermanent(counterType, count = 1, filter = Filters.Creature)` — "as
+  an additional cost to cast this spell, put a -1/-1 counter on a creature you control" (Lethal
+  Sting). `Atom(CostAtom.PutCountersOnPermanent(...))`, the same atom `Costs.pay.PutCountersOnPermanent`
+  pays outside casting; surfaces as a `costType = "PutCounters"` on-battlefield pick over
+  `validCounterPlacementTargets` (prompt "Select creature to put a -1/-1 counter on"; matching permanents the caster controls that can take the
+  counters), and the pick comes back as `additionalCostPayment.counterPlacementTargets`. Paid after
+  targets are chosen (CR 601.2h), so the chosen creature may also be the target. Placement
+  replacements apply but "if an effect would put" ones don't (a cost isn't an effect). Mandatory and
+  fails closed: with no eligible permanent the spell isn't castable. **Not blight** — `BlightWasPaid`
+  stays false; use `BlightOrPay` / `BlightVariable` for cards that say "blight".
 - `Costs.additional.RevealFromHandOrPay(filter = Filters.Any, alternativeManaCost, count = 1)` —
   "reveal a [filter] card from your hand or pay {mana}" (Lorwyn's tribal cycle: Wren's Run
   Vanquisher, Silvergill Adept, Goldmeadow Stalwart, Squeaking Pie Sneak, Flamekin Bladewhirl).

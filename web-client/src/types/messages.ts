@@ -1503,6 +1503,8 @@ export interface AdditionalCostInfo {
   readonly counterRemovalCreatures?: readonly CounterRemovalCreatureInfo[]
   readonly validBlightTargets?: readonly EntityId[]
   readonly blightAmount?: number
+  /** For PutCounters: the permanents a "put N counters on a permanent you control" cost may pick. */
+  readonly validCounterPlacementTargets?: readonly EntityId[]
   /** For BlightVariable: cap on X (greatest toughness among creatures you control). */
   readonly blightVariableMaxX?: number
   /** For PayXLife: cap on X (your current life total). */

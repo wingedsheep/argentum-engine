@@ -375,6 +375,8 @@ data class AdditionalCostInfo(
     val revealCount: Int = 0,
     val counterRemovalCreatures: List<CounterRemovalCreatureInfo> = emptyList(),
     val validBlightTargets: List<EntityId> = emptyList(),
+    /** For PutCounters: permanents a "put N counters on a permanent you control" spell cost may pick. */
+    val validCounterPlacementTargets: List<EntityId> = emptyList(),
     val blightAmount: Int = 0,
     /** For BlightVariable: cap on X (greatest toughness among creatures you control). */
     val blightVariableMaxX: Int = 0,

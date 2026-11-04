@@ -324,6 +324,7 @@ class LegalActionEnricher(
         revealCount = revealCount,
         counterRemovalCreatures = counterRemovalCreatures.map { it.toDto() },
         validBlightTargets = validBlightTargets,
+        validCounterPlacementTargets = validCounterPlacementTargets,
         blightAmount = blightAmount,
         blightVariableMaxX = blightVariableMaxX,
         payXLifeMaxX = payXLifeMaxX,

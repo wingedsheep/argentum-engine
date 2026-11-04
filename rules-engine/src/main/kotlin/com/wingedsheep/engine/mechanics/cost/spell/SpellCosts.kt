@@ -42,7 +42,7 @@ object SpellCosts {
         put(CostAtom.Mill::class, AbilityOnlyAtomCostKind)
         put(CostAtom.ExileTopOfLibrary::class, AbilityOnlyAtomCostKind)
         put(CostAtom.PutCountersOnSelf::class, AbilityOnlyAtomCostKind)
-        put(CostAtom.PutCountersOnPermanent::class, AbilityOnlyAtomCostKind)
+        put(CostAtom.PutCountersOnPermanent::class, PutCountersOnPermanentCostKind)
         put(CostAtom.RevealNotedCreatureType::class, AbilityOnlyAtomCostKind)
         put(CostAtom.Unattach::class, AbilityOnlyAtomCostKind)
         put(CostAtom.PutFromHandOnTopOfLibrary::class, AbilityOnlyAtomCostKind)
