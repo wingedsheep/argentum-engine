@@ -6,6 +6,7 @@ import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.ai.engine.knowledge.RemovalBreadth
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
@@ -16,6 +17,7 @@ import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
@@ -24,6 +26,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.serialization.Serializable
@@ -389,7 +392,7 @@ object LimitedCardRater {
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets)) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
 
     // Four-mana activations are already slow; above that, retain only the share likely to be used.
     private fun activationDiscount(slot: EffectWalker.Slot): Double =
@@ -419,7 +422,7 @@ object LimitedCardRater {
     private const val NARROWEST_SHARE = 0.2
 
     /** What one effect is worth to a limited rating — the leaf scores folded over its tree. */
-    internal fun effectValue(effect: Effect): Double = EffectWalker.fold(effect, LimitedScoreFold)
+    internal fun effectValue(effect: Effect): Double = EffectWalker.fold(effect, LimitedScoreFold())
 
     /** What a keyword adds to a limited rating, or 0 for one the table doesn't price. */
     internal fun keywordValue(keyword: Keyword): Double = KEYWORD_BONUS[keyword] ?: 0.0
@@ -512,7 +515,7 @@ object LimitedCardRater {
     }
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
-    private object LimitedScoreFold : EffectWalker.Fold<Double> {
+    private class LimitedScoreFold(private val targets: List<TargetRequirement> = emptyList()) : EffectWalker.Fold<Double> {
         override fun blink(exile: MoveToZoneEffect, returns: MoveToZoneEffect): Double = 0.3
 
         /**
@@ -525,8 +528,12 @@ object LimitedCardRater {
                     EffectWalker.fold(effect.ifNotEmpty, this),
                     effect.ifEmpty?.let { EffectWalker.fold(it, this) },
                 )
+            } else if (effect is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(effect.target, targets)) {
+                // A toughness cost is not removal. Keep a modest penalty: survivors can pay it,
+                // but it makes the cantrip less broadly usable than a free draw.
+                -0.2
             } else {
-                scoreEffect(effect)
+                scoreEffect(effect, targets)
             }
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
@@ -543,7 +550,7 @@ object LimitedCardRater {
     /**
      * Score one leaf effect for limited value.
      */
-    private fun scoreEffect(effect: Effect): Double {
+    private fun scoreEffect(effect: Effect, targets: List<TargetRequirement>): Double {
         return when (effect) {
             // Mill spends no opposing board material. Give its library pressure a small term;
             // full library-depletion valuation belongs to the board evaluator.
@@ -596,11 +603,13 @@ object LimitedCardRater {
             // the analyzer's sweeper reading of it like the pipeline spelling (see [pipelineScore]).
             is ForEachEffect ->
                 if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE
-                else EffectWalker.fold(effect.body, LimitedScoreFold)
+                // Iteration can rebind context targets; do not mistake an outer own-side
+                // slot for the object visited by the loop.
+                else EffectWalker.fold(effect.body, LimitedScoreFold())
 
             // "Choose one —" is worth its best mode(s), plus a little for the choice.
             is ModalEffect -> {
-                val modes = effect.modes.map { EffectWalker.fold(it.effect, LimitedScoreFold) }.sortedDescending()
+                val modes = effect.modes.map { EffectWalker.fold(it.effect, LimitedScoreFold(it.targetRequirements)) }.sortedDescending()
                 val chosen = modes.take(effect.chooseCount.coerceAtLeast(1)).sum()
                 val flexibility = if (modes.size > effect.chooseCount) MODAL_FLEXIBILITY else 0.0
                 (chosen + flexibility).coerceAtMost(COMPOSITE_CAP)
@@ -613,7 +622,7 @@ object LimitedCardRater {
             is BudgetModalEffect -> {
                 var remaining = effect.budget
                 var chosen = 0.0
-                effect.modes.map { it.cost to EffectWalker.fold(it.effect, LimitedScoreFold) }
+                effect.modes.map { it.cost to EffectWalker.fold(it.effect, LimitedScoreFold(targets)) }
                     .sortedByDescending { it.second }
                     .forEach { (cost, value) ->
                         if (cost <= remaining && value > 0.0) { chosen += value; remaining -= cost.coerceAtLeast(0) }
@@ -629,7 +638,7 @@ object LimitedCardRater {
                 if (!EffectWalker.choosesOwnBranch(effect)) 0.0
                 // A pipeline inside a branch is already priced by the slot's pipelineScore, which
                 // reads through the choice (payoffLeaves).
-                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold) }
+                else effect.choices.maxOfOrNull { EffectWalker.fold(it.effect, LimitedScoreFold(targets)) }
                     ?.coerceAtMost(COMPOSITE_CAP) ?: 0.0
 
             // Card selection — scry and surveil see cards but draw none
@@ -659,7 +668,7 @@ object LimitedCardRater {
             is GrantKeywordEffect -> 0.2
 
             // Control effects — premium
-            is GainControlEffect -> 1.5
+            is GainControlEffect -> if (effect.duration == Duration.EndOfTurn) 0.6 else 1.5
 
             // Counterspells
             is CounterEffect -> 0.8

@@ -4372,6 +4372,83 @@
     ]
 }
 
+// Huatli's Spurring
+{
+    "name": "Huatli's Spurring",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+0 until end of turn. If you control a Huatli planeswalker, that creature gets +4/+0 until end of turn instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Huatli"
+                }
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "287",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "\"Run like the wind, fierce one. The hunt has begun.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a19440e2-855f-4f60-a443-b99500394611.jpg?1783935680",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Whether you control a Huatli planeswalker is checked only as Huatli’s Spurring resolves. The creature’s power won’t change later in the turn if Huatli leaves or comes under your control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Imperial Aerosaur
 {
     "name": "Imperial Aerosaur",
@@ -7272,6 +7349,79 @@
         "artist": "Simon Dominic",
         "flavorText": "The hook makes him feel brave, and the hat makes him feel fancy.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb9983ce-8ca6-450a-9cac-5396ba8e1690.jpg?1783935740"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rile
+{
+    "name": "Rile",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rile deals 1 damage to target creature you control. That creature gains trample until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Igor Kieryluk",
+        "flavorText": "The enormous can still be at the mercy of the small.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80925750-6c90-42d1-9525-27f1f0313398.jpg?1783935739",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If Rile targets a creature with 1 toughness, that creature won't be destroyed until after you've drawn a card. Its abilities may affect that draw or trigger on that draw if appropriate."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If the damage that would be dealt by Rile is prevented, the creature still gains trample until end of turn."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If the target creature is an illegal target by the time Rile resolves, the entire spell doesn't resolve. You won't draw a card."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"

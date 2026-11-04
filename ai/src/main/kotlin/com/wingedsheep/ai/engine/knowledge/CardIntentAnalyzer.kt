@@ -429,6 +429,8 @@ object CardIntentAnalyzer {
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
+                is DealDamageEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
                 is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
                 is GatherCardsEffect -> {
                     val source = leaf.source as? CardSource.TopOfLibrary
