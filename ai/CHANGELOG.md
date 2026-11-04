@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Uses a "that player loses the game" grant (Vraska, Scheming Gorgon's −10) when its attackers outnumber the blockers, then attacks for the win; reads Phage-style and "you win the game" effects as win conditions rather than blanks
 - #4390 Reads putting a permanent from the battlefield onto its owner's library (Expel from Orazca, Chaos Warp, Griptide) as removal, aims an "enchant creature an opponent controls" Aura with nothing on its host (Dead Man's Chest) at the opponent's creatures, reads a lasting "you may cast those cards" off an opponent's library top (Dead Man's Chest, Thief of Sanity) as card draw, and reads a search of your library and graveyard (Vraska's Scorn) as a tutor
 - #4388 Aims an Aura whose bonus turns on the enchanted creature's type (Sea Legs, Gift of Fangs, Bonds of Faith) at its own creatures of that type or the opponent's others, and holds it when only the wrong ones are left; reads a "-X/-X" Aura (Dead Weight) as removal rather than a pump
 - Values one-sided damage multipliers beyond their printed bodies and drafts narrow multipliers with the sources they amplify.

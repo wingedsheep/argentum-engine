@@ -54,6 +54,7 @@ data class EvaluationWeights(
         surplusLandsReadTheHand: Boolean = false,
         oneShotManaIsMana: Boolean = false,
         payoffsReadTheirFuel: Boolean = false,
+        finishersEndTheGame: Boolean = false,
     ): BoardEvaluator = CompositeBoardEvaluator(
         listOfNotNull(
             life to LifeDifferential,
@@ -77,6 +78,8 @@ data class EvaluationWeights(
             if (oneShotManaIsMana) tempo to OneShotMana(intents) else null,
             // In board-value units, so on [boardPresence]'s weight: an engine is part of the board.
             if (payoffsReadTheirFuel) boardPresence to SynergyPresence(intents) else null,
+            // In life units, so on [life]'s weight: a connecting strike is the game.
+            if (finishersEndTheGame) life to FinisherStrike(intents) else null,
         )
     )
 
@@ -165,6 +168,7 @@ object EvalWeights {
         surplusLandsReadTheHand: Boolean = false,
         oneShotManaIsMana: Boolean = false,
         payoffsReadTheirFuel: Boolean = false,
+        finishersEndTheGame: Boolean = false,
     ): BoardEvaluator =
         apprenticeWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
             ?: rawResourceWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
@@ -172,7 +176,7 @@ object EvalWeights {
                 intents, landDropIsNotCardLoss, sequenceLandsByUsableMana, discountedRaceClock,
                 creatureValuation, priceLandsInHandAsMana, evasionAfterAttacking, pendingLandDropIsMana,
                 surplusAwareLands, libraryClock, surplusLandsReadTheHand, oneShotManaIsMana,
-                payoffsReadTheirFuel,
+                payoffsReadTheirFuel, finishersEndTheGame,
             )
 
     /** Whether [id] selects a complete, finite raw vector rather than the composite fallback. */

@@ -240,6 +240,7 @@ object AiCardRating {
         IntentTag.DAMAGE_TO_PLAYERS to "Deals damage to players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
+        IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
     )
 
