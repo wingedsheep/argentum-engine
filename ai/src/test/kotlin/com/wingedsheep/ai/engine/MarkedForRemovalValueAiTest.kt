@@ -17,7 +17,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * A creature of theirs carrying a counter that a card in our hand destroys on entry (Tetzimoc,
- * Primal Death's prey counter) is already half gone — the
+ * Primal Death's prey counter) is already mostly gone — the
  * [com.wingedsheep.ai.engine.evaluation.MarkedForRemoval] term, [AiProfile.marksBeforeTheSweep].
  *
  * Without it a prey counter is worth nothing on the board, so with seven mana the AI cast

@@ -33,7 +33,7 @@ import com.wingedsheep.sdk.scripting.predicates.StatePredicate
  * So: on our own seat (we read our own hand and stack, never anyone else's), every card whose
  * entry — or whose resolution, for a spell — sweeps a group of creatures *with a counter* of some
  * kind is a marker; each opposing creature carrying that counter is worth [MARKED_SHARE] of its
- * board value to us, as if already half gone. The share is less than the whole because the sweep
+ * board value to us, as if already mostly gone. The share is less than the whole because the sweep
  * still has to be cast; it is more than half because nothing but an answer to the sweeper stands
  * between the mark and the kill. Casting the sweeper then trades the share for the whole kill, so
  * the mark is never priced twice.
@@ -89,10 +89,17 @@ class MarkedForRemoval(private val intents: IntentCatalog) : BoardFeature {
         if (IntentTag.REMOVAL !in CardIntentAnalyzer.analyzeEffect(effect).tags) return emptySet()
         return EffectWalker.payoffLeaves(effect).flatMapTo(HashSet()) { leaf ->
             val filter = ((leaf as? GatherCardsEffect)?.source as? CardSource.BattlefieldMatching)?.filter
-                ?.takeIf { it.controllerPredicate != ControllerPredicate.ControlledByYou }
+                ?.takeIf { opponentsOnly(it.controllerPredicate) }
                 ?: return@flatMapTo emptySet()
             filter.statePredicates.filterIsInstance<StatePredicate.HasCounter>().map { it.counterType }
         }
+    }
+
+    /** Only a sweep of their side: one that also kills ours would need our losses priced too. */
+    private fun opponentsOnly(predicate: ControllerPredicate?): Boolean = when (predicate) {
+        ControllerPredicate.ControlledByOpponent -> true
+        is ControllerPredicate.Not -> predicate.predicate == ControllerPredicate.ControlledByYou
+        else -> false
     }
 
     companion object {

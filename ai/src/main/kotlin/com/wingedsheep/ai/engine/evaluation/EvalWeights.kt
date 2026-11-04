@@ -81,7 +81,7 @@ data class EvaluationWeights(
             if (payoffsReadTheirFuel) boardPresence to SynergyPresence(intents) else null,
             // In life units, so on [life]'s weight: a connecting strike is the game.
             if (finishersEndTheGame) life to FinisherStrike(intents) else null,
-            // In board-value units, so on [boardPresence]'s weight: a marked creature is half gone.
+            // In board-value units, so on [boardPresence]'s weight: a marked creature is mostly gone.
             if (marksBeforeTheSweep) boardPresence to MarkedForRemoval(intents) else null,
         )
     )
