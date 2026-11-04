@@ -44,7 +44,11 @@ Two label shapes need explaining:
 - `ForEach>X` is the effect `X` inside a "for each …" body.
 - An "if you do" gate (`you may pay {E}. If you do, …`, `you may discard a card. If you do, …`) is
   read through to its payoff, so a flag on one names the effect behind the gate, never
-  `GatedEffect`. Only a gate an opponent decides (the punisher shape) is still a `GatedEffect` leaf.
+  `GatedEffect`. Only a gate an opponent decides (the punisher shape) is still a `GatedEffect` leaf,
+  read as what both of its branches do (Clash of Elements tucks the permanent either way); one
+  whose branches share nothing (Risk Factor) is flagged as `GatedEffect`.
+- "Do X N times" (`RepeatDynamicTimesEffect`) is read as `X`, so a flag on one names the effect it
+  repeats.
 - `Pipeline(<from>→<to>)` is a lowered library, graveyard or hand pipeline (gather, select, move,
   plus bookkeeping) named as one type by where its cards come from and go to. Its stages mean
   nothing alone.
