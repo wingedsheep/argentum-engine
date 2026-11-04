@@ -991,6 +991,19 @@ data class AiProfile(
      */
     val finishersEndTheGame: Boolean = false,
     /**
+     * Price their creatures **marked for a sweep we hold** — an opposing creature carrying a
+     * counter that a card in our hand destroys on entry (Tetzimoc, Primal Death's prey counter):
+     * the evaluator's [com.wingedsheep.ai.engine.evaluation.MarkedForRemoval] term, a share of the
+     * creature's board value already claimed. And in our own main phase, an ability activated from
+     * a card in our hand that keeps it there (the prey counter's "{B}, reveal this card") scores as
+     * at least casting that card right after it — `Strategist`'s enabler follow-up.
+     *
+     * Without it a prey counter moved no evaluated number, so with seven mana the AI cast Tetzimoc
+     * bare beside a Serra Angel instead of marking it for {B} first. `MarkedForRemovalValueAiTest`
+     * pins it.
+     */
+    val marksBeforeTheSweep: Boolean = false,
+    /**
      * Cast **enablers before what they discount**: in our own main phase a spell scores as at
      * least the best spell it makes cheaper (or castable), judged from the position right after it
      * — the same credit [landDropUnlocksSpells] gives a land.
@@ -2538,6 +2551,7 @@ data class AiProfile(
             oneShotManaIsMana = true,
             payoffsReadTheirFuel = true,
             finishersEndTheGame = true,
+            marksBeforeTheSweep = true,
             rollouts = PRODUCTION_CANDIDATE_EXPIRING.rollouts?.copy(staticPriorPlayouts = 1.0),
         )
 
