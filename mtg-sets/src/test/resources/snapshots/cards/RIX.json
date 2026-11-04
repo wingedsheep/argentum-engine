@@ -303,6 +303,216 @@
     ]
 }
 
+// Angrath, Minotaur Pirate
+{
+    "name": "Angrath, Minotaur Pirate",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Legendary Planeswalker — Angrath",
+    "oracleText": "+2: Angrath deals 1 damage to target opponent or planeswalker and each creature that player or that planeswalker's controller controls.\n−3: Return target Pirate card from your graveyard to the battlefield.\n−11: Destroy all creatures target opponent controls. Angrath deals damage to that player equal to their total power.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Angrath, Minotaur Pirate:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": {
+                                        "anyOf": [
+                                            {
+                                                "cardPredicates": [
+                                                    "IsCreature"
+                                                ],
+                                                "controllerPredicate": {
+                                                    "type": "ControlledByReferencedPlayer",
+                                                    "target": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t0"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "cardPredicates": [
+                                                    "IsCreature"
+                                                ],
+                                                "controllerPredicate": {
+                                                    "type": "ControlledByReferencedPlayer",
+                                                    "target": "TargetController"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "excludeTarget": true
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponentOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Angrath, Minotaur Pirate:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "Pirate own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Angrath, Minotaur Pirate:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -11
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "TargetOpponent",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "creature ctrl:target-opponent"
+                                    },
+                                    "storeAs": "destroyAll_gathered"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "destroyAll_gathered",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Destroy"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "number0"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f17103dd-f31b-4f6e-b2ea-4ea91815bdd6.jpg?1783935257",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Angrath's first and last abilities target only the player. Creatures with hexproof that player controls will be affected."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Angrath's last ability uses the power of those creatures as they last existed on the battlefield to determine their total power. If a creature's power was somehow less than 0, it subtracts from the total power of the other creatures. If the total power of those creatures is 0 or less, Angrath doesn't deal damage."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If a creature controlled by the target opponent isn't destroyed as Angrath's last ability resolves (most likely because it has indestructible), its power still contributes to the amount of damage dealt. Use its power as it currently exists on the battlefield to determine the total power of the creatures."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Any abilities that trigger when creatures die while resolving Angrath's last ability won't be put on the stack until after the player is dealt damage. If the player's life total becomes 0 or less, those triggers won't resolve in time to save that player."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Any abilities of the destroyed creatures that trigger when the player is dealt damage won't trigger."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Angrath, the Flame-Chained
 {
     "name": "Angrath, the Flame-Chained",
@@ -581,6 +791,80 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Arch of Orazca
+{
+    "name": "Arch of Orazca",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\n{T}: Add {C}.\n{5}, {T}: Draw a card. Activate only if you have the city's blessing.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arch of Orazca:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Arch of Orazca:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6d47162-749b-47d5-9589-8f1dbf60b9f3.jpg?1783935263",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "A permanent is any object on the battlefield, including tokens and lands. Spells and emblems aren't permanents."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Arterial Flow
@@ -1390,6 +1674,92 @@
     ]
 }
 
+// Captain's Hook
+{
+    "name": "Captain's Hook",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0, has menace, and is a Pirate in addition to its other creature types.\nWhenever this Equipment becomes unattached from a permanent, destroy that permanent.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain's Hook:1",
+                "trigger": "BecomesUnattachedEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "AttachedToTriggeringPermanent",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "descriptionOverride": "Whenever this Equipment becomes unattached from a permanent, destroy that permanent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Captain's Hook:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Pirate",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bd3f777-b33a-454a-8d5d-993260ddda03.jpg?1783935265",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Captain's Hook becomes unattached from the creature it's equipping if you equip it to a new creature, if Captain's Hook leaves the battlefield, if the equipped creature ceases to be a creature, or if Captain's Hook ceases to be an Equipment. (It also becomes unattached if the equipped creature leaves the battlefield, but the triggered ability won't do anything in that case.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Champion of Dusk
 {
     "name": "Champion of Dusk",
@@ -2054,6 +2424,65 @@
     ]
 }
 
+// Deadeye Brawler
+{
+    "name": "Deadeye Brawler",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Deathtouch\nAscend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nWhenever this creature deals combat damage to a player, if you have the city's blessing, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "ASCEND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadeye Brawler:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acb1ab66-f2ce-4094-b2dd-1fc63d78eea2.jpg?1783935278",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Some cards have triggered abilities with an intervening \"if\" clause that checks whether you have the city's blessing. You must already have the city's blessing in order for these abilities to trigger; otherwise they do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Deadeye Rig-Hauler
 {
     "name": "Deadeye Rig-Hauler",
@@ -2296,6 +2725,41 @@
         ]
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dire Fleet Neckbreaker
+{
+    "name": "Dire Fleet Neckbreaker",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "Attacking Pirates you control get +2/+0.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature Pirate attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "The buccaneers scaled the sides of buildings as easily as they boarded enemy ships.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/5146dd15-f696-42c3-b0e5-6a1b1d7be6b4.jpg?1783935277"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -3917,6 +4381,174 @@
     }
 }
 
+// Hadana's Climb
+{
+    "name": "Hadana's Climb",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "At the beginning of combat on your turn, put a +1/+1 counter on target creature you control. Then if that creature has three or more +1/+1 counters on it, transform Hadana's Climb.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hadana's Climb:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, put a +1/+1 counter on target creature you control. Then if that creature has three or more +1/+1 counters on it, transform Hadana's Climb."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Winged Temple of Orazca",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Hadana's Climb.)\n{T}: Add one mana of any color.\n{1}{G}{U}, {T}: Target creature you control gains flying and gets +X/+X until end of turn, where X is its power.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Winged Temple of Orazca:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Winged Temple of Orazca:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}{G}{U}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "Power"
+                                },
+                                "toughnessModifier": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "Power"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{1}{G}{U}, {T}: Target creature you control gains flying and gets +X/+X until end of turn, where X is its power."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "158",
+            "rarity": "RARE",
+            "artist": "Titus Lunter",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/e/8e7554bc-8583-4059-8895-c3845bc27ae3.jpg?1783935281"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "Hadana seeks power in the service of peace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e7554bc-8583-4059-8895-c3845bc27ae3.jpg?1783935281"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Hornswoggle
 {
     "name": "Hornswoggle",
@@ -3960,6 +4592,131 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Huatli, Radiant Champion
+{
+    "name": "Huatli, Radiant Champion",
+    "manaCost": "{2}{G}{W}",
+    "typeLine": "Legendary Planeswalker — Huatli",
+    "oracleText": "+1: Put a loyalty counter on Huatli for each creature you control.\n−1: Target creature gets +X/+X until end of turn, where X is the number of creatures you control.\n−8: You get an emblem with \"Whenever a creature you control enters, you may draw a card.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Huatli, Radiant Champion:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "LOYALTY",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put a loyalty counter on Huatli for each creature you control."
+            },
+            {
+                "id": "Huatli, Radiant Champion:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target creature gets +X/+X until end of turn, where X is the number of creatures you control."
+            },
+            {
+                "id": "Huatli, Radiant Champion:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Huatli, Radiant Champion:3",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature ctrl:you",
+                            "to": "Battlefield"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        "descriptionOverride": "Whenever a creature you control enters, you may draw a card."
+                    },
+                    "descriptionOverride": "Whenever a creature you control enters, you may draw a card.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever a creature you control enters, you may draw a card.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39bcc48a-efdb-443f-93b8-bc0b54aa0eb8.jpg?1783935274",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If you activate Huatli's first ability while you control no creatures, she'll get one loyalty counter from the ability's activation cost and no others as it resolves."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "The number of creatures you control is counted only as Huatli's first or second ability resolves. Once her second ability resolves, the bonus won't change, even if the number of creatures you control changes later in the turn."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -5346,6 +6103,85 @@
     ]
 }
 
+// Orazca Relic
+{
+    "name": "Orazca Relic",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\n{T}: Add {C}.\n{T}, Sacrifice this artifact: You gain 3 life and draw a card. Activate only if you have the city's blessing.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Orazca Relic:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Orazca Relic:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ed70bc5-8ea9-404e-a8cd-04322c8bc689.jpg?1783935265",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "A permanent is any object on the battlefield, including tokens and lands. Spells and emblems aren't permanents."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Overgrown Armasaur
 {
     "name": "Overgrown Armasaur",
@@ -5514,6 +6350,242 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Path of Mettle
+{
+    "name": "Path of Mettle",
+    "manaCost": "{R}{W}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Path of Mettle enters, it deals 1 damage to each creature that doesn't have first strike, double strike, vigilance, or haste.\nWhenever you attack with at least two creatures that have first strike, double strike, vigilance, and/or haste, transform Path of Mettle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Path of Mettle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FIRST_STRIKE"
+                                    },
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "DOUBLE_STRIKE"
+                                    },
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "VIGILANCE"
+                                    },
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "HASTE"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When Path of Mettle enters, it deals 1 damage to each creature that doesn't have first strike, double strike, vigilance, or haste."
+            },
+            {
+                "id": "Path of Mettle:2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2,
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "FIRST_STRIKE"
+                                    },
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "DOUBLE_STRIKE"
+                                    },
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "VIGILANCE"
+                                    },
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "HASTE"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "descriptionOverride": "Whenever you attack with at least two creatures that have first strike, double strike, vigilance, and/or haste, transform Path of Mettle."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Metzali, Tower of Triumph",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Path of Mettle.)\n{T}: Add one mana of any color.\n{1}{R}, {T}: Metzali deals 2 damage to each opponent.\n{2}{W}, {T}: Choose a creature at random that attacked this turn. Destroy that creature.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Metzali, Tower of Triumph:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Metzali, Tower of Triumph:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}{R}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "descriptionOverride": "{1}{R}, {T}: Metzali deals 2 damage to each opponent."
+                },
+                {
+                    "id": "Metzali, Tower of Triumph:3",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{W}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            "AttackedThisTurn"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "Random",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "{2}{W}, {T}: Choose a creature at random that attacked this turn. Destroy that creature."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "165",
+            "rarity": "RARE",
+            "artist": "Victor Adame Minguez",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/6/66d9d524-3611-48d9-86c9-48e509e8ae70.jpg?1783935278",
+            "rulings": [
+                {
+                    "date": "2018-01-19",
+                    "text": "A creature that attacked and was removed from combat still attacked, so it can be chosen at random. A creature that was put onto the battlefield attacking didn't attack, so it can't be chosen at random."
+                },
+                {
+                    "date": "2018-01-19",
+                    "text": "A creature with indestructible can be chosen at random. It won't be destroyed. A creature with hexproof can be chosen at random. It will be destroyed."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66d9d524-3611-48d9-86c9-48e509e8ae70.jpg?1783935278",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Path of Mettle's first ability deals 1 damage to each creature that doesn't have any of the four listed abilities. It doesn't deal 1 damage to each creature for each ability that creature doesn't have."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "For Path of Mettle's last ability to trigger, any two attacking creatures you control need to each have any one of the four listed abilities. They don't need to share one of those abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -5729,6 +6801,183 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Profane Procession
+{
+    "name": "Profane Procession",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "{3}{W}{B}: Exile target creature. Then if there are three or more cards exiled with Profane Procession, transform it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Profane Procession:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "Each",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsNontoken"
+                                            ],
+                                            "statePredicates": [
+                                                "ExiledWithSource"
+                                            ]
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}{W}{B}: Exile target creature. Then if there are three or more cards exiled with Profane Procession, transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tomb of the Dusk Rose",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Profane Procession.)\n{T}: Add one mana of any color.\n{2}{W}{B}, {T}: Put a creature card exiled with this permanent onto the battlefield under your control.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Tomb of the Dusk Rose:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Tomb of the Dusk Rose:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{W}{B}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "creature",
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a creature card exiled with Tomb of the Dusk Rose",
+                                "selectedLabel": "Put onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "{2}{W}{B}, {T}: Put a creature card exiled with this permanent onto the battlefield under your control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "166",
+            "rarity": "RARE",
+            "artist": "Bastien L. Deharme",
+            "flavorText": ". . . resting in the splendor of the dead.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/d/1d94ff37-f04e-48ee-8253-d62ab07f0632.jpg?1783935277"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "Vona sought a conqueror. Mavren sought a savior. Both found what they sought . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d94ff37-f04e-48ee-8253-d62ab07f0632.jpg?1783935277",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Profane Procession's ability can exile token creatures. They won't count towards the number of cards exiled with it."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If you have enough mana, you can activate Profane Procession's ability multiple times before any activation resolves. It will be transformed if one activation exiles the third card. Further activations waiting to resolve won't cause Tomb of the Dusk Rose to transform back into Profane Procession, but they will exile creatures that Tomb of the Dusk Rose can bring back."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If Profane Procession or Tomb of the Dusk Rose somehow has exiled cards other than with Profane Procession's ability, those exiled cards aren't linked to Tomb of the Dusk Rose's second ability. They can't be put onto the battlefield with that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -6114,6 +7363,95 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Relentless Raptor
+{
+    "name": "Relentless Raptor",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Vigilance\nThis creature attacks or blocks each combat if able.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustAttack",
+            "MustBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "As the battle for Orazca unfolded, the contenders discovered that others had already staked a claim.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d0727ba-4180-4908-93be-a8abf29a8958.jpg?1783935271",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If the defending player somehow gains control of Relentless Raptor after it attacks, it must also block if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Resplendent Griffin
+{
+    "name": "Resplendent Griffin",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying\nAscend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nWhenever this creature attacks, if you have the city's blessing, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "ASCEND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Resplendent Griffin:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Rowan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/915f2ad9-fd39-465c-8261-bfa34116cbcc.jpg?1783935271",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Some cards have triggered abilities with an intervening \"if\" clause that checks whether you have the city's blessing. You must already have the city's blessing in order for these abilities to trigger; otherwise they do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -6527,6 +7865,91 @@
         "GREEN",
         "WHITE"
     ]
+}
+
+// Silent Gravestone
+{
+    "name": "Silent Gravestone",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Cards in graveyards can't be the targets of spells or abilities.\n{4}, {T}: Exile this artifact and all cards from all graveyards. Draw a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Silent Gravestone:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile",
+                            "fromZone": "Battlefield"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}, {T}: Exile this artifact and all cards from all graveyards. Draw a card."
+            }
+        ],
+        "staticAbilities": [
+            "CardsInZonesCantBeTargeted"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Suzanne Helmigh",
+        "flavorText": "Made to ward off the Grim Captain and silence the lure of undeath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff60f685-a17e-4be6-bbb6-d14a053533ef.jpg?1783935265",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Only spells and abilities that target cards in graveyards will be affected. Spells and abilities that affect cards in graveyards without targeting them (such as Extract from Darkness) can still affect those cards."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Silent Gravestone isn't exiled until its activated ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Silverclad Ferocidons
@@ -7094,6 +8517,113 @@
         ]
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Storm the Vault
+{
+    "name": "Storm the Vault",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "Whenever one or more creatures you control deal combat damage to a player, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nAt the beginning of your end step, if you control five or more artifacts, transform Storm the Vault.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm the Vault:1",
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "Whenever one or more creatures you control deal combat damage to a player, create a Treasure token."
+            },
+            {
+                "id": "Storm the Vault:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you control five or more artifacts, transform Storm the Vault."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Vault of Catlacan",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Storm the Vault.)\n{T}: Add one mana of any color.\n{T}: Add {U} for each artifact you control.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Vault of Catlacan:1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Vault of Catlacan:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "artifact"
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "173",
+            "rarity": "RARE",
+            "artist": "Victor Adame Minguez",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/1/c16ba84e-a0cc-4c6c-9b80-713247b8fef9.jpg?1783935274"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c16ba84e-a0cc-4c6c-9b80-713247b8fef9.jpg?1783935274",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Storm the Vault's first ability can trigger more than once in a turn if creatures you control deal combat damage at different times in a turn (most likely because one or more has first strike) or if creatures you control deal combat damage to more than one player at once."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "The last ability of Storm the Vault doesn't trigger if you don't control five or more artifacts as your end step begins. If it does trigger but you don't control five or more artifacts as it resolves, it does nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
@@ -8865,6 +10395,151 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Zacama, Primal Calamity
+{
+    "name": "Zacama, Primal Calamity",
+    "manaCost": "{6}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Elder Dinosaur",
+    "oracleText": "Reach, vigilance, trample\nWhen Zacama enters, if you cast it, untap all lands you control.\n{2}{R}: Zacama deals 3 damage to target creature.\n{2}{G}: Destroy target artifact or enchantment.\n{2}{W}: You gain 3 life.",
+    "creatureStats": {
+        "power": 9,
+        "toughness": 9
+    },
+    "keywords": [
+        "REACH",
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zacama, Primal Calamity:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When Zacama enters, if you cast it, untap all lands you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zacama, Primal Calamity:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{R}: Zacama deals 3 damage to target creature."
+            },
+            {
+                "id": "Zacama, Primal Calamity:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{2}{G}: Destroy target artifact or enchantment."
+            },
+            {
+                "id": "Zacama, Primal Calamity:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "{2}{W}: You gain 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5aa75f2b-53c5-47c5-96d2-ab796358a96f.jpg?1783935269",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Zacama's triggered ability triggers if you cast it from any zone. It doesn't trigger if you put Zacama onto the battlefield without casting it."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "Zacama's damage-dealing ability can be activated during combat, perhaps targeting a creature blocking it. If all creatures blocking Zacama are destroyed, its combat damage is assigned to the player, planeswalker, or battle it's attacking because of trample. If the blocking creatures are dealt nonlethal damage, that damage is considered when assigning trample damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
     ]
 }
 

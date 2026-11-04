@@ -6,6 +6,7 @@ import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.mtg.sets.definitions.xln.cards.*
 import com.wingedsheep.mtg.sets.definitions.bng.cards.LoyalPegasus
+import com.wingedsheep.mtg.sets.definitions.rix.cards.RelentlessRaptor
 import com.wingedsheep.mtg.sets.definitions.one.cards.EvolvedSpinoderm
 import com.wingedsheep.mtg.sets.definitions.fra.cards.FrostbitePyromental
 import com.wingedsheep.mtg.sets.definitions.mmq.cards.Undertaker
@@ -40,7 +41,7 @@ class ActivatedPayoffReadingTest : FunSpec({
     }
 
     test("self combat restrictions are read as drawbacks and discounted") {
-        for (card in listOf(LoyalPegasus, HeadstrongBrute)) {
+        for (card in listOf(LoyalPegasus, HeadstrongBrute, RelentlessRaptor)) {
             val intent = CardIntentAnalyzer.analyze(card)
             intent.tags shouldContain IntentTag.COMBAT_RESTRICTION
             intent.tags shouldNotContain IntentTag.NEUTRALIZE

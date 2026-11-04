@@ -16,6 +16,8 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
@@ -449,6 +451,10 @@ object LimitedCardRater {
             is CantBlock -> if (static.filter.scope == Scope.Self) return -0.3
             is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) return -0.3
             is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) return -0.2
+            // "Attacks each combat if able" sends it into bad attacks; "blocks each combat if able"
+            // into bad blocks, a milder cost since a block is usually wanted anyway.
+            is MustAttack -> if (static.filter.scope == Scope.Self) return -0.2
+            is MustBlock -> if (static.filter.scope == Scope.Self) return -0.1
             else -> Unit
         }
         if (static is ModifyStats) {
