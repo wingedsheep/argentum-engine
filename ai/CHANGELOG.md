@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4415 Values a creature whose repeatable activation grows it through its own trigger (Inspired Tethermage's {6} Empower Jace → +1/+1 counter) by that growth, so its removal and lockdown Auras (Infinite Coursework) take the growing Tethermage instead of a 4/4 trample Beast token beside it
 - #4414 No longer casts "base power and toughness 0/0" (Multiply by Zero) outside combat on a creature it does not kill — +1/+1 counters and pumps now count toward what survives the new base
 - #4411 Fights with its best creature ("target creature you control fights …": Prey Upon, Pounce, Yoshimaru) instead of its weakest, and reads a granted modal trigger (Hunter's Axe's trample-or-deathtouch) so it equips its best attacker
 - #4410 Values self-fight creatures (Atzocan Archer) by their damage reach, puts its best card back when returning one from its own graveyard to its library (Mortuary Mire) while still reading any-graveyard tucks as graveyard hate, and weighs both sides for a chosen tap-or-untap or a copied base power and toughness

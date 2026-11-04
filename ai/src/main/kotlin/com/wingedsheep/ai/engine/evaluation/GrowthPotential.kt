@@ -97,6 +97,12 @@ import java.util.concurrent.ConcurrentHashMap
  * priced as a 2/2. An until-end-of-turn pump (firebreathing) leaves nothing on the board and is not
  * a producer; that is a combat question.
  *
+ * A producer's resolution also follows through the **source's own** untargeted triggers it sets off
+ * ([selfFollowUps]), once: Inspired Tethermage's "{6}: Empower Jace 2" only puts loyalty counters on
+ * a Jace, and its "whenever you put one or more loyalty counters on a planeswalker" trigger is what
+ * puts the +1/+1 counter on it. An activation that mentions no counter or token is a producer when
+ * its card has such a trigger; the simulation says whether the trigger answers.
+ *
  * A permanent whose abilities are gone (Humility, Turn to Frog — [ProjectedState.hasLostAllAbilities])
  * has no growth. A simulation that throws counts as none: an estimate must never take the evaluator
  * down with it.
@@ -124,10 +130,10 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
         val fingerprint = boardFingerprint(state, projected)
         var counters = 0.0
         var made = 0.0
-        fun add(index: Int, effect: Effect, schedule: List<Int>, likelihood: Double) {
+        fun add(index: Int, effect: Effect, schedule: List<Int>, likelihood: Double, followUps: List<TriggeredAbility> = emptyList()) {
             if (schedule.all { it == 0 }) return
             val key = SimulationKey(entityId, index, cardName, fingerprint)
-            val simulated = simulations[key] ?: expectedYield(state, entityId, controller, effect, schedule).also {
+            val simulated = simulations[key] ?: expectedYield(state, entityId, controller, effect, schedule, followUps).also {
                 if (simulations.size >= MAX_CACHED_SIMULATIONS) simulations.clear()
                 simulations[key] = it
             }
@@ -138,7 +144,7 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
         if (producers.isNotEmpty()) {
             val mana = projected.getBattlefieldControlledBy(controller).count { projected.hasType(it, "LAND") }
             producers.forEachIndexed { index, producer ->
-                add(triggers.size + index, producer.effect, producer.schedule(mana), 1.0)
+                add(triggers.size + index, producer.effect, producer.schedule(mana), 1.0, followUpsOf(cardName))
             }
         }
         return (counters * COUNTER_VALUE).coerceIn(-GROWTH_VALUE_CAP, GROWTH_VALUE_CAP) +
@@ -211,6 +217,11 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
         controller: EntityId,
         effect: Effect,
         schedule: List<Int>,
+        /**
+         * The source's own triggers its resolution may set off ([selfFollowUps]); empty for a
+         * recurring trigger, whose own resolution is what is being counted.
+         */
+        followUps: List<TriggeredAbility> = emptyList(),
     ): Yield =
         try {
             var current = state
@@ -226,14 +237,20 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
                             effect,
                             EffectContext(sourceId = sourceId, controllerId = controller),
                         )
-                        val made = result.state.getBattlefield().filter { it !in before }.toSet()
-                        counters += weight * netCounters(current.projectedState, result.events, controller, made)
-                        permanents += weight * netPermanents(result.state, made, controller)
                         // A resolution that stopped for a decision or was refused has not finished; its
                         // state is not a board the next resolution would see.
-                        if (result.outcome !is Outcome.Done) return@horizon
-                        if (result.state.getEntity(sourceId) == null) return@horizon
-                        current = result.state
+                        val done = result.outcome is Outcome.Done
+                        val (after, events) = if (done) {
+                            followOwnTriggers(result.state, result.events, sourceId, controller, followUps)
+                        } else {
+                            result.state to result.events
+                        }
+                        val made = after.getBattlefield().filter { it !in before }.toSet()
+                        counters += weight * netCounters(current.projectedState, events, controller, made)
+                        permanents += weight * netPermanents(after, made, controller)
+                        if (!done) return@horizon
+                        if (after.getEntity(sourceId) == null) return@horizon
+                        current = after
                     }
                 }
             }
@@ -241,6 +258,42 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
         } catch (_: RuntimeException) {
             Yield(0.0, 0.0)
         }
+
+    /**
+     * Resolve the triggers of [sourceId] itself that [events] set off — once, and only the
+     * untargeted ones in [followUps] — on top of [state], returning the board after them and every
+     * event of the whole resolution.
+     *
+     * This is what lets an activation that grows its source *through* the source's own trigger be
+     * counted: Inspired Tethermage's "{6}: Empower Jace 2" only puts loyalty counters on a Jace;
+     * the +1/+1 counter is its "whenever you put loyalty counters on a planeswalker" trigger. Only
+     * the source's own triggers are followed — another permanent's payoff is that permanent's
+     * value — and only one level deep, so nothing loops.
+     */
+    private fun followOwnTriggers(
+        state: GameState,
+        events: List<com.wingedsheep.engine.core.GameEvent>,
+        sourceId: EntityId,
+        controller: EntityId,
+        followUps: List<TriggeredAbility>,
+    ): Pair<GameState, List<com.wingedsheep.engine.core.GameEvent>> {
+        if (followUps.isEmpty() || events.isEmpty()) return state to events
+        val fired = services.triggerDetector.detectTriggers(state, events)
+            .filter { it.sourceId == sourceId && it.ability in followUps }
+        var current = state
+        val all = events.toMutableList()
+        for (pending in fired) {
+            val result = services.effectExecutorRegistry.execute(
+                current,
+                pending.ability.effect,
+                EffectContext(sourceId = sourceId, controllerId = controller),
+            )
+            if (result.outcome !is Outcome.Done) break
+            current = result.state
+            all += result.events
+        }
+        return current to all
+    }
 
     /** Board value of the permanents a resolution made: theirs against [controller], ours for. */
     private fun netPermanents(state: GameState, made: Set<EntityId>, controller: EntityId): Double {
@@ -272,6 +325,14 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
     internal fun triggersOf(cardName: String): List<GrowthTrigger> =
         triggersByName.getOrPut(cardName) {
             registry.getCard(cardName)?.let(::growthTriggers).orEmpty()
+        }
+
+    /** The source's own triggers a producer's resolution may set off, of each card name, read once. */
+    private val followUpsByName = ConcurrentHashMap<String, List<TriggeredAbility>>()
+
+    internal fun followUpsOf(cardName: String): List<TriggeredAbility> =
+        followUpsByName.getOrPut(cardName) {
+            registry.getCard(cardName)?.let(::selfFollowUps).orEmpty()
         }
 
     internal fun producersOf(cardName: String): List<Producer> =
@@ -409,8 +470,9 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
          * +1/+1 counter or a new permanent. An ability whose cost asks for anything else (a
          * sacrifice, a discard, counters, life, an X) is left out: its rate is not the mana's.
          */
-        internal fun producers(definition: CardDefinition): List<Producer> =
-            definition.script.activatedAbilities.mapNotNull { ability ->
+        internal fun producers(definition: CardDefinition): List<Producer> {
+            val feedsItsOwnTrigger = selfFollowUps(definition).isNotEmpty()
+            return definition.script.activatedAbilities.mapNotNull { ability ->
                 if (ability.isManaAbility || ability.isPlaneswalkerAbility || ability.isEquipAbility) return@mapNotNull null
                 if (ability.activateFromZone != Zone.BATTLEFIELD) return@mapNotNull null
                 if (ability.targetRequirements.isNotEmpty()) return@mapNotNull null
@@ -418,10 +480,29 @@ class GrowthPotential private constructor(private val registry: CardRegistry) {
                 // Neither mana nor a tap: nothing bounds how often it goes, and no such free
                 // engine is something a per-turn estimate can price.
                 if (cost.manaValue == 0 && !cost.taps && ability.restrictions.isEmpty()) return@mapNotNull null
-                if (!mentionsPlusOneCounters(ability.effect) && !mentionsNewPermanents(ability.effect)) {
+                // An activation that leaves nothing itself may still grow its source through the
+                // source's own trigger (Inspired Tethermage); the simulation says whether it does.
+                if (!feedsItsOwnTrigger && !mentionsPlusOneCounters(ability.effect) &&
+                    !mentionsNewPermanents(ability.effect)
+                ) {
                     return@mapNotNull null
                 }
                 Producer(ability.effect, cost.manaValue, cost.taps, oncePerTurn = ability.restrictions.isNotEmpty())
+            }
+        }
+
+        /**
+         * The triggered abilities of [definition] a producer's resolution might set off and that
+         * add to the board themselves: untargeted, ungated, not an Aura's or Equipment's, and not a
+         * recurring trigger ([growthTriggers] counts those on their own schedule) — their effect
+         * mentions a +1/+1 counter or a new permanent.
+         */
+        internal fun selfFollowUps(definition: CardDefinition): List<TriggeredAbility> =
+            definition.triggeredAbilities.filter { ability ->
+                ability.targetRequirement == null && ability.additionalTargetRequirements.isEmpty() &&
+                    ability.interveningIf == null && ability.binding != TriggerBinding.ATTACHED &&
+                    recurringLikelihood(ability) == null &&
+                    (mentionsPlusOneCounters(ability.effect) || mentionsNewPermanents(ability.effect))
             }
 
         private data class RepeatableCost(val manaValue: Int, val taps: Boolean)
