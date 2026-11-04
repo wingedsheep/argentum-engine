@@ -73,7 +73,7 @@ class FlexibleTargetPolarityAiTest : ScenarioTestBase() {
                 typeLine = "Instant"
                 spell {
                     val creature = target(TargetFilter.Creature)
-                    effect = Effects.ReturnToHand(creature) then Effects.Move(creature, Zone.LIBRARY)
+                    effect = Effects.ReturnToHand(creature) then Effects.Move(creature, Zone.COMMAND)
                 }
             }
             TargetPolarityAnalyzer.forSpell(unread) shouldBe listOf(TargetPolarity.UNKNOWN)

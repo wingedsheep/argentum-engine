@@ -1,3 +1,50 @@
+// Admiral's Order
+{
+    "name": "Admiral's Order",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Raid — If you attacked this turn, you may pay {U} rather than pay this spell's mana cost.\nCounter target spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{U}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "TurnTracking",
+                    "player": "You",
+                    "tracker": "PLAYER_ATTACKED"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Damn the cannons, mates. Charge!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80dc0310-afd9-49b4-b58f-a0e91120c38c.jpg?1783935329"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Angrath's Ambusher
 {
     "name": "Angrath's Ambusher",
@@ -1333,6 +1380,177 @@
     ]
 }
 
+// Dark Inquiry
+{
+    "name": "Dark Inquiry",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Naomi Baker",
+        "flavorText": "\"Your mind is no longer yours to waste.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42eaa634-0add-4e3d-9eee-5712598dda3f.jpg?1783935315"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dead Man's Chest
+{
+    "name": "Dead Man's Chest",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature an opponent controls\nWhen enchanted creature dies, exile cards equal to its power from the top of its owner's library. You may cast spells from among those cards for as long as they remain exiled, and mana of any type can be spent to cast them.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dead Man's Chest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "Power"
+                                },
+                                "player": "OwnerOfTriggeringEntity"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "OwnerOfTriggeringEntity"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": "Permanent",
+                            "withAnyManaType": true,
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "When enchanted creature dies, exile cards equal to its power from the top of its owner's library. You may cast spells from among those cards for as long as they remain exiled, and mana of any type can be spent to cast them."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:opponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a76ac1d9-b0df-4dec-b133-057cc5902071.jpg?1783935313",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If Dead Man's Chest and the enchanted creature are both put into graveyards at the same time, the last ability of Dead Man's Chest still triggers."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "To determine how many cards to exile, use the enchanted creature's power as it last existed on the battlefield."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If Dead Man's Chest enchants a creature that you own but an opponent controls, you'll exile cards from your library."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "The effect of Dead Man's Chest doesn't change when you can cast the exiled cards. For example, if you exile a creature card without flash, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Casting an exiled card causes it to leave exile. You can't cast it multiple times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deadeye Rig-Hauler
 {
     "name": "Deadeye Rig-Hauler",
@@ -1493,6 +1711,124 @@
             {
                 "date": "2018-01-19",
                 "text": "If an opponent's Dinosaur has an enrage ability and your Dinosaur Hunter deals damage to it during your turn, that ability resolves before Dinosaur Hunter's ability destroys the Dinosaur. If it's that opponent's turn, the Dinosaur is destroyed first, but its enrage ability still resolves afterwards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dire Fleet Poisoner
+{
+    "name": "Dire Fleet Poisoner",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Flash\nDeathtouch\nWhen this creature enters, target attacking Pirate you control gets +1/+1 and gains deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dire Fleet Poisoner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature Pirate attacking ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Ben Maier",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88273b1e-b33b-44d3-8777-4e78a04eed65.jpg?1783935313"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dusk Charger
+{
+    "name": "Dusk Charger",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nThis creature gets +2/+2 as long as you have the city's blessing.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Lucas Graciano",
+        "flavorText": "Stories say demon blood runs in its veins, making it fearless and bloodthirsty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2ce54a3-f3eb-48a0-bfa2-5f4b90e413f0.jpg?1783935312",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
             }
         ]
     },
@@ -1685,6 +2021,110 @@
     ]
 }
 
+// Expel from Orazca
+{
+    "name": "Expel from Orazca",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nReturn target nonland permanent to its owner's hand. If you have the city's blessing, you may put that permanent on top of its owner's library instead.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "then": "GainCitysBlessing"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Put that permanent on top of its owner's library?"
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Library",
+                            "placement": "Top"
+                        },
+                        "otherwise": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64f5119f-3921-48a5-a8fb-0cb1bbabde30.jpg",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If you have the city's blessing and choose not to put the target nonland permanent on top of its owner's library, it's returned to its owner's hand."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "If you cast a spell with ascend, you don't get the city's blessing until it resolves. Players may respond to that spell by trying to change whether you get the city's blessing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Exultant Skymarcher
 {
     "name": "Exultant Skymarcher",
@@ -1800,6 +2240,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Fathom Fleet Boarder
+{
+    "name": "Fathom Fleet Boarder",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "When this creature enters, you lose 2 life unless you control another Pirate.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fathom Fleet Boarder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Pirate",
+                            "negate": true,
+                            "excludeSelf": true
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Without frequent raids, orcs sometimes get bored and plunder their own ships.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f447eb83-c805-4ba8-b9f2-0add092f6795.jpg?1783935311",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Fathom Fleet Boarder's ability triggers regardless of whether you control another Pirate. Whether you control another Pirate is checked only as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2380,6 +2880,111 @@
     ]
 }
 
+// Golden Demise
+{
+    "name": "Golden Demise",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nAll creatures get -2/-2 until end of turn. If you have the city's blessing, instead only creatures your opponents control get -2/-2 until end of turn.",
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "then": "GainCitysBlessing"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "PlayerHasCitysBlessing"
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88bb420a-8bf1-4504-b1b5-2d929be978be.jpg",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If you cast a spell with ascend, you don't get the city's blessing until it resolves. Players may respond to that spell by trying to change whether you get the city's blessing."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Golden Demise affects only creatures that are on the battlefield at the time it resolves. Creatures that enter the battlefield later in the turn won't get -2/-2. Similarly, if you have the city's blessing, creatures that come under your opponents' control later in the turn won't get -2/-2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Grasping Scoundrel
 {
     "name": "Grasping Scoundrel",
@@ -2419,6 +3024,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Gruesome Fate
+{
+    "name": "Gruesome Fate",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent loses 1 life for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "LoseLife",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            },
+            "target": {
+                "type": "PlayerRef",
+                "player": "EachOpponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Even Amundsen",
+        "flavorText": "\"You were keen enough to sink your fangs into us, vampire! And now you're afraid of a few little nibbles?\"\n—Udvil \"Ratty\" Ratlock",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ea07116-afe7-4d88-a530-54424e791b74.jpg?1783935311"
+    }
+}
+
+// Hornswoggle
+{
+    "name": "Hornswoggle",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature spell. You create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "Being a merciful pirate, she saved the vampire's gold from falling overboard.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b10b8f15-b323-44d8-85a7-ed662a40889d.jpg?1783935324",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Hornswoggle can target a spell that can't be countered, such as Nezahal, Primal Tide. When Hornswoggle resolves, that spell won't be countered, but you'll still get a Treasure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3160,6 +3839,174 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Mastermind's Acquisition
+{
+    "name": "Mastermind's Acquisition",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Search your library for a card, put it into your hand, then shuffle.\n• Put a card you own from outside the game into your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for a card, put it into your hand, then shuffle"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Sideboard"
+                                },
+                                "storeAs": "wishable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "wishable",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "wishableFound"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "wishableFound",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Put a card you own from outside the game into your hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Another piece of a nefarious puzzle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f00f09b-a113-460e-ac2f-d3988a83179e.jpg?1783935310",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "In a casual game, a card you choose from outside the game comes from your personal collection. In a tournament event, a card you choose from outside the game must come from your sideboard. You may look at your sideboard at any time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mausoleum Harpy
+{
+    "name": "Mausoleum Harpy",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Harpy",
+    "oracleText": "Flying\nAscend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nWhenever another creature you control dies, if you have the city's blessing, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "ASCEND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mausoleum Harpy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54b40f3c-d75e-483f-b978-8b3bf30cc7ce.jpg?1783935309",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If another creature you control is dealt lethal damage at the same time that Mausoleum Harpy is dealt lethal damage, Mausoleum Harpy won't be saved by the +1/+1 counter that would have been put on it."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents. The city's blessing isn't a permanent itself and can't be removed by any effect."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Some cards have triggered abilities with an intervening \"if\" clause that checks whether you have the city's blessing. You must already have the city's blessing in order for these abilities to trigger; otherwise they do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4299,6 +5146,53 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sadistic Skymarcher
+{
+    "name": "Sadistic Skymarcher",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "As an additional cost to cast this spell, reveal a Vampire card from your hand or pay {1}.\nFlying, lifelink",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomRevealFromHand",
+                        "filter": "Vampire"
+                    }
+                },
+                "alternativeManaCost": "{1}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"I will catch you, child of the sun. I will drink your life and leave you a husk, discarded in the shadows.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/1334ee90-c798-42ec-b2be-68dac766a7eb.jpg?1783935307",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If an effect refers to a \"[subtype] spell\" or \"[subtype] card,\" it refers only to a spell or card that has that subtype."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5990,6 +6884,333 @@
         "flavorText": "Abandoning both queen and church, he chose to follow power.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d890a17-ffd4-4bda-bef3-2c116f7bf66f.jpg?1783935259"
     },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vraska's Scorn
+{
+    "name": "Vraska's Scorn",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent loses 4 life. You may search your library and/or graveyard for a card named Vraska, Scheming Gorgon, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Vraska, Scheming Gorgon"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Vraska, Scheming Gorgon to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Vraska, Scheming Gorgon"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Vraska, Scheming Gorgon to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Vraska, Scheming Gorgon"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Vraska, Scheming Gorgon to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/569ff807-365d-4f25-9fad-86617ed1c8f2.jpg?1783935258",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vraska, Scheming Gorgon
+{
+    "name": "Vraska, Scheming Gorgon",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Vraska",
+    "oracleText": "+2: Creatures you control get +1/+0 until end of turn.\n−3: Destroy target creature.\n−10: Until end of turn, creatures you control gain deathtouch and \"Whenever this creature deals damage to an opponent, that player loses the game.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vraska, Scheming Gorgon:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Scheming Gorgon:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Vraska, Scheming Gorgon:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Vraska, Scheming Gorgon:1",
+                                    "trigger": {
+                                        "type": "DealsDamageEvent",
+                                        "recipient": {
+                                            "type": "RecipientPlayer",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    "effect": {
+                                        "type": "LoseGame",
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "TriggeringPlayer"
+                                        },
+                                        "message": "Dealt damage by a creature empowered by Vraska, Scheming Gorgon"
+                                    },
+                                    "descriptionOverride": "Whenever this creature deals damage to an opponent, that player loses the game."
+                                },
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91685732-c118-4f52-ac77-f96866a687a3.jpg?1783935259",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Vraska's first and last abilities affect only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get +1/+0 or gain abilities."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "The triggered ability Vraska grants to creatures with her third ability triggers on any damage those creatures deal, including noncombat damage. If multiple players are dealt damage simultaneously by affected creatures, you choose the order in which those triggers resolve. If all your opponents have lost the game, you'll win the game before any more of the triggers resolve."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLACK"
     ]
