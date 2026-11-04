@@ -411,6 +411,7 @@ private fun needsCreatures(card: CardDefinition): Boolean {
     val tags = CardIntentAnalyzer.analyze(card).tags
     if (tags.any { it in ANSWER_TAGS }) return false
     return IntentTag.PUMP in tags || IntentTag.COMBAT_TRICK in tags || IntentTag.COMBAT_ENHANCEMENT in tags ||
+        IntentTag.EQUIPMENT_RELOCATION in tags ||
         card.typeLine.hasSubtype(Subtype.AURA)
 }
 

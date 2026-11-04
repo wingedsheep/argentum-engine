@@ -31,8 +31,9 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "+2 Mace" to emptyList(),
         // Shuffling itself into its library when it dies has no target and no window: no intent tag.
         "Alabaster Dragon" to emptyList(),
-        // Mixed +4/-1: whether that helps depends on the creature, so equip's target stays unread.
-        "Barbed Battlegear" to listOf("polarity: AttachEquipmentEffect"),
+        // Mixed +4/-1: whether that helps depends on the creature, but equip only reaches our own
+        // creatures, so its target is open for the simulation to pick the one that wears it best.
+        "Barbed Battlegear" to emptyList(),
         // A pump + keyword trick is held whole by HoldPolicy's combat-trick branch: the keyword is timed.
         "Adamant Will" to emptyList(),
         // An end-of-turn damage shield on an activation waits for damage that can still come.

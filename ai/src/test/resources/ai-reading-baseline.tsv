@@ -103,7 +103,7 @@ Aclazotz, Deepest Betrayal	intent: ReturnSelfFromZoneTransformedEffect
 Acolyte of Aclazotz
 Acolyte of Affliction
 Acquired Mutation
-Acquisition Octopus	intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
+Acquisition Octopus	intent: UnattachEquipmentEffect
 Acquisitions Expert
 Acrobatic Cheerleader	intent: AddCountersEffect
 Acrobatic Leap
@@ -196,7 +196,7 @@ Aetherjacket
 Aethershield Artificer
 Aethersnipe
 Aethertow
-Aettir and Priwen	polarity: AttachEquipmentEffect
+Aettir and Priwen
 Affa Guard Hound
 Affectionate Indrik
 Afflict
@@ -799,7 +799,7 @@ Armaggon, Future Shark
 Armament Corps	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Armament Dragon	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Armasaur Guide
-Armed and Armored	intent: ForEach>AddCardTypeEffect; intent: ForEach>AttachTargetEquipmentToCreatureEffect; intent: Pipeline(BattlefieldMatching→?); intent: SelectTargetEffect; timing: ForEach>AddCardTypeEffect
+Armed and Armored	timing: ForEach>AddCardTypeEffect
 Armguard Familiar	intent: UnattachEquipmentEffect
 Armillary Sphere
 Armor Sliver
@@ -937,7 +937,7 @@ Assembly-Worker
 Assert Authority
 Assert Perfection
 Assimilate Essence
-Assimilation Aegis	intent: BecomeCopyOfLinkedExileEffect; polarity: AttachEquipmentEffect
+Assimilation Aegis	intent: BecomeCopyOfLinkedExileEffect
 Assure // Assemble	timing: GrantKeywordEffect
 Astelli Reclaimer
 Astor, Bearer of Blades
@@ -1167,7 +1167,7 @@ Bala Ged Recovery
 Bala Ged Scorpion
 Balamb Garden, SeeD Academy
 Balamb T-Rexaur
-Balan, Wandering Knight	intent: ForEach>AttachTargetEquipmentToCreatureEffect
+Balan, Wandering Knight
 Balance	intent: ForEach>Pipeline(ControlledPermanents→?); intent: ForEach>Pipeline(hand→?); intent: Pipeline(?→graveyard)
 Balance of Power	polarity: DrawCardsEffect
 Balduvian Atrocity	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
@@ -1234,8 +1234,8 @@ Barbarian Lunatic
 Barbarian Riftcutter
 Barbarian Ring
 Barbary Apes
-Barbed Batterfist	polarity: AttachEquipmentEffect
-Barbed Battlegear	polarity: AttachEquipmentEffect
+Barbed Batterfist
+Barbed Battlegear
 Barbed Bloodletter	intent: GrantKeywordEffect; polarity: AttachEquipmentEffect; polarity: GrantKeywordEffect
 Barbed Servitor	intent: SuspectEffect
 Barbed Sliver
@@ -1395,7 +1395,7 @@ Beastie Beatdown
 Beastmaster Ascension
 Beastrider Vanguard
 Beasts of Bogardan
-Beatrix, Loyal General	intent: ForEach>AttachTargetEquipmentToCreatureEffect; intent: Pipeline(BattlefieldMatching→?); polarity: ForEachEffect
+Beatrix, Loyal General
 Bebop & Rocksteady	intent: PayOrSufferEffect
 Bebop, Warthog Warrior
 Beckett Mariner, Impetuous Ensign
@@ -1568,7 +1568,7 @@ Black Cat, Cunning Thief	polarity: Pipeline(TopOfLibrary→exile|library)
 Black Dragon
 Black Knight
 Black Lotus
-Black Mage's Rod	polarity: AttachEquipmentEffect
+Black Mage's Rod
 Black Mana Battery
 Black Market
 Black Market Connections
@@ -1596,8 +1596,8 @@ Blade Instructor
 Blade Juggler
 Blade Sliver
 Blade Splicer
-Blade of Selves	polarity: AttachEquipmentEffect
-Blade of Shared Souls	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: AttachEquipmentEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
+Blade of Selves
+Blade of Shared Souls	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
 Blade of the Bloodchief
 Blade of the Oni	intent: UnattachEquipmentEffect
 Blade of the Sixth Pride
@@ -2323,7 +2323,7 @@ By Invitation Only	intent: ChooseNumberThenEffect
 Bygone Colossus
 Byrke, Long Ear of the Law	intent: DoubleCountersEffect
 Byway Barterer
-C.A.M.P.	polarity: AttachEquipmentEffect
+C.A.M.P.
 Cabal Archon
 Cabal Coffers
 Cabal Conditioning
@@ -2417,7 +2417,7 @@ Candlegrove Witch
 Candlelight Vigil
 Candlelit Cavalry
 Candles' Glow
-Candlestick	polarity: AttachEquipmentEffect
+Candlestick
 Candletrap	polarity: Aura>GrantKeyword; polarity: Aura>MoveToZoneEffect
 Candy Grapple
 Candy Trail
@@ -2547,7 +2547,7 @@ Case of the Uneaten Feast	intent: BecomeSolvedEffect; intent: ForEach>GrantStati
 Case the Joint
 Casey Jones, Jury-Rig Justiciar
 Casey Jones, Vigilante
-Cass, Hand of Vengeance	intent: ForEach>AttachTargetEquipmentToCreatureEffect; intent: Pipeline(AttachedTo→battlefield); polarity: ForEachEffect; polarity: Pipeline(AttachedTo→battlefield)
+Cass, Hand of Vengeance
 Cast Away Doubt
 Cast Down
 Cast into the Fire
@@ -2639,7 +2639,7 @@ Celestial Unicorn
 Celestine, the Living Saint
 Celestus Sanctifier	intent: Pipeline(TopOfLibrary→graveyard|library)
 Cellar Door	polarity: Pipeline(BottomOfLibrary→graveyard)
-Cement Shoes	polarity: AttachEquipmentEffect
+Cement Shoes
 Cemetery Desecrator
 Cemetery Gatekeeper	intent: Pipeline(graveyard→exile)
 Cemetery Illuminator	intent: Pipeline(graveyard→exile)
@@ -2692,7 +2692,7 @@ Chainer's Edict
 Chainer's Torment
 Chainer, Dementia Master	intent: Pipeline(BattlefieldMatching→exile)
 Chainer, Nightmare Adept	intent: GrantStaticAbilityEffect
-Chainflail Centipede	intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
+Chainflail Centipede	intent: UnattachEquipmentEffect
 Chains of Custody
 Chains of Mephistopheles
 Chainsaw
@@ -3096,7 +3096,7 @@ Codespell Cleric
 Codex Shredder
 Codie, Ravenous Codex	intent: CopyTargetSpellEffect
 Codie, Vociferous Codex
-Codsworth, Handy Helper	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Codsworth, Handy Helper
 Coerced to Kill	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKeyword; polarity: Aura>GrantSubtype; polarity: Aura>SetBasePowerToughnessStatic
 Coercion
 Coeurl
@@ -3898,7 +3898,7 @@ Dead Drop
 Dead Man's Chest
 Dead Revels
 Dead Weight
-Dead-Iron Sledge	polarity: AttachEquipmentEffect
+Dead-Iron Sledge
 Deadapult
 Deadbridge Goliath
 Deadeye Brawler
@@ -4537,7 +4537,7 @@ Dragon Scales	intent: ReturnSelfToBattlefieldAttachedEffect
 Dragon Shadow	intent: ReturnSelfToBattlefieldAttachedEffect
 Dragon Sniper
 Dragon Tempest
-Dragon Throne of Tarkir	polarity: AttachEquipmentEffect
+Dragon Throne of Tarkir
 Dragon Trainer
 Dragon Turtle
 Dragon Tyrant
@@ -4839,7 +4839,7 @@ Dwynen, Gilt-Leaf Daen
 Dyadrine, Synthesis Amalgam
 Dying to Serve
 Dynamite Diver
-Dáin Ironfoot	intent: AttachTargetEquipmentToCreatureEffect
+Dáin Ironfoot
 Dáin's Company
 Dáin, Lord of the Iron Hills
 Déjà Vu
@@ -5504,7 +5504,7 @@ Exploration Broodship
 Exploratory Mission
 Explore
 Explorer's Cache	intent: MoveCountersEffect; polarity: MoveCountersEffect
-Explorer's Scope	intent: Pipeline(TopOfLibrary→battlefield); polarity: AttachEquipmentEffect
+Explorer's Scope	intent: Pipeline(TopOfLibrary→battlefield)
 Explosive Apparatus
 Explosive Derailment
 Explosive Entry
@@ -6361,7 +6361,7 @@ Frilled Sea Serpent
 Frilled Sparkshooter
 Frillscare Mentor
 Frodo Baggins	intent: TheRingTemptsYouEffect
-Frodo, Determined Hero	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Frodo, Determined Hero
 Frodo, Sauron's Bane
 Frog Butler	intent: GrantKeywordEffect
 Frog Tongue
@@ -6632,7 +6632,7 @@ General Kreat, the Boltbringer
 General Kudro of Drannith
 General Traag, Heart of Stone
 General's Enforcer
-General's Kabuto	polarity: AttachEquipmentEffect
+General's Kabuto
 Generous Ent
 Generous Gift
 Generous Patron
@@ -6802,7 +6802,7 @@ Gilded Light	timing: GrantEvasionKeywordEffect
 Gilded Lotus
 Gilded Pinions
 Gilded Sentinel
-Gilgamesh, Master-at-Arms	intent: AttachTargetEquipmentToCreatureEffect; intent: Pipeline(BattlefieldMatching|TopOfLibrary→battlefield|library)
+Gilgamesh, Master-at-Arms
 Gilt-Leaf Ambush
 Gilt-Leaf Palace
 Gilt-Leaf Seer	intent: Pipeline(TopOfLibrary→library)
@@ -6850,7 +6850,7 @@ Gladewalker Ritualist
 Gladiolus Amicitia
 Glaive of the Guildpact
 Glamdring	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(hand→?); intent: StoreNumberEffect
-Glamdring, Foe-hammer	polarity: AttachEquipmentEffect
+Glamdring, Foe-hammer
 Glamer Gifter	polarity: GrantKeywordEffect
 Glamermite
 Glamorous Outlaw
@@ -7358,7 +7358,7 @@ Griffin Aerie
 Griffin Protector
 Griffin Sentinel
 Griffnaut Tracker
-Grifter's Blade	polarity: AttachEquipmentEffect
+Grifter's Blade
 Grim Backwoods
 Grim Bauble
 Grim Bounty
@@ -7577,7 +7577,7 @@ Halo Hopper
 Halo Hunter
 Halo Scarab
 Halo-Charged Skaab	intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
-Halvar, God of Battle	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachEquipmentEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Halvar, God of Battle
 Hama Pashar, Ruin Seeker
 Hama, the Bloodbender
 Hamato Guardian Stance
@@ -7600,7 +7600,7 @@ Hand That Feeds
 Hand of Death
 Hand of Justice
 Hand of Silumgar
-Hand of Vecna	polarity: AttachEquipmentEffect
+Hand of Vecna
 Hangar Scrounger	polarity: GrantTriggeredAbilityEffect
 Hangarback Walker
 Hanged Executioner
@@ -7664,7 +7664,7 @@ Harsh Justice
 Harsh Mentor
 Harsh Mercy
 Haru, Hidden Talent	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Harvest Hand	intent: ReturnSelfFromZoneTransformedEffect; polarity: AttachEquipmentEffect
+Harvest Hand	intent: ReturnSelfFromZoneTransformedEffect
 Harvest Season
 Harvester of Misery
 Harvester of Souls
@@ -7738,7 +7738,7 @@ Heaped Harvest
 Heart Sliver
 Heart Warden
 Heart of Ramos
-Heart-Piercer Bow	polarity: AttachEquipmentEffect
+Heart-Piercer Bow
 Heartbeat of Spring
 Heartfire
 Heartfire Hero
@@ -7814,7 +7814,7 @@ Hellspur Brute
 Hellspur Posse Boss
 Helm of Chatzuk	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Helm of the Ghastlord	polarity: Aura>ConditionalStaticAbility
-Helm of the Host	intent: CreateTokenCopyOfEquippedCreatureEffect; polarity: AttachEquipmentEffect
+Helm of the Host	intent: CreateTokenCopyOfEquippedCreatureEffect
 Helpful Hunter
 Helping Hand
 Helvault
@@ -8292,7 +8292,7 @@ Identity Echo
 Idol of Endurance	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
 Idol of False Gods
 Idol of Oblivion
-Idol of the Deep King	polarity: AttachEquipmentEffect
+Idol of the Deep King
 Idolized
 Idyllic Beachfront
 Idyllic Grange
@@ -8462,7 +8462,7 @@ Infestation Sage
 Infested Fleshcutter
 Infesting Radroach
 Infiltrate
-Infiltration Lens	polarity: AttachEquipmentEffect
+Infiltration Lens
 Infinite Authority	polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect
 Infinite Coursework
 Infinite Diversity	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
@@ -8619,7 +8619,7 @@ Invasion of Lorwyn
 Invasion of Mercadia
 Invasion of Moag
 Invasion of Muraganda
-Invasion of New Capenna	polarity: AttachEquipmentEffect
+Invasion of New Capenna
 Invasion of New Phyrexia
 Invasion of Pyrulea
 Invasion of Ravnica
@@ -8685,7 +8685,7 @@ Iron Giant
 Iron Golem
 Iron Hills
 Iron Hills Blacksmith
-Iron Hills Stalwart	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Iron Hills Stalwart
 Iron Lad, Diverging Destiny
 Iron Lance
 Iron League Steed
@@ -8875,7 +8875,7 @@ Jeskai Student
 Jeskai Windscout
 Jessica Jones, Private Eye	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Jet Medallion
-Jet's Brainwashing	polarity: mixed(CantBlockEffect+GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Jet's Brainwashing
 Jet, Freedom Fighter
 Jetmir's Fixer
 Jetmir's Garden
@@ -9187,7 +9187,7 @@ Kellogg, Dangerous Mind
 Kelpie Guide
 Kelsinko Ranger
 Kemba's Skyguard
-Kemba, Kha Enduring	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Kemba, Kha Enduring
 Kenessos, Priest of Thassa	intent: Pipeline(TopOfLibrary→battlefield|library)
 Kenrith's Transformation
 Kenrith, the Returned King
@@ -9397,7 +9397,7 @@ Koma's Faithful
 Koma, Cosmos Serpent
 Koma, World-Eater
 Kona, Rescue Beastie	intent: Pipeline(hand→battlefield)
-Konda's Banner	polarity: AttachEquipmentEffect
+Konda's Banner
 Konda's Hatamoto
 Konda, Lord of Eiganjo
 Kongming's Contraptions
@@ -10015,7 +10015,7 @@ Los Diablos Missile Base
 Lose Hope
 Lost Days
 Lost Isle Calling
-Lost Jitte	polarity: AttachEquipmentEffect
+Lost Jitte
 Lost Legion
 Lost Soul
 Lost in Space
@@ -10270,7 +10270,7 @@ Malcator's Watcher
 Malcator, Purity Overseer
 Malcolm, Alluring Scoundrel
 Malcolm, the Eyes
-Malefic Scythe	polarity: AttachEquipmentEffect
+Malefic Scythe
 Malevolent Awakening
 Malevolent Chandelier	polarity: MoveToZoneEffect
 Malevolent Hermit
@@ -10432,7 +10432,7 @@ Mask of Avacyn
 Mask of Griselbrand
 Mask of Immolation
 Mask of Law and Grace
-Mask of Memory	polarity: AttachEquipmentEffect
+Mask of Memory
 Mask of the Jadecrafter
 Masked Admirers
 Masked Bandits
@@ -10471,7 +10471,7 @@ Master of Winds
 Master of the Feast
 Master of the Hunt
 Master of the Veil	intent: TurnFaceDownEffect; polarity: TurnFaceDownEffect
-Master of the Wild Hunt	polarity: DistributeDamageAmongCollectionEffect; polarity: ForEachEffect
+Master of the Wild Hunt
 Master the Way
 Master's Councillors
 Master's Guide-Mural
@@ -10832,7 +10832,7 @@ Mirror Golem
 Mirror Image
 Mirror March
 Mirror Room // Fractured Realm
-Mirror Shield	polarity: AttachEquipmentEffect
+Mirror Shield
 Mirror Universe
 Mirror Universe Intrusion	polarity: CreateTokenCopyOfTargetEffect
 Mirror of Galadriel
@@ -10841,7 +10841,7 @@ Mirrorform	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermane
 Mirrorhall Mimic
 Mirrormade
 Mirrormere Guardian	intent: TheRingTemptsYouEffect
-Mirrormind Crown	polarity: AttachEquipmentEffect
+Mirrormind Crown
 Mirrorshell Crab
 Mirrorwing Dragon	intent: CopyForOtherPossibleTargetsEffect
 Miscalculation
@@ -10917,7 +10917,7 @@ Mithril Coat
 Mizzium Tank
 Mizzix's Mastery	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
 Mizzix, Replica Rider	intent: CopyTargetSpellEffect
-Mjölnir, Hammer of Thor	polarity: AttachEquipmentEffect
+Mjölnir, Hammer of Thor
 Mm'menon, Uthros Exile
 Mm'menon, the Right Hand
 Mnemonic Betrayal	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile|graveyard)
@@ -11554,7 +11554,7 @@ Ninja Teen
 Ninja of the Deep Hours
 Ninja of the Hand
 Ninja of the New Moon
-Ninja's Blades	polarity: AttachEquipmentEffect
+Ninja's Blades
 Ninja's Kunai
 Ninth Bridge Patrol
 Nirkana Assassin
@@ -11698,7 +11698,7 @@ Oath of Kaya
 Oath of Teferi
 Oath of the Ancient Wood
 Oath of the Grey Host
-Oathkeeper, Takeno's Daisho	polarity: AttachEquipmentEffect
+Oathkeeper, Takeno's Daisho
 Oathsworn Giant
 Oathsworn Knight
 Oathsworn Vampire
@@ -12156,7 +12156,7 @@ Pardic Swordsmith
 Pardic Wanderer
 Parhelion II
 Parhelion Patrol
-Pariah's Shield	polarity: AttachEquipmentEffect
+Pariah's Shield
 Parish-Blade Trainee	intent: EmitKeywordCounterEventEffect
 Park Heights Pegasus
 Parker Luck	intent: Pipeline(TopOfLibrary→hand)
@@ -12258,7 +12258,7 @@ Perception Bobblehead	intent: CastFromCollectionWithoutPayingCostEffect; intent:
 Perch Protection
 Peregrin Took
 Peregrine Drake	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
-Peregrine Mask	polarity: AttachEquipmentEffect
+Peregrine Mask
 Perennation
 Perennial Behemoth
 Perfect Intimidation	polarity: RemoveAllCountersEffect
@@ -12445,7 +12445,7 @@ Pinpoint Avalanche
 Pious Interdiction
 Pious Kitsune
 Pious Wayfarer
-Pip-Boy 3000	polarity: AttachEquipmentEffect
+Pip-Boy 3000
 Piper Wright, Publick Reporter
 Piper of the Swarm
 Pippin's Bravery
@@ -12454,7 +12454,7 @@ Piracy	intent: TapForManaPermanentsYouDontControlEffect
 Piracy Charm	polarity: ModifyStatsEffect
 Piranha Fly
 Piranha Marsh
-Pirate Hat	polarity: AttachEquipmentEffect
+Pirate Hat
 Pirate Peddlers
 Pirate Ship
 Pirate's Cutlass
@@ -12829,7 +12829,7 @@ Provisions Merchant
 Provoke the Trolls	polarity: mixed(DealDamageEffect+ModifyStatsEffect)
 Prowcatcher Specialist
 Prowess of the Fair
-Prowler's Helm	polarity: AttachEquipmentEffect
+Prowler's Helm
 Prowler, Clawed Thief
 Prowling Caracal
 Prowling Felidar
@@ -13257,7 +13257,7 @@ Rathi Trapper
 Rattleback Apothecary	polarity: ModalEffect
 Rattleblaze Scarecrow
 Rattleclaw Mystic
-Raubahn, Bull of Ala Mhigo	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Raubahn, Bull of Ala Mhigo
 Raucous Audience
 Raucous Carnival
 Raucous Entertainer
@@ -13345,7 +13345,7 @@ Reanimate
 Reaper King
 Reaper from the Abyss
 Reaper of Night
-Reaper's Talisman	polarity: AttachEquipmentEffect
+Reaper's Talisman
 Reaping Willow
 Reaping the Graves
 Rearing Embermare
@@ -13554,7 +13554,7 @@ Replicator
 Repository Skaab
 Reprieve	polarity: DrawCardsEffect; polarity: ReturnSpellToOwnersHandEffect
 Reptil, Dinomorpher
-Reptilian Recruiter	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Reptilian Recruiter
 Reptilian Reflection
 Repudiate // Replicate
 Repulse
@@ -13705,7 +13705,7 @@ Rhox Meditant
 Rhox Oracle
 Rhox Pummeler
 Rhox War Monk
-Rhuk, Hexgold Nabber	intent: ForEach>AttachTargetEquipmentToCreatureEffect; intent: Pipeline(AttachedTo→?)
+Rhuk, Hexgold Nabber
 Rhys, the Evermore	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Rhystic Study	intent: PayOrSufferEffect
 Rhythm of the Wild
@@ -13922,7 +13922,7 @@ Rograkh, Son of Rohgahh
 Rogue Artificial Intelligence
 Rogue Class	intent: Pipeline(TopOfLibrary→exile)
 Rogue Kavu
-Rogue's Gloves	polarity: AttachEquipmentEffect
+Rogue's Gloves
 Rogue's Passage
 Rogues' Gallery
 Rohgahh of Kher Keep	intent: PayOrSufferEffect
@@ -14909,7 +14909,7 @@ Shadowy Backstreet
 Shadrix Silverquill
 Shady Informant
 Shady Traveler
-Shagrat, Loot Bearer	polarity: AttachTargetEquipmentToCreatureEffect
+Shagrat, Loot Bearer
 Shahrazad	intent: PlaySubgameEffect
 Shaile, Dean of Radiance	polarity: mixed(AddCountersEffect+DealDamageEffect)
 Shake the Foundations
@@ -15012,7 +15012,7 @@ Shield Wall
 Shield of Duty and Reason
 Shield of Kaldra
 Shield of the Ages
-Shield of the Realm	polarity: AttachEquipmentEffect
+Shield of the Realm
 Shield-Wall Sentinel
 Shieldmage Elder	timing: PreventDamageEffect
 Shieldmate's Blessing
@@ -15141,7 +15141,7 @@ Sidar Jabari
 Sidequest: Card Collection
 Sidequest: Catch a Fish
 Sidequest: Hunt the Mark
-Sidequest: Play Blitzball	intent: SelectTargetEffect; polarity: AttachEquipmentEffect
+Sidequest: Play Blitzball	intent: SelectTargetEffect
 Sidequest: Raise a Chocobo
 Sideswipe	intent: ChangeTriggeringObjectTargetsEffect; polarity: ChangeTriggeringObjectTargetsEffect
 Sidewinder Sliver
@@ -15367,7 +15367,7 @@ Skull Skaab
 Skull of Orm
 Skull of Ramos
 Skullcap Snail
-Skullclamp	polarity: AttachEquipmentEffect
+Skullclamp
 Skullknocker Ogre
 Skullport Merchant
 Skullslither Worm
@@ -16246,7 +16246,7 @@ Stitched Assistant
 Stitched Drake
 Stitched Mangler
 Stitcher's Apprentice
-Stitcher's Graft	intent: GrantKeywordEffect; polarity: AttachEquipmentEffect
+Stitcher's Graft	intent: GrantKeywordEffect
 Stitcher's Supplier
 Stitchwing Skaab
 Stock Up
@@ -16262,7 +16262,7 @@ Stoke the Flames
 Stolen Grain
 Stolen Stark Tech
 Stolen Strategy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Stolen Uniform	polarity: AttachTargetEquipmentToCreatureEffect
+Stolen Uniform
 Stolen Vitality
 Stolen by the Fae
 Stomped by the Foot
@@ -16504,7 +16504,7 @@ Summon: Valefor
 Summon: Yojimbo
 Summoned Dromedary
 Summoner's Bane
-Summoner's Grimoire	polarity: AttachEquipmentEffect
+Summoner's Grimoire
 Summons of Saruman
 Sun Ce, Young Conquerer
 Sun Droplet
@@ -16596,7 +16596,7 @@ Super Suit
 Super Villain Lockup
 Super-Adaptoid	intent: AddCountersEffect; polarity: AddCountersEffect
 Super-Skrull
-Super-Soldier Serum	intent: ForEach>AttachTargetEquipmentToCreatureEffect; polarity: ForEachEffect
+Super-Soldier Serum
 Superior Foes of Spider-Man
 Superior Spider-Man
 Supernatural Rescue
@@ -16720,7 +16720,7 @@ Sword of the Animist
 Sword of the Meek
 Sword of the Squeak
 Swords to Plowshares
-Swordsman, Sharp Scoundrel	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Swordsman, Sharp Scoundrel
 Swordsworn Cavalier
 Swordwise Centaur
 Sworn Companions
@@ -16791,7 +16791,7 @@ Systems Override	polarity: AddCountersEffect; polarity: CreateDelayedTriggerEffe
 Sythis, Harvest's Hand
 Szadek, Lord of Secrets
 Szarel, Genesis Shepherd
-T-45 Power Armor	polarity: AttachEquipmentEffect
+T-45 Power Armor
 TCRI Building
 Tablet of Compleation
 Tablet of Discovery	intent: GrantMayPlayFromExileEffect
@@ -17305,7 +17305,7 @@ The Irencrag	intent: BecomeArtifactEffect
 The Jolly Balloon Man
 The Kami War
 The Kenriths' Royal Funeral	polarity: DrawCardsEffect; polarity: LoseLifeEffect; polarity: Pipeline(ChosenTargets→exile); polarity: StoreNumberEffect
-The Key to the Vault	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library); polarity: AttachEquipmentEffect
+The Key to the Vault	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library)
 The Kingpin of Crime	intent: GrantStaticAbilityEffect
 The Lady of the Mountain
 The Last Agni Kai
@@ -17365,7 +17365,7 @@ The Queen of Dale
 The Rack
 The Raven Man
 The Raven's Warning
-The Reality Chip	intent: UnattachEquipmentEffect; polarity: AttachEquipmentEffect
+The Reality Chip	intent: UnattachEquipmentEffect
 The Reaver Cleaver
 The Regalia	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library)
 The Restoration of Eiganjo
@@ -17459,7 +17459,7 @@ Thief of Hope
 Thief of Sanity
 Thief's Knife
 Thieves' Guild Enforcer
-Thieves' Tools	polarity: AttachEquipmentEffect
+Thieves' Tools
 Thieving Otter
 Thieving Skydiver
 Thieving Sprite
@@ -17816,7 +17816,7 @@ Tomik, Orzhov Lawmage
 Tomik, Wielder of Law
 Tonberry
 Tonic Peddler
-Tony Stark	intent: AttachTargetEquipmentToCreatureEffect; intent: Pipeline(hand→battlefield)
+Tony Stark
 Too Evil to Stay Dead
 Took Reaper	intent: TheRingTemptsYouEffect
 Tooth Collector
@@ -17838,7 +17838,7 @@ Topple the Statue
 Topplegeist
 Tor Giant
 Tor Wauki
-Toralf, God of Fury	polarity: AttachEquipmentEffect
+Toralf, God of Fury
 Torbran, Thane of Red Fell
 Torch Breath
 Torch Courier
@@ -17925,7 +17925,7 @@ Tragic Trajectory
 Trail of Crumbs
 Trail of Mystery
 Trailblazer
-Trailblazer's Boots	polarity: AttachEquipmentEffect
+Trailblazer's Boots
 Trailblazing Historian
 Trailtracker Scout
 Trained Armodon
@@ -18048,7 +18048,7 @@ Trick Shot
 Trickery Charm	polarity: BecomeCreatureTypeEffect
 Trickster's Elk
 Trickster's Stratagem
-Trickster's Talisman	polarity: AttachEquipmentEffect
+Trickster's Talisman
 Triclopean Sight	intent: TapUntapEffect
 Tricorder
 Trigon of Corruption
@@ -18357,7 +18357,7 @@ Uneasy Partings
 Unending Whisper
 Unexpected Assistance
 Unexpected Fangs
-Unexpected Request	polarity: AttachTargetEquipmentToCreatureEffect; polarity: CreateDelayedTriggerEffect
+Unexpected Request	polarity: CreateDelayedTriggerEffect
 Unexpected Windfall
 Unexplained Disappearance
 Unexplained Vision
@@ -19033,9 +19033,9 @@ Vulcan Mind-Meld	polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(TopOf
 Vulpikeet
 Vulpine Goliath
 Vulshok Battlegear
-Vulshok Battlemaster	intent: ForEach>AttachTargetEquipmentToCreatureEffect
+Vulshok Battlemaster
 Vulshok Berserker
-Vulshok Gauntlets	polarity: AttachEquipmentEffect
+Vulshok Gauntlets
 Vulshok Heartstoker
 Vulshok Morningstar
 Vulshok Replica
@@ -19304,7 +19304,7 @@ Weapon Rack	intent: MoveCountersEffect; polarity: MoveCountersEffect
 Weaponcraft Enthusiast
 Weaponize the Monsters
 Weapons Manufacturing
-Weapons Vendor	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
+Weapons Vendor
 Wear // Tear
 Wear Away
 Wear Down
@@ -19661,7 +19661,7 @@ Wizard's Lightning
 Wizard's Retort
 Wizard's Rockets
 Wizard's Spellbook	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets|FromLinkedExile→exile); polarity: RollDiceEffect
-Wizard's Staff	polarity: AttachEquipmentEffect
+Wizard's Staff
 Wizened Cenn
 Wizened Snitches
 Woe Strider
@@ -19732,7 +19732,7 @@ World-Weary
 Worldly Counsel
 Worldly Tutor
 Worlds Within Worlds	intent: ForEach>Pipeline(hand→battlefield); intent: Pipeline(BattlefieldMatching→exile|hand)
-Worldslayer	polarity: AttachEquipmentEffect
+Worldslayer
 Worldsoul Colossus
 Worldsoul's Rage
 Worldwalker Helm

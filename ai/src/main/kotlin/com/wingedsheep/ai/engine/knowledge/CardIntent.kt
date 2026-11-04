@@ -371,6 +371,16 @@ enum class IntentTag {
      */
     COMBAT_ENHANCEMENT,
 
+    /**
+     * Moves Equipment onto a creature without paying its equip cost — "attach target Equipment you
+     * control to target creature you control" (Halvar, Weapons Vendor), "attach any number of
+     * Equipment you control to it" (Beatrix, Loyal General), "attach all Equipment on the
+     * battlefield to it" (Vulshok Battlemaster). Worth the Equipment it moves, so it wants
+     * Equipment in the deck and creatures to wear it; which creature gets it is the polarity reader's
+     * creature slot, a gift.
+     */
+    EQUIPMENT_RELOCATION,
+
     /** An activated ability whose cost is sacrificing a permanent — a sacrifice outlet. */
     SACRIFICE_OUTLET,
 

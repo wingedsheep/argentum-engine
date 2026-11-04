@@ -240,6 +240,7 @@ object AiCardRating {
         IntentTag.TAPPER to "Tapper",
         IntentTag.EVASION_GRANT to "Grants evasion",
         IntentTag.COMBAT_ENHANCEMENT to "Combat enhancement",
+        IntentTag.EQUIPMENT_RELOCATION to "Moves Equipment",
         IntentTag.SACRIFICE_OUTLET to "Sacrifice outlet",
         IntentTag.CAST_BAN to "Stops opponents casting spells",
         IntentTag.MILL to "Mills opponents toward running out of cards",
