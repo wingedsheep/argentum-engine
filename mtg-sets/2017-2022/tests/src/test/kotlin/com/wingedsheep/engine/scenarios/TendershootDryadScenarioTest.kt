@@ -10,7 +10,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Tendershoot Dryad (RIX, printed here from BLC) — the other ascend card, and the one that pins the
+ * Tendershoot Dryad (canonical in RIX; BLC and SLD are reprints) — the other ascend card, and the one that pins the
  * *projection-mode* half of the city's blessing.
  *
  * Its "Saprolings you control get +2/+2 as long as you have the city's blessing" is a

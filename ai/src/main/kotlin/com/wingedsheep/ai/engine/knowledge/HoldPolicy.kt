@@ -464,10 +464,16 @@ class HoldPolicy(
         return TimingVerdict.NoWindow
     }
 
+    /**
+     * Whether the payoff waits on a trigger's event rather than landing on resolution: a temporary
+     * global trigger, or a triggered ability granted to a permanent (Ascendant Spirit's "whenever this
+     * deals combat damage to a player, draw a card" upgrade wants this turn's attack, not their end step).
+     */
     private fun createsTemporaryTrigger(effect: com.wingedsheep.sdk.scripting.effects.Effect): Boolean =
         EffectWalker.payoffLeaves(effect).any {
-            it is com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect &&
-                it.duration != com.wingedsheep.sdk.scripting.Duration.Permanent
+            (it is com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect &&
+                it.duration != com.wingedsheep.sdk.scripting.Duration.Permanent) ||
+                it is com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
         }
 
     private fun castCreatesTemporaryTrigger(state: GameState, cast: CastSpell?): Boolean {

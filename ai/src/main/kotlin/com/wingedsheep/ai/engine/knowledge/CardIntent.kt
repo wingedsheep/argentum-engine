@@ -268,6 +268,10 @@ enum class IntentTag {
      *
      * The scope test is what keeps it honest — see `CardIntentAnalyzer.neutralizeTags`. "This
      * creature can't block" printed on a creature is a drawback, not an answer.
+     * The one-shot form reads the same: another creature losing all its abilities, or having its
+     * base power and toughness set to 1/1 or less without dying (Warkite Marauder's "loses all
+     * abilities and has base power and toughness 0/1 until end of turn") — still on the
+     * battlefield, no longer a threat or a blocker worth the name.
      */
     NEUTRALIZE,
 
@@ -409,6 +413,14 @@ enum class IntentTag {
      * (Phage cast from anywhere but the hand) is the card's price and earns no tag.
      */
     GAME_WIN,
+
+    /**
+     * Its controller takes an extra turn — Time Walk, Timestream Navigator's "take an extra turn
+     * after this one". Its payoff is a whole turn: an untap, a draw and another attack, none of which
+     * the board simulation sees when the effect resolves, so without the tag the ability read as
+     * "no intent". An extra turn handed to an opponent is never a play and earns no tag.
+     */
+    EXTRA_TURN,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */

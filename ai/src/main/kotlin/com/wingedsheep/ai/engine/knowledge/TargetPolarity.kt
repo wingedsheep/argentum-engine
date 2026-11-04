@@ -66,6 +66,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
+import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
@@ -786,6 +787,9 @@ object TargetPolarityAnalyzer {
             is GrantHexproofFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
             is AdaptEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            // "Target creature you control explores" (Enter the Unknown): the explorer gets a +1/+1
+            // counter, or its controller the revealed land in hand — either way a gift to that side.
+            is ExploreEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AdaptAsThoughNoCountersEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddDynamicCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
             // Equip, fortify, reconfigure: "attach this permanent to target creature" does to that
@@ -1093,7 +1097,7 @@ object TargetPolarityAnalyzer {
      * readable leaf, or with any leaf this cannot call, reads [TargetPolarity.UNKNOWN] —
      * "enchanted creature has '…'" can be a curse as easily as a gift.
      */
-    private fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity =
+    internal fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity =
         grantedEffectPolarity(ability.effect, listOfNotNull(ability.targetRequirement))
 
     private fun grantedEffectPolarity(effect: Effect, requirements: List<TargetRequirement>): TargetPolarity {

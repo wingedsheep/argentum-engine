@@ -290,6 +290,9 @@ object SynergyAxes {
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
         is SurveilEffect -> setOf(SynergyAxis.GRAVEYARD)
+        // Explore puts a +1/+1 counter on the explorer for a nonland card, which it may bin like a
+        // surveil — both stocks Jadelight Ranger and its kin keep filling.
+        is com.wingedsheep.sdk.scripting.effects.ExploreEffect -> setOf(SynergyAxis.PLUS_COUNTERS, SynergyAxis.GRAVEYARD)
         is com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect -> {
             val destination = leaf.destination as? com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone
             if (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard && destination?.player == Player.You) {

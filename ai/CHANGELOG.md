@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4403 Reads explore as card selection that feeds +1/+1-counter and graveyard decks (and a pump when another creature explores), its own extra turn as a payoff the draft heuristic prices, an opposing creature losing all abilities or shrunk to a 0/1 base as neutralized (Warkite Marauder), and a helpful trigger granted for good as the ability it grants (Cherished Hatchling's fighting Dinosaurs)
+
 - #4400 Reads a creature's own "attacks or blocks each combat if able" as a combat drawback (Relentless Raptor), a +1/+1 counter it puts on itself as a pump (Resplendent Griffin), and putting a card from a permanent's exile pile onto its own battlefield as recursion (Tomb of the Dusk Rose)
 
 - Drafts artifact/enchantment-only removal below broad creature removal when using fallback ratings, including cantrips whose draw needs a legal target.

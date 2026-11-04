@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -517,7 +518,14 @@ object AiReadingAudit {
             // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
             val players = (each.space as? IterationSpace.Players)?.players
             val ownSide = players == null || players == Player.You
-            labels(body).filterNot { it.first in NO_INTENT_PIPELINES || (ownSide && noIntentPipeline(it.first, body)) }.forEach { (label, _) ->
+            // Over the owners of the source's exile pile, a pipeline out of that pile hands each owner
+            // their own cards back (Induced Amnesia's "return the exiled cards to their owner's hand"):
+            // the release half of an exile already read where it was made — no target, nothing to time.
+            val releasesThePile = players == Player.OwnersOfLinkedExile
+            labels(body).filterNot {
+                it.first in NO_INTENT_PIPELINES || (ownSide && noIntentPipeline(it.first, body)) ||
+                    (releasesThePile && it.first.startsWith(LINKED_EXILE_PIPELINE))
+            }.forEach { (label, _) ->
                 sink += gap(Check.INTENT, unread, "ForEach>$label", step(leaves, each))
             }
         }
@@ -526,7 +534,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, or is an unless-clause its payer suffers as an upkeep cost or life loss")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -627,6 +635,7 @@ object AiReadingAudit {
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
+        IntentTag.EXTRA_TURN -> "takes an extra turn"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
     }
@@ -757,6 +766,10 @@ object AiReadingAudit {
         if (leaf is ProliferateEffect && leaf.target == null) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
+        // A permanent exploring itself (Jadelight Ranger) is read as card selection, and its +1/+1
+        // counter is self-growth, which needs no tag: skipped so a sibling leaf is still asked about.
+        // A target creature exploring reads as a pump too and never gets here.
+        if (leaf is ExploreEffect && leaf.target == EffectTarget.Self) return true
         // A permanent removing counters from itself (a time/oil/charge tick, Clockwork Beast's
         // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
         // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
@@ -881,6 +894,9 @@ object AiReadingAudit {
      * Explicit opponent-capable mills now read MILL before this exemption is consulted.
      */
     private val NO_INTENT_PIPELINES = setOf("Pipeline(TopOfLibrary→graveyard)")
+
+    /** The label prefix of a pipeline whose cards come out of the source's linked-exile pile. */
+    private const val LINKED_EXILE_PIPELINE = "Pipeline(FromLinkedExile→"
 
     /**
      * Whether the pipeline labelled [label], made of [stages], needs no intent tag: one of
