@@ -194,6 +194,19 @@ Each step:
 The loop stops when the top groups are all in the ledger, in flight, judgment calls, or too small to
 matter (under five cards).
 
+## Game-win intent and finisher strikes
+
+`LoseGameEffect` aimed away from its controller (a target player, an opponent, or the player a
+trigger names) and `WinGameEffect` for its controller read `GAME_WIN`; so does a granted triggered
+ability whose effect does (Vraska, Scheming Gorgon's −10). Its controller losing the game (Phage cast
+from anywhere but the hand, Lich, Nine Lives) is the card's price and needs no intent.
+
+Under `AiProfile.finishersEndTheGame` the evaluator's `FinisherStrike` term prices a board, on its
+controller's turn before attackers are declared, whose creatures that can attack now carry a
+self-bound damage trigger reading `GAME_WIN` (printed or granted) and outnumber the defenders'
+untapped blockers: a near-win in life units. Emblem-held triggers (Vraska, Golgari Queen) read
+`GAME_WIN` but aren't counted by the term.
+
 ## Mill intent and library pressure
 
 Explicit `TopOfLibrary(isMill = true)` effects that can reach an opponent read `MILL`.

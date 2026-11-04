@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
@@ -614,6 +615,7 @@ object AiReadingAudit {
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
+        IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
     }
@@ -692,6 +694,10 @@ object AiReadingAudit {
         // response to removal too, is the simulation's call; no intent tag would change it.
         // Sacrificing another stays flagged.
         if (leaf == SacrificeSelfEffect) return true
+        // Its controller losing the game (Phage the Untouchable entering from anywhere but the hand)
+        // is the card's price, never a play: no target to aim, nothing to time, and no tag would
+        // make the AI choose it. An opponent losing is GAME_WIN and never reaches here.
+        if (leaf is LoseGameEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // A creature shifting its own P/T with a loss on either side — Flowstone's "+1/-1", Morphling's
         // "+1/-1", Blind Creeper's "-1/-1" drawback — has no target and is no trick to hold: it is a
         // trade on its own body the simulation prices on the board. A pure self pump already reads

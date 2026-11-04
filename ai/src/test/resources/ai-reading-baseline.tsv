@@ -505,7 +505,7 @@ Andradite Leech
 Andromedan Automatons
 Andúril, Flame of the West
 Angel of Despair
-Angel of Destiny	intent: ForEach>LoseGameEffect
+Angel of Destiny
 Angel of Finality	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
 Angel of Flight Alabaster
 Angel of Fury
@@ -719,7 +719,7 @@ Archers' Parapet
 Archfiend of Depravity
 Archfiend of Despair
 Archfiend of Ifnir
-Archfiend of the Dross	intent: LoseGameEffect
+Archfiend of the Dross
 Archfiend's Vessel
 Archghoul of Thraben
 Archipelagore
@@ -946,7 +946,7 @@ At Knifepoint
 Atalya, Samite Master
 Atarka Monument
 Atarka, World Render	intent: GrantKeywordEffect
-Atemsis, All-Seeing	intent: LoseGameEffect; intent: RevealHandEffect
+Atemsis, All-Seeing
 Athreos, God of Passage	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
 Athreos, Shroud-Veiled	intent: AddCountersEffect; intent: MoveToZoneEffect; polarity: AddCountersEffect
 Atlantean Cavalry
@@ -2640,7 +2640,7 @@ Centaur Peacemaker
 Centaur Safeguard
 Centaur Veteran
 Centaur's Herald
-Central Elevator // Promising Stairs	intent: WinGameEffect
+Central Elevator // Promising Stairs
 Cephalid Broker
 Cephalid Coliseum
 Cephalid Inkmage
@@ -3051,7 +3051,7 @@ Coal Golem
 Coalborn Entity
 Coalhauler Swine
 Coalition Skyknight
-Coalition Victory	intent: WinGameEffect
+Coalition Victory
 Coalition Warbrute
 Coalstoke Gearhulk
 Coast Watcher
@@ -5754,7 +5754,7 @@ Felhide Minotaur
 Felidar Cub
 Felidar Retreat
 Felidar Savior
-Felidar Sovereign	intent: WinGameEffect
+Felidar Sovereign
 Feline Sovereign
 Fell
 Fell Flagship	intent: Pipeline(hand→graveyard)
@@ -6321,7 +6321,7 @@ Frilled Sparkshooter
 Frillscare Mentor
 Frodo Baggins	intent: TheRingTemptsYouEffect
 Frodo, Determined Hero	intent: AttachTargetEquipmentToCreatureEffect; polarity: AttachTargetEquipmentToCreatureEffect
-Frodo, Sauron's Bane	intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
+Frodo, Sauron's Bane
 Frog Butler	intent: GrantKeywordEffect
 Frog Tongue
 Froghemoth	polarity: AddDynamicCountersEffect; polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
@@ -7528,7 +7528,7 @@ Hallowed Respite
 Hallowed Spiritkeeper
 Hallway Heckler
 Halo Forager	intent: ReflexiveTriggerEffect
-Halo Fountain	intent: WinGameEffect
+Halo Fountain
 Halo Hopper
 Halo Hunter
 Halo Scarab
@@ -7572,7 +7572,7 @@ Hapatra, the Desert Fang
 Hapatra, the Desert Frost	intent: TapUntapEffect
 Haphazard Bombardment	intent: AddCountersToCollectionEffect; intent: Pipeline(BattlefieldMatching→?)
 Hapless Researcher
-Happily Ever After	intent: WinGameEffect
+Happily Ever After
 Happy Hogan, Dauntless Driver
 Haradrim Spearmaster
 Harald Unites the Elves
@@ -7763,7 +7763,7 @@ Hellish Sideswipe
 Hellkite Courser	intent: ForEach>GrantKeywordEffect; intent: Pipeline(command→battlefield)
 Hellkite Overlord
 Hellkite Punisher
-Hellkite Tyrant	intent: WinGameEffect
+Hellkite Tyrant
 Hellkite Whelp
 Hellspur Brute
 Hellspur Posse Boss
@@ -7860,7 +7860,7 @@ Hidden Volcano	intent: DiscoverEffect
 Hide in Plain Sight	intent: Pipeline(TopOfLibrary→battlefield|library)
 Hide on the Ceiling
 Hideous Laughter
-Hidetsugu Consumes All	intent: LoseGameEffect
+Hidetsugu Consumes All
 Hidetsugu and Kairi	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Hidetsugu's Second Rite
 Hidetsugu, Devouring Chaos
@@ -9702,9 +9702,9 @@ Liberty Prime, Recharged
 Library Larcenist
 Library of Alexandria
 Library of Leng
-Lich	intent: LoseGameEffect
+Lich
 Lich's Caress
-Lich's Mastery	intent: ForceExileMultiZoneEffect; intent: LoseGameEffect
+Lich's Mastery	intent: ForceExileMultiZoneEffect
 Lich's Relic
 Lich-Knights' Conquest
 Lie in Wait
@@ -9782,7 +9782,7 @@ Liliana of the Veil	intent: ForEach>Pipeline(hand→graveyard); polarity: ForceS
 Liliana the Faultless
 Liliana the Repentant
 Liliana's Caress
-Liliana's Contract	intent: WinGameEffect
+Liliana's Contract
 Liliana's Devotee
 Liliana's Elite
 Liliana's Mastery
@@ -10322,7 +10322,7 @@ Mardu Strike Leader
 Mardu Warshrieker
 Marhault Elsdragon
 Marina Vendrell	intent: LockDoorEffect; intent: UnlockDoorEffect; polarity: LockDoorEffect; polarity: UnlockDoorEffect
-Marina Vendrell's Grimoire	intent: LoseGameEffect; intent: Pipeline(hand→graveyard)
+Marina Vendrell's Grimoire	intent: Pipeline(hand→graveyard)
 Marionette Apprentice
 Marionette Master
 Mariposa Military Base
@@ -11425,7 +11425,7 @@ Nicanzil, Current Conductor	intent: Pipeline(hand→battlefield)
 Nick Fury, Agent of S.H.I.E.L.D.	intent: ForEach>TransformEffect; intent: Pipeline(TopOfLibrary→battlefield|library)
 Nick Valentine, Private Eye
 Nicol Bolas	intent: Pipeline(hand→graveyard)
-Nicol Bolas, Dragon-God	intent: ForEach>LoseGameEffect
+Nicol Bolas, Dragon-God
 Nicol Bolas, God-Pharaoh	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(?→exile); polarity: GatherUntilMatchEffect; polarity: GrantMayPlayFromExileEffect; polarity: GrantPlayWithoutPayingCostEffect; polarity: Pipeline(?→exile)
 Nicol Bolas, the Ravager	intent: ExileAndReturnTransformedEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Night Clubber
@@ -11488,7 +11488,7 @@ Nimbus Wings
 Nimbus of the Isles
 Nimraiser Paladin
 Nimrodel Watcher
-Nine Lives	intent: LoseGameEffect
+Nine Lives
 Nine-Lives Familiar
 Nine-Ringed Bo	timing: MarkExileOnDeathEffect
 Ninja Pizza
@@ -12148,7 +12148,7 @@ Pawn of Ulamog
 Pawpatch Formation
 Pawpatch Recruit
 Peace and Quiet
-Peace in Our Time	intent: WinGameEffect
+Peace in Our Time
 Peacewalker Colossus	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Peach Garden Oath
 Pearl Dragon
@@ -12256,7 +12256,7 @@ Petrified Hamlet
 Petrify
 Petrifying Meddler
 Pewter Golem
-Phage the Untouchable	intent: LoseGameEffect
+Phage the Untouchable
 Phalanx Tactics
 Phalanx Vanguard
 Phantasmal Forces
@@ -13584,7 +13584,7 @@ Returned Centaur
 Returned Pastcaller
 Returned Reveler
 Revel Ruiner
-Revel in Riches	intent: WinGameEffect
+Revel in Riches
 Revelation
 Revelation of Power
 Revelsong Horn
@@ -15171,7 +15171,7 @@ Simian Brawler
 Simian Simulacrum
 Simian Sling	intent: UnattachEquipmentEffect
 Simian Spirit Guide
-Simic Ascendancy	intent: WinGameEffect
+Simic Ascendancy
 Simic Growth Chamber
 Simic Guildgate
 Simic Locket
@@ -16305,7 +16305,7 @@ Strip Mine
 Strix Lookout
 Strix Serenade
 Strixhaven Skycoach
-Strixhaven Stadium	intent: LoseGameEffect; intent: RemoveAllCountersOfTypeEffect
+Strixhaven Stadium
 Stroke of Midnight
 Stromkirk Bloodthief
 Stromkirk Captain
@@ -17058,7 +17058,7 @@ Tersa Lightshatter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveya
 Teshar, Ancestor's Apostle
 Test of Conviction
 Test of Courage
-Test of Endurance	intent: WinGameEffect
+Test of Endurance
 Test of Identity
 Test of Loyalty
 Test of Priorities
@@ -17106,7 +17106,7 @@ Thallid Shell-Dweller
 Thallid Soothsayer
 Thanos, the Mad Titan
 Thassa's Intervention
-Thassa's Oracle	intent: Pipeline(TopOfLibrary→library); intent: WinGameEffect
+Thassa's Oracle
 Thassa, Deep-Dwelling	polarity: MoveToZoneEffect
 Thaumatog
 Thaumaton Torpedo
@@ -17965,7 +17965,7 @@ Trip Up	intent: PutOnLibraryPositionOfChoiceEffect; polarity: PutOnLibraryPositi
 Trip Wire
 Triple Triad	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Triplicate Spirits
-Triskaidekaphile	intent: WinGameEffect
+Triskaidekaphile
 Triskaidekaphobia
 Triskelion
 Triton Shorestalker
@@ -18067,7 +18067,7 @@ Tusked Colossodon
 Tuskeri Firewalker	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Tuskguard Captain
 Tweeze
-Twenty-Toed Toad	intent: WinGameEffect
+Twenty-Toed Toad
 Twiddle	polarity: ModalEffect
 Twilight Diviner
 Twilight Drover
@@ -18899,7 +18899,7 @@ Voracious Vermin
 Vorinclex	intent: ExileAndReturnTransformedEffect
 Vorinclex, Monstrous Raider
 Vorosh, the Hunter
-Vorpal Sword	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Vorpal Sword	timing: GrantTriggeredAbilityEffect
 Vorrac Battlehorns
 Vorstclaw
 Vortex Runner
@@ -18922,9 +18922,9 @@ Vraska's Finisher
 Vraska's Scorn
 Vraska's Stoneglare
 Vraska, Betrayal's Sting	intent: BecomeArtifactEffect; polarity: AddDynamicCountersEffect; polarity: BecomeArtifactEffect
-Vraska, Golgari Queen	intent: CreateGlobalTriggeredAbilityEffect
+Vraska, Golgari Queen
 Vraska, Regal Gorgon
-Vraska, Scheming Gorgon	intent: ForEach>GrantKeywordEffect; intent: ForEach>GrantTriggeredAbilityEffect
+Vraska, Scheming Gorgon
 Vraska, Soul of Stone
 Vraska, Swarm's Eminence
 Vraska, the Cutting Glare
@@ -19826,7 +19826,7 @@ Zendikar Incarnate
 Zendikar's Roil
 Zenith Chronicler
 Zenith Flare
-Zenos yae Galvus	intent: ChooseOpponentForSourceEffect; intent: WinGameEffect; polarity: CreateDelayedTriggerEffect
+Zenos yae Galvus	intent: ChooseOpponentForSourceEffect; polarity: CreateDelayedTriggerEffect
 Zephid
 Zephid's Embrace
 Zephyr Boots

@@ -386,6 +386,19 @@ enum class IntentTag {
      * is not opponent-facing either.
      */
     TOKEN_THEFT,
+
+    /**
+     * Ends the game in its controller's favour outright — an opponent loses (Phage the Untouchable's
+     * "that player loses the game", Vraska, Scheming Gorgon's −10 handing every creature of ours
+     * that trigger), or its controller wins.
+     *
+     * Its payoff is the game, which no board simulation sees until the damage lands: the grant
+     * itself moves nothing but a keyword, so the −10 read as a planeswalker spent for deathtouch.
+     * The tag is what says what the card is for; [com.wingedsheep.ai.engine.evaluation.FinisherStrike]
+     * is what prices a board whose attackers carry the trigger. A loss its own controller suffers
+     * (Phage cast from anywhere but the hand) is the card's price and earns no tag.
+     */
+    GAME_WIN,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */

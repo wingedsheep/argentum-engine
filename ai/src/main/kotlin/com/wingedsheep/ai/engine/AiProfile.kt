@@ -980,6 +980,17 @@ data class AiProfile(
      */
     val payoffsReadTheirFuel: Boolean = false,
     /**
+     * Price a board whose attackers **end the game on contact** — creatures of ours that can attack
+     * now and carry "whenever this creature deals damage to an opponent, that player loses the
+     * game" (granted by Vraska, Scheming Gorgon's −10, printed on Phage the Untouchable), more of
+     * them than the defenders have blockers: the evaluator's
+     * [com.wingedsheep.ai.engine.evaluation.FinisherStrike] term, a near-win in life units.
+     *
+     * Without it the −10 read as a planeswalker spent for deathtouch: with Vraska at 10 and three
+     * Grizzly Bears into one, the AI took the +2. `FinisherReadingAiTest` pins it.
+     */
+    val finishersEndTheGame: Boolean = false,
+    /**
      * Cast **enablers before what they discount**: in our own main phase a spell scores as at
      * least the best spell it makes cheaper (or castable), judged from the position right after it
      * — the same credit [landDropUnlocksSpells] gives a land.
@@ -2526,6 +2537,7 @@ data class AiProfile(
             libraryClock = true,
             oneShotManaIsMana = true,
             payoffsReadTheirFuel = true,
+            finishersEndTheGame = true,
             rollouts = PRODUCTION_CANDIDATE_EXPIRING.rollouts?.copy(staticPriorPlayouts = 1.0),
         )
 

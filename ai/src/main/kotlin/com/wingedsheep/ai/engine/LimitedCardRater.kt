@@ -728,6 +728,9 @@ object LimitedCardRater {
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
         IntentTag.TOKEN_THEFT to 0.2,
+        // "That player loses the game" only pays when the creature carrying it connects — a
+        // bomb's rider rather than a card on its own, so a little over a pump.
+        IntentTag.GAME_WIN to 0.4,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

@@ -311,6 +311,7 @@ class AIPlayer(
                 surplusLandsReadTheHand = profile.surplusLandsReadTheHand,
                 oneShotManaIsMana = profile.oneShotManaIsMana,
                 payoffsReadTheirFuel = profile.payoffsReadTheirFuel,
+                finishersEndTheGame = profile.finishersEndTheGame,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,

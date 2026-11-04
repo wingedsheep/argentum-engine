@@ -234,6 +234,7 @@ object AiCardRating {
         IntentTag.TRIBAL_ENABLER to "Enables a chosen creature type",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
+        IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
     )
 

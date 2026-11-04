@@ -1000,8 +1000,19 @@ object CardIntentAnalyzer {
         // "Target creature gains 'When this creature dies, return it to the battlefield'" (Feign
         // Death, Undying Malice, earthbend's return): the creature outlives the removal aimed at it,
         // so the grant is protection, as a regeneration shield is.
-        is GrantTriggeredAbilityEffect ->
-            if (returnsItselfWhenItLeaves(effect.ability)) setOf(IntentTag.PROTECTION) else emptySet()
+        // Its "that player loses the game" handed to a creature (Vraska, Scheming Gorgon's −10)
+        // is the win it threatens, as the same trigger printed on Phage is.
+        is GrantTriggeredAbilityEffect -> buildSet {
+            if (returnsItselfWhenItLeaves(effect.ability)) add(IntentTag.PROTECTION)
+            if (IntentTag.GAME_WIN in effectTags(effect.ability.effect)) add(IntentTag.GAME_WIN)
+        }
+
+        // "That player loses the game" aimed away from its controller, or "you win the game": the
+        // game itself. A loss its controller suffers is the card's price, not its point.
+        is LoseGameEffect -> if (losesAnOpponent(effect.target)) setOf(IntentTag.GAME_WIN) else emptySet()
+        is WinGameEffect -> if (effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)) {
+            setOf(IntentTag.GAME_WIN)
+        } else emptySet()
 
         // "Choose one —": the card can do whatever any one mode does, so it carries every mode's
         // tags — a charm with a removal mode is removal in hand, as a ForEach body is read above.
@@ -1046,6 +1057,17 @@ object CardIntentAnalyzer {
     internal fun bansAnOpponent(target: EffectTarget): Boolean = when (target) {
         is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
         is EffectTarget.PlayerRef -> target.player in OPPONENT_PLAYERS
+        else -> false
+    }
+
+    /**
+     * Whether a [LoseGameEffect] aimed at [target] costs an opponent the game: a chosen target
+     * player, an opponent, or the player a trigger names ("whenever this creature deals damage to
+     * an opponent, that player loses the game"). Its controller losing is a price, not a win.
+     */
+    private fun losesAnOpponent(target: EffectTarget): Boolean = when (target) {
+        is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
+        is EffectTarget.PlayerRef -> target.player in OPPONENT_PLAYERS || target.player == Player.TriggeringPlayer
         else -> false
     }
 
