@@ -880,6 +880,20 @@ class CombatAdvisor(
             }
         }
 
+        // A multi-blocker has capacity left after its first assignment. Compare the complete
+        // combat through the engine: two individually safe blocks can kill it together.
+        for ((blocker, targets) in currentPlan.entries.filter {
+            it.key !in mandatoryBlockerIds &&
+                it.value.size < 1L + projected.getAdditionalBlockCount(it.key).coerceAtLeast(0)
+        }.take(3)) {
+            for (attacker in unblockedAttackers.take(3)) {
+                if (!canBlock(state, projected, attacker, blocker)) continue
+                val mutation = currentPlan.toMutableMap()
+                mutation[blocker] = targets + attacker
+                mutations.add(mutation)
+            }
+        }
+
         // 2b. Swap: put an idle blocker in place of an assigned one on the same attacker — the
         //     same block made by a different body, so a trade is paid with the cheaper creature.
         if (blockSearchTriesSwaps) {
