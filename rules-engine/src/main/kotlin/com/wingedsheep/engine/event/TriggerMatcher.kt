@@ -457,12 +457,18 @@ class TriggerMatcher(
             }
             is EventPattern.EnlistedEvent ->
                 event is com.wingedsheep.engine.core.EnlistedEvent && event.attackerId == sourceId
-            is EventPattern.ExertedAsItAttacksEvent -> {
-                // The "when you do" linked to ExertAsItAttacks (CR 607.2h): only this creature's own
-                // exert, and only one chosen as an optional attack cost — not a Costs.Exert payment.
-                event is com.wingedsheep.engine.core.ExertedEvent &&
-                    event.asItAttacks &&
-                    event.entityId == sourceId
+            is EventPattern.ExertedEvent -> {
+                // asItAttacks = the "when you do" linked to ExertAsItAttacks (CR 607.2h): only an
+                // exert chosen as an optional attack cost, never a Costs.Exert payment.
+                if (event !is com.wingedsheep.engine.core.ExertedEvent) return false
+                if (trigger.asItAttacks && !event.asItAttacks) return false
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.entityId == sourceId) return false
+                if (!matchesPlayer(state, trigger.exertedBy, event.exertedBy, controllerId, sourceId)) return false
+                trigger.filter == GameObjectFilter.Any || predicateEvaluator.matches(
+                    state, state.projectedState, event.entityId, trigger.filter,
+                    com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
             }
             is EventPattern.BecameSaddledEvent -> {
                 // Saddled permanents stay on the battlefield (CR 702.171b), so this matches in the

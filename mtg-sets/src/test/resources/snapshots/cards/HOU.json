@@ -2836,6 +2836,73 @@
     ]
 }
 
+// Resolute Survivors
+{
+    "name": "Resolute Survivors",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "You may exert this creature as it attacks. (It won't untap during your next untap step.)\nWhenever you exert a creature, this creature deals 1 damage to each opponent and you gain 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Resolute Survivors:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "filter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"We are crops no longer. Reap elsewhere.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/713f469e-58c3-4db4-aa7a-77126bda13f2.jpg?1783936010",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have abilities that trigger whenever you exert any creature. These abilities trigger when you exert that creature or any other creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Riddleform
 {
     "name": "Riddleform",
@@ -4103,6 +4170,67 @@
         "rarity": "UNCOMMON",
         "artist": "Jason Felix",
         "imageUri": "https://cards.scryfall.io/normal/front/5/2/52db5673-ecd3-4e58-8dc9-b42c76f80186.jpg?1783936055"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Vizier of the True
+{
+    "name": "Vizier of the True",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "You may exert this creature as it attacks. (It won't untap during your next untap step.)\nWhenever you exert a creature, tap target creature an opponent controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vizier of the True:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "filter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Outnumbered, but not outmatched.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1800882-e886-48d5-ac85-0a8e5841dc9a.jpg?1783936055",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have abilities that trigger whenever you exert any creature. These abilities trigger when you exert that creature or any other creature you control."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a creature has a targeted triggered ability that triggers when you exert it, you can exert it even if there isn't a legal target for that triggered ability."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"

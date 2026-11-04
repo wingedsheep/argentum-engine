@@ -344,7 +344,7 @@ class TriggerIndex(
                 is SdkGameEvent.TrainedEvent -> TRAINED_LIST
                 is SdkGameEvent.EvolvedEvent -> EVOLVED_LIST
                 is SdkGameEvent.EnlistedEvent -> ENLISTED_LIST
-                is SdkGameEvent.ExertedAsItAttacksEvent -> EXERTED_LIST
+                is SdkGameEvent.ExertedEvent -> EXERTED_LIST
                 is SdkGameEvent.ChampionedEvent -> CHAMPIONED_LIST
                 is SdkGameEvent.BendPerformedEvent -> BEND_LIST
                 is SdkGameEvent.ManifestedDreadEvent -> MANIFESTED_DREAD_LIST

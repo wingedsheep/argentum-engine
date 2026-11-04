@@ -10447,10 +10447,16 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   per paid enlist instance, binding the enlisted creature as `EffectTarget.TriggeringEntity`.
   This is distinct from an ordinary tap and from the keyword's separately generated linked boost.
   Supports Guardian of New Benalia's enlist payoff.
-- `EventPattern.ExertedAsItAttacksEvent` (facade: `Triggers.self.exertedAsItAttacks()`, SELF only) — the
-  "When you do" after "you may exert this creature as it attacks" (CR 701.43d), linked to the
-  `ExertAsItAttacks` static (CR 607.2h). Matches an `ExertedEvent` for the source with `asItAttacks`
-  set, so exerting it to pay `Costs.Exert` doesn't fire it. Hydra Trainer.
+- `EventPattern.ExertedEvent(filter, exertedBy, asItAttacks)` — a permanent is exerted (CR 701.43a).
+  Two facades:
+  - `Triggers.you.exerts(filter)` (also `anOpponent` / `anyPlayer`) — "whenever you exert a creature":
+    every exert of a matching permanent, as an attack cost or an activated ability's `Costs.Exert`,
+    the source included. Re-exerting an already-exerted permanent (CR 701.43b) is still an exert and
+    fires again. The exerted permanent is `EffectTarget.TriggeringEntity`. Vizier of the True,
+    Resolute Survivors: `Triggers.you.exerts(GameObjectFilter.Creature)`.
+  - `Triggers.self.exertedAsItAttacks()` (SELF only) — the "When you do" after "you may exert this
+    creature as it attacks" (CR 701.43d), linked to the `ExertAsItAttacks` static (CR 607.2h).
+    `asItAttacks = true`, so exerting it to pay `Costs.Exert` doesn't fire it. Hydra Trainer.
 - `EventPattern.TrainedEvent` (facade: `Triggers.self.trains()`) — "when this creature trains"
   (CR 702.149c: "a resolving training ability puts one or more
   +1/+1 counters on this creature"). A `data object` (no parameters); the trainer identity is selected by the ability's

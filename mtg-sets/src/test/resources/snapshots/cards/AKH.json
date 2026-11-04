@@ -948,7 +948,10 @@
         "triggeredAbilities": [
             {
                 "id": "Combat Celebrant:1",
-                "trigger": "ExertedAsItAttacksEvent",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
                 "effect": {
                     "type": "Composite",
                     "effects": [

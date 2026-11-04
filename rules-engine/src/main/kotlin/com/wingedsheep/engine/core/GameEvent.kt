@@ -1535,14 +1535,17 @@ data class TappedEvent(
 
 /**
  * A permanent was exerted (CR 701.43a) — it won't untap during its controller's next untap step.
- * Lets animations and "whenever you exert a permanent" reactions (none printed yet) fire instead
- * of the state changing silently.
+ * Lets animations and "whenever you exert a creature" triggers (Vizier of the True) react instead
+ * of the state changing silently. Emitted for every exert, including re-exerting an
+ * already-exerted permanent (CR 701.43b): the player still exerted it.
  */
 @Serializable
 @SerialName("ExertedEvent")
 data class ExertedEvent(
     val entityId: EntityId,
     val entityName: String,
+    /** The player who exerted it — "whenever **you** exert a creature". */
+    val exertedBy: EntityId,
     /**
      * True when the exert was chosen as an optional cost to attack ("you may exert this creature
      * as it attacks", CR 701.43d / 508.1g) — the only exert that fires the linked "when you do"
