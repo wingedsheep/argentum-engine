@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4413 Counts land untappers (Arbor Elf, Hope Tender, Voyaging Satyr) as ramp when drafting, building decks and choosing plays
 - Reads granted first strike, deathtouch, lifelink, haste and similar keywords, "must be blocked" and base power/toughness replacement as combat enhancements: a flash creature whose arrival hands its attacker first strike is cast before combat instead of held to the opponent's end step, and such spells count as needing creatures when building a deck
 - #4412 Values counter carriers (The Ozolith, Essence Channeler, Host of the Hereafter) as payoffs for +1/+1-counter decks when drafting and building
 - #4416 Reads "its owner puts it on the top or bottom of their library" (Dire Downdraft, Aether Gust, Plan for All Outcomes) as removal aimed at the opponent, and a 0/2 base power and toughness (Sorceress Queen) as a curse, so it no longer offers either to its own creatures
