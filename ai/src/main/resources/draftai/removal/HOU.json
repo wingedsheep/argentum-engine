@@ -33,6 +33,10 @@
     "removal",
     "creature-removal"
   ],
+  "Consign // Oblivion": [
+    "removal",
+    "creature-removal"
+  ],
   "Desert's Hold": [
     "removal",
     "creature-removal"
@@ -76,6 +80,10 @@
   "Ifnir Deadlands": [
     "removal",
     "creature-removal"
+  ],
+  "Inferno Jet": [
+    "removal",
+    "planeswalker-removal"
   ],
   "Kefnet's Last Word": [
     "removal",
@@ -140,6 +148,10 @@
     "creature-removal"
   ],
   "Unquenchable Thirst": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unsummon": [
     "removal",
     "creature-removal"
   ]
