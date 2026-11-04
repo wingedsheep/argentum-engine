@@ -1,0 +1,158 @@
+{
+  "Abrade": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Ambuscade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Angel of Condemnation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Banewhip Punisher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blur of Blades": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bontu's Last Reckoning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra's Defeat": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chaos Maw": [
+    "removal",
+    "creature-removal"
+  ],
+  "Consign // Oblivion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Desert's Hold": [
+    "removal",
+    "creature-removal"
+  ],
+  "Doomfall": [
+    "removal",
+    "creature-removal"
+  ],
+  "Farm // Market": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fervent Paincaster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gideon's Defeat": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grind // Dust": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hour of Devastation": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Hour of Glory": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hour of Revelation": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Ifnir Deadlands": [
+    "removal",
+    "creature-removal"
+  ],
+  "Inferno Jet": [
+    "removal",
+    "planeswalker-removal"
+  ],
+  "Kefnet's Last Word": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Lethal Sting": [
+    "removal",
+    "creature-removal"
+  ],
+  "Liliana's Defeat": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Nicol Bolas, God-Pharaoh": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Nicol Bolas, the Deceiver": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nissa's Defeat": [
+    "removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Open Fire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Puncturing Blow": [
+    "removal",
+    "creature-removal"
+  ],
+  "Samut, the Tested": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sand Strangler": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sandblast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Struggle // Survive": [
+    "removal",
+    "creature-removal"
+  ],
+  "The Scorpion God": [
+    "removal",
+    "creature-removal"
+  ],
+  "Torment of Venom": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unquenchable Thirst": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unsummon": [
+    "removal",
+    "creature-removal"
+  ]
+}
