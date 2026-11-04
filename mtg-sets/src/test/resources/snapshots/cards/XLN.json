@@ -812,6 +812,90 @@
     ]
 }
 
+// Burning Sun's Avatar
+{
+    "name": "Burning Sun's Avatar",
+    "manaCost": "{3}{R}{R}{R}",
+    "typeLine": "Creature — Dinosaur Avatar",
+    "oracleText": "When this creature enters, it deals 3 damage to target opponent or planeswalker and 3 damage to up to one target creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burning Sun's Avatar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponentOrPlaneswalker",
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Tilonalli's searing rays carry the spark of life's eventual destruction as all light fades.\"\n—Chitlati, Lightning Rider",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/146c0cab-5f6b-425d-9f50-33d8da266235.jpg?1783935749",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "The ability of Burning Sun’s Avatar can target any creature, not just one controlled by the target opponent."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If the ability of Burning Sun’s Avatar has two targets and one becomes illegal, the other will still be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Call to the Feast
 {
     "name": "Call to the Feast",
@@ -914,6 +998,82 @@
                 "text": "If you sacrifice Treasures to cast Captain Lannery Storm, its last ability won't trigger for those Treasures."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Captivating Crew
+{
+    "name": "Captivating Crew",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "{3}{R}: Gain control of target creature an opponent controls until end of turn. Untap that creature. It gains haste until end of turn. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Captivating Crew:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{3}{R}: Gain control of target creature an opponent controls until end of turn. Untap it. It gains haste until end of turn. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "\"We sail. We plunder. Then we dance.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c76e66c1-dbe2-4346-b4b3-20e8386e7d76.jpg?1783935748"
     },
     "colorIdentityOverride": [
         "RED"
@@ -3068,6 +3228,83 @@
     ]
 }
 
+// Fire Shrine Keeper
+{
+    "name": "Fire Shrine Keeper",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Menace\n{7}{R}, {T}, Sacrifice this creature: It deals 3 damage to each of up to two target creatures.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fire Shrine Keeper:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{7}{R}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Zoltan Boros",
+        "flavorText": "Though grimed with the dust of centuries, the ancient shrine was not unguarded.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54135905-9b15-4bf9-8f4d-4ea7a0c75b77.jpg?1783935745",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You can’t target the same creature twice to have Fire Shrine Keeper deal 6 damage to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Firecannon Blast
 {
     "name": "Firecannon Blast",
@@ -3821,6 +4058,50 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Headstrong Brute
+{
+    "name": "Headstrong Brute",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "This creature can't block.\nThis creature has menace as long as you control another Pirate.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "MENACE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Pirate",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"Watch your backs, keep your blades at hand, and let the orc go first!\"\n—Captain Brandis Thorn",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66973e90-0c8b-4438-bc22-6e78930c194d.jpg?1783935744"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

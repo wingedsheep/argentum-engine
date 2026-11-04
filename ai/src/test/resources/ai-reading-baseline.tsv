@@ -108,7 +108,7 @@ Acquisitions Expert
 Acrobatic Cheerleader	intent: AddCountersEffect
 Acrobatic Leap
 Acrobatic Maneuver
-Act of Treason	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Act of Treason
 Act on Impulse	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Action News Crew
 Active Volcano
@@ -1079,7 +1079,7 @@ Awaken the Bear
 Awaken the Erstwhile
 Awaken the Honored Dead
 Awaken the Inferno
-Awaken the Sleeper	polarity: Pipeline(AttachedTo→?)
+Awaken the Sleeper
 Awaken the Woods
 Awakened Awareness	polarity: Aura>AddDynamicCountersEffect; polarity: Aura>ConditionalStaticAbility
 Awakening Zone
@@ -1802,7 +1802,7 @@ Bloodtithe Collector
 Bloodtithe Harvester
 Bloodtracker
 Bloodvial Purveyor
-Bloody Betrayal	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Bloody Betrayal
 Bloom Hulk
 Bloom Tender
 Bloombrute
@@ -1900,7 +1900,7 @@ Bombur, Gentle Dreamer
 Bond of Discipline
 Bond of Flourishing
 Bond of Insight
-Bond of Passion	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Bond of Passion
 Bond of Revival
 Bonded Herdbeast
 Bonders' Enclave
@@ -2264,6 +2264,7 @@ Burning Hands
 Burning Prophet
 Burning Shield Askari	intent: GrantKeywordEffect
 Burning Sun Cavalry
+Burning Sun's Avatar
 Burning Sun's Fury	timing: ForEach>ModifyStatsEffect
 Burning Vengeance
 Burning Wish	intent: Pipeline(sideboard→hand)
@@ -2457,6 +2458,7 @@ Captain of the Watch
 Captain's Call
 Captain's Tutelage	intent: GrantKeywordEffect
 Captivating Cave
+Captivating Crew
 Captivating Glance
 Captivating Gyre
 Captivating Unicorn
@@ -2568,7 +2570,7 @@ Cathedral Acolyte
 Cathedral Sanctifier
 Cathedral of Serra
 Cathodion
-Caught Red-Handed	polarity: SuspectEffect; timing: GrantKeywordEffect
+Caught Red-Handed	timing: GrantKeywordEffect
 Caught in the Brights
 Caught in the Crossfire
 Cauldron Dance	intent: GrantKeywordEffect; intent: Pipeline(ChosenTargets|hand→battlefield); polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets|hand→battlefield)
@@ -2921,7 +2923,7 @@ Civil Servant
 Clachan Festival
 Clackbridge Troll	intent: AnyPlayerMayPayEffect
 Claim Jumper
-Claim the Firstborn	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Claim the Firstborn
 Claim the Kingdom
 Claim the Precious
 Clammy Prowler
@@ -4394,7 +4396,7 @@ Dollhouse of Horrors
 Dollmaker's Shop // Porcelain Gallery
 Dolmen Gate
 Domesticated Hydra	intent: BecomeMonstrousEffect
-Dominating Vampire	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Dominating Vampire
 Domineer
 Dominion Assault Force
 Dominion Infiltration	polarity: ForEachEffect
@@ -5269,7 +5271,7 @@ Erhnam Djinn
 Erica Ortegas, Plucky Pilot	intent: Pipeline(BattlefieldMatching|hand→battlefield|hand)
 Eriette of the Charmed Apple
 Eriette's Lullaby
-Eriette's Tempting Apple	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Eriette's Tempting Apple
 Eriette's Whisper
 Eriette, the Beguiler
 Erkenbrand, Lord of Westfold
@@ -5913,6 +5915,7 @@ Fire Nation Warship
 Fire Navy Trebuchet
 Fire Prophecy
 Fire Sages
+Fire Shrine Keeper
 Fire Snake
 Fire Sprites
 Fire Tempest
@@ -7155,7 +7158,7 @@ Gourmand's Talent
 Gowron, Eager for Battle
 Graaz, Unstoppable Juggernaut
 Grab the Prize
-Grab the Reins	polarity: mixed(GainControlEffect+GrantKeywordEffect)
+Grab the Reins
 Grabby Giant
 Graceful Adept
 Graceful Cat
@@ -7667,6 +7670,7 @@ Headhunter	intent: Pipeline(hand→graveyard)
 Headless Horseman
 Headless Rider
 Headlong Rush	intent: ForEach>GrantKeywordEffect
+Headstrong Brute
 Headwater Sentries
 Heal the Scars
 Healer of the Glade
@@ -8321,7 +8325,7 @@ Imskir Iron-Eater
 In Bolas's Clutches
 In Garruk's Wake
 In Search of Greatness
-In Thrall to the Pit	polarity: CreateDelayedTriggerEffect
+In Thrall to the Pit
 In the Darkness Bind Them
 In the Eye of Chaos
 In the Pale Moonlight
@@ -8592,9 +8596,9 @@ Invoke Justice	polarity: DistributeCountersAmongFilteredEffect
 Invoke Prejudice	intent: GatedEffect
 Invoke the Ancients
 Invoke the Divine
-Invoke the Winds	polarity: mixed(GainControlEffect+TapUntapEffect)
+Invoke the Winds
 Involuntary Cooldown
-Involuntary Employment	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Involuntary Employment
 Ionize
 Ioreth of the Healing House	intent: TapUntapEffect
 Irascible Wolverine	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -8781,7 +8785,7 @@ Jazal Goldmane
 Jecht, Reluctant Guardian	intent: ExileAndReturnTransformedEffect
 Jedit Ojanen
 Jedit's Dragoons
-Jeering Instigator	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Jeering Instigator
 Jegantha, the Wellspring
 Jem Lightfoote, Sky Explorer
 Jenara, Asura of War
@@ -9104,7 +9108,7 @@ Keldon Flamesage	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipe
 Keldon Halberdier
 Keldon Marauders
 Keldon Necropolis
-Keldon Overseer	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Keldon Overseer
 Keldon Raider
 Keldon Strike Team
 Keldon Warcaller	intent: AddCountersEffect; polarity: AddCountersEffect
@@ -12010,7 +12014,7 @@ Pack Guardian
 Pack Hunt	polarity: Pipeline(library→hand)
 Pack Leader
 Pack Mastiff
-Pack's Betrayal	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Pack's Betrayal
 Pack's Favor
 Packsong Pup
 Pact of Negation
@@ -12524,7 +12528,7 @@ Portal of Sanctuary
 Portal to Phyrexia
 Portcullis Vine
 Portent Tracker	intent: AddCountersEffect; intent: RemoveCountersEffect; intent: TapUntapEffect; polarity: AddCountersEffect; polarity: RemoveCountersEffect
-Portent of Betrayal	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Portent of Betrayal
 Portent of Calamity
 Possessed Goat	intent: AddColorEffect; intent: AddCreatureTypeEffect
 Possession Engine
@@ -14277,7 +14281,7 @@ Sauroform Hybrid	intent: AdaptEffect
 Sauron's Ransom	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); polarity: TheRingTemptsYouEffect
 Sauron, Lord of the Rings	intent: TheRingTemptsYouEffect
 Sauron, the Dark Lord	intent: TheRingTemptsYouEffect
-Sauron, the Lidless Eye	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Sauron, the Lidless Eye
 Sauron, the Necromancer
 Savaen Elves
 Savage Alliance
@@ -15035,7 +15039,7 @@ Shu Grain Caravan
 Shu Soldier-Farmers
 Shuri, Wakandan Inventor	intent: EachPermanentBecomesCopyOfTargetEffect; polarity: EachPermanentBecomesCopyOfTargetEffect
 Shuttle Ace
-Sibling Rivalry	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Sibling Rivalry
 Sibsig Appraiser
 Sickbay
 Sicken
@@ -15437,7 +15441,7 @@ Smaug's Fury
 Smaug, Wicked Worm
 Smaug, the Great Calamity
 Smelt
-Smelt-Ward Ignus	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Smelt-Ward Ignus
 Smelt-Ward Minotaur	intent: CantBlockEffect
 Smelted Chargebug
 Smile at Death
@@ -15557,7 +15561,7 @@ Song of Eärendil
 Song of Freyalise
 Song of Stupefaction
 Song of Totentanz
-Song-Mad Treachery	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Song-Mad Treachery
 Songcrafter Mage	intent: GrantHarmonizeEffect; polarity: GrantHarmonizeEffect
 Sonic Assault
 Sonic Shrieker
@@ -16720,7 +16724,7 @@ Take Out the Trash
 Take Up Arms
 Take Up the Shield	timing: GrantKeywordEffect
 Take Vengeance
-Take for a Ride	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Take for a Ride
 Take the Fall
 Take to the Streets
 Taken by Nightmares
@@ -16981,7 +16985,7 @@ Tendershoot Dryad
 Tendril of the Mycotyrant
 Tendrils of Agony
 Tenement Crasher
-Tentative Connection	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Tentative Connection
 Tenth District Guard
 Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect
 Tenth District Legionnaire
@@ -17826,7 +17830,7 @@ Training Compound
 Training Grounds
 Training Regimen
 Traitorous Blood	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
-Traitorous Greed	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Traitorous Greed
 Tramway Station
 Tranquil Cove
 Tranquil Domain
@@ -18081,7 +18085,7 @@ Twisted Abomination
 Twisted Embrace
 Twisted Experiment	polarity: Aura>ModifyStats
 Twisted Fates
-Twisted Fealty	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Twisted Fealty
 Twisted Justice	polarity: ForceSacrificeEffect
 Twisted Landscape
 Twisted Riddlekeeper
@@ -18563,7 +18567,7 @@ Vengeant Earth	intent: AddSubtypeEffect; intent: BecomeCreatureEffect; intent: M
 Vengeful Bloodwitch
 Vengeful Creeper
 Vengeful Dead
-Vengeful Possession	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Vengeful Possession
 Vengeful Reaper
 Vengeful Strangler	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
 Vengeful Townsfolk
@@ -19792,7 +19796,7 @@ Zareth San, the Trickster	intent: Pipeline(Entity→battlefield)
 Zariel, Archduke of Avernus	intent: CreateGlobalTriggeredAbilityEffect
 Zask, Skittering Swarmlord
 Zealot's Conviction
-Zealous Conscripts	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Zealous Conscripts
 Zealous Display
 Zealous Guardian
 Zealous Inquisitor	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect

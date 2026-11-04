@@ -29,6 +29,7 @@ Format — newest first, one bullet each:
 ## Changes
 
 - #4386 Gives a "target player creates a token" (Emeritus of Truce) to itself, reads a creature's own conditional penalty ("-2/-2 as long as …") as a drawback rather than a pump, and prices a keyword a creature grants itself (ascend's flying with the city's blessing) in draft ratings like a printed one
+- Aims theft followed by haste and untapping at opposing creatures, values repeatable targeted-removal activations on creatures beyond their bodies, and discounts expensive activations and combat drawbacks when drafting.
 
 - Recognizes repeatable mill engines as win conditions and values library-depletion progress against them before the last few cards, without penalizing ordinary draws in games without a mill threat.
 
