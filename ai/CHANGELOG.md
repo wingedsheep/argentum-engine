@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4423 Aims "target player draws N and loses N life" (Sign in Blood, Vault Plunderer, Blood Pact) at itself instead of handing the opponent the cards, still going to the face when the life loss is lethal
 - #4413 Counts land untappers (Arbor Elf, Hope Tender, Voyaging Satyr) as ramp when drafting, building decks and choosing plays
 - Reads granted first strike, deathtouch, lifelink, haste and similar keywords, "must be blocked" and base power/toughness replacement as combat enhancements: a flash creature whose arrival hands its attacker first strike is cast before combat instead of held to the opponent's end step, and such spells count as needing creatures when building a deck
 - #4412 Values counter carriers (The Ozolith, Essence Channeler, Host of the Hereafter) as payoffs for +1/+1-counter decks when drafting and building
