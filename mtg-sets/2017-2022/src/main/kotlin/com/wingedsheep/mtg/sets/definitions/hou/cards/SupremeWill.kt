@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
- * Supreme Will — Hour of Devastation #102 (canonical printing)
+ * Supreme Will — Hour of Devastation #49 (canonical printing)
  * {2}{U} · Instant
  *
  * Choose one —
@@ -47,8 +47,8 @@ val SupremeWill = card("Supreme Will") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "102"
+        collectorNumber = "49"
         artist = "Alayna Danner"
-        imageUri = "https://cards.scryfall.io/normal/front/f/c/fcf7fd8a-adc3-4099-8e30-08375f263446.jpg?1783928848"
+        imageUri = "https://cards.scryfall.io/normal/front/b/6/b677e7cb-7b5d-4993-8f13-881493c498ce.jpg?1783936046"
     }
 }

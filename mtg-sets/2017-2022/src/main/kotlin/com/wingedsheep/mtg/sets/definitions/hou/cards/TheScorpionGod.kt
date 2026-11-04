@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * The Scorpion God — Hour of Devastation #133 (canonical printing)
+ * The Scorpion God — Hour of Devastation #146 (canonical printing)
  * {3}{B}{R} · Legendary Creature — God · 6/5
  *
  * Whenever a creature with a -1/-1 counter on it dies, draw a card.
@@ -54,9 +54,9 @@ val TheScorpionGod = card("The Scorpion God") {
 
     metadata {
         rarity = Rarity.MYTHIC
-        collectorNumber = "133"
+        collectorNumber = "146"
         artist = "Lius Lasahido"
-        imageUri = "https://cards.scryfall.io/normal/front/7/9/792eabed-6c49-41f0-a9ce-0184e5c577e9.jpg?1783904536"
+        imageUri = "https://cards.scryfall.io/normal/front/d/e/def0d0ac-6422-486e-b42b-e1813dd0a23e.jpg?1783936009"
         ruling("2017-07-14", "If a creature with a -1/-1 counter on it dies at the same time as The Scorpion God does, you'll draw a card. The same is true if The Scorpion God dies with a -1/-1 counter on it.")
         ruling("2017-07-14", "You'll draw only one card when a creature with more than one -1/-1 counter on it dies.")
     }

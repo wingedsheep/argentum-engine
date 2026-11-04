@@ -13,7 +13,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 /**
- * Supreme Will (HOU #102) — Choose one —
+ * Supreme Will (HOU #49) — Choose one —
  * • Counter target spell unless its controller pays {3}.
  * • Look at the top four cards of your library. Put one of them into your hand and the rest on
  *   the bottom of your library in any order.
@@ -58,6 +58,7 @@ class SupremeWillScenarioTest : ScenarioTestBase() {
                     .withCardInLibrary(1, "Hill Giant")
                     .withCardInLibrary(1, "Lightning Bolt")
                     .withCardInLibrary(1, "Llanowar Elves")
+                    .withCardInLibrary(1, "Island") // fifth card: stays put beneath the four looked at
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -76,7 +77,11 @@ class SupremeWillScenarioTest : ScenarioTestBase() {
 
                 withClue("the chosen card is in hand, the other three went back to the library") {
                     game.isInHand(1, "Hill Giant") shouldBe true
-                    game.librarySize(1) shouldBe 3
+                    game.librarySize(1) shouldBe 4
+                }
+                withClue("the three unchosen cards went to the bottom, so the untouched fifth card is now on top") {
+                    val top = game.state.getLibrary(game.player1Id).first()
+                    game.state.getEntity(top)?.get<CardComponent>()?.name shouldBe "Island"
                 }
             }
         }
