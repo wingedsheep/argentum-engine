@@ -6922,6 +6922,61 @@
     ]
 }
 
+// Raging Swordtooth
+{
+    "name": "Raging Swordtooth",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Trample\nWhen this creature enters, it deals 1 damage to each other creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raging Swordtooth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "Carnivorous dinosaurs developed a taste for undead flesh, tracking the vampires by the scent of blood on their breath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15a79137-9589-4c24-9bea-31041fd3c9ae.jpg?1783935711"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Rallying Roar
 {
     "name": "Rallying Roar",
