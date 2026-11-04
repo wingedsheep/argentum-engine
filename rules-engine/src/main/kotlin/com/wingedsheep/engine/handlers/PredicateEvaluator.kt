@@ -404,6 +404,7 @@ class PredicateEvaluator(
             StatePredicate.IsTapped -> snapshot.wasTapped
             StatePredicate.IsUntapped -> !snapshot.wasTapped
             StatePredicate.IsModified -> snapshot.wasModified
+            StatePredicate.IsEnchanted -> snapshot.attachments.any { it.hasSubtype(Subtype.AURA) }
             StatePredicate.IsFaceDown -> snapshot.wasFaceDown
             StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
             // Only the caller knows whether the snapshot is of a permanent: "an ability of a land on
@@ -478,6 +479,25 @@ class PredicateEvaluator(
             CardPredicate.IsColorless -> snapshot.colors?.isEmpty()
             CardPredicate.IsMonocolored -> snapshot.colors?.let { it.size == 1 }
             CardPredicate.IsMulticolored -> snapshot.colors?.let { it.size > 1 }
+            CardPredicate.SharesColorWithRecipient -> {
+                val recipientId = context.recipientId ?: return false
+                // A card that returned is another object, even when its entity id is stable.
+                val sameObject = recipientId == snapshot.entityId &&
+                    (snapshot.objectRef == null || state.objectRef(recipientId) == snapshot.objectRef)
+                if (sameObject) false else snapshot.colors?.let { colors ->
+                    val recipientColors = state.projectedState.colorsOf(recipientId)
+                    colors.any { it in recipientColors }
+                }
+            }
+            CardPredicate.ManaValueIsEven -> if (snapshot.wasFaceDown) true else snapshot.manaValue?.let { it % 2 == 0 }
+            CardPredicate.ManaValueIsOdd -> if (snapshot.wasFaceDown) false else snapshot.manaValue?.let { it % 2 != 0 }
+            CardPredicate.HasChosenSubtype -> {
+                val sourceId = context.sourceId ?: return false
+                val chosen = context.lastKnownSourceSnapshot?.takeIf { it.entityId == sourceId }?.chosenSubtype
+                    ?: state.getEntity(sourceId)?.chosenSubtype() ?: return false
+                snapshot.subtypes.any { it.equals(chosen, ignoreCase = true) } ||
+                    (snapshot.keywords.containsKeyword(Keyword.CHANGELING) && chosen in Subtype.ALL_CREATURE_TYPES)
+            }
             is CardPredicate.HasSubtype ->
                 typeLine?.hasSubtype(predicate.subtype)
                     ?: snapshot.subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
@@ -546,7 +566,6 @@ class PredicateEvaluator(
             is CardPredicate.HasAnyOfSubtypes,
             is CardPredicate.HasBasicLandType,
             CardPredicate.HasChosenColor,
-            CardPredicate.HasChosenSubtype,
             CardPredicate.HasNoAbilities,
             CardPredicate.HasNonManaActivatedAbility,
             is CardPredicate.HasSubtypeFromVariable,
@@ -571,8 +590,6 @@ class PredicateEvaluator(
             is CardPredicate.ManaValueAtMostEntityManaSpent,
             is CardPredicate.ManaValueEquals,
             is CardPredicate.ManaValueEqualsDynamic,
-            CardPredicate.ManaValueIsEven,
-            CardPredicate.ManaValueIsOdd,
             CardPredicate.NameNotSharedWithControlledRoom,
             is CardPredicate.NotColor,
             is CardPredicate.NotKeyword,
@@ -597,7 +614,6 @@ class PredicateEvaluator(
             CardPredicate.SharesChosenColorWithSource,
             is CardPredicate.SharesColorWith,
             is CardPredicate.SharesColorWithPermanentYouControl,
-            CardPredicate.SharesColorWithRecipient,
             CardPredicate.SharesColorWithTriggeringMana,
             is CardPredicate.SharesCreatureTypeWith,
             CardPredicate.SharesCreatureTypeWithSource,
