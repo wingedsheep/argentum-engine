@@ -807,6 +807,12 @@ class GamePlayHandler(
             val persistenceInfo = gameSession.getPlayerPersistenceInfo()
             val gameMode = statsLobby?.gameMode?.name
                 ?: if (gameSession.quickGameSetCode != null) "QUICK_GAME" else "CASUAL"
+            // Who actually played: a seat that never made a play of its own past the mulligan (a
+            // no-show the disconnect timer conceded, an instant concession) doesn't count. Only a log
+            // recorded from the first action can show an *absence* of plays — without a setup (a dev
+            // scenario, or a recovered game whose recording couldn't resume) we know only who did act.
+            val actedIds = com.wingedsheep.gameserver.stats.StatsEligibility.playersWhoActed(gameSession.getRecordedActions())
+            val completeLog = replaySetup != null
             matchResultSink.record(
                 com.wingedsheep.gameserver.stats.RecordedMatch(
                     gameId = gameSessionId,
@@ -841,6 +847,12 @@ class GamePlayHandler(
                             clientIp = if (isAi) null else identity?.clientIp,
                             deckCards = recordedDeck?.cards.orEmpty(),
                             deckPrintings = recordedDeck?.printings.orEmpty(),
+                            // The AI never sits out a game, even one it only had to pass through.
+                            tookAction = when {
+                                isAi || player.playerId.value in actedIds -> true
+                                completeLog -> false
+                                else -> null
+                            },
                         )
                     },
                 )

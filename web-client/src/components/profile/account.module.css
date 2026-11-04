@@ -293,6 +293,18 @@
 }
 .result[data-won='true'] { color: #6fdc9a; background: rgba(40, 120, 80, 0.22); border: 1px solid rgba(111, 220, 154, 0.3); }
 .result[data-won='false'] { color: #ff9a9a; background: rgba(140, 40, 50, 0.22); border: 1px solid rgba(255, 138, 138, 0.28); }
+/* A result left out of the record (someone never took an action): keep the word, drop the colour. */
+.result[data-counted='false'] { color: #8f98ac; background: rgba(255, 255, 255, 0.04); border: 1px dashed rgba(255, 255, 255, 0.18); }
+.notCounted {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(242, 180, 92, 0.35);
+  color: #e8c07a;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.forfeits { color: #8f98ac; font-size: 12px; }
 
 .cellStack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .cellMain { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #eef0f6; }
@@ -492,6 +504,9 @@ li:first-child > .tournamentRow { border-top: none; }
 .overview[data-donut='false'] { grid-template-columns: minmax(0, 1fr); }
 
 .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.overviewMain { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.overviewFoot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.overviewFoot:empty { display: none; }
 
 .donut { position: relative; height: 160px; }
 .donutCenter {

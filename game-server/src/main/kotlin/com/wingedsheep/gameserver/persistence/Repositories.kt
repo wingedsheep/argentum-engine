@@ -33,13 +33,8 @@ interface CubeRepository : CrudRepository<CubeRow, Long> {
     fun findByShareCode(shareCode: String): CubeRow?
 }
 
-interface MatchResultRepository : CrudRepository<MatchResultRow, Long> {
-    @Query("SELECT count(*) FROM match_participants WHERE user_id = :userId")
-    fun countGamesForUser(@Param("userId") userId: UUID): Long
-
-    @Query("SELECT count(*) FROM match_participants WHERE user_id = :userId AND won = true")
-    fun countWinsForUser(@Param("userId") userId: UUID): Long
-}
+/** Saves match rows; every read goes through [com.wingedsheep.gameserver.stats.StatsQueryService]. */
+interface MatchResultRepository : CrudRepository<MatchResultRow, Long>
 
 interface AnteSpoilRepository : CrudRepository<AnteSpoilRow, Long> {
     fun findTop200ByUserIdOrderByCreatedAtDesc(userId: UUID): List<AnteSpoilRow>

@@ -265,6 +265,11 @@ data class AiVsHumanReport(
     val aiChanges: AiChangeLog,
     val filter: AiAppliedFilter,
     val options: AiFilterOptions,
+    /**
+     * AI-vs-human games in the range left out of every figure above because the person never took
+     * an action past the mulligan ([StatsEligibility]) — a no-show or an instant concession.
+     */
+    val notCounted: Long = 0,
 )
 
 enum class AiBucket {

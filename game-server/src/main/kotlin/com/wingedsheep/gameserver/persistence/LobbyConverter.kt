@@ -310,7 +310,9 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                 draws = standing.draws,
                 gamesWon = standing.gamesWon,
                 gamesLost = standing.gamesLost,
-                lifeDifferential = standing.lifeDifferential
+                lifeDifferential = standing.lifeDifferential,
+                forfeitWins = standing.forfeitWins,
+                forfeitLosses = standing.forfeitLosses,
             )
         },
         rounds = getRoundsForPersistence().map { round ->
@@ -388,7 +390,9 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
             draws = persistentStanding.draws,
             gamesWon = persistentStanding.gamesWon,
             gamesLost = persistentStanding.gamesLost,
-            lifeDifferential = persistentStanding.lifeDifferential
+            lifeDifferential = persistentStanding.lifeDifferential,
+            forfeitWins = persistentStanding.forfeitWins,
+            forfeitLosses = persistentStanding.forfeitLosses,
         )
     }
 

@@ -230,6 +230,26 @@ class TournamentProgressionTest : FunSpec({
         manager.unseatedPlayersWithMatchesLeft(seated).shouldBeEmpty()
     }
 
+    test("a leaver's forfeited matches are tallied apart from the ones they played") {
+        // The standings still count every forfeit (placement is built on them), but a player's record
+        // must be able to leave out matches nobody played — on both sides of each forfeit.
+        val manager = tournament()
+        val round1 = manager.startNextRound()!!
+        val played = round1.matchFor(human)
+        val firstOpponent = played.opponentOf(human)
+        played.gameSessionId = "g-played"
+        manager.reportMatchResult("g-played", firstOpponent)
+
+        manager.recordAbandon(human)
+
+        val standings = manager.getStandings().associateBy { it.playerId }
+        val leaver = standings.getValue(human)
+        leaver.losses shouldBe 7
+        leaver.forfeitLosses shouldBe 6
+        standings.getValue(firstOpponent).forfeitWins shouldBe 0
+        (ai - firstOpponent).forEach { standings.getValue(it).forfeitWins shouldBe 1 }
+    }
+
     test("a seat that is not ready keeps its match out of the sweep") {
         val manager = tournament()
         val round1 = manager.startNextRound()!!

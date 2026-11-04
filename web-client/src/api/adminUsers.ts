@@ -4,6 +4,7 @@
  * mounted when the server has accounts enabled.
  */
 import type {
+  AccountStats,
   CardStat,
   GameDeckCard,
   GameDecks,
@@ -13,8 +14,9 @@ import type {
   UserTournamentEntry,
 } from './account'
 import { type AdminAuth, adminAuthHeaders } from './adminAuth'
+import { ALL_GAMES, type StatsFilter, filterQuery } from './statsFilter'
 
-/** A registered account with its lifetime record, for the roster. */
+/** A registered account with its record under the roster's filter. */
 export interface AdminUserSummary {
   readonly id: string
   readonly email: string
@@ -28,12 +30,8 @@ export interface AdminUserSummary {
   readonly lastPlayed: string | null
 }
 
-export interface AdminUserStats {
-  readonly games: number
-  readonly wins: number
-  readonly losses: number
-  readonly winRate: number
-}
+/** The same record shape a player's own stats page reads. */
+export type AdminUserStats = AccountStats
 
 /** One account's full profile + stats, for the detail view. */
 export interface AdminUserDetail {
@@ -53,14 +51,14 @@ export interface AdminUserDetail {
   readonly recentGames: GameHistoryEntry[]
 }
 
-export async function fetchUsers(auth: AdminAuth): Promise<AdminUserSummary[]> {
-  const res = await fetch('/api/admin/users', { headers: adminAuthHeaders(auth) })
+export async function fetchUsers(auth: AdminAuth, f: StatsFilter = ALL_GAMES): Promise<AdminUserSummary[]> {
+  const res = await fetch(`/api/admin/users${filterQuery(f).replace(/^&/, '?')}`, { headers: adminAuthHeaders(auth) })
   if (!res.ok) throw new Error(`Failed to load players (${res.status})`)
   return (await res.json()) as AdminUserSummary[]
 }
 
-export async function fetchUserDetail(auth: AdminAuth, id: string): Promise<AdminUserDetail> {
-  const res = await fetch(`/api/admin/users/${id}`, { headers: adminAuthHeaders(auth) })
+export async function fetchUserDetail(auth: AdminAuth, id: string, f: StatsFilter = ALL_GAMES): Promise<AdminUserDetail> {
+  const res = await fetch(`/api/admin/users/${id}${filterQuery(f).replace(/^&/, '?')}`, { headers: adminAuthHeaders(auth) })
   if (!res.ok) throw new Error(`Failed to load player (${res.status})`)
   return (await res.json()) as AdminUserDetail
 }
@@ -97,8 +95,9 @@ export async function fetchUserGames(
   id: string,
   limit: number,
   offset: number,
+  f: StatsFilter = ALL_GAMES,
 ): Promise<AdminGamesPage> {
-  const res = await fetch(`/api/admin/users/${id}/games?limit=${limit}&offset=${offset}`, {
+  const res = await fetch(`/api/admin/users/${id}/games?limit=${limit}&offset=${offset}${filterQuery(f)}`, {
     headers: adminAuthHeaders(auth),
   })
   if (!res.ok) throw new Error(`Failed to load games (${res.status})`)

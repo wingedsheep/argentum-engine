@@ -1,0 +1,105 @@
+/* The stats filter bar: two segmented controls ("Against", "Period") that wrap on a phone. Shared by
+   the account pages (Stats, Profile, public profiles) and the admin screens, so it carries its own
+   look rather than either page system's. */
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.label {
+  flex: none;
+  color: #8f98ac;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.segments {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  min-width: 0;
+  border-radius: 10px;
+  background: rgba(10, 12, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.segments::-webkit-scrollbar { display: none; }
+
+.segment {
+  flex: none;
+  min-height: 30px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #b4bccd;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.segment:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
+.segment[aria-pressed='true'] { background: rgba(255, 255, 255, 0.14); color: #fff; }
+.segment:focus-visible { outline: 2px solid var(--color-focus-ring, #7d9bff); outline-offset: 1px; }
+
+.reset {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #9fb4ff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.reset:hover { text-decoration: underline; }
+
+/* "3 games not counted" — a quiet line, with the help popover beside it. */
+.note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8f98ac;
+  font-size: 13px;
+}
+
+/* The opponent split under the record tiles: two clickable records. */
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.splitItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #c3c9d7;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+.splitItem:hover { border-color: rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.06); }
+.splitItem[aria-pressed='true'] { border-color: rgba(159, 180, 255, 0.55); background: rgba(125, 155, 255, 0.12); }
+.splitItem:disabled { cursor: default; opacity: 0.55; }
+.splitLabel { color: #8f98ac; }
+.splitRecord { color: #eef0f6; font-variant-numeric: tabular-nums; font-weight: 600; }
+.splitRate { color: #9aa3b8; font-variant-numeric: tabular-nums; }

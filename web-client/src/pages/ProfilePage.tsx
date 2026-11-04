@@ -32,6 +32,8 @@ import {
   accountStyles as a,
 } from '@/components/profile/accountUi'
 import { pageStyles as p } from '@/components/ui/PageShell'
+import { ALL_GAMES, type StatsFilter, filterQuery } from '@/api/statsFilter'
+import { NotCountedNote, OpponentSplit, StatsFilterBar } from '@/components/stats/StatsFilterBar'
 import { useAuthStore } from '@/store/authStore'
 
 const PAGE_SIZE = 10
@@ -51,6 +53,8 @@ export function ProfilePage() {
   const [history, setHistory] = useState<GameHistoryEntry[]>([])
   const [historyTotal, setHistoryTotal] = useState(0)
   const [page, setPage] = useState(0)
+  // Who the listed games were against; the list keeps games that don't count, marked.
+  const [historyFilter, setHistoryFilter] = useState<StatsFilter>(ALL_GAMES)
   const [tournaments, setTournaments] = useState<UserTournamentEntry[]>([])
   const [openTournament, setOpenTournament] = useState<number | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
@@ -87,7 +91,7 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (status !== 'authenticated') return
-    void fetchHistoryPage(PAGE_SIZE, page * PAGE_SIZE)
+    void fetchHistoryPage(PAGE_SIZE, page * PAGE_SIZE, historyFilter)
       .then((p) => {
         setHistory(p.entries)
         setHistoryTotal(p.total)
@@ -96,7 +100,7 @@ export function ProfilePage() {
         setHistory([])
         setHistoryTotal(0)
       })
-  }, [status, page])
+  }, [status, page, historyFilter])
 
   const startEditName = () => {
     setNameDraft(user?.displayName ?? '')
@@ -192,8 +196,20 @@ export function ProfilePage() {
             <Stat label="Games" value={stats?.games ?? 0} />
             <Stat label="Wins" value={stats?.wins ?? 0} />
             <Stat label="Losses" value={stats?.losses ?? 0} />
-            <Stat label="Win rate" value={stats ? `${Math.round(stats.winRate * 100)}%` : '—'} />
+            <Stat label="Win rate" value={stats && stats.games > 0 ? `${Math.round(stats.winRate * 100)}%` : '—'} />
           </div>
+          {stats && (stats.vsHumans.games > 0 || stats.vsAi.games > 0 || stats.notCounted > 0) && (
+            <div className={a.overviewFoot} style={{ marginTop: 12 }}>
+              {/* Each record opens the full stats page filtered to it. */}
+              <OpponentSplit
+                vsHumans={stats.vsHumans}
+                vsAi={stats.vsAi}
+                filter={ALL_GAMES}
+                onChange={(f) => navigate(`/stats${filterQuery(f).replace(/^&/, '?')}`)}
+              />
+              <NotCountedNote count={stats.notCounted} />
+            </div>
+          )}
         </section>
 
         <div className={a.shortcuts}>
@@ -232,8 +248,24 @@ export function ProfilePage() {
               </span>
             )}
           </div>
+          {(historyTotal > 0 || historyFilter.vs !== 'all') && (
+            <div style={{ marginBottom: 10 }}>
+              <StatsFilterBar
+                filter={historyFilter}
+                showPeriod={false}
+                onChange={(f) => {
+                  setHistoryFilter(f)
+                  setPage(0)
+                }}
+              />
+            </div>
+          )}
           {history.length === 0 ? (
-            <p className={a.muted}>No games yet — finished games show up here with their decks and replays.</p>
+            <p className={a.muted}>
+              {historyFilter.vs === 'all'
+                ? 'No games yet — finished games show up here with their decks and replays.'
+                : `No games against ${historyFilter.vs === 'ai' ? 'the AI' : 'humans'} yet.`}
+            </p>
           ) : (
             <GameHistoryList
               games={history}

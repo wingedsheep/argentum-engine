@@ -218,6 +218,11 @@ function Players({ players, onProfile }: { players: AdminGamePlayer[]; onProfile
                 {p.isAi ? <span style={styles.aiTag}> AI</span> : null}
               </span>
             )}
+            {p.noAction && (
+              <span style={styles.noAction} title="Never took an action past the mulligan — this game isn't counted for this seat">
+                {' '}no action
+              </span>
+            )}
             {p.colors != null && (
               <span style={styles.seatPips}>
                 <ColorPips colors={p.colors} />
@@ -292,6 +297,7 @@ const styles: Record<string, React.CSSProperties> = {
   playerLink: { background: 'none', border: 'none', color: adminTheme.accent, cursor: 'pointer', fontSize: 'inherit', padding: 0 },
   playerLinkWon: { background: 'none', border: 'none', color: adminTheme.accent, cursor: 'pointer', fontSize: 'inherit', padding: 0, fontWeight: 600 },
   aiTag: { color: adminTheme.textMuted, fontSize: 11 },
+  noAction: { color: '#e8c07a', fontSize: 11 },
   origin: { color: adminTheme.textMuted, fontSize: 11, whiteSpace: 'nowrap' },
   clickableRow: { cursor: 'pointer' },
   pager: { display: 'inline-flex', alignItems: 'center', gap: 10 },

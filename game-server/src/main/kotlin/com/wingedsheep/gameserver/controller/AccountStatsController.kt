@@ -1,7 +1,6 @@
 package com.wingedsheep.gameserver.controller
 
 import com.wingedsheep.gameserver.auth.AuthSupport
-import com.wingedsheep.gameserver.persistence.MatchResultRepository
 import com.wingedsheep.gameserver.persistence.RatingHistoryRepository
 import com.wingedsheep.gameserver.persistence.UserRatingRepository
 import com.wingedsheep.gameserver.persistence.UserRepository
@@ -9,6 +8,8 @@ import com.wingedsheep.gameserver.ranking.Elo
 import com.wingedsheep.gameserver.ranking.RankedMode
 import com.wingedsheep.gameserver.ranking.RatingTier
 import com.wingedsheep.gameserver.stats.CardStat
+import com.wingedsheep.gameserver.stats.GameFilter
+import com.wingedsheep.gameserver.stats.PlayerRecord
 import com.wingedsheep.gameserver.stats.GameDecks
 import com.wingedsheep.gameserver.stats.GameHistoryEntry
 import com.wingedsheep.gameserver.stats.HeadToHead
@@ -34,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/stats")
 @ConditionalOnProperty(name = ["accounts.enabled"], havingValue = "true")
 class AccountStatsController(
-    private val matchResults: MatchResultRepository,
     private val statsQuery: StatsQueryService,
     private val userRatings: UserRatingRepository,
     private val ratingHistory: RatingHistoryRepository,
@@ -42,8 +42,6 @@ class AccountStatsController(
     private val authSupport: AuthSupport,
     private val anteSpoils: com.wingedsheep.gameserver.persistence.AnteSpoilRepository,
 ) {
-    data class StatsDto(val games: Long, val wins: Long, val losses: Long, val winRate: Double)
-
     /** Current ranked standing in one mode. Unrated modes report the starting rating / Provisional. */
     data class RatingDto(
         val mode: String,
@@ -102,18 +100,6 @@ class AccountStatsController(
             }
         }
 
-    /** Overall win/loss record for [userId]. */
-    private fun statsFor(userId: java.util.UUID): StatsDto {
-        val games = matchResults.countGamesForUser(userId)
-        val wins = matchResults.countWinsForUser(userId)
-        return StatsDto(
-            games = games,
-            wins = wins,
-            losses = games - wins,
-            winRate = if (games > 0) wins.toDouble() / games else 0.0,
-        )
-    }
-
     /** All three ranked queues for the signed-in user, unplayed ones shown at the starting rating. */
     @GetMapping("/me/ratings")
     fun ratings(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<RatingDto> =
@@ -155,25 +141,45 @@ class AccountStatsController(
         return SpoilsDto(won.map(::dto), lost.map(::dto))
     }
 
+    // Every game-derived endpoint below takes the same optional slice: `vs` = all / humans / ai and
+    // `days` (absent or 0 = all time) — see [GameFilter]. Results whose seat never took an action are
+    // left out of every figure; the history list shows them, marked.
+
+    /** Win/loss record under the slice, plus the period's split by opponent type. */
     @GetMapping("/me")
-    fun me(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): StatsDto =
-        statsFor(authSupport.requireUser(auth).userId)
+    fun me(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): PlayerRecord = statsQuery.playerRecord(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     @GetMapping("/me/colors")
-    fun colors(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.colorBreakdown(authSupport.requireUser(auth).userId)
+    fun colors(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): List<StatBucket> = statsQuery.colorBreakdown(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     @GetMapping("/me/sets")
-    fun sets(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.setBreakdown(authSupport.requireUser(auth).userId)
+    fun sets(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): List<StatBucket> = statsQuery.setBreakdown(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     @GetMapping("/me/modes")
-    fun modes(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.modeBreakdown(authSupport.requireUser(auth).userId)
+    fun modes(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): List<StatBucket> = statsQuery.modeBreakdown(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     @GetMapping("/me/opponents")
-    fun opponents(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<HeadToHead> =
-        statsQuery.headToHead(authSupport.requireUser(auth).userId)
+    fun opponents(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): List<HeadToHead> = statsQuery.headToHead(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     /** One page of game history. The total count (for the pager) is returned in `X-Total-Count`. */
     @GetMapping("/me/history")
@@ -181,11 +187,14 @@ class AccountStatsController(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
         @RequestParam(defaultValue = "25") limit: Int,
         @RequestParam(defaultValue = "0") offset: Int,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
     ): ResponseEntity<List<GameHistoryEntry>> {
         val userId = authSupport.requireUser(auth).userId
-        val page = statsQuery.recentGames(userId, limit.coerceIn(1, 100), offset.coerceAtLeast(0))
+        val filter = GameFilter.of(vs, days)
+        val page = statsQuery.recentGames(userId, limit.coerceIn(1, 100), offset.coerceAtLeast(0), filter)
         return ResponseEntity.ok()
-            .header("X-Total-Count", statsQuery.recentGamesCount(userId).toString())
+            .header("X-Total-Count", statsQuery.recentGamesCount(userId, filter).toString())
             .body(page)
     }
 
@@ -204,25 +213,35 @@ class AccountStatsController(
     fun creatureTypes(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
         @RequestParam(defaultValue = "15") limit: Int,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
     ): List<StatBucket> =
-        statsQuery.creatureTypeBreakdown(authSupport.requireUser(auth).userId, limit.coerceIn(1, 50))
+        statsQuery.creatureTypeBreakdown(authSupport.requireUser(auth).userId, limit.coerceIn(1, 50), GameFilter.of(vs, days))
 
     /** Distribution of the user's cards across primary card types (Creature, Instant, Land, …). */
     @GetMapping("/me/card-types")
-    fun cardTypes(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.cardTypeBreakdown(authSupport.requireUser(auth).userId)
+    fun cardTypes(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): List<StatBucket> = statsQuery.cardTypeBreakdown(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     /** Mana-value curve of the user's nonland cards (buckets 0..6 then "7+"). */
     @GetMapping("/me/curve")
-    fun curve(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.manaCurve(authSupport.requireUser(auth).userId)
+    fun curve(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): List<StatBucket> = statsQuery.manaCurve(authSupport.requireUser(auth).userId, GameFilter.of(vs, days))
 
     @GetMapping("/me/cards")
     fun cards(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
         @RequestParam(defaultValue = "30") limit: Int,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
     ): List<CardStat> =
-        statsQuery.topCardsForUser(authSupport.requireUser(auth).userId, limit.coerceIn(1, 200))
+        statsQuery.topCardsForUser(authSupport.requireUser(auth).userId, limit.coerceIn(1, 200), GameFilter.of(vs, days))
 
     @GetMapping("/me/tournaments")
     fun tournaments(
@@ -249,7 +268,7 @@ class AccountStatsController(
         val userId: String,
         val displayName: String,
         val avatar: String?,
-        val stats: StatsDto,
+        val stats: PlayerRecord,
         val ratings: List<RatingDto>,
         val ratingHistory: List<RatingPointDto>,
         val colors: List<StatBucket>,
@@ -268,29 +287,35 @@ class AccountStatsController(
      * A public, read-only profile for any account, bundled into one response so a visitor's page is a
      * single round-trip. No auth required — profiles are public — but the account must exist (404
      * otherwise). The deck viewer stays `/me`-only, so this never exposes another player's decklists.
+     * Takes the same `vs` / `days` slice as the `/me` endpoints; ratings and tournaments ignore it.
      */
     @GetMapping("/users/{userId}")
-    fun publicProfile(@PathVariable userId: java.util.UUID): ResponseEntity<PublicProfileDto> {
+    fun publicProfile(
+        @PathVariable userId: java.util.UUID,
+        @RequestParam(required = false) vs: String?,
+        @RequestParam(required = false) days: Int?,
+    ): ResponseEntity<PublicProfileDto> {
         val user = users.findById(userId).orElse(null) ?: return ResponseEntity.notFound().build()
         val id = user.id ?: return ResponseEntity.notFound().build()
+        val filter = GameFilter.of(vs, days)
         return ResponseEntity.ok(
             PublicProfileDto(
                 userId = id.toString(),
                 displayName = user.displayName,
                 avatar = user.avatar,
-                stats = statsFor(id),
+                stats = statsQuery.playerRecord(id, filter),
                 ratings = ratingsFor(id),
                 ratingHistory = ratingHistoryFor(id, RankedMode.entries),
-                colors = statsQuery.colorBreakdown(id),
-                cardTypes = statsQuery.cardTypeBreakdown(id),
-                curve = statsQuery.manaCurve(id),
-                creatureTypes = statsQuery.creatureTypeBreakdown(id, 12),
-                modes = statsQuery.modeBreakdown(id),
-                sets = statsQuery.setBreakdown(id),
-                topCards = statsQuery.topCardsForUser(id, 24),
-                opponents = statsQuery.headToHead(id),
+                colors = statsQuery.colorBreakdown(id, filter),
+                cardTypes = statsQuery.cardTypeBreakdown(id, filter),
+                curve = statsQuery.manaCurve(id, filter),
+                creatureTypes = statsQuery.creatureTypeBreakdown(id, 12, filter),
+                modes = statsQuery.modeBreakdown(id, filter),
+                sets = statsQuery.setBreakdown(id, filter),
+                topCards = statsQuery.topCardsForUser(id, 24, filter),
+                opponents = statsQuery.headToHead(id, filter),
                 tournaments = statsQuery.tournamentHistory(id, 15),
-                recentGames = statsQuery.recentGames(id, 10, 0),
+                recentGames = statsQuery.recentGames(id, 10, 0, filter),
             ),
         )
     }

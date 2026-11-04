@@ -638,7 +638,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Profile (from the account menu) shows your record at a glance, your recent games with both decks and their replays, and your recent tournaments. You can change your display name and avatar here.',
     body: [
       { kind: 'ul', items: [
-        'Games, wins, losses and win rate.',
+        'Games, wins, losses and win rate — only games everyone actually played (see “Which games count”).',
         'Recent games, ten to a page — open Decks to see both players’ lists, Watch the replay, or Share its link.',
         'Spoils — the cards you’ve won in games played for ante, and a count of the ones you lost.',
         'Recent tournaments, each opening its final standings and replays.',
@@ -647,7 +647,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Click your avatar to choose one. Portraits offers 56 painted characters — the creature types of each colour, from Kithkin and Loxodon to Phyrexians and Eldrazi. Card art lets you search for any card, pick the printing whose art you like, and drag and zoom the circle to frame the part you want. Your avatar shows in the account menu, on your public profile, to friends and in messages, on the match intro, and as your portrait at the table, with your life total beneath it. At a table of three or more it leads your name on the player rail and board labels, and anyone spectating or watching the replay sees it beside your name too. “Use my initial” goes back to the letter. Avatars need an account; guests show their initial, and AI opponents sit behind a portrait of their own.' },
       { kind: 'p', text: 'Everyone also has a public profile at `/u/<id>` that anyone can open without signing in. It shows the same statistics and recent games but never your decklists. “This is how others see your profile” marks your own.' },
     ],
-    related: ['stats', 'friends', 'guest-vs-account', 'playing-for-ante'],
+    related: ['stats', 'stats-what-counts', 'friends', 'guest-vs-account', 'playing-for-ante'],
   },
   {
     id: 'stats',
@@ -656,10 +656,33 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'The Stats page is a dashboard of how you play: record and win rate, ranked ratings, the colours, card types, curve, creature types, modes and sets you play most, head-to-heads and your most-played cards.',
     body: [
-      { kind: 'p', text: 'Head to head lists your most-played human opponents (AI games are left out) with your record against each, linked to their profiles. Most-played cards preview on hover. The tournament panel lists the events you played.' },
+      { kind: 'p', text: 'The bar at the top narrows everything below it. Against picks who you played: Everyone, Humans (every opponent was a person) or AI (every opponent was the AI). A multiplayer game with both people and the AI at the table shows only under Everyone. Period limits it to the last year, 90, 30 or 7 days. Your choice stays in the page address, so a reload or a shared link keeps it.' },
+      { kind: 'p', text: 'Under your record, “vs humans” and “vs AI” show both records for the period side by side; click one to filter to it.' },
+      { kind: 'p', text: 'Head to head lists your most-played human opponents (AI games are left out) with your record against each, linked to their profiles. Most-played cards preview on hover. The tournament panel lists the events you played; ratings and tournaments ignore the filter.' },
+      { kind: 'p', text: 'Games where someone never played — a tournament game you missed, or a concession before anyone took an action — are left out of every number. See “Which games count”.' },
       { kind: 'p', text: 'Stats need an account; games played as a guest are not counted.' },
     ],
-    related: ['ranked', 'profile'],
+    related: ['stats-what-counts', 'ranked', 'profile'],
+  },
+  {
+    id: 'stats-what-counts',
+    section: 'community',
+    title: 'Which games count',
+    summary:
+      'A game counts toward your record only if you took an action in it after the mulligan — and so did at least one opponent.',
+    body: [
+      { kind: 'p', text: 'Your record measures games you actually played. Two kinds of game are left out:' },
+      { kind: 'ul', items: [
+        'A game you never played — for example a tournament game that started while you were away, which the disconnect timer conceded for you.',
+        'A game someone conceded before doing anything past the mulligan.',
+      ] },
+      { kind: 'p', text: 'Taking an action means making a play of your own: playing a land, casting a spell, activating an ability, attacking or blocking, or making a choice the game asked for. Keeping or mulliganing, passing priority, and conceding don’t count, because the game passes for you automatically when you aren’t there.' },
+      { kind: 'p', text: 'When your opponent never played, the win they handed you is left out too. In a multiplayer game only the seat that didn’t play is left out; everyone who kept playing still has a result.' },
+      { kind: 'p', text: 'These games still appear in your recent games, marked “Not counted”, so you can see what happened.' },
+      { kind: 'h', text: 'Tournaments' },
+      { kind: 'p', text: 'When a player leaves a tournament, the matches they had left are forfeited: they lose each one and their opponents win it. Standings and placement still include those forfeits. Your tournament record shows only the matches that were played, with the forfeits listed beside it.' },
+    ],
+    related: ['stats', 'profile', 'tournament-flow'],
   },
   {
     id: 'friends',
