@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #TBD Gives a "target player creates a token" (Emeritus of Truce) to itself, reads a creature's own conditional penalty ("-2/-2 as long as …") as a drawback rather than a pump, and prices a keyword a creature grants itself (ascend's flying with the city's blessing) in draft ratings like a printed one
+- #4386 Gives a "target player creates a token" (Emeritus of Truce) to itself, reads a creature's own conditional penalty ("-2/-2 as long as …") as a drawback rather than a pump, and prices a keyword a creature grants itself (ascend's flying with the city's blessing) in draft ratings like a printed one
 - Reads chosen-type grants as tribal enablers, drafts them with off-tribe creatures and tribal payoffs, and chooses the type those payoffs reward instead of the most common existing type.
 
 - Reads "each token that would be created under an opponent's control this turn is created under your control instead" (Crafty Cutpurse) as taking the opponent's tokens rather than as an unrecognised ability, and prices it in draft ratings above the bare body
