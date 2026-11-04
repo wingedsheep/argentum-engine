@@ -128,6 +128,7 @@ data class LegalActionInfo(
      */
     val attackTargetsByAttacker: Map<EntityId, List<EntityId>>? = null,
     val validBlockers: List<EntityId>? = null,
+    val blockableAttackers: List<EntityId>? = null,
     val hasXCost: Boolean = false,
     val maxAffordableX: Int? = null,
     /**
@@ -227,6 +228,8 @@ data class LegalActionInfo(
      * [com.wingedsheep.engine.legalactions.LegalAction.castsTransformed].
      */
     val castsTransformed: Boolean = false,
+    /** Previously submitted teammate choices, displayed but not part of this player's input. */
+    val proposedBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
     val maxRepeatableActivations: Int? = null,

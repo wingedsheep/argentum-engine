@@ -509,7 +509,7 @@ class CombatAdvisor(
             return DeclareBlockers(playerId, emptyMap())
         }
 
-        val attackers = getAttackingCreatures(state)
+        val attackers = legalAction.blockableAttackers ?: getAttackingCreatures(state)
         if (attackers.isEmpty()) {
             return DeclareBlockers(playerId, emptyMap())
         }
@@ -628,13 +628,14 @@ class CombatAdvisor(
 
         // ── Block tax: a plan we cannot pay for is a plan we would only decline (see
         // [CombatTaxBudget]) ──
+        val legal = legalizeBlockerPlan(state, playerId, bestMap, mandatoryBlockerIds)
         val affordable = CombatTaxBudget.affordableBlock(
-            state, projected, playerId, cardRegistry,
-            legalizeBlockerPlan(state, playerId, bestMap, mandatoryBlockerIds),
-            mandatoryBlockerIds,
+            state, projected, playerId, cardRegistry, legal, mandatoryBlockerIds,
         )
-
-        return DeclareBlockers(playerId, affordable)
+        // Removing an unaffordable partner can invalidate a co-blocker restriction.
+        val finalPlan = if (affordable == legal) legal
+            else legalizeBlockerPlan(state, playerId, affordable, mandatoryBlockerIds)
+        return DeclareBlockers(playerId, finalPlan)
     }
 
     /**
@@ -649,7 +650,12 @@ class CombatAdvisor(
         mandatoryBlockerIds: Set<EntityId>,
     ): Map<EntityId, List<EntityId>> {
         val candidate = proposed.toMutableMap()
-        while (simulator.simulate(state, DeclareBlockers(playerId, candidate)) is SimulationResult.Illegal) {
+        fun isIllegal(): Boolean {
+            val simulated = simulator.simulate(state, DeclareBlockers(playerId, candidate))
+            return simulated is SimulationResult.Illegal ||
+                com.wingedsheep.engine.mechanics.combat.SharedTeamBlockChoices.problem(simulated.state, playerId) != null
+        }
+        while (isIllegal()) {
             val removable = candidate.keys
                 .filterNot { it in mandatoryBlockerIds }
                 .minByOrNull { CombatMath.creatureValue(state, state.projectedState, it) }

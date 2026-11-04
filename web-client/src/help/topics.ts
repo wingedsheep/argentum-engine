@@ -558,8 +558,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Exactly four players in two teams of two (CR 810). Each team shares one 30-life total, takes its turns together, and attacks and blocks as one unit.',
     body: [
       { kind: 'p', text: 'Teams are randomised at game start by default, re-rolled every game. Switch to “Choose teams” and the host can click each player’s team chip to assign them by hand.' },
+      { kind: 'p', text: 'Blocking is one team declaration. You can select highlighted creatures from either teammate’s board and assign them against attacks on either teammate. Confirm Blocks submits the whole team’s choices together; No Blocks declares no blockers for the team. If an effect gives different players control of those choices, each chooses their own portion in turn. Earlier choices stay visible as arrows; the game declares the blocks only after the combined choice is legal.' },
     ],
-    related: ['table-team-vs-team'],
+    related: ['table-team-vs-team', 'targeting-and-combat'],
   },
   {
     id: 'table-team-vs-team',
@@ -1367,7 +1368,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'A blocked attacker stays blocked even after its blockers die or leave combat. When that happens its red attack chevron turns into a blue Blocked tag, and any attack arrow it has fades to a dashed line, so it does not look like it is still getting through.' },
       { kind: 'p', text: 'Dragging one attacker onto another bands them (CR 702.22) — the drop lights up only when the band would be legal: creatures with banding plus at most one without, or creatures that all share the quality one of them "bands with other" (any number of legendary creatures, when one of them bands with other legendary creatures). On a phone, swipe left and right on the opponent strip to move between boards.' },
     ],
-    related: ['pass-button', 'decisions', 'multiplayer-camera', 'zone-browsers'],
+    related: ['pass-button', 'decisions', 'multiplayer-camera', 'zone-browsers', 'table-two-headed-giant'],
   },
   {
     id: 'zone-browsers',

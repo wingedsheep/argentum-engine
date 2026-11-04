@@ -267,12 +267,15 @@ export function selectCardInteraction(state: GameStore, input: CardInteractionIn
     // "bands with other"), so the highlight never promises a band the link would refuse.
     bandIsLegal(mergedBand(combat.bands, draggingAttackerId, cardId), (id) => viewed?.cards?.[id])
 
-  const isValidBlocker = isInBlockerMode && ownForCombat && isValidCombatCreature
-  const isSelectedAsBlocker = isInBlockerMode && !!(combat.blockerAssignments[cardId]?.length)
-  const isAttackingInBlockerMode = isInBlockerMode && opponentForCombat && listHas(combat.attackingCreatures, cardId)
-  const isMustBeBlocked = isInBlockerMode && opponentForCombat && listHas(combat.mustBeBlockedAttackers, cardId)
-  // Multiplayer: an attacker in this combat that is attacking a *different* defender — you can't
-  // block it (CR 509.1b). `attackingCreatures` is already scoped to attacks on the acting defender.
+  // Shared-turn declarations include teammates' creatures wherever their board is displayed.
+  // Membership in the server's declaration lists is authoritative, not the card's screen row.
+  const isValidBlocker = isInBlockerMode && isCreature && isValidCombatCreature
+  const isSelectedAsBlocker = isInBlockerMode && !!(
+    combat.blockerAssignments[cardId]?.length || combat.proposedBlockerAssignments?.[cardId]?.length
+  )
+  const isAttackingInBlockerMode = isInBlockerMode && listHas(combat.attackingCreatures, cardId)
+  const isMustBeBlocked = isInBlockerMode && listHas(combat.mustBeBlockedAttackers, cardId)
+  // The server excludes attacks outside this declaration's defending player or shared-turn team.
   const isBystanderAttacker = isInBlockerMode && opponentForCombat &&
     !listHas(combat.attackingCreatures, cardId) &&
     (serverIndex?.attacking.has(cardId) ?? false)

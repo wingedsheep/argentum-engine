@@ -525,6 +525,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.DamageAssignedEvent,
             is com.wingedsheep.engine.core.DecisionRequestedEvent,
             is com.wingedsheep.engine.core.DecisionSubmittedEvent,
+            is com.wingedsheep.engine.core.TeamBlockerChoiceEvent,
             is com.wingedsheep.engine.core.DiscardRequiredEvent,
             is com.wingedsheep.engine.core.DoorLockedEvent,
             is com.wingedsheep.engine.core.AttackDeclarationCancelledEvent,

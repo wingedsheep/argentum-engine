@@ -13,9 +13,16 @@ data class BlockCheckContext(
     val projected: ProjectedState,
     val attackerId: EntityId,
     val blockerId: EntityId,
+    /** Controller of the blocking creature, even when a teammate submits the declaration. */
     val blockingPlayer: EntityId,
     val cardRegistry: CardRegistry
-)
+) {
+    /** Attacker-relative defender; shared-team blocking does not change who it attacks. */
+    val defendingPlayer: EntityId = state.getEntity(attackerId)
+        ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+        ?.let { com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(state, it, projected) }
+        ?: blockingPlayer
+}
 
 /**
  * A combat rule that determines whether a specific blocker can block a specific attacker.

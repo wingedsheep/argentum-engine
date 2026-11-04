@@ -1312,8 +1312,8 @@ data class BlockersDeclaredEvent(
     override val blockerNames: Map<EntityId, String> = emptyMap(),
     override val attackerNames: Map<EntityId, String> = emptyMap(),
     /**
-     * The defending player whose declaration this is. Each defending player declares in turn in
-     * multiplayer, so one combat can emit several of these; null only on hand-built events.
+     * The defending player submitting this declaration (for the whole side under shared team
+     * turns). Separate defending sides declare in turn; null only on hand-built events.
      */
     val blockingPlayerId: EntityId? = null
 ) : GameEvent, BlockingRelationshipsEvent {
@@ -2955,3 +2955,8 @@ data class DiceRolledEvent(
     val results: List<Int>,
     val sourceId: EntityId? = null,
 ) : GameEvent
+
+/** A partial team block choice was saved, or an illegal combined choice restarted. */
+@Serializable
+@SerialName("TeamBlockerChoiceEvent")
+data class TeamBlockerChoiceEvent(val playerId: EntityId, val description: String) : GameEvent

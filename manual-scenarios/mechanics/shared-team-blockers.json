@@ -1,0 +1,106 @@
+{
+  "players": [
+    {
+      "name": "Attack captain",
+      "config": {
+        "lifeTotal": 30,
+        "hand": [],
+        "battlefield": [
+          {
+            "name": "Grizzly Bears"
+          },
+          {
+            "name": "Grizzly Bears"
+          }
+        ],
+        "library": [
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain"
+        ]
+      }
+    },
+    {
+      "name": "Attack partner",
+      "config": {
+        "lifeTotal": 30,
+        "hand": [],
+        "battlefield": [],
+        "library": [
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain"
+        ]
+      }
+    },
+    {
+      "name": "Horncrest captain",
+      "config": {
+        "lifeTotal": 30,
+        "hand": [],
+        "battlefield": [
+          {
+            "name": "Bonded Horncrest"
+          }
+        ],
+        "library": [
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain"
+        ]
+      }
+    },
+    {
+      "name": "Horncrest partner",
+      "config": {
+        "lifeTotal": 30,
+        "hand": [],
+        "battlefield": [
+          {
+            "name": "Bonded Horncrest"
+          }
+        ],
+        "library": [
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain",
+          "Mountain"
+        ]
+      }
+    }
+  ],
+  "teams": [
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "mode": "SELF",
+  "phase": "COMBAT",
+  "step": "DECLARE_ATTACKERS",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

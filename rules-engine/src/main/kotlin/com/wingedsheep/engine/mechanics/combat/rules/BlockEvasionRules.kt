@@ -184,31 +184,20 @@ class LandwalkRule(
     }
 
     private fun playerControlsLegendaryLand(ctx: BlockCheckContext): Boolean =
-        ctx.projected.getBattlefieldControlledBy(ctx.blockingPlayer).any { entityId ->
+        ctx.projected.getBattlefieldControlledBy(ctx.defendingPlayer).any { entityId ->
             ctx.projected.hasType(entityId, "LAND") && ctx.projected.isLegendary(entityId)
         }
 
-    private fun playerControlsNonbasicLand(ctx: BlockCheckContext): Boolean {
-        return ctx.state.getBattlefield().any { entityId ->
-            val container = ctx.state.getEntity(entityId) ?: return@any false
-            val cardComponent = container.get<CardComponent>() ?: return@any false
-            val controller = ctx.projected.getController(entityId)
-            controller == ctx.blockingPlayer &&
-                cardComponent.typeLine.isLand &&
-                !cardComponent.typeLine.isBasicLand
+    private fun playerControlsNonbasicLand(ctx: BlockCheckContext): Boolean =
+        ctx.projected.getBattlefieldControlledBy(ctx.defendingPlayer).any { entityId ->
+            ctx.projected.hasType(entityId, "LAND") && !ctx.projected.hasType(entityId, "BASIC")
         }
-    }
 
-    private fun playerControlsLandWithSubtype(ctx: BlockCheckContext, landSubtype: Subtype): Boolean {
-        return ctx.state.getBattlefield().any { entityId ->
-            val container = ctx.state.getEntity(entityId) ?: return@any false
-            val cardComponent = container.get<CardComponent>() ?: return@any false
-            val controller = ctx.projected.getController(entityId)
-            controller == ctx.blockingPlayer &&
-                cardComponent.typeLine.isLand &&
-                cardComponent.typeLine.hasSubtype(landSubtype)
+    private fun playerControlsLandWithSubtype(ctx: BlockCheckContext, landSubtype: Subtype): Boolean =
+        ctx.projected.getBattlefieldControlledBy(ctx.defendingPlayer).any { entityId ->
+            ctx.projected.hasType(entityId, "LAND") && ctx.projected.hasSubtype(entityId, landSubtype.value)
         }
-    }
+
 }
 
 /**
@@ -435,7 +424,7 @@ class CantBeBlockedUnlessDefenderSharesCreatureTypeRule : BlockEvasionRule {
     }
 
     private fun defenderHasEnoughSharedCreatureTypes(ctx: BlockCheckContext, minCount: Int): Boolean {
-        val creatures = ctx.projected.getBattlefieldControlledBy(ctx.blockingPlayer).filter { entityId ->
+        val creatures = ctx.projected.getBattlefieldControlledBy(ctx.defendingPlayer).filter { entityId ->
             ctx.projected.isCreature(entityId)
         }
 
@@ -454,9 +443,8 @@ class CantBeBlockedUnlessDefenderSharesCreatureTypeRule : BlockEvasionRule {
  * controls at least N permanents matching a filter — the landwalk shape generalized past land
  * types (Neurok Spy: "can't be blocked as long as defending player controls an artifact").
  *
- * Counts against [BlockCheckContext.blockingPlayer], which is the defending player for this
- * declaration, so a multiplayer attack at a player with no matching permanent stays blockable even
- * when another opponent has one. The candidate set comes from projected state
+ * Counts against [BlockCheckContext.defendingPlayer], the seat this attacker attacks, so a shared-team
+ * attack at a player with no matching permanent stays blockable even when their teammate has one. The candidate set comes from projected state
  * ([ProjectedState.getBattlefieldControlledBy]) and each candidate is matched with the projection in
  * hand, so a permanent that only *became* an artifact (Ensoul Artifact, March of the Machines) counts
  * and control-changing effects are honored. The filter is evaluated with the defender bound as
@@ -483,11 +471,11 @@ class CantBeBlockedIfDefenderControlsRule(
         if (abilities.isEmpty()) return null
 
         val predicateContext = PredicateContext(
-            controllerId = ctx.blockingPlayer,
+            controllerId = ctx.defendingPlayer,
             sourceId = ctx.attackerId
         )
         for (ability in abilities) {
-            val matches = ctx.projected.getBattlefieldControlledBy(ctx.blockingPlayer).count { entityId ->
+            val matches = ctx.projected.getBattlefieldControlledBy(ctx.defendingPlayer).count { entityId ->
                 predicateEvaluator.matches(
                     ctx.state, ctx.projected, entityId, ability.permanentFilter, predicateContext
                 )

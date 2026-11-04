@@ -149,8 +149,11 @@ class CreaturesAttackYouUnblockedTriggerTest : FunSpec({
         d.declareAttackers(p[0], mapOf(fromP0 to p[2], fromP1 to p[2])).error shouldBe null
         d.passPriorityUntil(Step.DECLARE_BLOCKERS)
         d.declareNoBlockers(d.state.priorityPlayerId!!).error shouldBe null
-        d.declareNoBlockers(d.state.priorityPlayerId!!).error shouldBe null
-
+        withClue("one combined declaration finishes both defending teammates") {
+            listOf(p[2], p[3]).forEach { defender ->
+                d.state.getEntity(defender)!!.has<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() shouldBe true
+            }
+        }
         withClue("one trigger for each attacking player (Coveted Jewel ruling)") { d.stackSize shouldBe 2 }
     }
 })

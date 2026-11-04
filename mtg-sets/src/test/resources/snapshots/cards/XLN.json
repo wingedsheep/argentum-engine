@@ -774,6 +774,70 @@
     ]
 }
 
+// Bonded Horncrest
+{
+    "name": "Bonded Horncrest",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This creature can't attack or block alone.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            },
+            {
+                "type": "CantBlockUnlessCoBlocker",
+                "coBlockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"You don't tame a horncrest. You convince it that it's easier to destroy something else.\"\n—Amautl, knight of Atzocan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a50ad54a-73f8-4b97-b890-2be9a178bc42.jpg?1783935749",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If you control more than one Bonded Horncrest, they can attack or block together, even if no other creatures attack or block."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Although Bonded Horncrest can’t attack alone, other attacking creatures don’t have to attack the same player or planeswalker. For example, Bonded Horncrest could attack an opponent and another creature could attack a planeswalker that opponent controls. Similarly, other blocking creatures don’t have to block the same creature that Bonded Horncrest blocks."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once Bonded Horncrest has attacked or blocked, it will remain in combat even if you no longer control another attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an effect says that Bonded Horncrest attacks or blocks if able and you control another creature able to attack or block, you must attack or block with Bonded Horncrest and that creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "In a Two-Headed Giant game, Bonded Horncrest can attack or block with a creature controlled by your teammate, even if no other creatures you control are attacking or blocking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Brazen Buccaneers
 {
     "name": "Brazen Buccaneers",

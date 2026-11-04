@@ -1164,6 +1164,10 @@ export interface LegalActionInfo {
   readonly attackTargetsByAttacker?: Readonly<Record<EntityId, readonly EntityId[]>>
   /** Valid blocker IDs for DeclareBlockers action */
   readonly validBlockers?: readonly EntityId[]
+  /** Attacking creature IDs this declaration may block, including attacks on a shared-turn teammate. */
+  readonly blockableAttackers?: readonly EntityId[]
+  /** Teammate choices already submitted while separate effects control the team's block choices. */
+  readonly proposedBlockerAssignments?: Readonly<Record<EntityId, readonly EntityId[]>>
   /** Whether this spell has X in its mana cost */
   readonly hasXCost?: boolean
   /** Maximum X value the player can afford (null if not X cost spell) */

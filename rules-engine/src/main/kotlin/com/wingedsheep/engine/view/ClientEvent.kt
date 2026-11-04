@@ -1850,6 +1850,12 @@ is PermanentsSacrificedEvent -> {
                 sourceName = event.sourceName
             )
 
+            is TeamBlockerChoiceEvent -> ClientEvent.DecisionMade(
+                playerId = event.playerId,
+                isYours = event.playerId == viewingPlayerId,
+                description = event.description,
+            )
+
             is DecisionSubmittedEvent -> {
                 if (event.description != null) {
                     val isYours = event.playerId == viewingPlayerId

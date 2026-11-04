@@ -820,6 +820,12 @@ function processStateUpdate(
     )
       ? state.opponentBlockerAssignments
       : null,
+    // Shared-team choices can hand this connection another seat's declaration without an
+    // epoch change. Drop the old seat's draft atomically; App enters the new server offer.
+    ...(state.combatState && !msg.legalActions.some(({ action }) =>
+      action.type === (state.combatState?.mode === 'declareAttackers' ? 'DeclareAttackers' : 'DeclareBlockers') &&
+      (state.combatState?.actingSeat == null || action.playerId === state.combatState.actingSeat)
+    ) ? { combatState: null, draggingBlockerId: null, draggingAttackerId: null } : {}),
     ...(state.interactionEpoch !== (msg.interactionEpoch ?? null)
       ? CLEARED_ACTION_SELECTIONS
       : isPipelineOutpaced(state, msg.legalActions) ? CLEARED_PIPELINE_SELECTIONS : {}),

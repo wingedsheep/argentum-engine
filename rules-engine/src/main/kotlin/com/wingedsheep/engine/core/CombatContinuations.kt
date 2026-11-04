@@ -223,6 +223,10 @@ data class RedirectDamageSourceContinuation(
 data class BlockerPilesContinuation(
     val blockingPlayer: EntityId,
     val attackers: List<EntityId>,
+    val choosingPlayer: EntityId = blockingPlayer,
+    val remainingPlayers: List<EntityId> = emptyList(),
+    val chosenPiles: List<List<EntityId>> = emptyList(),
+    val separateChoices: Boolean = false,
 ) : AnswerContinuation
 
 @Serializable
@@ -231,6 +235,10 @@ data class BlockerPileRestrictionChoiceContinuation(
     val attackers: List<EntityId>,
     val candidates: Map<EntityId, List<EntityId>>,
     val assignmentCount: Int,
+    val choosingPlayer: EntityId = blockingPlayer,
+    val remainingPlayers: List<EntityId> = emptyList(),
+    val chosenBlocks: Map<EntityId, List<EntityId>> = emptyMap(),
+    val separateChoices: Boolean = false,
 ) : AnswerContinuation
 
 /** Carries the resolved amount and source object identities across the source-choice decision. */

@@ -193,8 +193,8 @@ export interface CombatState {
   /**
    * The seat this declaration is being made for, from the legal action's
    * `playerId`. Matters in multiplayer: a hotseat connection declares for the
-   * acting seat, and a defender's blocks are scoped to the attackers attacking
-   * *them* (CR 509.1b). Null when unknown (legacy 2-player fallbacks apply).
+   * acting seat. The server provides the defending player's or shared team's
+   * eligible blockers and attackers. Null when unknown.
    */
   actingSeat: EntityId | null
   /**
@@ -217,6 +217,8 @@ export interface CombatState {
   attackTargetsByAttacker: Readonly<Record<EntityId, readonly EntityId[]>>
   /** Blocker assignments: blocker ID -> attacker IDs (supports blocking multiple attackers) */
   blockerAssignments: Record<EntityId, EntityId[]>
+  /** Previously submitted team choices: shown as arrows but never included in this seat's input. */
+  proposedBlockerAssignments?: Readonly<Record<EntityId, readonly EntityId[]>>
   /** Valid creatures that can participate (attackers or blockers depending on mode) */
   validCreatures: readonly EntityId[]
   /** Creatures that must attack this combat (from MustAttack, Taunt, etc.) */

@@ -162,6 +162,40 @@ describe('browser live action origins', () => {
     })
   })
 
+  it.each([false, true])('clears the previous seat block draft on a same-epoch handoff (delta=%s)', (delta) => {
+    const nextSeat = entityId('teammate')
+    const combat: CombatState = {
+      interactionEpoch: 'original', mode: 'declareBlockers', actingSeat: ME, stickyDefenderId: null,
+      selectedAttackers: [], attackerTargets: {}, validAttackTargets: [], attackTargetsByAttacker: {},
+      blockerAssignments: { [MANA]: [TARGET] }, validCreatures: [MANA], mandatoryAttackers: [], loneAttackers: [],
+      attackingCreatures: [TARGET], mustBeBlockedAttackers: [], blockerMaxBlockCounts: {}, bands: [],
+    }
+    useGameStore.getState().startCombat(combat)
+    send.mockClear()
+    const nextOffer: LegalActionInfo = {
+      actionType: 'DeclareBlockers', description: 'Choose teammate blockers',
+      action: { type: 'DeclareBlockers', playerId: nextSeat, blockers: {} },
+      validBlockers: [SPELL], blockableAttackers: [TARGET],
+      proposedBlockerAssignments: { [MANA]: [TARGET] },
+    }
+    receive('original', delta, undefined, [nextOffer])
+    expect(useGameStore.getState().combatState).toBeNull()
+    useGameStore.getState().confirmCombat('original')
+    expect(send).not.toHaveBeenCalled()
+
+    // App re-enters from the fresh offer. Prior choices are display-only and aren't resubmitted.
+    useGameStore.getState().startCombat({
+      ...combat, actingSeat: nextSeat, validCreatures: [SPELL],
+      blockerAssignments: { [SPELL]: [TARGET] }, proposedBlockerAssignments: { [MANA]: [TARGET] },
+    })
+    send.mockClear()
+    useGameStore.getState().confirmCombat('original')
+    expect(send).toHaveBeenCalledExactlyOnceWith({
+      type: 'submitAction', interactionEpoch: 'original',
+      action: { type: 'DeclareBlockers', playerId: nextSeat, blockers: { [SPELL]: [TARGET] } },
+    })
+  })
+
   it('rejects a held decision callback after undo and after the next question', () => {
     const decision: PendingDecision = {
       type: 'YesNoDecision', id: 'original:question-7', playerId: entityId('controlled-player'),

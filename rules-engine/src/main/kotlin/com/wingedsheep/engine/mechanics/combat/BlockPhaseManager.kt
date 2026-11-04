@@ -74,6 +74,10 @@ internal class BlockPhaseManager(
         blockingPlayer: EntityId,
         blockers: Map<EntityId, List<EntityId>>
     ): ExecutionResult {
+        if (!CombatDefenders.isDefendingPlayer(state, blockingPlayer)) {
+            return ExecutionResult.error(state, "You are not defending this combat")
+        }
+        // The shared-turn team submits one declaration, validated as a whole.
         // Validate each blocker
         for ((blockerId, attackerIds) in blockers) {
             val validation = validateBlocker(state, blockingPlayer, blockerId, attackerIds)
@@ -144,39 +148,56 @@ internal class BlockPhaseManager(
         // player to confirm — same reasoning as attack taxes: don't tap their mana
         // without consent.
         val projected = state.projectedState
-        val totalBlockTax = CombatTaxes.blockTax(state, cardRegistry, blockers.keys, projected, predicateEvaluator = predicateEvaluator)
-        if (totalBlockTax > 0) {
-            return pauseForBlockTaxConfirmation(state, blockingPlayer, blockers, totalBlockTax)
+        val taxes = state.sharedTurnTeam(blockingPlayer).mapNotNull { member ->
+            val owned = blockers.keys.filterTo(mutableSetOf()) { projected.getController(it) == member }
+            CombatTaxes.blockTax(state, cardRegistry, owned, projected, predicateEvaluator = predicateEvaluator)
+                .takeIf { it > 0 }?.let { member to it }
+        }.toMap()
+        if (taxes.isNotEmpty()) {
+            return pauseForBlockTaxConfirmation(state, blockingPlayer, blockers, taxes)
         }
 
         return commitBlockDeclaration(state, blockingPlayer, blockers, taxEvents = emptyList())
     }
 
     fun beginBlockerPiles(state: GameState, blockingPlayer: EntityId): ExecutionResult {
-        val attackers = state.getBattlefield().filter { id ->
-            val attack = state.getEntity(id)?.get<AttackingComponent>() ?: return@filter false
-            CombatDefenders.defendingPlayerOf(state, attack, state.projectedState) in state.sharedTurnTeam(blockingPlayer)
-        }
+        val attackers = CombatDefenders.blockableAttackers(state, blockingPlayer)
         val projected = state.projectedState
+        val team = state.sharedTurnTeam(blockingPlayer)
         val creatures = state.getBattlefield().filter {
-            projected.isCreature(it) && projected.getController(it) == blockingPlayer
+            projected.isCreature(it) && projected.getController(it) in team
         }
-        // Nothing to divide: declare "no blocks" rather than ask an empty question.
         if (attackers.isEmpty() || creatures.isEmpty()) return commitBlockDeclaration(state, blockingPlayer, emptyMap(), emptyList())
-        val capacities = creatures.associateWith { blocker -> maxPileMemberships(state, blocker, attackers.size) }
+        val separate = SharedTeamBlockChoices.requiresSeparateChoices(state, blockingPlayer)
+        val owners = if (separate) team.filter { member -> creatures.any { projected.getController(it) == member } }
+            else listOf(blockingPlayer)
+        return askBlockerPiles(state, BlockerPilesContinuation(blockingPlayer, attackers,
+            choosingPlayer = owners.first(), remainingPlayers = owners.drop(1), separateChoices = separate))
+    }
+
+    private fun askBlockerPiles(state: GameState, continuation: BlockerPilesContinuation): ExecutionResult {
+        val projected = state.projectedState
+        val owners = if (continuation.separateChoices) listOf(continuation.choosingPlayer)
+            else state.sharedTurnTeam(continuation.blockingPlayer)
+        val creatures = state.getBattlefield().filter {
+            projected.isCreature(it) && projected.getController(it) in owners
+        }
+        val capacities = creatures.associateWith { blocker -> maxPileMemberships(state, blocker, continuation.attackers.size) }
         return state.suspendForDecision(
             question = { id -> SplitPilesDecision(
                 id = id,
-                playerId = CombatDeclarationControl.declarerFor(state, blockingPlayer) ?: blockingPlayer,
+                playerId = CombatDeclarationControl.controllerOf(state,
+                    com.wingedsheep.sdk.scripting.effects.CombatDeclaration.BLOCKERS, continuation.choosingPlayer)
+                    ?: continuation.choosingPlayer,
                 prompt = "Choose creatures for each pile. Piles are assigned to attackers at random; empty piles are allowed.",
                 context = DecisionContext(sourceId = null, sourceName = "Blocker piles", phase = DecisionPhase.COMBAT),
                 cards = creatures,
-                numberOfPiles = attackers.size,
+                numberOfPiles = continuation.attackers.size,
                 allowUnassigned = true,
                 maxPileMemberships = capacities,
                 useTargetingUI = true,
             ) },
-            answer = BlockerPilesContinuation(blockingPlayer, attackers),
+            answer = continuation,
         )
     }
 
@@ -185,10 +206,18 @@ internal class BlockPhaseManager(
     }
 
     fun resolveBlockerPiles(state: GameState, continuation: BlockerPilesContinuation, response: PilesSplitResponse): ExecutionResult {
-        // Shuffle after the response is validated, so an invalid submission cannot reroll combat.
+        val chosen = continuation.attackers.indices.map { index ->
+            continuation.chosenPiles.getOrElse(index) { emptyList() } + response.piles[index]
+        }
+        if (continuation.remainingPlayers.isNotEmpty()) {
+            return askBlockerPiles(state, continuation.copy(
+                choosingPlayer = continuation.remainingPlayers.first(),
+                remainingPlayers = continuation.remainingPlayers.drop(1), chosenPiles = chosen))
+        }
+        // Every chooser commits their pile memberships before the one shared shuffle.
         val (attackers, randomized) = state.nextRandom { shuffle(continuation.attackers) }
         val candidates = linkedMapOf<EntityId, MutableList<EntityId>>()
-        for ((index, pile) in response.piles.withIndex()) {
+        for ((index, pile) in chosen.withIndex()) {
             val attacker = attackers[index]
             for (blocker in pile) {
                 if (validateBlocker(randomized, continuation.blockingPlayer, blocker, listOf(attacker)) == null) {
@@ -201,39 +230,85 @@ internal class BlockPhaseManager(
         val suggested = maximalLegalPileBlocks(randomized, blocks)
         val count = suggested.values.sumOf { it.size }
         if (count == 0) return commitBlockDeclaration(randomized, continuation.blockingPlayer, emptyMap(), emptyList())
-        val pileOptions = attackers.mapIndexed { index, attacker -> index to blocks.filterValues { attacker in it }.keys.toList() }.toMap()
-        return randomized.suspendForDecision(
+        return beginPileRestrictionChoices(randomized, continuation.blockingPlayer, attackers, blocks, count)
+    }
+
+    private fun beginPileRestrictionChoices(
+        state: GameState,
+        blockingPlayer: EntityId,
+        attackers: List<EntityId>,
+        candidates: Map<EntityId, List<EntityId>>,
+        count: Int,
+        retry: Boolean = false,
+    ): ExecutionResult {
+        val separate = SharedTeamBlockChoices.requiresSeparateChoices(state, blockingPlayer)
+        val owners = if (separate) state.sharedTurnTeam(blockingPlayer).filter { member ->
+            candidates.keys.any { state.projectedState.getController(it) == member }
+        } else listOf(blockingPlayer)
+        return askPileRestrictionChoice(state, BlockerPileRestrictionChoiceContinuation(
+            blockingPlayer, attackers, candidates, count, choosingPlayer = owners.first(),
+            remainingPlayers = owners.drop(1), separateChoices = separate), retry)
+    }
+
+    private fun askPileRestrictionChoice(
+        state: GameState,
+        continuation: BlockerPileRestrictionChoiceContinuation,
+        retry: Boolean = false,
+    ): ExecutionResult {
+        val candidates = continuation.candidates.filterKeys {
+            !continuation.separateChoices || state.projectedState.getController(it) == continuation.choosingPlayer
+        }
+        val suggested = maximalLegalPileBlocks(state, continuation.candidates).filterKeys { it in candidates }
+        val attackers = continuation.attackers
+        val count = continuation.assignmentCount
+        val scope = if (continuation.separateChoices) "The team must choose $count blocks in total. Choose this player's blocks"
+            else "Choose $count blocks"
+        return state.suspendForDecision(
             question = { id -> SplitPilesDecision(
                 id = id,
-                playerId = CombatDeclarationControl.declarerFor(randomized, continuation.blockingPlayer) ?: continuation.blockingPlayer,
-                prompt = "Choose $count blocks from the assigned piles. Blocking restrictions prevent all chosen creatures from blocking.",
+                playerId = CombatDeclarationControl.controllerOf(state,
+                    com.wingedsheep.sdk.scripting.effects.CombatDeclaration.BLOCKERS, continuation.choosingPlayer)
+                    ?: continuation.choosingPlayer,
+                prompt = (if (retry) "The combined choices were not legal. Choose again. " else "") +
+                    "$scope from the assigned piles. Blocking restrictions prevent all chosen creatures from blocking.",
                 context = DecisionContext(sourceId = null, sourceName = "Blocker piles", phase = DecisionPhase.COMBAT),
-                cards = blocks.keys.toList(),
+                cards = candidates.keys.toList(),
                 numberOfPiles = attackers.size,
                 allowUnassigned = true,
-                maxPileMemberships = blocks.mapValues { it.value.size },
+                maxPileMemberships = candidates.mapValues { it.value.size },
                 useTargetingUI = true,
-                pileLabels = attackers.map { com.wingedsheep.engine.state.nameVisibleToAll(randomized, it,
-                    randomized.getEntity(it)?.get<CardComponent>()?.name ?: "Attacker") },
-                pileOptions = pileOptions,
-                requiredAssignments = count,
+                pileLabels = attackers.map { com.wingedsheep.engine.state.nameVisibleToAll(state, it,
+                    state.getEntity(it)?.get<CardComponent>()?.name ?: "Attacker") },
+                pileOptions = attackers.mapIndexed { index, attacker -> index to candidates.filterValues { attacker in it }.keys.toList() }.toMap(),
+                requiredAssignments = count.takeUnless { continuation.separateChoices },
                 suggestedPiles = attackers.map { attacker -> suggested.filterValues { attacker in it }.keys.toList() },
             ) },
-            answer = BlockerPileRestrictionChoiceContinuation(continuation.blockingPlayer, attackers, blocks, count),
+            answer = continuation,
         )
     }
 
     fun resolvePileRestrictions(state: GameState, continuation: BlockerPileRestrictionChoiceContinuation, response: PilesSplitResponse): ExecutionResult {
-        val blocks = linkedMapOf<EntityId, MutableList<EntityId>>()
+        val blocks = continuation.chosenBlocks.mapValuesTo(linkedMapOf()) { it.value.toMutableList() }
         for ((index, pile) in response.piles.withIndex()) {
             val attacker = continuation.attackers[index]
             for (blocker in pile) {
                 if (attacker !in continuation.candidates[blocker].orEmpty()) return ExecutionResult.error(state, "Block was not assigned by the random piles")
+                if (continuation.separateChoices && state.projectedState.getController(blocker) != continuation.choosingPlayer) {
+                    return ExecutionResult.error(state, "Choose only this player's blocks")
+                }
                 blocks.getOrPut(blocker) { mutableListOf() }.add(attacker)
             }
         }
-        if (blocks.values.sumOf { it.size } != continuation.assignmentCount || !pileRestrictionsSatisfied(state, blocks))
+        if (continuation.remainingPlayers.isNotEmpty()) {
+            return askPileRestrictionChoice(state, continuation.copy(
+                choosingPlayer = continuation.remainingPlayers.first(),
+                remainingPlayers = continuation.remainingPlayers.drop(1), chosenBlocks = blocks))
+        }
+        if (blocks.values.sumOf { it.size } != continuation.assignmentCount || !pileRestrictionsSatisfied(state, blocks)) {
+            if (continuation.separateChoices) return beginPileRestrictionChoices(state, continuation.blockingPlayer,
+                continuation.attackers, continuation.candidates, continuation.assignmentCount, retry = true)
             return ExecutionResult.error(state, "Choose the required number of legal blocks")
+        }
         return commitBlockDeclaration(state, continuation.blockingPlayer, blocks, emptyList())
     }
 
@@ -353,7 +428,12 @@ internal class BlockPhaseManager(
         // assignments before stamping so the rest of combat (ordering, the damage board) sees the
         // full bipartite picture.
         val bandMembers = collectBands(state)
-        val expandedBlockers: Map<EntityId, List<EntityId>> = blockers.mapValues { (_, attackerIds) ->
+        val defendingSide = state.sharedTurnTeam(blockingPlayer)
+        val battlefield = state.getBattlefield().toSet()
+        val remainingBlockers = blockers.filterKeys {
+            it in battlefield && state.projectedState.getController(it) in defendingSide
+        }
+        val expandedBlockers: Map<EntityId, List<EntityId>> = remainingBlockers.mapValues { (_, attackerIds) ->
             val expanded = LinkedHashSet<EntityId>()
             for (attackerId in attackerIds) {
                 expanded += attackerId
@@ -366,8 +446,10 @@ internal class BlockPhaseManager(
         var newState = BlockingRelationships.establish(state, expandedBlockers)
 
         // Mark that blockers have been declared this combat (even if empty)
-        newState = newState.updateEntity(blockingPlayer) { container ->
-            container.with(BlockersDeclaredThisCombatComponent)
+        for (member in state.sharedTurnTeam(blockingPlayer)) {
+            newState = newState.updateEntity(member) { container ->
+                container.with(BlockersDeclaredThisCombatComponent)
+            }
         }
 
         val blockerNameMap = expandedBlockers.keys.associateWith { nameVisibleToAll(state, it, state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature") }
@@ -446,7 +528,7 @@ internal class BlockPhaseManager(
         for ((blockerId, attackerId) in provokeConstraints) {
             if (blockerId !in potentialBlockers) continue
             val controller = projected.getController(blockerId)
-            if (controller != blockingPlayer) continue
+            if (controller !in state.sharedTurnTeam(blockingPlayer)) continue
             val attackerContainer = state.getEntity(attackerId) ?: continue
             if (!attackerContainer.has<AttackingComponent>()) continue
             if (!canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) continue
@@ -476,7 +558,7 @@ internal class BlockPhaseManager(
         val rules = BlockStaticRules(state, cardRegistry, predicateEvaluator)
         val potential = findPotentialBlockers(state, blockingPlayer)
         val each = potential.filter { rules.mustBlockEach(it) }
-        if (each.isEmpty()) return null
+        if (each.isEmpty() && state.sharedTurnTeam(blockingPlayer).size == 1) return null
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
         data class Demand(val blocker: EntityId? = null, val attacker: EntityId? = null)
         val demands = mutableListOf<Demand>()
@@ -499,6 +581,7 @@ internal class BlockPhaseManager(
                 demands.add(Demand(blocker, modification.attackerId))
             }
         }
+        if (demands.isEmpty()) return submitted ?: emptyMap()
         fun obeyed(demand: Demand, blocks: Map<EntityId, List<EntityId>>): Boolean = when {
             demand.blocker == null -> blocks.values.any { demand.attacker in it }
             demand.attacker == null -> blocks[demand.blocker].orEmpty().isNotEmpty()
@@ -628,6 +711,7 @@ internal class BlockPhaseManager(
     ): String? {
         val container = state.getEntity(blockerId)
             ?: return "Blocker not found: $blockerId"
+        if (blockerId !in state.getBattlefield()) return "Blocker is not on the battlefield"
 
         val cardComponent = container.get<CardComponent>()
             ?: return "Not a card: $blockerId"
@@ -642,7 +726,7 @@ internal class BlockPhaseManager(
             return "A battle can't block: ${cardComponent.name}"
         }
         val controller = projected.getController(blockerId)
-        if (controller != blockingPlayer) {
+        if (controller !in state.sharedTurnTeam(blockingPlayer)) {
             return "You don't control ${cardComponent.name}"
         }
 
@@ -663,6 +747,10 @@ internal class BlockPhaseManager(
         if (!isFaceDown) {
             val cantBlockUnlessError = validateCantBlockUnless(state, blockerId, blockingPlayer, projected)
             if (cantBlockUnlessError != null) return cantBlockUnlessError
+        }
+
+        if (attackerIds.isEmpty() || attackerIds.distinct().size != attackerIds.size) {
+            return "Each blocker must name distinct attacking creatures"
         }
 
         if (attackerIds.size > 1) {
@@ -714,7 +802,7 @@ internal class BlockPhaseManager(
             projected = state.projectedState,
             attackerId = attackerId,
             blockerId = blockerId,
-            blockingPlayer = blockingPlayer,
+            blockingPlayer = state.projectedState.getController(blockerId) ?: blockingPlayer,
             cardRegistry = cardRegistry
         )
         for (rule in blockEvasionRules) {
@@ -744,13 +832,17 @@ internal class BlockPhaseManager(
         if (projected.cantBlock(blockerId)) {
             return false
         }
+        val attack = state.getEntity(attackerId)?.get<AttackingComponent>() ?: return false
+        val controller = projected.getController(blockerId) ?: return false
+        if (CombatDefenders.defendingPlayerOf(state, attack, projected) !in state.sharedTurnTeam(controller)) return false
+        if (hasCantBlockUnlessRestriction(state, blockerId, controller, projected)) return false
 
         val ctx = BlockCheckContext(
             state = state,
             projected = projected,
             attackerId = attackerId,
             blockerId = blockerId,
-            blockingPlayer = blockingPlayer,
+            blockingPlayer = state.projectedState.getController(blockerId) ?: blockingPlayer,
             cardRegistry = cardRegistry
         )
         return blockEvasionRules.all { it.check(ctx) == null }
@@ -1039,7 +1131,7 @@ internal class BlockPhaseManager(
     ): String? {
         for (blockerId in restrictionBlockerIds) {
             val cardComponent = state.getEntity(blockerId)?.get<CardComponent>() ?: continue
-            if (state.getEntity(blockerId)?.has<FaceDownComponent>() == true) continue
+            if (state.getEntity(blockerId)?.has<FaceDownComponent>() == true || projected.hasLostAllAbilities(blockerId)) continue
             val printed = cardRegistry.getCard(cardComponent.cardDefinitionId)
                 ?.staticAbilities.orEmpty()
             val granted = state.grantedStaticAbilities
@@ -1196,7 +1288,7 @@ internal class BlockPhaseManager(
 
         for ((blockerId, attackerId) in provokeConstraints) {
             val controller = projected.getController(blockerId)
-            if (controller != blockingPlayer) continue
+            if (controller !in state.sharedTurnTeam(blockingPlayer)) continue
 
             val blockerContainer = state.getEntity(blockerId) ?: continue
             if (blockerId !in state.getBattlefield()) continue
@@ -1414,7 +1506,7 @@ internal class BlockPhaseManager(
 
                 projected.isCreature(entityId) &&
                     !projected.isBattle(entityId) &&
-                    controller == blockingPlayer &&
+                    controller in state.sharedTurnTeam(blockingPlayer) &&
                     !TappedBlockBypass.tappedPreventsBlocking(state, entityId, cardRegistry, predicateEvaluator)
             }
     }
@@ -1451,7 +1543,7 @@ internal class BlockPhaseManager(
 
         val effectContext = EffectContext(
             sourceId = blockerId,
-            controllerId = blockingPlayer,
+            controllerId = projected.getController(blockerId) ?: blockingPlayer,
         )
         if (!conditionEvaluator.evaluate(state, restriction.condition, effectContext)) {
             return "${cardComponent.name} ${restriction.description}"
@@ -1486,7 +1578,7 @@ internal class BlockPhaseManager(
 
         val effectContext = EffectContext(
             sourceId = blockerId,
-            controllerId = blockingPlayer,
+            controllerId = projected.getController(blockerId) ?: blockingPlayer,
         )
         return !conditionEvaluator.evaluate(state, restriction.condition, effectContext)
     }
@@ -1495,12 +1587,14 @@ internal class BlockPhaseManager(
     // Block Taxes
     // =========================================================================
 
-    private fun pauseForBlockTaxConfirmation(
+    internal fun pauseForBlockTaxConfirmation(
         state: GameState,
         blockingPlayer: EntityId,
         blockers: Map<EntityId, List<EntityId>>,
-        totalTax: Int,
+        taxes: Map<EntityId, Int>,
+        selections: List<BlockTaxSelection> = emptyList(),
     ): ExecutionResult {
+        val (payingPlayer, totalTax) = taxes.entries.first()
         val manaCost = com.wingedsheep.sdk.core.ManaCost(
             List(totalTax) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
         )
@@ -1508,7 +1602,7 @@ internal class BlockPhaseManager(
         // Sources with a "tap another permanent" sub-cost (Springleaf Drum, Gene Pollinator) stay
         // off the menu: the combat-tax resumer can't ask for the extra permanent. The player can
         // still activate them inside the payment window (CR 605.3a), as ManaPaymentWindow does.
-        val sources = manaSolver.findAvailableManaSources(state, blockingPlayer)
+        val sources = manaSolver.findAvailableManaSources(state, payingPlayer)
             .filter { it.tapPermanentsSubCost == null }
         val sourceOptions = sources.map { source ->
             com.wingedsheep.engine.core.ManaSourceOption(
@@ -1520,7 +1614,7 @@ internal class BlockPhaseManager(
                 manaAmount = source.manaAmount,
             )
         }
-        val solution = manaSolver.solve(state, blockingPlayer, manaCost)
+        val solution = manaSolver.solve(state, payingPlayer, manaCost)
         val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
 
         val continuation = com.wingedsheep.engine.core.BlockTaxManaSelectionContinuation(
@@ -1529,12 +1623,15 @@ internal class BlockPhaseManager(
             manaCost = manaCost,
             availableSources = sourceOptions,
             autoPaySuggestion = autoPaySuggestion,
+            payingPlayer = payingPlayer,
+            remainingTaxes = taxes - payingPlayer,
+            selections = selections,
         )
         return state.suspendForDecision(
             question = { decisionId ->
                 com.wingedsheep.engine.core.SelectManaSourcesDecision(
                     id = decisionId,
-                    playerId = blockingPlayer,
+                    playerId = payingPlayer,
                     prompt = "Pay {$totalTax} to block with the declared creatures",
                     context = com.wingedsheep.engine.core.DecisionContext(
                         sourceId = null,

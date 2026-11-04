@@ -2042,6 +2042,12 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
 
       {isInCombatMode && combatState?.mode === 'declareBlockers' && (
         <div data-learn="combat-buttons" style={styles.combatButtonContainer}>
+          {blockerDeclarationDescription && blockerDeclarationDescription !== 'Declare blockers' &&
+            blockerDeclarationDescription !== 'Choose blocker piles' && (
+              <span role="status" style={{ color: '#e0e0e0', fontSize: 12, maxWidth: 360 }}>
+                {blockerDeclarationDescription}
+              </span>
+            )}
           {Object.keys(combatState.blockerAssignments).length === 0 ? (
             <>
               <button
