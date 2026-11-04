@@ -256,14 +256,25 @@ data class ForceSacrificeEffect(
      * The fixed [count] is kept as the fallback for the common edict ("a creature") case so
      * existing cards and their compiled snapshots are untouched.
      */
-    val dynamicCount: DynamicAmount? = null
+    val dynamicCount: DynamicAmount? = null,
+    /**
+     * When true, [dynamicCount] is evaluated **once per sacrificing player**, with [Player.You]
+     * bound to that player (the rebinding `ForEachPlayer` gives its body) — "each opponent
+     * sacrifices half the creatures **they** control, rounded up" (Vona's Hunger, Legate Lanius,
+     * Zodiark). Every count is read before anyone sacrifices, and the sacrifices stay one
+     * simultaneous event (CR 101.4), which a `ForEachPlayer` loop around a single-player edict
+     * can't give. False keeps the single resolution-time evaluation (Rush of Dread's targeted
+     * opponent, Meathook Massacre II's X).
+     */
+    val countPerPlayer: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append(target.description)
         // "you sacrifice", not "you sacrifices" — the controller form reads as second person.
         append(if (target.description.equals("you", ignoreCase = true)) " sacrifice " else " sacrifices ")
         if (dynamicCount != null) {
-            append(dynamicCount.description)
+            // A per-player count reads the sacrificing player's own permanents: "they control".
+            append(if (countPerPlayer) dynamicCount.description.replace("you control", "they control") else dynamicCount.description)
             append(" ")
             append(filter.description)
             append("s")

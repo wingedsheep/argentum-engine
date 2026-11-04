@@ -24,6 +24,8 @@ import kotlinx.serialization.Serializable
  * @property chosen Edict choices already made by earlier players in APNAP order. Nothing is
  *   sacrificed until the last player has chosen; then every choice is sacrificed at once
  *   (CR 101.4).
+ * @property perPlayerCounts Each remaining player's own count when the edict reads it per player
+ *   ("half the creatures they control"); a player missing from it sacrifices [count].
  */
 @Serializable
 data class SacrificeContinuation(
@@ -34,6 +36,7 @@ data class SacrificeContinuation(
     val filter: GameObjectFilter? = null,
     val count: Int = 1,
     val chosen: List<SacrificeChoice> = emptyList(),
+    val perPlayerCounts: Map<EntityId, Int> = emptyMap(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

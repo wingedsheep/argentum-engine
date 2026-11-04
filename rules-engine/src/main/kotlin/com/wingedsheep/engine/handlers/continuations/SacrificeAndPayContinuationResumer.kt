@@ -72,7 +72,8 @@ class SacrificeAndPayContinuationResumer(
             val result = executor.processPlayers(
                 state, continuation.remainingPlayers, continuation.filter,
                 continuation.count, continuation.sourceId,
-                chosen = continuation.chosen + SacrificeChoice(playerId, selectedPermanents)
+                chosen = continuation.chosen + SacrificeChoice(playerId, selectedPermanents),
+                perPlayerCounts = continuation.perPlayerCounts
             )
             if (result.outcome is Outcome.Paused) {
                 return ExecutionResult.propagatePause(result.state, result.events.toList())

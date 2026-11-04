@@ -29,7 +29,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * (`Divide(<count>, Fixed(2), roundUp = false)`) reads *their* own life / hand / permanents:
  * - life loss → `Divide(LifeTotal(You), 2)` to themselves
  * - discard → `Divide(AggregateZone(You, HAND), 2)` (player chooses which cards)
- * - sacrifice → `Divide(AggregateBattlefield(You, Permanent), 2)` permanents "of their choice"
+ * - sacrifice → `Divide(AggregateBattlefield(You, Permanent), 2)` permanents "of their choice" —
+ *   one `Sacrifice(countPerPlayer = true)` rather than a loop, so every player's count is read
+ *   before anyone sacrifices and the sacrifices are one simultaneous event (CR 101.4)
  */
 val PoxPlague = card("Pox Plague") {
     manaCost = "{B}{B}{B}{B}{B}"
@@ -51,16 +53,14 @@ val PoxPlague = card("Pox Plague") {
                 count = DynamicAmounts.zone(Player.You, Zone.HAND).count() / 2,
                 target = EffectTarget.Controller,
             ),
-        ) then Effects.ForEachPlayer(
-            Player.ActivePlayerFirst,
-            Effects.Sacrifice(
-                filter = GameObjectFilter.Permanent,
-                count = DynamicAmounts.battlefield(
-                    Player.You,
-                    GameObjectFilter.Permanent,
-                ).count() / 2,
-                target = EffectTarget.Controller,
-            ),
+        ) then Effects.Sacrifice(
+            filter = GameObjectFilter.Permanent,
+            count = DynamicAmounts.battlefield(
+                Player.You,
+                GameObjectFilter.Permanent,
+            ).count() / 2,
+            target = EffectTarget.PlayerRef(Player.ActivePlayerFirst),
+            countPerPlayer = true,
         )
     }
 

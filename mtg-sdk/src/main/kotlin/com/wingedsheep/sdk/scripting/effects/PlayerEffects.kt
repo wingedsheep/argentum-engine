@@ -1375,7 +1375,7 @@ data class CreatePermanentEmblemEffect(
 data class GainCitysBlessingEffect(
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
-    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gets the city's blessing"
+    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} ${if (target.description.equals("you", ignoreCase = true)) "get" else "gets"} the city's blessing"
 }
 
 /**

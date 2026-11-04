@@ -11655,29 +11655,26 @@
                     }
                 },
                 {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "ActivePlayerFirst"
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ActivePlayerFirst"
                     },
-                    "body": {
-                        "type": "ForceSacrifice",
-                        "filter": "permanent",
-                        "target": "Controller",
-                        "dynamicCount": {
-                            "type": "Divide",
-                            "numerator": {
-                                "type": "AggregateBattlefield",
-                                "player": "You",
-                                "filter": "permanent"
-                            },
-                            "denominator": {
-                                "type": "Fixed",
-                                "amount": 2
-                            },
-                            "roundUp": false
-                        }
-                    }
+                    "dynamicCount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "roundUp": false
+                    },
+                    "countPerPlayer": true
                 }
             ]
         }

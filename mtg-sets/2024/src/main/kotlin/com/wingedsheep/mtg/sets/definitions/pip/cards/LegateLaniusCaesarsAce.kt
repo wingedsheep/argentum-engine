@@ -21,9 +21,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * control of their choice, rounded up.
  * Whenever an opponent sacrifices a creature, put a +1/+1 counter on Legate Lanius.
  *
- * "A tenth … rounded up" is measured per opponent, so the sacrifice runs inside
- * `ForEachPlayer(EachOpponent)`, which rebinds `Player.You` to the opponent being processed — the
- * Zodiark, Umbral God shape with `divRoundedUp 10` (Rush of Dread's rounding). The counter trigger
+ * "A tenth … rounded up" is measured per opponent, so the edict reads its count with
+ * `countPerPlayer = true`, which binds `Player.You` to each opponent in turn — the Zodiark, Umbral
+ * God shape with `divRoundedUp 10` (Rush of Dread's rounding). Every opponent's sacrifice is one
+ * simultaneous event. The counter trigger
  * is the per-permanent `Triggers.anOpponent.sacrifices`, so Decimate itself grows Lanius by one
  * counter for each creature it makes an opponent sacrifice.
  */
@@ -38,13 +39,11 @@ val LegateLaniusCaesarsAce = card("Legate Lanius, Caesar's Ace") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.ForEachPlayer(
-            players = Player.EachOpponent,
-            effect = Effects.Sacrifice(
-                filter = GameObjectFilter.Creature,
-                count = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).count() divRoundedUp 10,
-                target = EffectTarget.PlayerRef(Player.You)
-            )
+        effect = Effects.Sacrifice(
+            filter = GameObjectFilter.Creature,
+            count = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).count() divRoundedUp 10,
+            target = EffectTarget.PlayerRef(Player.EachOpponent),
+            countPerPlayer = true
         )
     }
 

@@ -5,8 +5,10 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.divRoundedUp
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -37,6 +39,52 @@ class SimultaneousEdictTest : FunSpec({
         spell {
             effect = Effects.Sacrifice(GameObjectFilter.Creature, 1, EffectTarget.PlayerRef(Player.Each))
         }
+    }
+
+    val halfEdict = card("Edict Test Half Edict") {
+        manaCost = "{B}"
+        typeLine = "Instant"
+        spell {
+            effect = Effects.Sacrifice(
+                GameObjectFilter.Creature,
+                DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature).count() divRoundedUp 2,
+                EffectTarget.PlayerRef(Player.EachOpponent),
+                countPerPlayer = true
+            )
+        }
+    }
+
+    test("countPerPlayer reads each opponent's own count, and their sacrifices still happen together") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(bear, halfEdict))
+        val players = driver.initMultiplayer(decks = List(3) { Deck.of("Forest" to 40) }, startingPlayer = 1)
+        val (p1, p2, p3) = players
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN, activePlayer = p2)
+
+        // Caster p2 has the most creatures; a single resolution-time count would read p2's six.
+        val bearCounts = mapOf(p1 to 5, p2 to 6, p3 to 4)
+        val bears = bearCounts.mapValues { (p, n) -> List(n) { driver.putCreatureOnBattlefield(p, "Edict Test Bear") } }
+        val spell = driver.putCardInHand(p2, "Edict Test Half Edict")
+        driver.giveMana(p2, Color.BLACK)
+        driver.castSpell(p2, spell).error.shouldBeNull()
+        repeat(3) {
+            if (driver.state.pendingDecision == null) driver.passPriority(driver.state.priorityPlayerId!!)
+        }
+
+        // APNAP order among the opponents: p3, then p1. Half of 4 = 2, half of 5 rounded up = 3.
+        for ((chooser, sacrifices) in listOf(p3 to 2, p1 to 3)) {
+            val decision = driver.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+            decision.playerId shouldBe chooser
+            decision.minSelections shouldBe sacrifices
+            decision.maxSelections shouldBe sacrifices
+            players.forEach { p -> driver.getCreatures(p).size shouldBe bearCounts.getValue(p) }
+            driver.submitCardSelection(chooser, bears.getValue(chooser).take(sacrifices)).error.shouldBeNull()
+        }
+
+        driver.state.pendingDecision.shouldBeNull()
+        driver.getCreatures(p3).size shouldBe 2
+        driver.getCreatures(p1).size shouldBe 2
+        driver.getCreatures(p2).size shouldBe 6
     }
 
     test("choices go active player first, then in turn order, and the sacrifices happen together") {
