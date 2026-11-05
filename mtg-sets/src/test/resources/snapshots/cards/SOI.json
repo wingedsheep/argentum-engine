@@ -5118,6 +5118,23 @@
                                     "target": "IterationEntity"
                                 }
                             }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeywordVariantsSharedByGroup",
+                                "keyword": "HEXPROOF",
+                                "group": {
+                                    "baseFilter": "creature ctrl:you"
+                                },
+                                "target": "IterationEntity"
+                            }
                         }
                     ],
                     "descriptionOverride": "Creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, trample, and vigilance."

@@ -42,6 +42,10 @@ import com.wingedsheep.sdk.core.Step
  *    each creature receives its own floating end-of-turn keyword effect. This also snapshots the
  *    affected set at resolution, matching the ruling that creatures you come to control later in
  *    the turn gain nothing.
+ *  - **Hexproof carries its variants** — per the 2020 ruling, a creature with "hexproof from white"
+ *    passes on that specific variant, which is a projected `HEXPROOF_FROM_WHITE` keyword rather than
+ *    [Keyword.HEXPROOF], so a trailing [Effects.GrantKeywordVariantsSharedByGroup] clause fans every
+ *    hexproof-from variant some creature you control has out to the group.
  *  - **Skulk is omitted** — it is the one keyword on the printed list with no
  *    [com.wingedsheep.sdk.core.Keyword] entry and no blocking rule in the engine, so nothing in the
  *    card pool can currently *have* skulk and the "if a creature you control has skulk" clause can
@@ -89,7 +93,14 @@ val OdricLunarchMarshal = card("Odric, Lunarch Marshal") {
                         Effects.GrantKeyword(keyword, EffectTarget.IterationEntity, Duration.EndOfTurn)
                     )
                 )
-            },
+            } + Effects.ForEachInGroup(
+                GroupFilter(GameObjectFilter.Creature.youControl()),
+                Effects.GrantKeywordVariantsSharedByGroup(
+                    Keyword.HEXPROOF,
+                    GroupFilter(GameObjectFilter.Creature.youControl()),
+                    EffectTarget.IterationEntity,
+                )
+            ),
             descriptionOverride = "Creatures you control gain first strike until end of turn if a " +
                 "creature you control has first strike. The same is true for flying, deathtouch, " +
                 "double strike, haste, hexproof, indestructible, lifelink, menace, reach, " +

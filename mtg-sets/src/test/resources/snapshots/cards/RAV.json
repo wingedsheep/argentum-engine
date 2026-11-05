@@ -3174,7 +3174,8 @@
                                 }
                             },
                             "body": {
-                                "type": "GrantProtectionsSharedByGroup",
+                                "type": "GrantKeywordVariantsSharedByGroup",
+                                "keyword": "PROTECTION",
                                 "group": {
                                     "baseFilter": "creature ctrl:you"
                                 },

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -206,28 +207,41 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
 }
 
 /**
- * [target] gains, for [duration], **every protection ability** that some permanent in [group]
- * has — "creatures you control gain protection until end of turn if a creature you control has
- * protection" (Concerted Effort). Protection is parameterised (CR 702.16a: "protection from
- * [quality]"), so it can't be one fixed `Keyword` grant: the executor reads each [group] member's
- * projected protection abilities — from a colour, a card type, a subtype, a supertype, each
- * opponent — and grants every distinct one it finds. Per the Concerted Effort ruling, a creature
- * with protection from red and one with protection from green give every creature *both*.
+ * [target] gains, for [duration], **every variant of [keyword]** that some permanent in [group]
+ * has. Two keywords are parameterised families whose instances can't be one fixed `Keyword` grant:
  *
- * The set is read once, at resolution, and granted as ordinary keyword grants for [duration], so
- * the gained protections outlast the creature that supplied them. Fan it over a group with
- * `Effects.ForEachInGroup(group, Effects.GrantProtectionsSharedByGroup(group, IterationEntity))`.
- * An empty group, or one with no protection, grants nothing.
+ * - [Keyword.PROTECTION] — "protection from [quality]" (CR 702.16a). "Creatures you control gain
+ *   protection until end of turn if a creature you control has protection" (Concerted Effort): per
+ *   its ruling, a creature with protection from red and one with protection from green give every
+ *   creature *both*.
+ * - [Keyword.HEXPROOF] — the "hexproof from [quality]" variants (CR 702.11d). "… gains hexproof if
+ *   you control a creature with hexproof" (Majestic Myriarch, Odric, Lunarch Marshal): per their
+ *   rulings, a creature with hexproof from white passes on that specific variant. Plain hexproof is
+ *   not a variant — grant it with `GrantKeyword(Keyword.HEXPROOF)` behind
+ *   `Conditions.ControlCreatureWithKeyword`.
+ *
+ * The executor reads each [group] member's projected keyword strings for the family
+ * (`PROTECTION_FROM_…`, `HEXPROOF_FROM_…`) once, at resolution, and grants every distinct one as an
+ * ordinary keyword grant for [duration], so the gained variants outlast the creature that supplied
+ * them. Fan it over a group with
+ * `Effects.ForEachInGroup(group, Effects.GrantKeywordVariantsSharedByGroup(keyword, group, IterationEntity))`.
+ * An empty group, or one with no variant, grants nothing.
  */
-@SerialName("GrantProtectionsSharedByGroup")
+@SerialName("GrantKeywordVariantsSharedByGroup")
 @Serializable
-data class GrantProtectionsSharedByGroupEffect(
+data class GrantKeywordVariantsSharedByGroupEffect(
+    val keyword: Keyword,
     val group: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
     val target: EffectTarget,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    init {
+        require(keyword in VARIANT_FAMILIES) { "GrantKeywordVariantsSharedByGroup has no variants for $keyword" }
+    }
+
     override val description: String = buildString {
-        append("${target.description} gains each protection ability that ")
+        val family = if (keyword == Keyword.PROTECTION) "protection ability" else "hexproof-from ability"
+        append("${target.description} gains each $family that ")
         append(group.description.replaceFirstChar { it.lowercase() })
         append(" have")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
@@ -236,5 +250,10 @@ data class GrantProtectionsSharedByGroupEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newGroup = group.applyTextReplacement(replacer)
         return if (newGroup !== group) copy(group = newGroup) else this
+    }
+
+    companion object {
+        /** The keywords whose projected variants this effect can share. */
+        val VARIANT_FAMILIES: Set<Keyword> = setOf(Keyword.PROTECTION, Keyword.HEXPROOF)
     }
 }
