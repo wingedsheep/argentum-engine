@@ -1343,6 +1343,13 @@ would be a no-op (Wand of Ith splits the revealed card into a land pile and a no
 each ransom on its own pile). The resolving pipeline's collections *are* carried across the
 pay-or-decline pause, so a suffer effect can name them on either answer.
 
+**Cost filters are judged in the resolution's context**, with the payer as "you": a `Costs.pay` filter
+may name the resolving spell's source and targets — e.g. `otherThan(ContextTarget(0))` /
+`otherThan(<bound target>)` for "sacrifice another nonland permanent" relative to the target (Torment
+of Venom) — on both the single-cost and the `Costs.pay.Choice` paths. Pipeline values beyond named
+targets and stored collections are seen on the single-cost path only: the `Choice` continuation
+carries just those two across its pause.
+
 `PayOrSufferEffect(cost, suffer, player = EffectTarget.Controller)` defaults to charging the ability's
 controller, but **`player` may route the decision *and* the payment to any other player** — most
 usefully `EffectTarget.PlayerRef(Player.TriggeringPlayer)` on a death trigger, which resolves to the
@@ -8160,6 +8167,13 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `Targets.Any(GameObjectFilter.Any.notTriggeringEntity())`, where the damaged permanent is excluded but players
   stay legal. `TargetFilter`-based requirements keep `otherThanTriggeringEntity()`. False with no trigger
   context (projection, untap and trigger-matching evaluate it as false).
+- `IsEntity(reference)` (negated builder `otherThan(reference)`) — the candidate *is* the object a
+  `EffectTarget.SingleEntity` names: the general identity test behind "another … other than it" when "it"
+  is a role other than the source, granter or triggering entity (those keep `IsSource`,
+  `IsGrantingPermanent`, `IsTriggeringEntity`). Torment of Venom's "its controller loses 3 life unless they
+  sacrifice **another** nonland permanent" is `Costs.pay.Sacrifice(NonlandPermanent.otherThan(creature))`,
+  `creature` being the spell's target. A reference resolving to nothing matches nothing (so `otherThan`
+  then excludes nothing); false in projection, untap and trigger-matching contexts.
 - `HasGreatestPower` (filter builder `hasGreatestPower()`) / `HasLeastPower` (filter builder
   `hasLeastPower()`) — has the greatest / least projected power among creatures *its controller*
   controls (ties all qualify). Used for "creature with the greatest/least power" target and edict
@@ -9398,10 +9412,14 @@ The shapes in this family, with their engine notes.
   (Adrenaline Jockey, Rangers' Aetherhive). This is the plain Aetherdrift wording, which counts an exhaust *mana*
   ability too. `OnceOnlyAbilityKind.BOAST` is "whenever you activate a boast ability" (Frenzied Raider), and
   `POWER_UP` "a power-up ability" — the same axis.
-- `Triggers.you.activatesAbility(keyword = Keyword.NINJUTSU)` — you activate a **ninjutsu** ability (or any keyword
-  ability whose `ActivatedAbility.keyword` is set). Backed by `EventPattern.AbilityActivatedEvent(keyword = …)` and the
-  activation event's `keyword`. Counts a printed or a granted ninjutsu alike; Satoru Umezawa pairs it with
-  `oncePerTurn = true` for "This ability triggers only once each turn."
+- `Triggers.you.activatesAbility(keywords = setOf(Keyword.NINJUTSU))` — you activate a **ninjutsu** ability (or any
+  keyword ability whose `ActivatedAbility.keyword` is one of `keywords`). Backed by
+  `EventPattern.AbilityActivatedEvent(keywords = …)` and the activation event's `keyword`. Counts a printed or a granted
+  ninjutsu alike; Satoru Umezawa pairs it with `oncePerTurn = true` for "This ability triggers only once each turn."
+  Several keywords read as "or": `keywords = setOf(Keyword.ETERNALIZE, Keyword.EMBALM)` is Vizier of the Anointed's
+  "whenever you activate an eternalize or embalm ability" — the `embalm(cost)` / `eternalize(cost)` abilities (and a
+  granted embalm) carry the marker, so the card's other abilities never count. Keyword abilities marked today:
+  ninjutsu, embalm, eternalize.
 - `Triggers.you.activatesAbility(loyalty = true)` / `Triggers.anOpponent.activatesAbility(loyalty = true)` — you / an opponent activates a
   **loyalty ability** (CR 606): `AbilityActivatedEvent(requireLoyalty = true)`, matched against the
   activation event's `isLoyalty` flag (set from `ActivatedAbility.isPlaneswalkerAbility`). Way of the
@@ -14169,7 +14187,7 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > **Where set-mechanic helpers live.** The `card { … }` keyword helpers below for *set-specific*
 > mechanics — `mayBeginGameOnBattlefield()`, `flurry { }`, `mobilize(…)`, `firebending(n)`, `sneak(cost)`, `webSlinging(cost)`, `mayhem(cost)`, `madness(cost)`, `decayed()`,
 > `vividEtb { }` / `vividCostReduction()`, `convergeEntersWithCounters(counterType?)`,
-> `impending(time, cost)`, `renew(cost) { }`, `embalm(cost)`, `unearth(cost)`, `encore(cost)`, `enduring()`,
+> `impending(time, cost)`, `renew(cost) { }`, `embalm(cost)`, `eternalize(cost)`, `unearth(cost)`, `encore(cost)`, `enduring()`,
 > `craft(filter, cost)`, `station()`, `jobSelect()`, `forMirrodin()`, `gift(kind)` — are `CardBuilder` **extension functions** in
 > `mtg-sdk/.../dsl/mechanics/` (one file per mechanic), not methods on the core `CardBuilder`. They
 > stay in package `com.wingedsheep.sdk.dsl`, so the call syntax is unchanged, but a card file that
@@ -15597,7 +15615,7 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   `ninjutsuAbility(cost)` is also the grant shape — Satoru Umezawa's "each creature card in your hand has ninjutsu
   {2}{U}{B}" is `GrantActivatedAbility(ninjutsuAbility("{2}{U}{B}"), GroupFilter(GameObjectFilter.Creature.ownedByYou()),
   recipientZone = Zone.HAND)`. Name ninjutsu activations through the `keyword` axis:
-  `Triggers.you.activatesAbility(keyword = Keyword.NINJUTSU)` (Satoru) and
+  `Triggers.you.activatesAbility(keywords = setOf(Keyword.NINJUTSU))` (Satoru) and
   `ReduceActivatedAbilityCost(..., reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, keyword = Keyword.NINJUTSU)`
   (Silver-Fur Master). Used by *Kaito, Bane of Nightmares* (DSK) — a planeswalker with ninjutsu whose own static makes it
   a creature on your turn, so it can enter attacking.
@@ -15903,13 +15921,23 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   `activateFromZone = Zone.GRAVEYARD` + `timing = SorcerySpeed`, whose effect is
   `CreateTokenCopyOfTarget(EffectTarget.Self, overrideColors = {WHITE}, addedSubtypes = {Zombie}, noManaCost = true)` —
   the three printed exceptions, no new engine subsystem. The card is exiled as part of the *cost*, which is why per the
-  Cursecloth Wrappings ruling an opponent can't respond by exiling it. Declares `Keyword.EMBALM` for display.
+  Cursecloth Wrappings ruling an opponent can't respond by exiling it. Declares `Keyword.EMBALM` for display, and the
+  ability itself carries `ActivatedAbility.keyword = Keyword.EMBALM`, so `Triggers.you.activatesAbility(keywords = …)`
+  can name it (printed or granted).
   **Granting embalm at runtime:** `Effects.GrantEmbalm(target, cost?, duration)` hands the very same ability to a
   creature card already in a graveyard (Cursecloth Wrappings — "target creature card in your graveyard gains embalm
   until end of turn. The embalm cost is equal to its mana cost"). Because embalm is an ordinary *activated* ability
   rather than an alternative way to cast, the grant rides the plain `GrantedActivatedAbility` channel — not the
   `GrantedKeywordAbility` record `GrantHarmonize`/`GrantFlashback` need — and `ZoneActivatedAbilityEnumerator` surfaces
   printed **and** granted zone abilities alike.
+- `Eternalize(cost)` — `card { eternalize(cost) }` builder helper (CR 702.129, Hour of Devastation). "[cost], Exile this
+  card from your graveyard: Create a token that's a copy of it, except it's black, it's 4/4, it has no mana cost, and
+  it's a Zombie in addition to its other types. Activate only as a sorcery." The 4/4 black sibling of `embalm`: the
+  shared `eternalizeAbility(cost)` factory builds the same graveyard-activated shape with
+  `CreateTokenCopyOfTarget(Self, overridePower = 4, overrideToughness = 4, overrideColors = {BLACK},
+  addedSubtypes = {Zombie}, exceptions = CopyExceptions(noManaCost = true))`. Declares `Keyword.ETERNALIZE` for display
+  and marks the ability `keyword = Keyword.ETERNALIZE` (Vizier of the Anointed's draw trigger). Used by Timeless
+  Witness, Fanatic of Rhonas.
 - `Unearth(cost)` — `card { unearth(cost) }` builder helper (CR 702.84, Shards of Alara). "[Cost]: Return this card
   from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step. If it would
   leave the battlefield, exile it instead of putting it anywhere else. Activate only as a sorcery." Composed entirely

@@ -609,6 +609,8 @@ internal class AffectsFilterResolver(
         StatePredicate.IsBlockingIterationEntity -> false
         // Role-relative ("blocking it"); needs an effect context, never present in projection.
         is StatePredicate.IsBlockingEntity -> false
+        // Reference-relative identity; projection has no effect context to resolve it.
+        is StatePredicate.IsEntity -> false
         // Source-relative: "created with the source" needs the ability's source permanent, absent
         // in group-static projection. Only meaningful in target/gather-filter contexts via
         // PredicateEvaluator. Never match here.

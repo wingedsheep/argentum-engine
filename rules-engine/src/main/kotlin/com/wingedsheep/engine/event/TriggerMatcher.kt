@@ -65,7 +65,7 @@ class TriggerMatcher(
      * the ATTACHED path: keyword, loyalty, once-only keyword (exhaust / power-up / boast), {T}-in-cost, and the mana-ability gate.
      */
     fun matchesActivationKind(trigger: EventPattern.AbilityActivatedEvent, event: AbilityActivatedEvent): Boolean {
-        if (trigger.keyword != null && event.keyword != trigger.keyword) return false
+        if (trigger.keywords.isNotEmpty() && event.keyword !in trigger.keywords) return false
         if (trigger.requireLoyalty && !event.isLoyalty) return false
         if (event.loyaltyCountersRemoved < trigger.minLoyaltyRemoved) return false
         when (trigger.tapInCost) {
@@ -3129,6 +3129,7 @@ class TriggerMatcher(
         // uses it, so fail closed rather than matching every creature.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithEntityThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingEntity -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEntity -> false
         // Suspected (CR 701.60a) reads off the floating-effect list, which is available here, so a
         // "whenever a suspected creature …" trigger filter gates exactly instead of failing open.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSuspected ->
