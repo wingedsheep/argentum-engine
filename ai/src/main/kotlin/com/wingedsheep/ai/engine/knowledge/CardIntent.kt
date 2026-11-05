@@ -408,8 +408,9 @@ enum class IntentTag {
      * Makes a creature better in a fight without adding to its power and toughness — one-shot or
      * static, and whichever creature the polarity reader says it lands on: a granted first strike,
      * double strike, deathtouch, lifelink, vigilance or haste, a
-     * "must be blocked" that drags a blocker in, or a base power and toughness it takes from
-     * something bigger (Exuberant Wolfbear). Not a [PUMP]: nothing here is a +N/+N a simulation
+     * "must be blocked" that drags a blocker in, a base power and toughness it takes from
+     * something bigger (Exuberant Wolfbear), or a cut to an opposing creature's power alone
+     * (Ominous Sphinx's "-2/-0 until end of turn") that blunts it in the fight without killing it. Not a [PUMP]: nothing here is a +N/+N a simulation
      * or a precombat plan may add to the creature's stats.
      */
     COMBAT_ENHANCEMENT,
