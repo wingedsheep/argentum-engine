@@ -11288,7 +11288,8 @@
                 "fromZones": [
                     "Hand",
                     "Library"
-                ]
+                ],
+                "duringYourTurnOnly": true
             }
         ]
     },
