@@ -2731,6 +2731,8 @@ class PredicateEvaluator(
             // Monstrous marker — set by BecomeMonstrousExecutor when a monstrosity ability
             // resolves (CR 701.37b). Sticky until the permanent leaves the battlefield.
             StatePredicate.IsMonstrous -> container.has<MonstrousComponent>()
+            // Embalmed — a token created by a resolving embalm ability (CR 702.128b).
+            StatePredicate.IsEmbalmed -> container.has<com.wingedsheep.engine.state.components.identity.EmbalmedComponent>()
 
             // Suspected designation (CR 701.60a) — a Layer-ability floating effect, so the answer
             // lives in the projection rather than on a component. Unlike saddled it never expires.

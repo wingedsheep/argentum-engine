@@ -1526,6 +1526,27 @@ sealed interface StatePredicate {
     }
 
     // =============================================================================
+    // Embalmed (Entity)
+    // =============================================================================
+
+    /**
+     * A token that is **embalmed** — "A token is 'embalmed' if it's created by a resolving embalm
+     * ability" (CR 702.128b). Stamped by a `CreateTokenCopyOfTargetEffect` with `embalmed = true`,
+     * which is what [com.wingedsheep.sdk.dsl.embalmAbility] builds (printed embalm and the
+     * Cursecloth Wrappings grant alike).
+     *
+     * Provenance, not a characteristic: it is not a copiable value, so a copy of an embalmed token
+     * is not embalmed, and it stays with the token for as long as the token exists — including
+     * through the token entering as a copy of something else. Read by "if this creature was
+     * embalmed" (Vizier of Many Faces' copy exception, `Conditions.SourceWasEmbalmed`).
+     */
+    @SerialName("IsEmbalmed")
+    @Serializable
+    data object IsEmbalmed : Entity {
+        override val description: String = "embalmed"
+    }
+
+    // =============================================================================
     // Saddle (Entity)
     // =============================================================================
 

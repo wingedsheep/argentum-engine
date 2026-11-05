@@ -3149,6 +3149,9 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsMonstrous ->
             state.getEntity(entityId)
                 ?.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>() == true
+        // Embalmed (CR 702.128b) — token provenance, plain per-entity state.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEmbalmed ->
+            state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.EmbalmedComponent>() == true
         // Soulbond pairing (CR 702.95b) — plain per-entity state, evaluable here, so a
         // "whenever a paired creature …" trigger filter gates correctly instead of failing open.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsPaired ->

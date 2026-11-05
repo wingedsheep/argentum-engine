@@ -631,6 +631,8 @@ class BeginningPhaseManager(
         // Monstrous (CR 701.37b) — sticky per-entity state like renowned.
         StatePredicate.IsMonstrous ->
             container.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>()
+        // Embalmed (CR 702.128b) — token provenance, sticky for the token's life.
+        StatePredicate.IsEmbalmed -> container.has<com.wingedsheep.engine.state.components.identity.EmbalmedComponent>()
         is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.Not -> !matchesStatePredicateForUntap(state, projected, entityId, predicate.predicate, container)

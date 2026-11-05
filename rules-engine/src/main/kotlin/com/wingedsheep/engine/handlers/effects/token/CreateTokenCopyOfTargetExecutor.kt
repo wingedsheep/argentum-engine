@@ -13,6 +13,7 @@ import com.wingedsheep.engine.handlers.effects.LkiPolicy
 import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
 import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
+import com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
@@ -365,6 +366,17 @@ class CreateTokenCopyOfTargetExecutor(
             .copy(ownerId = controllerId, isDoubleFaced = false)
 
         val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")
+        // A token that's a copy of a Clone *card* (Vizier of Many Faces, embalmed) has the Clone's
+        // "you may have it enter as a copy of …" among its copiable values, so each token gets that
+        // choice as it enters (CR 707.9 / 614.1c) — asked before any token exists, one per token.
+        val selfCopy = if (auraHostId == null && effect.attachedTo == null) {
+            EffectCopyEntry.mintedReplacement(tokenCard, cardRegistry)
+        } else null
+        if (selfCopy != null) {
+            EffectCopyEntry.prepareMinted(
+                state, effect, context, controllerId, tokenCard.name, selfCopy, cappedCount, amountEvaluator.predicates
+            )?.let { return it }
+        }
         // CR 508.4: "its controller chooses ... as it enters" — every copy's defender is settled
         // before the first one is created, one question per token. The answers re-run the whole
         // effect from the top (EnteringAttackDefenderContinuation), so an Aura copy — whose host
@@ -408,10 +420,34 @@ class CreateTokenCopyOfTargetExecutor(
                     )
                 }
             }
+            // "A token is 'embalmed' if it's created by a resolving embalm ability" (CR 702.128b).
+            if (effect.embalmed) {
+                components.add(com.wingedsheep.engine.state.components.identity.EmbalmedComponent)
+            }
+            // The token's own as-enters copy choice (see selfCopy above). Its "except if …"
+            // clauses read the token itself — provenance included ("if it was embalmed") — so they
+            // are settled against the token as built so far, just before it enters.
+            val entryChoice = selfCopy?.let { context.entryCopies[EffectCopyEntry.mintedKey(index)] }
+                ?.takeIf { it.copiedCard != null }
+                ?.let { choice ->
+                    val probe = newState.withEntity(tokenId, ComponentContainer.of(*components.toTypedArray()))
+                    choice.copy(replacement = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                        .withConditionalExceptions(probe, tokenId, controllerId, choice.replacement, amountEvaluator.predicates))
+                }
+            val entryCard = entryChoice?.let { EffectCopyEntry.copiedIdentity(tokenCard, it) } ?: tokenCard
+            if (entryChoice != null && entryCard !== tokenCard) {
+                components[0] = entryCard
+                components.add(com.wingedsheep.engine.state.components.identity.CopyOfComponent(
+                    originalCardDefinitionId = tokenCard.cardDefinitionId,
+                    copiedCardDefinitionId = entryChoice.copiedCard!!.cardDefinitionId,
+                    originalCardComponent = tokenCard,
+                ))
+            }
+            val enteredAsCopy = entryChoice != null && entryCard !== tokenCard
             // Only creatures can be attacking. A copy of a card whose printed type line isn't a
             // creature (e.g. an animated permanent exiled and reverted to its printed type) still
             // enters tapped but never attacking — see Mardu Siegebreaker's rulings.
-            if (effect.attacking && tokenCard.typeLine.isCreature) {
+            if (effect.attacking && entryCard.typeLine.isCreature) {
                 // A specified defender ("attacking that player" — myriad) is honoured only while
                 // it is still in the game and one of the creator's opponents; otherwise the copy
                 // enters but never attacking (CR 508.4a). Unspecified, the token joins the
@@ -438,14 +474,23 @@ class CreateTokenCopyOfTargetExecutor(
             // with the same face up as the source. Counters
             // are intentionally not copied (handled by the absence of CountersComponent copy
             // throughout this executor).
-            targetContainer.copiableDoubleFacedComponent {
+            if (!enteredAsCopy) targetContainer.copiableDoubleFacedComponent {
                 withAddedStatics(CopyExceptionApplier.apply(it, exceptions, context.resolvingTriggeredAbility))
                     .copy(ownerId = controllerId, isDoubleFaced = false)
             }?.let { components.add(it) }
 
             var container = ComponentContainer.of(*components.toTypedArray())
-            // Toxic N / bushido N ride components, not the CardComponent — carry them over too.
-            container = CopyExceptionApplier.withNumericKeywords(container, targetContainer, exceptions, cardRegistry)
+            // Toxic N / bushido N ride components, not the CardComponent — carry them over too,
+            // from whatever the token ended up a copy of.
+            container = if (enteredAsCopy) {
+                val copied = entryChoice!!.copiedEntity?.let { newState.getEntity(it) }
+                val withKeywords = copied?.let {
+                    CopyExceptionApplier.withNumericKeywords(container, it, entryChoice.replacement.exceptions, cardRegistry)
+                } ?: container
+                EffectCopyEntry.tagCopyDuration(withKeywords, entryChoice.replacement.duration)
+            } else {
+                CopyExceptionApplier.withNumericKeywords(container, targetContainer, exceptions, cardRegistry)
+            }
 
             if (staticAbilityHandler != null) {
                 container = staticAbilityHandler.addContinuousEffectComponent(container)
@@ -591,7 +636,7 @@ class CreateTokenCopyOfTargetExecutor(
                         state = pausedState,
                         entityId = tokenId,
                         controllerId = controllerId,
-                        cardComponent = tokenCard,
+                        cardComponent = entryCard,
                         choice = choicePlan.choice,
                         fromZone = null,
                         carryEvents = events,
@@ -606,7 +651,7 @@ class CreateTokenCopyOfTargetExecutor(
             events.add(
                 ZoneChangeEvent(
                     entityId = tokenId,
-                    entityName = tokenCard.name,
+                    entityName = entryCard.name,
                     fromZone = null,
                     toZone = Zone.BATTLEFIELD,
                     ownerId = controllerId,

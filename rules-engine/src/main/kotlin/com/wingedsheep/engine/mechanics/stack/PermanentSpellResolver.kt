@@ -248,6 +248,11 @@ internal class PermanentSpellResolver(
                     state, spellId, controllerId, it, predicateEvaluator
                 )
             }
+            ?.let {
+                com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.withConditionalExceptions(
+                    state, spellId, controllerId, it, predicateEvaluator
+                )
+            }
         if (entersAsCopy != null) {
             // Find candidates to copy. Battlefield copies (Clone) read permanents in play;
             // graveyard copies (Superior Spider-Man) read creature cards across every graveyard.

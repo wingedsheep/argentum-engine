@@ -703,6 +703,13 @@ data class CreateTokenCopyOfTargetEffect(
      */
     val stampCreator: Boolean = false,
     /**
+     * The created tokens are **embalmed** — "a token is 'embalmed' if it's created by a resolving
+     * embalm ability" (CR 702.128b). Set only by [com.wingedsheep.sdk.dsl.embalmAbility]; read
+     * through [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEmbalmed]
+     * (`Conditions.SourceWasEmbalmed` — Vizier of Many Faces). Provenance, not a copy exception.
+     */
+    val embalmed: Boolean = false,
+    /**
      * The object each token copy enters the battlefield **attached to** — "create a token that's a
      * copy of that Aura attached to that creature" (Arna Kennerüd, Skycaptain). Null (the default)
      * creates the tokens unattached, except that an Aura copy's controller then chooses a host as

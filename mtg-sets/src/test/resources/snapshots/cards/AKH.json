@@ -3004,7 +3004,8 @@
                     "addedSubtypes": [
                         "Zombie"
                     ],
-                    "noManaCost": true
+                    "noManaCost": true,
+                    "embalmed": true
                 },
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
@@ -6573,6 +6574,93 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Vizier of Many Faces
+{
+    "name": "Vizier of Many Faces",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Shapeshifter Cleric",
+    "oracleText": "You may have this creature enter as a copy of any creature on the battlefield, except if this creature was embalmed, the token has no mana cost, it's white, and it's a Zombie in addition to its other types.\nEmbalm {3}{U}{U} ({3}{U}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Shapeshifter Cleric with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "EMBALM"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "embalm_{3}{U}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {3}{U}{U} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "conditionalExceptions": [
+                    {
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsEmbalmed"
+                                ]
+                            }
+                        },
+                        "exceptions": {
+                            "addedSubtypes": [
+                                "Zombie"
+                            ],
+                            "overrideColors": [
+                                "WHITE"
+                            ],
+                            "noManaCost": true
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2781c44-aa90-4a37-a812-33c643ba4deb.jpg?1783936515"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

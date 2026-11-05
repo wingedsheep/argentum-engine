@@ -1482,6 +1482,15 @@ object Conditions {
     val SourceIsMonstrous: ConditionInterface =
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.monstrous())
 
+    /**
+     * If this permanent was embalmed — a token created by a resolving embalm ability
+     * (CR 702.128b). Vizier of Many Faces: "except if Vizier of Many Faces was embalmed, the token
+     * has no mana cost, it's white, and it's a Zombie in addition to its other types", an
+     * [com.wingedsheep.sdk.scripting.EntersAsCopy.conditionalExceptions] clause.
+     */
+    val SourceWasEmbalmed: ConditionInterface =
+        SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.embalmed())
+
     /** If this creature is soulbond-paired with another creature (CR 702.95b). */
     val SourceIsPaired: ConditionInterface =
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.paired())

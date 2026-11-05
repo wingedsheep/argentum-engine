@@ -33,7 +33,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *    white ([CreateTokenCopyOfTargetEffect.overrideColors] — the token is white *instead of* its
  *    other colors), Zombie in addition to its other types
  *    ([CreateTokenCopyOfTargetEffect.addedSubtypes]), and no mana cost
- *    ([CreateTokenCopyOfTargetEffect.noManaCost]).
+ *    ([CreateTokenCopyOfTargetEffect.noManaCost]); the token is stamped **embalmed**
+ *    ([CreateTokenCopyOfTargetEffect.embalmed], CR 702.128b) for "if it was embalmed".
  *
  * The source resolves through [EffectTarget.Self] — by the time the effect runs the card is in
  * exile, and the copy is made from what was printed on it, not from anything it was on the
@@ -55,6 +56,7 @@ fun embalmAbility(cost: ManaCost): ActivatedAbility = ActivatedAbility(
         overrideColors = setOf(Color.WHITE),
         addedSubtypes = setOf(Subtype("Zombie")),
         noManaCost = true,
+        embalmed = true,
     ),
     timing = TimingRule.SorcerySpeed,
     activateFromZone = Zone.GRAVEYARD,
