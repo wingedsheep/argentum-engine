@@ -537,6 +537,18 @@ object CardIntentAnalyzer {
                     leaf.space == IterationSpace.Targets && requirements.size == 1 &&
                         EffectWalker.payoffLeaves(leaf.body).all { it is MoveToZoneEffect } ->
                         readingLeaves(leaf.body, requirements)
+                    // "One or two target creatures each get +2/+1 until end of turn" (Appeal to
+                    // Eirdu, Coordinated Assault's "+1/+0 and gain first strike") runs its pump once
+                    // per target, each seeing it as `ContextTarget(0)`: every target gets the same
+                    // stats and keywords, so it reads as the pump it is — an expiring one a combat
+                    // trick, like the single-target form.
+                    leaf.space == IterationSpace.Targets &&
+                        EffectWalker.payoffLeaves(leaf.body).let { body ->
+                            body.any { it is ModifyStatsEffect } && body.all {
+                                (it is ModifyStatsEffect && it.target == EffectTarget.ContextTarget(0)) ||
+                                    (it is GrantKeywordEffect && it.target == EffectTarget.ContextTarget(0))
+                            }
+                        } -> readingLeaves(leaf.body, requirements)
                     else -> listOf(leaf)
                 }
                 is GatherCardsEffect -> {

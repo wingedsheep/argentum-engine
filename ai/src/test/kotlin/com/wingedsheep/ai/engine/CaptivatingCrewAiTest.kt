@@ -24,13 +24,16 @@ class CaptivatingCrewAiTest : ScenarioTestBase() {
                 .filter { it.check == AiReadingAudit.Check.POLARITY && !it.read } shouldBe emptyList()
         }
 
-        test("a gift before theft remains mixed even when an equal gift follows it") {
+        // An unconditional theft in the same sequence makes the creature ours by the time it resolves,
+        // so an untap before the steal ("Untap target creature and gain control of it", Threaten) goes
+        // to the creature we take, as one after it does.
+        test("an untap before an unconditional theft in the same sequence is part of the theft") {
             val ability = CaptivatingCrew.script.activatedAbilities.single()
             val parts = (ability.effect as com.wingedsheep.sdk.scripting.effects.CompositeEffect).effects
             val untap = parts.filterIsInstance<com.wingedsheep.sdk.scripting.effects.TapUntapEffect>().single()
             val reversed = com.wingedsheep.sdk.scripting.effects.CompositeEffect(listOf(untap.copy()) + parts)
             TargetPolarityAnalyzer.forRequirements(reversed, ability.targetRequirements) shouldBe
-                listOf(TargetPolarity.UNKNOWN)
+                listOf(TargetPolarity.HARMFUL)
         }
 
         test("the repeatable theft premium reaches the board evaluator but not a face-down card") {

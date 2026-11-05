@@ -108,6 +108,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
@@ -402,10 +403,22 @@ object TargetPolarityAnalyzer {
             val gifts = mutableListOf<Effect>()
             fun visit(part: Effect) {
                 when (part) {
-                    is com.wingedsheep.sdk.scripting.effects.CompositeEffect -> part.effects.forEach(::visit)
+                    is com.wingedsheep.sdk.scripting.effects.CompositeEffect -> {
+                        // "Untap target creature and gain control of it until end of turn"
+                        // (Threaten) untaps before it steals: an unconditional theft anywhere in
+                        // the sequence makes the whole sequence's untap and haste part of it.
+                        stolen += part.effects.filterIsInstance<GainControlEffect>().map { it.target }
+                        part.effects.forEach(::visit)
+                    }
                     is GainControlEffect -> stolen += part.target
                     is TapUntapEffect -> if (!part.tap && part.target in stolen) gifts += part else stolen.clear()
-                    is GrantKeywordEffect -> if (part.keyword == Keyword.HASTE.name && part.target in stolen) gifts += part else stolen.clear()
+                    // Haste to attack with it, and the trample or lifelink some thefts add (Traitorous
+                    // Blood, Zidane) — every keyword but a drawback goes to the creature we took.
+                    is GrantKeywordEffect -> if (part.keyword != Keyword.DEFENDER.name && part.target in stolen) gifts += part else stolen.clear()
+                    // "If that creature is a Goat, it also gets +3/+0 until end of turn" (Goatnap):
+                    // a boost to the creature we took is ours to attack with, part of the theft.
+                    is ModifyStatsEffect ->
+                        if (part.target in stolen && raisesOnly(part)) gifts += part else stolen.clear()
                     // "You may attach an Equipment you control to that creature" (Unexpected Request):
                     // the Equipment rides the stolen creature into the attack, part of the theft.
                     // "If that artifact is an Equipment, attach it to this creature" (Thieving
@@ -632,6 +645,14 @@ object TargetPolarityAnalyzer {
                 perSlot[slot] += TargetPolarity.FLEXIBLE
             }
         }
+        // "Remove all counters from target creature" (Perfect Intimidation) strips an opponent's
+        // +1/+1 counters or frees our creature of its -1/-1 counters (blight): which side it helps is
+        // the counters on the board, so both stay open for the simulation. Only when nothing else
+        // reads the slot: Suncleanser's "target opponent loses all counters" is read by its lock.
+        for (strip in leaves.filterIsInstance<RemoveAllCountersEffect>()) {
+            val slot = slotOf(strip.target, requirements) ?: continue
+            if (perSlot[slot].isEmpty()) perSlot[slot] += TargetPolarity.FLEXIBLE
+        }
         return perSlot.mapIndexed { slot, readings ->
             when {
                 slot in recursions -> TargetPolarity.BENEFICIAL
@@ -683,6 +704,12 @@ object TargetPolarityAnalyzer {
         val harmful = onSlot.filter { (_, polarities) -> TargetPolarity.HARMFUL in polarities }.map { it.first }
         return beneficial.isNotEmpty() && beneficial.all { it is DrawCardsEffect } &&
             harmful.isNotEmpty() && harmful.all { it is LoseLifeEffect }
+    }
+
+    /** A stat change that only adds: "+3/+0", never "+2/-1" or an unread "+X". */
+    private fun raisesOnly(effect: ModifyStatsEffect): Boolean {
+        val signs = listOf(AmountSign.of(effect.powerModifier), AmountSign.of(effect.toughnessModifier))
+        return AmountSign.GAIN in signs && signs.all { it == AmountSign.GAIN || it == AmountSign.ZERO }
     }
 
     /**

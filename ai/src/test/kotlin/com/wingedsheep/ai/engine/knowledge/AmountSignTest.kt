@@ -46,4 +46,10 @@ class AmountSignTest : FunSpec({
         statsSign(DynamicAmount.Fixed(2), DynamicAmount.Fixed(-2)) shouldBe AmountSign.UNKNOWN
         statsSign(DynamicAmount.Multiply(count, -1), DynamicAmount.Multiply(count, -1)) shouldBe AmountSign.LOSS
     }
+    test("the distance between two values, max(a - b, b - a), is never negative") {
+        val power = DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.Power)
+        val toughness = DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.Toughness)
+        AmountSign.of(DynamicAmount.Max(DynamicAmount.Subtract(toughness, power), DynamicAmount.Subtract(power, toughness))) shouldBe AmountSign.GAIN
+        AmountSign.of(DynamicAmount.Max(DynamicAmount.Subtract(toughness, power), DynamicAmount.Subtract(power, count))) shouldBe AmountSign.UNKNOWN
+    }
 })

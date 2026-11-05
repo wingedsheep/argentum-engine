@@ -379,7 +379,7 @@ All-Out Assault
 All-Seeing Arbiter
 Alley Assailant
 Alley Strangler
-Allied Assault	timing: ForEach>ModifyStatsEffect
+Allied Assault
 Allies at Last
 Alloy Animist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Alloy Golem
@@ -644,7 +644,7 @@ Apothecary Stomper
 Appa, Loyal Sky Bison
 Appa, Steadfast Guardian
 Appeal // Authority
-Appeal to Eirdu	timing: ForEach>ModifyStatsEffect
+Appeal to Eirdu
 Appendage Amalgam
 Appetite for Brains
 Appetite for the Unnatural
@@ -1626,7 +1626,7 @@ Bladed Battle-Fan
 Bladed Pinions
 Bladegraft Aspirant
 Bladehold War-Whip
-Blades of Velis Vel	timing: ForEach>ModifyStatsEffect
+Blades of Velis Vel
 Bladestitched Skaab
 Bladetusk Boar
 Bladewing the Risen
@@ -1701,7 +1701,7 @@ Blind Creeper
 Blind Obedience
 Blind Phantasm
 Blind Seer	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
-Blind with Anger	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect); timing: GrantKeywordEffect
+Blind with Anger	timing: GrantKeywordEffect
 Blind-Spot Giant
 Blindblast
 Blinding Beam
@@ -2303,7 +2303,7 @@ Burning Prophet
 Burning Shield Askari
 Burning Sun Cavalry
 Burning Sun's Avatar
-Burning Sun's Fury	timing: ForEach>ModifyStatsEffect
+Burning Sun's Fury
 Burning Vengeance
 Burning Wish
 Burning of Xinye
@@ -2791,7 +2791,7 @@ Chant of Vitu-Ghazi
 Chaos Channeler
 Chaos Maw
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
-Chaos Spewer	intent: PayOrSufferEffect
+Chaos Spewer
 Chaos Wand	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→exile|library)
 Chaos Warp
 Chaoslace	intent: ChangeColorEffect; polarity: ChangeColorEffect
@@ -3344,7 +3344,7 @@ Convolute
 Cool but Rude
 Cooped Up
 Cooperation	polarity: Aura>GrantKeyword
-Coordinated Assault	timing: ForEach>ModifyStatsEffect
+Coordinated Assault
 Coordinated Charge
 Coordinated Clobbering	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Coordinated Maneuver
@@ -3713,7 +3713,7 @@ Cut of the Profits
 Cut the Tethers	intent: ForEach>ForEachEffect
 Cutthroat Centurion
 Cutthroat Contender
-Cutthroat Maneuver	timing: ForEach>ModifyStatsEffect
+Cutthroat Maneuver
 Cyberdrive Awakener	intent: MassAnimateEffect
 Cybernetic Specialist
 Cycle of Renewal
@@ -3876,7 +3876,7 @@ Dauntless Bodyguard
 Dauntless Cathar
 Dauntless Dismantler
 Dauntless Dourbark
-Dauntless Onslaught	timing: ForEach>ModifyStatsEffect
+Dauntless Onslaught
 Dauntless River Marshal
 Dauntless Scrapbot
 Dauntless Survivor
@@ -4371,7 +4371,7 @@ Disempower
 Disenchant
 Disentomb
 Disfigure
-Disharmony	polarity: RemoveFromCombatEffect
+Disharmony
 Disinformation Campaign
 Disintegrate
 Dismal Backwater
@@ -4519,7 +4519,7 @@ Doomwake Giant
 Doorkeeper Thrull
 Doors of Durin
 Doppelgang	polarity: ForEachEffect
-Doran, Besieged by Time	intent: ModifyStatsEffect
+Doran, Besieged by Time
 Doran, the Siege Tower
 Dori, Bearer of Friends
 Dormant Grove
@@ -7049,8 +7049,8 @@ Go-Shintai of Hidden Cruelty
 Go-Shintai of Life's Origin
 Go-Shintai of Lost Wisdom
 Go-Shintai of Shared Purpose
-Goatnap	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
-Goatnapper	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Goatnap
+Goatnapper
 Gobbling Ooze
 Goblin Anarchomancer
 Goblin Arsonist
@@ -8689,7 +8689,7 @@ Invasion of Belenon
 Invasion of Dominaria
 Invasion of Eldraine
 Invasion of Ergamon
-Invasion of Fiora	intent: RemoveAllCountersEffect; polarity: RemoveAllCountersEffect
+Invasion of Fiora	intent: RemoveAllCountersEffect
 Invasion of Gobakhan	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Invasion of Ikoria
 Invasion of Innistrad
@@ -10530,7 +10530,7 @@ Marwyn, the Preserver
 Mary Jane Watson
 Masako the Humorless
 Mascot Exhibition
-Mascot Interception	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
+Mascot Interception
 Mask of Avacyn
 Mask of Griselbrand
 Mask of Immolation
@@ -11125,7 +11125,7 @@ Monstrous Step	polarity: ForceBlockEffect
 Monstrous Vortex
 Monstrous War-Leech
 Monument to Endurance
-Monument to Perfection	intent: GrantKeywordEffect; intent: RemoveAllAbilitiesEffect
+Monument to Perfection	intent: GrantKeywordEffect
 Monumental Henge
 Moodmark Painter
 Moogles' Valor	timing: ForEach>GrantKeywordEffect
@@ -11391,7 +11391,7 @@ Nahiri's Lithoforming
 Nahiri's Machinations
 Nahiri's Resolve	intent: Pipeline(BattlefieldMatching→battlefield|exile)
 Nahiri's Sacrifice
-Nahiri's Stoneblades	timing: ForEach>ModifyStatsEffect
+Nahiri's Stoneblades
 Nahiri's Warcrafting
 Nahiri, Forged in Fury	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Nahiri, Heir of the Ancients
@@ -11762,7 +11762,7 @@ Null Elemental Blast
 Null Group Biological Assets
 Null Summoner
 Nulldrifter
-Nullhide Ferox	intent: RemoveAllAbilitiesEffect; timing: RemoveAllAbilitiesEffect
+Nullhide Ferox	timing: RemoveAllAbilitiesEffect
 Nullmage Shepherd
 Nullpriest of Oblivion
 Nullstone Gargoyle
@@ -12378,7 +12378,7 @@ Peregrine Drake	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapColle
 Peregrine Mask
 Perennation
 Perennial Behemoth
-Perfect Intimidation	polarity: RemoveAllCountersEffect
+Perfect Intimidation
 Perfected Theory
 Perforating Artist
 Perigee Beckoner
@@ -12793,7 +12793,7 @@ Prescient Chimera
 Presence of Gond
 Presence of the Master
 Press for Answers
-Press the Advantage	timing: ForEach>ModifyStatsEffect
+Press the Advantage
 Press the Enemy
 Pressure Point
 Preston Garvey, Minuteman	intent: CreateAuraTokenEffect; intent: ForEach>TapUntapEffect
@@ -12805,7 +12805,7 @@ Prey's Vengeance
 Price of Betrayal
 Price of Fame
 Price of Freedom
-Price of Loyalty	polarity: mixed(GainControlEffect+GrantKeywordEffect+ModifyStatsEffect+TapUntapEffect)
+Price of Loyalty
 Prickly Marmoset
 Prickly Pair
 Pride Sovereign
@@ -13011,7 +13011,7 @@ Pure Reflection
 Purelace	intent: ChangeColorEffect; polarity: ChangeColorEffect
 Puresteel Paladin
 Purge
-Purging Stormbrood	intent: RemoveAllCountersEffect; polarity: RemoveAllCountersEffect; timing: GrantEvasionKeywordEffect; timing: GrantKeywordEffect; timing: ModifyStatsEffect
+Purging Stormbrood	intent: RemoveAllCountersEffect; timing: GrantEvasionKeywordEffect; timing: GrantKeywordEffect; timing: ModifyStatsEffect
 Purify
 Purify the Grave
 Purifying Dragon
@@ -13754,7 +13754,7 @@ Restricted Office // Lecture Hall
 Resurgent Belief
 Resurrected Cultist
 Resurrection
-Retched Wretch	intent: RemoveAllAbilitiesEffect
+Retched Wretch
 Retreat to Coralhelm
 Retreat to Hagra
 Retreat to Kazandu
@@ -15028,7 +15028,7 @@ Shadow Prophecy
 Shadow Sliver
 Shadow Stinger
 Shadow Summoning
-Shadow Urchin	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?)
+Shadow Urchin
 Shadow of Doubt	timing: CantSearchLibrariesEffect
 Shadow of Mortality
 Shadow of the Enemy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
@@ -16053,7 +16053,7 @@ Spikeshot Goblin
 Spikewheel Acrobat
 Spin Out
 Spinal Centipede
-Spinal Embrace	polarity: CreateDelayedTriggerEffect; timing: GrantKeywordEffect
+Spinal Embrace	timing: GrantKeywordEffect
 Spinal Villain
 Spine of Ish Sah
 Spined Basher
@@ -16688,7 +16688,7 @@ Sunblade Angel
 Sunblade Elf
 Sunblade Samurai
 Sunblast Angel
-Suncleanser	intent: ModalEffect; polarity: GrantKeywordEffect; polarity: RemoveAllCountersEffect
+Suncleanser	intent: ModalEffect; polarity: GrantKeywordEffect
 Sunder Shaman
 Sunder the Gateway
 Sunderflock	intent: Pipeline(BattlefieldMatching→hand)
@@ -17048,7 +17048,7 @@ Tamiyo, Inquisitive Student
 Tamiyo, the Moon Sage	polarity: DrawCardsEffect
 Tanazir Quandrix
 Tandem Lookout	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
-Tandem Tactics	timing: ForEach>ModifyStatsEffect
+Tandem Tactics
 Tandem Takedown
 Tangle
 Tangle Golem
@@ -17220,7 +17220,7 @@ Temporal Manipulation
 Temporal Mastery
 Temporal Spring
 Temporal Trespass
-Temporary Insanity	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect); timing: GrantKeywordEffect
+Temporary Insanity	timing: GrantKeywordEffect
 Temporary Lockdown	intent: Pipeline(BattlefieldMatching→exile)
 Temporary Truce
 Tempt with Bunnies
@@ -17739,7 +17739,7 @@ Thrashing Wumpus
 Thrasios, Triton Hero
 Thraxodemon
 Threadbind Clique
-Threaten	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Threaten
 Threats Around Every Corner	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Threats Undetected
 Three Blind Mice
@@ -18109,7 +18109,7 @@ Training Center
 Training Compound
 Training Grounds
 Training Regimen
-Traitorous Blood	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Traitorous Blood
 Traitorous Greed
 Tramway Station
 Tranquil Cove
@@ -19576,7 +19576,7 @@ Wheel and Deal
 Wheel of Fortune
 Wheel of Potential
 Wheel of Torture
-When We Were Young	timing: ForEach>GrantKeywordEffect; timing: ForEach>ModifyStatsEffect
+When We Were Young
 Whip Sergeant
 Whip Silk
 Whipcorder
@@ -20152,7 +20152,7 @@ Zhur-Taa Goblin
 Ziatora's Envoy
 Ziatora's Proving Ground
 Ziatora, the Incinerator
-Zidane, Tantalus Thief	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect)
+Zidane, Tantalus Thief
 Zilortha, Strength Incarnate
 Zimone and Dina	polarity: DrainLifeEffect
 Zimone's Experiment
