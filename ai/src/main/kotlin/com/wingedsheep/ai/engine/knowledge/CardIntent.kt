@@ -539,6 +539,9 @@ enum class IntentTag {
      * the spell didn't cost (and, from outside the hand, the card itself), which the board
      * simulation only sees once the spell resolves, so without the tag the ability read as
      * "no intent". A cast that still pays the spell's mana cost earns no tag.
+     *
+     * Putting a nonland permanent card from hand onto the battlefield (Kinscaer Sentry, Goblin
+     * Lackey) is the same payoff without the cast, and reads the same.
      */
     FREE_SPELL,
 }
