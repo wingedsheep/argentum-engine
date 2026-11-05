@@ -15081,7 +15081,14 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
     DoubleCounters(+1/+1, target)`; `overloadEffect` runs the same two steps as two
     `ForEachInGroup(AllCreaturesYouControl, …)` passes, so every creature gets its counter before any
     doubling.
-- `Afflict(n)` — defender loses N when this becomes blocked.
+- `Afflict(n)` — **engine-live**, the same shape as `Rampage(n)`. Declare it with `card { afflict(n) }`
+  (just this keyword ability); the engine derives CR 702.130a's "whenever this creature becomes blocked,
+  defending player loses N life" from
+  [`Afflict`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Afflict.kt): an unfiltered
+  `BecomesBlockedEvent` on `SELF` (once however many creatures block), effect
+  `LoseLife(n, PlayerRef(DefendingPlayer))` — still the attacked player if the creature leaves combat
+  before resolution. One trigger per printed instance (CR 702.130b) while the projected bare `AFFLICT`
+  keyword survives (lost with all abilities). Frontline Devastator, Khenra Eternal.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
   Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to
   animate a **Vehicle** (artifact subtype, CR 301.7) — it becomes an artifact creature until end of turn

@@ -391,6 +391,7 @@ object LimitedCardRater {
         Keyword.DEATHTOUCH to 0.5,
         Keyword.LIFELINK to 0.4,
         Keyword.VIGILANCE to 0.2,
+        Keyword.AFFLICT to 0.3,
         // Speed
         Keyword.HASTE to 0.3,
         Keyword.FLASH to 0.3,

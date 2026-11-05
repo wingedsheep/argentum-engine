@@ -774,6 +774,8 @@ object BoardPresence : BoardFeature {
         if (Keyword.LIFELINK.name in keywords) value += 0.5 + power * 0.3
         if (Keyword.VIGILANCE.name in keywords) value += 0.8  // attacks without cost
         if (Keyword.PROVOKE.name in keywords) value += 0.5
+        // Afflict: every block costs the defender life (CR 702.130a), a tax on blocking it.
+        if (Keyword.AFFLICT.name in keywords) value += 0.6
 
         // ── Survivability ──
         if (Keyword.INDESTRUCTIBLE.name in keywords) value += 3.0
