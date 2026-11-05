@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 
@@ -26,7 +27,7 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
  *   durably under `ChoiceSlot.CARD_NAME` (same shape as Sorcerous Spyglass, minus the hand look).
  * - The tax is symmetric — every caster pays it — so [SpellCostTarget.AnyCaster] over the bare
  *   chosen-name predicate ([GameObjectFilter.namedFromChosenComponent]).
- * - The ability lock is [PreventActivatedAbilities]`(nonManaAbilitiesOnly = true, anyZone = true)` over
+ * - The ability lock is [PreventActivatedAbilities]`(abilities = NON_MANA, anyZone = true)` over
  *   the same name — "sources" reaches cards in every zone, so cycling and channel are locked too.
  */
 val DisruptorFlute = card("Disruptor Flute") {
@@ -60,7 +61,7 @@ val DisruptorFlute = card("Disruptor Flute") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Any.namedFromChosenComponent(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
             anyZone = true,
         )
     }

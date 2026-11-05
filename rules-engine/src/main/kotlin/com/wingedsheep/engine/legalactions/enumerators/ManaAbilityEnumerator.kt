@@ -81,7 +81,7 @@ class ManaAbilityEnumerator(
 
             // PreventActivatedAbilities (Cursed Totem etc.) blocks mana abilities too —
             // per ruling, "Cursed Totem stops players from activating mana abilities of
-            // creatures." A `nonManaAbilitiesOnly` lock (Sharkey) exempts mana abilities,
+            // creatures." A `NON_MANA` lock (Sharkey) exempts mana abilities,
             // so pass abilityIsManaAbility = true here.
             if (context.castPermissionUtils.isActivationPrevented(state, entityId, abilityIsManaAbility = true)) continue
 

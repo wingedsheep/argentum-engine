@@ -10267,7 +10267,7 @@
                         "IsPlaneswalker"
                     ]
                 },
-                "loyaltyAbilitiesOnly": true
+                "abilities": "LOYALTY"
             },
             {
                 "type": "ModifySpellCost",

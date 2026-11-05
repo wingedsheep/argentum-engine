@@ -43,6 +43,8 @@ import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -1515,6 +1517,12 @@ object CardIntentAnalyzer {
         // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a
         // standing permission to cast cards back out of our graveyard is recursion, every turn.
         is MayCastFromGraveyard -> setOf(IntentTag.RECURSION)
+        // "Enchanted creature loses all abilities" (Lignify) and "creatures enchanted player
+        // controls lose all abilities and have base power and toughness 1/1" (Overwhelming
+        // Splendor) leave the creatures on the battlefield, no longer threats worth the name.
+        is LoseAllAbilities -> neutralizeTags(static.filter)
+        is SetBasePowerToughnessStatic ->
+            if (static.shrinksToAtMostOneOne()) neutralizeTags(static.filter) else emptySet()
         // A composite static is each of its parts (a conditional one is read above, by the
         // ability it gates).
         is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
@@ -1548,8 +1556,7 @@ object CardIntentAnalyzer {
      * kind of trade.
      */
     private fun neutralizeTags(filter: GroupFilter): Set<IntentTag> =
-        if (filter.scope == Scope.AttachedTo) setOf(IntentTag.NEUTRALIZE) else emptySet()
-
+        if (filter.scope == Scope.AttachedTo || filter.reachesEnchantedPlayer()) setOf(IntentTag.NEUTRALIZE) else emptySet()
     /**
      * Total P+T a battlefield-wide anthem hands to each creature it covers. Zero for an
      * Aura/Equipment bonus, which lands on one creature and is therefore already visible in that

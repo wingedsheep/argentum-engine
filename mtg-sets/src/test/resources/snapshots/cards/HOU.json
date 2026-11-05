@@ -2507,6 +2507,70 @@
     ]
 }
 
+// Overwhelming Splendor
+{
+    "name": "Overwhelming Splendor",
+    "manaCost": "{6}{W}{W}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nCreatures enchanted player controls lose all abilities and have base power and toughness 1/1.\nEnchanted player can't activate abilities that aren't mana abilities or loyalty abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "LoseAllAbilities",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 1,
+                "toughness": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "type": "PlayersCantActivateAbilities",
+                "affected": "EnchantedPlayer",
+                "abilities": "NON_MANA_NON_LOYALTY",
+                "anyZone": true
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "MYTHIC",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/867b32d2-e396-411d-ac02-1af4106dd3d2.jpg?1783936059"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pride Sovereign
 {
     "name": "Pride Sovereign",

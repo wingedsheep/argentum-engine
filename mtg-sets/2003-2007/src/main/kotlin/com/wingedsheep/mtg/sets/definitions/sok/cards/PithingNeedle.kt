@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 
 /**
@@ -19,7 +20,7 @@ import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
  * - Same shape as Sorcerous Spyglass minus the look at an opponent's hand: the as-enters name choice is
  *   [EntersWithChoice]`(ChoiceType.CARD_NAME, CardNamePool.ANY)`, stored durably under
  *   `ChoiceSlot.CARD_NAME`.
- * - The lock is [PreventActivatedAbilities]`(nonManaAbilitiesOnly = true, anyZone = true)` over the bare
+ * - The lock is [PreventActivatedAbilities]`(abilities = NON_MANA, anyZone = true)` over the bare
  *   chosen-name predicate — "sources" reaches cards in every zone, so cycling and channel are locked too.
  */
 val PithingNeedle = card("Pithing Needle") {
@@ -41,7 +42,7 @@ val PithingNeedle = card("Pithing Needle") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Any.namedFromChosenComponent(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
             anyZone = true,
         )
     }
