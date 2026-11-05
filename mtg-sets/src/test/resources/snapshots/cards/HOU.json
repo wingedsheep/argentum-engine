@@ -193,6 +193,168 @@
     ]
 }
 
+// Act of Heroism
+{
+    "name": "Act of Heroism",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Untap target creature. It gets +2/+2 until end of turn and can block an additional creature this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CanBlockAdditionalForCreatureGroup",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"On every plane, there are those who run toward danger.\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/bebc06f6-305d-4a5a-9be7-fbc6d8cd9c72.jpg?1783936069",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "You can cast Act of Heroism even if the target creature won't be able to block right away, perhaps because you're the attacking player."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "Untapping an attacking creature doesn't remove it from combat."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "Act of Heroism can target an untapped creature. It still gets +2/+2 and can block an additional creature."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "The effects of Act of Heroism are cumulative. If multiples resolve targeting the same creature, that creature can block that many additional creatures this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Adorned Pouncer
+{
+    "name": "Adorned Pouncer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Double strike\nEternalize {3}{W}{W} ({3}{W}{W}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Cat with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "ETERNALIZE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{3}{W}{W}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{W}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {3}{W}{W} ({3}{W}{W}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/865e267d-450c-4eeb-b61d-bd0ec5d8534a.jpg?1783936067",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie in addition to its other types and is black instead of its other colors. Its base power and toughness are 4/4. It has no mana cost, and thus its mana value is 0. These are copiable values of the token that other effects may copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aerial Guide
 {
     "name": "Aerial Guide",
@@ -323,6 +485,145 @@
             }
         ]
     }
+}
+
+// Angel of Condemnation
+{
+    "name": "Angel of Condemnation",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying, vigilance\n{2}{W}, {T}: Exile another target creature. Return that card to the battlefield under its owner's control at the beginning of the next end step.\n{2}{W}, {T}, Exert this creature: Exile another target creature until this creature leaves the battlefield. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Angel of Condemnation:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Exile another target creature. Return it to the battlefield under its owner's control at the beginning of the next end step."
+            },
+            {
+                "id": "Angel of Condemnation:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExert"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Exert: Exile another target creature until Angel of Condemnation leaves the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90dad070-e41d-419b-ae27-ace82b9ab2c5.jpg?1783936067",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If Angel of Condemnation leaves the battlefield before its last ability resolves, the target creature won't be exiled."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The card exiled with Angel of Condemnation's last ability returns to the battlefield immediately after Angel of Condemnation leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Tapping Angel of Condemnation to activate either of its abilities while it's attacking doesn't remove it from combat."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If a creature token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Angel of Condemnation leaves the battlefield before its first activated ability resolves, the target creature is still exiled. That card returns to the battlefield even if Angel of Condemnation has left the battlefield before the next end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Angel of the God-Pharaoh
@@ -1611,6 +1912,98 @@
     ]
 }
 
+// Crook of Condemnation
+{
+    "name": "Crook of Condemnation",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Exile target card from a graveyard.\n{1}, Exile this artifact: Exile all graveyards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crook of Condemnation:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Crook of Condemnation:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Maier",
+        "flavorText": "The God-Pharaoh's angels stripped former initiates of their cartouches and the fortifying magic they provided.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78f6d7c2-ee4f-4cd0-a9a2-d8469ff89291.jpg?1783936004"
+    },
+    "colorIdentityOverride": []
+}
+
 // Crypt of the Eternals
 {
     "name": "Crypt of the Eternals",
@@ -1728,6 +2121,64 @@
         "BLACK",
         "RED"
     ]
+}
+
+// Dagger of the Worthy
+{
+    "name": "Dagger of the Worthy",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0 and has afflict 1. (Whenever it becomes blocked, defending player loses 1 life.)\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dagger of the Worthy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "AFFLICT_1"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Tommy Arnold",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abe9d9d7-bc4e-4367-b27c-e8d6e430467e.jpg?1783936002"
+    }
 }
 
 // Dauntless Aven
@@ -1998,6 +2449,105 @@
     ]
 }
 
+// Desert's Hold
+{
+    "name": "Desert's Hold",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, if you control a Desert or there is a Desert card in your graveyard, you gain 3 life.\nEnchanted creature can't attack or block, and its activated abilities can't be activated.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Desert's Hold:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8082298e-05c4-48b3-9367-713f59aafdc6.jpg?1783936067",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities are activated abilities and will have colons in their reminder text. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected by the last ability of Desert's Hold."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn't matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For abilities that trigger only if you control a Desert or there is a Desert card in your graveyard, one condition must be true as the ability triggers and one must be true as the ability resolves. They don't have to be the same condition, though. For example, you could sacrifice your only Desert after the ability triggers but before it has resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Devotee of Strength
 {
     "name": "Devotee of Strength",
@@ -2058,6 +2608,54 @@
     ]
 }
 
+// Disposal Mummy
+{
+    "name": "Disposal Mummy",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Zombie Jackal",
+    "oracleText": "When this creature enters, exile target card from an opponent's graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Disposal Mummy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Gabor Szikszai",
+        "flavorText": "Without the viziers to oversee their actions, some anointed went to extreme lengths to fulfill their directives.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad806d67-4c98-438b-859f-b1358281e09d.jpg?1783936067"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Djeru's Renunciation
 {
     "name": "Djeru's Renunciation",
@@ -2099,6 +2697,104 @@
         "artist": "Kieran Yanner",
         "flavorText": "\"I was promised an afterlife, not this. Samut was right. The God-Pharaoh lied.\"\n—Djeru, former Tah-crop initiate",
         "imageUri": "https://cards.scryfall.io/normal/front/0/3/03f005de-7971-4f22-ad1f-5d0667f68113.jpg?1783936062"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Djeru, With Eyes Open
+{
+    "name": "Djeru, With Eyes Open",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Vigilance\nWhen Djeru enters, you may search your library for a planeswalker card, reveal it, put it into your hand, then shuffle.\nIf a source would deal damage to a planeswalker you control, prevent 1 of that damage.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Djeru, With Eyes Open:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "planeswalker"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a planeswalker card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "amount": 1,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "planeswalker ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2234df89-0835-4a17-b5d8-2334ee8f692d.jpg?1783936062",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If multiple sources would deal damage to one or more planeswalkers you control at once (for example, several attacking creatures), 1 damage from each of those sources to each of those planeswalkers is prevented."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2767,6 +3463,125 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Endless Sands
+{
+    "name": "Endless Sands",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Exile target creature you control.\n{4}, {T}, Sacrifice this land: Return each creature card exiled with this land to the battlefield under its owner's control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Endless Sands:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Endless Sands:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile",
+                    "linkToSource": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Exile target creature you control."
+            },
+            {
+                "id": "Endless Sands:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true,
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}, {T}, Sacrifice this land: Return each creature card exiled with this land to the battlefield under its owner's control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ebd3e0a-30cc-4bc1-b9fa-6d65db9a6f5b.jpg?1783935997",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The last ability of Endless Sands returns only creature cards exiled by that card. If Endless Sands leaves the battlefield before you activate that ability, the exiled creatures are lost in the dunes forever."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you exile a creature that isn't a creature card with the second ability of Endless Sands (such as a token creature or a land that has become a creature), the third ability won't return that token or card from exile."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Eternal of Harsh Truths
@@ -3522,6 +4337,168 @@
     ]
 }
 
+// God-Pharaoh's Faithful
+{
+    "name": "God-Pharaoh's Faithful",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever you cast a blue, black, or red spell, you gain 1 life.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Pharaoh's Faithful:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"This is the final trial! Rejoice, for the God-Pharaoh soars among us!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cb8a25b-2ad0-4ffe-b41a-6b3f8b48c1e9.jpg?1783936061"
+    }
+}
+
+// God-Pharaoh's Gift
+{
+    "name": "God-Pharaoh's Gift",
+    "manaCost": "{7}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of combat on your turn, you may exile a creature card from your graveyard. If you do, create a token that's a copy of that card, except it's a 4/4 black Zombie. It gains haste until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Pharaoh's Gift:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may exile a creature card from your graveyard to create a 4/4 black Zombie copy of it",
+                            "selectedLabel": "Exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "moved2"
+                            },
+                            "overridePower": 4,
+                            "overrideToughness": 4,
+                            "overrideColors": [
+                                "BLACK"
+                            ],
+                            "overrideSubtypes": [
+                                "Zombie"
+                            ]
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may exile a creature card from your graveyard. If you do, create a token that's a copy of that card, except it's a 4/4 black Zombie. It gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2e85a9e-4c37-4721-b7ea-de3413ec39df.jpg?1783936002",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The ability of God-Pharaoh's Gift doesn't target the creature card you'll exile. You choose one as the ability resolves. No player may take actions between the time you choose a creature card to exile and the time you create the token."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie instead of its other types (unlike Zombies created by an eternalize ability) and is black instead of its other colors. Its power and toughness are 4/4. These are copiable values of the token that other effects may copy."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Unlike the tokens created by an eternalize ability, this token has the mana cost and thus mana value of the card it's copying."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card copied by the token had any \"when [this permanent] enters the battlefield\" abilities, then the token also has those abilities and will trigger them when it's created."
+            }
+        ]
+    }
+}
+
 // Granitic Titan
 {
     "name": "Granitic Titan",
@@ -4179,6 +5156,87 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Hostile Desert
+{
+    "name": "Hostile Desert",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{2}, Exile a land card from your graveyard: This land becomes a 3/4 Elemental creature until end of turn. It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hostile Desert:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hostile Desert:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "descriptionOverride": "{2}, Exile a land card from your graveyard: This land becomes a 3/4 Elemental creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "RARE",
+        "artist": "Josh Hass",
+        "flavorText": "Amonkhet's desiccated land thirsts for blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/250c35cb-77e7-4600-a915-ccf327fe3385.jpg?1783935996",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If Hostile Desert becomes a creature the same turn it enters the battlefield, you can't attack with it or tap it for mana."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Hour of Devastation
@@ -6408,6 +7466,64 @@
     ]
 }
 
+// Oketra's Avenger
+{
+    "name": "Oketra's Avenger",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, prevent all combat damage that would be dealt to it this turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oketra's Avenger:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": "Self",
+                    "scope": "CombatOnly"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"Oketra's arrow is my spear, and her love my shield.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06a644b4-a2f7-4219-935b-237936b07948.jpg?1783936060",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Oketra's Last Mercy
 {
     "name": "Oketra's Last Mercy",
@@ -6711,6 +7827,79 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Proven Combatant
+{
+    "name": "Proven Combatant",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Eternalize {4}{U}{U} ({4}{U}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Human Warrior with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "ETERNALIZE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{4}{U}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {4}{U}{U} ({4}{U}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Clint Cearley",
+        "flavorText": "\"It's not wise to keep glory waiting.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d83fd08a-c87b-4e29-bd1d-31dea3732156.jpg?1783936051",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie in addition to its other types and is black instead of its other colors. Its base power and toughness are 4/4. It has no mana cost, and thus its mana value is 0. These are copiable values of the token that other effects may copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7829,6 +9018,87 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Saving Grace
+{
+    "name": "Saving Grace",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature you control\nWhen this Aura enters, all damage that would be dealt this turn to you and permanents you control is dealt to enchanted creature instead.\nEnchanted creature gets +0/+3.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saving Grace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "RedirectNextDamage",
+                    "protectedTargets": [
+                        "Controller"
+                    ],
+                    "redirectTo": "EnchantedCreature",
+                    "scope": "CONTINUOUS",
+                    "protectedFilter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "descriptionOverride": "When this Aura enters, all damage that would be dealt this turn to you and permanents you control is dealt to enchanted creature instead."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 3
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "McLean Kendree",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9ac7b2d8-7702-4b8c-84ed-1d785dea5cc5.jpg?1783936060",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Saving Grace's ability has no effect on damage already dealt earlier in the turn."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Saving Grace leaves the battlefield during the turn its triggered ability resolved, damage will continue to be redirected to the creature it enchanted before it left the battlefield. If the creature Saving Grace was last attached to isn't on the battlefield or isn't a creature at the time damage would be dealt, it won't be redirected."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "More damage can be redirected to the enchanted creature than it has toughness, as long as that damage is all dealt at once (like combat damage is)."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Saving Grace's redirection effect doesn't change the source of the damage or whether the damage is combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you have more than one Saving Grace enter the battlefield in one turn, all damage that would be dealt at once to you and/or permanents you control is dealt to one of the enchanted creatures of your choice. It's not dealt to all of them, and you can't split the damage between them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
