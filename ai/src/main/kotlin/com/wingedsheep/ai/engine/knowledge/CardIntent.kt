@@ -454,6 +454,16 @@ enum class IntentTag {
     CAST_BAN,
 
     /**
+     * Makes an opponent's spells cost more — Thalia's "noncreature spells your opponents cast cost
+     * {1} more", God-Pharaoh's Statue's "spells your opponents cast cost {2} more". Softer than a
+     * [CAST_BAN]: nothing is stopped, every matching spell is a turn slower, so the tag carries no
+     * timing ([HoldPolicy] reads only the ban). Like the ban, its payoff is spells that come late or
+     * never, which no board simulation sees. A tax on spells aimed at our permanents is the
+     * ward-like [PROTECTION] instead; a symmetric tax (Sphere of Resistance) earns no tag.
+     */
+    SPELL_TAX,
+
+    /**
      * Makes an opponent's creatures attack this turn if able — Imaginary Threats' "creatures target
      * opponent controls attack this turn if able", Kardur's "each creature your
      * opponents control attacks … if able".

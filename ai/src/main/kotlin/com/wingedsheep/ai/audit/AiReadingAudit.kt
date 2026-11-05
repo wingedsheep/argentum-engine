@@ -727,6 +727,7 @@ object AiReadingAudit {
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
         IntentTag.CAST_BAN -> "stops opponents casting spells"
+        IntentTag.SPELL_TAX -> "makes opponents' spells cost more"
         IntentTag.FORCED_ATTACK -> "makes an opponent's creatures attack"
         IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
