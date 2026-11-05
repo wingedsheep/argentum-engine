@@ -201,8 +201,12 @@ object CardIntentAnalyzer {
      * (its effect can be rewritten by text-changing effects and X), so there is no sound key. The
      * fold is one pass over an effect tree and the only caller walks a stack of at most a few.
      */
-    fun analyzeEffect(effect: Effect, requirements: List<TargetRequirement> = emptyList()): CardIntent {
-        val tags = pipelineTags(effect).toMutableSet()
+    fun analyzeEffect(
+        effect: Effect,
+        requirements: List<TargetRequirement> = emptyList(),
+        turnAhead: Boolean = false,
+    ): CardIntent {
+        val tags = pipelineTags(effect, turnAhead).toMutableSet()
         var removalReach: Int? = null
         for (leaf in readingLeaves(effect, requirements)) {
             tags += tagsOf(leaf)
@@ -248,6 +252,7 @@ object CardIntentAnalyzer {
             EffectWalker.slots(script).map { it.effect } +
                 script.stateTriggeredAbilities.map { it.effect }
         }
+        val turnAheadRoots = scripts.flatMap { script -> EffectWalker.slots(script).filter { it.turnAhead }.map { it.effect } }
         val leaves = scripts.flatMap { script ->
             EffectWalker.slots(script).flatMap { readingLeaves(it.effect, it.targets) } +
                 script.stateTriggeredAbilities.flatMap { readingLeaves(it.effect) }
@@ -275,7 +280,7 @@ object CardIntentAnalyzer {
             }
         }
 
-        for (root in roots) tags += pipelineTags(root)
+        for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root })
         if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
         for (effect in leaves) {
             tags += tagsOf(effect)
@@ -458,6 +463,10 @@ object CardIntentAnalyzer {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
                 is DealDamageEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
+                // Pulling our own attacker out of combat (Reconnaissance) saves it — no answer to
+                // anything; [tagsOf] reads the move off any other creature as one.
+                is RemoveFromCombatEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
                     else listOf(leaf)
                 // "After that turn, that player takes an extra turn" aimed at a target opponent
                 // (Emrakul, the Promised End) is the price of the hijack, not a turn of ours.
@@ -677,8 +686,8 @@ object CardIntentAnalyzer {
      * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
      * fold sees a gather and a move, each worth nothing alone.
      */
-    internal fun pipelineTags(root: Effect): Set<IntentTag> = buildSet {
-        addAll(digTags(root))
+    internal fun pipelineTags(root: Effect, turnAhead: Boolean = false): Set<IntentTag> = buildSet {
+        addAll(digTags(root, turnAhead))
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(regrowthTags(root))
@@ -1000,8 +1009,16 @@ object CardIntentAnalyzer {
      * Primal Storm; Gix's and Kotis's spins on it) puts spells on the stack that never cost a card
      * from hand — the impulse with its window closed at resolution instead of at cleanup, which is
      * no loss, since nothing waits to be spent later.
+     *
+     * So does offering them one at a time: "for each of those cards, put that card into your hand
+     * unless any opponent pays 3 life" (Sword-Point Diplomacy) — a for-each over the gathered cards
+     * whose body moves each into our hand, directly or behind an opponents' punisher payment. The
+     * opponent picks which, but either branch is ours: the card, or the life it cost them.
+     *
+     * [turnAhead] — the slot is a trigger at the start of our own turn ([EffectWalker.firesWithItsTurnAhead]) —
+     * lets a "this turn" impulse read as a draw too: see [isLastingImpulse].
      */
-    private fun digTags(root: Effect): Set<IntentTag> {
+    private fun digTags(root: Effect, turnAhead: Boolean = false): Set<IntentTag> {
         val leaves = readingLeaves(root)
         val fromOurTop = collectionsFromTop(leaves) { it == Player.You }
         val fromAnyTop = collectionsFromTop(leaves) { true }
@@ -1009,9 +1026,25 @@ object CardIntentAnalyzer {
             it is MoveCollectionEffect && it.from in fromOurTop &&
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
         }
-        val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromAnyTop && isLastingImpulse(it) }
+        val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromAnyTop && isLastingImpulse(it, turnAhead) }
         val castsThemNow = leaves.any { it is CastAnyNumberFromCollectionWithoutPayingCostEffect && it.from in fromAnyTop }
-        return if (movesThemToOurHand || grantsThemToUs || castsThemNow) setOf(IntentTag.DRAW) else emptySet()
+        val offersThemToOurHand = leaves.any {
+            it is ForEachEffect && (it.space as? IterationSpace.Collection)?.collection in fromOurTop &&
+                EffectWalker.payoffLeaves(it.body).any(::putsTheIteratedCardIntoHand)
+        }
+        return if (movesThemToOurHand || grantsThemToUs || castsThemNow || offersThemToOurHand) setOf(IntentTag.DRAW) else emptySet()
+    }
+
+    /**
+     * The body step of a for-each over our gathered cards that puts the one iterated into its owner's
+     * (our) hand — directly, or as what happens when no opponent pays to stop it (the punisher shape;
+     * an opponent paying spends a resource of theirs, so either branch is a payoff of ours).
+     */
+    private fun putsTheIteratedCardIntoHand(leaf: Effect): Boolean = when (leaf) {
+        is MoveToZoneEffect -> leaf.target == EffectTarget.IterationEntity && leaf.destination == Zone.HAND
+        is AnyPlayerMayPayEffect -> leaf.eligiblePlayers == Player.EachOpponent &&
+            leaf.consequenceIfNonePaid?.let { EffectWalker.payoffLeaves(it).any(::putsTheIteratedCardIntoHand) } == true
+        else -> false
     }
 
     /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
@@ -1033,11 +1066,15 @@ object CardIntentAnalyzer {
      * of in hand. One that closes this turn ("until end of turn", "until your next end step") is not
      * read as one: a DRAW reading earns the idle-mana and end-step windows, and cards that must be
      * spent before cleanup are worth nothing cast into them.
+     *
+     * Unless the grant is made at the start of our own turn ([turnAhead]: an "at the beginning of
+     * your upkeep" trigger, Vance's Blasting Cannons): the ability is never ours to time, and both
+     * main phases of the turn are still ahead to spend the card in, as a card drawn that turn is.
      */
-    private fun isLastingImpulse(grant: GrantMayPlayFromExileEffect): Boolean =
+    private fun isLastingImpulse(grant: GrantMayPlayFromExileEffect, turnAhead: Boolean = false): Boolean =
         grant.recipient == EffectTarget.Controller && !grant.ownerControls && grant.condition == null &&
             when (val expiry = grant.expiry) {
-                MayPlayExpiry.EndOfTurn -> false
+                MayPlayExpiry.EndOfTurn -> turnAhead
                 is MayPlayExpiry.UntilControllerStep -> !expiry.includeCurrentTurn
                 else -> true
             }
@@ -1155,6 +1192,15 @@ object CardIntentAnalyzer {
         // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
         // the battlefield, shut off — the Pacifism reading without the static.
         is RemoveAllAbilitiesEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.NEUTRALIZE) else emptySet()
+
+        // "Untap target attacking creature an opponent controls and remove it from combat" (Spires
+        // of Orazca, Labyrinth of Skophos): the attacker deals no damage and the blocker blocks
+        // nothing — one creature shut off for the combat, still on the battlefield. Our own creature
+        // pulled out is dropped by [readingLeaves]; the source itself (Gustcloak Runner) is no answer,
+        // and neither is the creature that triggered it (Gustcloak Savior's own blocked attacker).
+        is RemoveFromCombatEffect ->
+            if (hitsAnotherPermanent(effect.target) && effect.target != EffectTarget.TriggeringEntity) setOf(IntentTag.NEUTRALIZE)
+            else emptySet()
 
         // Explore looks at the top card and keeps it or bins it — a scry's card flow — and the land
         // it finds goes to hand or the explorer gets a +1/+1 counter. That counter on another

@@ -401,7 +401,7 @@ object AiReadingAudit {
             ) {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
-                intent(trigger.effect, sink, reqs)
+                intent(trigger.effect, sink, reqs, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger))
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
@@ -495,7 +495,7 @@ object AiReadingAudit {
      * Intent per ability, not per leaf: a pipeline's plumbing ("shuffle", "select from the gathered
      * cards") earns no tag of its own and needs none when a sibling leaf reads the ability.
      */
-    private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>) {
+    private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>, turnAhead: Boolean = false) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
         val noIntent = { leaf: Effect ->
@@ -509,7 +509,7 @@ object AiReadingAudit {
                 (leaf is MoveToZoneEffect &&
                     CardIntentAnalyzer.graveyardMoveOf(leaf, reqs) == CardIntentAnalyzer.GraveyardMove.OWN_EXILE)
         }
-        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs).tags
+        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
         if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {

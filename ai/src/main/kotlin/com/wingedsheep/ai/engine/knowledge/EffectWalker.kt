@@ -5,7 +5,10 @@ import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
@@ -183,7 +186,19 @@ object EffectWalker {
         val origin: Origin,
         val targets: List<TargetRequirement> = emptyList(),
         val activationManaValue: Int = 0,
+        /** A trigger that fires at the start of its controller's turn — see [firesWithItsTurnAhead]. */
+        val turnAhead: Boolean = false,
     )
+
+    /**
+     * "At the beginning of your upkeep" / "your draw step": a trigger that resolves with its
+     * controller's whole turn — both main phases — still ahead. What it grants "this turn" (Vance's
+     * Blasting Cannons' exiled card) can be spent as freely as a card drawn that turn.
+     */
+    fun firesWithItsTurnAhead(trigger: TriggeredAbility): Boolean {
+        val pattern = trigger.trigger as? EventPattern.StepEvent ?: return false
+        return pattern.player == Player.You && (pattern.step == Step.UPKEEP || pattern.step == Step.DRAW)
+    }
 
     /**
      * Every effect slot on [script] that the walk knows how to read: the spell effect, each
@@ -197,7 +212,7 @@ object EffectWalker {
     fun slots(script: CardScript): List<Slot> = buildList {
         script.spellEffect?.let { add(Slot(it, Origin.SPELL, script.targetRequirements)) }
         script.triggeredAbilities.forEach {
-            add(Slot(it.effect, Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements))
+            add(Slot(it.effect, Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements, turnAhead = firesWithItsTurnAhead(it)))
         }
         script.activatedAbilities
             .filterNot { it.isManaAbility }
