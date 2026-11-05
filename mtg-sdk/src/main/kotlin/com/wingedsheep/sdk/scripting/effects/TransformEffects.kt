@@ -70,18 +70,24 @@ enum class ReturnFace { TRANSFORMED, FRONT, BACK }
  *
  * Used by both directions of the cycle: the front face's activated/triggered ability returns it
  * [TRANSFORMED] (front → back Saga), and the back Saga's final chapter returns it [FRONT].
+ *
+ * [controllerOverride] names the player the returned permanent enters under, the same axis as
+ * [ReturnSelfFromZoneTransformedEffect.controllerOverride]: null is the owner (the eikons), and
+ * [EffectTarget.Controller] is "return it to the battlefield transformed **under your control**"
+ * (Conqueror's Galleon), which differs from the owner when the ability's controller doesn't own it.
  */
 @SerialName("ExileAndReturnTransformed")
 @Serializable
 data class ExileAndReturnTransformedEffect(
     val target: EffectTarget = EffectTarget.Self,
-    val returnAs: ReturnFace = ReturnFace.TRANSFORMED
+    val returnAs: ReturnFace = ReturnFace.TRANSFORMED,
+    val controllerOverride: EffectTarget? = null
 ) : Effect, SelfReferentialDescription {
     override val descriptionTemplate: String = when (returnAs) {
         ReturnFace.TRANSFORMED -> "Exile ${target.selfNounToken}, then return it to the battlefield transformed"
         ReturnFace.FRONT -> "Exile ${target.selfNounToken}, then return it to the battlefield front face up"
         ReturnFace.BACK -> "Exile ${target.selfNounToken}, then return it to the battlefield back face up"
-    }
+    } + (if (controllerOverride != null) " under your control" else "")
     override val description: String get() = defaultResolvedDescription
 }
 

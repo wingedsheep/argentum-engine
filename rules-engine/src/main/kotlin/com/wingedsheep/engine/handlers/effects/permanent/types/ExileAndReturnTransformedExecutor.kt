@@ -16,7 +16,8 @@ import kotlin.reflect.KClass
  * Executor for [ExileAndReturnTransformedEffect] (FIN "Dominant" / eikon transform).
  *
  * Models the "Exile [this], then return it to the battlefield transformed under its owner's
- * control" templating: the target double-faced permanent leaves the battlefield and a brand-new
+ * control" templating (or "under your control" via
+ * [ExileAndReturnTransformedEffect.controllerOverride]): the target double-faced permanent leaves the battlefield and a brand-new
  * object enters on the requested face. Two zone changes happen atomically inside this single
  * resolution — no priority or state-based actions in between — so the permanent is only momentarily
  * in exile, matching the single-instruction oracle wording.
@@ -66,6 +67,10 @@ class ExileAndReturnTransformedExecutor(
             ReturnFace.BACK -> DoubleFacedComponent.Face.BACK
         }
 
+        // "...under your control" (Conqueror's Galleon): the ability's controller, not the owner.
+        // Resolved before the exile, while the source is still on the battlefield.
+        val controllerId = effect.controllerOverride?.let { context.resolveTarget(it, state) }
+
         // 1. Exile from the battlefield. The permanent ceases to exist as its current object;
         //    leaves-the-battlefield triggers fire and attachments come off via standard cleanup.
         val exileTransition = zones.moveToZone(state, targetId, Zone.EXILE)
@@ -79,7 +84,9 @@ class ExileAndReturnTransformedExecutor(
         }
 
         // 2. Flip to the destination face and return it to the battlefield as a new object.
-        val returnTransition = returnDfcFace(zones, newState, cardRegistry, targetId, destinationFace)
+        val returnTransition = returnDfcFace(
+            zones, newState, cardRegistry, targetId, destinationFace, controllerId = controllerId
+        )
         newState = returnTransition.state
         events.addAll(returnTransition.events)
 

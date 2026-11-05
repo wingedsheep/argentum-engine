@@ -2290,6 +2290,9 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   (the opposite face — front→back), `FRONT` ("return it front face up" — the eikon Saga's final chapter flips
   back to the legend), or `BACK`. The front face's activated ability is sorcery-speed
   (`timing = TimingRule.SorcerySpeed`); Jecht uses it from a "may" combat-damage trigger instead.
+  `underYourControl = true` (`controllerOverride = EffectTarget.Controller`) is "…transformed **under your
+  control**" — it re-enters under the ability's controller, not its owner (Conqueror's Galleon, delayed to end of
+  combat via `CreateDelayedTrigger(step = Step.END_COMBAT, …)`).
 - `Meld(partner, into, tappedAndAttacking = false)` — CR 701.42 meld: "If you both own and control [this] and a
   [partner], exile them, then meld them into [into]." Put it on the one meld card that prints the ability (CR 712.4a);
   its source is always that card. `partner` names the other card with its type — `Filters.Creature.named("Bruna, the

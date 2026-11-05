@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -771,6 +772,9 @@ object AiReadingAudit {
         // Transforming another permanent stays flagged.
         if (leaf is TransformEffect && leaf.target == EffectTarget.Self) return true
         if (leaf is ReturnSelfFromExileTransformedEffect) return true
+        // "Exile this, then return it transformed" (the FIN eikons, Conqueror's Galleon's end-of-combat
+        // flip into a land) is the same self-transform as a new object: no target, nothing to time.
+        if (leaf is ExileAndReturnTransformedEffect && leaf.target == EffectTarget.Self) return true
         // A permanent animating itself (a manland, "this artifact becomes a 3/3 until end of turn") has
         // no target and is no spell to hold: when to activate it is the timing check's question and
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
