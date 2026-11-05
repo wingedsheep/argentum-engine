@@ -47,6 +47,15 @@ class CardAsksTest : FunSpec({
         answers("Garruk's Packleader", "Grizzly Bears") shouldBe false
     }
 
+    test("a free-cycling static asks for the deck's cycling cards") {
+        // New Perspectives: "you may pay {0} rather than pay cycling costs" — cycling and
+        // typecycling cards feed it; a card with no cycling doesn't.
+        read("New Perspectives").asks shouldHaveSize 1
+        answers("New Perspectives", "Hieroglyphic Illumination") shouldBe true
+        answers("New Perspectives", "Twisted Abomination") shouldBe true
+        answers("New Perspectives", "Grizzly Bears") shouldBe false
+    }
+
     test("an ask every deck answers is no ask") {
         // "Creatures you control get +1/+1": every limited deck feeds it.
         read("Glorious Anthem").asks.shouldBeEmpty()

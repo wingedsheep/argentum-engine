@@ -2397,6 +2397,28 @@ data object FreeFirstEquipEachTurn : StaticAbility {
 }
 
 /**
+ * The controller may pay {0} rather than pay the cycling costs of the cards they cycle — New
+ * Perspectives' "As long as you have seven or more cards in hand, you may pay {0} rather than pay
+ * cycling costs", gated with a [ConditionalStaticAbility]. Typecycling is cycling (CR 702.29e), so
+ * it is free too, as is cycling granted by another permanent.
+ *
+ * The {0} is an alternative cost for the activation (CR 601.2f via CR 602.2b): it replaces the
+ * printed cycling cost, and cost increases and reductions still apply on top of it — a Tithe Taker
+ * tax makes the cycle cost {1}. A cycling cost with {X} is cycled free with X = 0 (an alternative
+ * cost without X sets X to 0, CR 107.3); announcing a larger X opts out of the {0} and pays the
+ * printed cost.
+ *
+ * Not [FreeFirstEquipEachTurn] — that is a once-each-turn permission keyed to equip abilities and
+ * the per-turn equip counter; not [ReduceActivatedAbilityCost] — a generic-mana reduction can't
+ * remove coloured pips, and it isn't an alternative cost.
+ */
+@SerialName("FreeCyclingCosts")
+@Serializable
+data object FreeCyclingCosts : StaticAbility {
+    override val description: String = "You may pay {0} rather than pay cycling costs"
+}
+
+/**
  * The controller's equip abilities cost [amount] generic mana less to activate (Éowyn, Lady of
  * Rohan: "Equip abilities you activate cost {1} less to activate"). The engine keys this off
  * `ActivatedAbility.isEquipAbility` and reduces only the generic portion of the equip cost,
