@@ -8196,6 +8196,162 @@
     ]
 }
 
+// Nicol Bolas, the Deceiver
+{
+    "name": "Nicol Bolas, the Deceiver",
+    "manaCost": "{5}{U}{B}{R}",
+    "typeLine": "Legendary Planeswalker — Bolas",
+    "oracleText": "+3: Each opponent loses 3 life unless that player sacrifices a nonland permanent of their choice or discards a card.\n−3: Destroy target creature. Draw a card.\n−11: Nicol Bolas deals 7 damage to each opponent. You draw seven cards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nicol Bolas, the Deceiver:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 3
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "Choice",
+                            "options": [
+                                {
+                                    "type": "PayAtom",
+                                    "atom": {
+                                        "type": "AtomSacrifice",
+                                        "filter": "nonland permanent"
+                                    }
+                                },
+                                {
+                                    "type": "PayAtom",
+                                    "atom": "AtomDiscard"
+                                }
+                            ]
+                        },
+                        "suffer": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Controller"
+                        },
+                        "consequenceDescription": "lose 3 life"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Each opponent loses 3 life unless that player sacrifices a nonland permanent of their choice or discards a card."
+            },
+            {
+                "id": "Nicol Bolas, the Deceiver:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy target creature. Draw a card."
+            },
+            {
+                "id": "Nicol Bolas, the Deceiver:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -11
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Nicol Bolas deals 7 damage to each opponent. You draw seven cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74239d78-1608-4b27-b2fd-8c7453f6b86b.jpg?1783935986",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "While resolving Nicol Bolas's first ability, your opponent chooses a card to be discarded without revealing it, chooses a nonland permanent to be sacrificed, or chooses to do neither. Then that player discards that card, sacrifices that permanent, or loses 3 life. Your opponent can always choose to lose 3 life, even if they have cards to discard or nonland permanents to sacrifice."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the target of Nicol Bolas's second ability becomes illegal, the ability doesn't resolve and you won't draw a card. If that target is legal but can't be destroyed, most likely because it has indestructible, you still draw a card."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Nicol Bolas's third ability causes each opponent to have 0 or less life, but it also causes you to try to draw more cards than you have in your library, the game ends in a draw."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Nimble Obstructionist
 {
     "name": "Nimble Obstructionist",
@@ -8395,6 +8551,271 @@
             }
         ]
     },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nissa's Encouragement
+{
+    "name": "Nissa's Encouragement",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library and graveyard for a card named Forest, a card named Brambleweft Behemoth, and a card named Nissa, Genesis Mage. Reveal those cards, put them into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Library",
+                            "Graveyard"
+                        ],
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Forest"
+                                                },
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Brambleweft Behemoth"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "NameEquals",
+                                            "name": "Nissa, Genesis Mage"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for a card named Forest, a card named Brambleweft Behemoth, and a card named Nissa, Genesis Mage",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Tommy Arnold",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a489d5c7-ef57-4973-86ac-06234c308c3c.jpg?1783935985",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "You can find any or all of the cards listed with Nissa's Encouragement. You could even find none, but that wouldn't be very encouraging."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Nissa's Encouragement can't be used to find a card with the land type Forest that isn't also named Forest (such as Sheltered Thicket from the Amonkhet set)."
+            }
+        ],
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nissa, Genesis Mage
+{
+    "name": "Nissa, Genesis Mage",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "+2: Untap up to two target creatures and up to two target lands.\n−3: Target creature gets +5/+5 until end of turn.\n−10: Look at the top ten cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Genesis Mage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "gathered0",
+                            "tap": false
+                        }
+                    ],
+                    "descriptionOverride": "Untap up to two target creatures and up to two target lands."
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Genesis Mage:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Genesis Mage:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "filter": "creature|land",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Put any number of creature and/or land cards onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Put on the bottom of your library",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2923c85a-4022-4cda-bcbb-bb000137f64f.jpg?1783935987",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "You can activate Nissa's first ability with fewer than four targets. For example, you could target one creature and two lands, or no creatures and two lands. You could even choose no targets at all."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "While resolving Nissa's last ability, all creatures and lands put onto the battlefield this way enter at the same time. If any have triggered abilities that trigger on something else entering the battlefield, they'll see each other."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "GREEN"
     ]
@@ -10943,6 +11364,275 @@
     "colorIdentityOverride": []
 }
 
+// Sidewinder Naga
+{
+    "name": "Sidewinder Naga",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "As long as you control a Desert or there is a Desert card in your graveyard, this creature gets +1/+0 and has trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Those who embrace the harsh land rather than fight it find they have a powerful ally.\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3786d75-1a8a-4917-aa98-6836df1b9145.jpg?1783936013",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn’t matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sifter Wurm
+{
+    "name": "Sifter Wurm",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Trample\nWhen this creature enters, scry 3, then reveal the top card of your library. You gain life equal to that card's mana value.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sifter Wurm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 3
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "RevealCollection",
+                                    "from": "gathered0"
+                                },
+                                {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "StoredCardManaValue",
+                                        "collectionName": "gathered0"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "\"Rhonas's monument belongs to the wurms now. Look elsewhere for refuge.\"\n—Arnun, vizier of the menagerie",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dbaf7e3-e2fc-4399-aa83-c13df43008a0.jpg?1783936012",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Once Sifter Wurm's triggered ability begins to resolve, no player may take other actions until it's done. Notably, opponents can't try to change your library after you scry but before you reveal the top card of your library."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "For cards in your library with {X} in their mana costs, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Sinuous Striker
+{
+    "name": "Sinuous Striker",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "{U}: This creature gets +1/-1 until end of turn.\nEternalize—{3}{U}{U}, Discard a card. ({3}{U}{U}, Discard a card, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Snake Warrior with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "ETERNALIZE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sinuous Striker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "eternalize_{3}{U}{U}_Discard a card",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize—{3}{U}{U}, Discard a card ({3}{U}{U}, Discard a card, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed2b97d1-3e69-4305-b1df-947ff64c5043.jpg?1783936048",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Several cards have an eternalize cost that includes \"Discard a card.\" You can't discard the card with eternalize to pay its own cost because the card has to be in your graveyard to begin activating its eternalize ability."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Solemnity
 {
     "name": "Solemnity",
@@ -11029,6 +11719,81 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Spellweaver Eternal
+{
+    "name": "Spellweaver Eternal",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Zombie Snake Wizard",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nAfflict 2 (Whenever this creature becomes blocked, defending player loses 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "PROWESS",
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spellweaver Eternal:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Jason Felix",
+        "flavorText": "\"They were once our brothers and sisters.\"\n—Etha, former Rhet-crop initiate",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6bb7d1a-d606-46a8-a592-648c5d2e7382.jpg?1783936048",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
 }
 
 // Steadfast Sentinel
@@ -11624,6 +12389,152 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7b0404e-0f42-456b-91ce-f960195c4951.jpg?1783935993"
     },
     "colorIdentityOverride": []
+}
+
+// Swarm Intelligence
+{
+    "name": "Swarm Intelligence",
+    "manaCost": "{6}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast an instant or sorcery spell, you may copy that spell. You may choose new targets for the copy.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swarm Intelligence:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, you may copy that spell. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "The Locust God's children were numberless, relentlessly eating away every trace of the city's protection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2bec26d-20ba-4f31-a153-2c93a4f474e5.jpg?1783936046",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Swarm Intelligence can copy the spell even if it's countered before Swarm Intelligence's triggered ability resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell (such as Swarm Intelligence's own ability) won't trigger."
+            }
+        ]
+    }
+}
+
+// Tenacious Hunter
+{
+    "name": "Tenacious Hunter",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Crocodile",
+    "oracleText": "As long as a creature has a -1/-1 counter on it, this creature has vigilance and deathtouch.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "Each",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "MINUS_ONE_MINUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "Each",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "MINUS_ONE_MINUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "The crocodiles of the Broken Lands, long used to feeding on undead flesh, eagerly flooded into Naktamun for a taste of something fresher.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3eec0010-52ab-4bf2-b589-e7fd97c290fe.jpg?1783936012",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "A creature with a -1/-1 counter on it controlled by any player satisfies Tenacious Hunter’s ability."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Tenacious Hunter loses vigilance after attacking, it will remain untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // The Locust God
@@ -12448,6 +13359,83 @@
     ]
 }
 
+// Uncage the Menagerie
+{
+    "name": "Uncage the Menagerie",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to X creature cards with different names that each have mana value X, reveal them, put them into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueEqualsDynamic",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": "XValue"
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for up to X creature cards with different names and mana value X",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "MYTHIC",
+        "artist": "Simon Dominic",
+        "flavorText": "The destruction of Rhonas's monument released his collection upon the city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc4aa918-53b9-4177-a859-f5a8eff09fe5.jpg?1783936013",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If you cast Uncage the Menagerie with X as 0, you'll search your library and shuffle it, but you won't be able to find any cards."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For cards in your library with {X} in their mana costs, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Unconventional Tactics
 {
     "name": "Unconventional Tactics",
@@ -12531,6 +13519,193 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Unesh, Criosphinx Sovereign
+{
+    "name": "Unesh, Criosphinx Sovereign",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Sphinx",
+    "oracleText": "Flying\nSphinx spells you cast cost {2} less to cast.\nWhenever Unesh or another Sphinx you control enters, reveal the top four cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unesh, Criosphinx Sovereign:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Sphinx ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "revealed",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "revealed",
+                            "selection": "ChooseAnyNumber",
+                            "chooser": "Opponent",
+                            "storeSelected": "pileA",
+                            "storeRemainder": "pileB",
+                            "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                            "selectedLabel": "Pile 1",
+                            "remainderLabel": "Pile 2",
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "ChoosePile",
+                            "pileA": "pileA",
+                            "pileB": "pileB",
+                            "storeChosenAs": "keepPile",
+                            "storeOtherAs": "otherPile",
+                            "prompt": "Choose which pile goes to your Hand; the other goes to your Graveyard."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "keepPile",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "otherPile",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Sphinx"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "MYTHIC",
+        "artist": "Adrian Majkrzak",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdd1a8b2-f4ba-45af-9586-98a98834b8bc.jpg?1783936046",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Unesh's cost-reduction ability doesn't reduce the cost to cast itself."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "You (not your opponent) choose which pile to put into your hand and which to put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "A pile can have no cards in it. In this case, you'll choose whether to put all the revealed cards into your hand or into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Unquenchable Thirst
+{
+    "name": "Unquenchable Thirst",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, if you control a Desert or there is a Desert card in your graveyard, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unquenchable Thirst:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Jeremy Wilson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a418b2aa-dbc2-409b-9f19-e16a0ad8cbac.jpg?1783936046",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn't matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For abilities that trigger only if you control a Desert or there is a Desert card in your graveyard, one condition must be true as the ability triggers and one must be true as the ability resolves. They don't have to be the same condition, though. For example, you could sacrifice your only Desert after the ability triggers but before it has resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -12681,6 +13856,236 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Visage of Bolas
+{
+    "name": "Visage of Bolas",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, you may search your library and/or graveyard for a card named Nicol Bolas, the Deceiver, reveal it, and put it into your hand. If you search your library this way, shuffle.\n{T}: Add {U}, {B}, or {R}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Visage of Bolas:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Nicol Bolas, the Deceiver"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Nicol Bolas, the Deceiver to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Nicol Bolas, the Deceiver"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Nicol Bolas, the Deceiver to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Nicol Bolas, the Deceiver"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Nicol Bolas, the Deceiver to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this artifact enters, you may search your library and/or graveyard for a card named Nicol Bolas, the Deceiver, reveal it, and put it into your hand. If you search your library this way, shuffle."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Visage of Bolas:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Visage of Bolas:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Visage of Bolas:4",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f29bbfe2-d59f-4361-8ea4-6a8d1b909769.jpg?1783935983",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -12941,6 +14346,90 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Wasp of the Bitter End
+{
+    "name": "Wasp of the Bitter End",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Insect Horror",
+    "oracleText": "Flying\nWhenever you cast a Bolas planeswalker spell, you may sacrifice this creature. If you do, destroy target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wasp of the Bitter End:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Bolas"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Battlefield"
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": "SacrificeSelf",
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    },
+                    "descriptionOverride": "sacrifice this creature. If you do, destroy target creature"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a Bolas planeswalker spell, you may sacrifice this creature. If you do, destroy target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "As the Second Sun glided into its final position in the sky, a chorus of wings sounded to herald the return of Nicol Bolas.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46d348eb-7db0-4209-8960-c6adc473417d.jpg?1783935984",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "You choose a target for Wasp of the Bitter End's triggered ability right after casting a Bolas planeswalker spell, but you don't choose whether to sacrifice Wasp of the Bitter End or not until that ability resolves. If the creature becomes an illegal target, the entire ability doesn't resolve and you can't sacrifice Wasp of the Bitter End."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Wildfire Eternal

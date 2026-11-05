@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4460 Aims untaps of its own chosen targets (Nissa, Genesis Mage's +2) at its own tapped creatures and lands rather than the opponent's, reads that +2 as ramp, and reads putting creature/land cards off the library top onto the battlefield (Nissa's −10, Collected Company, Animist's Awakening) as card advantage.
 - #4456 Casts a forced attack on the opponent's creatures (Imaginary Threats) in their turn before they attack, the only window "attack this turn if able" binds an attack of theirs, instead of never casting it; reads Kardur, Doomscourge's entry as forcing the opponent's attack.
 - Keeps enough blockers home when the opponent's board holds a "target creature can't block" activation it can pay for on its turn: the crack-back now plays that activation out against our blockers.
 - #4454 Aims "N damage divided as you choose among …" (Arc Lightning, Electrolyze, Lukka's −4, Huatli, Warrior Poet's −X) at opponents' creatures and players instead of choosing its targets blind, and "distribute N +1/+1 counters among …" / "double the +1/+1 counters on …" (Armament Corps, Biogenic Upgrade, Kalonian Hydra) at its own creatures as a pump; no longer reads an X-sized division as damage that answers only toughness 0.
