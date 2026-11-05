@@ -37,6 +37,7 @@ val OneWithTheMultiverse = card("One with the Multiverse") {
         ability = MayCastWithoutPayingManaCost(
             controllerOnly = true,
             oncePerTurn = true,
+            duringYourTurnOnly = true,
             fromZones = setOf(Zone.HAND, Zone.LIBRARY),
         )
     }

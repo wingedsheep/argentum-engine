@@ -18671,7 +18671,8 @@
                 "oncePerTurn": true,
                 "fromZones": [
                     "Hand"
-                ]
+                ],
+                "duringYourTurnOnly": true
             }
         ]
     },

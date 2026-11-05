@@ -2266,6 +2266,8 @@ class CostCalculator(
      *    be [casterId].
      *  - `firstSpellOfTurnOnly` — when true, [casterId] must be the active player and must have
      *    cast no spells yet this turn.
+     *  - `duringYourTurnOnly` — when true, [casterId] must be the active player.
+     *  - `oncePerTurn` — when true, this source must not have granted a free cast yet this turn.
      *
      * Scans every battlefield zone (not just the caster's) so that an opponent's source can
      * still grant the caster their free cast when the source's wording doesn't require
@@ -2300,10 +2302,11 @@ class CostCalculator(
                     if (!state.isActiveTurnFor(casterId)) continue
                     if ((state.playerSpellsCastThisTurn[casterId] ?: 0) > 0) continue
                 }
-                // `oncePerTurn` (Zaffai and the Tempests): only during the caster's own turn, and
-                // only while this specific source hasn't already been used this turn.
+                // `duringYourTurnOnly` (Zaffai and the Tempests' "during each of your turns").
+                if (ability.duringYourTurnOnly && !state.isActiveTurnFor(casterId)) continue
+                // `oncePerTurn` ("Once each turn", As Foretold): only while this specific source
+                // hasn't already been used this turn — on any player's turn.
                 if (ability.oncePerTurn) {
-                    if (!state.isActiveTurnFor(casterId)) continue
                     if (container.has<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()) continue
                 }
                 // The permission may be scoped to a spell type (e.g. Dracogenesis — Dragons only).
@@ -2393,6 +2396,7 @@ class CostCalculator(
             for (ability in statics.abilities) {
                 if (ability !is MayCastWithoutPayingManaCost) continue
                 if (ability.firstSpellOfTurnOnly || ability.oncePerTurn) continue
+                if (ability.duringYourTurnOnly && !state.isActiveTurnFor(casterId)) continue
                 if (!ability.allowsCastFrom(castFromZone)) continue
                 if (ability.controllerOnly && emblemController != casterId) continue
                 if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
@@ -2442,8 +2446,8 @@ class CostCalculator(
                 if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
                     !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState, spellColors = spellColorsFor(state, spellCardDef, casterId))
                 ) continue
+                if (ability.duringYourTurnOnly && !state.isActiveTurnFor(casterId)) continue
                 if (ability.oncePerTurn) {
-                    if (!state.isActiveTurnFor(casterId)) continue
                     if (container.has<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()) continue
                     if (oncePerTurnCandidate == null) oncePerTurnCandidate = entityId
                 } else {

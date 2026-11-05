@@ -159,6 +159,63 @@
     ]
 }
 
+// As Foretold
+{
+    "name": "As Foretold",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, put a time counter on this enchantment.\nOnce each turn, you may pay {0} rather than pay the mana cost for a spell you cast with mana value X or less, where X is the number of time counters on this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "As Foretold:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "TIME",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastWithoutPayingManaCost",
+                "controllerOnly": true,
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "ManaValueAtMostDynamic",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "TIME"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "MYTHIC",
+        "artist": "Tommy Arnold",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f91d225-788e-42fc-9d01-8668f672b717.jpg?1783936527"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Baleful Ammit
 {
     "name": "Baleful Ammit",

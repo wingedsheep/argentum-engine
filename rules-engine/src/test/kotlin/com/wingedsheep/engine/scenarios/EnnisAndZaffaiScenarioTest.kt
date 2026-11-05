@@ -19,7 +19,7 @@ import io.kotest.matchers.shouldNotBe
  *  - **Ennis, Debate Moderator** — the `CARDS_PUT_INTO_EXILE` turn tracker + its end-step
  *    intervening-if counter, plus the ETB blink (exile up to one other creature you control,
  *    return at the next end step).
- *  - **Zaffai and the Tempests** — `MayCastWithoutPayingManaCost(oncePerTurn = true)`: one free
+ *  - **Zaffai and the Tempests** — `MayCastWithoutPayingManaCost(oncePerTurn = true, duringYourTurnOnly = true)`: one free
  *    instant/sorcery cast from hand per your turn, consumed after a single use.
  */
 class EnnisAndZaffaiScenarioTest : ScenarioTestBase() {
@@ -120,6 +120,29 @@ class EnnisAndZaffaiScenarioTest : ScenarioTestBase() {
 
                 withClue("a second free cast this turn is refused — the permission was consumed") {
                     game.freeCast(1, "Divination").error shouldNotBe null
+                }
+            }
+
+            test("offers nothing on an opponent's turn — \"during each of your turns\" (duringYourTurnOnly)") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Zaffai and the Tempests", summoningSickness = false)
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withActivePlayer(2)
+                    .withPriorityPlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bolt = game.state.getHand(game.player1Id).single()
+                withClue("an instant on the opponent's turn is not free under Zaffai") {
+                    game.execute(
+                        CastSpell(
+                            game.player1Id,
+                            bolt,
+                            targets = listOf(com.wingedsheep.engine.state.components.stack.ChosenTarget.Player(game.player2Id)),
+                            useWithoutPayingManaCost = true,
+                        )
+                    ).error shouldNotBe null
                 }
             }
         }

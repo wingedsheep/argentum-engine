@@ -13743,7 +13743,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `GrantAlternativeCastingCost("{0}", listOf(Costs.additional.PayPlayerCounters(CounterType.ENERGY, 1)),
   spellFilter = GameObjectFilter.Creature.manaValueAtMost(3), asThoughFlash = true)`. Like every
   granted alternative cost it is offered for casts from hand only.
-- `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromZones = null)` — a
+- `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromZones = null, duringYourTurnOnly = false)` — a
   battlefield permission to cast a spell without paying its mana cost (CR 118.9). Like every
   "without paying its mana cost" cast (cascade, discover, `PlayWithoutPayingCostComponent`
   permissions), it is priced as a {0} base through the full cost-modifier pipeline
@@ -13752,10 +13752,12 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   a server-initiated free cast the caster can't pay simply isn't cast. Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);
   `firstSpellOfTurnOnly = true` requires the caster to be the active player and to have cast
-  zero spells this turn; `oncePerTurn = true` allows one free cast during each of the caster's own
-  turns (active player only) regardless of how many spells were cast first — unlike
+  zero spells this turn; `oncePerTurn = true` allows one free cast each turn — on **any** player's
+  turn ("Once each turn") — regardless of how many spells were cast first — unlike
   `firstSpellOfTurnOnly`, the caster may cast other spells before using it; each source tracks its
-  own use via `MayCastWithoutPayingCostUsedThisTurnComponent`, cleared at end of turn; `spellFilter`
+  own use via `MayCastWithoutPayingCostUsedThisTurnComponent`, cleared at end of turn;
+  `duringYourTurnOnly = true` limits the permission to turns where the caster is the active player,
+  so "Once during each of your turns" is `oncePerTurn = true, duringYourTurnOnly = true`; `spellFilter`
   restricts *which* spells may be cast for free (card predicates, matched in any zone — default
   `GameObjectFilter.Any` = every spell). `fromZones` restricts the permission to spells cast **from** the listed zones (the zone the
   spell left, CR 601.2a; `null` = any zone): the free cast is offered on each listed zone's cast path
@@ -13766,16 +13768,21 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   than or equal to the number of creatures you control from your hand without paying their mana
   costs") is `MayCastWithoutPayingManaCost(controllerOnly = true, fromZones = setOf(Zone.HAND),
   spellFilter = GameObjectFilter.Any.manaValueAtMostDynamic(DynamicAmounts.creaturesYouControl()))`.
+  **As Foretold** ("Once each turn, you may pay {0} rather than pay the mana cost for a spell you cast
+  with mana value X or less, where X is the number of time counters on As Foretold") is
+  `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn = true, spellFilter =
+  GameObjectFilter.Any.manaValueAtMostDynamic(DynamicAmounts.countersOnSelf(CounterType.TIME)))` —
+  usable on an opponent's turn too (an instant, or a flash creature).
   **One with the Multiverse** ("Once during each of your turns, you may cast a spell from your hand or
   the top of your library without paying its mana cost") is `MayCastWithoutPayingManaCost(
-  controllerOnly = true, oncePerTurn = true, fromZones = setOf(Zone.HAND, Zone.LIBRARY))`; the library
+  controllerOnly = true, oncePerTurn = true, duringYourTurnOnly = true, fromZones = setOf(Zone.HAND, Zone.LIBRARY))`; the library
   variant is offered on the top-of-library cast path, so it needs a play-from-top permission beside it
   (`PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter = GameObjectFilter.Any)`), and one use
   covers both zones. The free variant is offered on the hand, exile and top-of-library cast paths. Whatever the source, a free cast of an {X} spell has X = 0 (CR 107.3b): the
   enumerator never asks for X on the free variant, and `CastValidator` rejects a free cast announcing
   X > 0. Weftwalking is
   `MayCastWithoutPayingManaCost(firstSpellOfTurnOnly = true)`; Zaffai and the
-  Tempests is `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn = true, spellFilter =
+  Tempests is `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn = true, duringYourTurnOnly = true, spellFilter =
   GameObjectFilter.InstantOrSorcery)` ("Once during each of your turns, you may cast an instant or
   sorcery spell from your hand without paying its mana cost"); Dracogenesis is
   `MayCastWithoutPayingManaCost(controllerOnly = true, spellFilter = GameObjectFilter.Any.withSubtype("Dragon"))`

@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.core.Step
  * - Charred Foyer's upkeep ability is the standard "impulse draw" ([Patterns.Exile.impulse]) with
  *   an end-of-turn play window.
  * - Warped Space is the [MayCastWithoutPayingManaCost] free-cast static, gated to spells cast from
- *   exile (`fromZones = setOf(Zone.EXILE)`) and to once per turn (`oncePerTurn`). "Pay {0}" is an alternative cost
+ *   exile (`fromZones = setOf(Zone.EXILE)`) and to once each turn — on any player's turn (`oncePerTurn`). "Pay {0}" is an alternative cost
  *   of nothing, i.e. casting without paying the mana cost (CR 118.9 — additional/mandatory costs
  *   still apply, X is 0). It pairs naturally with Charred Foyer's impulse-exiled cards but applies
  *   to any spell cast from exile (foretell, adventure-in-exile, etc.).

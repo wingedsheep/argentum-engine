@@ -1133,15 +1133,15 @@ data class MayCastWithoutPayingManaCost(
     val firstSpellOfTurnOnly: Boolean = false,
     val spellFilter: GameObjectFilter = GameObjectFilter.Any,
     /**
-     * When true, the permission may be used at most once during each of the caster's own turns —
-     * unlike [firstSpellOfTurnOnly] (which forces the free cast to be the turn's *first* spell),
-     * the caster may cast other spells first and still use this free cast once. Like
-     * [firstSpellOfTurnOnly] it requires the caster to be the active player ("each of your turns").
+     * When true, the permission may be used at most once each turn ("Once each turn, you may pay
+     * {0} rather than pay the mana cost …") — on any player's turn unless [duringYourTurnOnly] also
+     * holds. Unlike [firstSpellOfTurnOnly] (which forces the free cast to be the turn's *first*
+     * spell), the caster may cast other spells first and still use this free cast once.
      * Each source tracks its own use via
      * `com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent`,
-     * cleared at end of turn. Zaffai and the Tempests:
-     * `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn = true,
-     * spellFilter = GameObjectFilter.InstantOrSorcery)`.
+     * cleared at end of turn. As Foretold: `MayCastWithoutPayingManaCost(controllerOnly = true,
+     * oncePerTurn = true, spellFilter = GameObjectFilter.Any.manaValueAtMostDynamic(
+     * DynamicAmounts.countersOnSelf(CounterType.TIME)))`.
      */
     val oncePerTurn: Boolean = false,
     /**
@@ -1159,7 +1159,14 @@ data class MayCastWithoutPayingManaCost(
      *
      * The engine gates this on the cast's source zone through [allowsCastFrom].
      */
-    val fromZones: Set<Zone>? = null
+    val fromZones: Set<Zone>? = null,
+    /**
+     * When true, the permission applies only while the caster is the active player ("during each
+     * of your turns"). Pairs with [oncePerTurn] for "Once during each of your turns, you may cast …
+     * without paying its mana cost" — Zaffai and the Tempests, One with the Multiverse.
+     * ([firstSpellOfTurnOnly] already implies it: "the first spell … during each of their turns".)
+     */
+    val duringYourTurnOnly: Boolean = false
 ) : StaticAbility {
     init {
         require(fromZones == null || fromZones.isNotEmpty()) { "fromZones must be null (any zone) or non-empty" }

@@ -252,8 +252,11 @@ class CastSpellEnumerator(
             // `hasNoManaCost` flag, not on `manaCost` itself: a printed {0} parses to a non-empty
             // one-symbol cost and stays normally castable, but plenty of test-fixture cards
             // construct `ManaCost.ZERO` directly as shorthand for "free" — `hasNoManaCost` only
-            // reflects a genuinely blank cost string in the real card DSL.
-            if (cardDef.hasNoManaCost) continue
+            // reflects a genuinely blank cost string in the real card DSL. A battlefield
+            // `MayCastWithoutPayingManaCost` permission is one of the ways that CAN cast it (As
+            // Foretold's ruling: a spell with no mana cost has mana value 0), so such a card stays
+            // in the loop with only its free variant on offer — `canAfford` is forced false below.
+            if (cardDef.hasNoManaCost && !context.freeCastPermissionFor(cardId)) continue
 
             // Check timing - sorcery-speed spells need main phase, empty stack, your turn
             val isInstant = cardComponent.typeLine.isInstant
@@ -390,7 +393,9 @@ class CastSpellEnumerator(
             // (Arc Reactor) is worth more as a mana source than as an improvise tap, so the
             // no-taps configuration has to stay reachable on its own.
             val improviseHelp = improviseArtifacts.takeIf { hasImprovise && it.isNotEmpty() }.orEmpty()
-            val canAfford = if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
+            val canAfford = if (cardDef.hasNoManaCost) {
+                false
+            } else if (hasConvoke && convokeCreatures != null && convokeCreatures.isNotEmpty()) {
                 context.manaSolver.canPay(state, playerId, payableCost, spellContext = spellContext, precomputedSources = cachedSources) ||
                     context.costUtils.canAffordWithConvoke(
                         state, playerId, payableCost, convokeCreatures,
