@@ -444,7 +444,6 @@ class CastPermissionUtils(
         return applicable ?: emptyList()
     }
 
-    /** Whether [affected] (interpreted relative to [controllerId]) includes [castingPlayerId]. */
     /**
      * Whether [castingPlayerId] is in a prohibition's [affected] group, read relative to the
      * controller of [sourcePermanentId], the permanent carrying the static. [Player.EnchantedPlayer]
