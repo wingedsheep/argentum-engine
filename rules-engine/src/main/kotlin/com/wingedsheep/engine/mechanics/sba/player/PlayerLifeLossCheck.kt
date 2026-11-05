@@ -64,7 +64,8 @@ internal fun playerCantLoseGame(state: GameState, playerId: EntityId, predicateE
     val team = (if (state.format.playersWinLoseAsTeam) state.teamOf(playerId) else listOf(playerId))
         .toHashSet()
     return ControllerGrants.anyGranting<GrantsCantLoseGameComponent>(state, predicateEvaluator = predicateEvaluator) { it in team } ||
-        ControllerGrants.anyHoldingProjected<GrantCantLoseGame>(state) { it in team }
+        ControllerGrants.anyHoldingProjected<GrantCantLoseGame>(state) { it in team } ||
+        ControllerGrants.anyEmblemGranting<GrantCantLoseGame>(state, predicateEvaluator = predicateEvaluator) { it in team }
 }
 
 /**
@@ -93,5 +94,6 @@ internal fun playerCantLoseGameFromLife(state: GameState, playerId: EntityId, pr
 internal fun playerCantWinGame(state: GameState, playerId: EntityId, predicateEvaluator: PredicateEvaluator): Boolean {
     val opponents = state.getOpponents(playerId).toHashSet()
     return ControllerGrants.anyGranting<GrantsOpponentsCantWinGameComponent>(state, predicateEvaluator = predicateEvaluator) { it in opponents } ||
-        ControllerGrants.anyHoldingProjected<GrantOpponentsCantWinGame>(state) { it in opponents }
+        ControllerGrants.anyHoldingProjected<GrantOpponentsCantWinGame>(state) { it in opponents } ||
+        ControllerGrants.anyEmblemGranting<GrantOpponentsCantWinGame>(state, predicateEvaluator = predicateEvaluator) { it in opponents }
 }

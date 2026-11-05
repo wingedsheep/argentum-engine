@@ -98,6 +98,7 @@ import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
@@ -388,6 +389,7 @@ object TargetPolarityAnalyzer {
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
+        val stored = EffectWalker.leaves(effect).filterIsInstance<StoreNumberEffect>().associate { it.name to it.amount }
         val blinks = EffectWalker.blinkMoves(effect) + EffectWalker.delayedBlinks(targetLeaves(effect))
         for (move in blinks.filterIsInstance<MoveToZoneEffect>()) slotOf(move.target, requirements)?.let { slot ->
             // An unrestricted blink can remove their token or recover a stolen permanent.
@@ -532,7 +534,7 @@ object TargetPolarityAnalyzer {
             }
             if (leaf is GatherCardsEffect) {
                 val top = leaf.source as? CardSource.TopOfLibrary
-                if (top?.isMill == true) {
+                if (top != null) {
                     val slot = when (val player = top.player) {
                         Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
                             requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
@@ -542,7 +544,8 @@ object TargetPolarityAnalyzer {
                             .takeIf { it >= 0 }
                         else -> null
                     }
-                    slot?.let { perSlot[it] += TargetPolarity.HARMFUL }
+                    val reading = if (top.isMill) TargetPolarity.HARMFUL else libraryTopPolarity(leaf.storeAs, effect)
+                    if (reading != null) slot?.let { perSlot[it] += reading }
                 }
             }
             val recursion = recursionSlot(leaf, requirements)
@@ -571,7 +574,7 @@ object TargetPolarityAnalyzer {
             } else if (gift != null) {
                 perSlot[gift.first] += gift.second
             } else {
-                for ((target, polarity) in classify(withRequirementZone(leaf, requirements), definitions, source)) {
+                for ((target, polarity) in classify(withStoredNumbers(withRequirementZone(leaf, requirements), stored), definitions, source)) {
                     if (target == EffectTarget.TargetController) controllerReadings += polarity
                     val slot = slotOf(target, requirements) ?: continue
                     perSlot[slot] += polarity
@@ -1055,6 +1058,52 @@ object TargetPolarityAnalyzer {
         val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
         val zone = (requirement as? TargetObject)?.filter?.zone ?: return leaf
         return leaf.copy(fromZone = zone)
+    }
+
+    /**
+     * [leaf] with a "+X/+X" whose X is a number the pipeline stored earlier read as that number's
+     * own amount: "the chosen creatures get +X/+X, where X is the difference between their powers"
+     * (Spry and Mighty) stores X once and pumps by it, and a bare variable reads as either sign.
+     */
+    private fun withStoredNumbers(leaf: Effect, stored: Map<String, DynamicAmount>): Effect {
+        if (leaf !is ModifyStatsEffect || stored.isEmpty()) return leaf
+        fun resolve(amount: DynamicAmount) =
+            (amount as? DynamicAmount.VariableReference)?.let { stored[it.variableName] } ?: amount
+        return leaf.copy(powerModifier = resolve(leaf.powerModifier), toughnessModifier = resolve(leaf.toughnessModifier))
+    }
+
+    /**
+     * What the cards gathered off a target player's library top into [collection] do to that player,
+     * when the gather is no mill of its own: "target player mills five cards, then puts each Goblin
+     * card milled this way into their hand" (Grub's Command), "exile the top two cards of target
+     * opponent's library" (Maralen, Fae Ascendant). Cards that only leave for a graveyard, exile or
+     * our hand are their loss, [TargetPolarity.HARMFUL]; some of them handed back to their own hand
+     * makes it [TargetPolarity.FLEXIBLE] — which library it is worth digging depends on the cards.
+     * Null when nothing moves them out (a look, a reorder).
+     */
+    private fun libraryTopPolarity(collection: String, effect: Effect): TargetPolarity? {
+        val leaves = EffectWalker.leaves(effect)
+        val names = hashSetOf(collection)
+        do {
+            val before = names.size
+            for (leaf in leaves) names += CardIntentAnalyzer.derivedCollections(leaf, names)
+        } while (names.size != before)
+        var taken = false
+        var handedBack = false
+        for (move in leaves.filterIsInstance<MoveCollectionEffect>()) {
+            if (move.from !in names) continue
+            val to = move.destination as? CardDestination.ToZone ?: continue
+            when {
+                to.zone == Zone.GRAVEYARD || to.zone == Zone.EXILE -> taken = true
+                to.zone == Zone.HAND && to.player == Player.You -> taken = true
+                to.zone == Zone.HAND -> handedBack = true
+            }
+        }
+        return when {
+            taken && handedBack -> TargetPolarity.FLEXIBLE
+            taken -> TargetPolarity.HARMFUL
+            else -> null
+        }
     }
 
     /** Whether [requirement]'s filter keeps its target on an opponent's side ("… an opponent controls"). */

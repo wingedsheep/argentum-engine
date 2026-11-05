@@ -29,6 +29,8 @@ Format — newest first, one bullet each:
 ## Changes
 
 - #4484 Prices permanents by what they still do in play: a hand-only ability (Gideon's Memorial) or an exile of its own creature (Identity Echo) no longer makes a permanent "repeatable removal", a discard-a-card-to-draw rummager (Murmuring Volume, Hallway Heckler) is card selection rather than a card-draw engine, and blinking your own creature (Cloudshift) reads as protection, not removal.
+- Reads "you can't lose the game" and "your opponents can't win the game" (Platinum Angel, Gideon of the Trials' emblem) as protection, so a planeswalker ability that hands out that emblem is no longer an unknown effect.
+- Reads "put a creature card from your hand onto the battlefield" as a free spell (and a land as ramp), mass bounce (Sunderflock, Aetherize) as a sweeper, and reveal-until digs (Aurora Awakener, Sanar) as card draw, and values a creature that cheats one in every attack (Kinscaer Sentry, Goblin Lackey) as an engine worth removing.
 - #4480 Holds "one or two target creatures each get +N/+N until end of turn" tricks (Appeal to Eirdu, Coordinated Assault, Tandem Tactics) for a fight or a response, as it does single-target pumps.
 - #4478 Reads a "you may play those cards until your next end step" impulse as card draw wherever it comes from (Dragonhawk, Fate's Tempest, Questing Druid, Inti, Unlucky Witness), since a main phase is always left before that window closes.
 - Drafts and builds a free-cycling enchantment (New Perspectives) as a payoff its own cycling and typecycling cards feed, instead of reading it as a lone draw-three

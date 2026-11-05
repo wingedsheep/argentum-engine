@@ -2,6 +2,8 @@ package com.wingedsheep.ai.audit
 
 import com.wingedsheep.ai.audit.AiReadingAudit.AbilityKind
 import com.wingedsheep.ai.audit.AiReadingAudit.Check
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -168,12 +170,14 @@ class AiReadingByAbilityTest : FunSpec({
         AiReadingAudit.audit(card("Hoarding Dragon")).map { it.key } shouldBe listOf("intent: Pipeline(FromLinkedExile→hand)")
     }
 
-    test("a return to hand chosen among its controller's own permanents needs no intent, but a bounce that reaches others stays flagged") {
+    test("a return to hand chosen among its controller's own permanents needs no intent, and a bounce that reaches others reads as removal") {
         AiReadingAudit.read(card("Azorius Chancery")).readFully shouldBe true
         AiReadingAudit.read(card("Whitemane Lion")).readFully shouldBe true
-        AiReadingAudit.audit(card("Aetherize")).map { it.key } shouldContain "intent: Pipeline(BattlefieldMatching→hand)"
-        // Over each player, "you" is the player iterated: the opponent returns their own land.
-        AiReadingAudit.audit(card("Confounding Conundrum")).map { it.key } shouldContain "intent: ForEach>Pipeline(BattlefieldMatching→hand)"
+        // "Return all attacking creatures to their owner's hand": a bounce-all, read as a sweeper.
+        AiReadingAudit.audit(card("Aetherize")).map { it.key } shouldNotContain "intent: Pipeline(BattlefieldMatching→hand)"
+        CardIntentAnalyzer.analyze(card("Aetherize")).tags shouldContain IntentTag.SWEEPER
+        // Over each player, "you" is the player iterated: the opponent returns their own land — an edict-shaped bounce.
+        AiReadingAudit.audit(card("Confounding Conundrum")).map { it.key } shouldNotContain "intent: ForEach>Pipeline(BattlefieldMatching→hand)"
     }
 
     test("a permanent setting its own base P/T needs no intent, and setting a target's reads as a combat enhancement") {
