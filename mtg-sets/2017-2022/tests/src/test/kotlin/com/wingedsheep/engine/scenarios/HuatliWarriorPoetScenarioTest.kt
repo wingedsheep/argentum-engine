@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.lea.cards.SamiteHealer
@@ -9,6 +11,7 @@ import com.wingedsheep.mtg.sets.definitions.xln.cards.HuatliWarriorPoet
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import io.kotest.assertions.withClue
@@ -169,6 +172,35 @@ class HuatliWarriorPoetScenarioTest : ScenarioTestBase() {
                     projected.cantBlock(bears) shouldBe false
                 }
                 projected.cantBlock(force) shouldBe true
+            }
+
+            test("a target that became illegal loses its share and isn't dealt damage this way") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Huatli, Warrior Poet")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Force of Nature")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val huatli = game.findPermanent("Huatli, Warrior Poet")!!
+                seedLoyalty(game, huatli, 3)
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val force = game.findPermanent("Force of Nature")!!
+
+                game.execute(ActivateAbility(game.player1Id, huatli, minusX,
+                    targets = listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(force)), xValue = 2,
+                    damageDistribution = mapOf(bears to 1, force to 1))).error shouldBe null
+
+                // The Bears leave in response; they are no longer a legal target.
+                game.state = game.state.moveToZone(bears,
+                    ZoneKey(game.player2Id, Zone.BATTLEFIELD), ZoneKey(game.player2Id, Zone.HAND))
+                game.resolveStack()
+
+                withClue("the Force keeps its announced 1, not the whole X") {
+                    (game.state.getEntity(force)?.get<DamageComponent>()?.amount ?: 0) shouldBe 1
+                }
+                game.state.projectedState.cantBlock(force) shouldBe true
             }
 
             test("a division left to resolution still marks what it damaged") {

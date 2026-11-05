@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -880,6 +881,8 @@ object AiReadingAudit {
         val (counter, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
+            // "Double the +1/+1 counters on this creature" (Dragonsguard Elite) grows its own source.
+            is DoubleCountersEffect -> (leaf.counterType ?: return leaf.target == EffectTarget.Self) to leaf.target
             else -> return false
         }
         // A counter on a player (poison, rad, energy) is a clock or a resource, like life loss: no
