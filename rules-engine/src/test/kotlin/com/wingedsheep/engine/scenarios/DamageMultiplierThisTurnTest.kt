@@ -21,7 +21,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * The multiplying form of the turn-scoped damage replacement (CR 616):
+ * The multiplying form of the turn-scoped damage replacement effect (CR 614):
  * `Effects.DoubleDamageThisTurn` — `AmplifyDamageThisTurnEffect` with `multiplier = 2` — as on
  * Insult // Injury: "If a source you control would deal damage this turn, it deals double that
  * damage instead."

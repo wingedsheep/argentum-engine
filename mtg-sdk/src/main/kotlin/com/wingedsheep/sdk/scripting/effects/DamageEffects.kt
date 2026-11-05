@@ -130,6 +130,9 @@ data class AmplifyDamageThisTurnEffect(
 ) : Effect {
     init {
         require(multiplier >= 1) { "AmplifyDamageThisTurnEffect.multiplier must be at least 1" }
+        require(multiplier == 1 || bonus == DynamicAmount.Fixed(0)) {
+            "AmplifyDamageThisTurnEffect multiplies or adds, never both"
+        }
     }
 
     override val description: String = describe(bonus.description)
@@ -144,7 +147,7 @@ data class AmplifyDamageThisTurnEffect(
             3 -> "triple that damage"
             else -> "$multiplier times that damage"
         }
-        val plus = if (multiplier > 1 && amount == "0") "" else " plus $amount"
+        val plus = if (multiplier > 1) "" else " plus $amount"
         return "Until end of turn, if ${appliesTo.description}, it's $scaled$plus instead"
     }
 

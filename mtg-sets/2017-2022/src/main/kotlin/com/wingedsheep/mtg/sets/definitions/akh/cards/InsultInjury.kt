@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *   Injury deals 2 damage to target creature and 2 damage to target player or planeswalker.
  *
  * Insult installs two turn-scoped effects that outlive the spell: the game-wide "can't be prevented"
- * and an until-end-of-turn doubling replacement (CR 616) scoped to sources Insult's controller
+ * and an until-end-of-turn doubling replacement effect (CR 614) scoped to sources Insult's controller
  * controls. Each Insult doubles once, so two of them quadruple.
  */
 val InsultInjury = card("Insult // Injury") {

@@ -2798,10 +2798,11 @@ object DamageUtils {
             }
         }
 
-        // Turn-duration damage amplification (Taii Wakeen, Perfect Shot; Rankle and Torbran): a
-        // floating +bonus replacement (CR 616) scoped by its own DamageEvent pattern, "you" being the
-        // effect's controller. It outlives the source that installed it, which still answers "this
-        // permanent" when the pattern names it. Multiple installs stack additively.
+        // Turn-duration damage amplification (Taii Wakeen, Perfect Shot; Rankle and Torbran; Insult): a
+        // floating +bonus or ×multiplier replacement scoped by its own DamageEvent pattern, "you" being
+        // the effect's controller. It outlives the source that installed it, which still answers "this
+        // permanent" when the pattern names it. Each install applies once: bonuses add up, multipliers
+        // compound (two Insults quadruple).
         for (floating in state.floatingEffects) {
             val mod = floating.effect.modification
             if (mod !is com.wingedsheep.engine.mechanics.layers.SerializableModification.AmplifyDamage) continue

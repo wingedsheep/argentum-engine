@@ -93,18 +93,22 @@ class InsultInjuryScenarioTest : ScenarioTestBase() {
             val game = scenario().base()
                 .withCardInHand(1, "Insult // Injury")
                 .withCardOnBattlefield(1, "Craw Wurm")
+                .withCardOnBattlefield(1, "Grizzly Bears")
                 .withCardOnBattlefield(2, "Hill Giant")
                 .build()
 
             game.castInsult()
 
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
-            game.declareAttackers(mapOf("Craw Wurm" to 2)).error.shouldBeNull()
+            game.declareAttackers(mapOf("Craw Wurm" to 2, "Grizzly Bears" to 2)).error.shouldBeNull()
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
             game.declareBlockers(mapOf("Hill Giant" to listOf("Craw Wurm"))).error.shouldBeNull()
             game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
 
-            withClue("the Wurm's 6 combat damage is doubled — the Giant dies") {
+            withClue("the unblocked Bears' 2 combat damage is doubled to 4") {
+                game.getLifeTotal(2) shouldBe 16
+            }
+            withClue("the blocked Wurm kills the Giant") {
                 game.findPermanent("Hill Giant").shouldBeNull()
             }
             val wurm = game.findPermanent("Craw Wurm").shouldNotBeNull()
