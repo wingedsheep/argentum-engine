@@ -95,9 +95,10 @@ class ResilientKhenraScenarioTest : ScenarioTestBase() {
         test("if the Khenra has left the battlefield, X is its last-known power") {
             val game = board()
                 .withCardInHand(1, name)
-                .withCardInHand(1, "Shock")
-                .withLandsOnBattlefield(1, "Forest", 2)
-                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withCardInHand(1, "Murder")
+                .withCardInHand(1, "Giant Growth")
+                .withLandsOnBattlefield(1, "Forest", 4)
+                .withLandsOnBattlefield(1, "Swamp", 4)
                 .build()
             val bears = game.findPermanent("Grizzly Bears")!!
 
@@ -108,14 +109,15 @@ class ResilientKhenraScenarioTest : ScenarioTestBase() {
                 game.selectTargets(listOf(bears)).error shouldBe null
             }
 
-            withClue("Shock the Khenra in response to its trigger") {
-                game.castSpell(1, "Shock", khenra).error shouldBe null
+            withClue("in response to its trigger, Murder the Khenra, then pump it on top so it dies as a 5/5") {
+                game.castSpell(1, "Murder", khenra).error shouldBe null
+                game.castSpell(1, "Giant Growth", khenra).error shouldBe null
             }
             game.resolveStack()
             game.answerTrigger(bears, accept = true)
 
             game.findPermanent(name) shouldBe null
-            withClue("X uses the Khenra's last-known power 2") { game.statsOf(bears) shouldBe (4 to 4) }
+            withClue("X uses the Khenra's last-known power 5, not its printed 2") { game.statsOf(bears) shouldBe (7 to 7) }
         }
     }
 }
