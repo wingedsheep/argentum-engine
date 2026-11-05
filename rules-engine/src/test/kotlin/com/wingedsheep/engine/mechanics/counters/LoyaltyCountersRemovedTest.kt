@@ -157,6 +157,24 @@ class LoyaltyCountersRemovedTest : FunSpec({
         d.getLifeTotal(d.player2) shouldBe 26
     }
 
+    test("lethal combat damage fires it once even though the step's SBA already took the walker") {
+        val d = newDriver()
+        val pw = d.walkerWith(d.player2, 2)
+        val a = d.putCreatureOnBattlefield(d.player1, "Centaur Courser")
+        d.removeSummoningSickness(a)
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(d.player1, mapOf(a to pw)).error shouldBe null
+        d.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        d.declareNoBlockers(d.player2)
+        d.passPriorityUntil(Step.COMBAT_DAMAGE)
+
+        d.state.getBattlefield().contains(pw) shouldBe false
+        d.events.loyaltyRemovals(pw).single().amount shouldBe 2
+        d.state.stack.size shouldBe 1
+        d.bothPass()
+        d.getLifeTotal(d.player2) shouldBe 22
+    }
+
     test("leaving the battlefield without losing counters doesn't fire it") {
         val d = newDriver()
         val pw = d.walkerWith(d.player1, 3)

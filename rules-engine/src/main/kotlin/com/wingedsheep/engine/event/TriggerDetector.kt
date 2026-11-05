@@ -388,6 +388,9 @@ class TriggerDetector(
         // The same look-back for "a creature dealt damage by this creature this turn dies" whose
         // damaging creature died alongside its victim (Dread Slaver trading in combat).
         deathAndLeaveDetector.detectDepartedDamagingSourceDiesTriggers(state, index.statics, events, triggers)
+        // "Whenever counters are removed from this" on a permanent the same batch then took off the
+        // battlefield (Chandra, Fire Artisan dying to combat damage).
+        deathAndLeaveDetector.detectDepartedCounterRemovalTriggers(state, index.statics, events, triggers)
 
         // Detect "whenever one or more cards are put into your graveyard from your library"
         // batching triggers (e.g., Sidisi, Brood Tyrant). Groups library→graveyard zone changes
