@@ -8,6 +8,7 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * An "Enchant player" Aura reaches the player it enchants through their actions ("enchanted
@@ -38,6 +39,12 @@ class EnchantedPlayerCurseReadingAiTest : ScenarioTestBase() {
                 TargetPolarityAnalyzer.forSpell(card("Torment of Scarabs")) shouldBe listOf(TargetPolarity.HARMFUL)
             }
             CardIntentAnalyzer.analyze(card("Torment of Scarabs")).tags shouldContain IntentTag.DISCARD
+        }
+
+        test("a gift to the enchanted player is not read as aiming the Aura at our own side") {
+            withClue("Tenuous Truce enchants an opponent though both players draw; BENEFICIAL would filter every cast") {
+                TargetPolarityAnalyzer.forSpell(card("Tenuous Truce")) shouldNotBe listOf(TargetPolarity.BENEFICIAL)
+            }
         }
 
         test("an enchanted-creature 'loses all abilities' Aura neutralizes its host") {

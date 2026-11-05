@@ -1578,7 +1578,8 @@ object TargetPolarityAnalyzer {
     /**
      * What a triggered or activated leaf of an "Enchant player" Aura does to the player it
      * enchants: life lost, damage dealt, or an unless-clause they must pay or suffer from is a
-     * curse; life gained or cards drawn a gift. Null for a leaf that doesn't name them.
+     * curse. Gifts (life, cards) stay unread: Tenuous Truce enchants an opponent yet gives both players
+     * cards, and reading it as BENEFICIAL would aim it only at our own side. Null otherwise.
      */
     private fun enchantedPlayerLeafPolarity(leaf: Effect): TargetPolarity? {
         val enchanted = EffectTarget.PlayerRef(Player.EnchantedPlayer)
@@ -1589,8 +1590,6 @@ object TargetPolarityAnalyzer {
                 leaf.player == enchanted &&
                     EffectWalker.payoffLeaves(leaf.suffer).all { enchantedPlayerLeafPolarity(it) == TargetPolarity.HARMFUL }
             }
-            is GainLifeEffect -> TargetPolarity.BENEFICIAL.takeIf { leaf.target == enchanted }
-            is DrawCardsEffect -> TargetPolarity.BENEFICIAL.takeIf { leaf.target == enchanted }
             else -> null
         }
     }

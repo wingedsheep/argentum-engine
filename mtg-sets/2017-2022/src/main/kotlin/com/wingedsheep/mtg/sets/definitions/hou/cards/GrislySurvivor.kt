@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * 2/3
  * Whenever you cycle or discard a card, this creature gets +2/+0 until end of turn.
  *
- * "Cycle or discard" is a single discard trigger: cycling discards the card (CR 702.29a), so
+ * "Cycle or discard" is a single discard trigger: cycling discards the card (CR 702.29a; once per card, 702.29d), so
  * `Triggers.you.discards()` fires once per cycled card, and wiring `cycles()` as well would
  * double-trigger against the ruling. Same shape as Flameblade Adept.
  */

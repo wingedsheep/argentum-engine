@@ -871,6 +871,7 @@ object CardIntentAnalyzer {
     private fun paidByAnOpponent(payer: EffectTarget, eachPlayer: Player?): Boolean = when (payer) {
         is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
         is EffectTarget.PlayerRef -> payer.player in OPPONENT_PLAYERS || payer.player == Player.EnchantedPlayer ||
+            payer.player == Player.TriggeringPlayer ||
             (payer.player == Player.You && eachPlayer != null && !includesYou(eachPlayer))
         EffectTarget.Controller -> eachPlayer != null && !includesYou(eachPlayer)
         else -> false

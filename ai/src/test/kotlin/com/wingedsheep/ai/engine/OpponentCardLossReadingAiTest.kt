@@ -40,6 +40,9 @@ class OpponentCardLossReadingAiTest : ScenarioTestBase() {
 
         test("an opponent's lose-life-unless-they-discard punisher reads as discard") {
             CardIntentAnalyzer.analyze(card("Torment of Hailfire")).tags shouldContain IntentTag.DISCARD
+            withClue("the triggering player pays: Painful Quandary") {
+                CardIntentAnalyzer.analyze(card("Painful Quandary")).tags shouldContain IntentTag.DISCARD
+            }
         }
     }
 }

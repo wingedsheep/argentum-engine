@@ -17177,7 +17177,7 @@ Tenth District Guard
 Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect
 Tenth District Legionnaire
 Tenth District Veteran
-Tenuous Truce
+Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffect
 Tenured Concocter
 Tenured Inkcaster
 Tenured Oilcaster
