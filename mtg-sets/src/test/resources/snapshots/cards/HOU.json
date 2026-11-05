@@ -4467,6 +4467,130 @@
     ]
 }
 
+// Vizier of the Anointed
+{
+    "name": "Vizier of the Anointed",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, you may search your library for a creature card with eternalize or embalm, put that card into your graveyard, then shuffle.\nWhenever you activate an eternalize or embalm ability, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vizier of the Anointed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    {
+                                                        "type": "And",
+                                                        "predicates": [
+                                                            "IsCreature",
+                                                            {
+                                                                "type": "HasKeyword",
+                                                                "keyword": "ETERNALIZE"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "And",
+                                                        "predicates": [
+                                                            "IsCreature",
+                                                            {
+                                                                "type": "HasKeyword",
+                                                                "keyword": "EMBALM"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a creature card with eternalize or creature with embalm to put into your graveyard",
+                                "selectedLabel": "Put into your graveyard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Vizier of the Anointed:2",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "keywords": [
+                        "ETERNALIZE",
+                        "EMBALM"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68ef426c-b396-4767-b360-435f67207022.jpg?1783936045",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If you activate an eternalize or embalm ability, you’ll draw a card before that ability resolves, but after you’ve paid all of the costs for that ability. If an eternalize ability requires a discard to activate, you’ll need to have another card available to discard."
+            }
+        ]
+    }
+}
+
 // Vizier of the True
 {
     "name": "Vizier of the True",

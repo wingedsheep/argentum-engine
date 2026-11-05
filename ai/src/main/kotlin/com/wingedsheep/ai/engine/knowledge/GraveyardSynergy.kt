@@ -54,7 +54,7 @@ object GraveyardSynergy {
 
     private val GRAVEYARD_KEYWORDS: Set<Keyword> = setOf(
         Keyword.FLASHBACK, Keyword.ESCAPE, Keyword.DELVE, Keyword.DREDGE, Keyword.DISTURB,
-        Keyword.EMBALM, Keyword.UNEARTH, Keyword.HARMONIZE, Keyword.MAYHEM, Keyword.AFTERMATH,
+        Keyword.EMBALM, Keyword.ETERNALIZE, Keyword.UNEARTH, Keyword.HARMONIZE, Keyword.MAYHEM, Keyword.AFTERMATH,
     )
 
     private val ZONE_FIELDS = setOf("activateFromZone", "activeZone", "fromZone", "sourceZone", "copyFromZone")

@@ -3142,10 +3142,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * the activation, fixed once the cost is paid, so checking it as the trigger is matched is the
      * same as checking it again on resolution. 0 (the default) imposes nothing.
      *
-     * [keyword] narrows to activations of one keyword ability — the activated ability's own
-     * `ActivatedAbility.keyword` marker. "Whenever you activate a ninjutsu ability" (Satoru
-     * Umezawa) is `keyword = Keyword.NINJUTSU`; it counts a ninjutsu ability activated from hand or (commander
-     * ninjutsu) the command zone, printed or granted, and nothing else. Null (the default) imposes nothing.
+     * [keywords] narrows to activations of the named keyword abilities — the activated ability's own
+     * `ActivatedAbility.keyword` marker must be one of them. "Whenever you activate a ninjutsu ability"
+     * (Satoru Umezawa) is `keywords = setOf(Keyword.NINJUTSU)`; it counts a ninjutsu ability activated
+     * from hand or (commander ninjutsu) the command zone, printed or granted, and nothing else.
+     * "Whenever you activate an eternalize or embalm ability" (Vizier of the Anointed) names two.
+     * Empty (the default) imposes nothing.
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable
@@ -3159,13 +3161,15 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val includeManaAbilities: Boolean = false,
         val requireLoyalty: Boolean = false,
         val minLoyaltyRemoved: Int = 0,
-        val keyword: com.wingedsheep.sdk.core.Keyword? = null,
+        val keywords: Set<com.wingedsheep.sdk.core.Keyword> = emptySet(),
     ) : EventPattern {
         override val description: String = buildString {
-            if (keyword != null) {
+            if (keywords.isNotEmpty()) {
+                val names = keywords.map { it.displayName.lowercase() }
                 append(player.description)
-                append(" activates a ")
-                append(keyword.displayName.lowercase())
+                append(" activates ")
+                append(if (names.first().first() in "aeiou") "an " else "a ")
+                append(names.joinToString(" or "))
                 append(" ability")
                 return@buildString
             }

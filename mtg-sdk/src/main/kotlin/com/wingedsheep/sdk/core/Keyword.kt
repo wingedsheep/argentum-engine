@@ -622,6 +622,20 @@ enum class Keyword(val displayName: String) {
     EMBALM("Embalm"),
 
     /**
+     * Eternalize [cost] (CR 702.129, Hour of Devastation).
+     * "[Cost], Exile this card from your graveyard: Create a token that's a copy of it, except
+     * it's black, it's 4/4, it has no mana cost, and it's a Zombie in addition to its other types.
+     * Activate only as a sorcery."
+     *
+     * The 4/4 black sibling of [EMBALM], composed the same way by the `eternalize(cost)` helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder] (`eternalizeAbility(cost)`). The keyword is
+     * display-only on the card; the activated ability carries it as its
+     * [com.wingedsheep.sdk.scripting.ActivatedAbility.keyword] so "whenever you activate an
+     * eternalize ability" (Vizier of the Anointed) can name it.
+     */
+    ETERNALIZE("Eternalize"),
+
+    /**
      * Unearth [cost] (CR 702.84, Shards of Alara). "[Cost]: Return this card from your graveyard
      * to the battlefield. It gains haste. Exile it at the beginning of the next end step. If it
      * would leave the battlefield, exile it instead of putting it anywhere else. Activate only as

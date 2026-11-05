@@ -324,9 +324,14 @@ object SynergyAxes {
         is com.wingedsheep.sdk.scripting.effects.ExploreEffect -> setOf(SynergyAxis.PLUS_COUNTERS, SynergyAxis.GRAVEYARD)
         is com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect -> {
             val destination = leaf.destination as? com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone
-            if (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard && destination?.player == Player.You) {
-                setOf(SynergyAxis.GRAVEYARD)
-            } else emptySet()
+            // A discard, or a plain move of gathered cards into your own graveyard — "search your
+            // library for a card, put it into your graveyard" (Entomb, Vizier of the Anointed) —
+            // stocks the graveyard the same way a self-mill does.
+            val binsOwnCards = destination?.player == Player.You && (
+                leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard ||
+                    (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Default && destination.zone == Zone.GRAVEYARD)
+                )
+            if (binsOwnCards) setOf(SynergyAxis.GRAVEYARD) else emptySet()
         }
         is GatherCardsEffect -> {
             val source = leaf.source
