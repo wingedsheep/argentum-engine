@@ -154,7 +154,8 @@ object AiCardRating {
                         IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags -> "Damage amplification"
                         IntentTag.REMOVAL in inPlayIntent.tags || IntentTag.EXILE_REMOVAL in inPlayIntent.tags -> "Repeatable removal"
                         IntentTag.GRAVEYARD_HATE in inPlayIntent.tags -> "Repeatable graveyard hate"
-                        else -> "Counters what targets it"
+                        IntentTag.PROTECTION in inPlayIntent.tags -> "Counters what targets it"
+                        else -> "Ability value"
                     }
                     add(Part(label, abilityValue))
                 }
