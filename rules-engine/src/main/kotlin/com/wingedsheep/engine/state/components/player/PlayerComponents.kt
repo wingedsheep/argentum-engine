@@ -1814,13 +1814,24 @@ data class CardsCycledThisGameComponent(val countsByName: Map<String, Int> = emp
 }
 
 /**
- * How many spells this player has cast this game. Never cleared. Written by `CastRecords`
- * alongside the per-turn counts; backs
+ * How many spells this player has cast this game, in total and by spell name. Never cleared.
+ * Written by `CastRecords` alongside the per-turn counts; backs
  * [com.wingedsheep.sdk.scripting.values.DynamicAmount.SpellsCastThisGame] — "if this spell is the
- * first spell you've cast this game" (Once Upon a Time).
+ * first spell you've cast this game" (Once Upon a Time), and with a name "you've cast another
+ * spell named Approach of the Second Sun this game". A face-down cast counts toward [count] only.
  */
 @Serializable
-data class SpellsCastThisGameComponent(val count: Int = 0) : Component
+data class SpellsCastThisGameComponent(
+    val count: Int = 0,
+    val countsByName: Map<String, Int> = emptyMap(),
+) : Component {
+    fun count(cardName: String?): Int = if (cardName == null) count else countsByName[cardName] ?: 0
+
+    fun record(cardName: String?): SpellsCastThisGameComponent = SpellsCastThisGameComponent(
+        count = count + 1,
+        countsByName = if (cardName == null) countsByName else countsByName + (cardName to (countsByName[cardName] ?: 0) + 1),
+    )
+}
 
 /**
  * A player's extra turns (CR 500.7). [pending] counts extra turns created for them that haven't

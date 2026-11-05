@@ -22,7 +22,8 @@ import io.kotest.matchers.shouldBe
  *
  * Rules pinned: a spell counts once cast whether or not it resolves (a countered spell was still
  * cast); the count is per player and never resets at a turn boundary, unlike the per-turn spell
- * counts; and a multi-player scope sums its players.
+ * counts; a multi-player scope sums its players; and a card name narrows the count to spells
+ * with that name, which a face-down spell (it has no name) never matches.
  */
 class SpellsCastThisGameTest : FunSpec({
 
@@ -92,5 +93,28 @@ class SpellsCastThisGameTest : FunSpec({
             amounts.evaluate(driver.state, DynamicAmounts.spellsCastThisTurn(), EffectContext(sourceId = null, controllerId = you)) shouldBe 0
         }
         driver.castThisGame(you) shouldBe 1
+    }
+
+    test("a card name narrows the count to spells with that name; a face-down cast has none") {
+        val (driver, you, opponent) = setup()
+        fun named(name: String): Int = amounts.evaluate(
+            driver.state, DynamicAmounts.spellsCastThisGame(cardName = name), EffectContext(sourceId = null, controllerId = you)
+        )
+
+        driver.bolt(you, opponent)
+        driver.bothPass()
+        driver.bolt(you, opponent)
+        driver.bothPass()
+        val morph = driver.putCardInHand(you, "Morph Test Creature")
+        driver.giveColorlessMana(you, 3)
+        driver.submit(CastSpell(you, morph, castFaceDown = true, paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
+        driver.bothPass()
+
+        driver.castThisGame(you) shouldBe 3
+        named("Lightning Bolt") shouldBe 2
+        named("Counterspell") shouldBe 0
+        withClue("a face-down spell is nameless, so it counts toward the total only") {
+            named("Morph Test Creature") shouldBe 0
+        }
     }
 })

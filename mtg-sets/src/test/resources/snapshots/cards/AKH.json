@@ -90,6 +90,95 @@
     ]
 }
 
+// Approach of the Second Sun
+{
+    "name": "Approach of the Second Sun",
+    "manaCost": "{6}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "If this spell was cast from your hand and you've cast another spell named Approach of the Second Sun this game, you win the game. Otherwise, put Approach of the Second Sun into its owner's library seventh from the top and you gain 7 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "WasCastFromHand",
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "SpellsCastThisGame",
+                                "cardName": "Approach of the Second Sun"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            },
+            "then": "WinGame",
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Stack",
+                        "positionFromTop": 6
+                    },
+                    {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdf59a6e-7708-45a1-884d-d12e9f7b9ed9.jpg?1783936543",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Approach of the Second Sun has no effect until it's resolving. If the second one you cast is countered, you won't win the game."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "The second Approach of the Second Sun that you cast must be cast from your hand, but first may have been cast from anywhere."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A copy of a spell isn't cast, so it won't count as the first nor as the second Approach of the Second Sun."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A card that changes zones is considered a new object, so casting the same Approach of the Second Sun card on a later turn is “another spell” named Approach of the Second Sun."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you have fewer than six cards in your library, you'll put Approach of the Second Sun on the bottom of your library. Otherwise, you'll lift up the top six cards without looking at them and place Approach of the Second Sun just under them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "As your second Approach of the Second Sun resolves, it checks only whether the first one was cast, not whether the first one resolved. If your first Approach of the Second Sun was countered, you'll still win the game as your second one resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Archfiend of Ifnir
 {
     "name": "Archfiend of Ifnir",

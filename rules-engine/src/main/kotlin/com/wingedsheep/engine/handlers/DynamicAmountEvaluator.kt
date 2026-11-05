@@ -470,7 +470,7 @@ class DynamicAmountEvaluator(
                 resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
                     state.getEntity(playerId)
                         ?.get<com.wingedsheep.engine.state.components.player.SpellsCastThisGameComponent>()
-                        ?.count ?: 0
+                        ?.count(amount.cardName) ?: 0
                 }
 
             is DynamicAmount.ExtraTurnsBegunThisGame ->

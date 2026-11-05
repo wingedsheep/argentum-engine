@@ -537,12 +537,18 @@ class MoveToZoneEffectExecutor(
         )
     }
 
+    /**
+     * The zone [entityId] is in. The stack isn't one of [GameState.zones], so a spell moving itself
+     * as part of its own resolution ("put Approach of the Second Sun into its owner's library
+     * seventh from the top") is found through its logical zone — the same fallback
+     * `ZoneTransitionService` uses, which then takes it off the stack.
+     */
     private fun findEntityZone(state: GameState, entityId: com.wingedsheep.sdk.model.EntityId): com.wingedsheep.engine.state.ZoneKey? {
         for ((zoneKey, entities) in state.zones) {
             if (entityId in entities) {
                 return zoneKey
             }
         }
-        return null
+        return state.logicalZone(entityId)?.takeIf { it.zoneType == Zone.STACK }
     }
 }
