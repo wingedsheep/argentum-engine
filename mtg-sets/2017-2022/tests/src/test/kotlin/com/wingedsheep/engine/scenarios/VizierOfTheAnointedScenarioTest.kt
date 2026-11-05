@@ -6,6 +6,8 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.mtg.sets.definitions.dft.cards.CurseclothWrappings
 import com.wingedsheep.mtg.sets.definitions.hou.cards.VizierOfTheAnointed
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -74,16 +76,19 @@ class VizierOfTheAnointedScenarioTest : FunSpec({
     val embalmId = embalmAbility(ManaCost.parse("{1}")).id
 
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(VizierOfTheAnointed, eternalCat, embalmedBird, plainBear))
+        registerCards(TestCards.all + listOf(VizierOfTheAnointed, CurseclothWrappings, eternalCat, embalmedBird, plainBear))
         initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
 
-    fun GameTestDriver.resolveAll(onSearch: (SelectCardsDecision) -> List<EntityId> = { emptyList() }) {
+    fun GameTestDriver.resolveAll(
+        search: Boolean = true,
+        onSearch: (SelectCardsDecision) -> List<EntityId> = { emptyList() },
+    ) {
         var guard = 0
         while ((state.stack.isNotEmpty() || pendingDecision != null) && guard++ < 20) {
             when (val d = pendingDecision) {
-                is YesNoDecision -> submitYesNo(d.playerId, true)
+                is YesNoDecision -> submitYesNo(d.playerId, search)
                 is SelectCardsDecision -> submitCardSelection(d.playerId, onSearch(d))
                 null -> bothPass()
                 else -> autoResolveDecision()
@@ -117,6 +122,54 @@ class VizierOfTheAnointedScenarioTest : FunSpec({
             offered shouldContainExactlyInAnyOrder listOf(cat, bird)
         }
         d.getGraveyard(me) shouldContain cat
+    }
+
+    test("enters: declining the search leaves library and graveyard alone") {
+        val d = driver()
+        val me = d.player1
+        val cat = d.putCardOnTopOfLibrary(me, "Vizier Test Eternal Cat")
+        val vizier = d.putCardInHand(me, "Vizier of the Anointed")
+        d.giveMana(me, Color.BLUE, 1)
+        d.giveColorlessMana(me, 3)
+        d.castSpell(me, vizier).outcome shouldBe Outcome.Done
+
+        var searched = false
+        d.resolveAll(search = false) { searched = true; emptyList() }
+
+        searched shouldBe false
+        d.getGraveyard(me).contains(cat) shouldBe false
+        d.state.getZone(me, Zone.LIBRARY) shouldContain cat
+    }
+
+    test("activating a granted embalm ability draws a card too") {
+        val d = driver()
+        val me = d.player1
+        d.putCreatureOnBattlefield(me, "Vizier of the Anointed")
+        val wrappings = d.putPermanentOnBattlefield(me, "Cursecloth Wrappings")
+        val bear = d.putCardInGraveyard(me, "Vizier Test Plain Bear")
+        val grant = d.cardRegistry.getCard("Cursecloth Wrappings")!!.activatedAbilities.first().id
+        d.submit(
+            ActivateAbility(
+                playerId = me,
+                sourceId = wrappings,
+                abilityId = grant,
+                targets = listOf(ChosenTarget.Card(bear, me, Zone.GRAVEYARD)),
+            )
+        ).outcome shouldBe Outcome.Done
+        d.resolveAll()
+        val handBefore = d.getHandSize(me)
+
+        withClue("Cursecloth grants embalm at the Bear's mana cost, {1}{G}") {
+            d.giveMana(me, Color.GREEN, 1)
+            d.giveColorlessMana(me, 1)
+            d.submit(
+                ActivateAbility(playerId = me, sourceId = bear, abilityId = embalmAbility(ManaCost.parse("{1}{G}")).id)
+            ).outcome shouldBe Outcome.Done
+        }
+        d.resolveAll()
+
+        d.getHandSize(me) shouldBe handBefore + 1
+        d.findPermanent(me, "Vizier Test Plain Bear").shouldNotBeNull()
     }
 
     test("activating an eternalize ability draws a card before the ability resolves") {

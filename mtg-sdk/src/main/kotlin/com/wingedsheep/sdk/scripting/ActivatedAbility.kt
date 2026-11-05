@@ -141,10 +141,12 @@ data class ActivatedAbility(
      * ability…"). Null for an ordinary activated ability.
      *
      * It is how other cards name a keyword's activations without caring about the cost: "whenever
-     * you activate a ninjutsu ability" (Satoru Umezawa — [EventPattern.AbilityActivatedEvent.keyword])
-     * and "ninjutsu abilities you activate cost {1} less" (Silver-Fur Master —
-     * [ReduceActivatedAbilityCost.keyword]). A *granted* copy of the ability (Satoru's "each
-     * creature card in your hand has ninjutsu") carries the same marker, so it counts too.
+     * you activate a ninjutsu ability" (Satoru Umezawa — [EventPattern.AbilityActivatedEvent.keywords]),
+     * "whenever you activate an eternalize or embalm ability" (Vizier of the Anointed) and "ninjutsu
+     * abilities you activate cost {1} less" (Silver-Fur Master — [ReduceActivatedAbilityCost.keyword]).
+     * Set today by `ninjutsu`, `embalm` and `eternalize`. A *granted* copy of the ability (Satoru's
+     * "each creature card in your hand has ninjutsu", Cursecloth Wrappings' granted embalm) carries
+     * the same marker, so it counts too.
      */
     val keyword: Keyword? = null,
     /**
