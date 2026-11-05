@@ -1222,6 +1222,15 @@ object CardIntentAnalyzer {
         // "Creatures your opponents control can't block this turn" / "creatures you control can't be
         // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
         is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)
+        // "Target creature can't block this turn" (Earthshaker Khenra, Gilded Cerodon): one blocker
+        // taken out of the opponent's defence — the single-creature form of the team-wide evasion
+        // above. "This creature can't block" on its own source is a drawback, not a payoff.
+        is CantBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.EVASION_GRANT) else emptySet()
+        // "You may cast an instant or sorcery spell from your hand without paying its mana cost"
+        // (Wildfire Eternal, Omnispell Adept), "… cast it without paying its mana cost" off the top
+        // of a library or out of exile: a spell for free, see [IntentTag.FREE_SPELL]. A cast that
+        // still pays the spell's mana cost is only a zone it may be cast from, and earns no tag.
+        is CastFromCollectionWithoutPayingCostEffect -> if (effect.payManaCost) emptySet() else setOf(IntentTag.FREE_SPELL)
 
         // "Your opponents can't cast spells this turn" / "target player can't cast …": disruption whose
         // payoff is spells never cast. A ban that binds its controller too is a price, not a payoff.

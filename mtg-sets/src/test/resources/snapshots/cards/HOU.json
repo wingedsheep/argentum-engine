@@ -178,6 +178,90 @@
     ]
 }
 
+// Ammit Eternal
+{
+    "name": "Ammit Eternal",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Crocodile Demon",
+    "oracleText": "Afflict 3 (Whenever this creature becomes blocked, defending player loses 3 life.)\nWhenever an opponent casts a spell, put a -1/-1 counter on this creature.\nWhenever this creature deals combat damage to a player, remove all -1/-1 counters from it.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ammit Eternal:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Ammit Eternal:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "RemoveAllCountersOfType",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b04934f-87d1-4768-b7b5-5f7249a09771.jpg?1783936044",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Ammit Eternal's middle ability will resolve before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
+}
+
 // Angel of the God-Pharaoh
 {
     "name": "Angel of the God-Pharaoh",
@@ -1275,6 +1359,201 @@
     ]
 }
 
+// Earthshaker Khenra
+{
+    "name": "Earthshaker Khenra",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Jackal Warrior",
+    "oracleText": "Haste\nWhen this creature enters, target creature with power less than or equal to this creature's power can't block this turn.\nEternalize {4}{R}{R} ({4}{R}{R}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Jackal Warrior with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE",
+        "ETERNALIZE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Earthshaker Khenra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMostEntity",
+                                    "reference": "Self"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{4}{R}{R}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{R}{R}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {4}{R}{R} ({4}{R}{R}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d60eabe-b281-4eba-9c26-287364ed2067.jpg?1783936030",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The target creature's power is checked when you target it with Earthshaker Khenra's ability and when that ability resolves. Once the ability resolves, if the creature's power increases or Earthshaker Khenra's power decreases, the target creature will still be unable to block."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Spells, activated abilities, and triggered abilities can't raise Earthshaker Khenra's power before you have to choose a target for its ability. Static abilities, such as that of Lord of the Accursed, will raise its power in time to let you target a larger creature."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For each card with eternalize, a corresponding game play supplement token can be found in some Hour of Devastation booster packs. These supplements are not required to play with cards with eternalize; you can use the same items to represent an eternalized token as you would any other token."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If a creature card with eternalize is put into your graveyard during your main phase, you'll have priority immediately afterward. You can activate its eternalize ability before any player can try to exile it, such as with Crook of Condemnation, if it's legal for you to do so."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Once you've activated an eternalize ability, the card is immediately exiled. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie in addition to its other types and is black instead of its other colors. Its base power and toughness are 4/4. It has no mana cost, and thus its mana value is 0. These are copiable values of the token that other effects may copy."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card copied by the token had any \"when [this permanent] enters the battlefield\" abilities, then the token also has those abilities and will trigger them when it's created. Similarly, any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities that the token has copied will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Eternal of Harsh Truths
+{
+    "name": "Eternal of Harsh Truths",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Cleric",
+    "oracleText": "Afflict 2 (Whenever this creature becomes blocked, defending player loses 2 life.)\nWhenever this creature attacks and isn't blocked, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eternal of Harsh Truths:1",
+                "trigger": "BecomesUnblockedEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"If creating the Eternals was Bolas's plan here, what is his plan for the Eternals?\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/0389daf7-0818-488f-8e6a-94818a6c94a6.jpg?1783936052",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "An ability that triggers when something \"attacks and isn't blocked\" triggers in the declare blockers step after blockers are declared if (1) that creature is attacking and (2) no creatures are declared to block it. It will trigger even if that creature was put onto the battlefield attacking rather than having been declared as an attacker in the declare attackers step."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
+}
+
 // Feral Prowler
 {
     "name": "Feral Prowler",
@@ -1679,6 +1958,76 @@
     ]
 }
 
+// Gilded Cerodon
+{
+    "name": "Gilded Cerodon",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever this creature attacks, if you control a Desert or there is a Desert card in your graveyard, target creature can't block this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gilded Cerodon:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Matt Stewart",
+        "flavorText": "The plating of its horns is a token of honor from Hazoret, who favors creatures with great hearts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f68c8fbd-9223-447d-a85c-fa6222c75277.jpg?1783936030",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn’t matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For abilities that trigger only if you control a Desert or there is a Desert card in your graveyard, one condition must be true as the ability triggers and one must be true as the ability resolves. They don’t have to be the same condition, though. For example, you could sacrifice your only Desert after the ability triggers but before it has resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Granitic Titan
 {
     "name": "Granitic Titan",
@@ -1990,6 +2339,74 @@
     }
 }
 
+// Khenra Scrapper
+{
+    "name": "Khenra Scrapper",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Jackal Warrior",
+    "oracleText": "Menace\nYou may exert this creature as it attacks. When you do, it gets +2/+0 until end of turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Khenra Scrapper:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"There is no tomorrow, so hold nothing back.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5d4caac-95e8-47bb-90c4-3bf877afdc57.jpg?1783936026",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lethal Sting
 {
     "name": "Lethal Sting",
@@ -2110,6 +2527,62 @@
     ]
 }
 
+// Manticore Eternal
+{
+    "name": "Manticore Eternal",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Zombie Manticore",
+    "oracleText": "Afflict 3 (Whenever this creature becomes blocked, defending player loses 3 life.)\nThis creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 3
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "While most Eternals were initiates who completed the trials, Bolas had plans for some of Amonkhet's other denizens.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b03a9686-d30b-4048-8b0a-23fd2f0aed4b.jpg?1783936025",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If, during your declare attackers step, Manticore Eternal is tapped or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having it attack, you aren't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
+}
+
 // Marauding Boneslasher
 {
     "name": "Marauding Boneslasher",
@@ -2143,6 +2616,88 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Merciless Eternal
+{
+    "name": "Merciless Eternal",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Cleric",
+    "oracleText": "Afflict 2 (Whenever this creature becomes blocked, defending player loses 2 life.)\n{2}{B}, Discard a card: This creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Merciless Eternal:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"My work here is complete. The people have done everything required of them.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11a6becd-15be-4f2d-8fda-35b1b289b28f.jpg?1783936038",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
 }
 
 // Mirage Mirror
@@ -2282,6 +2837,99 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Neheb, the Eternal
+{
+    "name": "Neheb, the Eternal",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Zombie Minotaur Warrior",
+    "oracleText": "Afflict 3 (Whenever this creature becomes blocked, defending player loses 3 life.)\nAt the beginning of each of your postcombat main phases, add {R} for each 1 life your opponents have lost this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Neheb, the Eternal:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "EachOpponent",
+                        "tracker": "LIFE_LOST_AMOUNT"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each of your postcombat main phases, add {R} for each 1 life your opponents have lost this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "\"This is what glory looks like.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54231832-d492-4812-b658-4ab9a30fefe2.jpg?1783936025",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Because it triggers at the beginning of a phase, Neheb's last ability isn't a mana ability. It uses the stack and can be countered by effects that interact with triggered abilities, such as that of Nimble Obstructionist."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "You get a postcombat main phase even if no creatures attacked during a turn. Neheb's last ability will trigger."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If an opponent loses life but Neheb leaves the battlefield before your postcombat main phase begins, its last ability doesn't trigger."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Neheb's ability checks only how much life opponents lost during the turn, not by how much their life total decreased compared to the start of the turn. For example, if an opponent lost 2 life and then gained 8 life before your postcombat main phase, you'll add {R}{R}."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you somehow have more than two main phases in a turn, each main phase after your first one is a postcombat main phase, and Neheb's last ability triggers at the beginning of each of them."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If an opponent loses life and subsequently loses the game before your postcombat main phase, Neheb's last ability counts that loss of life."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
 }
 
 // Nicol Bolas, God-Pharaoh
@@ -3128,6 +3776,150 @@
     ]
 }
 
+// Resilient Khenra
+{
+    "name": "Resilient Khenra",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Jackal Wizard",
+    "oracleText": "When this creature enters, you may have target creature get +X/+X until end of turn, where X is this creature's power.\nEternalize {4}{G}{G} ({4}{G}{G}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Jackal Wizard with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "ETERNALIZE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Resilient Khenra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "IfPositive",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        "toughnessModifier": {
+                            "type": "IfPositive",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{4}{G}{G}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {4}{G}{G} ({4}{G}{G}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/033a69fb-2af9-426c-b1d6-3e5b18c78c9a.jpg?1783936014",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The value of X is determined only as Resilient Khenra's triggered ability resolves. Once that happens, the value of X won't change later in the turn even if Resilient Khenra's power changes."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Resilient Khenra leaves the battlefield before its triggered ability resolves, use its power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Resilient Khenra's power is negative as its triggered ability resolves, X is considered to be 0. (This is a change from previous rules.)"
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For each card with eternalize, a corresponding game play supplement token can be found in some Hour of Devastation booster packs. These supplements are not required to play with cards with eternalize; you can use the same items to represent an eternalized token as you would any other token."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If a creature card with eternalize is put into your graveyard during your main phase, you'll have priority immediately afterward. You can activate its eternalize ability before any player can try to exile it, such as with Crook of Condemnation, if it's legal for you to do so."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Once you've activated an eternalize ability, the card is immediately exiled. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie in addition to its other types and is black instead of its other colors. Its base power and toughness are 4/4. It has no mana cost, and thus its mana value is 0. These are copiable values of the token that other effects may copy."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card copied by the token had any \"when [this permanent] enters the battlefield\" abilities, then the token also has those abilities and will trigger them when it's created. Similarly, any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities that the token has copied will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Resolute Survivors
 {
     "name": "Resolute Survivors",
@@ -3334,6 +4126,59 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Ruin Rat
+{
+    "name": "Ruin Rat",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "Deathtouch\nWhen this creature dies, exile target card from an opponent's graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruin Rat:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, exile target card from an opponent's graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Shreya Shetty",
+        "flavorText": "From every shadow came the dull scratch of teeth on bones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91652fe0-2064-4996-b484-a1f88e0023f7.jpg?1783936036"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3560,6 +4405,150 @@
         "artist": "Greg Opalinski",
         "flavorText": "The arrival of the God-Pharaoh marked a betrayal of both gods and mortals.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a71fb62-acbd-49f5-842f-0fc9fa48afea.jpg?1783936059"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Solitary Camel
+{
+    "name": "Solitary Camel",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Camel",
+    "oracleText": "This creature has lifelink as long as you control a Desert or there is a Desert card in your graveyard. (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Aaron Miller",
+        "flavorText": "Deserts are inhospitable, not uninhabitable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8adb8dbf-c83c-4169-b822-8e32aa36cffa.jpg?1783936060",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn’t matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Steadfast Sentinel
+{
+    "name": "Steadfast Sentinel",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Vigilance\nEternalize {4}{W}{W} ({4}{W}{W}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Human Cleric with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "ETERNALIZE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{4}{W}{W}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {4}{W}{W} ({4}{W}{W}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/707a30d2-0fca-4b39-91fb-9b03152705ba.jpg?1783936059",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "For each card with eternalize, a corresponding game play supplement token can be found in some Hour of Devastation booster packs. These supplements are not required to play with cards with eternalize; you can use the same items to represent an eternalized token as you would any other token."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If a creature card with eternalize is put into your graveyard during your main phase, you'll have priority immediately afterward. You can activate its eternalize ability before any player can try to exile it, such as with Crook of Condemnation, if it's legal for you to do so."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Once you've activated an eternalize ability, the card is immediately exiled. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie in addition to its other types and is black instead of its other colors. Its base power and toughness are 4/4. It has no mana cost, and thus its mana value is 0. These are copiable values of the token that other effects may copy."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -4329,6 +5318,76 @@
     ]
 }
 
+// Thorned Moloch
+{
+    "name": "Thorned Moloch",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nThis creature has first strike as long as it's attacking.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thorned Moloch:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "James Paick",
+        "flavorText": "Those who fled the destruction of the city stumbled into the territory of their prickly neighbors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01ab2615-5a02-4b59-b8bd-577b91a1a0e3.jpg?1783936024"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Torment of Venom
 {
     "name": "Torment of Venom",
@@ -4770,6 +5829,106 @@
     ]
 }
 
+// Wildfire Eternal
+{
+    "name": "Wildfire Eternal",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Zombie Jackal Cleric",
+    "oracleText": "Afflict 4 (Whenever this creature becomes blocked, defending player loses 4 life.)\nWhenever this creature attacks and isn't blocked, you may cast an instant or sorcery spell from your hand without paying its mana cost.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wildfire Eternal:1",
+                "trigger": "BecomesUnblockedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseSpell",
+                            "filter": "instant|sorcery",
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast an instant or sorcery spell from your hand without paying its mana cost",
+                            "selectedLabel": "Cast for free",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd845479-619a-4262-b445-d93975c183b4.jpg",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Wildfire Eternal's second ability resolves before combat damage is dealt, and you must cast a spell at that time if you wish to cast one without paying its mana cost. You can cast a sorcery during the declare blockers step this way."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Tormenting Voice, those must be paid to cast the card."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "An ability that triggers when something \"attacks and isn't blocked\" triggers in the declare blockers step after blockers are declared if (1) that creature is attacking and (2) no creatures are declared to block it. It will trigger even if that creature was put onto the battlefield attacking rather than having been declared as an attacker in the declare attackers step."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Without Weakness
 {
     "name": "Without Weakness",
@@ -4805,6 +5964,114 @@
         "collectorNumber": "81",
         "artist": "Alex Konstad",
         "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6695fa8-881c-407c-91d9-3ac770372d35.jpg?1783936035"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wretched Camel
+{
+    "name": "Wretched Camel",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Camel",
+    "oracleText": "When this creature dies, if you control a Desert or there is a Desert card in your graveyard, target player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wretched Camel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Perfectly adapted to cross the wastes in life, they bring the wastes with them in death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdd729df-8a02-4d5e-8432-bc0d006b0d3d.jpg?1783936034",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn’t matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For abilities that trigger only if you control a Desert or there is a Desert card in your graveyard, one condition must be true as the ability triggers and one must be true as the ability resolves. They don’t have to be the same condition, though. For example, you could sacrifice your only Desert after the ability triggers but before it has resolved."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
