@@ -13082,6 +13082,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   nonmana parts such as paying life, while the per-player
   `EquipActivationsThisTurnComponent.count == 0`, and increments that counter on every equip
   activation (reset at turn start by `TurnManager`).
+- `FreeCyclingCosts` — the controller may pay {0} rather than pay cycling costs (New Perspectives,
+  gated with `staticAbility { condition = Conditions.CompareAmounts(DynamicAmounts.cardsInYourHand(),
+  ComparisonOperator.GTE, 7); ability = FreeCyclingCosts }`). Typecycling and cycling granted by
+  another permanent are cycling too (CR 702.29e). The {0} is an alternative cost: cost increases and
+  reductions still apply on top (a Tithe Taker tax makes it {1}). An `{X}` cycling cost is free at
+  X = 0; announcing a larger X pays the printed cost. Consulted by `CastPermissionUtils
+  .cyclingBaseCost` from the cycling enumerator and both cycling handlers.
 - `ReduceEquipCost(amount, targetFilter = null, onlyOwnEquip = false, onlyOtherEquip = false)` — the controller's equip abilities cost
   `{amount}` generic mana less to activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost
   {1} less to activate"). The engine reduces only the generic portion of the equip cost (floored at

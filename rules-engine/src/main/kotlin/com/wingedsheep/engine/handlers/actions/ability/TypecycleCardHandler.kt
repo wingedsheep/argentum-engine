@@ -295,9 +295,13 @@ class TypecycleCardHandler(
      * [cost] after the board's activated-ability cost reductions — typecycling is an activated
      * ability of the card in hand (CR 702.29a), so Zirda's "abilities you activate" reaches it.
      */
-    private fun reduced(state: GameState, action: TypecycleCard, cost: ManaCost): ManaCost =
-        castPermissionUtils?.applyActivatedAbilityCostReduction(cost, state, action.cardId, action.playerId)
-            ?: cost
+    private fun reduced(state: GameState, action: TypecycleCard, cost: ManaCost): ManaCost {
+        val utils = castPermissionUtils ?: return cost
+        // Typecycling is cycling (CR 702.29e): a free-cycling grant (New Perspectives) swaps the
+        // printed cost for {0} before the reductions apply.
+        val base = utils.cyclingBaseCost(cost, null, state, action.playerId)
+        return utils.applyActivatedAbilityCostReduction(base, state, action.cardId, action.playerId)
+    }
 
     companion object {
         fun create(services: EngineServices): TypecycleCardHandler {

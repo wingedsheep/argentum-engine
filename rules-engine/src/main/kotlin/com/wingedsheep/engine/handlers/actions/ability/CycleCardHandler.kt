@@ -99,7 +99,7 @@ class CycleCardHandler(
 
         // Affordability is judged against X=0 when the player hasn't announced X yet — the
         // handler raises the choice, and X=0 is always a legal announcement (CR 107.3a).
-        val effectiveCost = reduced(state, action, cyclingAbility.cost.withXAs(action.xValue ?: 0))
+        val effectiveCost = reduced(state, action, baseCost(state, action, cyclingAbility.cost, action.xValue))
 
         if (action.paymentStrategy is PaymentStrategy.Explicit) {
             for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
@@ -150,7 +150,11 @@ class CycleCardHandler(
                     com.wingedsheep.engine.core.ChooseNumberDecision(
                         id = decisionId,
                         playerId = action.playerId,
-                        prompt = "Choose X for cycling ${cardComponent.name} (0-$maxX)",
+                        prompt = if (castPermissionUtils?.hasFreeCycling(state, action.playerId) == true) {
+                            "Choose X for cycling ${cardComponent.name} (0-$maxX; X = 0 cycles it for {0})"
+                        } else {
+                            "Choose X for cycling ${cardComponent.name} (0-$maxX)"
+                        },
                         context = com.wingedsheep.engine.core.DecisionContext(
                             sourceId = action.cardId,
                             sourceName = cardComponent.name,
@@ -167,7 +171,7 @@ class CycleCardHandler(
         // X is settled from here on. Substituting it into the cost leaves an ordinary X-free cost,
         // so every payment path below (pool, auto-tap, explicit taps) works unchanged.
         val announcedX = action.xValue?.takeIf { cyclingAbility.cost.hasX }
-        val cyclingCost = reduced(state, action, cyclingAbility.cost.withXAs(announcedX ?: 0))
+        val cyclingCost = reduced(state, action, baseCost(state, action, cyclingAbility.cost, announcedX))
 
         var currentState = state
         val events = mutableListOf<GameEvent>()
@@ -321,6 +325,14 @@ class CycleCardHandler(
     ): CyclingGrants.CyclingOption? = CyclingGrants.chosenOption(
         state, action.cardId, cardDef, action.playerId, action.grantedBy, cardRegistry, zones.predicateEvaluator
     )
+
+    /**
+     * The printed cycling cost with X bound, or {0} under a free-cycling grant (New Perspectives) —
+     * see [CastPermissionUtils.cyclingBaseCost].
+     */
+    private fun baseCost(state: GameState, action: CycleCard, printed: ManaCost, xValue: Int?): ManaCost =
+        castPermissionUtils?.cyclingBaseCost(printed, xValue, state, action.playerId)
+            ?: printed.withXAs(xValue ?: 0)
 
     /**
      * [cost] after the board's activated-ability cost reductions — cycling is an activated ability

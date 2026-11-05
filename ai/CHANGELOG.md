@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Drafts and builds a free-cycling enchantment (New Perspectives) as a payoff its own cycling and typecycling cards feed, instead of reading it as a lone draw-three
 - Prices a creature that keeps drawing cards (a card on every attack, upkeep or combat hit, Fireglass Mentor's second-main impulse) as a card-advantage engine on the board, so its removal goes there before a vanilla body; reads a "you may play it this turn" impulse from a trigger on its own turn — beginning of combat or second main, attack, combat damage to a player — as card draw.
 - Reads a creature that counters whatever targets it (Glyph Keeper) as self-protection rather than a counterspell, so playouts no longer treat casting it on an empty stack as a dead card, and prices the shield in its board value
 - #4472 Aims protection-from-a-colour, wither, infect, persist, undying, myriad and changeling grants at its own creatures instead of the opponent's, times "gains deathtouch and lifelink, and when it dies this turn …" tricks for a fight, and reads "opponent blights" (a -1/-1 counter on a creature they choose) as removal

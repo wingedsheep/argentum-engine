@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.FreeCyclingCosts
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
@@ -94,6 +95,9 @@ internal object CardAsks {
             for (static in script.staticAbilities.flatMap(::unwrap)) {
                 groupFilter(static)?.let { add(it, DeckSynergy.TRIBE_MEMBERS_WANTED, spells = false) }
                 spellFilter(static)?.let { add(it, DeckSynergy.FEEDERS_WANTED, spells = true) }
+                // "You may pay {0} rather than pay cycling costs" (New Perspectives) is fuelled
+                // only by the deck's own cycling cards.
+                if (static is FreeCyclingCosts) asks.merge(CYCLING, DeckSynergy.FEEDERS_WANTED, ::minOf)
             }
             for (replacement in script.replacementEffects.filter(DamageAmplifiers::reads)) {
                 val event = replacement.appliesTo as EventPattern.DamageEvent
@@ -153,6 +157,7 @@ internal object CardAsks {
 
     private val AURAS: GameObjectFilter = GameObjectFilter.Enchantment.withSubtype(Subtype.AURA.value)
     private val EQUIPMENT: GameObjectFilter = GameObjectFilter.Artifact.withSubtype("Equipment")
+    private val CYCLING: GameObjectFilter = GameObjectFilter.Any.withCycling()
 
     private fun scripts(card: CardDefinition): List<CardScript> = listOf(card.script) + card.cardFaces.map { it.script }
 
