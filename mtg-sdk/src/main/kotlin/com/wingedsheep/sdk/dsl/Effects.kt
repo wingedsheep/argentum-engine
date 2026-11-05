@@ -4469,15 +4469,18 @@ object Effects {
     ): Effect = GrantProtectionFromChosenColorEffect(target, duration)
 
     /**
-     * [target] gains every protection ability some permanent in [group] has, read at resolution
-     * — the protection clause of Concerted Effort. Fan it over the group with [ForEachInGroup]
-     * and [EffectTarget.IterationEntity]. See [GrantProtectionsSharedByGroupEffect].
+     * [target] gains every variant of [keyword] — every protection ability, or every hexproof-from
+     * ability — some permanent in [group] has, read at resolution: Concerted Effort's
+     * "the same is true for … protection", Majestic Myriarch's hexproof variants. Fan it over a
+     * group with [ForEachInGroup] and [EffectTarget.IterationEntity]. See
+     * [com.wingedsheep.sdk.scripting.effects.GrantKeywordVariantsSharedByGroupEffect].
      */
-    fun GrantProtectionsSharedByGroup(
+    fun GrantKeywordVariantsSharedByGroup(
+        keyword: Keyword,
         group: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
         target: EffectTarget,
         duration: Duration = Duration.EndOfTurn
-    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantProtectionsSharedByGroupEffect(group, target, duration)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantKeywordVariantsSharedByGroupEffect(keyword, group, target, duration)
 
     /**
      * Grant "protection from the card type of your choice" to a target (CR 702.16). The

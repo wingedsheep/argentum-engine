@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.mtg.sets.definitions.dom.cards.KnightOfMalice
 import com.wingedsheep.mtg.sets.definitions.soi.cards.OdricLunarchMarshal
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -33,7 +34,7 @@ import io.kotest.matchers.shouldBe
 class OdricLunarchMarshalScenarioTest : ScenarioTestBase() {
 
     init {
-        cardRegistry.register(listOf(OdricLunarchMarshal))
+        cardRegistry.register(listOf(OdricLunarchMarshal, KnightOfMalice))
 
         context("sharing a keyword someone has") {
 
@@ -188,6 +189,40 @@ class OdricLunarchMarshalScenarioTest : ScenarioTestBase() {
 
                 withClue("blocking matters too, so the trigger must fire on their combat") {
                     game.state.projectedState.hasKeyword(lions, Keyword.FIRST_STRIKE) shouldBe true
+                }
+            }
+        }
+
+        context("hexproof variants (2020-01-24 ruling)") {
+
+            test("hexproof from white spreads as that variant, not as plain hexproof") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Odric, Lunarch Marshal")
+                    .withCardOnBattlefield(1, "Knight of Malice")
+                    .withCardOnBattlefield(1, "Savannah Lions")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val lions = game.findPermanent("Savannah Lions")!!
+                val odric = game.findPermanent("Odric, Lunarch Marshal")!!
+
+                game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+                game.resolveStack()
+
+                val projected = game.state.projectedState
+                withClue("the Lions gained the Knight's hexproof from white") {
+                    projected.getKeywords(lions).contains("HEXPROOF_FROM_WHITE") shouldBe true
+                }
+                withClue("Odric gained it too") {
+                    projected.getKeywords(odric).contains("HEXPROOF_FROM_WHITE") shouldBe true
+                }
+                withClue("hexproof from white is not hexproof, so plain hexproof is not handed out") {
+                    projected.hasKeyword(lions, Keyword.HEXPROOF) shouldBe false
+                }
+                withClue("the Knight's first strike still spreads alongside") {
+                    projected.hasKeyword(lions, Keyword.FIRST_STRIKE) shouldBe true
                 }
             }
         }
