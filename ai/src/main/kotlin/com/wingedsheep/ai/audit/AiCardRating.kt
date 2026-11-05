@@ -254,7 +254,7 @@ object AiCardRating {
         IntentTag.MILL to "Mills opponents toward running out of cards",
         IntentTag.TRIBAL_ENABLER to "Enables a chosen creature type",
         IntentTag.DAMAGE_AMPLIFIER to "Amplifies damage from our sources",
-        IntentTag.DAMAGE_TO_PLAYERS to "Deals damage to players",
+        IntentTag.DAMAGE_TO_PLAYERS to "Damages or drains players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",

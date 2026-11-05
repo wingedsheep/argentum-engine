@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4466 Aims a curse Aura that grants its host a consolation ability (Compulsory Rest, Hold for Ransom, Imprisoned in the Moon) at the opponent's creature and a pump Aura that grants its host a fading drawback (Consuming Fervor) at its own, instead of reading both as unknown; reads "target creature doesn't untap during its controller's next untap step" (Kefnet's Monument, Barl's Cage) as a tapper, and an Aura granting its host a helpful trigger (Sixth Sense's combat-damage draw) as what that trigger does.
 - #4465 Holds a creature's "{T}: deal damage to each opponent" (Lightning-Rig Crew) for the opponent's end step, where the tap costs no attack or block, instead of tapping its last blocker to ping at 2 life; still pings at once when the damage is lethal.
 - Names its best graveyard cards for an exile-copy-and-cast trigger (Uldaros Theorix) instead of naming none, and reads cards that target a card in its own graveyard however they move it (Uldaros, Hour of Eternity) as graveyard payoffs when drafting and building.
 - #4460 Aims untaps of its own chosen targets (Nissa, Genesis Mage's +2) at its own tapped creatures and lands rather than the opponent's, reads that +2 as ramp, and reads putting creature/land cards off the library top onto the battlefield (Nissa's −10, Collected Company, Animist's Awakening) as card advantage.

@@ -211,6 +211,58 @@
     ]
 }
 
+// Binding Mummy
+{
+    "name": "Binding Mummy",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Whenever another Zombie you control enters, you may tap target artifact or creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Binding Mummy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Zombie ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Shreya Shetty",
+        "flavorText": "What the gods decree, the mummies enforce.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fae54072-ae27-4aae-a2b7-71f4551934f6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blazing Volley
 {
     "name": "Blazing Volley",
@@ -444,6 +496,95 @@
         "flavorText": "They are the first to greet dissenters on their journey into exile.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdc6a825-43f7-40a4-95f0-335dc538b6cd.jpg"
     }
+}
+
+// Bontu the Glorified
+{
+    "name": "Bontu the Glorified",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Menace, indestructible\nBontu can't attack or block unless a creature died under your control this turn.\n{1}{B}, Sacrifice another creature: Scry 1. Each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE",
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bontu the Glorified:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": "ControlledCreatureDiedThisTurn"
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": "ControlledCreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bc07386-909f-4946-9120-3acb58622e2f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Bontu's Monument
@@ -842,6 +983,126 @@
     }
 }
 
+// Cast Out
+{
+    "name": "Cast Out",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhen this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\nCycling {W} ({W}, Discard this card: Draw a card.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cast Out:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Cast Out:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76ff0dd0-489e-4773-93f6-b77fc3b8ef2e.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Censor
+{
+    "name": "Censor",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1}.\nCycling {U} ({U}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{1}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "\"Why so many questions?\"\n—Temmet, vizier of Naktamun",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cb4e315-1a77-479a-9f15-fb23575de805.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Channeler Initiate
 {
     "name": "Channeler Initiate",
@@ -1072,6 +1333,189 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Compelling Argument
+{
+    "name": "Compelling Argument",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player mills five cards.\nCycling {U} ({U}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"How can there be doubt in the presence of such blessings?\"\n—Ukhat, vizier of initiation",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c35f4d5-2337-4ea0-a571-5a73e2d0d54a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Compulsory Rest
+{
+    "name": "Compulsory Rest",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.\nEnchanted creature has \"{2}, Sacrifice this creature: You gain 2 life.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Compulsory Rest:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "CostSacrificeSelf"
+                        ]
+                    },
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "descriptionOverride": "{2}, Sacrifice this creature: You gain 2 life."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Eric Deschamps",
+        "flavorText": "The pain of death is nothing compared to the pain of failure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11cb3a5b-beee-4f53-a6b5-e9b5603546fa.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Consuming Fervor
+{
+    "name": "Consuming Fervor",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+3 and has \"At the beginning of your upkeep, put a -1/-1 counter on this creature.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Consuming Fervor:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, put a -1/-1 counter on this creature."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Headlong is the only way to pass through the gate to the afterlife.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d529d230-89b0-453b-987b-a47e15bc3830.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1357,6 +1801,82 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Desiccated Naga
+{
+    "name": "Desiccated Naga",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Snake",
+    "oracleText": "{3}{B}: Target opponent loses 2 life and you gain 2 life. Activate only if you control a Liliana planeswalker.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Desiccated Naga:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "planeswalker Liliana"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"The nature of this plane makes it almost too easy for me to command the dead.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21f31e96-bb66-4b28-b14a-426d1d5839a6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2861,6 +3381,59 @@
     }
 }
 
+// Honored Crop-Captain
+{
+    "name": "Honored Crop-Captain",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks, other attacking creatures get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Honored Crop-Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "Her words inspire action. Her actions inspire victory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1b44194-fed5-491c-a791-80b986dd66d6.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Hyena Pack
 {
     "name": "Hyena Pack",
@@ -2878,6 +3451,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// In Oketra's Name
+{
+    "name": "In Oketra's Name",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Zombies you control get +2/+1 until end of turn. Other creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Zombie ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Zombie"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Nils Hamm",
+        "flavorText": "\"A single grain of sand is insignificant, but a sandstorm can reduce pyramids to dust. Stand with your crop. Become the storm.\"\n—Oketra, god of solidarity",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccf535ef-79ee-4a31-a614-f6c77fea72b5.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2960,6 +3608,66 @@
         "BLUE",
         "WHITE"
     ]
+}
+
+// Kefnet's Monument
+{
+    "name": "Kefnet's Monument",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Blue creature spells you cast cost {1} less to cast.\nWhenever you cast a creature spell, target creature an opponent controls doesn't untap during its controller's next untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kefnet's Monument:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature blue"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "flavorText": "\"The worthy shall cultivate a nimble mind to perceive the glorious wonders that await them.\"\n—Monument inscription",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5d20f0a-aa7c-4d40-acb2-2b86666afd53.jpg"
+    }
 }
 
 // Khenra Charioteer
@@ -4540,6 +5248,84 @@
     }
 }
 
+// Samut, Voice of Dissent
+{
+    "name": "Samut, Voice of Dissent",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Flash\nDouble strike, vigilance, haste\nOther creatures you control have haste.\n{W}, {T}: Untap another target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "DOUBLE_STRIKE",
+        "VIGILANCE",
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Samut, Voice of Dissent:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "flavorText": "\"I'll fight no more just for the honor of dying. The afterlife will have to wait.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60f2d8f1-43a9-438a-830c-9d6b5701f950.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Scaled Behemoth
 {
     "name": "Scaled Behemoth",
@@ -4591,6 +5377,67 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Scribe of the Mindful
+{
+    "name": "Scribe of the Mindful",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{1}, {T}, Sacrifice this creature: Return target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scribe of the Mindful:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Return target instant or sorcery card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"The best answers solve more than one riddle.\"\n—Kefnet, god of knowledge",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34ffaefe-1b9e-418d-9760-b7d546f03542.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4676,6 +5523,59 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sixth Sense
+{
+    "name": "Sixth Sense",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"Whenever this creature deals combat damage to a player, you may draw a card.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Sixth Sense:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "Instinct yields the truest insight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e564db6b-0b8b-4c67-9135-5da76d2225fe.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5152,6 +6052,47 @@
     ]
 }
 
+// Throne of the God-Pharaoh
+{
+    "name": "Throne of the God-Pharaoh",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "At the beginning of your end step, each opponent loses life equal to the number of tapped creatures you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Throne of the God-Pharaoh:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature tapped"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, each opponent loses life equal to the number of tapped creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "\"When the Second Sun rests between the horns on the horizon, so begins the Hour of Revelation. Then the Hour of Glory, the Hour of Promise, and finally the Hour of Eternity.\"\n—*The Accounting of Hours*",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe402b8e-f966-4971-90a5-950d8cff5025.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Violent Impact
 {
     "name": "Violent Impact",
@@ -5192,6 +6133,83 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Vizier of Tumbling Sands
+{
+    "name": "Vizier of Tumbling Sands",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{T}: Untap another target permanent.\nCycling {1}{U} ({1}{U}, Discard this card: Draw a card.)\nWhen you cycle this card, untap target permanent.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vizier of Tumbling Sands:2",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "When you cycle this card, untap target permanent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vizier of Tumbling Sands:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Untap another target permanent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Time is like the Luxa River—though it flows in one direction, it can be diverted.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce4ff0f5-abee-4f3e-89ae-1b7ee771ec68.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

@@ -43,6 +43,8 @@ import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.*
@@ -1352,6 +1354,10 @@ object CardIntentAnalyzer {
             EffectTarget.Self -> emptySet()
             else -> removalTags(effect.target)
         }
+        // "Each opponent loses life equal to …" (Throne of the God-Pharaoh), "target player loses 2
+        // life": the same clock on a player as face damage, minus the source. Life its controller
+        // loses is the card's price, not its point.
+        is LoseLifeEffect -> if (losesAnOpponent(effect.target)) setOf(IntentTag.DAMAGE_TO_PLAYERS) else emptySet()
 
         is DividedDamageEffect -> setOf(IntentTag.REMOVAL)
 
@@ -1472,7 +1478,15 @@ object CardIntentAnalyzer {
         // what it protects, the damage soaked by a body chosen for it — a prevention that lands elsewhere.
         is RedirectNextDamageEffect -> setOf(IntentTag.PROTECTION)
 
-        is GrantKeywordEffect -> keywordTags(effect.keyword)
+        // "Target creature an opponent controls doesn't untap during its controller's next untap
+        // step" (Kefnet's Monument, Barl's Cage): keeps a chosen permanent tapped — the tapper's
+        // payoff, as [SkipUntapEffect] reads it; which side it lands on is the polarity check's. On
+        // the source or its host ("it doesn't untap", Stitcher's Graft's attacker) it is a price.
+        is GrantKeywordEffect ->
+            if (effect.keyword in LOCKED_TAPPED_FLAGS &&
+                (effect.target is EffectTarget.BoundVariable || effect.target is EffectTarget.ContextTarget)
+            ) setOf(IntentTag.TAPPER)
+            else keywordTags(effect.keyword)
         is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)
         // "Target creature must be blocked this turn if able" / "all creatures able to block it do
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
@@ -1991,6 +2005,16 @@ object CardIntentAnalyzer {
             if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.ANTHEM) else setOf(IntentTag.PUMP)
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "Enchanted creature has 'Whenever this creature deals combat damage to a player, you may
+        // draw a card'" (Sixth Sense): a trigger handed to the host for good that serves whoever
+        // controls it is that creature's own ability from then on — read as if printed, as the
+        // one-shot [GrantTriggeredAbilityEffect] is. A harmful grant (a curse's upkeep drain) is
+        // read by the Aura's polarity instead, and tags nothing here.
+        is GrantTriggeredAbility ->
+            if (static.filter.scope == Scope.AttachedTo &&
+                TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.BENEFICIAL
+            ) analyzeEffect(static.ability.effect, static.ability.allTargetRequirements).tags
+            else emptySet()
         is CantAttack -> neutralizeTags(static.filter)
         is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
             else neutralizeTags(static.filter)
@@ -2392,6 +2416,9 @@ object CardIntentAnalyzer {
     private val EVASION_FLAGS = setOf(
         AbilityFlag.CANT_BE_BLOCKED.name, AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE.name,
     )
+
+    /** The flags that keep a tapped permanent tapped through its controller's untap step. */
+    private val LOCKED_TAPPED_FLAGS = setOf(AbilityFlag.DOESNT_UNTAP.name, AbilityFlag.CANT_BECOME_UNTAPPED.name)
 
     /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
     private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)

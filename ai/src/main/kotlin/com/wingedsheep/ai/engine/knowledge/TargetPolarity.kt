@@ -938,6 +938,17 @@ object TargetPolarityAnalyzer {
     internal fun targetsOwnSide(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
         slotOf(target, requirements)?.let { isOwnSide(requirements[it]) } == true
 
+    /**
+     * Whether [target] is a chosen slot our own permanents can fill — any slot not kept on an
+     * opponent's side ("target creature", "another target permanent"). A beneficial leaf on such a
+     * slot is aimed at our side, as one confined there ([targetsOwnSide]) is.
+     */
+    internal fun ownSideCanFill(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        slotOf(target, requirements)?.let { slot ->
+            val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+            requirement is TargetObject && !isOpponentSide(requirement)
+        } == true
+
     /** Whether [requirement]'s filter keeps its target on our side of the table ("… you control"). */
     internal fun isOwnSide(requirement: TargetRequirement): Boolean {
         val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
@@ -1401,7 +1412,7 @@ object TargetPolarityAnalyzer {
         // opponent's creature, the removal ranking's side.
         val aura = card.script.auraTarget
         // Only when nothing at all reads the host — an UNKNOWN from an unread host effect
-        // (Honest Work, Relic Bind) stays a gap rather than hiding behind the enchant restriction.
+        // stays a gap rather than hiding behind the enchant restriction.
         if (reading == TargetPolarity.UNKNOWN && aura != null && isOpponentSide(aura) &&
             attachmentReadings(card, definitions, hostIs = null).isEmpty()
         ) return TargetPolarity.HARMFUL
@@ -1466,6 +1477,17 @@ object TargetPolarityAnalyzer {
      */
     private fun attachmentReadings(card: CardDefinition, definitions: CardLookup, hostIs: Boolean?): List<TargetPolarity> {
         val readings = mutableListOf<TargetPolarity>()
+        // An ability granted to the host is its controller's to activate or ignore — a gift when it
+        // is all the Aura does (Abundant Growth), but beside a curse only the consolation the curse
+        // leaves them: Compulsory Rest's "{2}, Sacrifice this creature: You gain 2 life" on a
+        // creature that can't attack or block, Imprisoned in the Moon's mana ability on a creature
+        // that became a land. It never turns the curse into a gift, so a harm outranks it.
+        val consolations = mutableListOf<TargetPolarity>()
+        // A triggered ability granted to the host that only hurts it, beside a gift the Aura gives
+        // outright — Consuming Fervor's "+3/+3" and "at the beginning of your upkeep, put a -1/-1
+        // counter on this creature" — is the gift's price, paid a turn at a time after the bonus has
+        // landed: a pump that fades, not a curse. With no gift beside it, the harm is the card.
+        val prices = mutableListOf<TargetPolarity>()
         for (static in card.script.staticAbilities) {
             if (hostIs != null && static is ConditionalStaticAbility) {
                 val holds = when (static.condition) {
@@ -1474,7 +1496,12 @@ object TargetPolarityAnalyzer {
                 }
                 if (!holds) continue
             }
-            staticPolarity(static)?.let(readings::add)
+            val reading = staticPolarity(static) ?: continue
+            when {
+                static is GrantActivatedAbility -> consolations += reading
+                static is GrantTriggeredAbility && reading == TargetPolarity.HARMFUL -> prices += reading
+                else -> readings += reading
+            }
         }
         // "Enchanted artifact is a creature with base power and toughness 4/4" (Mightstone's
         // Animation, Zoetic Glyph, Puppet Crafting): the creature type and the body arrive together,
@@ -1506,6 +1533,10 @@ object TargetPolarityAnalyzer {
         // A self-only zone redirect (disturb's "if this would be put into a graveyard, exile it
         // instead") moves the Aura itself and never touches the creature, so it is no veto either.
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
+        // A price needs a gift the Aura gives outright, so judge it before any consolation joins.
+        val payPrices = TargetPolarity.BENEFICIAL !in readings || TargetPolarity.HARMFUL in readings
+        if (TargetPolarity.HARMFUL !in readings) readings += consolations
+        if (payPrices) readings += prices
         return readings
     }
 

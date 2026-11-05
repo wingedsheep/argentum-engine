@@ -731,7 +731,7 @@ object AiReadingAudit {
         IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
         IntentTag.DAMAGE_AMPLIFIER -> "amplifies damage from our sources"
-        IntentTag.DAMAGE_TO_PLAYERS -> "deals damage to players"
+        IntentTag.DAMAGE_TO_PLAYERS -> "damages or drains players"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
@@ -812,7 +812,7 @@ object AiReadingAudit {
         // A permanent untapping itself (a mana rock untapping for more, a boast's "untap it") has no
         // target and nothing to hold: the untap is worth what tapping it again buys (another mana
         // ability, or a blocker after it attacked), which the simulation already sees on the board.
-        // Untapping a *chosen* target stays flagged unless it is our own ([untapsOwnTarget]) or a land (ramp).
+        // Untapping a *chosen* target stays flagged unless our side can fill it ([untapsOwnTarget]) or it is a land (ramp).
         if (leaf is TapUntapEffect && !leaf.tap && leaf.target == EffectTarget.Self) return true
         // A permanent transforming itself (a werewolf, a DFC's "transform this") has no target and is
         // no spell to time: its payoff is the face it becomes, which the simulation sees on the board.
@@ -937,14 +937,16 @@ object AiReadingAudit {
     }
 
     /**
-     * Untapping a target confined to our own side ("untap target creature you control", Dauntless
-     * Aven) needs no intent for the reason untapping the source itself doesn't (see [needsNoIntent]):
-     * the untap is worth what tapping that permanent again buys — another attack's blocker, another
-     * activation — which the simulation sees on the board. Untapping a target land reads as ramp
-     * (CardIntentAnalyzer); an untap that can land on an opponent's permanent stays flagged.
+     * Untapping a target our own side can fill ("untap target creature you control", Dauntless
+     * Aven; "untap another target creature", Samut, Voice of Dissent) needs no intent for the reason
+     * untapping the source itself doesn't (see [needsNoIntent]): the untap is worth what tapping that
+     * permanent again buys — another attack's blocker, another activation — which the simulation
+     * sees on the board. An untap reads as a gift (TargetPolarityAnalyzer), so a slot open to either
+     * side is aimed at our own permanents, never handed to the opponent. Untapping a target land
+     * reads as ramp (CardIntentAnalyzer); an untap confined to an opponent's permanents stays flagged.
      */
     private fun untapsOwnTarget(leaf: Effect, reqs: List<TargetRequirement>): Boolean =
-        leaf is TapUntapEffect && !leaf.tap && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)
+        leaf is TapUntapEffect && !leaf.tap && TargetPolarityAnalyzer.ownSideCanFill(leaf.target, reqs)
 
     /** A counter placed on a bound target slot that only a player can fill (see [needsNoIntent]'s player counters). */
     private fun countsOnAPlayerSlot(leaf: Effect, playerSlots: Set<String>): Boolean {
