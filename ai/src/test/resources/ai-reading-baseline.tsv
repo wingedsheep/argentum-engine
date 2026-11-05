@@ -243,7 +243,7 @@ Agonasaur Rex
 Agonizing Demise
 Agonizing Remorse	intent: Pipeline(FromMultipleZones→exile); intent: RevealHandEffect
 Agonizing Syphon
-Agrus Kos, Eternal Soldier	intent: CopyForOtherPossibleTargetsEffect
+Agrus Kos, Eternal Soldier
 Agrus Kos, Spirit of Justice
 Agrus Kos, Wojek Veteran
 Ahn-Crop Invader
@@ -341,7 +341,7 @@ Aladdin's Lamp	intent: ReplaceNextDrawWithEffect
 Aladdin's Ring
 Alandra, Sky Dreamer
 Alania's Pathmaker
-Alania, Divergent Storm	intent: CopyTargetSpellEffect; polarity: ReflexiveTriggerEffect
+Alania, Divergent Storm	polarity: ReflexiveTriggerEffect
 Alarum
 Alchemist's Apprentice
 Alchemist's Assistant
@@ -1118,7 +1118,7 @@ Ayli, Eternal Pilgrim
 Ayula's Influence
 Ayula, Queen Among Bears
 Azami, Lady of Scrolls
-Aziza, Mage Tower Captain	intent: CopyTargetSpellEffect
+Aziza, Mage Tower Captain
 Azog, Moria's Ruin
 Azor's Gateway
 Azor, the Lawbringer
@@ -1214,7 +1214,7 @@ Banefire
 Banehound
 Baneslayer Angel
 Banish from Edoras
-Banish into Fable	intent: CopyTargetSpellEffect
+Banish into Fable
 Banishing Betrayal
 Banishing Light
 Banishing Slash
@@ -1374,7 +1374,7 @@ Beacon of Destiny	intent: RedirectDamageFromChosenSourceEffect; timing: Redirect
 Beacon of Immortality	polarity: SetLifeTotalEffect
 Beaming Defiance
 Beamsaw Prospector
-Beamsplitter Mage	intent: CopyForOtherPossibleTargetsEffect
+Beamsplitter Mage
 Beamtown Beatstick
 Beanstalk Giant
 Beanstalk Wurm
@@ -2069,7 +2069,7 @@ Branchsnap Lorian
 Brandywine Farmer
 Brash Taunter
 Brass Gnat
-Brass Knuckles	intent: CopyTargetSpellEffect
+Brass Knuckles
 Brass Man
 Brass Secretary
 Brass's Bounty
@@ -2724,7 +2724,7 @@ Champions of the Perfect
 Champions of the Shoal
 Chance for Glory
 Chance-Met Elves
-Chancellor of Tales	intent: CopyTargetSpellEffect
+Chancellor of Tales
 Chandra Nalaar
 Chandra's Embercat
 Chandra's Emberling
@@ -2736,7 +2736,7 @@ Chandra's Magmutt
 Chandra's Outrage
 Chandra's Pyreling
 Chandra's Pyrohelix	polarity: DividedDamageEffect
-Chandra's Regulator	intent: CopyTargetSpellOrAbilityEffect
+Chandra's Regulator
 Chandra's Spitfire
 Chandra's Triumph
 Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
@@ -2748,7 +2748,7 @@ Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; int
 Chandra, Flame's Fury
 Chandra, Flameshaper	polarity: DividedDamageEffect
 Chandra, Heart of Fire	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary|hand→exile|graveyard)
-Chandra, Hope's Beacon	intent: CopyTargetSpellEffect
+Chandra, Hope's Beacon
 Chandra, Novice Pyromancer
 Chandra, Spark Hunter
 Chandra, Torch of Defiance
@@ -2870,7 +2870,7 @@ Chomping Kavu
 Choose Your Weapon
 Chorale of the Void	polarity: Aura>MoveToZoneEffect; polarity: Aura>SacrificeSelfEffect
 Chord of Calling
-Choreographed Sparks	intent: ModalEffect
+Choreographed Sparks
 Chorus of Woe
 Chorus of the Conclave
 Chosen by Heliod
@@ -3096,7 +3096,7 @@ Code of Constraint
 Codecracker Hound
 Codespell Cleric
 Codex Shredder
-Codie, Ravenous Codex	intent: CopyTargetSpellEffect
+Codie, Ravenous Codex
 Codie, Vociferous Codex
 Codsworth, Handy Helper
 Coerced to Kill	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKeyword; polarity: Aura>GrantSubtype; polarity: Aura>SetBasePowerToughnessStatic
@@ -3154,7 +3154,7 @@ Colossodon Yearling
 Colossus Hammer
 Colossus of Sardia
 Colossus of the Blood Age
-Combadge	intent: CopyTargetSpellEffect
+Combadge
 Combat Celebrant	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
 Combat Courier
 Combat Medic
@@ -3207,7 +3207,7 @@ Compelling Deterrence
 Compleat Devotion
 Compleated Huntmaster
 Complete Disregard
-Complete the Circuit	intent: CopyTargetSpellEffect; intent: GrantFlashToSpellsEffect; timing: GrantFlashToSpellsEffect
+Complete the Circuit	timing: GrantFlashToSpellsEffect
 Complicate
 Component Collector
 Composite Golem
@@ -3662,7 +3662,7 @@ Cursed Land	polarity: Aura>DealDamageEffect
 Cursed Minotaur
 Cursed Mirror
 Cursed Rack
-Cursed Recording	intent: CopyNextSpellCastEffect
+Cursed Recording
 Cursed Ronin
 Cursed Totem
 Cursed Windbreaker	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
@@ -4349,7 +4349,7 @@ Disperse
 Dispersing Orb
 Displacer Beast	intent: VentureIntoTheDungeonEffect
 Displacer Kitten
-Display of Power	intent: CopyEachTargetSpellEffect; polarity: CopyEachTargetSpellEffect
+Display of Power	polarity: CopyEachTargetSpellEffect
 Disrupt
 Disrupting Scepter
 Disruption Protocol
@@ -4481,10 +4481,10 @@ Dormant Grove
 Dorothea, Vengeful Victim
 Dosan the Falling Leaf
 Dose of Dawnglow
-Double Down	intent: CopyTargetSpellEffect
-Double Major	intent: CopyTargetSpellEffect
-Double Vision	intent: CopyTargetSpellEffect
-Doublecast	intent: CopyNextSpellCastEffect
+Double Down
+Double Major
+Double Vision
+Doublecast
 Doubling Season
 Doubtless One
 Dour Port-Mage
@@ -4519,7 +4519,7 @@ Draconic Muralists
 Draconic Visitor
 Dracosaur Auxiliary
 Drafna's Restoration	intent: Pipeline(ChosenTargets→library); polarity: Pipeline(ChosenTargets→library)
-Drafna, Founder of Lat-Nam	intent: CopyTargetSpellEffect
+Drafna, Founder of Lat-Nam
 Drag Under
 Drag the Canal
 Drag to the Bottom
@@ -4744,10 +4744,10 @@ Dryad's Caress
 Dryad's Favor
 Dryad's Revival
 Dual Shot
-Dual Strike	intent: CopyNextSpellCastEffect
+Dual Strike
 Dual-Sun Adepts
 Dual-Sun Technique	timing: GrantKeywordEffect
-Dualcaster Mage	intent: CopyTargetSpellEffect
+Dualcaster Mage
 Dub
 Dubious Delicacy
 Duchess, Wayward Tavernkeep	intent: AddCountersEffect
@@ -4915,9 +4915,9 @@ Echo Inspector
 Echo Tracer
 Echo of Dusk
 Echo of Eons
-Echo, Perceptive Prodigy	intent: CopyTargetSpellOrAbilityEffect
+Echo, Perceptive Prodigy
 Echocasting Symposium	polarity: CreateTokenCopyOfTargetEffect
-Echoes of Eternity	intent: CopyTargetSpellEffect
+Echoes of Eternity
 Echoing Assault	polarity: CreateTokenCopyOfTargetEffect
 Echoing Courage	polarity: ForEachEffect
 Echoing Decay	polarity: ForEachEffect
@@ -5326,7 +5326,7 @@ Erosion	intent: PayOrSufferEffect; polarity: Aura>PayOrSufferEffect
 Errand-Rider of Gondor
 Errant Ephemeron
 Errant and Giada
-Errant, Street Artist	intent: CopyTargetSpellEffect
+Errant, Street Artist
 Erratic Apparition
 Erratic Cyclops	intent: ModifyStatsEffect
 Erratic Explosion
@@ -5335,7 +5335,7 @@ Erstwhile Trooper
 Ertai Resurrected
 Ertai's Scorn
 Ertai, the Corrupted
-Ertha Jo, Frontier Mentor	intent: CopyTargetSpellOrAbilityEffect
+Ertha Jo, Frontier Mentor
 Erudite Wizard
 Eruth, Tormented Prophet
 Escape Artist
@@ -5479,7 +5479,7 @@ Exotic Pets
 Expand the Sphere	intent: Pipeline(TopOfLibrary→battlefield|library)
 Expanded Anatomy
 Expanding Ooze	intent: AdaptEffect
-Expansion // Explosion	intent: CopyTargetSpellEffect
+Expansion // Explosion
 Expedite	timing: GrantKeywordEffect
 Expedited Inheritance
 Expedition Champion
@@ -5917,7 +5917,7 @@ Filigree Familiar
 Filigree Sages	intent: TapUntapEffect
 Fill with Fright
 Filter Out	intent: Pipeline(BattlefieldMatching→hand)
-Fin Fang Foom	intent: CopyTargetSpellEffect
+Fin Fang Foom
 Final Death
 Final Flare
 Final Flourish
@@ -5934,7 +5934,7 @@ Final Vengeance
 Finale of Devastation
 Finale of Eternity
 Finale of Glory
-Finale of Promise	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>CopyTargetSpellEffect; intent: Pipeline(ChosenTargets|graveyard→?); polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets|graveyard→?)
+Finale of Promise	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets|graveyard→?)
 Finale of Revelation
 Finch Formation
 Find // Finality
@@ -5951,7 +5951,7 @@ Fire Drake
 Fire Elemental
 Fire Giant's Fury
 Fire Imp
-Fire Lord Azula	intent: CopyTargetSpellEffect
+Fire Lord Azula
 Fire Lord Zuko
 Fire Magic
 Fire Nation Attacks
@@ -5973,7 +5973,7 @@ Fire of Orthanc
 Fire-Belly Changeling
 Fire-Rim Form
 Fireball
-Firebender Ascension	intent: CopyTargetTriggeredAbilityEffect
+Firebender Ascension
 Firebending Lesson
 Firebending Student
 Fireblade Artist
@@ -6046,7 +6046,7 @@ Flameborn Viron
 Flamebraider
 Flamecache Gecko
 Flamecast Wheel
-Flamehold Grappler	intent: CopyNextSpellCastEffect
+Flamehold Grappler
 Flamekin Bladewhirl
 Flamekin Brawler
 Flamekin Gildweaver
@@ -6064,7 +6064,7 @@ Flaming Sword
 Flanking Troops
 Flare of Cultivation
 Flare of Denial
-Flare of Duplication	intent: CopyTargetSpellEffect
+Flare of Duplication
 Flare of Faith
 Flare of Fortitude	timing: ForEach>GrantKeywordEffect; timing: LockLifeGainEffect; timing: LockLifeLossEffect
 Flare of Malice
@@ -6264,7 +6264,7 @@ Forgotten Ancient	intent: DistributeCountersFromSelfEffect
 Forgotten Cave
 Forgotten Monument
 Forgotten Sentinel
-Fork	intent: CopyTargetSpellEffect
+Fork
 Forked Lightning	polarity: DividedDamageEffect
 Forlorn Flats
 Form a Posse
@@ -6518,7 +6518,7 @@ Galuf's Final Act
 Galvanic Arc
 Galvanic Discharge
 Galvanic Giant
-Galvanic Iteration	intent: CopyNextSpellCastEffect
+Galvanic Iteration
 Galvanic Juggernaut
 Galvanic Key	intent: TapUntapEffect
 Galvanize
@@ -7121,7 +7121,7 @@ Godo, Bandit Warlord	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffec
 Gods Willing	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Gods' Hall Guardian
 Godtoucher
-Gogo, Master of Mimicry	intent: CopyTargetSpellOrAbilityEffect
+Gogo, Master of Mimicry
 Goham Djinn
 Gohn, Town of Ruin
 Golbez, Crystal Collector
@@ -8116,7 +8116,7 @@ Hoverguard Sweepers
 Hoverstone Pilgrim	polarity: MoveToZoneEffect
 How to Start a Riot	timing: GrantKeywordEffect
 Howl from Beyond
-Howl of the Horde	intent: CopyNextSpellCastEffect
+Howl of the Horde
 Howl of the Hunt	intent: TapUntapEffect
 Howl of the Night Pack
 Howler's Heavy	intent: ModifyStatsEffect
@@ -8601,7 +8601,7 @@ Invasion Submersible	intent: AddCardTypeEffect
 Invasion Tactics
 Invasion of Alara	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile|hand|library)
 Invasion of Amonkhet
-Invasion of Arcavios	intent: CopyTargetSpellEffect
+Invasion of Arcavios
 Invasion of Azgol
 Invasion of Belenon
 Invasion of Dominaria
@@ -8632,7 +8632,7 @@ Invasion of Tarkir
 Invasion of Theros
 Invasion of Tolvada
 Invasion of Ulgrotha
-Invasion of Vryn	intent: CopyTargetSpellEffect
+Invasion of Vryn
 Invasion of Xerex
 Invasion of Zendikar
 Invasion of the Giants
@@ -8754,7 +8754,7 @@ Ivorytusk Fortress
 Ivy Dancer
 Ivy Elemental
 Ivy Lane Denizen
-Ivy, Gleeful Spellthief	intent: CopyForOtherPossibleTargetsEffect
+Ivy, Gleeful Spellthief
 Ixalan's Binding
 Ixalli's Diviner
 Ixalli's Keeper
@@ -8773,7 +8773,7 @@ Izzet Locket
 Izzet Signet
 J. Jonah Jameson	intent: SuspectEffect; polarity: SuspectEffect
 Jace Beleren
-Jace Reawakened	intent: CopyEachSpellCastEffect; intent: MakePlottedEffect; intent: Pipeline(hand→exile)
+Jace Reawakened	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
 Jace's Archivist
 Jace's Ingenuity
 Jace's Machinations	timing: GrantLoyaltyActivationPermissionEffect
@@ -8791,7 +8791,7 @@ Jace, Wielder of Mysteries
 Jace, the Mind Sculptor	intent: Pipeline(TopOfLibrary→library); polarity: Pipeline(TopOfLibrary→library)
 Jace, the Perfected Mind	intent: ModifyStatsEffect
 Jack-o'-Lantern
-Jackal, Genius Geneticist	intent: CopyTargetSpellEffect
+Jackal, Genius Geneticist
 Jackdaw Savior
 Jacked Rabbit
 Jackhammer
@@ -8843,7 +8843,7 @@ Jaya Ballard
 Jaya's Firenado
 Jaya's Greeting
 Jaya's Immolating Inferno
-Jaya, Fiery Negotiator	intent: CreateGlobalTriggeredAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→?)
+Jaya, Fiery Negotiator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→?)
 Jaya, Venerated Firemage
 Jayemdae Tome
 Jazal Goldmane
@@ -8859,7 +8859,7 @@ Jennika's Technique
 Jennika, Bad Apple Big Sister
 Jenova, Ancient Calamity
 Jeong Jeong's Deserters
-Jeong Jeong, the Deserter	intent: CopyNextSpellCastEffect
+Jeong Jeong, the Deserter
 Jerrard of the Closed Fist
 Jerren, Corrupted Bishop
 Jeska's Will	polarity: AddManaEffect
@@ -8904,7 +8904,7 @@ Jihad
 Jill, Shiva's Dominant	intent: ExileAndReturnTransformedEffect
 Jin-Gitaxias	intent: ExileAndReturnTransformedEffect
 Jin-Gitaxias, Core Augur
-Jin-Gitaxias, Progress Tyrant	intent: CopyTargetSpellEffect
+Jin-Gitaxias, Progress Tyrant
 Jinnie Fay, Jetmir's Second
 Jinxed Choker	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
 Jinxed Idol	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
@@ -9289,7 +9289,7 @@ Kird Ape
 Kird Chieftain
 Kirk, Commanding Officer	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Kirk, Enterprising Captain	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Kirol, Attentive First-Year	intent: CopyTargetTriggeredAbilityEffect; polarity: CopyTargetTriggeredAbilityEffect
+Kirol, Attentive First-Year
 Kirol, History Buff
 Kishla Skimmer
 Kishla Trawlers
@@ -9314,7 +9314,7 @@ Kithkin Mourncaller
 Kithkin Rabble
 Kithkin Shielddare
 Kitnap
-Kitsa, Otterball Elite	intent: CopyTargetSpellEffect
+Kitsa, Otterball Elite
 Kitsune Ace
 Kitsune Blademaster
 Kitsune Diviner
@@ -9657,7 +9657,7 @@ Leaf Gilder
 Leaf-Crowned Visionary
 Leafkin Avenger
 Leafkin Druid
-League Guildmage	intent: CopyTargetSpellEffect
+League Guildmage
 Leap of Faith
 Leapfrog
 Leaping Ambush
@@ -9745,7 +9745,7 @@ Leyline of Anticipation
 Leyline of Combustion
 Leyline of Hope
 Leyline of Mutation
-Leyline of Resonance	intent: CopyTargetSpellEffect
+Leyline of Resonance
 Leyline of Sanctity
 Leyline of Transformation
 Leyline of the Guildpact
@@ -9881,7 +9881,7 @@ Lita, Mechanical Engineer	intent: ForEach>TapUntapEffect
 Lithatog
 Lithobraking
 Lithoform Blight
-Lithoform Engine	intent: CopyTargetSpellEffect; intent: CopyTargetSpellOrAbilityEffect
+Lithoform Engine
 Lithomantic Barrage
 Littjara Glade-Warden
 Littjara Kinseekers
@@ -9954,7 +9954,7 @@ Lodestone Myr
 Lodestone Needle
 Lofty Denial
 Lofty Dreams
-Loki Laufeyson	intent: CopyNextSpellCastEffect
+Loki Laufeyson
 Loki, God of Mischief
 Lolth, Spider Queen	intent: CreateGlobalTriggeredAbilityEffect
 Lone Missionary
@@ -10076,7 +10076,7 @@ Lu Meng, Wu General
 Lu Su, Wu Advisor
 Lu Xun, Scholar General
 Luck Bobblehead
-Lucky Clover	intent: CopyTargetSpellEffect
+Lucky Clover
 Lucky Offering
 Ludevic, Necrogenius
 Luke Cage, Power Man
@@ -10085,7 +10085,7 @@ Lukka, Coppercoat Outcast	intent: GrantMayPlayFromExileEffect; intent: Pipeline(
 Lull
 Lullmage's Domination
 Lullmage's Familiar
-Lumaret's Favor	intent: CopyTargetSpellEffect
+Lumaret's Favor
 Lumbering Battlement
 Lumbering Laundry	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Lumbering Megasloth
@@ -10127,7 +10127,7 @@ Lurking Roper
 Lurrus of the Dream-Den
 Lush Oasis
 Lush Portico
-Lutri, the Spellchaser	intent: CopyTargetSpellEffect
+Lutri, the Spellchaser
 Lux Cannon
 Luxior, Giada's Gift
 Luxknight Breacher
@@ -10577,7 +10577,7 @@ Memory Theft
 Memory Trap
 Memory Vessel
 Menacing Ogre	intent: SecretChoiceEffect; intent: StorePlayerEffect
-Mendicant Core, Guidelight	intent: CopyTargetSpellEffect
+Mendicant Core, Guidelight
 Meneldor, Swift Savior
 Meng Huo's Horde
 Meng Huo, Barbarian King
@@ -10587,7 +10587,7 @@ Mental Misstep
 Mental Modulation
 Mental Note
 Mentor of the Meek
-Mentor's Guidance	intent: CopyTargetSpellEffect
+Mentor's Guidance
 Mephitic Draught
 Mephitic Vapors
 Mer-Ek Nightblade
@@ -10603,7 +10603,7 @@ Merciless Javelineer	combat: CantBlockEffect; timing: CantBlockEffect
 Merciless Repurposing
 Merciless Resolve
 Mercurial Kite
-Mercurial Spelldancer	intent: CopyTargetSpellEffect
+Mercurial Spelldancer
 Mercurial Transformation
 Meren of Clan Nel Toth
 Merfolk Assassin
@@ -10674,7 +10674,7 @@ Metropolis Angel
 Metropolis Reformer
 Metropolis Sprite
 Miasma Demon
-Mica, Reader of Ruins	intent: CopyTargetSpellEffect
+Mica, Reader of Ruins
 Michelangelo's Technique	intent: Pipeline(TopOfLibrary→battlefield|library)
 Michelangelo, Game Master
 Michelangelo, Improviser	intent: Pipeline(hand→battlefield)
@@ -10839,21 +10839,21 @@ Mirror Shield
 Mirror Universe
 Mirror Universe Intrusion	polarity: CreateTokenCopyOfTargetEffect
 Mirror of Galadriel
-Mirror-Shield Hoplite	intent: CopyTargetTriggeredAbilityEffect
+Mirror-Shield Hoplite
 Mirrorform
 Mirrorhall Mimic
 Mirrormade
 Mirrormere Guardian	intent: TheRingTemptsYouEffect
 Mirrormind Crown
 Mirrorshell Crab
-Mirrorwing Dragon	intent: CopyForOtherPossibleTargetsEffect
+Mirrorwing Dragon
 Miscalculation
 Miscast
 Mischievous Catgeist
 Mischievous Chimera
 Mischievous Mystic
 Mischievous Pup
-Mischievous Quanar	intent: CopyTargetSpellEffect; intent: TurnFaceDownEffect
+Mischievous Quanar	intent: TurnFaceDownEffect
 Mischievous Sneakling
 Misdirection
 Misery Charm
@@ -10919,7 +10919,7 @@ Mite Overseer
 Mithril Coat
 Mizzium Tank
 Mizzix's Mastery	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
-Mizzix, Replica Rider	intent: CopyTargetSpellEffect
+Mizzix, Replica Rider
 Mjölnir, Hammer of Thor
 Mm'menon, Uthros Exile
 Mm'menon, the Right Hand
@@ -11297,7 +11297,7 @@ Nahiri, Heir of the Ancients
 Nahiri, Storm of Stone
 Nahiri, the Unforgiving	intent: GrantStaticAbilityEffect; polarity: GrantStaticAbilityEffect
 Naiad of Hidden Coves
-Najal, the Storm Runner	intent: CopyNextSpellCastEffect
+Najal, the Storm Runner
 Najeela, the Blade-Blossom	timing: ForEach>GrantKeywordEffect
 Namazu Trader
 Nameless Inversion	polarity: LoseAllCreatureTypesEffect; polarity: ModifyStatsEffect
@@ -11320,13 +11320,13 @@ Narnam Cobra
 Narrow Escape
 Narset of the Ancient Way
 Narset's Rebuke
-Narset's Reversal	intent: CopyTargetSpellEffect; intent: ReturnSpellOrPermanentToOwnersHandEffect
+Narset's Reversal
 Narset, Enlightened Exile
 Narset, Enlightened Master	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Narset, Jeskai Waymaster
 Narset, Parter of Veils
 Narstad Scrapper
-Naru Meha, Master Wizard	intent: CopyTargetSpellEffect
+Naru Meha, Master Wizard
 Nashi, Moon Sage's Scion	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
 Nashi, Moon's Legacy
 Nashi, Searcher in the Dark
@@ -12315,7 +12315,7 @@ Pet Avengers
 Pet Sehlat
 Petals of Insight
 Peter Parker
-Peter Parker's Camera	intent: CopyTargetSpellOrAbilityEffect
+Peter Parker's Camera
 Petra Sphinx	intent: ChooseOptionEffect; intent: Pipeline(TopOfLibrary→graveyard|hand); polarity: ChooseOptionEffect; polarity: Pipeline(TopOfLibrary→graveyard|hand)
 Petrified Field
 Petrified Hamlet
@@ -12351,7 +12351,7 @@ Phoenix Chick
 Phoenix Down
 Phoenix Fleet Airship
 Phoenix of Ash
-Photon Blast Barrage	intent: CopyTargetSpellEffect
+Photon Blast Barrage
 Photosynthetic Physician
 Phylactery Lich
 Phylath, World Sculptor
@@ -12417,7 +12417,7 @@ Piety
 Piety Charm
 Piggy Bank
 Pigment Storm
-Pigment Wrangler	intent: CopyNextSpellCastEffect
+Pigment Wrangler
 Pikemen
 Pile On
 Pileated Provisioner
@@ -12466,7 +12466,7 @@ Pirate's Pillage
 Pirate's Prize
 Pirated Copy
 Piston-Fist Cyclops
-Pit Automaton	intent: CopyTargetSpellOrAbilityEffect
+Pit Automaton
 Pit Imp
 Pit Keeper
 Pit Raptor
@@ -12547,7 +12547,7 @@ Pledge of Loyalty	polarity: Aura>GrantProtectionFromControlledColors
 Pledge of Unity
 Plover Knights
 Plow Through
-Plumb the Forbidden	intent: CopyTargetSpellEffect
+Plumb the Forbidden
 Plumecreed Escort
 Plumecreed Mentor
 Plumeveil
@@ -13162,7 +13162,7 @@ Ral, Caller of Storms	polarity: DividedDamageEffect
 Ral, Crackling Wit	combat: GrantSpellKeywordEffect
 Ral, Izzet Viceroy
 Ral, Monsoon Mage	intent: FlipCoinEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: ModifySpellCostsEffect; intent: Pipeline(TopOfLibrary→exile); polarity: DividedDamageEffect; polarity: DrawCardsEffect
-Ral, Storm Conduit	intent: CopyNextSpellCastEffect
+Ral, Storm Conduit
 Rally
 Rally Maneuver
 Rally at the Hornburg
@@ -13444,8 +13444,8 @@ Reenact the Crime	polarity: CopyCardIntoCollectionEffect; polarity: MoveToZoneEf
 Referee Squad
 Reflecting Mirror
 Reflecting Pool
-Reflections of Littjara	intent: CopyTargetSpellEffect
-Reflective Golem	intent: CopyTargetSpellEffect
+Reflections of Littjara
+Reflective Golem
 Reflex Sliver
 Reflexes
 Reforge the Soul
@@ -13546,7 +13546,7 @@ Rent Is Due
 Repair and Recharge
 Repeal
 Repeat Offender	intent: SuspectEffect
-Repeated Reverberation	intent: CopyTargetSpellOrAbilityEffect
+Repeated Reverberation
 Repeating Barrage
 Repel
 Repel Calamity
@@ -13754,7 +13754,7 @@ Riku of Many Paths
 Rile
 Riling Dawnbreaker
 Rime Chill
-Rimefire Torque	intent: CopyNextSpellCastEffect
+Rimefire Torque
 Rimefur Reindeer
 Rimekin Recluse
 Rimeshield Frost Giant
@@ -13766,7 +13766,7 @@ Ring of Ma'rûf	intent: ReplaceNextDrawWithEffect
 Ring of Renewal
 Ring of the Lucii
 Ringing Strike Mastery	polarity: Aura>GrantActivatedAbility; polarity: Aura>GrantKeyword; polarity: Aura>TapUntapEffect
-Rings of Brighthearth	intent: CopyTargetSpellOrAbilityEffect
+Rings of Brighthearth
 Ringsight
 Ringskipper
 Ringwarden Owl
@@ -13975,7 +13975,7 @@ Rootbreaker Wurm
 Rootcast Apprenticeship
 Rootcoil Creeper
 Rootgrapple
-Rootha, Mercurial Artist	intent: CopyTargetSpellEffect
+Rootha, Mercurial Artist
 Rooting Kavu	intent: Pipeline(graveyard→library)
 Rooting Moloch	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
 Rootless Yew
@@ -14028,7 +14028,7 @@ Rowan's Battleguard
 Rowan's Grim Search
 Rowan's Stalwarts
 Rowan, Fearless Sparkmage	combat: ForEach>CantBlockEffect
-Rowan, Scholar of Sparks	combat: SetBaseStatsEffect; intent: CreateGlobalTriggeredAbilityEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
+Rowan, Scholar of Sparks	combat: SetBaseStatsEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
 Rowan, Scion of War	intent: ModifySpellCostsEffect
 Rowdy Research
 Rowdy Snowballers
@@ -14205,7 +14205,7 @@ Sage of Mysteries
 Sage of the Falls
 Sage of the Fang
 Sage of the Inward Eye
-Sage of the Skies	intent: CopyTargetSpellEffect
+Sage of the Skies
 Sage of the Unknowable
 Sage's Knowledge
 Sage's Nouliths
@@ -14480,7 +14480,7 @@ Scholar of New Horizons
 Scholar of Stars
 Scholar of the Ages
 School Daze
-Scientist Supreme of A.I.M.	intent: CopyTargetSpellOrAbilityEffect
+Scientist Supreme of A.I.M.
 Scion Summoner
 Scion of Darkness
 Scion of Draco
@@ -14602,7 +14602,7 @@ Sea Gate Colossus
 Sea Gate Loremaster
 Sea Gate Oracle
 Sea Gate Restoration
-Sea Gate Stormcaller	intent: CopyNextSpellCastEffect
+Sea Gate Stormcaller
 Sea God's Scorn
 Sea Kings' Blessing	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect; timing: ForEach>ChangeColorEffect
 Sea Legs
@@ -15098,7 +15098,7 @@ Short Circuit
 Short Sword
 Shortcut Seeker	intent: VentureIntoTheDungeonEffect
 Shortcut to Mushrooms	intent: TheRingTemptsYouEffect
-Show of Confidence	intent: CopyTargetSpellEffect; timing: GrantKeywordEffect
+Show of Confidence	timing: GrantKeywordEffect
 Show of Valor
 Showdown of the Skalds
 Shower of Arrows
@@ -15491,7 +15491,7 @@ Sleight of Mind	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
 Slice and Dice
 Slice from the Shadows	timing: ModifyStatsEffect
 Slice in Twain
-Slick Imitator	intent: CopyTargetSpellEffect
+Slick Imitator
 Slick Sequence
 Slickshot Lockpicker
 Slickshot Show-Off
@@ -15611,7 +15611,7 @@ Soaring Seacliff
 Soaring Stoneglider
 Soaring Thought-Thief
 Social Climber
-Social Snub	intent: CopyTargetSpellEffect
+Social Snub
 Soilshaper	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Sokenzan Bruiser
 Sokenzan Smelter
@@ -15887,7 +15887,7 @@ Spider-Sense
 Spider-Slayer, Hatred Honed
 Spider-Suit
 Spider-UK
-Spider-Verse	intent: CopyTargetSpellEffect
+Spider-Verse
 Spider-Woman, Secret Agent
 Spider-Woman, Stunning Savior
 Spiders-Man, Heroic Horde
@@ -15915,7 +15915,7 @@ Spined Megalodon
 Spined Wurm
 Spineless Thug
 Spinerock Knoll	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile|library)
-Spinerock Tyrant	intent: CopyTargetSpellEffect; intent: GrantKeywordToSpellEffect
+Spinerock Tyrant
 Spineseeker Centipede
 Spinewoods Armadillo
 Spinewoods Paladin
@@ -16325,7 +16325,7 @@ Storm Skreelix
 Storm Spirit
 Storm Strike
 Storm World
-Storm of Saruman	intent: CopyTargetSpellEffect
+Storm of Saruman
 Storm of Souls
 Storm the Citadel
 Storm the Festival	intent: Pipeline(TopOfLibrary→battlefield|library)
@@ -16959,14 +16959,14 @@ Tawnos's Coffin	intent: ExileWithAurasNotingCountersEffect; intent: ReturnNotedE
 Tawnos's Tinkering
 Tawnos's Wand
 Tawnos's Weaponry
-Tawnos, the Toymaker	intent: CopyTargetSpellEffect
+Tawnos, the Toymaker
 Taxi Driver
 Tazeem Raptor
 Tazeem Roilmage
 Tazri, Beacon of Unity
 Tazri, Stalwart Survivor
 Tea, Earl Grey, Hot
-Teach by Example	intent: CopyNextSpellCastEffect
+Teach by Example
 Teacher's Pest
 Teachings of the Archaics
 Teachings of the Kirin	polarity: ReflexiveTriggerEffect
@@ -17274,7 +17274,7 @@ The Eldest Reborn
 The Emperor of Palamecia
 The End	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(ChosenTargets→exile); intent: StoreCardNameEffect; polarity: CaptureControllersEffect; polarity: ForEachCapturedControllerEffect; polarity: Pipeline(ChosenTargets→exile); polarity: StoreCardNameEffect
 The Endstone
-The Enigma Jewel	intent: CopyTargetSpellOrAbilityEffect
+The Enigma Jewel
 The Eternal Wanderer
 The Eternity Elevator
 The Everflowing Well
@@ -17551,7 +17551,7 @@ Thousand Moons Smithy
 Thousand Winds	intent: Pipeline(BattlefieldMatching→hand)
 Thousand-Faced Shadow	polarity: CreateTokenCopyOfTargetEffect
 Thousand-Year Elixir	intent: TapUntapEffect
-Thousand-Year Storm	intent: CopyTargetSpellEffect
+Thousand-Year Storm
 Thousand-legged Kami
 Thraben Charm	polarity: ForEachEffect
 Thraben Exorcism
@@ -18192,7 +18192,7 @@ Twining Twins
 Twinmaw Stormbrood
 Twinned Vision
 Twinning Glass	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(hand→?)
-Twinning Staff	intent: CopyTargetSpellEffect
+Twinning Staff
 Twins of Maurer Estate
 Twinscroll Shaman
 Twinshot Sniper
@@ -18526,7 +18526,7 @@ Utter Insignificance
 Utvara Hellkite
 Uurg, Spawn of Turg
 Uvilda, Dean of Perfection	intent: ForEach>AddCountersEffect; intent: ForEach>GrantTriggeredAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: Pipeline(hand→exile)
-Uyo, Silent Prophet	intent: CopyTargetSpellEffect
+Uyo, Silent Prophet
 V'Ger, the Intruder
 V.A.T.S.	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
 Vaan, Street Thief
@@ -18706,7 +18706,7 @@ Venomspout Brackus
 Venser's Sliver
 Venser, Corpse Puppet
 Venus, Torn Between Worlds
-Verazol, the Split Current	intent: CopyTargetSpellEffect
+Verazol, the Split Current
 Verdant Catacombs
 Verdant Command
 Verdant Force
@@ -18847,7 +18847,7 @@ Viridian Scout
 Viridian Shaman
 Viridian Zealot
 Virtue of Courage	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Virtue of Knowledge	intent: CopyTargetSpellOrAbilityEffect
+Virtue of Knowledge
 Virtue of Loyalty
 Virtue of Persistence
 Virtue of Strength
@@ -18979,7 +18979,7 @@ Voldaren Estate
 Voldaren Stinger
 Voldaren Thrillseeker
 Volley Veteran
-Volo, Guide to Monsters	intent: CopyTargetSpellEffect
+Volo, Guide to Monsters
 Volshe Tideturner
 Volt Charge
 Voltage Surge
@@ -19331,7 +19331,7 @@ Weatherseed Treefolk
 Weave Fate
 Weaver of Blossoms
 Weaver of Currents
-Weaver of Harmony	intent: CopyTargetSpellOrAbilityEffect
+Weaver of Harmony
 Weaver of Lies	intent: ForEach>TurnFaceDownEffect; polarity: ForEachEffect
 Weaver of Lightning
 Web
@@ -19483,7 +19483,7 @@ Wild Onslaught
 Wild Ox
 Wild Pack Squad
 Wild Research
-Wild Ricochet	intent: ChangeTriggeringObjectTargetsEffect; intent: CopyTargetSpellEffect
+Wild Ricochet
 Wild Ride
 Wild Roads
 Wild Shape

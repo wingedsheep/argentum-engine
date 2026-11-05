@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -958,6 +959,7 @@ object TargetPolarityAnalyzer {
         // only the stack shows — so both sides stay open, as a copied permanent's source does.
         if (leaf is CopyTargetSpellOrAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         if (leaf is CopyTargetSpellEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
+        if (leaf is CopyTargetTriggeredAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
             // library (Expel from Orazca's "on top of its owner's library instead", Chaos Warp): it

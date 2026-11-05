@@ -1040,6 +1040,11 @@ object CardIntentAnalyzer {
         is BecomePreparedEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
+        // "Copy target spell", "copy target activated or triggered ability", "when you next cast an
+        // instant or sorcery spell this turn, copy it": see [IntentTag.SPELL_COPY].
+        is CopyTargetSpellEffect, is CopyTargetSpellOrAbilityEffect, is CopyTargetTriggeredAbilityEffect,
+        is CopyEachTargetSpellEffect, is CopyForOtherPossibleTargetsEffect, is CopyNextSpellCastEffect,
+        is CopyEachSpellCastEffect -> setOf(IntentTag.SPELL_COPY)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         // An exchange is carried out as a gain for the player whose total goes up (rule 701.12c),
         // and its controller only casts it to be that player: Psychic Transfer at 4 against 9.
