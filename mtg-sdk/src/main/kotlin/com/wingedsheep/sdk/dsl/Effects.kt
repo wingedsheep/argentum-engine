@@ -5805,6 +5805,15 @@ object Effects {
         CounterEffect(target = CounterTarget.Ability, targetSource = CounterTargetSource.TriggeringEntity)
 
     /**
+     * Counter the spell or ability that made a becomes-the-target trigger fire — "whenever this
+     * creature becomes the target of a spell or ability for the first time each turn, counter that
+     * spell or ability" (Glyph Keeper: `Triggers.self.becomesTarget(firstTimeEachTurn = true)`).
+     * Untargeted; a no-op when that spell or ability already left the stack.
+     */
+    fun CounterTargetingSource(): Effect =
+        CounterEffect(target = CounterTarget.SpellOrAbility, targetSource = CounterTargetSource.TargetingSource)
+
+    /**
      * Counter the spell or ability that made this trigger fire unless its controller pays [cost] —
      * "counter that spell or ability unless its controller pays {1}" on a becomes-the-target trigger
      * (Valkmira, Protector's Shield: `Triggers.another(Permanent.youControl())

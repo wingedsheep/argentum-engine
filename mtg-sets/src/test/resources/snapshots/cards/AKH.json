@@ -2950,6 +2950,80 @@
     ]
 }
 
+// Glyph Keeper
+{
+    "name": "Glyph Keeper",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhenever this creature becomes the target of a spell or ability for the first time each turn, counter that spell or ability.\nEmbalm {5}{U}{U} ({5}{U}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Sphinx with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "EMBALM"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glyph Keeper:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "firstTimeEachTurn": true
+                },
+                "effect": {
+                    "type": "Counter",
+                    "target": "CounterTarget.SpellOrAbility",
+                    "targetSource": "CounterTargetSource.TargetingSource"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "embalm_{5}{U}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {5}{U}{U} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2663738-1688-4306-be6d-6a1f94a2319c.jpg?1783936521"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Graceful Cat
 {
     "name": "Graceful Cat",

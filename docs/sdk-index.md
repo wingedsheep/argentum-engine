@@ -586,6 +586,7 @@ Families:
 
 - `CounterTargetSource.Chosen` — Uses a chosen target from context.targets (normal targeting).
 - `CounterTargetSource.EachOnStack(controller: Player)` — Every object on the stack of the effect's CounterTarget kind whose controller is one of controller — untargeted.
+- `CounterTargetSource.TargetingSource` — The spell or ability that made a becomes-the-target trigger fire — read from the trigger's targeting object (`EffectTarget.TargetingSource`), not from the triggering entity, which is the permanent…
 - `CounterTargetSource.TriggeringEntity` — Uses context.triggeringEntityId (for triggered abilities like Decree of Silence).
 
 ## DamagePredicate

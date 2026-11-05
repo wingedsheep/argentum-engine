@@ -64,6 +64,19 @@ sealed interface CounterTargetSource {
     data object TriggeringEntity : CounterTargetSource
 
     /**
+     * The spell or ability that made a becomes-the-target trigger fire — read from the trigger's
+     * targeting object (`EffectTarget.TargetingSource`), not from the triggering entity, which is
+     * the permanent that was targeted. "Whenever this creature becomes the target of a spell or
+     * ability for the first time each turn, counter that spell or ability" (Glyph Keeper) is
+     * `CounterEffect(target = SpellOrAbility, targetSource = TargetingSource)`. Untargeted: an object
+     * that already left the stack is left alone. (Ward's "counter it unless its controller pays" keeps
+     * [WardCounterEffect], whose [WardCost] also charges life, discards and sacrifices.)
+     */
+    @SerialName("CounterTargetSource.TargetingSource")
+    @Serializable
+    data object TargetingSource : CounterTargetSource
+
+    /**
      * Every object on the stack of the effect's [CounterTarget] kind whose controller is one of
      * [controller] — untargeted. "For each spell and ability your opponents control, counter it
      * unless its controller pays {4}" (Whirlwind Denial) is
@@ -241,7 +254,9 @@ data class CounterEffect(
                 appendUnlessPays()
             }
             CounterTarget.SpellOrAbility -> {
-                if (filter != null) {
+                if (targetSource == CounterTargetSource.TargetingSource) {
+                    append("Counter that spell or ability")
+                } else if (filter != null) {
                     append("Counter target ${filter.baseFilter.description}")
                 } else {
                     append("Counter target spell or ability")
@@ -381,6 +396,7 @@ data class ExileTargetSpellEffect(
 ) : Effect {
     init {
         require(spell !is CounterTargetSource.EachOnStack) { "ExileTargetSpellEffect exiles one spell; EachOnStack is a CounterEffect axis" }
+        require(spell != CounterTargetSource.TargetingSource) { "ExileTargetSpellEffect exiles a chosen or triggering spell; TargetingSource is a CounterEffect axis" }
     }
 
     override val description: String = buildString {

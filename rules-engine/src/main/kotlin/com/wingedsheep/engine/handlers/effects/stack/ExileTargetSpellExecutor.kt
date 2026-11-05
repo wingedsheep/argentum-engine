@@ -41,8 +41,8 @@ class ExileTargetSpellExecutor(
         val spellId = when (effect.spell) {
             CounterTargetSource.Chosen -> (context.targets.firstOrNull() as? ChosenTarget.Spell)?.spellEntityId
             CounterTargetSource.TriggeringEntity -> context.triggeringEntityId
-            // Rejected by ExileTargetSpellEffect's init: it exiles exactly one spell.
-            is CounterTargetSource.EachOnStack -> null
+            // Both rejected by ExileTargetSpellEffect's init.
+            is CounterTargetSource.EachOnStack, CounterTargetSource.TargetingSource -> null
         } ?: return EffectResult.success(state)
         if (spellId !in state.stack) return EffectResult.success(state)
 
