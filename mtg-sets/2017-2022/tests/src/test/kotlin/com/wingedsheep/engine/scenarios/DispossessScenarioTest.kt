@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.LibraryShuffledEvent
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SelectCardsDecision
@@ -75,7 +76,11 @@ class DispossessScenarioTest : FunSpec({
         val selection = d.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         selection.playerId shouldBe d.player1
         selection.options shouldContainExactlyInAnyOrder listOf(inGraveyard, inHand, inHandKept, inLibrary)
-        d.submitCardSelection(d.player1, listOf(inGraveyard, inHand, inLibrary)).error shouldBe null
+        val resolved = d.submitCardSelection(d.player1, listOf(inGraveyard, inHand, inLibrary))
+        resolved.error shouldBe null
+        withClue("then that player shuffles") {
+            resolved.events.filterIsInstance<LibraryShuffledEvent>().map { it.playerId } shouldBe listOf(d.player2)
+        }
 
         val exile = d.getExile(d.player2)
         listOf(inGraveyard, inHand, inLibrary).forEach { exile shouldContain it }
