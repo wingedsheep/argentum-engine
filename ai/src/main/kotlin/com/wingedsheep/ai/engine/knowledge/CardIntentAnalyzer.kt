@@ -1478,7 +1478,14 @@ object CardIntentAnalyzer {
         // casts free or puts into their hand: either way one more card than they had, like the
         // free cast off the library top that [digTags] reads as a draw.
         is DiscoverEffect -> setOf(IntentTag.DRAW)
-        is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
+        // "Whenever this creature becomes the target of a spell or ability …, counter that spell or
+        // ability" (Glyph Keeper) shields the permanent from what targets it — ward-like
+        // protection, not a counterspell: it never answers a spell aimed elsewhere, and reading it
+        // as one would mark the creature a dead card on an empty stack.
+        is CounterEffect ->
+            if (effect.targetSource == CounterTargetSource.TargetingSource) setOf(IntentTag.PROTECTION)
+            else setOf(IntentTag.COUNTERSPELL)
+        is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
         is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
         // "Copy target spell", "copy target activated or triggered ability", "when you next cast an
         // instant or sorcery spell this turn, copy it": see [IntentTag.SPELL_COPY].
@@ -2356,8 +2363,20 @@ object CardIntentAnalyzer {
                 }
             }
             val amplifier = if (IntentTag.DAMAGE_AMPLIFIER in intent.tags) 1.5 else 0.0
+            // A creature that counters whatever targets it (Glyph Keeper) shrugs off the first
+            // removal spell aimed at it, a soft hexproof the keyword-only body value can't see.
+            // Below hexproof's 1.5: it guards once a turn and turns away its controller's own
+            // pump spells too.
+            val shieldsItself = scripts.any { script ->
+                script.triggeredAbilities.any { trigger ->
+                    EffectWalker.leaves(trigger.effect).any {
+                        it is CounterEffect && it.targetSource == CounterTargetSource.TargetingSource
+                    }
+                }
+            }
             val ability = when {
                 repeatableRemoval -> 1.5
+                shieldsItself -> 1.0
                 repeatableHate -> 0.5
                 else -> 0.0
             }

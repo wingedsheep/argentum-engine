@@ -879,6 +879,7 @@ Arwen's Gift
 Arwen, Mortal Queen
 Arwen, Weaver of Hope
 Aryel, Knight of Windgrace
+As Foretold
 Asari Captain
 Ascendant Dustspeaker
 Ascendant Evincar
@@ -7012,6 +7013,7 @@ Gluttonous Slime
 Gluttonous Troll
 Gluttonous Zombie
 Glyph Elemental
+Glyph Keeper
 Glyph of Delusion	intent: AddDynamicCountersEffect; intent: BecomeArtifactEffect; intent: GrantTriggeredAbilityEffect; polarity: AddDynamicCountersEffect; polarity: BecomeArtifactEffect; polarity: GrantTriggeredAbilityEffect
 Glyph of Destruction
 Glyph of Doom	polarity: CreateDelayedTriggerEffect

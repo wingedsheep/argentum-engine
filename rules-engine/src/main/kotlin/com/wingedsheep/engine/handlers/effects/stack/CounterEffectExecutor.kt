@@ -55,8 +55,8 @@ class CounterEffectExecutor(
 
         // Step 1: Resolve the spell/ability entity ID
         val entityId = resolveCounterTarget(effect, context, state)
-            ?: return if (effect.targetSource == CounterTargetSource.TriggeringEntity) {
-                // Triggering entity no longer on stack — nothing to counter
+            ?: return if (effect.targetSource != CounterTargetSource.Chosen) {
+                // Triggering / targeting object no longer on stack — nothing to counter
                 EffectResult.success(state)
             } else {
                 EffectResult.error(state, "No valid target to counter")
@@ -88,6 +88,10 @@ class CounterEffectExecutor(
             }
             CounterTargetSource.TriggeringEntity -> {
                 val id = context.triggeringEntityId ?: return null
+                if (!state.stack.contains(id)) null else id
+            }
+            CounterTargetSource.TargetingSource -> {
+                val id = context.triggerContext?.targetingSourceEntityId ?: return null
                 if (!state.stack.contains(id)) null else id
             }
             is CounterTargetSource.EachOnStack -> error("EachOnStack is resolved by executeEachOnStack")

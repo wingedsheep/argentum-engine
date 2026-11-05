@@ -153,7 +153,8 @@ object AiCardRating {
                     val label = when {
                         IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags -> "Damage amplification"
                         IntentTag.REMOVAL in inPlayIntent.tags || IntentTag.EXILE_REMOVAL in inPlayIntent.tags -> "Repeatable removal"
-                        else -> "Repeatable graveyard hate"
+                        IntentTag.GRAVEYARD_HATE in inPlayIntent.tags -> "Repeatable graveyard hate"
+                        else -> "Counters what targets it"
                     }
                     add(Part(label, abilityValue))
                 }

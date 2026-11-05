@@ -1538,7 +1538,7 @@ serialized shape; the facade for each is:
 | `ChooseColorForTargetEffect` | `Effects.ChooseColorForTarget` |
 | `ConvertCountersToTokensEffect` | `Effects.ConvertCountersToTokens` |
 | `CopyTargetSpellEffect` | `Effects.CopyTargetSpell` |
-| `CounterEffect` | `Effects.CounterSpell()` / `CounterUnlessPays("{N}")` / `CounterTriggeringSpell(destination)` / `CounterAbility()` / `CounterTriggeringAbility()` |
+| `CounterEffect` | `Effects.CounterSpell()` / `CounterUnlessPays("{N}")` / `CounterTriggeringSpell(destination)` / `CounterAbility()` / `CounterTriggeringAbility()` / `CounterTargetingSource()` |
 | `CreateDelayedTriggerEffect` | `Effects.CreateDelayedTrigger` |
 | `CreatePredefinedTokenEffect` | `Effects.CreatePredefinedToken(type, count)` (or `CreateTreasure` / `CreateFood` / `CreateMapToken`) |
 | `InvestigateEffect` | `Effects.Investigate(count, controller?)` |
@@ -9502,6 +9502,10 @@ The shapes in this family, with their engine notes.
   unless its controller pays {1}" on a becomes-the-target trigger (Valkmira, Protector's Shield): the
   ward keyword's own counter (`WardCounterEffect`), aimed at the object that did the targeting, so any
   `WardCost` shape works. Its payment prompt is labelled with the source card's name rather than "Ward".
+  `Effects.CounterTargetingSource()` is the unconditional "counter **that spell or ability**" on a
+  becomes-the-target trigger (Glyph Keeper: `Triggers.self.becomesTarget(firstTimeEachTurn = true)`) —
+  `CounterEffect(target = SpellOrAbility, targetSource = CounterTargetSource.TargetingSource)`, untargeted, a
+  no-op when the targeting object already left the stack (a spell goes to its owner's graveyard, an ability is removed).
 - `Triggers.you.attackTriggersAbility()` — **a creature you control attacking causes a triggered ability of that
   creature to trigger** (Firebender Ascension). Backed by `EventPattern.AbilityTriggeredEvent(player, cause,
   sourceFilter?)`, which matches the engine's `AbilityTriggeredEvent` when a triggered ability is put on the stack.
