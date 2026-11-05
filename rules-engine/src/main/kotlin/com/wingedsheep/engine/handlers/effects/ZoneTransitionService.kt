@@ -1525,6 +1525,17 @@ class ZoneTransitionService(
             }
         }
 
+        // Discard record: "you discarded this card this turn" names the discarded object only while
+        // it stays that object (CR 400.7). Any later moveToZone — out of the graveyard (reanimation,
+        // exile, bounce), off the battlefield a replacement diverted the discard onto — makes a new
+        // object that was not discarded. The one move that keeps it is an uncast madness card going
+        // from exile to the graveyard (CR 400.7k: effects
+        // referencing the discarded card can still find it — Shadow of the Grave's ruling).
+        // A cast bypasses moveToZone and prunes in SpellCaster instead.
+        if (!(fromZone == Zone.EXILE && actualDestZone == Zone.GRAVEYARD && container.has<MadnessExiledComponent>())) {
+            newState = untrackDiscardedCard(newState, entityId)
+        }
+
         // 8c. Track cards leaving the graveyard
         if (fromZone == Zone.GRAVEYARD) {
             // Strip the "put into a graveyard this turn" stamp — the card is no longer in a
@@ -1533,11 +1544,6 @@ class ZoneTransitionService(
             newState = newState.updateEntity(entityId) { c ->
                 c.without<PutIntoGraveyardThisTurnComponent>()
             }
-            // Likewise drop the Mayhem "you discarded this card this turn" gate mark: once the card
-            // leaves the graveyard it becomes a new object on any later return (CR 400.7), so it is
-            // no longer the card you discarded. (Casting via Mayhem bypasses moveToZone and prunes
-            // in CastSpellHandler instead; this covers reanimation / exile / bounce out of the yard.)
-            newState = untrackDiscardedCard(newState, entityId)
             newState = newState.updateEntity(ownerId) { playerContainer ->
                 val existing = playerContainer.get<CardsLeftGraveyardThisTurnComponent>()
                     ?: CardsLeftGraveyardThisTurnComponent()
@@ -2263,9 +2269,9 @@ class ZoneTransitionService(
 
         /**
          * Remove [cardId] from the discarded-this-turn *gate* list (not the monotonic count) on any
-         * player who still has it recorded. Called when the card leaves a graveyard (CR 400.7 — a later
-         * graveyard return is a new object that was not discarded), so a Mayhem spell can't be recast
-         * each time it resolves back. A no-op if no player has the id recorded.
+         * player who still has it recorded. Called when the card changes zones or is cast (CR 400.7 —
+         * the new object was not discarded), so a Mayhem spell can't be recast each time it resolves
+         * back and Shadow of the Grave doesn't find it. A no-op if no player has the id recorded.
          */
         fun untrackDiscardedCard(state: GameState, cardId: EntityId): GameState {
             var newState = state

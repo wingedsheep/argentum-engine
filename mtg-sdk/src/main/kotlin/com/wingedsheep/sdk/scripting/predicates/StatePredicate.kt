@@ -972,6 +972,24 @@ sealed interface StatePredicate {
     }
 
     /**
+     * This card is currently in a graveyard *and* its owner discarded it this turn — Shadow of the
+     * Grave's "all cards in your graveyard that you cycled or discarded this turn". Any discard
+     * counts (a cycling cost, an opponent's discard effect); so does a madness card its owner
+     * discarded into exile and didn't cast, which then went to the graveyard (CR 400.7k).
+     * A discarded card that later left the graveyard and came back, or was cast, is a new object
+     * and doesn't count (CR 400.7).
+     *
+     * The discard-route sibling of [MilledThisTurn], but read off the discarder's per-turn discard
+     * record (the one that gates Mayhem) rather than the graveyard stamp, because the madness route
+     * reaches the graveyard by a non-discard move.
+     */
+    @SerialName("DiscardedThisTurn")
+    @Serializable
+    data object DiscardedThisTurn : History {
+        override val description: String = "discarded this turn"
+    }
+
+    /**
      * This card is currently in a graveyard *and* was put there during the current combat phase
      * (CR 506.1: beginning of combat through end of combat step), from any zone — Storrev,
      * Devkarin Lich's "target creature or planeswalker card in your graveyard that wasn't put

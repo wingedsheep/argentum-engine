@@ -1746,6 +1746,7 @@ Families:
 - `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` — Dealt combat damage *this turn* to the player who controls the effect's source.
 - `StatePredicate.DealtDamageToSourceControllerThisTurn` — Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's source: the any-damage sibling of DealtCombatDamageToSourceControllerThisTurn.
 - `StatePredicate.DealtDamageToSourceThisTurn` — **Dealt** damage this turn to the effect's *source* — the active-voice mirror of WasDealtDamageBySourceThisTurn: "each creature that dealt damage to it this turn" (Brine Hag).
+- `StatePredicate.DiscardedThisTurn` — This card is currently in a graveyard *and* its owner discarded it this turn — Shadow of the Grave's "all cards in your graveyard that you cycled or discarded this turn".
 - `StatePredicate.DrawnThisTurn` — This card is currently in a hand *and* got there by being drawn (CR 121.1) this turn — Sylvan Library's "choose two cards in your hand drawn this turn".
 - `StatePredicate.EnteredThisTurn(underYourControl: Boolean)` — Entered the battlefield this turn (has summoning sickness if creature).
 - `StatePredicate.ExiledByYou` — The candidate card is in exile and was put there by a spell or ability controlled by the asking player (the evaluation context's controller) — "a card from exile … if it was exiled by an ability yo…
