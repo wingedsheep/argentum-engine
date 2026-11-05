@@ -498,6 +498,16 @@ enum class IntentTag {
      * "no intent". An extra turn handed to an opponent is never a play and earns no tag.
      */
     EXTRA_TURN,
+
+    /**
+     * Casts a spell without paying its mana cost — Wildfire Eternal's and Omnispell Adept's "cast an
+     * instant or sorcery spell from your hand without paying its mana cost", a cascade-like "cast it
+     * without paying its mana cost" off the top of a library or out of exile. Its payoff is the mana
+     * the spell didn't cost (and, from outside the hand, the card itself), which the board
+     * simulation only sees once the spell resolves, so without the tag the ability read as
+     * "no intent". A cast that still pays the spell's mana cost earns no tag.
+     */
+    FREE_SPELL,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */

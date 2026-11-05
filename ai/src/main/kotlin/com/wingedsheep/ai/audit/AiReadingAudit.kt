@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -678,6 +679,7 @@ object AiReadingAudit {
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.EXTRA_TURN -> "takes an extra turn"
+        IntentTag.FREE_SPELL -> "casts a spell without paying its mana cost"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
     }
@@ -827,6 +829,9 @@ object AiReadingAudit {
         // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
         // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
         if (leaf is RemoveCountersEffect && leaf.target == EffectTarget.Self) return true
+        // "Remove all -1/-1 counters from this creature" (Ammit Eternal) is the same shed, every
+        // counter of the kind at once: a recovery the simulation sees as the restored P/T.
+        if (leaf is RemoveAllCountersOfTypeEffect && leaf.target == EffectTarget.Self) return true
         // Counters moved between permanents or taken off one, whatever their kind — The Ozolith
         // storing a leaving creature's counters and moving them on, Essence Channeler's "put its
         // counters on target creature you control", Etched Slith's "remove a counter from another

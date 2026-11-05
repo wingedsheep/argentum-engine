@@ -259,6 +259,7 @@ object AiCardRating {
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.EXTRA_TURN to "Takes an extra turn",
+        IntentTag.FREE_SPELL to "Casts spells for free",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
         IntentTag.EXTRA_BLOCKING to "Blocks additional creatures",
     )
