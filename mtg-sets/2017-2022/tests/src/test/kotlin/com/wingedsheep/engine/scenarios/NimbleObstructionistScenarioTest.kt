@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.shouldBe
 
 /**
@@ -64,11 +65,9 @@ class NimbleObstructionistScenarioTest : FunSpec({
         d.submit(CycleCard(you, obstructionist)).error shouldBe null
         d.getHandSize(you) shouldBe handBefore
 
-        val decision = d.pendingDecision
-        if (decision is ChooseTargetsDecision) {
-            decision.legalTargets[0].orEmpty() shouldContain lifeTrigger
-            d.submitTargetSelection(you, listOf(lifeTrigger)).error shouldBe null
-        }
+        val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        decision.legalTargets[0].orEmpty() shouldContain lifeTrigger
+        d.submitTargetSelection(you, listOf(lifeTrigger)).error shouldBe null
         d.stackSize shouldBe 2
 
         // Resolve the counter trigger: the opponent's life trigger leaves the stack unresolved.
