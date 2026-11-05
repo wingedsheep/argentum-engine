@@ -61,7 +61,9 @@ internal enum class AmountSign {
                 ZERO, LOSS -> ZERO
                 GAIN, UNKNOWN -> GAIN
             }
-            is DynamicAmount.Max -> max(of(amount.left), of(amount.right))
+            // "The difference between its power and toughness" is max(a - b, b - a): whichever
+            // operand is larger, one side is never negative (Doran, Besieged by Time).
+            is DynamicAmount.Max -> if (isAbsoluteDifference(amount)) GAIN else max(of(amount.left), of(amount.right))
             is DynamicAmount.Min -> max(of(amount.left).flipped(), of(amount.right).flipped()).flipped()
             is DynamicAmount.Conditional -> either(of(amount.ifTrue), of(amount.ifFalse))
             is DynamicAmount.GreatestAmongPlayers -> of(amount.inner)
@@ -104,6 +106,12 @@ internal enum class AmountSign {
             is DynamicAmount.CountersRemovedAsCost, is DynamicAmount.TotalPowerSacrificedThisWay,
             is DynamicAmount.LargestSharedCreatureTypeCount -> GAIN
             is DynamicAmount.PartySize -> GAIN
+        }
+
+        private fun isAbsoluteDifference(amount: DynamicAmount.Max): Boolean {
+            val left = amount.left as? DynamicAmount.Subtract ?: return false
+            val right = amount.right as? DynamicAmount.Subtract ?: return false
+            return left.left == right.right && left.right == right.left
         }
 
         private fun ofInt(n: Int): AmountSign = when {

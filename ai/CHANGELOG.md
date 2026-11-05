@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4480 Holds "one or two target creatures each get +N/+N until end of turn" tricks (Appeal to Eirdu, Coordinated Assault, Tandem Tactics) for a fight or a response, as it does single-target pumps.
 - #4478 Reads a "you may play those cards until your next end step" impulse as card draw wherever it comes from (Dragonhawk, Fate's Tempest, Questing Druid, Inti, Unlucky Witness), since a main phase is always left before that window closes.
 - Drafts and builds a free-cycling enchantment (New Perspectives) as a payoff its own cycling and typecycling cards feed, instead of reading it as a lone draw-three
 - Prices a creature that keeps drawing cards (a card on every attack, upkeep or combat hit, Fireglass Mentor's second-main impulse) as a card-advantage engine on the board, so its removal goes there before a vanilla body; reads a "you may play it this turn" impulse from a trigger on its own turn — beginning of combat or second main, attack, combat damage to a player — as card draw.

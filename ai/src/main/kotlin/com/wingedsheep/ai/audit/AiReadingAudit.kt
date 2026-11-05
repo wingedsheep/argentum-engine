@@ -49,6 +49,9 @@ import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.Chooser
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
@@ -560,7 +563,8 @@ object AiReadingAudit {
         // labelled by that effect — the step it schedules, not the scheduling. Its price ("sacrifice
         // it at end step") needs no intent, like a gate's cost: EffectWalker.firedLeaves drops it.
         val leaves = fired(EffectWalker.payoffLeaves(root))
-        val unreadLeaves = leaves.filterNot(noIntent)
+        val blight = ownBlightStages(leaves)
+        val unreadLeaves = leaves.filterNot { noIntent(it) || blight.any { stage -> stage === it } }
         labels(unreadLeaves.filterNot { it is ForEachEffect }).filterNot { noIntentPipeline(it.first, unreadLeaves) }.forEach { (label, leaf) ->
             sink += gap(Check.INTENT, unread, label, step(leaves, leaf))
         }
@@ -863,6 +867,10 @@ object AiReadingAudit {
         // when to activate it is the timing check's question, and what it is worth is the body the
         // simulation then sees. Setting a target's base stays flagged (a gift or a curse by creature).
         if (leaf is SetBaseStatsEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent stripping its own abilities — Retched Wretch's "return it to the battlefield
+        // … and it loses all abilities" — has no target and nothing to hold: the price of its own
+        // return, and what is left is the vanilla body the simulation sees. Stripping another stays flagged.
+        if (leaf is RemoveAllAbilitiesEffect && leaf.target == EffectTarget.Self) return true
         // Damage to a player is a clock: the evaluator prices the life it takes on resolution, it
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
@@ -899,8 +907,11 @@ object AiReadingAudit {
         if (leaf is PayOrSufferEffect) {
             val paidByController = leaf.player == EffectTarget.Controller || leaf.player == EffectTarget.PlayerRef(Player.You)
             // Scry/surveil needsNoIntent only because CardIntentAnalyzer reads them, and nothing reads inside a suffer.
-            return EffectWalker.payoffLeaves(leaf.suffer).all {
-                (it !is ScryEffect && it !is SurveilEffect && needsNoIntent(it)) || (paidByController && harmsOnlyItsSource(it))
+            val suffer = EffectWalker.payoffLeaves(leaf.suffer)
+            val blight = if (paidByController) ownBlightStages(suffer) else emptyList()
+            return suffer.all {
+                (it !is ScryEffect && it !is SurveilEffect && needsNoIntent(it)) || (paidByController && harmsOnlyItsSource(it)) ||
+                    blight.any { stage -> stage === it }
             }
         }
         // Untargeted proliferate has no target to aim and no consistent window to hold it for (+1/+1
@@ -990,6 +1001,30 @@ object AiReadingAudit {
     }
 
     /** A leaf that only sacrifices, taps or phases out its own source — the "suffer" of an upkeep cost. */
+    /**
+     * The stages of a blight of our own — "blight 1: put a -1/-1 counter on a creature you control"
+     * (Shadow Urchin's attack trigger, Chaos Spewer's unpaid ETB): a gather of our creatures, our
+     * pick of one, and -1/-1 counters on it. Like a sacrifice of our own choosing ([SacrificeEffect]
+     * in [needsNoIntent]) it is a price with no target and nothing to time, and which creature
+     * wears the counters is the simulation's pick at resolution. An opponent's blight (they choose,
+     * among their creatures) is an answer and stays read as one.
+     */
+    private fun ownBlightStages(leaves: List<Effect>): List<Effect> {
+        val ours = leaves.filterIsInstance<GatherCardsEffect>().filter { gather ->
+            (gather.source as? CardSource.ControlledPermanents)?.player == Player.You
+        }
+        val picks = leaves.filterIsInstance<SelectFromCollectionEffect>().filter { select ->
+            select.chooser == Chooser.Controller && ours.any { it.storeAs == select.from }
+        }
+        val counters = leaves.filterIsInstance<AddCountersToCollectionEffect>().filter { add ->
+            add.counterType == CounterType.MINUS_ONE_MINUS_ONE && picks.any { it.storeSelected == add.collectionName }
+        }
+        if (counters.isEmpty()) return emptyList()
+        val usedPicks = picks.filter { pick -> counters.any { it.collectionName == pick.storeSelected } }
+        val usedGathers = ours.filter { gather -> usedPicks.any { it.from == gather.storeAs } }
+        return usedGathers + usedPicks + counters
+    }
+
     private fun harmsOnlyItsSource(leaf: Effect): Boolean = when (leaf) {
         SacrificeSelfEffect -> true
         is SacrificeTargetEffect -> leaf.target == EffectTarget.Self
