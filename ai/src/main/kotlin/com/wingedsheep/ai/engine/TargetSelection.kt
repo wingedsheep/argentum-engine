@@ -11,6 +11,12 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.StormCopyTargetContinuation
 import com.wingedsheep.engine.core.Suspension
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.core.CopyTriggeredAbilityTargetContinuation
+import com.wingedsheep.engine.core.CopyActivatedAbilityTargetContinuation
+import com.wingedsheep.engine.core.CopyAbilityTargetContinuation
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.core.TriggerModalTargetSelectionContinuation
 import com.wingedsheep.engine.core.TriggeredAbilityContinuation
@@ -338,8 +344,8 @@ object TargetSelection {
      * asked it, when that continuation carries the effect the targets are for: a triggered ability
      * being put on the stack ([TriggeredAbilityContinuation]), or one mode of a modal triggered
      * ability ([TriggerModalTargetSelectionContinuation] — Proud Pack-Rhino's "put a shield counter
-     * on target permanent"), or a spell copy's new targets ([StormCopyTargetContinuation] — Fork,
-     * Double Major, storm). Empty — UNKNOWN everywhere — for any other question, and for a
+     * on target permanent"), or a copy's new targets ([StormCopyTargetContinuation] — Fork, a
+     * storm copy; the ability-copy continuations — Lithoform Engine, Echo). Empty — UNKNOWN everywhere — for any other question, and for a
      * trigger whose dependent targets are asked one slot at a time.
      */
     fun decisionPolarities(
@@ -360,17 +366,51 @@ object TargetSelection {
                 if (mode == null) emptyList()
                 else intents.effectTargetPolarities(mode.effect, mode.targetRequirements)
             }
-            // "Choose new targets for the copy" (Fork, Double Major, a storm copy): the copy is ours,
-            // so each slot wants what the copied effect does to it — the copy of their Shock at
-            // their creature, the copy of our Giant Growth on ours.
-            is StormCopyTargetContinuation ->
-                answer.spellEffect?.let { intents.effectTargetPolarities(it, answer.spellTargetRequirements, answer.spellName) }
-                    ?: emptyList()
+            // "Choose new targets for the copy" (Fork, Double Major, a storm copy; Lithoform Engine,
+            // Echo copying an ability): the copy is ours, so each slot wants what the copied effect
+            // does to it — the copy of their Shock at their creature, of their Giant Growth on ours.
+            is StormCopyTargetContinuation -> answer.spellEffect?.let {
+                copySlots(intents.effectTargetPolarities(it, answer.spellTargetRequirements, answer.spellName),
+                    answer.spellTargetRequirements, decision.targetRequirements.size)
+            } ?: emptyList()
+            is CopyAbilityTargetContinuation -> abilityCopySlots(state, answer.abilityEntityId, answer.targetRequirements, decision, intents)
+            is CopyActivatedAbilityTargetContinuation -> abilityCopySlots(state, answer.abilityEntityId, answer.targetRequirements, decision, intents)
+            is CopyTriggeredAbilityTargetContinuation -> abilityCopySlots(state, answer.abilityEntityId, answer.targetRequirements, decision, intents)
             else -> emptyList()
         }
         return decision.targetRequirements.mapNotNull { req ->
             read.getOrNull(req.index)?.let { req.index to it }
         }.toMap()
+    }
+
+    private fun abilityCopySlots(
+        state: GameState,
+        abilityId: EntityId,
+        requirements: List<TargetRequirement>,
+        decision: ChooseTargetsDecision,
+        intents: IntentCatalog,
+    ): List<TargetPolarity> {
+        val ability = state.getEntity(abilityId) ?: return emptyList()
+        val effect = ability.get<ActivatedAbilityOnStackComponent>()?.effect
+            ?: ability.get<TriggeredAbilityOnStackComponent>()?.effect
+            ?: return emptyList()
+        return copySlots(intents.effectTargetPolarities(effect, requirements), requirements, decision.targetRequirements.size)
+    }
+
+    /**
+     * Per-requirement [polarities] spread over a copy prompt's [slots]: the prompt asks one slot
+     * per original target, so a requirement for two targets covers two slots, the last requirement
+     * whatever is left — the alignment the engine's copy prompt uses. Unread when they don't line up.
+     */
+    private fun copySlots(polarities: List<TargetPolarity>, requirements: List<TargetRequirement>, slots: Int): List<TargetPolarity> {
+        if (polarities.size != requirements.size) return emptyList()
+        if (slots == requirements.size) return polarities
+        var left = slots
+        return requirements.indices.flatMap { group ->
+            val covered = if (group == requirements.lastIndex) left else minOf(requirements[group].count, left)
+            left -= covered
+            List(covered.coerceAtLeast(0)) { polarities[group] }
+        }.takeIf { it.size == slots } ?: emptyList()
     }
 
     /**
