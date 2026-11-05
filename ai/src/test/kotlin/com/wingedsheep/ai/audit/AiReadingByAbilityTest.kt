@@ -118,12 +118,12 @@ class AiReadingByAbilityTest : FunSpec({
         AiReadingAudit.audit(card("Aphetto Alchemist")).map { it.key } shouldBe listOf("intent: TapUntapEffect")
     }
 
-    test("a creature shifting its own P/T needs no intent, but a -N/-0 on a target stays flagged") {
+    test("a creature shifting its own P/T needs no intent, and a -N/-0 on a target reads as a combat effect") {
         val giant = AiReadingAudit.read(card("Flowstone Giant"))
         giant.readFully shouldBe true
         giant.abilities.filter { it.ability.kind == AbilityKind.ACTIVATED }
             .flatMap { it.findings }.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
-        AiReadingAudit.audit(card("Dizzy Spell")).map { it.key } shouldBe listOf("intent: ModifyStatsEffect")
+        AiReadingAudit.audit(card("Dizzy Spell")).map { it.key }.filter { "ModifyStatsEffect" in it } shouldBe emptyList()
     }
 
     test("an upkeep cost its controller pays or sacrifices for needs no intent, but an opponent's tax on our draw stays flagged") {

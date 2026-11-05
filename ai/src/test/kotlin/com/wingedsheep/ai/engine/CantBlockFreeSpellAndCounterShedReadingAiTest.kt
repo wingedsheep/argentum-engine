@@ -67,8 +67,9 @@ class CantBlockFreeSpellAndCounterShedReadingAiTest : FunSpec({
             flags(name).shouldBeEmpty()
             AiCardRating.of(card(name), listOf("HOU")).intent.unrecognised shouldBe false
         }
-        withClue("Mana Vapors skips an opponent's untap: a payoff, still flagged") {
-            flags("Mana Vapors") shouldContain "intent: SkipUntapEffect"
+        withClue("Mana Vapors skips an opponent's untap: a tapper's payoff, read as such") {
+            flags("Mana Vapors").shouldBeEmpty()
+            AiCardRating.of(card("Mana Vapors"), listOf("PCY")).intent.unrecognised shouldBe false
         }
     }
 })
