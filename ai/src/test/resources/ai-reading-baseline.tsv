@@ -2304,7 +2304,7 @@ Burning Sun Cavalry
 Burning Sun's Avatar
 Burning Sun's Fury	timing: ForEach>ModifyStatsEffect
 Burning Vengeance
-Burning Wish	intent: Pipeline(sideboard→hand)
+Burning Wish
 Burning of Xinye
 Burning-Fist Minotaur
 Burning-Rune Demon
@@ -5587,7 +5587,7 @@ Extract the Truth
 Extraction Specialist
 Extraordinary Journey
 Extraplanar Lens
-Extrapolate the Impossible	intent: Pipeline(FromVariable→hand)
+Extrapolate the Impossible
 Extravagant Replication
 Extus, Oriq Overlord
 Exuberant Fuseling
@@ -5632,7 +5632,7 @@ Fade from Memory
 Fade into Antiquity
 Fading Hope
 Fae Flight
-Fae of Wishes	intent: Pipeline(sideboard→hand)
+Fae of Wishes
 Faebloom Trick
 Faeburrow Elder
 Faerie Dreamthief
@@ -6190,7 +6190,7 @@ Flotsam // Jetsam
 Flourishing Bloom-Kin
 Flourishing Defenses
 Flourishing Fox
-Flourishing Grapple	timing: RemoveAllAbilitiesEffect
+Flourishing Grapple
 Flourishing Hunter
 Flow State
 Flow of Ideas
@@ -7622,7 +7622,7 @@ Halfdane	polarity: SetBaseStatsEffect
 Haliya, Ascendant Cadet
 Haliya, Guided by Light
 Hall Monitor
-Hall of Echoes	timing: GrantStaticAbilityEffect
+Hall of Echoes
 Hall of Heliod's Generosity
 Hall of Oracles
 Hall of Storm Giants	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
@@ -7987,7 +7987,7 @@ High Perfect Morcant	intent: ForEach>AddCountersToCollectionEffect; intent: ForE
 High Priest of Penance
 High Sentinels of Arashin
 High Stride
-High Tide	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
+High Tide	intent: GrantStaticAbilityEffect
 High-Flying Ace
 High-Rise Sawjack
 High-Society Hunter
@@ -8856,7 +8856,7 @@ Jace Reawakened	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
 Jace's Archivist
 Jace's Defeat
 Jace's Ingenuity
-Jace's Machinations	timing: GrantLoyaltyActivationPermissionEffect
+Jace's Machinations
 Jace's Projection	intent: AddCountersEffect
 Jace's Ruse
 Jace's Scrutiny
@@ -9767,7 +9767,7 @@ Leechridden Swamp
 Leering Onlooker
 Leery Fogbeast
 Legate Lanius, Caesar's Ace
-Legion Angel	intent: Pipeline(sideboard→hand)
+Legion Angel
 Legion Conquistador
 Legion Extruder
 Legion Guildmage
@@ -11714,7 +11714,7 @@ Norn's Wellspring
 North Pole Gates
 North Pole Patrol
 North Star	intent: GrantOneSpellAnyManaTypeEffect
-North Wind Avatar	intent: Pipeline(sideboard→hand)
+North Wind Avatar
 Northampton Farm
 Northern Air Temple
 Northern Paladin
@@ -13036,7 +13036,7 @@ Pym Technologies
 Pyramids	polarity: RemoveDamageShieldEffect
 Pyre Charger
 Pyre Hound
-Pyre Rhymer	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
+Pyre Rhymer	intent: GrantStaticAbilityEffect
 Pyre Spawn
 Pyre Zombie
 Pyre of Heroes
@@ -18419,7 +18419,7 @@ Ulamog, the Ceaseless Hunger	intent: Pipeline(TopOfLibrary→exile)
 Ulamog, the Defiler	intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Ulamog, the Infinite Gyre	intent: Pipeline(graveyard→library)
 Ulcerate
-Uldaros Theorix	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
+Uldaros Theorix
 Ulna Alley Shopkeep
 Ulrich's Kindred
 Ultima
@@ -19067,7 +19067,7 @@ Vivien's Crocodile
 Vivien's Grizzly
 Vivien's Invocation
 Vivien's Jaguar
-Vivien, Arkbow Ranger	intent: Pipeline(sideboard→hand)
+Vivien, Arkbow Ranger
 Vivien, Champion of the Wilds
 Vivien, Monsters' Advocate
 Vivisection

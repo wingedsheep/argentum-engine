@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import java.lang.reflect.Modifier
 import java.util.IdentityHashMap
@@ -38,7 +39,9 @@ import java.util.concurrent.ConcurrentHashMap
  *  - counts or reads **your** graveyard — any object holding `zone = GRAVEYARD` beside
  *    `player = You` (`DynamicAmount.Count(You, GRAVEYARD)` for threshold-style counts, the
  *    distinct-type aggregation behind delirium, a gather from your graveyard). A "search your
- *    library and/or graveyard" choice is a tutor, not a payoff.
+ *    library and/or graveyard" choice is a tutor, not a payoff;
+ *  - targets a card only **your** graveyard holds (a `TargetFilter` in the graveyard owned or
+ *    controlled by you), however the effect then moves it.
  *
  * The walk is reflective over the SDK's pure-data definition graph, so a new effect, amount or
  * keyword ability that names those fields is recognized without touching this file. A false
@@ -105,6 +108,11 @@ object GraveyardSynergy {
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false
+            // A target only our own graveyard can fill — "exile up to one target nonland card of each
+            // card type from your graveyard … cast the copies" (Uldaros Theorix), "exile X target
+            // creature cards from your graveyard" (Hour of Eternity) — names a graveyard card to use.
+            // A pipeline then moves it by collection, so no `fromZone` says where it came from.
+            if (node is TargetFilter && node.zone == Zone.GRAVEYARD && TargetPolarityAnalyzer.ownGraveyardOnly(node)) return true
             return when (node) {
                 is Collection<*> -> node.any(::visit)
                 is Map<*, *> -> node.keys.any(::visit) || node.values.any(::visit)

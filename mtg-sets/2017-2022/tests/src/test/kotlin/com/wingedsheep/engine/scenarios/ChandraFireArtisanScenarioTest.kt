@@ -83,6 +83,31 @@ class ChandraFireArtisanScenarioTest : ScenarioTestBase() {
             withClue("her trigger resolved for the seven counters removed") { game.getLifeTotal(2) shouldBe 13 }
             withClue("the exiled cards are playable this turn") { castableFromExile(game, "Shock") shouldBe true }
         }
+
+        test("lethal combat damage kills her, but she still deals the counters she lost to the attacker") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Craw Wurm")
+                .withCardOnBattlefield(2, "Chandra, Fire Artisan")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val chandra = game.findPermanent("Chandra, Fire Artisan")!!
+            setLoyalty(game, chandra, 3)
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackersWithPermanentTargets(
+                permanentAttackers = mapOf("Craw Wurm" to "Chandra, Fire Artisan")
+            ).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            game.declareNoBlockers().error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.COMBAT_DAMAGE)
+            if (game.hasPendingDecision()) game.selectTargets(listOf(game.player1Id)).error shouldBe null
+            game.resolveStack()
+
+            withClue("six damage to three loyalty killed her") { game.isInGraveyard(2, "Chandra, Fire Artisan") shouldBe true }
+            withClue("her trigger dealt the three counters removed to her opponent") { game.getLifeTotal(1) shouldBe 17 }
+        }
     }
 
     private fun activate(game: TestGame, source: EntityId, index: Int) {

@@ -544,7 +544,7 @@ object LimitedCardRater {
      * and a gather or a move is worth nothing alone, so "destroy all creatures" and "look at the top
      * three, put one into your hand" scored zero. [CardIntentAnalyzer.pipelineTags] reads what the
      * stages add up to; this prices that reading like the leaf it stands for — a wrath or a picked
-     * destroy like a destroy, a dig like one card drawn — and graveyard targets the pipeline brings
+     * destroy like a destroy, a dig like one card drawn, a wish like a tutor — and graveyard targets the pipeline brings
      * onto our battlefield, however it splits them first (Boneyard Parley's piles), like the
      * recursion they are.
      */
@@ -558,6 +558,9 @@ object LimitedCardRater {
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
         if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
+        // A wish (Burning Wish): the sideboard gather and the move to hand read as nothing alone.
+        // A library search is priced at its own gather leaf, which a wish's gather isn't.
+        if (IntentTag.TUTOR in tags) score += TAG_VALUE.getValue(IntentTag.TUTOR)
         return score
     }
 

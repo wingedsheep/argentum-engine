@@ -157,6 +157,12 @@ class HoldPolicy(
      */
     private val tapToGrowAtTheirEndStep: Boolean = false,
     /**
+     * [AiProfile.tapToPingAtTheirEndStep][com.wingedsheep.ai.engine.AiProfile.tapToPingAtTheirEndStep]
+     * — hold a creature's "{T}: deal damage to each opponent" for the window where the tap costs
+     * no attack and no block. See [SelfTapPingWindow].
+     */
+    private val tapToPingAtTheirEndStep: Boolean = false,
+    /**
      * [AiProfile.borrowedCreaturesGoHome][com.wingedsheep.ai.engine.AiProfile.borrowedCreaturesGoHome]
      * — refuse an until-end-of-turn steal once the turn has no fight left for the borrowed creature
      * ([ExpiringGrantWindow], `PayoffKind.BORROW`).
@@ -394,7 +400,8 @@ class HoldPolicy(
     ): TimingVerdict {
         if (activation == null) return TimingVerdict.Neutral
         if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches ||
-                refuseEmptyPayoffs || drawWithIdleMana || refuseWastedPayoffs || tapToGrowAtTheirEndStep)
+                refuseEmptyPayoffs || drawWithIdleMana || refuseWastedPayoffs || tapToGrowAtTheirEndStep ||
+                tapToPingAtTheirEndStep)
         ) {
             return TimingVerdict.Neutral
         }
@@ -414,6 +421,10 @@ class HoldPolicy(
         if (drawWithIdleMana) drawActivationVerdict(state, playerId, ability)?.let { return it }
         // A tap that costs an attack or a block, for counters the opponent's end step buys for free.
         if (tapToGrowAtTheirEndStep && SelfTapGrowthWindow.holds(state, playerId, ability, activation)) {
+            return TimingVerdict.NoWindow
+        }
+        // The same for damage to each opponent, unless that damage ends the game now.
+        if (tapToPingAtTheirEndStep && SelfTapPingWindow.holds(state, playerId, ability, activation)) {
             return TimingVerdict.NoWindow
         }
         if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseWastedPayoffs || borrowedCreaturesGoHome)) {

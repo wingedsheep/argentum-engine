@@ -605,11 +605,13 @@ object CardIntentAnalyzer {
      */
     /**
      * Whether [payoff] goes on to use the card a graveyard exile took — cast it, play it, or copy
-     * it — so the exile is the way in rather than the point: recursion, not hate.
+     * it — so the exile is the way in rather than the point: recursion, not hate. Casting any
+     * number of them, or of their copies, under a budget (Uldaros Theorix) is the same use.
      */
     internal fun usesTheExiledCard(payoff: List<Effect>): Boolean = payoff.any {
         it is GrantFreeCastTargetFromExileEffect || it is GrantMayPlayFromExileEffect ||
             it is GrantPlayWithoutPayingCostEffect || it is CastFromCollectionWithoutPayingCostEffect ||
+            it is CastAnyNumberFromCollectionWithoutPayingCostEffect ||
             it is CreateTokenCopyOfTargetEffect || it is EachPermanentBecomesCopyOfTargetEffect
     }
 
@@ -724,7 +726,7 @@ object CardIntentAnalyzer {
      * Extrapolate the Impossible is the shape that needs it: "you may reveal two cards from outside
      * the game; an opponent chooses one; put it into your hand" lowers to `May(IfYouDo(reveal, then
      * = put into hand))`, and [EffectWalker] treats the `IfYouDo` as a leaf, so the card read as
-     * doing nothing at all. Used only for [CardIntent.selectsIntoHand] / [CardIntent.wishFilters]:
+     * doing nothing at all. Used only for [CardIntent.selectsIntoHand] / [CardIntent.wishFilters] and [wishTags]:
      * widening the shared walk would move every tag and the rater's numbers with it, which is a
      * separate change.
      */
@@ -764,6 +766,7 @@ object CardIntentAnalyzer {
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(discardPunisherTags(root, eachPlayer = null))
         addAll(regrowthTags(root, ownPile))
+        addAll(wishTags(root))
         addAll(graveyardExileTags(root))
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // Exile it, its owner may cast it again (Airbend, Release to the Wind): a bounce that skips
@@ -869,6 +872,32 @@ object CardIntentAnalyzer {
             }
         }
         return if (returnsThem) setOf(IntentTag.RECURSION) else emptySet()
+    }
+
+    /**
+     * "Choose a sorcery card you own from outside the game, reveal that card, and put it into your
+     * hand" (Burning Wish), "reveal two cards you own from outside the game; an opponent chooses one
+     * of them; put that card into your hand" (Extrapolate the Impossible): a gather from our own
+     * sideboard ([wishFilterOf]) whose cards, or the ones picked from among them, end in our hand is
+     * a search for the card we need — [IntentTag.TUTOR], from outside the game instead of the library.
+     * Read over [handSelectionLeaves]: Extrapolate's reveal is the action of an "if you do".
+     */
+    private fun wishTags(root: Effect): Set<IntentTag> {
+        val leaves = handSelectionLeaves(root)
+        val wished = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { wishFilterOf(it) != null }?.storeAs
+        }
+        if (wished.isEmpty()) return emptySet()
+        do {
+            val before = wished.size
+            for (leaf in leaves) wished += derivedCollections(leaf, wished)
+        } while (wished.size != before)
+        val toOurHand = leaves.any { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@any false
+            val to = move.destination as? CardDestination.ToZone ?: return@any false
+            move.from in wished && to.zone == Zone.HAND && to.player == Player.You
+        }
+        return if (toOurHand) setOf(IntentTag.TUTOR) else emptySet()
     }
 
     /**
@@ -1249,6 +1278,12 @@ object CardIntentAnalyzer {
         is ChoosePileEffect -> if (leaf.pileA in sources || leaf.pileB in sources) listOf(leaf.storeChosenAs, leaf.storeOtherAs) else emptyList()
         is ChooseOnePerCategoryEffect -> if (leaf.from in sources) listOf(leaf.storeAs) else emptyList()
         is MoveCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMovedAs) else emptyList()
+        // A later step re-gathering a stored collection by name ("an opponent chooses one of them"
+        // after the reveal, Extrapolate the Impossible) carries the same cards on.
+        is GatherCardsEffect -> {
+            val source = leaf.source
+            if (source is CardSource.FromVariable && source.variableName in sources) listOf(leaf.storeAs) else emptyList()
+        }
         else -> emptyList()
     }
 

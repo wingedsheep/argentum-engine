@@ -5,7 +5,7 @@
  */
 import type { GameDecks, StatBucket } from './account'
 import { type AdminAuth, adminAuthHeaders } from './adminAuth'
-import { ALL_GAMES, type OpponentFilter, type StatsFilter, filterQuery } from './statsFilter'
+import { ALL_GAMES, type StatsFilter, filterQuery } from './statsFilter'
 
 export interface GlobalOverview {
   readonly totalGames: number
@@ -22,6 +22,7 @@ export interface GlobalOverview {
   readonly notCountedGames: number
 }
 
+/** One bucket of the games-over-time chart; `day` is the bucket's first UTC day (`YYYY-MM-DD`). */
 export interface DailyCount {
   readonly day: string
   readonly count: number
@@ -139,12 +140,17 @@ async function getAdminStats<T>(auth: AdminAuth, path: string): Promise<T> {
 }
 
 // The game-derived panels take the dashboard's slice; their period parameter is `period` because
-// games-per-day already uses `days` for its chart window.
+// games-per-day takes it as `days`.
 const fq = (f: StatsFilter) => filterQuery(f, 'period').replace(/^&/, '?')
 export const fetchOverview = (auth: AdminAuth, f: StatsFilter = ALL_GAMES) =>
   getAdminStats<GlobalOverview>(auth, `/overview${fq(f)}`)
-export const fetchGamesPerDay = (auth: AdminAuth, days = 30, vs: OpponentFilter = 'all') =>
-  getAdminStats<DailyCount[]>(auth, `/games-per-day?days=${days}${vs === 'all' ? '' : `&vs=${vs}`}`)
+/** Games over the dashboard's slice, oldest first and gap-filled; the server sizes the bucket to the span. */
+export interface GamesOverTime {
+  readonly bucket: AiBucket
+  readonly points: DailyCount[]
+}
+export const fetchGamesOverTime = (auth: AdminAuth, f: StatsFilter = ALL_GAMES) =>
+  getAdminStats<GamesOverTime>(auth, `/games-per-day?days=${f.days}${f.vs === 'all' ? '' : `&vs=${f.vs}`}`)
 export const fetchModeDistribution = (auth: AdminAuth, f: StatsFilter = ALL_GAMES) =>
   getAdminStats<StatBucket[]>(auth, `/modes${fq(f)}`)
 /** Sets played most across recorded tournaments (counted once per tournament that used each set). */
