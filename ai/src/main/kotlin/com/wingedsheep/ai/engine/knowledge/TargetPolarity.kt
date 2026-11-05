@@ -1533,8 +1533,10 @@ object TargetPolarityAnalyzer {
         // A self-only zone redirect (disturb's "if this would be put into a graveyard, exile it
         // instead") moves the Aura itself and never touches the creature, so it is no veto either.
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
+        // A price needs a gift the Aura gives outright, so judge it before any consolation joins.
+        val payPrices = TargetPolarity.BENEFICIAL !in readings || TargetPolarity.HARMFUL in readings
         if (TargetPolarity.HARMFUL !in readings) readings += consolations
-        if (TargetPolarity.BENEFICIAL !in readings || TargetPolarity.HARMFUL in readings) readings += prices
+        if (payPrices) readings += prices
         return readings
     }
 
