@@ -13,6 +13,10 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
+import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
+import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
+import com.wingedsheep.sdk.scripting.CanAttackDespiteDefender
+import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
@@ -2044,8 +2048,26 @@ object CardIntentAnalyzer {
             // "Equipment spells you cast cost {1} less": a discount on our own spells only.
             static.target is SpellCostTarget.YouCast && !taxes(static.modification) ->
                 setOf(IntentTag.COST_REDUCER)
+            // "Noncreature spells your opponents cast cost {1} more" (Thalia, God-Pharaoh's Statue):
+            // every spell of theirs that matches is slower, which no board simulation sees.
+            static.target is SpellCostTarget.OpponentsCast && taxes(static.modification) ->
+                setOf(IntentTag.SPELL_TAX)
             else -> emptySet()
         }
+        // "You may cast spells from your hand without paying their mana costs" (Omniscience,
+        // Omnipresence, Fires of Invention): a free spell every time, ours alone. A symmetric grant
+        // (Weftwalking's "each player") pays the opponent as well and earns no tag.
+        is MayCastWithoutPayingManaCost ->
+            if (static.controllerOnly) setOf(IntentTag.FREE_SPELL) else emptySet()
+        // "Each creature you control with toughness greater than its power assigns combat damage
+        // equal to its toughness" (Ghalta the Immovable, Arcades) and "can attack as though it
+        // didn't have defender": better in a fight without a point of +N/+N. Doran's every-creature
+        // form helps the opponent's walls just as much and earns no tag.
+        is AssignDamageEqualToToughness ->
+            if (onlyOurCreatures(static.filter)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        is CanAttackDespiteDefender ->
+            if (onlyOurCreatures(static.filter)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        is GrantKeywordToOwnSpells -> ownSpellKeywordTags(static.keyword)
         // "Activated abilities of Equipment you control that target this creature cost {1} less",
         // "Abilities you activate cost {1} less": every printed reduction discounts the
         // controller's own permanents or activations, so only an opponents' reach is excluded.
@@ -2078,6 +2100,34 @@ object CardIntentAnalyzer {
         // A composite static is each of its parts (a conditional one is read above, by the
         // ability it gates).
         is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
+        else -> emptySet()
+    }
+
+    /**
+     * A static that reaches only creatures on our side: the source itself, what it is attached to
+     * (an Aura's or Equipment's host — who that is the polarity reader's question), or a battlefield
+     * group restricted to creatures we control.
+     */
+    private fun onlyOurCreatures(filter: GroupFilter): Boolean = when (filter.scope) {
+        Scope.Self, Scope.AttachedTo -> true
+        Scope.Battlefield -> filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
+        else -> false
+    }
+
+    /**
+     * A keyword our own spells are granted ("creature spells you cast have convoke", "instant and
+     * sorcery spells you control have split second") read for what it does to the spell:
+     * - convoke, improvise and delve pay for the spell with something other than mana — a discount;
+     * - storm, casualty and conspire copy the spell — a second helping of it;
+     * - split second stops the opponent answering it — protection for the spell on the stack;
+     * - lifelink gains life off the spell's damage.
+     * Anything else (a spell's deathtouch, cascade) is left unread.
+     */
+    private fun ownSpellKeywordTags(keyword: Keyword): Set<IntentTag> = when (keyword) {
+        Keyword.CONVOKE, Keyword.IMPROVISE, Keyword.DELVE -> setOf(IntentTag.COST_REDUCER)
+        Keyword.STORM, Keyword.CASUALTY, Keyword.CONSPIRE -> setOf(IntentTag.SPELL_COPY)
+        Keyword.SPLIT_SECOND -> setOf(IntentTag.PROTECTION)
+        Keyword.LIFELINK -> setOf(IntentTag.LIFEGAIN)
         else -> emptySet()
     }
 
@@ -2324,6 +2374,10 @@ object CardIntentAnalyzer {
             if (repeatable && IntentTag.TOKEN_MAKER in tags) add(PriorRung("repeatable token maker", 3.0))
             if (IntentTag.ANTHEM in tags) add(PriorRung("anthem", 3.0))
             if (IntentTag.DAMAGE_AMPLIFIER in tags) add(PriorRung("amplifies our damage", 2.0))
+            // A standing "cast spells without paying their mana costs" (Omniscience, Omnipresence)
+            // is a free spell every turn it stays: an engine as strong as an amplifier, and the
+            // permanent the opponent most wants gone. A one-shot free cast is priced by its cast.
+            if (IntentTag.FREE_SPELL in tags && intent.speed == Speed.STATIC) add(PriorRung("casts our spells for free", 2.0))
             if (IntentTag.SACRIFICE_OUTLET in tags) add(PriorRung("sacrifice outlet", 1.5))
             if (IntentTag.EVASION_GRANT in tags || IntentTag.PROTECTION in tags) add(PriorRung("grants evasion or protection", 1.5))
             // A mana rock is worth about a land, and an untapped land is 0.6.
@@ -2404,6 +2458,7 @@ object CardIntentAnalyzer {
 
     private val OPPONENT_FACING = setOf(
         IntentTag.CAST_BAN,
+        IntentTag.SPELL_TAX,
         IntentTag.FORCED_ATTACK,
         IntentTag.GRAVEYARD_HATE,
         IntentTag.MILL,

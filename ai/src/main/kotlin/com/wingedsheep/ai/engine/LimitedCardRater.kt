@@ -833,6 +833,9 @@ object LimitedCardRater {
         // A turn of no spells from the opponent: real tempo, but it answers nothing already on the
         // board — in Limited a little under a tapper.
         IntentTag.CAST_BAN to 0.3,
+        // A tax slows every matching spell of theirs a turn without stopping any: real against a
+        // removal-heavy hand, idle against creatures — under the ban.
+        IntentTag.SPELL_TAX to 0.2,
         // A forced attack into our blockers: a combat trick the opponent walks into, but only as
         // good as the board we already have — priced like the cast ban.
         IntentTag.FORCED_ATTACK to 0.3,
