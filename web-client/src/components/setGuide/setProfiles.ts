@@ -493,7 +493,7 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
     ],
   },
   HOU: {
-    tagline: 'An aggressive, combat-first format where blocking is punished and dead creatures come back. Exert and afflict reward attacking, aftermath gives every spell a second half.',
+    tagline: 'An aggressive, combat-first format where blocking is punished and dead creatures come back. Exert and afflict reward attacking, aftermath spells get a second half.',
     setting: 'Amonkhet as the Hours arrive and the God-Pharaoh Nicol Bolas returns to claim his plane.',
     gameplay: 'Games are decided in combat. Afflict creatures make the defender lose life whenever they are blocked, so chump blocks cost twice, and exert lets attackers hit harder in exchange for skipping an untap. Eternalize and embalm bring creatures back from the graveyard as tokens, so trades still leave value behind. Aftermath split cards are cast once from hand and again from the graveyard, and Deserts fuel cards that care about them. Common removal like Sandblast, Puncturing Blow and Unquenchable Thirst keeps boards in check.',
     tips: [

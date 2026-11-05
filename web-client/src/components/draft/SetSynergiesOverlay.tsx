@@ -2912,7 +2912,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Zombie Attackers',
         colors: ['W', 'B'],
         keyCard: 'Unraveling Mummy',
-        description: 'Embalm and eternalize Zombie tokens back from the graveyard and arm attacking Zombies with lifelink and deathtouch. A midrange deck that grinds out value from its dead creatures.',
+        description: 'Eternalize Zombie tokens back from the graveyard and arm attacking Zombies with lifelink and deathtouch. A midrange deck that grinds out value from its dead creatures.',
         creatureTypes: ['Zombie'],
       },
       {
@@ -2925,7 +2925,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: '-1/-1 Counters',
         colors: ['B', 'G'],
         keyCard: 'Obelisk Spider',
-        description: "Spread -1/-1 counters with afflict, combat and removal to shrink the opponent's creatures and drain them. A grindy midrange deck that turns every counter into reach.",
+        description: "Spread -1/-1 counters through combat and removal to shrink the opponent's creatures and drain them. A grindy midrange deck that turns every counter into reach.",
       },
       {
         name: 'Exert Aggro',
