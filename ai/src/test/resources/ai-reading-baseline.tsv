@@ -6182,7 +6182,7 @@ Flotsam // Jetsam
 Flourishing Bloom-Kin
 Flourishing Defenses
 Flourishing Fox
-Flourishing Grapple	timing: RemoveAllAbilitiesEffect
+Flourishing Grapple
 Flourishing Hunter
 Flow State
 Flow of Ideas
@@ -7614,7 +7614,7 @@ Halfdane	polarity: SetBaseStatsEffect
 Haliya, Ascendant Cadet
 Haliya, Guided by Light
 Hall Monitor
-Hall of Echoes	timing: GrantStaticAbilityEffect
+Hall of Echoes
 Hall of Heliod's Generosity
 Hall of Oracles
 Hall of Storm Giants	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
@@ -18403,7 +18403,7 @@ Ulamog, the Ceaseless Hunger	intent: Pipeline(TopOfLibrary→exile)
 Ulamog, the Defiler	intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Ulamog, the Infinite Gyre	intent: Pipeline(graveyard→library)
 Ulcerate
-Uldaros Theorix	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
+Uldaros Theorix
 Ulna Alley Shopkeep
 Ulrich's Kindred
 Ultima
