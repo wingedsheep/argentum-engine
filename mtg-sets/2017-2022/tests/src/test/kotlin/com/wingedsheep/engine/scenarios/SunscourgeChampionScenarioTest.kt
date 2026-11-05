@@ -91,12 +91,19 @@ class SunscourgeChampionScenarioTest : FunSpec({
         }
     }
 
-    test("eternalize can't be activated without a card to discard") {
+    test("eternalize is offered with a card in hand and not with an empty hand") {
         val d = driver()
         val me = d.player1
+        d.getHand(me).forEach(d::moveToGraveyard)
         val champion = d.putCardInGraveyard(me, "Sunscourge Champion")
         d.giveMana(me, Color.WHITE, 2)
         d.giveColorlessMana(me, 2)
+        fun offered() = d.legalActions(me).any { (it.action as? ActivateAbility)?.sourceId == champion }
+
+        withClue("an empty hand can't pay the discard") { offered() shouldBe false }
+        val fodder = d.putCardInHand(me, "Grizzly Bears")
+        withClue("one card in hand makes it activatable") { offered() shouldBe true }
+        d.moveToGraveyard(fodder)
 
         d.submit(
             ActivateAbility(
