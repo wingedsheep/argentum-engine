@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.effects.AmplifyDamageThisTurnEffect
 import com.wingedsheep.sdk.scripting.events.AmountFilter
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -15,6 +16,19 @@ internal object DamageAmplifiers {
         val multiplier = replacement as? DoubleDamage ?: return false
         if (multiplier.restrictions.isNotEmpty()) return false
         val event = multiplier.appliesTo as? EventPattern.DamageEvent ?: return false
+        return readsScope(event)
+    }
+
+    /**
+     * The one-shot, turn-scoped form (Insult // Injury's Insult: "if a source you control would deal
+     * damage this turn, it deals double that damage instead") — the same one-sided scope as a
+     * [DoubleDamage] permanent, for the rest of the turn. An additive "plus N" bonus is not a
+     * multiplier and does not read here.
+     */
+    fun reads(effect: AmplifyDamageThisTurnEffect): Boolean =
+        effect.multiplier > 1 && readsScope(effect.appliesTo)
+
+    private fun readsScope(event: EventPattern.DamageEvent): Boolean {
         // Noncombat-only engines need a damage-spell fuel model, and conditional sources need
         // a live-state reader; neither earns this unconditional battlefield premium.
         if (event.damageType != DamageType.Any || event.amount != AmountFilter.Any ||

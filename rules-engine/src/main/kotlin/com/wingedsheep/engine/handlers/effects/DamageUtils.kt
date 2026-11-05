@@ -2826,7 +2826,7 @@ object DamageUtils {
                     predicateEvaluator = predicateEvaluator
                 )
             ) continue
-            amplifiedAmount += mod.bonus
+            amplifiedAmount = mod.apply(amplifiedAmount)
         }
 
         // Cap damage replacements (Divine Presence): clamp the would-be amount to a maximum.

@@ -1697,6 +1697,12 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   cleaned up at end of turn. Taii Wakeen, Perfect Shot:
   `AmplifyDamageThisTurn(xValue(), DamageEvent(source = Any.youControl(), damageType = NonCombat))`;
   Rankle and Torbran: `AmplifyDamageThisTurn(fixed(2), DamageEvent(recipient = Recipient.AnyPlayerOrBattle))`.
+- `DoubleDamageThisTurn(appliesTo: EventPattern.DamageEvent)` — the multiplying form of
+  `AmplifyDamageThisTurn` (`AmplifyDamageThisTurnEffect` with `multiplier = 2`, `bonus = 0`): every damage
+  instance matching `appliesTo` deals *double* that damage for the rest of the turn. Same matchers and
+  "you"-relative scope; the effect outlives the spell that created it; each install doubles once (two ⇒ ×4),
+  and the affected player orders it against other damage replacements (CR 616.1). Insult // Injury (Insult):
+  `DamageCantBePreventedThisTurn() then DoubleDamageThisTurn(DamageEvent(source = Any.youControl()))`.
 - `DoubleDamageToPlayer(target, duration = UntilYourNextTurn)` — install a duration-bounded replacement
   (CR 616) that *doubles* all damage — any source, combat or noncombat — dealt to `target` (a player,
   e.g. `EffectTarget.PlayerRef(Player.TriggeringPlayer)`) and to any permanent that player controls. The

@@ -95,7 +95,8 @@ data class DealDamageEffect(
 /**
  * Install a turn-duration (until end of turn) replacement effect that adds [bonus] to every damage
  * instance matching [appliesTo] for the rest of the turn (CR 616 — a damage-amount replacement:
- * "it deals that much damage plus N instead").
+ * "it deals that much damage plus N instead"), or — with [multiplier] above 1 and a zero [bonus] —
+ * multiplies it ("it deals double that damage instead": Insult // Injury).
  *
  * [appliesTo] carries the whole scope — `source`, `recipient`, `damageType` and `amount` — matched by
  * the same shared matchers as [com.wingedsheep.sdk.scripting.ModifyDamageAmount], with the effect's
@@ -110,22 +111,42 @@ data class DealDamageEffect(
  * - Rankle and Torbran: "If a source would deal damage to a player or battle this turn, it deals that
  *   much damage plus 2 instead." — `appliesTo = DamageEvent(recipient = Recipient.AnyPlayerOrBattle)`.
  *
- * A floating effect rather than the permanent-hosted [com.wingedsheep.sdk.scripting.ModifyDamageAmount]
- * because it is turn-duration and bakes its bonus at resolution.
+ * - Insult // Injury (Insult): "If a source you control would deal damage this turn, it deals double
+ *   that damage instead." — `multiplier = 2`, `bonus = 0`,
+ *   `appliesTo = DamageEvent(source = Any.youControl())`. Each install doubles once, so two Insults
+ *   quadruple (CR 616.1).
+ *
+ * The damage becomes `amount * multiplier + bonus`; a card uses one of the two. A floating effect
+ * rather than the permanent-hosted [com.wingedsheep.sdk.scripting.ModifyDamageAmount] /
+ * [com.wingedsheep.sdk.scripting.DoubleDamage] because it is turn-duration, outlives the spell or
+ * ability that created it, and bakes its bonus at resolution.
  */
 @SerialName("AmplifyDamageThisTurn")
 @Serializable
 data class AmplifyDamageThisTurnEffect(
     val bonus: DynamicAmount,
     val appliesTo: EventPattern.DamageEvent,
+    val multiplier: Int = 1,
 ) : Effect {
+    init {
+        require(multiplier >= 1) { "AmplifyDamageThisTurnEffect.multiplier must be at least 1" }
+    }
+
     override val description: String = describe(bonus.description)
 
     override fun runtimeDescription(resolver: (DynamicAmount) -> Int?): String =
         describe(resolver(bonus)?.toString() ?: bonus.description)
 
-    private fun describe(amount: String): String =
-        "Until end of turn, if ${appliesTo.description}, it's that much damage plus $amount instead"
+    private fun describe(amount: String): String {
+        val scaled = when (multiplier) {
+            1 -> "that much damage"
+            2 -> "double that damage"
+            3 -> "triple that damage"
+            else -> "$multiplier times that damage"
+        }
+        val plus = if (multiplier > 1 && amount == "0") "" else " plus $amount"
+        return "Until end of turn, if ${appliesTo.description}, it's $scaled$plus instead"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newBonus = bonus.applyTextReplacement(replacer)

@@ -553,7 +553,12 @@ object DamageReplacementChain {
             }
             when (mod) {
                 is SerializableModification.AmplifyDamage -> if (matches(mod.appliesTo, floating.sourceId ?: floating.controllerId, floating.controllerId)) {
-                    amount("add ${mod.bonus} damage (${d.amount + mod.bonus})", d.amount + mod.bonus, "add")
+                    val next = mod.apply(d.amount)
+                    when {
+                        mod.multiplier == 1 -> amount("add ${mod.bonus} damage ($next)", next, "add")
+                        mod.bonus == 0 -> amount("${if (mod.multiplier == 2) "double" else "multiply"} damage ($next)", next, "multiply")
+                        else -> amount("multiply by ${mod.multiplier} and add ${mod.bonus} damage ($next)", next)
+                    }
                 }
                 is SerializableModification.DoubleDamageToPlayer -> if (d.targetId == mod.playerId || projected.getController(d.targetId) == mod.playerId) {
                     amount("double damage (${d.amount * 2})", d.amount * 2, "multiply")
