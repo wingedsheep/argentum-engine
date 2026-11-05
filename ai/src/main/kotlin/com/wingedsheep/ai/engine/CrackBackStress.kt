@@ -23,7 +23,8 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * This reads that: the opponent's board as it will stand on their turn (their permanents untapped,
  * except those that don't untap), and each non-mana activated ability it can then afford that can
- * touch a fight ([CombatReach.FIGHT]: removal, a pump, damage to a creature) — the engine's own
+ * touch a fight ([CombatReach.FIGHT]: removal, a pump, damage to a creature) or keep one of our
+ * blockers out of it ([CombatReach.BLOCK_DENIAL]: "target creature can't block") — the engine's own
  * legal actions, so mana, sacrifice and tap costs are the rules' answer. Each is played out once,
  * on the creatures it can hit, and the crack-back is re-estimated on what it leaves. The caller
  * takes the worst.
@@ -144,11 +145,15 @@ internal class CrackBackStress(
         return out.toList()
     }
 
-    /** An affordable non-mana activation whose effect can change a fight. */
+    /**
+     * An affordable non-mana activation whose effect can change a fight — or keep one of our
+     * creatures out of the block that would hold their attack off ([CombatReach.BLOCK_DENIAL]).
+     */
     private fun usable(state: GameState, offer: LegalAction): Boolean {
         if (!offer.affordable || offer.isManaAbility || offer.hasUnfillableTargetRequirement) return false
         val activation = offer.action as? ActivateAbility ?: return false
-        return CombatReach.FIGHT in CombatResponses.reachOf(state, activation, cardRegistry).orEmpty()
+        val reach = CombatResponses.reachOf(state, activation, cardRegistry).orEmpty()
+        return CombatReach.FIGHT in reach || CombatReach.BLOCK_DENIAL in reach
     }
 
     companion object {

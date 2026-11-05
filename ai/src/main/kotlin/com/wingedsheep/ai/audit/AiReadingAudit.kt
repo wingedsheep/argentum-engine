@@ -37,6 +37,8 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
@@ -387,7 +389,12 @@ object AiReadingAudit {
             intent(ability.effect, sink, ability.targetRequirements, ownPile)
             combat(ability, sink)
             if (ability.timing == TimingRule.InstantSpeed) {
-                timing(ability.effect, sink) { ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true) }
+                // A pure can't-attack / can't-block activation is judged whole by the restriction
+                // window (ExpiringGrantWindow.restrictionHasNoWindow), not leaf by leaf.
+                val restriction = ExpiringGrantWindow.readsRestriction(ability.effect)
+                timing(ability.effect, sink) {
+                    restriction || ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true)
+                }
             }
             modal(ability.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.ACTIVATED, i + 1, faceName, describe { ability.description }), sink.findings)
@@ -612,7 +619,10 @@ object AiReadingAudit {
             // "Return target creature to its owner's hand. You may have Shapeshifters you control
             // become copies of that creature until end of turn" (Absorb Identity): the copies ride
             // on the bounce in the same way, so when to cast it is the removal's question too.
-            val ridesOnRemoval = (leaf is MarkExileOnDeathEffect || expiring is EachPermanentBecomesCopyOfTargetEffect) && removal
+            // "A creature dealt damage this way can't block this turn" (Ballista Wielder, Blood
+            // Aspirant) rides on the damage the same way: when to ping is the removal's question.
+            val ridesOnRemoval = (leaf is MarkExileOnDeathEffect || expiring is EachPermanentBecomesCopyOfTargetEffect ||
+                expiring is CantBlockEffect || expiring is CantAttackEffect) && removal
             if (isRead(leaf) || ridesOnRemoval) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",

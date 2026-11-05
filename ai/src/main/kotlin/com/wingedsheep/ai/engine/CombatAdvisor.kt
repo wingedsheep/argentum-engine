@@ -2035,7 +2035,8 @@ class CombatAdvisor(
             val stressed = crackBackStress?.worstCrackBack(state, postCombat, playerId, myLife) { answered ->
                 val answeredProjected = answered.projectedState
                 val blockers = myBlockers.filter { id ->
-                    answeredProjected.isCreature(id) && answered.getEntity(id)?.has<TappedComponent>() != true
+                    answeredProjected.isCreature(id) && !answeredProjected.cantBlock(id) &&
+                        answered.getEntity(id)?.has<TappedComponent>() != true
                 }
                 incomingNextTurnDamage(answered, answeredProjected, playerId, blockers, stackOnTramplers = true)
             }

@@ -64,16 +64,24 @@ class AiReadingByAbilityTest : FunSpec({
     }
 
     test("combat and timing gaps are placed on the activated ability that has them") {
-        val reading = AiReadingAudit.read(card("Alchemist's Vial"))
+        // "{3}: Until end of turn, this creature loses defender and gains flying."
+        val reading = AiReadingAudit.read(card("Gargoyle Sentinel"))
         val activated = reading.abilities.filter { it.ability.kind == AbilityKind.ACTIVATED }
         activated shouldHaveSize 1
         val ability = activated.single()
         ability.readFully shouldBe false
         ability.ability.title shouldBe "Activated ability ${ability.ability.number}"
-        ability.findings.filter { it.check == Check.COMBAT && !it.read }.map { it.effectType } shouldBe listOf("CantBlockEffect")
-        ability.findings.filter { it.check == Check.TIMING && !it.read }.map { it.effectType }.toSet() shouldBe
-            setOf("CantAttackEffect", "CantBlockEffect")
-        ability.findings.first { it.check == Check.TIMING }.reason shouldBe "no timing for this until-end-of-turn effect"
+        ability.findings.filter { it.check == Check.COMBAT && !it.read }.map { it.effectType } shouldBe listOf("RemoveKeywordEffect")
+        ability.findings.filter { it.check == Check.TIMING && !it.read }.map { it.effectType } shouldBe listOf("RemoveKeywordEffect")
+        ability.findings.first { it.check == Check.TIMING && !it.read }.reason shouldBe "no timing for this until-end-of-turn effect"
+    }
+
+    test("a can't-attack-or-block activation is read whole: the crack-back sees it, the restriction window times it") {
+        val reading = AiReadingAudit.read(card("Alchemist's Vial"))
+        val ability = reading.abilities.single { it.ability.kind == AbilityKind.ACTIVATED }
+        ability.readFully shouldBe true
+        ability.findings.filter { it.check == Check.COMBAT }.map { it.reason } shouldBe listOf("combat sees this blocking change")
+        ability.findings.filter { it.check == Check.TIMING }.map { it.read }.toSet() shouldBe setOf(true)
         // The draw-on-entry trigger is read: the AI knows what it is for.
         reading.abilities.single { it.ability.kind == AbilityKind.TRIGGERED }.readFully shouldBe true
     }
