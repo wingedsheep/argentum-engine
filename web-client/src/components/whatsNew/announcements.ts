@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-hou',
+    date: '2026-11-05',
+    kind: 'set',
+    setCode: 'HOU',
+    title: 'Hour of Devastation is complete',
+    body: 'The God-Pharaoh returns to Amonkhet and the Hours bring ruin. Afflict punishes every block, aftermath spells get cast twice, exert and eternalize turn your creatures into relentless attackers, and Deserts anchor ten two-colour decks from exert aggro to -1/-1 counters.',
+    tryIf: 'aggressive creature decks and squeezing two spells out of one card',
+  },
+  {
     id: 'set-xln',
     date: '2026-11-05',
     kind: 'set',

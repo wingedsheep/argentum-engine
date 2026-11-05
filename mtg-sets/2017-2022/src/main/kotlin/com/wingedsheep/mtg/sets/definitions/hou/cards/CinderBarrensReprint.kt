@@ -16,4 +16,5 @@ val CinderBarrensReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/c/a/caedf353-35f8-4b58-8ed9-183d29302be9.jpg",
     releaseDate = "2017-07-14",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

@@ -43,6 +43,7 @@ val AvidReclaimer = card("Avid Reclaimer") {
         artist = "Josu Hernaiz"
         flavorText = "\"All can't be lost. Nissa has shown me that.\""
         imageUri = "https://cards.scryfall.io/normal/front/0/4/0468e488-94ce-4ae3-abe4-7782673a7e62.jpg?1783935987"
+        inBooster = false
         ruling("2017-07-14", "You can activate Avid Reclaimer's ability even if you don't have anything to spend that mana on. You'll still gain 2 life if you control a Nissa planeswalker.")
         ruling("2017-07-14", "Avid Reclaimer's ability is a mana ability. It doesn't use the stack and can't be responded to. You'll immediately add mana and gain 2 life, if applicable.")
     }

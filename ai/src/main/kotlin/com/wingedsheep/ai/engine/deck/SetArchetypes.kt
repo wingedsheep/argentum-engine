@@ -1249,6 +1249,33 @@ object SetArchetypes {
                     creatureTypes = listOf("Merfolk")),
             )
         ),
+        "HOU" to SetSynergies(
+            setCode = "HOU",
+            setName = "Hour of Devastation",
+            archetypes = listOf(
+                Archetype("Aftermath Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Hold the ground with removal for attackers, fly over the top, then cast the aftermath half from the graveyard for extra cards. A controlling tempo deck that gets two spells out of each card."),
+                Archetype("Discard Control", listOf(Color.BLUE, Color.BLACK),
+                    "Bounce threats and strip the opponent's hand while cycling and card draw smooth your draws. A grindy control deck that wins once the opponent runs out of cards."),
+                Archetype("Graveyard Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with cheap aggressive creatures, then bring them back from the graveyard and give them haste. A fast aggro deck that keeps its board refilled."),
+                Archetype("Desert Ramp", listOf(Color.RED, Color.GREEN),
+                    "Play Deserts and extra lands to fuel big creatures and land-count burn. A midrange deck that outsizes the opponent once its mana is ahead."),
+                Archetype("Go-Wide Aggro", listOf(Color.GREEN, Color.WHITE),
+                    "Flood the board with creatures and tokens, then pump the whole team or one huge trampler. A go-wide aggro deck that ends games with an alpha strike."),
+                Archetype("Zombie Attackers", listOf(Color.WHITE, Color.BLACK),
+                    "Embalm and eternalize Zombie tokens back from the graveyard and arm attacking Zombies with lifelink and deathtouch. A midrange deck that grinds out value from its dead creatures.",
+                    creatureTypes = listOf("Zombie")),
+                Archetype("Spells Prowess", listOf(Color.BLUE, Color.RED),
+                    "Cast cheap instants and sorceries to pump prowess creatures, then recycle the best spells from the graveyard. A tempo deck that races with evasive threats."),
+                Archetype("-1/-1 Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Spread -1/-1 counters with afflict, combat and removal to shrink the opponent's creatures and drain them. A grindy midrange deck that turns every counter into reach."),
+                Archetype("Exert Aggro", listOf(Color.RED, Color.WHITE),
+                    "Exert attackers every turn for bigger swings and payoffs that drain and gain on each exert. A fast aggro deck that pressures the opponent before bigger decks stabilize."),
+                Archetype("Card Draw Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp into big creatures and cycle away what you don't need, then sink extra mana into card draw. A midrange deck that out-values the opponent in long games."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",

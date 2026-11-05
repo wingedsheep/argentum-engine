@@ -1108,7 +1108,8 @@
                 "date": "2017-07-14",
                 "text": "Avid Reclaimer's ability is a mana ability. It doesn't use the stack and can't be responded to. You'll immediately add mana and gain 2 life, if applicable."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "GREEN",
@@ -8342,7 +8343,8 @@
                 "date": "2017-07-14",
                 "text": "If Nicol Bolas's third ability causes each opponent to have 0 or less life, but it also causes you to try to draw more cards than you have in your library, the game ends in a draw."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
@@ -8813,7 +8815,8 @@
                 "date": "2017-07-14",
                 "text": "While resolving Nissa's last ability, all creatures and lands put onto the battlefield this way enter at the same time. If any have triggered abilities that trigger on something else entering the battlefield, they'll see each other."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
@@ -14425,7 +14428,8 @@
                 "date": "2017-07-14",
                 "text": "You choose a target for Wasp of the Bitter End's triggered ability right after casting a Bolas planeswalker spell, but you don't choose whether to sacrifice Wasp of the Bitter End or not until that ability resolves. If the creature becomes an illegal target, the entire ability doesn't resolve and you can't sacrifice Wasp of the Bitter End."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -14726,7 +14730,8 @@
         "collectorNumber": "207",
         "artist": "Gabor Szikszai",
         "flavorText": "The God-Pharaoh's most devoted took it upon themselves to follow his example.",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/8/180d1cd4-7d0d-4279-bc2a-59bb21b06904.jpg?1783935984"
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/180d1cd4-7d0d-4279-bc2a-59bb21b06904.jpg?1783935984",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED"
