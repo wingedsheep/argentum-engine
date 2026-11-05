@@ -17765,13 +17765,17 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   narrows to cards with that exact name — every physical copy counts, not just the source object. Yidaro,
   Wandering Monster: `Conditions.CompareAmounts(DynamicAmounts.cardsCycledThisGame("Yidaro, Wandering
   Monster"), GTE, Fixed(4))`. Backed by the never-cleared per-player `CardsCycledThisGameComponent`.
-- `SpellsCastThisGame(player = Player.You)` (facade `DynamicAmounts.spellsCastThisGame(player)`) — how
-  many spells `player` has cast **this game**: any zone, resolved or countered; uncast copies don't count
+- `SpellsCastThisGame(player = Player.You, cardName = null)` (facade
+  `DynamicAmounts.spellsCastThisGame(player, cardName)`) — how many spells `player` has cast **this game**: any zone, resolved or countered; uncast copies don't count
   (CR 707.10). A spell counts once it has become cast, so a gate judged while it's being cast reads the
   count from before it. Once Upon a Time ("If this spell is the first spell you've cast this game, you
   may cast it without paying its mana cost"): `selfAlternativeCost = SelfAlternativeCost(ManaCost.ZERO,
-  condition = Conditions.CompareAmounts(DynamicAmounts.spellsCastThisGame(), EQ, Fixed(0)))`. Backed by
-  the never-cleared per-player `SpellsCastThisGameComponent`.
+  condition = Conditions.CompareAmounts(DynamicAmounts.spellsCastThisGame(), EQ, Fixed(0)))`. `cardName`
+  narrows it to spells with that exact name (a face-down cast has none): Approach of the Second Sun's
+  "you've cast another spell named Approach of the Second Sun this game" is
+  `CompareAmounts(spellsCastThisGame(cardName = "Approach of the Second Sun"), GTE, Fixed(2))` — read
+  while it resolves, the spell counts itself. Backed by the never-cleared per-player
+  `SpellsCastThisGameComponent`.
 - `ExtraTurnsBegunThisGame(player = Player.You)` (facade `DynamicAmounts.extraTurnsBegunThisGame(player)`)
   — how many extra turns `player` has **begun** this game. Counted as the inserted turn starts, so an
   extra turn that was created but never began (prevented by a `PreventExtraTurns` permanent, or skipped

@@ -2150,7 +2150,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * once it has become cast, so a cost or availability gate judged while it is being cast still
      * reads the count from before it: `Compare(SpellsCastThisGame(), EQ, 0)` on a
      * `SelfAlternativeCost` is "if this spell is the first spell you've cast this game" (Once Upon a
-     * Time). A multi-player [player] scope sums across those players.
+     * Time). [cardName] narrows the count to spells with that exact name — "you've cast another
+     * spell named Approach of the Second Sun this game" is `GTE 2` read while that spell resolves,
+     * since it counts itself; a face-down cast has no name and never matches. `null` counts every
+     * spell. A multi-player [player] scope sums across those players.
      *
      * Neighbours: [SpellsCastThisTurn] carries a per-turn cast *history* (filters, zones, card types)
      * that is cleared each turn, so a game-long scope would mean keeping every record forever for a
@@ -2159,10 +2162,12 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      */
     @SerialName("SpellsCastThisGame")
     @Serializable
-    data class SpellsCastThisGame(val player: Player = Player.You) : DynamicAmount {
-        override val description: String =
-            if (player == Player.You) "the number of spells you've cast this game"
-            else "the number of spells ${player.description} has cast this game"
+    data class SpellsCastThisGame(val player: Player = Player.You, val cardName: String? = null) : DynamicAmount {
+        override val description: String = run {
+            val spells = if (cardName == null) "spells" else "spells named $cardName"
+            if (player == Player.You) "the number of $spells you've cast this game"
+            else "the number of $spells ${player.description} has cast this game"
+        }
     }
 
     /**

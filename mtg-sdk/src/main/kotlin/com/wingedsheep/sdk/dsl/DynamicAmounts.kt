@@ -1118,10 +1118,11 @@ object DynamicAmounts {
     /**
      * Spells [player] has cast this game, from any zone, countered or not. Zero while a spell is
      * being cast means it is the first: "if this spell is the first spell you've cast this game"
-     * (Once Upon a Time).
+     * (Once Upon a Time). [cardName] counts only spells with that name ("you've cast another spell
+     * named Approach of the Second Sun this game" — the resolving spell counts itself).
      */
-    fun spellsCastThisGame(player: Player = Player.You): DynamicAmount =
-        DynamicAmount.SpellsCastThisGame(player)
+    fun spellsCastThisGame(player: Player = Player.You, cardName: String? = null): DynamicAmount =
+        DynamicAmount.SpellsCastThisGame(player, cardName)
 
     /** How many extra turns [player] has begun this game ("if you haven't begun an extra turn this game"). */
     fun extraTurnsBegunThisGame(player: Player = Player.You): DynamicAmount =

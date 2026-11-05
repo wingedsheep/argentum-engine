@@ -225,9 +225,10 @@ internal class CastRecords(
             // "the spell most recently cast this turn" — read by Mana Maze's cast restriction.
             lastCastSpellColors = record.colors
         )
-        // "The first spell you've cast this game" (Once Upon a Time): a never-cleared game count.
+        // "The first spell you've cast this game" (Once Upon a Time) and "you've cast another spell
+        // named X this game" (Approach of the Second Sun): a never-cleared game count, by name too.
         newState = newState.updateEntity(action.playerId) { player ->
-            player.with(SpellsCastThisGameComponent((player.get<SpellsCastThisGameComponent>()?.count ?: 0) + 1))
+            player.with((player.get<SpellsCastThisGameComponent>() ?: SpellsCastThisGameComponent()).record(record.name))
         }
         return newState to stormCount
     }
