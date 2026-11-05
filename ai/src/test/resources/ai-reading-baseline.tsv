@@ -2080,7 +2080,7 @@ Brass Knuckles
 Brass Man
 Brass Secretary
 Brass's Bounty
-Brass's Tunnel-Grinder	intent: DiscoverEffect
+Brass's Tunnel-Grinder
 Brassclaw Orcs
 Brave Brawler
 Brave the Sands
@@ -2272,7 +2272,7 @@ Burgeoning	intent: Pipeline(hand→battlefield)
 Burglar Rat
 Buried Alive
 Buried Ruin
-Buried Treasure	intent: DiscoverEffect
+Buried Treasure
 Buried in the Garden
 Burlfist Oak
 Burly Breaker
@@ -2453,7 +2453,7 @@ Canyon Vaulter
 Canyon Wildcat
 Cao Cao, Lord of Wei
 Cao Ren, Wei Commander
-Caparocti Sunborn	intent: DiscoverEffect
+Caparocti Sunborn
 Capashen Knight
 Capashen Templar
 Capashen Unicorn
@@ -2851,7 +2851,7 @@ Chill of the Grave
 Chillbringer
 Chillerpillar	intent: BecomeMonstrousEffect
 Chilling Trap
-Chimil, the Inner Sun	intent: DiscoverEffect
+Chimil, the Inner Sun
 Chimney Imp
 Chimney Rabble
 Chitin Gravestalker
@@ -3642,7 +3642,7 @@ Cunning Nightbonder
 Cuombajj Witches
 Curate
 Curator of Destinies
-Curator of Sun's Creation	intent: DiscoverEffect
+Curator of Sun's Creation
 Curator's Ward
 Curie, Emergent Intelligence
 Curio Vendor
@@ -4264,7 +4264,7 @@ Dig Site Inventory
 Dig Through Time
 Dig Up
 Dig Up the Body
-Digsite Conservator	intent: DiscoverEffect
+Digsite Conservator
 Dihada, Binder of Wills
 Diligent Excavator
 Diligent Zookeeper
@@ -5395,7 +5395,7 @@ Essence of Orthodoxy
 Essenceknit Scholar
 Estrid's Invocation
 Estwald Shieldbasher
-Etali's Favor	intent: DiscoverEffect
+Etali's Favor
 Etali, Primal Conqueror	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile)
 Etali, Primal Storm
 Etched Cornfield
@@ -6671,7 +6671,7 @@ Genesis Wave	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Genghis Frog
 Genji Glove	intent: AddCombatPhaseEffect; intent: TapUntapEffect
 Genku, Future Shaper
-Geological Appraiser	intent: DiscoverEffect
+Geological Appraiser
 Geology Enthusiast
 Geometer's Arthropod
 Georgiou, Terran Emperor
@@ -7923,15 +7923,15 @@ Hexhaven Dueling Arena
 Hexhaven Invigorator
 Hexing Squelcher
 Hexplate Golem
-Hidden Cataract	intent: DiscoverEffect
-Hidden Courtyard	intent: DiscoverEffect
+Hidden Cataract
+Hidden Courtyard
 Hidden Grotto
 Hidden Horror
 Hidden Lair
-Hidden Necropolis	intent: DiscoverEffect
-Hidden Nursery	intent: DiscoverEffect
+Hidden Necropolis
+Hidden Nursery
 Hidden Path
-Hidden Volcano	intent: DiscoverEffect
+Hidden Volcano
 Hide in Plain Sight	intent: Pipeline(TopOfLibrary→battlefield|library)
 Hide on the Ceiling
 Hideous Laughter
@@ -7993,7 +7993,7 @@ Historian's Boon
 Historian's Wisdom
 History of Benalia
 Hit It!	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
-Hit the Mother Lode	intent: DiscoverEffect
+Hit the Mother Lode
 Hitchclaw Recluse
 Hithlain Knots
 Hive Mind Coprocessor
@@ -10754,7 +10754,7 @@ Might of the Meek
 Might of the Old Ways
 Mightform Harmonizer
 Mightstone
-Mightstone's Animation	polarity: Aura>DrawCardsEffect; polarity: Aura>GrantCardType; polarity: Aura>SetBasePowerToughnessStatic
+Mightstone's Animation
 Mighty Emergence
 Mighty Leap
 Mighty Mutanimals
@@ -11068,7 +11068,7 @@ Monstrous Emergence
 Monstrous Growth
 Monstrous Rage
 Monstrous Step	polarity: ForceBlockEffect
-Monstrous Vortex	intent: DiscoverEffect
+Monstrous Vortex
 Monstrous War-Leech
 Monument to Endurance
 Monument to Perfection	intent: GrantKeywordEffect; intent: RemoveAllAbilitiesEffect
@@ -12785,7 +12785,7 @@ Primeval Shambler
 Primevals' Glorious Rebirth
 Primitive Etchings
 Primoc Escapee
-Primordial Gnawer	intent: DiscoverEffect
+Primordial Gnawer
 Primordial Hydra
 Primordial Ooze
 Primordial Pachyderm
@@ -12939,7 +12939,7 @@ Puncturing Blow
 Puncturing Light
 Punishing Punch
 Punk Frogs
-Puppet Crafting	polarity: Aura>GrantCardType; polarity: Aura>GrantSubtype; polarity: Aura>MoveToZoneEffect; polarity: Aura>SetBasePowerToughnessStatic
+Puppet Crafting
 Puppet Master	intent: Pipeline(Entity→hand); polarity: Aura>ConditionalOnCollectionEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
 Pure Energy	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Pure Reflection
@@ -13069,7 +13069,7 @@ Quilled Sliver
 Quilled Wolf
 Quina, Qu Gourmet
 Quintessential Katana
-Quintorius Kand	intent: DiscoverEffect
+Quintorius Kand
 Quintorius, Field Historian
 Quintorius, Loremaster	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
 Quirion Beastcaller	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
@@ -18179,7 +18179,7 @@ True Polymorph
 Truefire Captain
 Trufflesnout
 Trumpet Blast
-Trumpeting Carnosaur	intent: DiscoverEffect
+Trumpeting Carnosaur
 Trumpeting Gnarr
 Trumpeting Herd
 Trusted Pegasus
@@ -18308,7 +18308,7 @@ Tyvar, Jubilant Brawler	intent: TapUntapEffect
 Tyvar, the Pummeler	intent: ForEach>ModifyStatsEffect; intent: StoreNumberEffect; timing: ForEach>ModifyStatsEffect
 U.S.Agent, John Walker
 U.S.S. Cerritos, Following Up
-U.S.S. Discovery, at Black Alert	intent: DiscoverEffect
+U.S.S. Discovery, at Black Alert
 U.S.S. Enterprise-A, Free Spirit
 U.S.S. Enterprise-D, Galaxy-Class	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 U.S.S. Excelsior, Cutting Edge
@@ -20070,7 +20070,7 @@ Zodiac Rooster
 Zodiac Snake
 Zodiac Tiger
 Zodiark, Umbral God
-Zoetic Glyph	intent: DiscoverEffect; polarity: Aura>DiscoverEffect; polarity: Aura>GrantCardType; polarity: Aura>GrantSubtype; polarity: Aura>SetBasePowerToughnessStatic
+Zoetic Glyph
 Zof Consumption
 Zof Shade
 Zog, Triceraton Castaway
