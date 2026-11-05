@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4447 Aims harm at a target's controller (Refuse, Backlash) at an opponent's object, names the best graveyard cards for exile-to-use pipelines (Hour of Eternity's token copies, Practiced Scrollsmith and Rooting Moloch's cast-from-exile) as recursion, and reads "each player shuffles their graveyard into their library" (Survive, Mnemonic Nexus) as graveyard hate.
 - #4445 Aims "until end of turn, gains 'when this dies, return it'" grants (Verdant Rebirth, Feign Death, earthbending) at its own creatures and holds Verdant Rebirth for the removal or fight it answers instead of casting it as a main-phase cantrip; aims "target player's life total becomes 1" (Vraska, Relic Seeker) at the opponent; and no longer credits an "each opponent may search for a land" drawback (Old-Growth Dryads) as our own tutor/ramp, drafting it as a drawback
 - #4444 Reads "target creature can't block this turn" (Earthshaker Khenra, Gilded Cerodon) as evasion for its attack and casting a spell without paying its mana cost (Wildfire Eternal, Omnispell Adept) as a free spell the draft heuristic prices, instead of unrecognised abilities.
 - #4443 Takes an opponent's graveyard creature when the spell puts it under our control: Boneyard Parley, Rise from the Grave and Virtue of Persistence-style reanimations name the best creature card in any graveyard instead of only our own, are no longer held when only an opponent's card is there to take, and Boneyard Parley's pile reanimation is priced as recursion in drafts

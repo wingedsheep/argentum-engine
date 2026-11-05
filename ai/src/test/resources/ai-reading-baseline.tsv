@@ -637,6 +637,7 @@ Apothecary Initiate
 Apothecary Stomper
 Appa, Loyal Sky Bison
 Appa, Steadfast Guardian
+Appeal // Authority
 Appeal to Eirdu	timing: ForEach>ModifyStatsEffect
 Appendage Amalgam
 Appetite for Brains
@@ -2953,6 +2954,7 @@ Civic Wayfinder
 Civil Servant
 Clachan Festival
 Clackbridge Troll	intent: AnyPlayerMayPayEffect
+Claim // Fame
 Claim Jumper
 Claim the Firstborn
 Claim the Kingdom
@@ -3269,6 +3271,7 @@ Consecrated Sphinx
 Conservator
 Consider
 Consider the Prime Directive
+Consign // Oblivion
 Consign to Memory
 Consign to the Pit
 Conspicuous Snoop
@@ -4467,7 +4470,7 @@ Donatello, Gadget Master
 Donatello, Mutant Mechanic
 Donatello, Turtle Techie
 Donatello, Way with Machines
-Dong Zhou, the Tyrant	polarity: DealDamageEffect
+Dong Zhou, the Tyrant
 Doom Blade
 Doom Cannon
 Doom Foretold
@@ -4694,6 +4697,7 @@ Drill Too Deep	polarity: AddCountersEffect
 Drinker of Sorrow	intent: SacrificeEffect
 Dripping Dead
 Dripping-Tongue Zubera
+Driven // Despair
 Driver of the Dead
 Drivnod, Carnage Dominus	intent: AddCountersEffect
 Drix Fatemaker
@@ -5702,6 +5706,7 @@ Farfinder
 Farhaven Elf
 Farideh's Fireball
 Farideh, Devil's Chosen
+Farm // Market
 Farmer Cotton
 Farmstead
 Farmstead Gleaner
@@ -6206,7 +6211,7 @@ Foggy Bottom Swamp
 Foggy Swamp Hunters
 Foggy Swamp Spirit Keeper
 Foggy Swamp Vinebender
-Foggy Swamp Visions	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
+Foggy Swamp Visions
 Folio of Fancies
 Folk Hero
 Folk Medicine
@@ -7399,6 +7404,7 @@ Grim Wanderer
 Grimclaw Bats
 Grimdancer
 Grimgrin, Corpse-Born
+Grind // Dust
 Grinning Demon
 Grinning Ignus
 Grip of Chaos	intent: ReselectTargetRandomlyEffect
@@ -8127,6 +8133,10 @@ Hotshot Mechanic
 Hound Tamer
 Hound of Griselbrand
 Hour of Defeat
+Hour of Devastation
+Hour of Eternity
+Hour of Glory
+Hour of Promise
 Hour of Reckoning
 Hour of Revelation
 Hour of Victory
@@ -8360,6 +8370,7 @@ Immaculate Magistrate
 Immersturm Predator
 Immersturm Raider
 Immersturm Skullcairn
+Imminent Doom
 Immolation	polarity: Aura>ModifyStats
 Immolation Shaman
 Immortal Phoenix
@@ -9455,7 +9466,7 @@ Kothophed, Soul Hoarder
 Kotis, Sibsig Champion
 Kotis, the Fangkeeper
 Kotori, Pilot Prodigy
-Kotose, the Silent Spider	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets|FromMultipleZones→exile); intent: StoreCardNameEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets|FromMultipleZones→exile); polarity: StoreCardNameEffect
+Kotose, the Silent Spider
 Koya, Death from Above
 Kozilek's Channeler
 Kozilek's Command
@@ -9696,6 +9707,7 @@ Leashling
 Leather Armor
 Leatherback Baloth
 Leatherhead, Swamp Stalker
+Leave // Chance
 Leave No Trace
 Leave in the Dust
 Leaves from the Vine
@@ -10953,13 +10965,13 @@ Misty Rainforest
 Mite Overseer
 Mithril Coat
 Mizzium Tank
-Mizzix's Mastery	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets→exile)
+Mizzix's Mastery
 Mizzix, Replica Rider
 Mjölnir, Hammer of Thor
 Mm'menon, Uthros Exile
 Mm'menon, the Right Hand
 Mnemonic Betrayal	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile|graveyard)
-Mnemonic Nexus	intent: ForEach>Pipeline(graveyard→library)
+Mnemonic Nexus
 Mnemonic Sliver
 Mnemonic Sphere
 Moan of the Unhallowed
@@ -12681,7 +12693,7 @@ Powerstone Shard
 Pox Plague
 Practical Research
 Practiced Offense	polarity: ModalEffect
-Practiced Scrollsmith	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Practiced Scrollsmith
 Practiced Tactics
 Pradesh Gypsies	intent: ModifyStatsEffect
 Prairie Dog	intent: GrantCounterPlacementModifierEffect; timing: GrantCounterPlacementModifierEffect
@@ -13057,7 +13069,7 @@ Quilled Sliver
 Quilled Wolf
 Quina, Qu Gourmet
 Quintessential Katana
-Quintorius Kand	intent: DiscoverEffect; polarity: AddManaEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Quintorius Kand	intent: DiscoverEffect
 Quintorius, Field Historian
 Quintorius, Loremaster	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
 Quirion Beastcaller	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
@@ -13393,6 +13405,7 @@ Reaper's Talisman
 Reaping Willow
 Reaping the Graves
 Rearing Embermare
+Reason // Believe
 Reasonable Doubt	polarity: CounterEffect; polarity: SuspectEffect
 Reassembling Skeleton
 Reave Soul
@@ -13491,6 +13504,7 @@ Reflexes
 Reforge the Soul
 Refurbish
 Refurbished Familiar
+Refuse // Cooperate
 Refuse to Yield
 Refute
 Refute Destiny
@@ -14020,7 +14034,7 @@ Rootcoil Creeper
 Rootgrapple
 Rootha, Mercurial Artist
 Rooting Kavu	intent: Pipeline(graveyard→library)
-Rooting Moloch	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Rooting Moloch
 Rootless Yew
 Rootrider Faun
 Rootrunner
@@ -16471,6 +16485,7 @@ Stronghold Machinist
 Stronghold Overseer
 Stronghold Zeppelin
 Structural Assault
+Struggle // Survive
 Struggle for Project Purity
 Struggle for Sanity	intent: Pipeline(?→graveyard|hand); intent: RepeatWhileEffect; intent: RevealHandEffect
 Struggle for Skemfar
@@ -17547,7 +17562,7 @@ Thopter Foundry
 Thopter Mechanic
 Thopter Spy Network
 Thor Odinson
-Thor, God of Thunder	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→exile); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→exile)
+Thor, God of Thunder
 Thorin Oakenshield
 Thorin's Last Stand
 Thorin, Mountain-king	polarity: Pipeline(ChosenTargets→?); polarity: ReflexiveTriggerEffect
@@ -19732,7 +19747,7 @@ Wizard Replica
 Wizard's Lightning
 Wizard's Retort
 Wizard's Rockets
-Wizard's Spellbook	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: CastFromCollectionWithoutPayingCostEffect; polarity: CopyCollectionIntoCollectionEffect; polarity: Pipeline(ChosenTargets|FromLinkedExile→exile); polarity: RollDiceEffect
+Wizard's Spellbook
 Wizard's Staff
 Wizened Cenn
 Wizened Snitches
