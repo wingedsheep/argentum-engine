@@ -498,7 +498,11 @@ object AiReadingAudit {
                 // Damage confined to our creatures is a drawback, not offensive removal.
                 // Polarity still reads the harm; simulation prices the damaged board.
                 (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)) ||
-                untapsOwnTarget(leaf, reqs)
+                untapsOwnTarget(leaf, reqs) ||
+                // A card exiled from our own graveyard is the price or fuel of what follows
+                // (Patchwork Crawler, Trove Warden), not an answer.
+                (leaf is MoveToZoneEffect &&
+                    CardIntentAnalyzer.graveyardMoveOf(leaf, reqs) == CardIntentAnalyzer.GraveyardMove.OWN_EXILE)
         }
         val tags = CardIntentAnalyzer.analyzeEffect(root, reqs).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
@@ -553,7 +557,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles a card from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -657,6 +661,7 @@ object AiReadingAudit {
         IntentTag.PERMANENT_COPY -> "turns a permanent into a copy of another"
         IntentTag.SPELL_REDIRECT -> "changes the target of a spell or ability"
         IntentTag.SPELL_COPY -> "copies a spell or ability"
+        IntentTag.GRAVEYARD_HATE -> "exiles cards from a graveyard"
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"

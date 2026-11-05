@@ -65,7 +65,7 @@ Abundance
 Abundant Growth
 Abundant Maw
 Abyssal Gorestalker
-Abyssal Harvester	polarity: CreateTokenCopyOfTargetEffect; polarity: MoveToZoneEffect
+Abyssal Harvester
 Abyssal Horror
 Abyssal Nightstalker
 Abzan Ascendancy
@@ -508,7 +508,7 @@ Andromedan Automatons
 Andúril, Flame of the West
 Angel of Despair
 Angel of Destiny
-Angel of Finality	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Angel of Finality
 Angel of Flight Alabaster
 Angel of Fury
 Angel of Glory's Rise
@@ -1888,7 +1888,7 @@ Boggart Prankster
 Boggart Ram-Gang
 Boggart Shenanigans
 Boggart Sprite-Chaser
-Boggart Trawler	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Boggart Trawler
 Bogslither's Embrace
 Bogstomper
 Bogwater Lumaret
@@ -1897,7 +1897,7 @@ Boilerbilges Ripper
 Boiling Rock Prison
 Boiling Rock Rioter	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
 Boiling Seas
-Bojuka Bog	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Bojuka Bog
 Bola Slinger
 Bolas's Citadel
 Bold Biochemist
@@ -1936,7 +1936,7 @@ Bonebind Orator
 Bonebreaker Giant
 Bonecache Overseer
 Bonecaller Cleric
-Boneclad Necromancer	polarity: MoveToZoneEffect
+Boneclad Necromancer
 Boneclub Berserker
 Bonecrusher Giant
 Bonehoard Dracosaur
@@ -2366,7 +2366,7 @@ Calamitous Cave-In
 Calamitous Tide
 Calamity Bearer
 Calamity of Cinders
-Calamity's Wake	intent: Pipeline(graveyard→exile); timing: CantCastSpellsEffect
+Calamity's Wake	timing: CantCastSpellsEffect
 Calamity, Galloping Inferno
 Calciderm
 Caldaia Strongarm
@@ -2394,7 +2394,7 @@ Call to the Netherworld
 Callaphe, Beloved of the Sea
 Caller of Gales
 Caller of the Claw
-Callous Bloodmage	polarity: Pipeline(graveyard→exile)
+Callous Bloodmage
 Callous Deceiver	intent: Pipeline(TopOfLibrary→?)
 Callous Dismissal
 Callous Giant
@@ -2516,7 +2516,7 @@ Carrion Cruiser
 Carrion Feeder
 Carrion Grub
 Carrion Howler
-Carrion Imp	polarity: MoveToZoneEffect
+Carrion Imp
 Carrion Locust
 Carrion Screecher
 Carrion Wall
@@ -2643,10 +2643,10 @@ Celestus Sanctifier	intent: Pipeline(TopOfLibrary→graveyard|library)
 Cellar Door	polarity: Pipeline(BottomOfLibrary→graveyard)
 Cement Shoes
 Cemetery Desecrator
-Cemetery Gatekeeper	intent: Pipeline(graveyard→exile)
-Cemetery Illuminator	intent: Pipeline(graveyard→exile)
-Cemetery Protector	intent: Pipeline(graveyard→exile)
-Cemetery Prowler	intent: Pipeline(graveyard→exile)
+Cemetery Gatekeeper
+Cemetery Illuminator
+Cemetery Protector
+Cemetery Prowler
 Cemetery Reaper
 Cemetery Recruitment
 Cemetery Tampering	intent: Pipeline(FromLinkedExile|TopOfLibrary→graveyard); intent: Pipeline(TopOfLibrary→exile|library); intent: PlayFromCollectionWithoutPayingCostEffect
@@ -2879,7 +2879,7 @@ Chromatic Lantern
 Chromatic Orrery
 Chromatic Sphere
 Chrome Cat
-Chrome Companion	polarity: MoveToZoneEffect
+Chrome Companion
 Chrome Dome
 Chrome Host Seedshark
 Chrome Mox	intent: Pipeline(hand→exile)
@@ -3103,7 +3103,7 @@ Coerced to Kill	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKe
 Coercion
 Coeurl
 Coffin Purge
-Cogwork Archivist	polarity: MoveToZoneEffect
+Cogwork Archivist
 Cogwork Assembler	polarity: CreateTokenCopyOfTargetEffect
 Cogwork Wrestler	intent: ModifyStatsEffect
 Coiled Tinviper
@@ -3954,7 +3954,7 @@ Deathbellow War Cry
 Deathbloom Gardener
 Deathbloom Ritualist
 Deathbloom Thallid
-Deathbonnet Sprout	intent: Pipeline(graveyard→exile)
+Deathbonnet Sprout
 Deathbringer Regent
 Deathcap Glade
 Deathcap Marionette
@@ -4261,7 +4261,7 @@ Dimensional Exile	polarity: Aura>ExileUntilLeavesEffect; polarity: Aura>GatherCa
 Diminisher Witch	intent: CreateAuraTokenEffect
 Dimir Aqueduct
 Dimir Cutpurse
-Dimir Doppelganger	polarity: MoveToZoneEffect
+Dimir Doppelganger
 Dimir Guildgate
 Dimir Guildmage
 Dimir House Guard
@@ -4900,7 +4900,7 @@ Eat to Extinction
 Eaten Alive
 Eaten by Piranhas
 Eater of Virtue
-Eater of the Dead	polarity: MoveToZoneEffect
+Eater of the Dead
 Ebon Dragon
 Ebon Drake
 Ebon Praetor
@@ -5683,7 +5683,7 @@ Faramir, Field Commander
 Faramir, Prince of Ithilien	polarity: CreateDelayedTriggerEffect
 Faramir, Steward of Gondor	intent: TakeDesignationEffect
 Farbog Explorer
-Farewell	intent: ModalEffect
+Farewell
 Farfinder
 Farhaven Elf
 Farideh's Fireball
@@ -7264,7 +7264,7 @@ Grave Bramble
 Grave Exchange
 Grave Pact
 Grave Researcher
-Grave Robbers	polarity: MoveToZoneEffect
+Grave Robbers
 Grave Titan
 Grave-Shell Scarab
 Graveblade Marauder
@@ -7981,7 +7981,7 @@ Hoarder's Overflow
 Hoarding Broodlord
 Hoarding Dragon	intent: Pipeline(FromLinkedExile→hand)
 Hoarding Ogre
-Hoarding Recluse	polarity: MoveToZoneEffect
+Hoarding Recluse
 Hobbit Hole
 Hobbit's Sting
 Hobblefiend
@@ -8113,7 +8113,7 @@ Hovel Hurler
 Hover Barrier
 Hoverguard Observer
 Hoverguard Sweepers
-Hoverstone Pilgrim	polarity: MoveToZoneEffect
+Hoverstone Pilgrim
 How to Start a Riot	timing: GrantKeywordEffect
 Howl from Beyond
 Howl of the Horde
@@ -8809,7 +8809,7 @@ Jade Monolith	intent: RedirectDamageFromChosenSourceEffect; polarity: RedirectDa
 Jade Orb of Dragonkind
 Jade Seedstones	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 Jade Statue
-Jade-Cast Sentinel	polarity: MoveToZoneEffect
+Jade-Cast Sentinel
 Jadecraft Artisan
 Jaded Analyst
 Jaded Sell-Sword
@@ -8908,7 +8908,7 @@ Jin-Gitaxias, Progress Tyrant
 Jinnie Fay, Jetmir's Second
 Jinxed Choker	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
 Jinxed Idol	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
-Jirina, Dauntless General	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Jirina, Dauntless General
 Jodah's Codex
 Jodah, Archmage Eternal
 Jodah, the Unifier	intent: CastFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile|library)
@@ -8984,7 +8984,7 @@ Junk Jet
 Junk Winder
 Junkblade Bruiser
 Junktown
-Junktroller	polarity: MoveToZoneEffect
+Junktroller
 Junkyard Genius
 Junkyo Bell
 Juntu Stakes
@@ -9134,7 +9134,7 @@ Kaya, Bane of the Dead
 Kaya, Geist Hunter	intent: GrantReplacementEffectEffect
 Kaya, Intangible Slayer
 Kaya, Orzhov Usurper	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
-Kaya, Spirits' Justice	intent: Pipeline(graveyard→exile); polarity: ForEachEffect
+Kaya, Spirits' Justice	polarity: ForEachEffect
 Kayla's Command
 Kayla's Reconstruction	intent: Pipeline(TopOfLibrary→battlefield|library)
 Kaza, Roil Chaser	intent: ModifySpellCostsEffect; timing: ModifySpellCostsEffect
@@ -9161,7 +9161,7 @@ Keep Safe
 Keep Watch
 Keeper of Fables
 Keeper of the Accord
-Keeper of the Cadence	polarity: MoveToZoneEffect
+Keeper of the Cadence
 Keeper of the Nine Gales
 Keeper of the Quiet Hour
 Keepers of the Faith
@@ -9511,7 +9511,7 @@ Kura, the Boundless Sky
 Kurgadon
 Kuro, Pitlord
 Kusari-Gama
-Kutzil's Flanker	polarity: Pipeline(graveyard→exile)
+Kutzil's Flanker
 Kutzil, Malamet Exemplar
 Kwain, Itinerant Meddler
 Kwende, Pride of Femeref
@@ -9687,7 +9687,7 @@ Legion Guildmage
 Legion Leadership
 Legion Lieutenant
 Legion Warboss
-Legion's End	intent: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); intent: StoreCardNameEffect; polarity: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); polarity: StoreCardNameEffect
+Legion's End	polarity: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); polarity: StoreCardNameEffect
 Legion's Judgment
 Legions to Ashes	intent: Pipeline(BattlefieldMatching|ChosenTargets→exile); intent: StoreCardNameEffect; polarity: Pipeline(BattlefieldMatching|ChosenTargets→exile); polarity: StoreCardNameEffect
 Legolas, Counter of Kills
@@ -9938,7 +9938,7 @@ Loan Shark
 Loathsome Chimera
 Loathsome Troll
 Lobber Crew
-Lobelia Sackville-Baggins	polarity: CreatePredefinedTokenEffect; polarity: MoveToZoneEffect
+Lobelia Sackville-Baggins
 Lobotomy	intent: Pipeline(FromMultipleZones|hand→exile); intent: RevealHandEffect; intent: StoreCardNameEffect
 Loch Dragon
 Loch Korrigan
@@ -9994,7 +9994,7 @@ Lord Dregg, Insect Invader
 Lord Magnus
 Lord Skitter's Blessing	intent: CreateAuraTokenEffect
 Lord Skitter's Butcher
-Lord Skitter, Sewer King	polarity: MoveToZoneEffect
+Lord Skitter, Sewer King
 Lord Xander, the Collector
 Lord of Atlantis
 Lord of the Accursed
@@ -10275,7 +10275,7 @@ Malcolm, Alluring Scoundrel
 Malcolm, the Eyes
 Malefic Scythe
 Malevolent Awakening
-Malevolent Chandelier	polarity: MoveToZoneEffect
+Malevolent Chandelier
 Malevolent Hermit
 Malevolent Noble
 Malevolent Rumble
@@ -11622,7 +11622,7 @@ Norwood Riders
 Norwood Warrior
 Nosy Goblin
 Not Dead After All	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
-Not Forgotten	polarity: MoveToZoneEffect
+Not Forgotten
 Not on My Watch
 Notion Rain
 Notorious Assassin
@@ -11644,7 +11644,7 @@ Noxious Ghoul
 Noxious Grasp
 Noxious Groodion
 Noxious Newt
-Noxious Revival	polarity: MoveToZoneEffect
+Noxious Revival
 Noxious Toad
 Nuclear Fallout
 Nuisance Engine
@@ -12357,7 +12357,7 @@ Phylactery Lich
 Phylath, World Sculptor
 Phyresis Outbreak
 Phyrexian Altar
-Phyrexian Archivist	polarity: MoveToZoneEffect
+Phyrexian Archivist
 Phyrexian Arena
 Phyrexian Atlas
 Phyrexian Awakening
@@ -13128,7 +13128,7 @@ Raise the Past
 Raiyuu, Storm's Edge	intent: AddCombatPhaseEffect; intent: TapUntapEffect
 Rakalite
 Rakdos Carnarium
-Rakdos Charm	polarity: Pipeline(graveyard→exile)
+Rakdos Charm
 Rakdos Firewheeler
 Rakdos Guildgate
 Rakdos Joins Up
@@ -13440,7 +13440,7 @@ Reduce to Memory
 Redwood Treefolk
 Reef Roads
 Reef Worm
-Reenact the Crime	polarity: CopyCardIntoCollectionEffect; polarity: MoveToZoneEffect
+Reenact the Crime
 Referee Squad
 Reflecting Mirror
 Reflecting Pool
@@ -13474,8 +13474,8 @@ Reincarnation	intent: Pipeline(graveyard→battlefield); polarity: CreateDelayed
 Reinforced Bulwark
 Reinforced Ronin
 Reiterating Bolt
-Reito Lantern	polarity: MoveToZoneEffect
-Reito Sentinel	polarity: MoveToZoneEffect
+Reito Lantern
+Reito Sentinel
 Reiver Demon
 Reject
 Reject Imperfection
@@ -13519,7 +13519,7 @@ Rem Karolus, Stalwart Slayer
 Remand
 Reminisce	intent: Pipeline(graveyard→library); polarity: Pipeline(graveyard→library)
 Remnant Elemental
-Remorseful Cleric	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Remorseful Cleric
 Remote Isle
 Remove
 Remove Enchantments
@@ -13608,7 +13608,7 @@ Resplendent Griffin
 Resplendent Marshal
 Resplendent Mentor
 Response // Resurgence
-Rest in Peace	intent: Pipeline(graveyard→exile)
+Rest in Peace
 Restless Anchorage
 Restless Bivouac
 Restless Bloodseeker
@@ -13694,7 +13694,7 @@ Reweave	polarity: GatherUntilMatchEffect; polarity: SacrificeTargetEffect
 Rewind
 Rewrite History
 Rewrite Regrets
-Rex, Cyber-Hound	polarity: MoveToZoneEffect
+Rex, Cyber-Hound
 Reya Dawnbringer
 Rhet-Tomb Mystic
 Rhino's Rampage
@@ -13866,7 +13866,7 @@ Riverwheel Aerialists
 Riverwheel Sweep
 Riverwise Augur
 Riveteers Ascendancy
-Riveteers Charm	polarity: Pipeline(graveyard→exile)
+Riveteers Charm
 Riveteers Decoy
 Riveteers Initiate
 Riveteers Overlook
@@ -14461,7 +14461,7 @@ Scattershot Archer
 Scavenged Blade
 Scavenged Weaponry
 Scavenger Folk
-Scavenger Grounds	intent: Pipeline(graveyard→exile)
+Scavenger Grounds
 Scavenger Regent
 Scavenger's Talent
 Scavenging Ghoul
@@ -14527,7 +14527,7 @@ Scout the Borders
 Scout the City
 Scout the Wilderness
 Scouting Trek
-Scrabbling Claws	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Scrabbling Claws
 Scrabbling Skullcrab
 Scragnoth
 Scrap
@@ -14789,7 +14789,7 @@ Sentinel	combat: SetBaseStatsEffect; polarity: SetBaseStatsEffect
 Sentinel Sarah Lyons
 Sentinel Sliver
 Sentinel Spider
-Sentinel of Lost Lore	polarity: MoveToZoneEffect; polarity: Pipeline(graveyard→exile)
+Sentinel of Lost Lore	polarity: MoveToZoneEffect
 Sentinel of the Nameless City
 Sentinel of the Pearl Trident
 Sentinel's Eyes
@@ -14907,7 +14907,7 @@ Shadowcloak Vampire
 Shadowfax, Lord of Horses	intent: Pipeline(hand→battlefield)
 Shadowfeed
 Shadowmage Infiltrator
-Shadows' Verdict	intent: Pipeline(BattlefieldMatching|graveyard→exile)
+Shadows' Verdict
 Shadowspear	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
 Shadowstorm
 Shadowy Backstreet
@@ -15844,7 +15844,7 @@ Spellskite
 Spellstutter Sprite
 Spellweaver Helix	intent: Pipeline(ChosenTargets→exile); polarity: Pipeline(ChosenTargets→exile)
 Spelunking
-Sphere of Annihilation	intent: Pipeline(BattlefieldMatching|Entity|graveyard→exile); intent: StoreNumberEffect
+Sphere of Annihilation
 Sphere of Purity
 Sphere of Safety
 Sphinx Mindbreaker
@@ -16287,7 +16287,7 @@ Stone Rain
 Stone Retrieval Unit
 Stone Spirit
 Stone by Sunlight
-Stone of Erech	polarity: Pipeline(graveyard→exile)
+Stone of Erech
 Stone-Giant of High Pass
 Stone-Seeder Hierophant
 Stone-Throwing Devils
@@ -16366,7 +16366,7 @@ Strange Inversion	intent: SwitchPowerToughnessEffect; polarity: SwitchPowerTough
 Strangle
 Strangled Cemetery
 Strangling Spores
-Strategic Betrayal	intent: Pipeline(BattlefieldMatching|graveyard→exile); polarity: Pipeline(BattlefieldMatching|graveyard→exile)
+Strategic Betrayal
 Strategic Planning
 Stratosoarer
 Stratus Walk
@@ -16541,7 +16541,7 @@ Suncleanser	intent: ModalEffect; polarity: GrantKeywordEffect; polarity: RemoveA
 Sunder Shaman
 Sunder the Gateway
 Sunderflock	intent: Pipeline(BattlefieldMatching→hand)
-Sundering Archaic	polarity: MoveToZoneEffect
+Sundering Archaic
 Sundering Eruption
 Sundering Stroke
 Sundering Vitae
@@ -16706,7 +16706,7 @@ Swift Response
 Swift Warden
 Swiftblade Vindicator
 Swiftfoot Boots
-Swiftgear Drake	polarity: MoveToZoneEffect
+Swiftgear Drake
 Swiftwater Cliffs
 Swiftwing Assailant
 Swimmer in Nightmares
@@ -17382,7 +17382,7 @@ The Rollercrusher Ride
 The Royal Scions
 The Ruinous Wrecking Crew
 The Sackville-Bagginses
-The Scarab God	intent: EmitScriedEventEffect; intent: Pipeline(TopOfLibrary→library); polarity: CreateTokenCopyOfTargetEffect; polarity: MoveToZoneEffect
+The Scarab God	intent: EmitScriedEventEffect; intent: Pipeline(TopOfLibrary→library)
 The Scarlet Witch
 The Scorpion God
 The Seedcore
@@ -17554,7 +17554,7 @@ Thousand-Faced Shadow	polarity: CreateTokenCopyOfTargetEffect
 Thousand-Year Elixir	intent: TapUntapEffect
 Thousand-Year Storm
 Thousand-legged Kami
-Thraben Charm	polarity: ForEachEffect
+Thraben Charm
 Thraben Exorcism
 Thraben Heretic
 Thraben Inspector
@@ -17756,7 +17756,7 @@ Titan's Grave
 Titan's Presence
 Titan's Strength
 Titanbones, Towering Heart
-Titania's Command	polarity: Pipeline(graveyard→exile)
+Titania's Command
 Titania's Song	intent: MassAnimateEffect
 Titania, Gaea Incarnate
 Titania, Protector of Argoth
@@ -17862,7 +17862,7 @@ Tormented Angel
 Tormented Soul
 Tormenting Voice
 Tormentor's Helm
-Tormod's Crypt	intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
+Tormod's Crypt
 Torpid Moloch	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Torpor Dust
 Torpor Orb
@@ -19662,7 +19662,7 @@ Withstand Death
 Witness Protection
 Witness of Tomorrows
 Witness of the Ages
-Witness the Future	polarity: ForEachEffect
+Witness the Future
 Witty Roastmaster
 Wizard Class
 Wizard Mentor

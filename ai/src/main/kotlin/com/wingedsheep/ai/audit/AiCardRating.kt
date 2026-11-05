@@ -150,8 +150,11 @@ object AiCardRating {
                 }
                 val abilityValue = (inPlayIntent.staticPriorValue - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
                 if (abilityValue > 0.0) {
-                    val label = if (IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags) "Damage amplification"
-                        else "Repeatable removal"
+                    val label = when {
+                        IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags -> "Damage amplification"
+                        IntentTag.REMOVAL in inPlayIntent.tags || IntentTag.EXILE_REMOVAL in inPlayIntent.tags -> "Repeatable removal"
+                        else -> "Repeatable graveyard hate"
+                    }
                     add(Part(label, abilityValue))
                 }
                 add(Part("Power", body(power, 0, none), statDetail(power, 1.0, StatRelevance.POWER_KNEE)))
@@ -234,6 +237,7 @@ object AiCardRating {
         IntentTag.COUNTERSPELL to "Counterspell",
         IntentTag.SPELL_REDIRECT to "Redirects a spell",
         IntentTag.SPELL_COPY to "Copies a spell",
+        IntentTag.GRAVEYARD_HATE to "Graveyard hate",
         IntentTag.LIFEGAIN to "Life gain",
         IntentTag.DISCARD to "Discard",
         IntentTag.RECURSION to "Recursion",

@@ -365,6 +365,15 @@ enum class IntentTag {
      */
     SPELL_COPY,
 
+    /**
+     * Takes cards out of a graveyard that isn't only ours — "exile target card from a graveyard"
+     * (Scavenging Ooze, Carrion Locust, Mourner's Shield's imprint), "exile target player's
+     * graveyard" (Tormod's Crypt, Bojuka Bog), "put target card from a graveyard on the bottom of
+     * its owner's library" (Junktroller). It answers recursion, flashback and delirium before they
+     * happen, but no permanent on the board: never [REMOVAL], and worth little in Limited on its own.
+     */
+    GRAVEYARD_HATE,
+
     /** Gains life. */
     LIFEGAIN,
 
