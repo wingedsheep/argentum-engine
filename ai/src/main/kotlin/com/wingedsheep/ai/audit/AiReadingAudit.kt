@@ -549,7 +549,10 @@ object AiReadingAudit {
                 // A card exiled from our own graveyard is the price or fuel of what follows
                 // (Patchwork Crawler, Trove Warden), not an answer.
                 (leaf is MoveToZoneEffect &&
-                    CardIntentAnalyzer.graveyardMoveOf(leaf, reqs) == CardIntentAnalyzer.GraveyardMove.OWN_EXILE)
+                    CardIntentAnalyzer.graveyardMoveOf(leaf, reqs) == CardIntentAnalyzer.GraveyardMove.OWN_EXILE) ||
+                // Exiling a permanent we control (Identity Echo's polymorph) is the price of what
+                // follows, like a sacrifice of our own choosing — no answer to anything.
+                (leaf is MoveToZoneEffect && CardIntentAnalyzer.removesOurOwnPermanent(leaf, reqs))
         }
         val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that

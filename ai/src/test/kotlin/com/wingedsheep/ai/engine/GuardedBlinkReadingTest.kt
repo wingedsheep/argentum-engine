@@ -19,11 +19,17 @@ import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 
 class GuardedBlinkReadingTest : FunSpec({
-    fun guarded(name: String, filter: GameObjectFilter, otherTarget: Boolean = false) = card(name) {
+    // The negative cases aim at "target creature": exiling one we control is no removal however it returns.
+    fun guarded(
+        name: String,
+        filter: GameObjectFilter,
+        otherTarget: Boolean = false,
+        targetFilter: TargetFilter = TargetFilter.CreatureYouControl,
+    ) = card(name) {
         manaCost = "{U}"
         typeLine = "Instant"
         spell {
-            val creature = target(TargetFilter.CreatureYouControl)
+            val creature = target(targetFilter)
             val guardTarget = if (otherTarget) EffectTarget.Self else creature
             effect = Effects.Move(creature, Zone.EXILE) then Effects.If(
                 Conditions.TargetMatchesFilter(filter, guardTarget),
@@ -44,14 +50,16 @@ class GuardedBlinkReadingTest : FunSpec({
     }
 
     test("a characteristic condition does not turn conditional exile removal into protection") {
-        val card = guarded("Characteristic gated return", GameObjectFilter.Creature)
+        val card = guarded("Characteristic gated return", GameObjectFilter.Creature, targetFilter = TargetFilter.Creature)
         EffectWalker.blinkMoves(card.script.spellEffect!!) shouldBe emptyList()
         CardIntentAnalyzer.analyze(card).tags shouldNotContain IntentTag.PROTECTION
         CardIntentAnalyzer.analyze(card).tags shouldContain IntentTag.EXILE_REMOVAL
     }
 
     test("an exile check on another object does not establish that this target returns") {
-        val card = guarded("Other object gated return", GameObjectFilter.Any.currentlyIn(Zone.EXILE), true)
+        val card = guarded(
+            "Other object gated return", GameObjectFilter.Any.currentlyIn(Zone.EXILE), true, TargetFilter.Creature,
+        )
         EffectWalker.blinkMoves(card.script.spellEffect!!) shouldBe emptyList()
         CardIntentAnalyzer.analyze(card).tags shouldNotContain IntentTag.PROTECTION
         CardIntentAnalyzer.analyze(card).tags shouldContain IntentTag.EXILE_REMOVAL
