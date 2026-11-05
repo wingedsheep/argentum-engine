@@ -83,6 +83,26 @@ class GideonOfTheTrialsScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("without the emblem, the opponent's Felidar Sovereign wins") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Gideon of the Trials")
+                .withCardOnBattlefield(2, "Felidar Sovereign")
+                .withLifeTotal(2, 45)
+                .withCardInLibrary(1, "Plains")
+                .withCardInLibrary(2, "Plains")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            game.resolveStack()
+            game.state.gameOver shouldBe true
+            game.state.winnerId shouldBe game.player2Id
+        }
+
         test("without the emblem, 0 life loses as usual") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
