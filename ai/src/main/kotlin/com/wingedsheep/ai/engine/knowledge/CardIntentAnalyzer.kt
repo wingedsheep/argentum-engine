@@ -1988,17 +1988,17 @@ object CardIntentAnalyzer {
         MoveToZoneEffect(EffectTarget.Self, Zone.EXILE, fromZone = Zone.GRAVEYARD)
 
     /**
-     * What [readingLeaves] reads a card exiled from our own graveyard and then granted a cast from
-     * exile as: the return a recursion's `MoveToZoneEffect` out of the graveyard is
-     * ([IntentTag.RECURSION]), only by way of exile.
-     */
-    /**
      * What a [reanimatesChosenGraveyardTargets] pipeline reads as: a card out of a graveyard onto
      * our battlefield — [IntentTag.RECURSION], as the single-card return is in [tagsOf].
      */
     private val REANIMATE_FROM_A_GRAVEYARD: Effect =
         MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
 
+    /**
+     * What [readingLeaves] reads a card exiled from our own graveyard and then granted a cast from
+     * exile as: the return a recursion's `MoveToZoneEffect` out of the graveyard is
+     * ([IntentTag.RECURSION]), only by way of exile.
+     */
     private val RECAST_FROM_OUR_GRAVEYARD: Effect =
         MoveToZoneEffect(EffectTarget.Self, Zone.HAND, fromZone = Zone.GRAVEYARD)
 
