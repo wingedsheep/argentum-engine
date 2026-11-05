@@ -826,6 +826,9 @@ object LimitedCardRater {
         // A turn of no spells from the opponent: real tempo, but it answers nothing already on the
         // board — in Limited a little under a tapper.
         IntentTag.CAST_BAN to 0.3,
+        // A forced attack into our blockers: a combat trick the opponent walks into, but only as
+        // good as the board we already have — priced like the cast ban.
+        IntentTag.FORCED_ATTACK to 0.3,
         // A trigger lock shuts off enter triggers on both sides — in Limited, where most decks run
         // a few, it is a sideboard hoser more than a maindeck card.
         IntentTag.TRIGGER_LOCK to 0.1,
