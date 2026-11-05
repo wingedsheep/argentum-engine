@@ -15947,7 +15947,10 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   `CreateTokenCopyOfTarget(Self, overridePower = 4, overrideToughness = 4, overrideColors = {BLACK},
   addedSubtypes = {Zombie}, exceptions = CopyExceptions(noManaCost = true))`. Declares `Keyword.ETERNALIZE` for display
   and marks the ability `keyword = Keyword.ETERNALIZE` (Vizier of the Anointed's draw trigger). Used by Timeless
-  Witness, Fanatic of Rhonas.
+  Witness, Fanatic of Rhonas. An eternalize cost with a non-mana part takes it as `eternalize(cost, additionalCost)`:
+  Sunscourge Champion's "Eternalize—{2}{W}{W}, Discard a card" is `eternalize("{2}{W}{W}", Costs.DiscardCard)` — the
+  extra `AbilityCost` joins the mana and the self-exile in the ability's composite cost, and the ability stays marked
+  `Keyword.ETERNALIZE`.
 - `Unearth(cost)` — `card { unearth(cost) }` builder helper (CR 702.84, Shards of Alara). "[Cost]: Return this card
   from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step. If it would
   leave the battlefield, exile it instead of putting it anywhere else. Activate only as a sorcery." Composed entirely

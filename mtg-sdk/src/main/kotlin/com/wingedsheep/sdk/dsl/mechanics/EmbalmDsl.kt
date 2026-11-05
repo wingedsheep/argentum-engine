@@ -90,11 +90,15 @@ fun CardBuilder.embalm(cost: String) {
  * [CreateTokenCopyOfTargetEffect] of the card itself carrying the printed exceptions. It is marked
  * `keyword = Keyword.ETERNALIZE`, so "whenever you activate an eternalize … ability" (Vizier of the
  * Anointed) can name it.
+ *
+ * [additionalCost] is the non-mana part of an eternalize cost such as Sunscourge Champion's
+ * "Eternalize—{2}{W}{W}, Discard a card": it is paid alongside the mana and the self-exile, and
+ * the ability keeps its [Keyword.ETERNALIZE] marker, so it is still an eternalize ability.
  */
-fun eternalizeAbility(cost: ManaCost): ActivatedAbility = ActivatedAbility(
-    id = AbilityId("eternalize_$cost"),
+fun eternalizeAbility(cost: ManaCost, additionalCost: AbilityCost? = null): ActivatedAbility = ActivatedAbility(
+    id = AbilityId(if (additionalCost == null) "eternalize_$cost" else "eternalize_${cost}_${additionalCost.description}"),
     cost = AbilityCost.Composite(
-        listOf(AbilityCost.Atom(CostAtom.Mana(cost)), AbilityCost.ExileSelf)
+        listOfNotNull(AbilityCost.Atom(CostAtom.Mana(cost)), additionalCost, AbilityCost.ExileSelf)
     ),
     effect = CreateTokenCopyOfTargetEffect(
         target = EffectTarget.Self,
@@ -107,8 +111,11 @@ fun eternalizeAbility(cost: ManaCost): ActivatedAbility = ActivatedAbility(
     timing = TimingRule.SorcerySpeed,
     activateFromZone = Zone.GRAVEYARD,
     keyword = Keyword.ETERNALIZE,
-    descriptionOverride = "Eternalize $cost ($cost, Exile this card from your graveyard: Create a token " +
-        "that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+    descriptionOverride = eternalizeCostText(cost, additionalCost).let { costText ->
+        "Eternalize${if (additionalCost == null) " " else "—"}$costText ($costText, Exile this card from your " +
+            "graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. " +
+            "Eternalize only as a sorcery.)"
+    },
 )
 
 /**
@@ -118,9 +125,15 @@ fun eternalizeAbility(cost: ManaCost): ActivatedAbility = ActivatedAbility(
  * eternalize("{5}{G}{G}")
  * ```
  *
+ * A non-mana part of the cost goes in [additionalCost] — Sunscourge Champion's
+ * "Eternalize—{2}{W}{W}, Discard a card" is `eternalize("{2}{W}{W}", Costs.DiscardCard)`.
+ *
  * See [eternalizeAbility] for how the ability is composed.
  */
-fun CardBuilder.eternalize(cost: String) {
-    activatedAbilities.add(eternalizeAbility(ManaCost.parse(cost)))
+fun CardBuilder.eternalize(cost: String, additionalCost: AbilityCost? = null) {
+    activatedAbilities.add(eternalizeAbility(ManaCost.parse(cost), additionalCost))
     keywordSet.add(Keyword.ETERNALIZE)
 }
+
+private fun eternalizeCostText(cost: ManaCost, additionalCost: AbilityCost?): String =
+    if (additionalCost == null) "$cost" else "$cost, ${additionalCost.description}"
