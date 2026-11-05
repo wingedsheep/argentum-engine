@@ -27,7 +27,7 @@ import com.wingedsheep.sdk.core.Step
  *
  * "Landwalk" means every landwalk *variant* a creature has — each is its own keyword (swampwalk,
  * forestwalk, …, nonbasic landwalk), so each is its own clause. "Protection" is parameterised by
- * quality, so it can't be a fixed-keyword clause: [Effects.GrantProtectionsSharedByGroup] reads
+ * quality, so it can't be a fixed-keyword clause: [Effects.GrantKeywordVariantsSharedByGroup] (`Keyword.PROTECTION`) reads
  * every protection any creature you control has and grants all of them — the ruling's creature
  * with protection from red plus one with protection from green give everyone both. It needs no
  * gate: with no protection in the group it grants nothing.
