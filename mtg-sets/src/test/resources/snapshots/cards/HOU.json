@@ -3419,6 +3419,35 @@
     ]
 }
 
+// Solemnity
+{
+    "name": "Solemnity",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Players can't get counters.\nCounters can't be put on artifacts, creatures, enchantments, or lands.",
+    "script": {
+        "staticAbilities": [
+            "PlayersCantGetCounters",
+            {
+                "type": "CantReceiveCounters",
+                "filter": {
+                    "baseFilter": "artifact|creature|enchantment|land"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Greg Opalinski",
+        "flavorText": "The arrival of the God-Pharaoh marked a betrayal of both gods and mortals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a71fb62-acbd-49f5-842f-0fc9fa48afea.jpg?1783936059"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Steward of Solidarity
 {
     "name": "Steward of Solidarity",

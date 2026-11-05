@@ -11300,6 +11300,15 @@ staticAbility {
   chokepoint, so only that kind is refused: other kinds still go on, a creature entering with that
   kind enters without it, a cost that would put that kind on it can't be paid (CR 614.17b), and
   counters already on it stay (unlike `MaxCounters(kind, 0)`, no state-based removal).
+- `PlayersCantGetCounters(affected = Player.Each, counterType = null)` — "Players can't get
+  counters" (Solemnity), the player-side twin of `CantReceiveCounters` (players aren't projected) and
+  the static twin of the one-shot `LockPlayerCountersEffect`. `affected` is relative to the source's
+  controller (`You`, `EachOpponent`, `Each`); set `counterType` for "You can't get poison counters"
+  (Melira, Sylvok Outcast). The source's permanent carries a marker read by
+  `GameState.cantGetCounters`, which `ProjectedState.canReceiveCounters` asks of every recipient, so
+  effect placement, proliferate, infect/toxic damage and costs that would give the payer counters
+  (ward "get N poison counters" can't be paid) all honor it. Counters a player already has stay; it
+  ends when the source leaves or loses its abilities.
 - `MaxCounters(counterType, max)` — "This permanent can't have more than `max` `counterType` counters
   on it" (Rasputin Dreamweaver). A `ProjectedStaticAbility` on the holder, read by the
   counter-placement chokepoint (`ReplacementEffectUtils.applyCounterPlacementModifiers`) after every

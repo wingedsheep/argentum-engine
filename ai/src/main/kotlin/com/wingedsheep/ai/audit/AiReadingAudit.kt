@@ -666,6 +666,7 @@ object AiReadingAudit {
         IntentTag.DAMAGE_AMPLIFIER -> "amplifies damage from our sources"
         IntentTag.DAMAGE_TO_PLAYERS -> "deals damage to players"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
+        IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.EXTRA_TURN -> "takes an extra turn"

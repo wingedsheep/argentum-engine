@@ -251,6 +251,7 @@ object AiCardRating {
         IntentTag.DAMAGE_AMPLIFIER to "Amplifies damage from our sources",
         IntentTag.DAMAGE_TO_PLAYERS to "Deals damage to players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
+        IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.EXTRA_TURN to "Takes an extra turn",
