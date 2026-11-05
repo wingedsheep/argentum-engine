@@ -94,7 +94,7 @@ Accomplished Alchemist
 Accomplished Automaton
 Accorder's Shield
 Accumulate Wisdom
-Accursed Centaur	intent: SacrificeEffect
+Accursed Centaur
 Accursed Duneyard
 Accursed Horde
 Accursed Marauder
@@ -762,7 +762,7 @@ Archweaver
 Archwing Dragon
 Arclight Phoenix
 Arctic Treeline
-Ardent Dustspeaker	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Ardent Dustspeaker
 Ardent Electromancer
 Ardent Elementalist
 Ardent Militia
@@ -1143,7 +1143,7 @@ Azra Smokeshaper
 Azula Always Lies
 Azula, Cunning Usurper	intent: GrantMayPlayFromExileEffect; intent: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile); polarity: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile)
 Azula, On the Hunt
-Azure Beastbinder	polarity: RemoveAllAbilitiesEffect
+Azure Beastbinder
 Azure Drake
 Azusa's Many Journeys	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
 Azusa, Lost but Seeking
@@ -1199,7 +1199,7 @@ Ballista Charger
 Ballista Squad
 Ballista Watcher
 Balloon Peddler
-Ballroom Brawlers	polarity: ModalEffect
+Ballroom Brawlers
 Ballyrush Banneret
 Balm of Restoration
 Balmor, Battlemage Captain
@@ -1409,7 +1409,7 @@ Beastmaster Ascension
 Beastrider Vanguard
 Beasts of Bogardan
 Beatrix, Loyal General
-Bebop & Rocksteady	intent: PayOrSufferEffect
+Bebop & Rocksteady
 Bebop, Warthog Warrior
 Beckett Mariner, Impetuous Ensign
 Become Brutes
@@ -2104,7 +2104,7 @@ Brazen Blademaster
 Brazen Bluff	intent: GatedEffect; polarity: GatedEffect
 Brazen Borrower
 Brazen Buccaneers
-Brazen Cannonade	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Brazen Cannonade
 Brazen Collector
 Brazen Dwarf
 Brazen Freebooter
@@ -2327,7 +2327,7 @@ Bury in Books
 Bushi Tenderfoot	intent: FlipEffect
 Bushmeat Poacher
 Bushwhack
-Bushy Bodyguard	intent: ForagedEffect; intent: Pipeline(graveyard→exile); intent: SacrificeEffect
+Bushy Bodyguard
 Buster Sword
 Butch DeLoria, Tunnel Snake
 Butcher Ghoul
@@ -2788,7 +2788,7 @@ Channeled Dragonfire
 Channeled Force
 Channeler Initiate
 Chant of Vitu-Ghazi
-Chaos Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: RollDiceEffect
+Chaos Channeler
 Chaos Maw
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
 Chaos Spewer	intent: PayOrSufferEffect
@@ -3204,7 +3204,7 @@ Command the Dreadhorde
 Command the Stage
 Command the Storm
 Commandeer
-Commander Greven il-Vec	intent: SacrificeEffect
+Commander Greven il-Vec
 Commander Raffi Musiker
 Commander Sofia Daguerre
 Commander's Authority
@@ -3380,7 +3380,7 @@ Corpse Cobble
 Corpse Explosion
 Corpse Harvester
 Corpse Knight
-Corpseberry Cultivator	intent: ForagedEffect; intent: Pipeline(graveyard→exile); intent: SacrificeEffect
+Corpseberry Cultivator
 Corpsejack Menace
 Corpses of the Lost
 Corpulent Corpse
@@ -3735,8 +3735,8 @@ D'Ghor Bloodletter
 D'Vana Tendi, Optimistic Ensign
 D-7 Battle Cruiser
 DOT-7 Repair Squad
-Daemogoth Titan	intent: SacrificeEffect
-Daemogoth Woe-Eater	intent: SacrificeEffect
+Daemogoth Titan
+Daemogoth Woe-Eater
 Dagger Caster
 Dagger of the Worthy
 Daggerback Basilisk
@@ -4123,7 +4123,7 @@ Deluge Virtuoso
 Delver of Secrets	intent: Pipeline(TopOfLibrary→?)
 Delver's Torch	intent: VentureIntoTheDungeonEffect
 Demand Answers
-Demanding Dragon	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
+Demanding Dragon	intent: PayOrSufferEffect
 Dematerialize
 Demilich
 Demogorgon's Clutches
@@ -4138,7 +4138,7 @@ Demon's Disciple
 Demon's Due
 Demon's Grasp
 Demon's Horn
-Demonic Appetite	intent: SacrificeEffect
+Demonic Appetite
 Demonic Attorney	intent: ForEach>Pipeline(TopOfLibrary→ante)
 Demonic Bargain
 Demonic Counsel
@@ -4148,7 +4148,7 @@ Demonic Hordes	intent: PayOrSufferEffect
 Demonic Junker	intent: Pipeline(ChosenTargets→graveyard); polarity: AddCountersEffect; polarity: Pipeline(ChosenTargets→graveyard)
 Demonic Pact
 Demonic Ruckus
-Demonic Taskmaster	intent: SacrificeEffect
+Demonic Taskmaster
 Demonic Torment	polarity: Aura>CantAttack
 Demonic Tutor
 Demonic Vigor
@@ -4184,7 +4184,7 @@ Desculpting Blast
 Desdemona, Freedom's Edge	intent: GrantEscapeEffect; polarity: GrantEscapeEffect
 Desecrated Tomb
 Desecration Demon	intent: AnyPlayerMayPayEffect
-Desecration Elemental	intent: SacrificeEffect
+Desecration Elemental
 Desert
 Desert Cerodon
 Desert Drake
@@ -4257,7 +4257,7 @@ Devouring Greed
 Devouring Hellion
 Devouring Light
 Devouring Rage
-Devouring Strossus	intent: SacrificeEffect
+Devouring Strossus
 Devouring Sugarmaw
 Devouring Swarm
 Devouring Tendrils
@@ -4447,7 +4447,7 @@ Diviner's Lockbox
 Diving Griffin
 Divining Duelist
 Dizzy Spell
-Djeru and Hazoret	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library)
+Djeru and Hazoret
 Djeru's Renunciation
 Djeru's Resolve
 Djeru, With Eyes Open
@@ -4609,7 +4609,7 @@ Dragonclaw Strike
 Dragonfire Blade
 Dragonfly Suit
 Dragonfly Swarm
-Dragonhawk, Fate's Tempest	intent: DealDamagePerEntityInZoneEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Dragonhawk, Fate's Tempest	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Dragonkin Berserker
 Dragonloft Idol
 Dragonlord Atarka
@@ -4726,7 +4726,7 @@ Drifting Djinn
 Drifting Meadow
 Drill Bit
 Drill Too Deep	polarity: AddCountersEffect
-Drinker of Sorrow	intent: SacrificeEffect
+Drinker of Sorrow
 Dripping Dead
 Dripping-Tongue Zubera
 Driven // Despair
@@ -5693,7 +5693,7 @@ Fallaji Vanguard
 Fallaji Wayfarer
 Fallen Angel
 Fallen Cleric
-Fallen Shinobi	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Fallen Shinobi
 Faller's Faithful
 Falling Star
 Fallow Earth
@@ -6043,7 +6043,7 @@ Firefiend Elemental
 Firefist Adept
 Firefly
 Fireforger's Puzzleknot
-Fireglass Mentor	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Fireglass Mentor
 Firehoof Cavalry
 Firemane Angel
 Firemane Commando
@@ -6186,7 +6186,7 @@ Floodwaters
 Flopsie, Bumi's Buddy
 Floral Evoker
 Floral Spuzzem
-Florian, Voldaren Scion	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile|library)
+Florian, Voldaren Scion
 Floriferous Vinewall
 Flotsam // Jetsam
 Flourishing Bloom-Kin
@@ -6350,7 +6350,7 @@ Forum of Amity
 Foul Orchard
 Foul Play
 Foul Roads
-Foul Spirit	intent: SacrificeEffect
+Foul Spirit
 Foulmire Knight
 Found Footage
 Foundation Breaker
@@ -7089,7 +7089,7 @@ Goblin Electromancer
 Goblin Elite Infantry
 Goblin Fire Fiend
 Goblin Firebomb
-Goblin Firebug	intent: SacrificeEffect
+Goblin Firebug
 Goblin Fireleaper
 Goblin Firestarter
 Goblin Flotilla	intent: PayOrSufferEffect
@@ -7467,7 +7467,7 @@ Grolnok, the Omnivore
 Grond, the Gatebreaker
 Groom's Finery
 Grotag Bug-Catcher
-Grotag Night-Runner	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Grotag Night-Runner
 Grotesque Demise
 Grotesque Mutation
 Grothama, All-Devouring	intent: EachPlayerDrawsForDamageDealtToSourceEffect
@@ -8142,7 +8142,7 @@ Hornbash Mentor
 Horned Cheetah
 Horned Loch-Whale
 Horned Sliver
-Horned Stoneseeker	intent: SacrificeEffect
+Horned Stoneseeker
 Horned Troll
 Horned Turtle
 Hornet Cobra
@@ -9376,8 +9376,8 @@ Kiora, the Rising Tide
 Kira Nerys, Firebrand
 Kird Ape
 Kird Chieftain
-Kirk, Commanding Officer	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Kirk, Enterprising Captain	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Kirk, Commanding Officer
+Kirk, Enterprising Captain
 Kirol, Attentive First-Year
 Kirol, History Buff
 Kishla Skimmer
@@ -9412,7 +9412,7 @@ Kitsune Mystic	intent: FlipEffect
 Kitsune Riftwalker
 Kitsune's Technique
 Kitsune, Dragon's Daughter	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
-Kjeldoran Dead	intent: SacrificeEffect
+Kjeldoran Dead
 Kjeldoran Knight
 Kjeldoran Phalanx
 Kjeldoran Skycaptain
@@ -9507,7 +9507,7 @@ Kor Line-Slinger
 Korlessa, Scale Singer
 Kormus Bell
 Korvold and the Noble Thief
-Korvold, Fae-Cursed King	intent: SacrificeEffect
+Korvold, Fae-Cursed King
 Koth of the Homestead
 Koth, Fire of Resistance
 Koth, the Geomancer
@@ -9635,7 +9635,7 @@ Lady Orca
 Lady Sun
 Lady Zhurong, Warrior Queen
 Lady of Laughter
-Laelia, the Blade Reforged	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Laelia, the Blade Reforged
 Lagac Lizard
 Lagomos, Hand of Hatred
 Lagonna-Band Elder
@@ -9810,7 +9810,7 @@ Leonin Warleader
 Leonin of the Lost Pride
 Leopard-Spotted Jiao
 Leshrac's Rite
-Lesser Gargadon	intent: SacrificeEffect
+Lesser Gargadon
 Lesser Masticore
 Lesser Werewolf
 Lessons from Life
@@ -10004,7 +10004,7 @@ Living Wall
 Livonya Silone
 Lizard Blades	intent: UnattachEquipmentEffect
 Lizard Warrior
-Lizard, Connors's Curse	polarity: BecomeCreatureEffect; polarity: RemoveAllAbilitiesEffect
+Lizard, Connors's Curse
 Llanowar Cavalry
 Llanowar Dead
 Llanowar Elite
@@ -10125,7 +10125,7 @@ Lotleth Giant
 Lotleth Troll
 Lotus Bloom
 Lotus Cobra
-Lotus Field	intent: SacrificeEffect
+Lotus Field
 Lotus Guardian
 Lotus Petal
 Lotus Ring
@@ -10419,7 +10419,7 @@ Manic Vandal
 Manifest Dread	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Manifestation Sage
 Manifold Key
-Manifold Mouse	polarity: ModalEffect
+Manifold Mouse
 Manipulate Fate
 Manor Skeleton
 Manta Riders
@@ -11423,12 +11423,12 @@ Narset of the Ancient Way
 Narset's Rebuke
 Narset's Reversal
 Narset, Enlightened Exile
-Narset, Enlightened Master	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Narset, Enlightened Master
 Narset, Jeskai Waymaster
 Narset, Parter of Veils
 Narstad Scrapper
 Naru Meha, Master Wizard
-Nashi, Moon Sage's Scion	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Nashi, Moon Sage's Scion
 Nashi, Moon's Legacy
 Nashi, Searcher in the Dark
 Nasty End
@@ -11983,7 +11983,7 @@ One with the Multiverse
 One with the Stars	polarity: Aura>TransformPermanent
 One-Eyed Scarecrow
 Oneirophage
-Oni Possession	intent: SacrificeEffect
+Oni Possession
 Oni-Cult Anvil
 Onulet
 Onyx Goblet
@@ -12220,7 +12220,7 @@ Pain for All	polarity: Aura>DealDamageEffect
 Painful Quandary
 Painted Bluffs
 Painter's Studio // Defaced Gallery
-Painwracker Oni	intent: SacrificeEffect
+Painwracker Oni
 Paired Tactician
 Palace Familiar
 Paladin Class
@@ -12282,7 +12282,7 @@ Part in Friendship	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefi
 Part the Veil
 Parting Gust
 Party Dude
-Party Thrasher	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Party Thrasher
 Pashalik Mons
 Passageway Seer	intent: TakeDesignationEffect
 Passenger Ferry
@@ -12755,7 +12755,7 @@ Powerstone Fracture
 Powerstone Shard
 Pox Plague
 Practical Research
-Practiced Offense	polarity: ModalEffect
+Practiced Offense
 Practiced Scrollsmith
 Practiced Tactics
 Pradesh Gypsies
@@ -13171,7 +13171,7 @@ Radiant Fountain
 Radiant Grace	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
 Radiant Grove
 Radiant Lotus	polarity: AddManaOfChoiceEffect
-Radiant Scrollwielder	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile)
+Radiant Scrollwielder	intent: GrantMayPlayFromExileEffect
 Radiant Strike
 Radiant's Judgment
 Radiating Lightning
@@ -13256,7 +13256,7 @@ Rakdos Shred-Freak
 Rakdos Signet
 Rakdos Trumpeter
 Rakdos, Lord of Riots
-Rakdos, Patron of Chaos	intent: ChooseActionEffect; polarity: ChooseActionEffect
+Rakdos, Patron of Chaos	intent: ChooseActionEffect
 Rakdos, the Muscle	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Rakdos, the Showstopper	intent: ForEach>FlipCoinsEffect; intent: ForEach>Pipeline(Entity→?); intent: Pipeline(?→graveyard)
 Rakeclaw Gargantuan
@@ -13377,7 +13377,7 @@ Rathi Assassin
 Rathi Dragon
 Rathi Intimidator
 Rathi Trapper
-Rattleback Apothecary	polarity: ModalEffect
+Rattleback Apothecary
 Rattleblaze Scarecrow
 Rattleclaw Mystic
 Raubahn, Bull of Ala Mhigo
@@ -13412,7 +13412,7 @@ Ravenous Giant
 Ravenous Gigamole
 Ravenous Harpy
 Ravenous Lindwurm
-Ravenous Necrotitan	intent: SacrificeEffect
+Ravenous Necrotitan
 Ravenous Rats
 Ravenous Robots
 Ravenous Sailback
@@ -13661,7 +13661,7 @@ Renewed Faith
 Renewed Solidarity
 Renewing Dawn	polarity: GainLifeEffect
 Renewing Touch	intent: Pipeline(ChosenTargets→library); polarity: Pipeline(ChosenTargets→library)
-Reno and Rude	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Reno and Rude
 Renowned Weaponsmith
 Rent Is Due
 Repair and Recharge
@@ -14128,7 +14128,7 @@ Rot Farm Mortipede
 Rot-Curse Rakshasa	intent: ForEach>AddCountersEffect; polarity: ForEachEffect
 Rot-Tide Gargantua
 Rotcrown Ghoul
-Rotisserie Elemental	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Rotisserie Elemental
 Rotlung Reanimator
 Rotted Hulk
 Rotted Hystrix
@@ -14987,7 +14987,7 @@ Serum Tank
 Serum Visionary
 Serum Visions
 Serum-Core Chimera
-Servant of Volrath	intent: SacrificeEffect
+Servant of Volrath
 Servant of the Scale
 Servant of the Stinger
 Seshiro the Anointed
@@ -15039,7 +15039,7 @@ Shadow-Rite Priest
 Shadowbeast Sighting
 Shadowblood Egg
 Shadowblood Ridge
-Shadowborn Demon	intent: SacrificeEffect
+Shadowborn Demon
 Shadowcloak Vampire
 Shadowed Caravel
 Shadowfax, Lord of Horses	intent: Pipeline(hand→battlefield)
@@ -15950,7 +15950,7 @@ Spectacular Skywhale
 Spectacular Spider-Man
 Spectacular Tactics
 Spectator Seating
-Specter of Mortality	intent: ForEach>ModifyStatsEffect; intent: Pipeline(graveyard→exile)
+Specter of Mortality	intent: ForEach>ModifyStatsEffect
 Specter of the Fens
 Specter's Shriek
 Spectral Adversary	intent: ForEach>PhaseOutEffect
@@ -16057,7 +16057,7 @@ Spinal Embrace	polarity: CreateDelayedTriggerEffect; timing: GrantKeywordEffect
 Spinal Villain
 Spine of Ish Sah
 Spined Basher
-Spined Fluke	intent: SacrificeEffect
+Spined Fluke
 Spined Karok
 Spined Megalodon
 Spined Wurm
@@ -16284,7 +16284,7 @@ Starnheim Unleashed
 Starport Security
 Starry-Eyed Skyrider
 Starscape Cleric
-Starseer Mentor	polarity: PayOrSufferEffect
+Starseer Mentor
 Starstorm
 Start from Scratch
 Starting Column
@@ -16554,7 +16554,7 @@ Stroke of Midnight
 Stromkirk Bloodthief
 Stromkirk Captain
 Stromkirk Noble
-Stromkirk Occultist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Stromkirk Occultist
 Strong Back
 Strong, the Brutish Thespian
 Strongarm Monk
@@ -16930,7 +16930,7 @@ Syndicate Infiltrator
 Syndicate Liquidators
 Syndicate Messenger
 Synod Sanctum
-Synth Eradicator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Synth Eradicator
 Synth Infiltrator
 Synthesizer Labship	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Syphon Essence
@@ -17076,7 +17076,7 @@ Tar Pitcher
 Taranika, Akroan Veteran
 Tarfire
 Targ Nar, Demon-Fang Gnoll
-Targ Wrangler	intent: SacrificeEffect
+Targ Wrangler
 Tarkir Duneshaper
 Tarmogoyf
 Tarnation Vista
@@ -17267,7 +17267,7 @@ Tephraderm
 Terashi's Cry
 Teremko Griffin
 Tergrid's Shadow
-Tergrid, God of Fright	polarity: PayOrSufferEffect
+Tergrid, God of Fright
 Terisian Mindbreaker
 Terminal Agony
 Terminal Criticism
@@ -17307,7 +17307,7 @@ Terror of Mount Velus
 Terror of Towashi
 Terror of the Fairgrounds
 Terror of the Peaks
-Tersa Lightshatter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile)
+Tersa Lightshatter	intent: GrantMayPlayFromExileEffect
 Teshar, Ancestor's Apostle
 Test of Conviction
 Test of Courage
@@ -17669,7 +17669,7 @@ Thornglint Bridge
 Thornhide Wolves
 Thornling
 Thornmantle Striker
-Thornplate Intimidator	intent: ChooseActionEffect; polarity: ChooseActionEffect
+Thornplate Intimidator
 Thornscape Apprentice
 Thornscape Master	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Thornspire Verge
@@ -18029,7 +18029,7 @@ Tormod's Crypt
 Torpid Moloch	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Torpor Dust
 Torpor Orb
-Torrent Sculptor	intent: Pipeline(graveyard→exile)
+Torrent Sculptor
 Torrent of Fire
 Torrential Gearhulk	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Torsten Von Ursus
@@ -18087,7 +18087,7 @@ Trade Secrets	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
 Trade the Helm	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Tradewind Rider
 Trading Post
-Tragedy Feaster	intent: SacrificeEffect
+Tragedy Feaster
 Tragic Banshee
 Tragic Lesson
 Tragic Poet
@@ -18989,7 +18989,7 @@ Vincent Valentine
 Vincent's Limit Break
 Vindicate
 Vindictive Flamestoker
-Vindictive Mob	intent: SacrificeEffect
+Vindictive Mob
 Vindictive Triumph
 Vindictive Vampire
 Vindictive Warden
