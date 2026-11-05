@@ -8356,10 +8356,10 @@ work for abilities-on-stack (which carry no `CardComponent`).
 - `DiscardedThisTurn` (filter builder `discardedThisTurn()`) — card currently in a graveyard that its
   owner discarded this turn, by any route (cycling, an opponent's discard effect, a discard cost):
   Shadow of the Grave returns `GameObjectFilter.Any.discardedThisTurn()` from your graveyard. An uncast
-  madness card that went exile → graveyard still counts (the card's ruling); a discarded card that left
+  madness card that went exile → graveyard still counts (CR 400.7k); a discarded card that left
   the graveyard and came back, or was cast, doesn't (CR 400.7). Read off the discarder's
-  `CardsDiscardedThisTurnComponent.cardIds`, which `ZoneTransitionService` prunes on every later zone
-  change and `SpellCaster` on a cast.
+  `CardsDiscardedThisTurnComponent.cardIds`, which `ZoneTransitionService.moveToZone` prunes on every
+  later move and `SpellCaster` on a cast.
 - `PutIntoGraveyardThisCombat` (filter builders `putIntoGraveyardThisCombat()` /
   `notPutIntoGraveyardThisCombat()`) — card currently in a graveyard that was put there, from any
   zone, during the combat phase in progress (CR 506.1). Storrev, Devkarin Lich's "target creature or

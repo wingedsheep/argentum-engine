@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.actions.spell
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.MayhemGrants
 import com.wingedsheep.engine.mechanics.WarpGrants
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -119,10 +118,9 @@ internal class CastRecords(
     )
 
     /**
-     * Reads which alternative cost was paid. Mayhem also drops the card's "discarded this turn"
-     * mark: the card is leaving the graveyard to become a spell (CR 400.7 — a new object), and
-     * casting bypasses `ZoneTransitionService.moveToZone`, so without this it could be mayhem-cast
-     * again each time it resolves back.
+     * Reads which alternative cost was paid. The card's "discarded this turn" mark (which Mayhem
+     * reads here, before the cast) is dropped later by `SpellCaster` for every cast (CR 400.7 — the
+     * spell is a new object), so a Mayhem card can't be mayhem-cast again when it resolves back.
      */
     fun markAlternativeCost(state: GameState, action: CastSpell, cardDef: CardDefinition?): Pair<GameState, AlternativeCostMarks> {
         fun paidWith(type: AlternativeCostType) = action.useAlternativeCost && cardDef != null && action.altAllows(type)
@@ -135,9 +133,7 @@ internal class CastRecords(
         val wasMayhem = paidWith(AlternativeCostType.MAYHEM) &&
             MayhemGrants.effectiveMayhem(state, action.cardId, cardDef!!, action.playerId, cardRegistry, predicateEvaluator) != null &&
             state.getEntity(action.playerId)?.get<CardsDiscardedThisTurnComponent>()?.cardIds?.contains(action.cardId) == true
-        val afterMayhem = if (wasMayhem) ZoneTransitionService.untrackDiscardedCard(state, action.cardId) else state
-
-        return afterMayhem to AlternativeCostMarks(
+        return state to AlternativeCostMarks(
             // Warp can also be granted to cards in hand by a battlefield static, hence the grant lookup.
             wasWarped = paidWith(AlternativeCostType.WARP) &&
                 WarpGrants.effectiveWarp(state, action.cardId, cardDef!!, action.playerId, cardRegistry, predicateEvaluator) != null,

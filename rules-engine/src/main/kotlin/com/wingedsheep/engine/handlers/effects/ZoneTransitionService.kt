@@ -1526,10 +1526,11 @@ class ZoneTransitionService(
         }
 
         // Discard record: "you discarded this card this turn" names the discarded object only while
-        // it stays that object (CR 400.7). Any later move — out of the graveyard (reanimation,
+        // it stays that object (CR 400.7). Any later moveToZone — out of the graveyard (reanimation,
         // exile, bounce), off the battlefield a replacement diverted the discard onto — makes a new
         // object that was not discarded. The one move that keeps it is an uncast madness card going
-        // from exile to the graveyard (Shadow of the Grave's ruling: it can still find that card).
+        // from exile to the graveyard (CR 400.7k: effects
+        // referencing the discarded card can still find it — Shadow of the Grave's ruling).
         // A cast bypasses moveToZone and prunes in SpellCaster instead.
         if (!(fromZone == Zone.EXILE && actualDestZone == Zone.GRAVEYARD && container.has<MadnessExiledComponent>())) {
             newState = untrackDiscardedCard(newState, entityId)

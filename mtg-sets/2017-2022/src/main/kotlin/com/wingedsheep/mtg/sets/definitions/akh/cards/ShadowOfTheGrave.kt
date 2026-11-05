@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * Cycling discards the card (CR 702.29a), so one discarded-this-turn filter covers both verbs —
  * any discard counts, including one an opponent's effect forced. An uncast madness card that went
- * exile → graveyard still counts (the card's ruling); one that left the graveyard since doesn't.
+ * exile → graveyard still counts (CR 400.7k); one that left the graveyard since doesn't.
  */
 val ShadowOfTheGrave = card("Shadow of the Grave") {
     manaCost = "{1}{B}"

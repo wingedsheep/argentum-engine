@@ -975,7 +975,7 @@ sealed interface StatePredicate {
      * This card is currently in a graveyard *and* its owner discarded it this turn — Shadow of the
      * Grave's "all cards in your graveyard that you cycled or discarded this turn". Any discard
      * counts (a cycling cost, an opponent's discard effect); so does a madness card its owner
-     * discarded into exile and didn't cast, which then went to the graveyard (the card's ruling).
+     * discarded into exile and didn't cast, which then went to the graveyard (CR 400.7k).
      * A discarded card that later left the graveyard and came back, or was cast, is a new object
      * and doesn't count (CR 400.7).
      *

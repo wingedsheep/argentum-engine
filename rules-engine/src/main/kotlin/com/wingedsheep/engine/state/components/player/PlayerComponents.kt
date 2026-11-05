@@ -1934,12 +1934,13 @@ data class PermanentsSacrificedThisTurnComponent(
  *    (Veronica, Dissident Scribe); [undefinedCharacteristics] marks the ones discarded with
  *    undefined characteristics, which no card predicate matches.
  *  - [cardIds] — entity ids of discarded-this-turn cards **still identifiable as that discarded
- *    object**. Membership (`sourceId in cardIds`) backs the `YouDiscardedThisCardThisTurn` condition
- *    that gates the Mayhem keyword (CR 702.187b). Entity ids are stable across the hand→graveyard
- *    move, so the id recorded at discard equals the object now in the graveyard — but per CR 400.7 a
- *    card that leaves the graveyard (cast via Mayhem, reanimated, exiled, bounced) becomes a **new
- *    object** on any later return, so its id is pruned from this list when it leaves the graveyard or
- *    is cast via Mayhem. That stops a Mayhem spell being recast every time it resolves back.
+ *    object**. Membership backs the `YouDiscardedThisCardThisTurn` condition that gates the Mayhem
+ *    keyword (CR 702.187b) and `StatePredicate.DiscardedThisTurn` (Shadow of the Grave). Entity ids
+ *    are stable across the hand→graveyard move, so the id recorded at discard equals the object now
+ *    in the graveyard — but per CR 400.7 a card that moves again (reanimated, exiled, bounced, cast)
+ *    becomes a **new object**, so its id is pruned on any later `moveToZone` and on any cast. The one
+ *    exception is an uncast madness card going exile → graveyard, which stays findable (CR 400.7k).
+ *    That stops a Mayhem spell being recast every time it resolves back.
  */
 @Serializable
 data class CardsDiscardedThisTurnComponent(
