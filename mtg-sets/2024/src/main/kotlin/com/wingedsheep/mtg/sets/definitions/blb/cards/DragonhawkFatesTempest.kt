@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.dsl.Effects
@@ -46,7 +47,12 @@ val DragonhawkFatesTempest = card("Dragonhawk, Fate's Tempest") {
             )
         )
         exile(exiledCards)
-        run(Effects.GrantMayPlayFromExile(exiledCards))
+        // "Until your next end step" — the window closes as that end step begins, the same moment
+        // the delayed trigger counts the cards still exiled.
+        run(Effects.GrantMayPlayFromExile(
+            exiledCards,
+            expiry = MayPlayExpiry.UntilNextEndStep
+        ))
         run(Effects.CreateDelayedTrigger(
             step = Step.END,
             fireOnPlayer = EffectTarget.PlayerRef(Player.You),

@@ -39,15 +39,14 @@ val TheInfamousCruelclaw = card("The Infamous Cruelclaw") {
             reveal(allRevealed)
             // Move all revealed cards to exile
             exile(allRevealed)
-            // Grant permission to play the nonland from exile
-            run(Effects.GrantMayPlayFromExile(nonland))
-            // Waive mana cost
-            run(Effects.GrantPlayWithoutPayingCost(nonland))
-            // Require discarding a card as additional cost
-            run(Effects.GrantPlayWithAdditionalCost(
+            // Cast it now, while the ability resolves (2024-07-26 ruling) — discarding a card is an
+            // alternative cost. Declined, the card stays in exile.
+            val spell = chooseSpell(
                 from = nonland,
-                additionalCost = Costs.additional.DiscardCards(1)
-            ))
+                prompt = "You may cast the exiled card by discarding a card rather than paying its mana cost",
+                selectedLabel = "Cast by discarding",
+            )
+            run(Effects.CastFromCollectionByPaying(spell, Costs.additional.DiscardCards(1)))
         }
     }
 

@@ -4609,7 +4609,7 @@ Dragonclaw Strike
 Dragonfire Blade
 Dragonfly Suit
 Dragonfly Swarm
-Dragonhawk, Fate's Tempest	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Dragonhawk, Fate's Tempest
 Dragonkin Berserker
 Dragonloft Idol
 Dragonlord Atarka
@@ -8648,7 +8648,7 @@ Interjection
 Interplanar Beacon
 Interpret the Signs
 Interstellar Effigy
-Inti, Seneschal of the Sun	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Inti, Seneschal of the Sun
 Intimidation
 Intimidation Campaign
 Intimidation Tactics
@@ -11813,7 +11813,7 @@ Oathsworn Giant
 Oathsworn Knight
 Oathsworn Vampire
 Ob Nixilis's Cruelty
-Ob Nixilis, Captive Kingpin	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Ob Nixilis, Captive Kingpin
 Ob Nixilis, the Adversary
 Ob Nixilis, the Fallen
 Ob Nixilis, the Hate-Twisted
@@ -13106,7 +13106,7 @@ Queen's Commission
 Quench
 Quest for the Necropolis
 Questing Beast
-Questing Druid	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Questing Druid
 Queza, Augur of Agonies
 Quick Draw	polarity: ForEachEffect
 Quick Sliver
@@ -13256,7 +13256,7 @@ Rakdos Signet
 Rakdos Trumpeter
 Rakdos, Lord of Riots
 Rakdos, Patron of Chaos	intent: ChooseActionEffect
-Rakdos, the Muscle	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
+Rakdos, the Muscle	polarity: Pipeline(TopOfLibrary→exile)
 Rakdos, the Showstopper	intent: ForEach>FlipCoinsEffect; intent: ForEach>Pipeline(Entity→?); intent: Pipeline(?→graveyard)
 Rakeclaw Gargantuan
 Raking Claws
@@ -14024,7 +14024,7 @@ Roc Egg
 Roc Hunter
 Roc of Kher Ridges
 Rocco, Cabaretti Caterer
-Rocco, Street Chef	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
+Rocco, Street Chef
 Rock Badger
 Rock Hydra
 Rock Jockey	intent: PreventLandPlaysThisTurnEffect
@@ -15027,7 +15027,7 @@ Shadow Prophecy
 Shadow Sliver
 Shadow Stinger
 Shadow Summoning
-Shadow Urchin	intent: AddCountersToCollectionEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ControlledPermanents→?); intent: Pipeline(TopOfLibrary→exile)
+Shadow Urchin	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?)
 Shadow of Doubt	timing: CantSearchLibrariesEffect
 Shadow of Mortality
 Shadow of the Enemy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
@@ -17461,7 +17461,7 @@ The Hunger Tide Rises
 The Hunter Maze
 The Huntsman's Redemption
 The Immortal Sun
-The Infamous Cruelclaw	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(?→exile)
+The Infamous Cruelclaw
 The Inner Light
 The Irencrag	intent: BecomeArtifactEffect
 The Jolly Balloon Man
@@ -18568,7 +18568,7 @@ Unlikely Aid
 Unliving Legionnaire
 Unlucky Cabbage Merchant
 Unlucky Drop
-Unlucky Witness	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Unlucky Witness
 Unmoored Ego
 Unnatural Aggression
 Unnatural Growth
