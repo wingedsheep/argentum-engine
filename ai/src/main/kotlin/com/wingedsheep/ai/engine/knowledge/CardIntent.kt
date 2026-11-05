@@ -456,6 +456,17 @@ enum class IntentTag {
     TRIGGER_LOCK,
 
     /**
+     * Stops counters going on players or permanents — Solemnity's "Players can't get counters.
+     * Counters can't be put on artifacts, creatures, enchantments, or lands", a battlefield-wide
+     * "can't have +1/+1 counters put on them" (Blightbeetle's opponents-only form).
+     *
+     * Like [TRIGGER_LOCK], a lock moves nothing — its payoff is counters that never arrive (poison,
+     * -1/-1, +1/+1, undying and persist returns) — so no board simulation sees it. The symmetric
+     * form also starves its controller's own counters, so the draft heuristic prices it as a hoser.
+     */
+    COUNTER_LOCK,
+
+    /**
      * Takes the tokens an opponent would create — Crafty Cutpurse's "each token that would be
      * created under an opponent's control this turn is created under your control instead".
      *

@@ -683,6 +683,7 @@ val engineSerializersModule = SerializersModule {
         subclass(GrantsCantLoseGameComponent::class)
         subclass(ForbidsLifePaymentForCostsComponent::class)
         subclass(ForbidsLibrarySearchComponent::class)
+        subclass(ForbidsPlayerCountersComponent::class)
         subclass(com.wingedsheep.engine.state.components.battlefield.ControlsOpponentsLibrarySearchesComponent::class)
         subclass(com.wingedsheep.engine.state.components.battlefield.IncreasesDevotionComponent::class)
         subclass(GrantsOpponentsCantWinGameComponent::class)
