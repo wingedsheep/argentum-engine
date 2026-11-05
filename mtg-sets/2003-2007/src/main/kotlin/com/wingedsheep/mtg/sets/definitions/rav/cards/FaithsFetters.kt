@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -26,7 +27,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * rather than a creature, and the activation lock spares mana abilities. Both are expressible
  * as-is — [GroupFilter.attachedCreature] is scope-based (`GameObjectFilter.Permanent` scoped to
  * the attachment) despite the name, so it already covers a non-creature host, and
- * [PreventActivatedAbilities] carries the `nonManaAbilitiesOnly` flag for the
+ * [PreventActivatedAbilities] carries `abilities = NON_MANA` for the
  * "… unless they're mana abilities" wording.
  *
  * The combat halves are inert on a non-creature host rather than wrong: a Fettered land was
@@ -59,7 +60,7 @@ val FaithsFetters = card("Faith's Fetters") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Permanent.attachedToBySource(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
         )
     }
 

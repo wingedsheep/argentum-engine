@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -34,7 +35,7 @@ import com.wingedsheep.sdk.model.Rarity
  *   which is static-projection / activation-legality safe (it keys off the *source permanent's*
  *   choice rather than a transient pipeline variable). It fails closed before a name is chosen.
  * - "Activated abilities of sources with the chosen name can't be activated unless they're mana
- *   abilities" → [PreventActivatedAbilities]`(filter, nonManaAbilitiesOnly = true, anyZone = true)`.
+ *   abilities" → [PreventActivatedAbilities]`(filter, abilities = NON_MANA, anyZone = true)`.
  *   "Sources" is any object in any zone (a landcycling card in hand included), so the filter is the
  *   bare chosen-name predicate (not restricted to lands).
  * - "Lands with the chosen name have \"{T}: Add {C}.\"" → [GrantActivatedAbility] of a tap-for-{C}
@@ -57,7 +58,7 @@ val PetrifiedHamlet = card("Petrified Hamlet") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Any.namedFromChosenComponent(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
             anyZone = true,
         )
     }

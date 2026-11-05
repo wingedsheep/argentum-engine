@@ -27,6 +27,8 @@ import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
+import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
+import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
@@ -1458,7 +1460,25 @@ object TargetPolarityAnalyzer {
         }
     }
 
-    private fun staticPolarity(static: StaticAbility): TargetPolarity? = when (static) {
+    private fun staticPolarity(static: StaticAbility): TargetPolarity? =
+        enchantedPlayerPolarity(static) ?: hostStaticPolarity(static)
+
+    /**
+     * What an "Enchant player" Aura's static does to the player it enchants, read through that
+     * player's own actions ("enchanted player can't activate abilities …") or the permanents they
+     * control ("creatures enchanted player controls lose all abilities and have base power and
+     * toughness 1/1" — Overwhelming Splendor). Null for any static that doesn't name them.
+     */
+    private fun enchantedPlayerPolarity(static: StaticAbility): TargetPolarity? = when (static) {
+        is PlayersCantActivateAbilities -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
+        is PlayersCantCastSpells -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
+        is LoseAllAbilities -> if (static.filter.reachesEnchantedPlayer()) TargetPolarity.HARMFUL else null
+        is SetBasePowerToughnessStatic ->
+            if (static.filter.reachesEnchantedPlayer() && static.shrinksToAtMostOneOne()) TargetPolarity.HARMFUL else null
+        else -> null
+    }
+
+    private fun hostStaticPolarity(static: StaticAbility): TargetPolarity? = when (static) {
         is ModifyStats -> if (static.filter.scope != Scope.AttachedTo) null
             else statsPolarity(DynamicAmount.Fixed(static.powerBonus), DynamicAmount.Fixed(static.toughnessBonus))
         is GrantKeyword -> if (static.filter.scope != Scope.AttachedTo) null else keywordPolarity(static.keyword)

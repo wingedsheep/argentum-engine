@@ -1999,7 +1999,7 @@ Families:
 - `PlayFromTopOfLibrary` — Play with the top card of your library revealed.
 - `PlayFromTopWithAlternativeCost(withoutPayingManaCost: Boolean, additionalCost: AdditionalCost?, filter: GameObjectFilter?, libraryOwner: EffectTarget, withAnyManaColor: Boolean)` — You may play cards from the top of your library, and a spell cast this way is cast with an alternative cost — its mana cost waived (withoutPayingManaCost) and/or an additionalCost substituted.
 - `PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter: GameObjectFilter?, landFilter: GameObjectFilter)` — You may play lands and cast spells matching a filter from the top of your library.
-- `PlayersCantActivateAbilities(affected: Player, permanentFilter: GameObjectFilter, condition: Condition?, nonManaAbilitiesOnly: Boolean, anyZone: Boolean, loyaltyAbilitiesOnly: Boolean)` — A continuous prohibition on activating activated abilities, scoped along the same three independent axes as PlayersCantCastSpells — each a reused SDK primitive, so one type covers a whole family of…
+- `PlayersCantActivateAbilities(affected: Player, permanentFilter: GameObjectFilter, condition: Condition?, abilities: ActivatedAbilityScope, anyZone: Boolean)` — A continuous prohibition on activating activated abilities, scoped along the same three independent axes as PlayersCantCastSpells — each a reused SDK primitive, so one type covers a whole family of…
 - `PlayersCantCastSpells(affected: Player, spellFilter: GameObjectFilter, condition: Condition?, conditionFromCaster: Boolean, fromZones: Set<Zone>?)`
 - `PlayersCantPayLifeForCosts(excludeManaAbilities: Boolean)` — "Players can't pay life to cast spells or to activate abilities that aren't mana abilities" — Karn's Sylex.
 - `PlayersCantPlayLands(affected: Player, condition: Condition?, landFilter: GameObjectFilter)`
@@ -2007,7 +2007,7 @@ Families:
 - `PlayersPlayWithHandsRevealed` — **Every** player plays with their hand revealed (to all players).
 - `PlayersRevealTopOfLibrary` — **Every** player plays with the top card of their library revealed (to all players), without granting anyone permission to play it from there.
 - `PlotFromTopOfLibrary(filter: GameObjectFilter)` — You may **plot** (CR 718) the top card of your library if it matches filter, paying a plot cost equal to its mana cost.
-- `PreventActivatedAbilities(filter: GameObjectFilter, nonManaAbilitiesOnly: Boolean, anyZone: Boolean)` — Activated abilities of permanents matching filter can't be activated.
+- `PreventActivatedAbilities(filter: GameObjectFilter, abilities: ActivatedAbilityScope, anyZone: Boolean)` — Activated abilities of permanents matching filter can't be activated.
 - `PreventCycling` — Prevents all players from cycling cards.
 - `PreventEnchantment(auras: GameObjectFilter, exceptSource: Boolean, filter: GroupFilter)` — Prevents matching Auras from enchanting the affected permanents.
 - `PreventManaPoolEmptying` — Prevents mana pools from emptying as steps and phases end.
