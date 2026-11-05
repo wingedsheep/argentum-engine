@@ -2762,14 +2762,14 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Dinosaur Toughness',
         colors: ['G', 'W'],
         keyCard: 'Belligerent Brontodon',
-        description: 'Build a wall of high-toughness Dinosaurs and defenders, then attack with toughness instead of power. A midrange deck that turns big butts into big damage.',
+        description: 'Build a wall of high-toughness Dinosaurs, then let them assign combat damage by toughness instead of power. A midrange deck that turns sturdy blockers into big attackers.',
         creatureTypes: ['Dinosaur'],
       },
       {
         name: 'Vampire Lifegain',
         colors: ['W', 'B'],
         keyCard: 'Call to the Feast',
-        description: 'Go wide with lifelinking Vampires and turn every point of life gained into +1/+1 counters and drain. A go-wide midrange deck where the life total is the engine.',
+        description: 'Go wide with lifelinking Vampire tokens and drain the opponent whenever the Vampires attack. A go-wide midrange deck that outlasts aggro and races everything else.',
         creatureTypes: ['Vampire'],
       },
       {
