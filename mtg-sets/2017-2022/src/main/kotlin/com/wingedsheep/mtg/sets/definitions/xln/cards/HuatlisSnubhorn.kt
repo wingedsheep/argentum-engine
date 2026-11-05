@@ -25,6 +25,7 @@ val HuatlisSnubhorn = card("Huatli's Snubhorn") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "286"
+        inBooster = false
         artist = "Randy Vargas"
         flavorText = "Don't make the mistake of thinking blunt horns can't kill."
         imageUri = "https://cards.scryfall.io/normal/front/e/2/e2d88e6c-4aa8-4175-9f5d-a4c0182cdf74.jpg"

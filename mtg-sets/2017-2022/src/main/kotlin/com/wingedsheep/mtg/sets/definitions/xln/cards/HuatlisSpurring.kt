@@ -26,6 +26,7 @@ val HuatlisSpurring = card("Huatli's Spurring") {
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "287"
+        inBooster = false
         artist = "Zack Stella"
         flavorText = "\"Run like the wind, fierce one. The hunt has begun.\""
         imageUri = "https://cards.scryfall.io/normal/front/a/1/a19440e2-855f-4f60-a443-b99500394611.jpg?1783935680"

@@ -1,0 +1,143 @@
+{
+  "Atzocan Archer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bright Reprisal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Burning Sun's Avatar": [
+    "removal",
+    "creature-removal"
+  ],
+  "Castaway's Despair": [
+    "removal",
+    "creature-removal"
+  ],
+  "Contract Killing": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crushing Canopy": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Demolish": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Demystify": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Dual Shot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Entrancing Melody": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiery Cannonade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fire Shrine Keeper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Firecannon Blast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hostage Taker": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Huatli, Warrior Poet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ixalan's Binding": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Legion's Judgment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lightning Strike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lurking Chupacabra": [
+    "removal",
+    "creature-removal"
+  ],
+  "Makeshift Munitions": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pious Interdiction": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pounce": [
+    "removal",
+    "creature-removal"
+  ],
+  "Repeating Barrage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Savage Stomp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Settle the Wreckage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Slice in Twain": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Star of Extinction": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unfriendly Fire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vanquish the Weak": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vona, Butcher of Magan": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Vraska's Contempt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vraska, Relic Seeker": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Walk the Plank": [
+    "removal",
+    "creature-removal"
+  ]
+}

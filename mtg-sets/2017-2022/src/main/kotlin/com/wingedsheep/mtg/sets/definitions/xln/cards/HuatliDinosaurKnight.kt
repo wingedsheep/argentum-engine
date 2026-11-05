@@ -61,6 +61,7 @@ val HuatliDinosaurKnight = card("Huatli, Dinosaur Knight") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "285"
+        inBooster = false
         artist = "Anna Steinbauer"
         imageUri = "https://cards.scryfall.io/normal/front/6/a/6a5a6f7b-149d-46d3-9814-d38a302db17c.jpg?1783935684"
         ruling(
