@@ -42,6 +42,7 @@ val GraspingCurrent = card("Grasping Current") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "282"
+        inBooster = false
         artist = "Yongjae Choi"
         imageUri = "https://cards.scryfall.io/normal/front/e/7/e7344ffb-aada-4be1-bc82-2ed96e6cb5bf.jpg?1783935685"
         ruling("2017-09-29", "You may cast Grasping Current without choosing any target creatures. You'll just search for Jace, Ingenious Mind-Mage. However, if you choose any targets and all of those targets become illegal before Grasping Current resolves, the spell won't resolve and you won't search.")

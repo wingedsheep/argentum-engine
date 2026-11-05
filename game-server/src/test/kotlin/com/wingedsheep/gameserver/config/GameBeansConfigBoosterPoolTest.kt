@@ -90,6 +90,41 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
     }
 
+    test("Ixalan draft pack is 10 commons, 3 uncommons and a rare or mythic, never a Planeswalker Deck card") {
+        // MTGJSON's XLN draft booster: 1 rare or mythic, 3 uncommons, 10 commons and a basic land (supplied
+        // at deck building). The rare sheet prints each rare twice and each mythic once: 15 mythics in 141.
+        val xln = boosterGenerator.availableSets["XLN"].shouldNotBeNull()
+        xln.fullyImplemented shouldBe true
+        xln.boosterStrategy shouldBe StandardBooster(commons = 10, mythicChance = 15.0 / 141)
+        val planeswalkerDeck = setOf(
+            "Jace, Ingenious Mind-Mage", "Castaway's Despair", "Grasping Current", "Jace's Sentinel",
+            "Woodland Stream", "Huatli, Dinosaur Knight", "Huatli's Snubhorn", "Huatli's Spurring",
+            "Sun-Blessed Mount", "Stone Quarry",
+        )
+        // The Planeswalker Deck cards (#280-289) are authored but never reach the booster pool.
+        xln.cards.map { it.name }.toSet().intersect(planeswalkerDeck) shouldBe emptySet()
+        val eligible = xln.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:xln is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 63, Rarity.MYTHIC to 15,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("XLN")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (mythics.toDouble() / packs) shouldBe (15.0 / 141 plusOrMinus 0.025)
+    }
+
     test("Rivals of Ixalan draft pack is 10 commons, 3 uncommons and a rare or mythic, never a Planeswalker Deck card") {
         // Retail pack: 1 rare or mythic, 3 uncommons, 10 commons and a basic land (supplied at deck
         // building). The rare sheet prints each rare twice and each mythic once: 13 mythics in 109.

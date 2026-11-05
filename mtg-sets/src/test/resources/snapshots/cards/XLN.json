@@ -1671,7 +1671,8 @@
     "metadata": {
         "collectorNumber": "281",
         "artist": "Chris Rahn",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3a26ba9-84b8-4f54-918c-f75d4cacad0b.jpg?1783935685"
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3a26ba9-84b8-4f54-918c-f75d4cacad0b.jpg?1783935685",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -5366,7 +5367,8 @@
                 "date": "2017-09-29",
                 "text": "You may cast Grasping Current without choosing any target creatures. You'll just search for Jace, Ingenious Mind-Mage. However, if you choose any targets and all of those targets become illegal before Grasping Current resolves, the spell won't resolve and you won't search."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -6105,7 +6107,8 @@
         "collectorNumber": "286",
         "artist": "Randy Vargas",
         "flavorText": "Don't make the mistake of thinking blunt horns can't kill.",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2d88e6c-4aa8-4175-9f5d-a4c0182cdf74.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2d88e6c-4aa8-4175-9f5d-a4c0182cdf74.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -6182,7 +6185,8 @@
                 "date": "2017-09-29",
                 "text": "Whether you control a Huatli planeswalker is checked only as Huatli’s Spurring resolves. The creature’s power won’t change later in the turn if Huatli leaves or comes under your control."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED"
@@ -6318,7 +6322,8 @@
                 "date": "2017-09-29",
                 "text": "Huatli's last ability affects only Dinosaurs you control at the time it resolves. Dinosaurs you begin to control later in the turn or creatures that become Dinosaurs later in the turn won't get +4/+4."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 4,
     "colorIdentityOverride": [
@@ -6842,7 +6847,8 @@
         "rarity": "UNCOMMON",
         "artist": "Alex Konstad",
         "flavorText": "\"We drove the Sun Empire out of the forest long ago, and we will not let them return.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9131361b-ec1e-4390-82c9-b9b9f77792a8.jpg?1783935684"
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9131361b-ec1e-4390-82c9-b9b9f77792a8.jpg?1783935684",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -7098,7 +7104,8 @@
                 "date": "2017-09-29",
                 "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well, and any effects that give the player control of permanents immediately end."
             }
-        ]
+        ],
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
@@ -13467,7 +13474,8 @@
         "rarity": "RARE",
         "artist": "Joe Slucher",
         "flavorText": "When Huatli chooses a mount, its eyes glow with the flames of the sun.",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f06ac1f-0bae-4aaa-9ff4-28c806828c40.jpg?1783935682"
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f06ac1f-0bae-4aaa-9ff4-28c806828c40.jpg?1783935682",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED",
