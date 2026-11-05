@@ -71,6 +71,8 @@ export function DamageDistributionModal() {
   }
 
   const { cardName, targetIds, totalDamage, minPerTarget, distribution } = damageDistributionState
+  // An activated ability (Chandra, Flameshaper's −4; Huatli, Warrior Poet's −X) is activated, not cast.
+  const confirmLabel = damageDistributionState.action.type === 'ActivateAbility' ? 'Activate' : 'Cast Spell'
 
   // Calculate remaining amount to distribute
   const totalAllocated = Object.values(distribution).reduce((sum, val) => sum + val, 0)
@@ -498,7 +500,7 @@ export function DamageDistributionModal() {
             transition: 'all 0.15s',
           }}
         >
-          Cast Spell
+          {confirmLabel}
         </button>
       </div>
     </div>

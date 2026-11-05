@@ -217,8 +217,9 @@ data class LegalAction(
     val totalDamageToDistribute: Int? = null,
     /**
      * The division's total for each X the caster may announce, keyed by X — present only when the
-     * total reads a mana-paid `{X}` (Shatterskull Smashing: "X damage divided … If X is 6 or more,
-     * … twice X damage divided … instead"). X is announced before targets and the division
+     * total reads the announced X: a spell's mana-paid `{X}` (Shatterskull Smashing: "X damage
+     * divided … If X is 6 or more, … twice X damage divided … instead") or an activation's X cost
+     * (Huatli, Warrior Poet's −X). X is announced before targets and the division
      * (CR 601.2b, 601.2d), so the client looks the total up for the X it chose; the prices are the
      * server's. When set, [totalDamageToDistribute] is the X-less reading and is not used.
      */

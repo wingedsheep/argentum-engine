@@ -1716,7 +1716,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   If either fighter is no longer a creature on the battlefield when the fight happens, neither deals
   damage (CR 701.14b) and the excess variable is 0 — this covers a `Self` fighter ("it fights"), which
   no target re-check removes.
-- `Effects.DividedDamage(total, minTargets, maxTargets, dynamicTotal?, among?)` — "N damage divided as you
+- `Effects.DividedDamage(total, minTargets, maxTargets, dynamicTotal?, among?, storeDamagedAs?)` — "N damage divided as you
   choose among target ..." The targets come from the ability's target requirement; pair with
   `TargetObject(filter = TargetFilter.Creature, count = count, minCount = minCount)` (Forked Lightning, Skirk Volcanist) or, for "any number of target",
   a `TargetObject(unlimited = true, dynamicMaxCount = ..., filter = ...)`. Set `dynamicTotal` (a
@@ -1748,6 +1748,22 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   division against it, and binds it onto the stack object as the ability's X — so the executor deals
   that number even if the creature that set it is gone. Cap the targets with the *board* amount
   (`dynamicMaxCount = <amount>`, not `XValue`, which enumeration treats as a player-chosen X).
+
+  **An activation's own X** (Huatli, Warrior Poet's −X: "Huatli deals X damage divided as you choose
+  among any number of target creatures") is `loyaltyAbilityX` (or an `{X}` mana cost) with
+  `dynamicTotal = DynamicAmounts.xValue()` and the targets capped by it (`targets(…, minCount = 0,
+  unlimited = true, dynamicMaxCount = DynamicAmounts.xValue())`). X is announced before the division
+  (CR 601.2b, 601.2d), so the legal action carries `totalDamageByX` — the total for every X from `minX`
+  to `maxAffordableX` — the client divides the entry for the X it chose, and the validator checks the
+  division against the announced X. With X = 0 no target can be chosen.
+
+  **"… dealt damage this way"** (Huatli: "Creatures dealt damage this way can't block this turn") is
+  `storeDamagedAs`: the permanents and players the division actually dealt at least 1 damage to, after
+  prevention and replacement, stored as a pipeline collection — a target that became illegal or whose
+  share was wholly prevented isn't in it. Read it in the same pipeline:
+  `val damaged = runStoringCollection { Effects.DividedDamage(total = 0, dynamicTotal = DynamicAmounts.xValue(),
+  storeDamagedAs = it) }; run(Effects.ForEachInCollection(damaged, Effects.CantBlock(EffectTarget.IterationEntity)))`.
+  It is stored on every path: an announced division, a lone target, and a division asked for at resolution.
 
   **A spell's X pinned by its additional cost** (Nahiri's Sacrifice: "As an additional cost to cast
   this spell, sacrifice an artifact or creature with mana value X. … deals X damage divided as you

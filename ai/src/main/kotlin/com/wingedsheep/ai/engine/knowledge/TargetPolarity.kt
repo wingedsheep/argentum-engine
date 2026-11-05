@@ -74,6 +74,8 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
+import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
+import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -561,6 +563,18 @@ object TargetPolarityAnalyzer {
                 biteSourceSlot(leaf, requirements)?.let { biteSources += it }
             }
             if (requirements.size == 1) implicitTargetPolarity(leaf)?.let { perSlot[0] += it }
+            // "N damage divided as you choose among …" across several requirements (the single-slot
+            // case is [implicitTargetPolarity]'s): damage to every target of the requirement it is
+            // scoped to (Magma Opus's `among`), or to every target of the ability when unscoped.
+            if (leaf is DividedDamageEffect && requirements.size > 1) {
+                val scoped = leaf.among?.let { id -> requirements.indices.filter { requirements[it].id == id } }
+                for (slot in scoped ?: requirements.indices.toList()) perSlot[slot] += TargetPolarity.HARMFUL
+            }
+            // "Distribute N counters among …" names no target either: the counter it divides is what
+            // each target gets (Biogenic Upgrade's +1/+1, Armament Corps' +1/+1 among ours).
+            if (leaf is DistributeCountersAmongTargetsEffect) {
+                counterPolarity(leaf.counterType)?.let { polarity -> requirements.indices.forEach { perSlot[it] += polarity } }
+            }
         }
         // Getting a card back is the point of a recursion slot: a finality or -1/-1 counter it
         // comes back with (Rite of the Moth, Soulcoil Viper) is the price, not the other side of it.
@@ -1133,6 +1147,9 @@ object TargetPolarityAnalyzer {
             is ExploreEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AdaptAsThoughNoCountersEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddDynamicCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
+            // "Double the number of +1/+1 counters on …" (Biogenic Upgrade, Deepglow Skate): more of
+            // what it already holds, so the counter decides the side; every kind at once is open.
+            is DoubleCountersEffect -> leaf.target to (leaf.counterType?.let(::counterPolarity) ?: TargetPolarity.FLEXIBLE)
             is MoveAllLastKnownCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is RemoveAnyNumberOfCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // Equip, fortify, reconfigure: "attach this permanent to target creature" does to that

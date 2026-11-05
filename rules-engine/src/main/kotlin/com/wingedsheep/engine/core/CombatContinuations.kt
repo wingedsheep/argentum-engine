@@ -74,6 +74,10 @@ data class AssignUnblockedToCreatureContinuation(
  * @property sourceId The spell/ability that is dealing the damage
  * @property controllerId The player who controls the effect
  * @property targets The targets that damage can be distributed among
+ * @property effect The divided-damage effect that asked, when one did: the answer is replayed
+ *   through its executor as an announced division (with [context]), so whatever the effect stores
+ *   ("creatures dealt damage this way") is stored on this path too. Null for the untargeted
+ *   collection division, which deals the answer directly.
  */
 @Serializable
 data class DistributeDamageContinuation(
@@ -81,6 +85,8 @@ data class DistributeDamageContinuation(
     val controllerId: EntityId,
     val targets: List<EntityId>,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    val effect: com.wingedsheep.sdk.scripting.effects.DividedDamageEffect? = null,
+    val context: com.wingedsheep.engine.handlers.EffectContext? = null,
 ) : AnswerContinuation
 
 /**

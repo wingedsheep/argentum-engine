@@ -346,18 +346,22 @@ object Effects {
      * @param among The handles of the one target requirement the damage is divided among, when the
      *        spell targets more than once (Magma Opus: `among = targets(Targets.Any.withCount(4)...)`).
      *        Null divides among every target.
+     * @param storeDamagedAs Pipeline key under which to store what was actually dealt damage —
+     *        "creatures dealt damage this way" (`runStoringCollection { DividedDamage(…, storeDamagedAs = it) }`).
      */
     fun DividedDamage(
         total: Int = 0,
         minTargets: Int = 1,
         maxTargets: Int = 3,
         dynamicTotal: DynamicAmount? = null,
-        among: List<EffectTarget.BoundVariable>? = null
+        among: List<EffectTarget.BoundVariable>? = null,
+        storeDamagedAs: String? = null
     ): Effect = DividedDamageEffect(
         totalDamage = total,
         minTargets = minTargets,
         maxTargets = maxTargets,
         dynamicTotal = dynamicTotal,
+        storeDamagedAs = storeDamagedAs,
         among = among?.let { handles ->
             val ids = handles.map { it.name.substringBefore('[') }.toSet()
             require(ids.size == 1) { "DividedDamage(among = ...) takes the handles of exactly one target requirement" }

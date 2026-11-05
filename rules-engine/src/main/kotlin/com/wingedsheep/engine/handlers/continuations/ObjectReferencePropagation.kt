@@ -189,7 +189,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is StormCopyTargetContinuation -> copy(objectReferences = refs)
     is StormCopyModalTargetContinuation -> copy(objectReferences = refs)
     is ChangeSpellTargetContinuation -> copy(objectReferences = refs)
-    is DistributeDamageContinuation -> copy(objectReferences = refs)
+    is DistributeDamageContinuation -> copy(objectReferences = refs, context = context?.copy(objectReferences = refs))
     is DeflectDamageSourceChoiceContinuation -> copy(objectReferences = refs)
     is PreventDamageFromChosenSourceContinuation -> copy(objectReferences = refs)
     is PreventNextDamageLeavingAmountContinuation -> copy(context = context.copy(objectReferences = refs))

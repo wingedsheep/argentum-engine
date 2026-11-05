@@ -48,10 +48,11 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Tam, the Possibility" to emptyList(),
         // A chosen-source silence on an activation: spent only on damage still to come this turn.
         "Burrenton Forge-Tender" to emptyList(),
+        // "Distribute two +1/+1 counters among one or two target creatures" reads as a pump on each.
+        "Abzan Charm" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         // A draw beside the trample outlasts the turn, so the keyword floor does not read the spell.
         "Charge Through" to listOf("timing: GrantKeywordEffect"),
-        "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         // "Target creature can't attack or block this turn": the can't-block reads as evasion for our
         // attack, which reads the ability's intent; combat and end-of-turn timing are still unread.

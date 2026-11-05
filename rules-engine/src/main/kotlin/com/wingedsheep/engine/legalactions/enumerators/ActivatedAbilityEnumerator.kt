@@ -1234,6 +1234,14 @@ class ActivatedAbilityEnumerator(
                         // here and let the client collect it after targeting, exactly as the cast
                         // path does for spells (Chandra, Flameshaper's −4; Ajani, Sleeper Agent's −3).
                         val division = AnnouncedDivision.ofActivation(ability.effect)
+                        // A total that reads the activation's X (Huatli, Warrior Poet's −X: "X damage
+                        // divided as you choose …") can't be priced before X is announced (CR 601.2b
+                        // precedes 601.2d), so the offer carries the total for every X it may take.
+                        val divisionByX = if (division != null && abilityHasXCost && abilityMaxAffordableX != null) {
+                            (abilityMinX..abilityMaxAffordableX).associateWith { x ->
+                                context.castPermissionUtils.divisionTotalAtActivation(state, division, ability, entityId, playerId, chosenX = x)
+                            }.takeIf { byX -> byX.values.distinct().size > 1 }
+                        } else null
                         result.add(LegalAction(
                             actionType = "ActivateAbility",
                             description = displayDescription,
@@ -1265,6 +1273,7 @@ class ActivatedAbilityEnumerator(
                             totalDamageToDistribute = division?.let {
                                 context.castPermissionUtils.divisionTotalAtActivation(state, it, ability, entityId, playerId)
                             },
+                            totalDamageByX = divisionByX,
                             minDamagePerTarget = division?.let(AnnouncedDivision::minPerTarget),
                             distributionUnit = division?.let(AnnouncedDivision::counterUnit),
                             inertReason = abilityInertReason

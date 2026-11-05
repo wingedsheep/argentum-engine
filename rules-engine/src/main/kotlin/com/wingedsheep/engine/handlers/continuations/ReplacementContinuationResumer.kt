@@ -43,8 +43,7 @@ class ReplacementContinuationResumer(
         else com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain.deal(
             services.zones, replay, continuation.instances, excessToController = continuation.excessToController)
         if (result.outcome is Outcome.Paused) return ExecutionResult.propagatePause(result.state, result.events)
-        val published = exposeCollectionsToNextFrame(result.state, emptyMap(), numbers = result.updatedStoredNumbers)
-        return checkForMore(published, result.events)
+        return checkForMore(result.stateWithOutputsHandedOn(), result.events)
     }
 
     override fun autoResumers(): List<AutoResumer<*>> = listOf(

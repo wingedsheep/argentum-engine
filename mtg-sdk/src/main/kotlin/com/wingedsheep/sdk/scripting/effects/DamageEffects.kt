@@ -224,6 +224,11 @@ data class DamageToTargetCantBePreventedThisTurnEffect(
  * "deals 4 damage divided as you choose among any number of targets. Tap two target permanents." —
  * the 4 damage is divided among the first requirement's targets only, never the tapped permanents.
  * Null divides among every target of the effect, the historical reading.
+ *
+ * [storeDamagedAs], when set, stores the permanents and players this effect actually dealt damage
+ * to (a share of at least 1 left after prevention and replacement) as a pipeline collection under
+ * that key — "creatures dealt damage this way" (Huatli, Warrior Poet: "… can't block this turn").
+ * A target whose share was wholly prevented, or that became illegal, is not in it.
  */
 @SerialName("DividedDamage")
 @Serializable
@@ -232,7 +237,8 @@ data class DividedDamageEffect(
     val minTargets: Int = 1,
     val maxTargets: Int = 3,
     val dynamicTotal: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
-    val among: String? = null
+    val among: String? = null,
+    val storeDamagedAs: String? = null
 ) : Effect {
     override val description: String =
         if (dynamicTotal != null)

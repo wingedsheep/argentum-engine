@@ -1361,6 +1361,10 @@ object CardIntentAnalyzer {
 
         is AddCountersEffect -> counterTags(effect.counterType, effect.target)
         is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)
+        // Divided among the targets (each a permanent), and doubling what one holds: the counter
+        // decides it, as for a plain placement.
+        is DistributeCountersAmongTargetsEffect -> counterTags(effect.counterType, EffectTarget.ContextTarget(0))
+        is DoubleCountersEffect -> effect.counterType?.let { counterTags(it, effect.target) } ?: emptySet()
 
         is TapUntapEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
         // "Creatures target opponent controls don't untap during their next untap step" (Imaginary
@@ -1812,7 +1816,9 @@ object CardIntentAnalyzer {
         is DealDamageEffect ->
             if (hitsAnotherPermanent(effect.target)) fixed(effect.amount) else null
 
-        is DividedDamageEffect -> effect.totalDamage
+        // A dynamic total (Huatli's X, Ureni's land count) is only known on the board, so it
+        // claims no fixed reach — not the placeholder 0 its `totalDamage` carries.
+        is DividedDamageEffect -> effect.dynamicTotal?.let(::fixed) ?: effect.totalDamage.takeIf { effect.dynamicTotal == null }
         is ModifyStatsEffect -> fixed(effect.toughnessModifier)?.takeIf { it < 0 }?.let { -it }
         is AddCountersEffect ->
             effect.counterType.ptDelta?.second?.takeIf { it < 0 && hitsAnotherPermanent(effect.target) }?.let { -it * effect.count }

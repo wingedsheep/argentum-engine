@@ -472,6 +472,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Outlast', inPlay: 'Sorcery-speed +1/+1 counters give Abzan a mana sink that slowly out-grows the board.' },
     ],
   },
+  XLN: {
+    tagline: 'A tribal format where Dinosaurs, Merfolk, Pirates and Vampires fight over a new world. Pick a tribe, curve out and win the combat step.',
+    setting: 'The jungles and seas of Ixalan, where conquistadors, pirates, river folk and dinosaur riders hunt for the golden city of Orazca.',
+    gameplay: 'Games are decided in combat. Each allied colour pair is one tribe: white-black Vampires grow on life gain, blue-red Pirates raid, red-green Dinosaurs enrage, and green-blue Merfolk explore. Explore smooths draws while growing creatures, raid rewards attacking before you cast, and Treasure fixes splashes and ramps into seven-drop Dinosaurs. Legendary enchantments and artifacts transform into lands with powerful abilities once their condition is met.',
+    tips: [
+      'Commit to a tribe: the uncommon payoffs reward on-type creatures, and the tribes rarely mix well.',
+      'Contract Killing, Waterknot and Pious Interdiction are the commons that answer bombs; take them early.',
+      'Attack before you cast — raid cards only pay off if a creature has already swung this turn.',
+    ],
+    tryIf: 'tribal decks, Dinosaurs and combat-heavy games',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['tribal', 'aggro', 'counters'],
+    mechanics: [
+      { name: 'Explore', inPlay: 'Creatures reveal the top card: a land goes to hand, anything else grows the creature, smoothing draws either way.' },
+      { name: 'Enrage', inPlay: 'Dinosaurs trigger whenever they are dealt damage, so blocking or burning them often backfires.' },
+      { name: 'Raid', inPlay: 'Bonuses for having attacked this turn push you to attack before casting, even with a small creature.' },
+      { name: 'Treasure', inPlay: 'One-shot mana tokens ramp, fix splashes and fuel Pirate payoffs.' },
+      { name: 'Transform', inPlay: 'Legendary enchantments and artifacts flip into lands once you meet their condition, turning a slow card into a lasting engine.' },
+    ],
+  },
   RIX: {
     tagline: 'A fast, tribal format where Dinosaurs, Merfolk, Pirates and Vampires race for the golden city. Curve out, attack, and make every combat count.',
     setting: 'The jungles and seas of Ixalan, where four tribes race to claim the golden city of Orazca.',
