@@ -837,6 +837,9 @@ object LimitedCardRater {
         // A whole extra turn — another untap, draw and attack — is a Limited bomb's effect on a
         // sorcery, though usually a pricey or conditional one: a little over a counterspell.
         IntentTag.EXTRA_TURN to 1.0,
+        // A spell cast for free is the mana it didn't cost — usually an attack or a cast trigger
+        // away and only as good as the spells beside it: priced like ramp.
+        IntentTag.FREE_SPELL to 0.4,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

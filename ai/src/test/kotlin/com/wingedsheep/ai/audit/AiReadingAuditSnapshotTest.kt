@@ -53,9 +53,10 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Charge Through" to listOf("timing: GrantKeywordEffect"),
         "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
+        // "Target creature can't attack or block this turn": the can't-block reads as evasion for our
+        // attack, which reads the ability's intent; combat and end-of-turn timing are still unread.
         "Alchemist's Vial" to listOf(
-            "combat: CantBlockEffect", "intent: CantAttackEffect", "intent: CantBlockEffect",
-            "timing: CantAttackEffect", "timing: CantBlockEffect",
+            "combat: CantBlockEffect", "timing: CantAttackEffect", "timing: CantBlockEffect",
         ),
         // "Target player reveals their hand and discards all nonland cards": read as discard, aimed at
         // the other side's hand.
