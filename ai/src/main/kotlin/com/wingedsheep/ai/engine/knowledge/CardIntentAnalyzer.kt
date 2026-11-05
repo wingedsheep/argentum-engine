@@ -509,6 +509,14 @@ object CardIntentAnalyzer {
                 // land (Wakeroot Elemental's "untap target land you control. It becomes a 5/5
                 // Elemental"), the untap sets that step up, and reading it as ramp would hide it.
                 is TapUntapEffect -> if (payoff.size == 1 && untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
+                // "Untap up to two target creatures and up to two target lands" (Nissa, Genesis Mage):
+                // the pipeline gathers every chosen target and untaps the lot. With a land slot among
+                // them it is "untap target land" again — the lands tap for mana once more — and the
+                // creature slots ride along; the untap is still the ability's whole payoff.
+                is TapUntapCollectionEffect ->
+                    if (!leaf.tap && leaf.collectionName in TargetPolarityAnalyzer.allChosenTargets(effect) &&
+                        payoff.count { it !is GatherCardsEffect } == 1 && requirements.any(::isUntappableLandSlot)
+                    ) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
                 is ForEachEffect -> when {
                     payoff.size == 1 && leaf.space == IterationSpace.Targets &&
                         EffectWalker.payoffLeaves(leaf.body).let { body ->
@@ -561,14 +569,17 @@ object CardIntentAnalyzer {
             is EffectTarget.BoundVariable -> listOfNotNull(requirements.firstOrNull { it.id == target.name.substringBefore('[') })
             else -> emptyList()
         }
-        return slots.isNotEmpty() && slots.all { requirement ->
-            val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
-                ?: return@all false
-            val base = filter.baseFilter
-            filter.zone == Zone.BATTLEFIELD && filter.alternatives.isEmpty() && base.anyOf.isEmpty() &&
-                (CardPredicate.IsLand in base.cardPredicates || CardPredicate.IsBasicLand in base.cardPredicates) &&
-                (base.controllerPredicate == null || base.controllerPredicate == ControllerPredicate.ControlledByYou)
-        }
+        return slots.isNotEmpty() && slots.all(::isUntappableLandSlot)
+    }
+
+    /** A slot [untapsATargetLand] reads: a land on the battlefield that any player — or we — control. */
+    private fun isUntappableLandSlot(requirement: TargetRequirement): Boolean {
+        val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+            ?: return false
+        val base = filter.baseFilter
+        return filter.zone == Zone.BATTLEFIELD && filter.alternatives.isEmpty() && base.anyOf.isEmpty() &&
+            (CardPredicate.IsLand in base.cardPredicates || CardPredicate.IsBasicLand in base.cardPredicates) &&
+            (base.controllerPredicate == null || base.controllerPredicate == ControllerPredicate.ControlledByYou)
     }
 
     /** What a single-card move out of a graveyard is — see [graveyardMoveOf]. */
@@ -1172,7 +1183,17 @@ object CardIntentAnalyzer {
             it is ForEachEffect && (it.space as? IterationSpace.Collection)?.collection in fromOurTop &&
                 EffectWalker.payoffLeaves(it.body).any(::putsTheIteratedCardIntoHand)
         }
-        return if (movesThemToOurHand || grantsThemToUs || castsThemNow || offersThemToOurHand) setOf(IntentTag.DRAW) else emptySet()
+        // "Put any number of creature and/or land cards from among them onto the battlefield"
+        // (Nissa, Genesis Mage's −10, Collected Company, Animist's Awakening): the cards come off our
+        // library top into play instead of into hand — card advantage that skips the casting. A
+        // face-down move (manifest, cloak) is a 2/2 rather than the card itself, and stays unread.
+        val putsThemOntoOurBattlefield = leaves.any {
+            it is MoveCollectionEffect && it.from in fromOurTop && it.faceDown == null &&
+                (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.BATTLEFIELD && to.player == Player.You } == true
+        }
+        return if (movesThemToOurHand || grantsThemToUs || castsThemNow || offersThemToOurHand || putsThemOntoOurBattlefield) {
+            setOf(IntentTag.DRAW)
+        } else emptySet()
     }
 
     /**

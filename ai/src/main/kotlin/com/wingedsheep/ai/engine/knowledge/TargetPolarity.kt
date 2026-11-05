@@ -112,6 +112,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
@@ -563,6 +564,13 @@ object TargetPolarityAnalyzer {
                 biteSourceSlot(leaf, requirements)?.let { biteSources += it }
             }
             if (requirements.size == 1) implicitTargetPolarity(leaf)?.let { perSlot[0] += it }
+            // "Untap up to two target creatures and up to two target lands" (Nissa, Genesis Mage)
+            // gathers every chosen target and taps or untaps the lot: each object slot gets what the
+            // single-target [TapUntapEffect] gives its one — an untap helps, a tap hurts.
+            if (leaf is TapUntapCollectionEffect && leaf.collectionName in allChosenTargets(effect)) {
+                val polarity = if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
+                for (slot in objectSlots(requirements)) perSlot[slot] += polarity
+            }
             // "N damage divided as you choose among …" across several requirements (the single-slot
             // case is [implicitTargetPolarity]'s): damage to every target of the requirement it is
             // scoped to (Magma Opus's `among`), or to every target of the ability when unscoped.
@@ -977,6 +985,21 @@ object TargetPolarityAnalyzer {
                 .flatMap { listOfNotNull(it.storeMatching, it.storeNonMatching) }
         } while (names.addAll(grown))
         return names
+    }
+
+    /**
+     * The pipeline collections of [effect] gathered straight from [CardSource.ChosenTargets] — every
+     * chosen target of every slot, unnarrowed. (A filtered one, in [chosenTargetCollections], may
+     * hold only some slots' targets, so it names no slot by itself.)
+     */
+    internal fun allChosenTargets(effect: Effect): Set<String> =
+        EffectWalker.leaves(effect).filterIsInstance<GatherCardsEffect>()
+            .filter { it.source == CardSource.ChosenTargets }.mapTo(HashSet()) { it.storeAs }
+
+    /** The slots of [requirements] that choose an object rather than a player. */
+    private fun objectSlots(requirements: List<TargetRequirement>): List<Int> = requirements.indices.filter {
+        val requirement = (requirements[it] as? TargetOther)?.baseRequirement ?: requirements[it]
+        requirement !is TargetPlayer && requirement !is TargetOpponent
     }
 
     /**
