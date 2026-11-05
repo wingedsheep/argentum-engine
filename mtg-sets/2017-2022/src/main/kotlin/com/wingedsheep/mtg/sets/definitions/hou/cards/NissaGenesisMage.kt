@@ -79,6 +79,7 @@ val NissaGenesisMage = card("Nissa, Genesis Mage") {
         collectorNumber = "200"
         artist = "Chris Rallis"
         imageUri = "https://cards.scryfall.io/normal/front/2/9/2923c85a-4022-4cda-bcbb-bb000137f64f.jpg?1783935987"
+        inBooster = false
         ruling(
             "2017-07-14",
             "You can activate Nissa's first ability with fewer than four targets. For example, you " +

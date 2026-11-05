@@ -16,4 +16,5 @@ val WoodlandStreamReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/0/d/0d757641-a6e8-4584-b35e-be043c228134.jpg",
     releaseDate = "2017-07-14",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

@@ -492,6 +492,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Transform', inPlay: 'Legendary enchantments and artifacts flip into lands once you meet their condition, turning a slow card into a lasting engine.' },
     ],
   },
+  HOU: {
+    tagline: 'An aggressive, combat-first format where blocking is punished and dead creatures come back. Exert and afflict reward attacking, aftermath spells get a second half.',
+    setting: 'Amonkhet as the Hours arrive and the God-Pharaoh Nicol Bolas returns to claim his plane.',
+    gameplay: 'Games are decided in combat. Afflict creatures make the defender lose life whenever they are blocked, so chump blocks cost twice, and exert lets attackers hit harder in exchange for skipping an untap. Eternalize and embalm bring creatures back from the graveyard as tokens, so trades still leave value behind. Aftermath split cards are cast once from hand and again from the graveyard, and Deserts fuel cards that care about them. Common removal like Sandblast, Puncturing Blow and Unquenchable Thirst keeps boards in check.',
+    tips: [
+      'Block carefully against afflict: a blocked afflict creature still drains the defending player, so racing can beat trading.',
+      'Count your graveyard as part of your hand: aftermath halves and eternalize creatures are cards you still get to play.',
+      'Sandblast and Puncturing Blow are the commons to take; cheap removal keeps the races on your side.',
+    ],
+    tryIf: 'aggressive creature decks and squeezing two spells out of one card',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['aggro', 'graveyard', 'counters'],
+    mechanics: [
+      { name: 'Afflict', inPlay: 'Whenever the creature becomes blocked, the defending player loses life, so blocking it is never free.' },
+      { name: 'Aftermath', inPlay: 'Split cards whose second half is cast only from the graveyard, giving two spells for one card.' },
+      { name: 'Eternalize', inPlay: 'Pay from the graveyard to make a 4/4 black Zombie token copy of the creature, turning late games into a second wave.' },
+      { name: 'Exert', inPlay: 'Attackers get a bonus if you choose to skip their next untap, trading defence for a bigger swing.' },
+      { name: 'Deserts', inPlay: 'A land type many cards reward you for controlling or having in your graveyard.' },
+    ],
+  },
   RIX: {
     tagline: 'A fast, tribal format where Dinosaurs, Merfolk, Pirates and Vampires race for the golden city. Curve out, attack, and make every combat count.',
     setting: 'The jungles and seas of Ixalan, where four tribes race to claim the golden city of Orazca.',

@@ -58,6 +58,7 @@ val WaspOfTheBitterEnd = card("Wasp of the Bitter End") {
         flavorText = "As the Second Sun glided into its final position in the sky, a chorus of " +
             "wings sounded to herald the return of Nicol Bolas."
         imageUri = "https://cards.scryfall.io/normal/front/4/6/46d348eb-7db0-4209-8960-c6adc473417d.jpg?1783935984"
+        inBooster = false
         ruling(
             "2017-07-14",
             "You choose a target for Wasp of the Bitter End's triggered ability right after " +

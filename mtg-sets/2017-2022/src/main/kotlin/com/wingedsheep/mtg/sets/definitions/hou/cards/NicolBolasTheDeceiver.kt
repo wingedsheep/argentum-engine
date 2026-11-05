@@ -70,6 +70,7 @@ val NicolBolasTheDeceiver = card("Nicol Bolas, the Deceiver") {
         collectorNumber = "205"
         artist = "Svetlin Velinov"
         imageUri = "https://cards.scryfall.io/normal/front/7/4/74239d78-1608-4b27-b2fd-8c7453f6b86b.jpg?1783935986"
+        inBooster = false
         ruling(
             "2017-07-14",
             "While resolving Nicol Bolas's first ability, your opponent chooses a card to be discarded without " +

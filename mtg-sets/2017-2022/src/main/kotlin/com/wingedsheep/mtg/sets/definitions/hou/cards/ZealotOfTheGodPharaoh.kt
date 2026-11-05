@@ -26,5 +26,6 @@ val ZealotOfTheGodPharaoh = card("Zealot of the God-Pharaoh") {
         artist = "Gabor Szikszai"
         flavorText = "The God-Pharaoh's most devoted took it upon themselves to follow his example."
         imageUri = "https://cards.scryfall.io/normal/front/1/8/180d1cd4-7d0d-4279-bc2a-59bb21b06904.jpg?1783935984"
+        inBooster = false
     }
 }

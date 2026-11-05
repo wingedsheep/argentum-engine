@@ -2874,6 +2874,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  HOU: {
+    setCode: 'HOU',
+    setName: 'Hour of Devastation',
+    archetypes: [
+      {
+        name: 'Aftermath Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Farm // Market',
+        description: 'Hold the ground with removal for attackers, fly over the top, then cast the aftermath half from the graveyard for extra cards. A controlling tempo deck that gets two spells out of each card.',
+      },
+      {
+        name: 'Discard Control',
+        colors: ['U', 'B'],
+        keyCard: 'Consign // Oblivion',
+        description: "Bounce threats and strip the opponent's hand while cycling and card draw smooth your draws. A grindy control deck that wins once the opponent runs out of cards.",
+      },
+      {
+        name: 'Graveyard Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Claim // Fame',
+        description: 'Curve out with cheap aggressive creatures, then bring them back from the graveyard and give them haste. A fast aggro deck that keeps its board refilled.',
+      },
+      {
+        name: 'Desert Ramp',
+        colors: ['R', 'G'],
+        keyCard: 'Struggle // Survive',
+        description: 'Play Deserts and extra lands to fuel big creatures and land-count burn. A midrange deck that outsizes the opponent once its mana is ahead.',
+      },
+      {
+        name: 'Go-Wide Aggro',
+        colors: ['G', 'W'],
+        keyCard: 'Appeal // Authority',
+        description: 'Flood the board with creatures and tokens, then pump the whole team or one huge trampler. A go-wide aggro deck that ends games with an alpha strike.',
+      },
+      {
+        name: 'Zombie Attackers',
+        colors: ['W', 'B'],
+        keyCard: 'Unraveling Mummy',
+        description: 'Eternalize Zombie tokens back from the graveyard and arm attacking Zombies with lifelink and deathtouch. A midrange deck that grinds out value from its dead creatures.',
+        creatureTypes: ['Zombie'],
+      },
+      {
+        name: 'Spells Prowess',
+        colors: ['U', 'R'],
+        keyCard: 'Bloodwater Entity',
+        description: 'Cast cheap instants and sorceries to pump prowess creatures, then recycle the best spells from the graveyard. A tempo deck that races with evasive threats.',
+      },
+      {
+        name: '-1/-1 Counters',
+        colors: ['B', 'G'],
+        keyCard: 'Obelisk Spider',
+        description: "Spread -1/-1 counters through combat and removal to shrink the opponent's creatures and drain them. A grindy midrange deck that turns every counter into reach.",
+      },
+      {
+        name: 'Exert Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Resolute Survivors',
+        description: 'Exert attackers every turn for bigger swings and payoffs that drain and gain on each exert. A fast aggro deck that pressures the opponent before bigger decks stabilize.',
+      },
+      {
+        name: 'Card Draw Ramp',
+        colors: ['G', 'U'],
+        keyCard: 'River Hoopoe',
+        description: "Ramp into big creatures and cycle away what you don't need, then sink extra mana into card draw. A midrange deck that out-values the opponent in long games.",
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',
