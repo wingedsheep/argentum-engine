@@ -48,6 +48,8 @@ import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect
+import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
@@ -369,6 +371,12 @@ object AiReadingAudit {
                             // A forced attack on an opponent's creatures: HoldPolicy rewards casting
                             // it on their turn before they attack ([ForcedAttackWindow]), the only
                             // window "this turn" binds an attack of theirs. Own spell only, as above.
+                            // "Until end of turn, you may activate loyalty abilities of Jace planeswalkers
+                            // you control … any time you could cast an instant" (Jace's Machinations):
+                            // HoldPolicy holds it for the opponent's turn, where the walker gets a second
+                            // activation ([CardIntent.grantsInstantSpeedLoyalty], AmbushWindow).
+                            (leaf is GrantLoyaltyActivationPermissionEffect && leaf.instantSpeed &&
+                                intent.grantsInstantSpeedLoyalty) ||
                             (leaf is MustAttackGroupEffect && IntentTag.FORCED_ATTACK in intent.tags &&
                                 script === card.script && card.cardFaces.isEmpty()) ||
                             // A spell that only grants keywords until end of turn is floored where no
@@ -641,7 +649,14 @@ object AiReadingAudit {
             // it rides on, and when to spend it is the copy's question, which the copy's reading answers.
             val ridesOnCopy = expiring is GrantStaticAbilityEffect && expiring.ability is LegendRuleDoesNotApplyTo &&
                 leaves.any { it is EachPermanentBecomesCopyOfTargetEffect && isRead(it) }
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy) {
+            // "Until end of turn, whenever you tap a Mountain for mana, add an additional {R}" (High
+            // Tide, Molten Tide) granted to its caster: the mana is spent in the window it is cast in,
+            // on the spell it makes affordable, and the cast's simulation sees that spell become
+            // castable. Cast with nothing to spend it on, it changes nothing and is passed. No window
+            // to wait for.
+            val spentWithCast = expiring is GrantStaticAbilityEffect && expiring.ability is AdditionalManaOnSourceTap &&
+                expiring.target == EffectTarget.Controller
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),
