@@ -133,6 +133,13 @@ data class CardIntent(
     /** Protection comes only from an immediate blink, not a shield improving the next combat. */
     val protectionOnlyFromBlink: Boolean = false,
     /**
+     * [IntentTag.COMBAT_ENHANCEMENT] comes only from untapping our own creatures ("untap all
+     * creatures you control"). That pays off *after* our creatures tap — on their attack, or once
+     * ours have attacked — so [AmbushWindow] must not read it as a reason to land a flash body
+     * before combat (Village Bell-Ringer).
+     */
+    val combatEnhancementOnlyFromUntap: Boolean = false,
+    /**
      * Whether the card carries an **untargeted group pump that expires** — "creatures you control
      * get +2/+1 until end of turn" (Rabbit Response), which `Patterns.Group.modifyStatsForAll`
      * lowers to a `ForEachEffect` over a group.

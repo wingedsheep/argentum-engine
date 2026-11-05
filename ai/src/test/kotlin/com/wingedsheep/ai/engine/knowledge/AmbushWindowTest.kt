@@ -89,6 +89,15 @@ class AmbushWindowTest : ScenarioTestBase() {
             angel.targetsOnlyOurPermanents shouldBe true
         }
 
+        test("a flash body whose only combat payoff is untapping our team keeps waiting") {
+            // Village Bell-Ringer: "When this creature enters, untap all creatures you control."
+            // Flashed in on our main phase it untaps nothing; it pays off once our creatures tap.
+            val bellRinger = intentFor("Village Bell-Ringer")
+            (IntentTag.COMBAT_ENHANCEMENT in bellRinger.tags) shouldBe true
+            bellRinger.combatEnhancementOnlyFromUntap shouldBe true
+            position().floors(bellRinger, step = Step.PRECOMBAT_MAIN, activeSeat = 1) shouldBe true
+        }
+
         test("a real protection shield still releases the floor before combat") {
             val angelWithShield = intentFor("Restoration Angel").copy(protectionOnlyFromBlink = false)
             position().floors(angelWithShield, step = Step.PRECOMBAT_MAIN, activeSeat = 1) shouldBe false

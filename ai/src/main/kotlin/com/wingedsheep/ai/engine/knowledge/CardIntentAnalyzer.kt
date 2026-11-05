@@ -343,6 +343,9 @@ object CardIntentAnalyzer {
             protectionOnlyFromBlink = (roots.any { EffectWalker.blinkMoves(it).isNotEmpty() } || leaves.any { it === DELAYED_BLINK }) &&
                 leaves.none { it !== DELAYED_BLINK && IntentTag.PROTECTION in tagsOf(it) } &&
                 scripts.flatMap { it.staticAbilities }.none { IntentTag.PROTECTION in tagsOf(it) },
+            combatEnhancementOnlyFromUntap = leaves.any(::untapsOurCreatures) &&
+                leaves.none { !untapsOurCreatures(it) && IntentTag.COMBAT_ENHANCEMENT in tagsOf(it) } &&
+                scripts.flatMap { it.staticAbilities }.none { IntentTag.COMBAT_ENHANCEMENT in tagsOf(it) },
             expiringGroupPump = expiringGroupPump,
             selectsIntoHand = (gathersLibraryTop || wishFilters.isNotEmpty()) && movesToHand,
             wishFilters = if (movesToHand) wishFilters else emptyList(),
@@ -1526,6 +1529,11 @@ object CardIntentAnalyzer {
      * else's — "untap all creatures you control". A symmetric untap (Intruder Alarm's "untap all
      * creatures") helps the opponent's board as much as ours and stays unread.
      */
+    private fun untapsOurCreatures(effect: Effect): Boolean {
+        val space = (effect as? ForEachEffect)?.space as? IterationSpace.Group ?: return false
+        return untapsOurCreatures(space.filter, effect.body)
+    }
+
     private fun untapsOurCreatures(group: GroupFilter, body: Effect): Boolean {
         val filter = group.baseFilter
         if (filter.anyOf.isNotEmpty() || CardPredicate.IsCreature !in filter.cardPredicates) return false

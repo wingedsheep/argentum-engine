@@ -125,9 +125,11 @@ internal object AmbushWindow {
         val mainPhaseAhead = state.activePlayerId == playerId && state.step in BEFORE_OUR_MAIN
         // A blink protects by escaping something on the stack; it does not leave a shield for
         // the next attack. Our-side blink bodies keep waiting for the same ambush window.
-        val combatPayoffs = if (intent.protectionOnlyFromBlink && intent.targetsOnlyOurPermanents) {
+        // Untapping our team pays off after our creatures tap, not before we attack: a Village
+        // Bell-Ringer flashed in on our main phase untaps nothing.
+        val combatPayoffs = (if (intent.protectionOnlyFromBlink && intent.targetsOnlyOurPermanents) {
             tags - IntentTag.PROTECTION
-        } else tags
+        } else tags).let { if (intent.combatEnhancementOnlyFromUntap) it - IntentTag.COMBAT_ENHANCEMENT else it }
         if (!mainPhaseAhead && combatPayoffs.any { it in PAYS_OFF_BEFORE_THE_AMBUSH }) return false
 
         // An ETB that answers *their* board wants to happen before we attack. One that points only
