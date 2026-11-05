@@ -98,7 +98,7 @@
 - [ ] 6 Forest
 - [ ] 1 Golgari Rot Farm
 - [ ] 1 Gruul Turf
-- [ ] 1 Ifnir Deadlands
+- [x] 1 Ifnir Deadlands
 - [ ] 4 Mountain
 - [ ] 1 Nesting Grounds
 - [x] 1 Path of Ancestry

@@ -63,6 +63,7 @@ import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
+import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -798,6 +799,11 @@ object AiReadingAudit {
         // drawback as the two above, and the evaluator prices the new total on resolution. Whether
         // a targeted one aims at the right player is the polarity check's question, not intent's.
         if (leaf is SetLifeTotalEffect) return true
+        // "Lands you control don't untap during your next untap step" (Hour of Devastation's god
+        // spells: Bontu's Last Reckoning, Oketra's Last Mercy) binds its own controller: the price of
+        // the card's payoff, with no target to aim and nothing to hold. Skipping an opponent's untap
+        // (Exhaustion, Mana Vapors) is a tempo payoff and stays flagged.
+        if (leaf is SkipUntapEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // A cast ban that binds its controller too — "you can't cast spells this turn" (Conduit of
         // Worlds), "each player can't cast noncreature spells this turn" (Calamity's Wake) — is the
         // price of the card's payoff, not its point. A ban on an opponent reads CAST_BAN.
