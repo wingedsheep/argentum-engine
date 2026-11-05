@@ -1437,7 +1437,15 @@ object CardIntentAnalyzer {
         // what it protects, the damage soaked by a body chosen for it — a prevention that lands elsewhere.
         is RedirectNextDamageEffect -> setOf(IntentTag.PROTECTION)
 
-        is GrantKeywordEffect -> keywordTags(effect.keyword)
+        // "Target creature an opponent controls doesn't untap during its controller's next untap
+        // step" (Kefnet's Monument, Barl's Cage): keeps a chosen permanent tapped — the tapper's
+        // payoff, as [SkipUntapEffect] reads it; which side it lands on is the polarity check's. On
+        // the source or its host ("it doesn't untap", Stitcher's Graft's attacker) it is a price.
+        is GrantKeywordEffect ->
+            if (effect.keyword in LOCKED_TAPPED_FLAGS &&
+                (effect.target is EffectTarget.BoundVariable || effect.target is EffectTarget.ContextTarget)
+            ) setOf(IntentTag.TAPPER)
+            else keywordTags(effect.keyword)
         is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)
         // "Target creature must be blocked this turn if able" / "all creatures able to block it do
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
@@ -2357,6 +2365,9 @@ object CardIntentAnalyzer {
     private val EVASION_FLAGS = setOf(
         AbilityFlag.CANT_BE_BLOCKED.name, AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE.name,
     )
+
+    /** The flags that keep a tapped permanent tapped through its controller's untap step. */
+    private val LOCKED_TAPPED_FLAGS = setOf(AbilityFlag.DOESNT_UNTAP.name, AbilityFlag.CANT_BECOME_UNTAPPED.name)
 
     /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
     private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)

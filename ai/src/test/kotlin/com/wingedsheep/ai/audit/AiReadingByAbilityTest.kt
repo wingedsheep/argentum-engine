@@ -116,14 +116,14 @@ class AiReadingByAbilityTest : FunSpec({
         AiReadingAudit.read(card("Way of the Necromancer")).readFully shouldBe true
     }
 
-    test("a permanent untapping itself needs no intent, but untapping a chosen target stays flagged") {
+    test("a permanent untapping itself, or a chosen target our side can fill, needs no intent") {
         val monolith = AiReadingAudit.read(card("Basalt Monolith"))
         monolith.readFully shouldBe true
         monolith.abilities.filter { it.ability.kind == AbilityKind.ACTIVATED }
             .flatMap { it.findings }.single { it.check == Check.INTENT }.reason shouldContain "needs no intent"
-        // Arbor Elf's "untap target Forest" now reads as ramp (TargetedUntapReadingTest); an untap of any
-        // player's artifact or creature (Aphetto Alchemist) is still unread.
-        AiReadingAudit.audit(card("Aphetto Alchemist")).map { it.key } shouldBe listOf("intent: TapUntapEffect")
+        // Arbor Elf's "untap target Forest" reads as ramp (TargetedUntapReadingTest); an untap of any
+        // player's artifact or creature (Aphetto Alchemist) is a gift the AI aims at its own side.
+        AiReadingAudit.read(card("Aphetto Alchemist")).readFully shouldBe true
     }
 
     test("a creature shifting its own P/T needs no intent, and a -N/-0 on a target reads as a combat effect") {

@@ -2773,6 +2773,57 @@
     ]
 }
 
+// Magma Spray
+{
+    "name": "Magma Spray",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Magma Spray deals 2 damage to target creature. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Jarreau Wimberly",
+        "flavorText": "\"Jund is a wounded world. Beware its searing blood spilling out onto the surface.\"\n—Rakka Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/708ec768-f455-48e4-b834-e0a2b3768c45.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Marble Chalice
 {
     "name": "Marble Chalice",
