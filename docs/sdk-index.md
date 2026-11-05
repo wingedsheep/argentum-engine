@@ -1185,7 +1185,7 @@ Families:
 
 ## EventPattern
 
-- `EventPattern.AbilityActivatedEvent(player: Player, targetMatch: Recipient?, sourceFilter: GameObjectFilter?, tapInCost: TapSymbolInCost?, onceOnlyKind: OnceOnlyAbilityKind?, excludeManaAbilities: Boolean, includeManaAbilities: Boolean, requireLoyalty: Boolean, minLoyaltyRemoved: Int, keyword: Keyword?)` — When a player activates an activated ability.
+- `EventPattern.AbilityActivatedEvent(player: Player, targetMatch: Recipient?, sourceFilter: GameObjectFilter?, tapInCost: TapSymbolInCost?, onceOnlyKind: OnceOnlyAbilityKind?, excludeManaAbilities: Boolean, includeManaAbilities: Boolean, requireLoyalty: Boolean, minLoyaltyRemoved: Int, keywords: Set<Keyword>)` — When a player activates an activated ability.
 - `EventPattern.AbilityTriggeredEvent(player: Player, cause: AbilityTriggerCause?, sourceFilter: GameObjectFilter?)` — When a triggered ability is put onto the stack (CR 603.3), scoped by whose ability it is and — optionally — by what caused it to trigger.
 - `EventPattern.AnyOf(events: List<EventPattern>)` — Matches when any constituent event pattern matches.
 - `EventPattern.AttackEvent(filter: GameObjectFilter?, requires: Set<AttackPredicate>)` — When a creature attacks.

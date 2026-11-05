@@ -1034,9 +1034,10 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * `OnceOnlyAbilityKind.BOAST` for Frenzied Raider's "whenever you activate a boast ability");
      * [tapInCost] is "with / without {T} in its
      * activation cost" — the Antiquities "without {T}" wording counts mana abilities too, so it pairs
-     * with [includeManaAbilities]. [keyword] is
-     * "a [keyword] ability" — `keyword = Keyword.NINJUTSU` for "whenever you activate a ninjutsu
-     * ability" (Satoru Umezawa).
+     * with [includeManaAbilities]. [keywords] is
+     * "a [keyword] ability" — `keywords = setOf(Keyword.NINJUTSU)` for "whenever you activate a ninjutsu
+     * ability" (Satoru Umezawa), `setOf(Keyword.ETERNALIZE, Keyword.EMBALM)` for "an eternalize or
+     * embalm ability" (Vizier of the Anointed).
      */
     fun activatesAbility(
         of: GameObjectFilter? = null,
@@ -1047,7 +1048,7 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         includeManaAbilities: Boolean = false,
         excludeManaAbilities: Boolean = false,
         tapInCost: TapSymbolInCost? = null,
-        keyword: com.wingedsheep.sdk.core.Keyword? = null,
+        keywords: Set<com.wingedsheep.sdk.core.Keyword> = emptySet(),
     ): TriggerSpec = spec(
         AbilityActivatedEvent(
             player = player,
@@ -1059,7 +1060,7 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
             includeManaAbilities = includeManaAbilities,
             requireLoyalty = loyalty || minLoyaltyRemoved > 0,
             minLoyaltyRemoved = minLoyaltyRemoved,
-            keyword = keyword,
+            keywords = keywords,
         )
     )
 

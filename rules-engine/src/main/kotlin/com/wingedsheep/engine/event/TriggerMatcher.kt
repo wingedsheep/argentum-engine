@@ -65,7 +65,7 @@ class TriggerMatcher(
      * the ATTACHED path: keyword, loyalty, once-only keyword (exhaust / power-up / boast), {T}-in-cost, and the mana-ability gate.
      */
     fun matchesActivationKind(trigger: EventPattern.AbilityActivatedEvent, event: AbilityActivatedEvent): Boolean {
-        if (trigger.keyword != null && event.keyword != trigger.keyword) return false
+        if (trigger.keywords.isNotEmpty() && event.keyword !in trigger.keywords) return false
         if (trigger.requireLoyalty && !event.isLoyalty) return false
         if (event.loyaltyCountersRemoved < trigger.minLoyaltyRemoved) return false
         when (trigger.tapInCost) {

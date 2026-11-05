@@ -1,18 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.mh2.cards
 
-import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.eternalize
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Timeless Witness — Modern Horizons 2 #179 (canonical printing)
@@ -21,11 +16,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * When this creature enters, return target card from your graveyard to your hand.
  * Eternalize {5}{G}{G}
  *
- * Eternalize (CR 702.129) composes as on Fanatic of Rhonas: a sorcery-speed graveyard-activated
- * ability whose cost exiles the card, making a token copy of it (resolved through
- * [EffectTarget.Self], now in exile) that is a 4/4, black instead of its other colors, a Zombie in
- * addition to its other types, and has no mana cost. The token's own enters trigger returns a card
- * as usual.
+ * Eternalize (CR 702.129) is the shared `eternalize(cost)` helper — `eternalizeAbility(cost)` builds the
+ * sorcery-speed graveyard ability that exiles the card as a cost and makes a 4/4 black Zombie token copy
+ * with no mana cost, marked `Keyword.ETERNALIZE` so "whenever you activate an eternalize ability" sees it.
  */
 val TimelessWitness = card("Timeless Witness") {
     manaCost = "{2}{G}{G}"
@@ -43,19 +36,7 @@ val TimelessWitness = card("Timeless Witness") {
         effect = Effects.ReturnToHand(card)
     }
 
-    activatedAbility {
-        cost = Costs.Composite(Costs.Mana("{5}{G}{G}"), Costs.ExileSelf)
-        effect = Effects.CreateTokenCopyOfTarget(
-            target = EffectTarget.Self,
-            overridePower = 4,
-            overrideToughness = 4,
-            overrideColors = setOf(Color.BLACK),
-            addedSubtypes = setOf(Subtype("Zombie")),
-            exceptions = CopyExceptions(noManaCost = true),
-        )
-        timing = TimingRule.SorcerySpeed
-        activateFromZone = Zone.GRAVEYARD
-    }
+    eternalize("{5}{G}{G}")
 
     metadata {
         rarity = Rarity.UNCOMMON

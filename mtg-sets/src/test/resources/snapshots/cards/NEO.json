@@ -17817,7 +17817,9 @@
                 "id": "Satoru Umezawa:1",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "keyword": "NINJUTSU"
+                    "keywords": [
+                        "NINJUTSU"
+                    ]
                 },
                 "binding": "ANY",
                 "effect": {
