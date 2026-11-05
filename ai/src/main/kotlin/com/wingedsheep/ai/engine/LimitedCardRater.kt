@@ -778,6 +778,9 @@ object LimitedCardRater {
         // Turns their removal back on them or onto a sponge: a narrower counterspell, since it
         // needs a single-target spell and a legal place to send it.
         IntentTag.SPELL_REDIRECT to 0.5,
+        // A second helping of a spell already cast: worth as much as the deck's best instant or
+        // sorcery, and nothing without one — a little under a redirect.
+        IntentTag.SPELL_COPY to 0.4,
         IntentTag.ANTHEM to 0.8,
         IntentTag.DRAW to 0.6,
         IntentTag.TUTOR to 0.6,

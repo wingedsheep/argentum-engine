@@ -28,7 +28,9 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- Reads "Players can't get counters" and board-wide "can't have counters put on them" locks (Solemnity, Blightbeetle) as counter locks, so it no longer treats them as blank permanents in play or in the draft
+- #4436 Reads "Players can't get counters" and board-wide "can't have counters put on them" locks (Solemnity, Blightbeetle) as counter locks, so it no longer treats them as blank permanents in play or in the draft
+- Reads "copy target spell" (Fork, Twincast, Lithoform Engine, Echo, Perceptive Prodigy): the copy's new targets follow what the copied spell does — a copy of their Giant Growth pumps our best creature, a copy of their Lightning Bolt goes at their side — instead of the removal-first ranking that pumped their creature again, spell copiers count as their own kind of card in drafts, and instant-or-sorcery copiers pull the deck toward instants and sorceries
+- #4434 Reads "prevent all damage a source of your choice would deal this turn" (Mourner's Shield, Burrenton Forge-Tender, Safeguard): names the threat — an opposing spell on the stack, then the hardest-hitting opposing creature in combat — instead of one of its own creatures, waits for blocks to raise it, and no longer spends it when no damage is left to come this turn
 - Reads "Enchant player" Curses that strip and shrink a player's creatures or lock their abilities (Overwhelming Splendor) as aimed at an opponent, and reads "loses all abilities" Auras (Lignify) as neutralizing their host
 - #4433 Pays "put a counter on a creature you control" spell costs (Lethal Sting) with its least valuable creature, so it can cast them at all
 - #4431 Reads "change the target of target spell" (Bolt Bend, Misdirection, Spellskite, Hydroelectric Specimen): a redirected spell now goes where its own effect pays off — their removal onto their creature, their pump onto our best one — instead of onto our own best creature, redirects count as their own kind of interaction rather than protection, and "copy target spell" slots stay open to both sides

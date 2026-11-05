@@ -347,7 +347,17 @@ class DecisionResponder(
                     kotlin.math.abs(skipScore - bestScore) <= TIE_EPSILON * maxOf(1.0, kotlin.math.abs(bestScore))
                 val evenButUseful = even && bestScore != Double.NEGATIVE_INFINITY &&
                     libraryAndGraveyardPreference(state, bestResult.state, playerId) > 0.0
-                if (skipScore >= bestScore && !evenButUseful) return skipResponse
+                // A spell copy's slot left empty keeps the original's target. On the wrong side of a
+                // read one-sided slot that is the worse pick even when the simulation can't tell the
+                // two apart — a copied Giant Growth wears off before the evaluator sees it.
+                val keepsWrongSide = TargetSelection.keptCopyTarget(state, decision, req.index)?.let { kept ->
+                    when (polarities[req.index]) {
+                        TargetPolarity.BENEFICIAL -> !TargetSelection.isOurs(state, kept, playerId)
+                        TargetPolarity.HARMFUL -> TargetSelection.isOurs(state, kept, playerId)
+                        else -> false
+                    }
+                } ?: false
+                if (skipScore >= bestScore && !evenButUseful && !(even && keepsWrongSide)) return skipResponse
             }
 
             return bestResponse
@@ -613,6 +623,13 @@ class DecisionResponder(
         ((state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
             ?.answer as? ChangeSpellTargetContinuation)?.let { redirect ->
             spellRedirect.choose(state, decision, playerId, redirect)?.let { return CardsSelectedResponse(decision.id, it) }
+        }
+
+        // "A source of your choice" for a damage shield: the threat it is raised against, not the
+        // card worth keeping most — the generic ranking named one of our own creatures.
+        val sourceChoice = (state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }?.answer
+        if (DamageSourceChoice.isSourceChoice(sourceChoice)) {
+            DamageSourceChoice.choose(state, decision, playerId)?.let { return CardsSelectedResponse(decision.id, it) }
         }
 
         // Proliferate: each recipient is its own yes/no. The generic branches below answer an

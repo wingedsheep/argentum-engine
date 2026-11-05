@@ -352,6 +352,19 @@ enum class IntentTag {
      */
     SPELL_REDIRECT,
 
+    /**
+     * Copies a spell or ability — "copy target instant or sorcery spell; you may choose new targets
+     * for the copy" (Fork, Double Major, Twincast), "copy target activated or triggered ability"
+     * (Lithoform Engine, Echo, Perceptive Prodigy), "when you next cast an instant or sorcery spell
+     * this turn, copy that spell" (Double Vision's kin). The copy is ours whoever controls the
+     * original, and worth what that object does, so the card is a second helping of the deck's best
+     * spell — it rewards instants and sorceries the way prowess does (`SynergyAxes`). Like
+     * [SPELL_REDIRECT] the targeted forms answer only what is already on the stack; which spell to
+     * copy is the polarity reader's two-sided slot, and where the copy's new targets go is read off
+     * the copied effect (`TargetSelection.decisionPolarities`).
+     */
+    SPELL_COPY,
+
     /** Gains life. */
     LIFEGAIN,
 

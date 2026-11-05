@@ -233,6 +233,7 @@ object AiCardRating {
         IntentTag.FIGHT to "Fight",
         IntentTag.COUNTERSPELL to "Counterspell",
         IntentTag.SPELL_REDIRECT to "Redirects a spell",
+        IntentTag.SPELL_COPY to "Copies a spell",
         IntentTag.LIFEGAIN to "Life gain",
         IntentTag.DISCARD to "Discard",
         IntentTag.RECURSION to "Recursion",
