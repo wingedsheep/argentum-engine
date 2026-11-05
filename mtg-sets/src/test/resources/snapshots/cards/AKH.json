@@ -5556,6 +5556,51 @@
     ]
 }
 
+// Shadow of the Grave
+{
+    "name": "Shadow of the Grave",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Return to your hand all cards in your graveyard that you cycled or discarded this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "statePredicates": [
+                                "DiscardedThisTurn"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Darek Zabrocki",
+        "flavorText": "\"Death has seeped into every part of this plane. I can feel it on my skin and taste it like sand in my mouth.\"\n—Nissa Revane"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sheltered Thicket
 {
     "name": "Sheltered Thicket",

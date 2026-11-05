@@ -2455,6 +2455,19 @@ class PredicateEvaluator(
                 container.get<PutIntoGraveyardThisTurnComponent>()?.milled == true
             }
 
+            // "Cards in your graveyard that you discarded this turn" (Shadow of the Grave — AKH). The
+            // discarder's CardsDiscardedThisTurnComponent names the discarded objects that are still
+            // that object (pruned on any later zone change or cast, CR 400.7 — but kept for an uncast
+            // madness card that went exile → graveyard, per Shadow of the Grave's ruling).
+            StatePredicate.DiscardedThisTurn -> {
+                state.logicalZone(entityId)?.zoneType == com.wingedsheep.sdk.core.Zone.GRAVEYARD &&
+                    state.turnOrder.any { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()
+                            ?.cardIds?.contains(entityId) == true
+                    }
+            }
+
             // The combat-restricted sibling: the arrival happened during the current combat
             // phase (Storrev, Devkarin Lich — WAR). CombatManager.endCombat clears the flag.
             StatePredicate.PutIntoGraveyardThisCombat -> {

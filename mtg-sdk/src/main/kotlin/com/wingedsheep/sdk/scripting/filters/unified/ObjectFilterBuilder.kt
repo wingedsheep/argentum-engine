@@ -1026,6 +1026,12 @@ interface ObjectFilterBuilder<out Self> {
     fun milledThisTurn() = withStatePredicate(StatePredicate.MilledThisTurn)
 
     /**
+     * Must currently be in a graveyard *and* have been discarded this turn (Shadow of the Grave).
+     * See [StatePredicate.DiscardedThisTurn].
+     */
+    fun discardedThisTurn() = withStatePredicate(StatePredicate.DiscardedThisTurn)
+
+    /**
      * Must currently be in a graveyard *and* have been put there during the current combat phase.
      * See [StatePredicate.PutIntoGraveyardThisCombat].
      */

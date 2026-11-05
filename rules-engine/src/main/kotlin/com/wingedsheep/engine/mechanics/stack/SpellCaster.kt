@@ -313,6 +313,9 @@ internal class SpellCaster(
         val objectOnStack = newState.objectRef(cardId)
 
         newState = consumeCastPermissions(newState, cardId, casterId, castFaceDown)
+        // The spell is a new object (CR 400.7): it is no longer the card its owner discarded this turn
+        // (Mayhem's gate, Shadow of the Grave's filter), wherever it resolves to.
+        newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.untrackDiscardedCard(newState, cardId)
         if (castFromZone == Zone.EXILE && objectBeforeCast != null) {
             newState = endGrantsUntilCastFromExile(newState, objectBeforeCast)
         }
