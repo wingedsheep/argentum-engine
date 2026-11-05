@@ -15,6 +15,8 @@ import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
+import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
@@ -206,8 +208,9 @@ object CardIntentAnalyzer {
         effect: Effect,
         requirements: List<TargetRequirement> = emptyList(),
         turnAhead: Boolean = false,
+        ownPile: Boolean = false,
     ): CardIntent {
-        val tags = pipelineTags(effect, turnAhead).toMutableSet()
+        val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile).toMutableSet()
         var removalReach: Int? = null
         for (leaf in readingLeaves(effect, requirements)) {
             tags += tagsOf(leaf)
@@ -281,7 +284,8 @@ object CardIntentAnalyzer {
             }
         }
 
-        for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root })
+        val ownPile = stashesOwnPermanents(scripts)
+        for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root }, ownPile = ownPile)
         if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
         for (effect in leaves) {
             tags += tagsOf(effect)
@@ -340,8 +344,9 @@ object CardIntentAnalyzer {
             flashPermanent = card.typeLine.isPermanent && Keyword.FLASH in card.keywords,
             hasHaste = Keyword.HASTE in card.keywords,
             targetsOnlyOurPermanents = targetsOnlyOurPermanents(scripts),
-            protectionOnlyFromBlink = (roots.any { EffectWalker.blinkMoves(it).isNotEmpty() } || leaves.any { it === DELAYED_BLINK }) &&
-                leaves.none { it !== DELAYED_BLINK && IntentTag.PROTECTION in tagsOf(it) } &&
+            protectionOnlyFromBlink = (roots.any { EffectWalker.blinkMoves(it).isNotEmpty() } ||
+                leaves.any { it === DELAYED_BLINK || it === OWN_STASH }) &&
+                leaves.none { it !== DELAYED_BLINK && it !== OWN_STASH && IntentTag.PROTECTION in tagsOf(it) } &&
                 scripts.flatMap { it.staticAbilities }.none { IntentTag.PROTECTION in tagsOf(it) },
             combatEnhancementOnlyFromUntap = leaves.any(::untapsOurCreatures) &&
                 leaves.none { !untapsOurCreatures(it) && IntentTag.COMBAT_ENHANCEMENT in tagsOf(it) } &&
@@ -352,7 +357,8 @@ object CardIntentAnalyzer {
             arrivalTags = arrivalTags.takeIf { it != tags },
             grantsInstantSpeedLoyalty = leaves.any { it is GrantLoyaltyActivationPermissionEffect && it.instantSpeed },
             counterTax = counterTaxOf(leaves),
-            cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) { effectTags(it.effect, it.targetRequirements) },
+            cashableTags = activated.filterNot { it.isManaAbility }
+                .flatMapTo(HashSet()) { effectTags(it.effect, it.targetRequirements, ownPile) },
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent, scripts))
     }
@@ -401,8 +407,9 @@ object CardIntentAnalyzer {
         val manaAbilities = scripts.flatMap { it.activatedAbilities }.filter { it.isManaAbility }
         val sickRamp = sick && manaAbilities.isNotEmpty() && manaAbilities.all { tapsOrUntapsItself(it.cost) }
         if (deferred.isEmpty() && !sickRamp) return tags
+        val ownPile = stashesOwnPermanents(scripts)
         fun tagsOfRoots(roots: List<Pair<Effect, List<TargetRequirement>>>) =
-            roots.flatMapTo(HashSet()) { (effect, requirements) -> effectTags(effect, requirements) }
+            roots.flatMapTo(HashSet()) { (effect, requirements) -> effectTags(effect, requirements, ownPile) }
         val later = tagsOfRoots(deferred) + if (sickRamp) setOf(IntentTag.RAMP) else emptySet()
         val onlyLater = later - tagsOfRoots(immediate) -
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
@@ -491,7 +498,11 @@ object CardIntentAnalyzer {
                     // Trove Warden's stored pile), not an answer to anything.
                     GraveyardMove.OWN_EXILE ->
                         if (usesTheExiledCard(payoff)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()
-                    null -> listOf(withSourceZone(leaf, requirements))
+                    // "{2}, {T}: Exile target creature you control" linked to this permanent
+                    // (Endless Sands, Safe Haven): a stash of our own creature to bring back later,
+                    // not removal — [OWN_STASH].
+                    null -> if (isOwnStash(leaf, requirements)) listOf(OWN_STASH)
+                        else listOf(withSourceZone(leaf, requirements))
                 }
                 // "Untap target land" / "untap two target lands" (Arbor Elf, Hope Tender): see [untapsATargetLand].
                 // Only when the untap is the ability's whole payoff: beside another step on the same
@@ -712,8 +723,21 @@ object CardIntentAnalyzer {
         }
 
     /** Every tag [root] reads as: its leaves' own, plus what the pipeline among them adds up to ([pipelineTags]). */
-    private fun effectTags(root: Effect, requirements: List<TargetRequirement> = emptyList()): Set<IntentTag> =
-        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root)
+    private fun effectTags(
+        root: Effect,
+        requirements: List<TargetRequirement> = emptyList(),
+        ownPile: Boolean = false,
+    ): Set<IntentTag> =
+        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root, ownPile = ownPile)
+
+    /**
+     * "Exile target creature you control" into a pile linked to this permanent (Endless Sands, Safe
+     * Haven, Synod Sanctum): a stash of our own permanent to bring back later, not removal. Shared by
+     * the intent reader and [com.wingedsheep.ai.engine.LimitedCardRater] so the two never disagree.
+     */
+    internal fun isOwnStash(leaf: MoveToZoneEffect, requirements: List<TargetRequirement>): Boolean =
+        leaf.linkToSource && leaf.destination == Zone.EXILE &&
+            TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)
 
     /**
      * What the gather → move pipelines in [root] add up to, which no single leaf of them says.
@@ -721,12 +745,12 @@ object CardIntentAnalyzer {
      * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
      * fold sees a gather and a move, each worth nothing alone.
      */
-    internal fun pipelineTags(root: Effect, turnAhead: Boolean = false): Set<IntentTag> = buildSet {
+    internal fun pipelineTags(root: Effect, turnAhead: Boolean = false, ownPile: Boolean = false): Set<IntentTag> = buildSet {
         addAll(digTags(root, turnAhead))
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(discardPunisherTags(root, eachPlayer = null))
-        addAll(regrowthTags(root))
+        addAll(regrowthTags(root, ownPile))
         addAll(graveyardExileTags(root))
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // Exile it, its owner may cast it again (Airbend, Release to the Wind): a bounce that skips
@@ -737,6 +761,39 @@ object CardIntentAnalyzer {
         EffectWalker.payoffLeaves(root).filterIsInstance<ReflexiveTriggerEffect>().forEach {
             addAll(pipelineTags(it.reflexiveEffect))
         }
+    }
+
+    /**
+     * Whether everything [scripts] exile "with this" comes off their controller's own battlefield:
+     * every pile filler is a single-target exile aimed only at "… you control" ("{2}, {T}: Exile
+     * target creature you control" — Endless Sands, Safe Haven). Such a pile holds our own
+     * creatures, so returning it "under its owner's control" brings them back to us ([regrowthTags]).
+     *
+     * Conservative: any other way of filling the pile — a group or pipeline exile, exile-until-leaves,
+     * an exiled spell, a zone-change redirect — may reach another player's cards and answers false.
+     */
+    fun stashesOwnPermanents(scripts: List<CardScript>): Boolean {
+        var filled = false
+        for (script in scripts) {
+            if (script.replacementEffects.any {
+                    (it is RedirectZoneChange && it.linkToSource) || (it is RedirectZoneChangeWith && it.linkToSource)
+                }
+            ) return false
+            for (slot in EffectWalker.slots(script)) {
+                for (leaf in EffectWalker.leaves(slot.effect)) {
+                    when {
+                        leaf is MoveToZoneEffect && leaf.linkToSource -> {
+                            if (!TargetPolarityAnalyzer.targetsOwnSide(leaf.target, slot.targets)) return false
+                            filled = true
+                        }
+                        leaf is MoveCollectionEffect && leaf.linkToSource -> return false
+                        leaf is ExileUntilLeavesEffect -> return false
+                        leaf is ExileTargetSpellEffect && leaf.linkToSource -> return false
+                    }
+                }
+            }
+        }
+        return filled
     }
 
     /**
@@ -752,8 +809,12 @@ object CardIntentAnalyzer {
      *
      * Only our graveyard (or that pile) and only to our side: reanimating an opponent's creature is a steal, and
      * a graveyard exiled is graveyard hate, both read (or not) elsewhere.
+     *
+     * "Under its owner's control" hands the pile back to whoever owned each card — a release, not a
+     * recursion — unless [ownPile]: the card only ever stashes its controller's own permanents there
+     * ([stashesOwnPermanents]: Endless Sands, Safe Haven), so the cards coming back are ours.
      */
-    private fun regrowthTags(root: Effect): Set<IntentTag> {
+    private fun regrowthTags(root: Effect, ownPile: Boolean = false): Set<IntentTag> {
         val leaves = readingLeaves(root)
         val ourGraveyard = leaves.mapNotNullTo(HashSet()) { leaf ->
             val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
@@ -788,8 +849,9 @@ object CardIntentAnalyzer {
             if (to.player != Player.You) return@any false
             when (move.from) {
                 in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD
-                // "Under their owners' control" (Lagrella, Safe Haven) hands the pile back.
-                in fromLinkedExile -> to.zone == Zone.BATTLEFIELD && !move.underOwnersControl
+                // "Under their owners' control" hands the pile back (Lagrella), unless only our
+                // own permanents were ever stashed in it (Endless Sands, Safe Haven).
+                in fromLinkedExile -> to.zone == Zone.BATTLEFIELD && (!move.underOwnersControl || ownPile)
                 else -> false
             }
         }
@@ -1187,6 +1249,7 @@ object CardIntentAnalyzer {
 
     private fun tagsOf(effect: Effect): Set<IntentTag> = when {
         effect === DELAYED_BLINK -> setOf(IntentTag.PROTECTION)
+        effect === OWN_STASH -> setOf(IntentTag.PROTECTION)
         effect === GRAVEYARD_HATE_LEAF -> setOf(IntentTag.GRAVEYARD_HATE)
         else -> leafTagsOf(effect)
     }
@@ -1332,6 +1395,10 @@ object CardIntentAnalyzer {
         is AddManaOfChoiceEffect, is PlayAdditionalLandsEffect -> setOf(IntentTag.RAMP)
 
         is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect -> setOf(IntentTag.PROTECTION)
+        // "All damage that would be dealt this turn to you and permanents you control is dealt to
+        // enchanted creature instead" (Saving Grace, Gideon's Sacrifice, Glarecaster): a shield over
+        // what it protects, the damage soaked by a body chosen for it — a prevention that lands elsewhere.
+        is RedirectNextDamageEffect -> setOf(IntentTag.PROTECTION)
 
         is GrantKeywordEffect -> keywordTags(effect.keyword)
         is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)
@@ -2190,6 +2257,15 @@ object CardIntentAnalyzer {
      */
     private val DELAYED_BLINK: Effect = CompositeEffect(
         listOf(MoveToZoneEffect(EffectTarget.Self, Zone.EXILE), MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD)),
+    )
+
+    /**
+     * What [readingLeaves] reads "exile target creature you control" linked to this permanent as
+     * (Endless Sands, Safe Haven): our creature stashed out of harm's way until the card returns it
+     * ([stashesOwnPermanents]) — a slow blink, [IntentTag.PROTECTION], never removal. Compared by identity.
+     */
+    private val OWN_STASH: Effect = CompositeEffect(
+        listOf(MoveToZoneEffect(EffectTarget.Self, Zone.EXILE, linkToSource = true)),
     )
 
     /**

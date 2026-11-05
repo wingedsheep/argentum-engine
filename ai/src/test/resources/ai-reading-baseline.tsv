@@ -110,6 +110,7 @@ Acquisitions Expert
 Acrobatic Cheerleader	intent: AddCountersEffect
 Acrobatic Leap
 Acrobatic Maneuver
+Act of Heroism
 Act of Treason
 Act on Impulse	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Action News Crew
@@ -134,6 +135,7 @@ Adherent of Hope
 Admiral Beckett Brass
 Admiral's Order
 Adorned Crocodile
+Adorned Pouncer
 Adrenaline Jockey
 Adrix and Nev, Twincasters
 Adult Gold Dragon
@@ -508,6 +510,7 @@ Andoria
 Andradite Leech
 Andromedan Automatons
 Andúril, Flame of the West
+Angel of Condemnation
 Angel of Despair
 Angel of Destiny
 Angel of Finality
@@ -1762,7 +1765,7 @@ Blood Speaker
 Blood Sun
 Blood Vassal
 Blood for Bones
-Blood of the Martyr	intent: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Blood of the Martyr	timing: RedirectNextDamageEffect
 Blood on the Snow
 Blood-Chin Rager
 Blood-Cursed Knight
@@ -3514,6 +3517,7 @@ Crippling Fear
 Critical Hit
 Croaking Counterpart	polarity: CreateTokenCopyOfTargetEffect
 Crocodile of the Crossing
+Crook of Condemnation
 Crookclaw Elder
 Crooked Custodian
 Crookshank Kobolds
@@ -3720,6 +3724,7 @@ DOT-7 Repair Squad	intent: TapUntapEffect
 Daemogoth Titan	intent: SacrificeEffect
 Daemogoth Woe-Eater	intent: SacrificeEffect
 Dagger Caster
+Dagger of the Worthy
 Daggerback Basilisk
 Daggerdrome Imp
 Daggerfang Duo
@@ -4179,6 +4184,7 @@ Desert of the Indomitable
 Desert of the Mindful
 Desert of the True
 Desert's Due	timing: ModifyStatsEffect
+Desert's Hold
 Deserted Beach
 Deserted Temple
 Deserter's Disciple
@@ -4370,6 +4376,7 @@ Dispersing Orb
 Displacer Beast	intent: VentureIntoTheDungeonEffect
 Displacer Kitten
 Display of Power	polarity: CopyEachTargetSpellEffect
+Disposal Mummy
 Disrupt
 Disrupting Scepter
 Disruption Protocol
@@ -4427,6 +4434,7 @@ Dizzy Spell	intent: ModifyStatsEffect
 Djeru and Hazoret	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library)
 Djeru's Renunciation
 Djeru's Resolve
+Djeru, With Eyes Open
 Djinn of Fool's Fall
 Djinn of Wishes	intent: Pipeline(TopOfLibrary→exile); intent: PlayFromCollectionWithoutPayingCostEffect
 Djinn of the Fountain
@@ -5247,6 +5255,7 @@ Endless Cockroaches
 Endless Detour
 Endless One
 Endless Ranks of the Dead
+Endless Sands
 Endless Wurm
 Endoskeleton
 Endrek Sahr, Master Breeder
@@ -6804,7 +6813,7 @@ Gideon's Defeat
 Gideon's Lawkeeper
 Gideon's Memorial
 Gideon's Reproach
-Gideon's Sacrifice	intent: RedirectNextDamageEffect; intent: SelectTargetEffect; timing: RedirectNextDamageEffect
+Gideon's Sacrifice	timing: RedirectNextDamageEffect
 Gideon's Triumph
 Gideon, Champion of Justice	intent: Pipeline(BattlefieldMatching→exile); polarity: AddDynamicCountersEffect
 Gideon, the Oathsworn	intent: AddCountersToCollectionEffect; intent: Pipeline(?→?); intent: Pipeline(BattlefieldMatching→exile)
@@ -6890,7 +6899,7 @@ Glamorous Outlaw
 Glarb, Calamity's Augur
 Glare of Heresy
 Glare of Subdual
-Glarecaster	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Glarecaster	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Glarewielder
 Glaring Aegis
 Glaring Fleshraker
@@ -7145,6 +7154,8 @@ God-Eternal Bontu
 God-Eternal Kefnet
 God-Eternal Oketra
 God-Eternal Rhonas
+God-Pharaoh's Faithful
+God-Pharaoh's Gift
 God-Pharaoh's Statue
 Goddric, Cloaked Reveler
 Godless Shrine
@@ -8131,6 +8142,7 @@ Horta
 Hoshi Sato, Exolinguist
 Host of the Hereafter
 Hostage Taker
+Hostile Desert
 Hostile Hostel	intent: PhaseOutEffect
 Hostile Investigator
 Hostile Minotaur
@@ -9141,7 +9153,7 @@ Karn, Living Legacy	intent: CreatePermanentEmblemEffect
 Karn, Scion of Urza	intent: Pipeline(exile→hand)
 Karn, the Great Creator	intent: BecomeCreatureEffect; intent: Pipeline(FromMultipleZones→hand); polarity: BecomeCreatureEffect
 Karok Wrangler
-Karona's Zealot	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect
+Karona's Zealot	polarity: RedirectNextDamageEffect
 Karona, False God	intent: GainControlByActivePlayerEffect
 Karoo Meerkat
 Karplusan Forest
@@ -11849,6 +11861,7 @@ Ojer Taq, Deepest Foundation	intent: ReturnSelfFromZoneTransformedEffect
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
+Oketra's Avenger
 Oketra's Last Mercy
 Oketra's Monument
 Okiba Reckoner Raid
@@ -12357,7 +12370,7 @@ Persistent Marshstalker
 Persistent Petitioners
 Persistent Specimen
 Person of Interest
-Personal Incarnation	intent: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Personal Incarnation	timing: RedirectNextDamageEffect
 Personal Tutor
 Personify
 Persuasion
@@ -12898,6 +12911,7 @@ Protocol Knight
 Protomatter Powder
 Proud Pack-Rhino
 Proud Wildbonder
+Proven Combatant
 Provisions Merchant
 Provoke the Trolls	polarity: mixed(DealDamageEffect+ModifyStatsEffect)
 Prowcatcher Specialist
@@ -13385,7 +13399,7 @@ Razaketh, the Foulblooded
 Raze the Effigy
 Raze to the Ground
 Razia's Purification
-Razia, Boros Archangel	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Razia, Boros Archangel	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Razor Barrier	intent: ChooseColorThenEffect; intent: GrantKeywordEffect; polarity: ChooseColorThenEffect; polarity: GrantKeywordEffect
 Razor Golem
 Razor Rings
@@ -13743,7 +13757,7 @@ Revenge of Ravens
 Revenge of the Drowned
 Revenge of the Rats
 Reverberating Summons
-Reverberation	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Reverberation	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Revered Dead
 Revered Elder
 Reverent Hoplite
@@ -14269,7 +14283,7 @@ Sadistic Augermage	intent: ForEach>Pipeline(hand→library)
 Sadistic Hypnotist
 Sadistic Shell Game	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: Pipeline(?→graveyard)
 Sadistic Skymarcher
-Safe Haven	intent: Pipeline(FromLinkedExile→battlefield)
+Safe Haven
 Safe Passage
 Safeguard
 Safehold Duo
@@ -14482,6 +14496,7 @@ Savannah Lions
 Savannah Sage
 Savanti Romero, Time's Exile
 Saved by the Shell	timing: GrantKeywordEffect
+Saving Grace
 Savior of Ollenbock	intent: EmitKeywordCounterEventEffect
 Savior of the Sleeping
 Savior of the Small
@@ -15117,7 +15132,7 @@ Shigeki, Jukai Visionary	intent: Pipeline(ChosenTargets→hand); intent: Pipelin
 Shiko, Paragon of the Way
 Shilgengar, Sire of Famine
 Shimatsu the Bloodcloaked
-Shimian Night Stalker	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Shimian Night Stalker	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Shimmer Dragon
 Shimmer Myr
 Shimmer of Possibility
@@ -18726,7 +18741,7 @@ Varis, Silverymoon Ranger	intent: VentureIntoTheDungeonEffect
 Varragoth, Bloodsky Sire	polarity: ForEachEffect
 Vash, Freelance Archaeologist
 Vassal Soul
-Vassal's Duty	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Vassal's Duty	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Vastlands Scavenger	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Vastwood Fortification
 Vastwood Gorger
@@ -20038,7 +20053,7 @@ Zealot's Conviction
 Zealous Conscripts
 Zealous Display
 Zealous Guardian
-Zealous Inquisitor	intent: RedirectNextDamageEffect; polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Zealous Inquisitor	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Zealous Lorecaster
 Zealous Strike
 Zefram Cochrane, Warp Pioneer
