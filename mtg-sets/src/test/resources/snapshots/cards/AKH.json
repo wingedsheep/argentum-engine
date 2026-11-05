@@ -2975,6 +2975,156 @@
     ]
 }
 
+// Gideon of the Trials
+{
+    "name": "Gideon of the Trials",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Gideon",
+    "oracleText": "+1: Until your next turn, prevent all damage target permanent would deal.\n0: Until end of turn, Gideon becomes a 4/4 Human Soldier creature with indestructible that's still a planeswalker. Prevent all damage that would be dealt to him this turn.\n0: You get an emblem with \"As long as you control a Gideon planeswalker, you can't lose the game and your opponents can't win the game.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gideon of the Trials:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "direction": "FromTarget",
+                    "duration": "UntilYourNextTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Gideon of the Trials:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "keywords": [
+                                "INDESTRUCTIBLE"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Soldier"
+                            ]
+                        },
+                        {
+                            "type": "PreventDamageShield",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Gideon of the Trials:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedStaticAbilities": [
+                        {
+                            "type": "ConditionalStaticAbility",
+                            "ability": "GrantCantLoseGame",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "planeswalker Gideon"
+                            }
+                        },
+                        {
+                            "type": "ConditionalStaticAbility",
+                            "ability": "GrantOpponentsCantWinGame",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "planeswalker Gideon"
+                            }
+                        }
+                    ],
+                    "emblemDescription": "As long as you control a Gideon planeswalker, you can't lose the game and your opponents can't win the game."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "MYTHIC",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/959ce13f-519f-4472-bbd1-f26a972723d7.jpg?1783936539",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Gideon's first ability will continue to prevent damage dealt by the target permanent even if Gideon leaves the battlefield before your next turn."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Gideon's second ability doesn't count as a creature entering the battlefield. Gideon was already on the battlefield; he only changed his types."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If Gideon becomes a creature the same turn he enters the battlefield, you can't attack with him or use any of his {T} abilities (if he gains any)."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If damage that can't be prevented is dealt to Gideon after his second ability has resolved, that damage will have all applicable results: specifically, the damage is marked on Gideon (since he's a creature) and that damage causes that many loyalty counters to be removed from him (since he's a planeswalker). Even though he has indestructible, if Gideon has no loyalty counters on him, he's put into his owner's graveyard."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If Gideon leaves the battlefield after giving you his emblem, you'll keep the emblem. Its effect will apply again later if another Gideon comes under your control."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "No game effect can cause you to lose the game or cause any opponent to win the game while Gideon's emblem is in effect. It doesn't matter whether you have 0 or less life, you're forced to draw a card while your library is empty, you have ten or more poison counters, you're at your Glorious End, your opponent casts a second Approach of the Second Sun, or so on. You keep playing."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you have Gideon's emblem in a Two-Headed Giant game and control a Gideon planeswalker, your team can't lose the game and the opposing team can't win the game. If your teammate controls a Gideon planeswalker but you do not, your emblem's effect doesn't apply."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gift of Paradise
 {
     "name": "Gift of Paradise",

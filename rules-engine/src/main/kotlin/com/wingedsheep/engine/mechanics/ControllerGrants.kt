@@ -6,8 +6,11 @@ import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ControllerGrantMarker
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ProjectedStaticAbility
+import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Condition
 
 /**
@@ -100,6 +103,36 @@ object ControllerGrants {
         return state.getBattlefield().any { entityId ->
             projected.getStaticAbilities(entityId).any { it is A } &&
                 granterController(state, entityId)?.let { controllerMatches(it) } == true
+        }
+    }
+
+    /**
+     * Whether any emblem whose controller satisfies [controllerMatches] has an [A] among its own
+     * statics ([EmblemStaticAbilityComponent]) that is granting right now — the command-zone half
+     * of a player-level grant read, beside [anyGranting] / [anyHoldingProjected] for permanents.
+     * Gideon of the Trials' emblem: "As long as you control a Gideon planeswalker, you can't lose
+     * the game and your opponents can't win the game."
+     *
+     * Emblems never enter the battlefield, so no marker is stamped on them; a bare [A] is always on,
+     * and one behind a [ConditionalStaticAbility] has its gate evaluated here, against current
+     * state, with the emblem as the source and its fixed controller (CR 114.2) as "you".
+     */
+    inline fun <reified A : StaticAbility> anyEmblemGranting(
+        state: GameState,
+        predicateEvaluator: PredicateEvaluator,
+        crossinline controllerMatches: (EntityId) -> Boolean
+    ): Boolean = state.emblemStaticHolders.any { emblemId ->
+        val container = state.getEntity(emblemId) ?: return@any false
+        val controllerId = container.get<ControllerComponent>()?.playerId ?: return@any false
+        if (!controllerMatches(controllerId)) return@any false
+        val statics = container.get<EmblemStaticAbilityComponent>()?.abilities ?: return@any false
+        statics.any { ability ->
+            when {
+                ability is A -> true
+                ability is ConditionalStaticAbility && ability.ability is A ->
+                    isActive(state, emblemId, ability.condition, predicateEvaluator = predicateEvaluator)
+                else -> false
+            }
         }
     }
 

@@ -41,6 +41,12 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
     )
 
     init {
+        test("an emblem with \"you can't lose the game and your opponents can't win\" reads as protection") {
+            val emblem = cardRegistry.requireCard("Gideon of the Trials").script.activatedAbilities[2]
+            CardIntentAnalyzer.analyzeEffect(emblem.effect).tags shouldContain IntentTag.PROTECTION
+            CardIntentAnalyzer.analyze(cardRegistry.requireCard("Platinum Angel")).tags shouldContain IntentTag.PROTECTION
+        }
+
         test("a standing cast-from-graveyard permission reads as recursion and a graveyard payoff") {
             val sarcophagus = cardRegistry.requireCard("Abandoned Sarcophagus")
             CardIntentAnalyzer.analyze(sarcophagus).tags shouldContain IntentTag.RECURSION
