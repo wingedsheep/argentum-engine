@@ -426,7 +426,7 @@ internal object ExpiringGrantWindow {
     }
 
     /** Whether [creature] is attacking or blocking in a combat whose damage is still to come. */
-    private fun inFightNow(state: GameState, creature: EntityId): Boolean {
+    internal fun inFightNow(state: GameState, creature: EntityId): Boolean {
         if (state.step !in FIGHT_STILL_AHEAD) return false
         val entity = state.getEntity(creature) ?: return false
         return entity.has<AttackingComponent>() || entity.has<BlockingComponent>()
@@ -1014,6 +1014,12 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
                 leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "Until end of turn, target creature gains 'when this creature dies, return it'"
+                // (Feign Death, Verdant Rebirth): a shield against dying rather than damage — it
+                // buys something only while the creature can still die this turn, in a fight or to
+                // something on the stack, which is exactly when a [PayoffKind.SHIELD] is spendable.
+                returnsFromDeathThisTurn(leaf) ->
+                    payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
                 leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     firesOnlyInAFight(leaf.ability) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
@@ -1105,6 +1111,16 @@ internal object ExpiringGrantWindow {
             else -> false
         }
     }
+
+    /**
+     * Whether [effect] grants, until end of turn, a "when this creature dies, return it to the
+     * battlefield / its owner's hand" trigger (Feign Death, Verdant Rebirth, Ashnod's
+     * Intervention): protection that is spent only if the creature dies before cleanup. Public for
+     * [HoldPolicy], which holds such a spell for that window, and for the AI card-reading audit.
+     */
+    fun returnsFromDeathThisTurn(effect: Effect): Boolean =
+        effect is GrantTriggeredAbilityEffect && effect.duration == Duration.EndOfTurn &&
+            CardIntentAnalyzer.returnsItselfWhenItLeaves(effect.ability)
 
     private fun isShield(effect: Effect): Boolean =
         effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&

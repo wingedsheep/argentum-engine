@@ -476,6 +476,16 @@ class HoldPolicy(
                 it is com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
         }
 
+    /** Whether [cast] resolves a death-return grant — see [ExpiringGrantWindow.returnsFromDeathThisTurn]. */
+    private fun castReturnsFromDeath(state: GameState, cast: CastSpell?): Boolean {
+        if (cast == null) return false
+        val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
+        val definition = intents.definition(name) ?: return false
+        return castEffects(definition, cast)?.any { effect ->
+            EffectWalker.payoffLeaves(effect).any(ExpiringGrantWindow::returnsFromDeathThisTurn)
+        } == true
+    }
+
     private fun castCreatesTemporaryTrigger(state: GameState, cast: CastSpell?): Boolean {
         if (cast == null) return false
         val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
@@ -600,6 +610,20 @@ class HoldPolicy(
                     responseWindowFor(state, playerId, intent)
                 state.step in combatWindow -> TimingVerdict.Adjust(COMBAT_WINDOW)
                 else -> responseWindowFor(state, playerId, intent)
+            }
+
+            // "Until end of turn, target creature gains 'when this creature dies, return it to its
+            // owner's hand'" (Verdant Rebirth, Feign Death): protection spent only if the creature
+            // dies this turn. On an empty stack outside a fight nothing can kill it before cleanup,
+            // so the grant is thrown away — and a cantrip's draw would otherwise pay for casting it
+            // there. Held for the removal it answers ([responseWindowFor]) or the fight its target
+            // is in; Patience's releases still let it go as a plain cantrip in a long game.
+            refuseUnspendableGrants && IntentTag.PROTECTION in intent.tags && castReturnsFromDeath(state, cast) -> when {
+                stackHasSomething -> responseWindowFor(state, playerId, intent)
+                cast!!.targets.any { (it as? ChosenTarget.Permanent)?.entityId?.let { id -> ExpiringGrantWindow.inFightNow(state, id) } == true } ->
+                    TimingVerdict.Neutral
+                Patience.releasedOutright(state, state.projectedState, playerId) -> TimingVerdict.Neutral
+                else -> TimingVerdict.NoWindow
             }
 
             // A permanent with flash, deployed where the ambush window is still ahead of us.

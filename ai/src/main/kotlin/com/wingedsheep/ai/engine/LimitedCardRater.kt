@@ -677,6 +677,9 @@ object LimitedCardRater {
             // the analyzer's sweeper reading of it like the pipeline spelling (see [pipelineScore]).
             is ForEachEffect ->
                 if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE
+                // "Each opponent may search their library for a basic land" (Old-Growth Dryads):
+                // the body's gain is the opponent's, so it is the card's price, not a payoff.
+                else if (CardIntentAnalyzer.giftsOnlyToOpponents(effect)) -EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
                 // Iteration can rebind context targets; do not mistake an outer own-side
                 // slot for the object visited by the loop.
                 else EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
