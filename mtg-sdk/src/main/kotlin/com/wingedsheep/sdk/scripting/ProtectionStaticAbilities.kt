@@ -316,12 +316,17 @@ data class PlayersCantGetCounters(
     val affected: Player = Player.Each,
     val counterType: CounterType? = null
 ) : StaticAbility {
+    init {
+        require(affected is Player.Each || affected is Player.You || affected is Player.EachOpponent) {
+            "PlayersCantGetCounters supports Player.Each, You and EachOpponent, not $affected"
+        }
+    }
+
     override val description: String = run {
         val who = when (affected) {
             is Player.You -> "You"
             is Player.EachOpponent -> "Your opponents"
-            is Player.Each -> "Players"
-            else -> affected.description.replaceFirstChar { it.uppercase() }
+            else -> "Players"
         }
         val what = counterType?.let { "${it.printed} counters" } ?: "counters"
         "$who can't get $what"
