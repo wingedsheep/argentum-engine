@@ -287,7 +287,7 @@ enum class IntentTag {
     /** Draws cards. */
     DRAW,
 
-    /** Searches a library. */
+    /** Searches a library for a card, or fetches one from outside the game (a wish). */
     TUTOR,
 
     /**
