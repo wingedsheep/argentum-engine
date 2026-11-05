@@ -23,7 +23,7 @@ import io.kotest.matchers.collections.shouldNotContain
  */
 class BlockDenialCrackBackTest : ScenarioTestBase() {
 
-    private fun board(vial: Boolean): TestGame {
+    private fun board(vial: Boolean, verge: Boolean = false): TestGame {
         var builder = scenario().withRngSeed(20261105L).withPlayers()
             .withLifeTotal(1, 3)
             .withLifeTotal(2, 20)
@@ -32,6 +32,8 @@ class BlockDenialCrackBackTest : ScenarioTestBase() {
             .withCardOnBattlefield(2, "Craw Wurm", tapped = true)
             .withLandsOnBattlefield(2, "Mountain", 2)
         if (vial) builder = builder.withCardOnBattlefield(2, "Alchemist's Vial")
+        // "{3}, {T}: Target creature can't block this turn. Activate only as a sorcery."
+        if (verge) builder = builder.withCardOnBattlefield(2, "Sandstorm Verge").withLandsOnBattlefield(2, "Mountain", 1)
         repeat(6) { builder = builder.withCardInLibrary(1, "Mountain").withCardInLibrary(2, "Mountain") }
         return builder.build().advanceToDeclaration(1, Step.DECLARE_ATTACKERS)
     }
@@ -62,7 +64,20 @@ class BlockDenialCrackBackTest : ScenarioTestBase() {
             withClue("reproduction: attacked with ${game.names(before)}") { before shouldContain giant }
 
             val attackers = game.attackersChosenBy(AiProfile.LIVE)
-            withClue("attacked with ${game.names(attackers)}") { attackers shouldNotContain giant }
+            withClue("attacked with ${game.names(attackers)}") {
+                attackers shouldNotContain giant
+                attackers shouldNotContain game.findPermanent("Grizzly Bears")!!
+            }
+        }
+    
+        // The crack-back is played from their precombat main phase, where a sorcery-speed
+        // can't-block is theirs to spend before they attack.
+        test("a sorcery-speed can't-block on their board is in the crack-back too") {
+            val game = board(vial = false, verge = true)
+            val attackers = game.attackersChosenBy(AiProfile.LIVE)
+            withClue("attacked with ${game.names(attackers)}") {
+                attackers shouldNotContain game.findPermanent("Hill Giant")!!
+            }
         }
     }
 }

@@ -101,7 +101,9 @@ internal enum class CombatReach {
                 // Damage aimed only at a player is a clock, not a combat answer.
                 is DealDamageEffect -> if (leaf.target !is EffectTarget.PlayerRef) reach += FIGHT
                 is AnimateLandEffect, is BecomeCreatureEffect, is MassAnimateEffect -> reach += BLOCKER
-                is CantBlockEffect -> if (leaf.target != EffectTarget.Self) reach += BLOCK_DENIAL
+                // "Can't block this creature" restricts one pairing, which the crack-back's blocker
+                // count does not see; only a creature kept out of every block is a denial.
+                is CantBlockEffect -> if (leaf.target != EffectTarget.Self && leaf.attacker == null) reach += BLOCK_DENIAL
                 else -> Unit
             }
         }
