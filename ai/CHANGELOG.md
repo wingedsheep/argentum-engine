@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #PRNUM Holds a creature's "{T}: deal damage to each opponent" (Lightning-Rig Crew) for the opponent's end step, where the tap costs no attack or block, instead of tapping its last blocker to ping at 2 life; still pings at once when the damage is lethal.
 - Names its best graveyard cards for an exile-copy-and-cast trigger (Uldaros Theorix) instead of naming none, and reads cards that target a card in its own graveyard however they move it (Uldaros, Hour of Eternity) as graveyard payoffs when drafting and building.
 - #4460 Aims untaps of its own chosen targets (Nissa, Genesis Mage's +2) at its own tapped creatures and lands rather than the opponent's, reads that +2 as ramp, and reads putting creature/land cards off the library top onto the battlefield (Nissa's −10, Collected Company, Animist's Awakening) as card advantage.
 - #4456 Casts a forced attack on the opponent's creatures (Imaginary Threats) in their turn before they attack, the only window "attack this turn if able" binds an attack of theirs, instead of never casting it; reads Kardur, Doomscourge's entry as forcing the opponent's attack.
