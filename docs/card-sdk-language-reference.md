@@ -12844,7 +12844,7 @@ staticAbility {
   Conditions.Not(Conditions.CouldCastSorcery), conditionFromCaster = true)` ("Each opponent can cast
   spells only any time they could cast a sorcery" — CR 307.5; it outranks any flash permission the
   opponent holds).
-- `PlayersCantActivateAbilities(affected = Player.EachOpponent, permanentFilter = GameObjectFilter.Any, condition = null, nonManaAbilitiesOnly = false, anyZone = false, loyaltyAbilitiesOnly = false)`
+- `PlayersCantActivateAbilities(affected = Player.EachOpponent, permanentFilter = GameObjectFilter.Any, condition = null, abilities = ActivatedAbilityScope.ALL, anyZone = false)`
   — continuous *activation* prohibition, the activated-ability twin of `PlayersCantCastSpells`,
   parameterized along the same three axes: **who** (`affected`, relative to the source's controller),
   **which** (`permanentFilter`, matched in projected state against the *permanent whose ability is being
@@ -12857,18 +12857,23 @@ staticAbility {
   permanentFilter = GameObjectFilter.Artifact or GameObjectFilter.Creature or GameObjectFilter.Enchantment,
   condition = IsYourTurn)` ("During your turn, your opponents can't activate abilities of artifacts,
   creatures, or enchantments."); loyalty abilities and land mana abilities are unaffected because the
-  filter only matches those three permanent types. Two more axes, both off by default:
-  `nonManaAbilitiesOnly = true` exempts mana abilities, and `anyZone = true` extends the prohibition past
-  permanents to abilities of cards in any zone — graveyard/hand/exile/command-zone activated abilities,
-  cycling and typecycling — for the unqualified "players can't activate abilities" wording. Crew is
-  checked like any battlefield ability. Yuriko, Blade of the Mighty = `PlayersCantActivateAbilities(Player.Each,
-  condition = IsInPhase(listOf(COMBAT), yoursOnly = false), nonManaAbilitiesOnly = true, anyZone = true)`
+  filter only matches those three permanent types. Two more axes:
+  `abilities` (an `ActivatedAbilityScope`, default `ALL`) picks which kinds of ability on a matching
+  source are forbidden — `NON_MANA` exempts mana abilities, `LOYALTY` forbids only loyalty abilities
+  (the ability's `isPlaneswalkerAbility`), `NON_MANA_NON_LOYALTY` exempts both — and `anyZone = true`
+  extends the prohibition past permanents to abilities of cards in any zone —
+  graveyard/hand/exile/command-zone activated abilities, cycling and typecycling — for the unqualified
+  "players can't activate abilities" wording. Crew is checked like any battlefield ability. Because the
+  scope can split one planeswalker's abilities by kind, legality is asked per ability kind, never per
+  permanent. `affected = Player.EnchantedPlayer` is the player the source Aura is attached to (also
+  honoured by `PlayersCantCastSpells`). Yuriko, Blade of the Mighty = `PlayersCantActivateAbilities(Player.Each,
+  condition = IsInPhase(listOf(COMBAT), yoursOnly = false), abilities = NON_MANA, anyZone = true)`
   plus `PlayersCantCastSpells(Player.Each, condition = IsInPhase(listOf(COMBAT), yoursOnly = false))`.
-  A third axis, `loyaltyAbilitiesOnly = true`, narrows the prohibition to loyalty abilities (the
-  ability's `isPlaneswalkerAbility`) and leaves every other activated ability of a matching permanent
-  alone — the static counterpart of the one-shot `CantActivateLoyaltyAbilitiesEffect`. The Immortal Sun =
-  `PlayersCantActivateAbilities(Player.Each, permanentFilter = GameObjectFilter.Planeswalker,
-  loyaltyAbilitiesOnly = true)` ("Players can't activate planeswalkers' loyalty abilities.").
+  The Immortal Sun = `PlayersCantActivateAbilities(Player.Each, permanentFilter = GameObjectFilter.Planeswalker,
+  abilities = LOYALTY)` ("Players can't activate planeswalkers' loyalty abilities.") — the static
+  counterpart of the one-shot `CantActivateLoyaltyAbilitiesEffect`. Overwhelming Splendor =
+  `PlayersCantActivateAbilities(Player.EnchantedPlayer, abilities = NON_MANA_NON_LOYALTY, anyZone = true)`
+  ("Enchanted player can't activate abilities that aren't mana abilities or loyalty abilities.").
 - `ExtraOnceOnlyActivations(kind, extraActivations = null, condition = null)`
   — the *permission* counterpart of the above, over the keyword-prefixed activation limits: exhaust
   (CR 702.177) and power-up (CR 702.193) "Activate this ability only once", and boast (CR 702.142) "only

@@ -86,8 +86,16 @@ class ActivatedAbilityEnumerator(
 
             // PlayersCantActivateAbilities (Grand Abolisher etc.) blocks abilities scoped by who
             // is activating and when — e.g. "During your turn, your opponents can't activate
-            // abilities of artifacts, creatures, or enchantments."
-            if (context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId)) continue
+            // abilities of artifacts, creatures, or enchantments." Its scope can split a
+            // planeswalker's abilities by kind (The Immortal Sun forbids only loyalty abilities,
+            // Overwhelming Splendor all but them), so it is asked once per kind, below.
+            val nonLoyaltyPrevented =
+                context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId)
+            val loyaltyPrevented by lazy {
+                context.castPermissionUtils.isActivationPreventedForPlayer(
+                    state, entityId, playerId, abilityIsLoyaltyAbility = true
+                )
+            }
 
             // Resolve by definition id, never by name. A copy effect may rename the copy
             // (CR 707.9 — Absorbing Man "becomes a copy of …, except his name is Absorbing Man"),
@@ -134,6 +142,7 @@ class ActivatedAbilityEnumerator(
             val textReplacement = TextChanges.merge(context.globalTextChanges, container.get<TextReplacementComponent>())
 
             for (ability in nonManaAbilities) {
+                if (if (ability.isPlaneswalkerAbility) loyaltyPrevented else nonLoyaltyPrevented) continue
                 // Sorcery-speed abilities: skip during non-main phases / opponent's turn.
                 // Equip abilities are exempt while the controller has an active instant-speed-equip
                 // permission (Forge Anew "During your turn …", Leonin Shikari) — CR 702.6e timing lifted.
@@ -152,11 +161,6 @@ class ActivatedAbilityEnumerator(
                 // Planeswalker loyalty abilities: sorcery speed + once per turn + loyalty cost check
                 if (ability.isPlaneswalkerAbility) {
                     if (context.cantActivateLoyaltyAbilities) continue
-                    // The Immortal Sun: "Players can't activate planeswalkers' loyalty abilities."
-                    if (context.castPermissionUtils.isActivationPreventedForPlayer(
-                            state, entityId, playerId, abilityIsLoyaltyAbility = true
-                        )
-                    ) continue
                     if (!context.canPlaySorcerySpeed &&
                         !context.castPermissionUtils.canActivateLoyaltyAtInstantSpeed(state, playerId, entityId)
                     ) continue

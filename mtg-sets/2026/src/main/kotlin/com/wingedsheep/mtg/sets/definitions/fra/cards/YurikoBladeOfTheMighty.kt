@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
@@ -47,7 +47,7 @@ val YurikoBladeOfTheMighty = card("Yuriko, Blade of the Mighty") {
         ability = PlayersCantActivateAbilities(
             affected = Player.Each,
             condition = IsInPhase(listOf(Phase.COMBAT), yoursOnly = false),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
             anyZone = true,
         )
     }

@@ -1653,30 +1653,31 @@ data class PlayersCantCastSpells(
  *    ("During your turn, your opponents can't activate abilities of artifacts, creatures, or
  *    enchantments.")
  *
- * Two further axes, both off by default:
- *  - [nonManaAbilitiesOnly] exempts mana abilities ("… abilities that aren't mana abilities").
+ * Two further axes:
+ *  - [abilities] — *which kinds* of activated ability on a matching source are forbidden, an
+ *    [ActivatedAbilityScope]: every one (the default), all but mana abilities, only loyalty
+ *    abilities, or all but mana and loyalty abilities.
  *  - [anyZone] extends the prohibition past the battlefield to abilities of cards in any zone —
  *    graveyard and hand abilities, cycling, and the crew/saddle actions — for the unqualified
  *    "players can't activate abilities" wording. Off, it speaks of permanents only.
  *
  *  - Yuriko, Blade of the Mighty's activate clause: `PlayersCantActivateAbilities(Player.Each,
- *    condition = IsInPhase(COMBAT, yoursOnly = false), nonManaAbilitiesOnly = true, anyZone = true)`
+ *    condition = IsInPhase(COMBAT, yoursOnly = false), abilities = NON_MANA, anyZone = true)`
  *    ("During combat, players can't … activate abilities that aren't mana abilities.")
- *
- * A third axis, [loyaltyAbilitiesOnly], narrows the prohibition to loyalty abilities (the
- * ability's `isPlaneswalkerAbility` flag, CR 606) — the static counterpart of the one-shot
- * `CantActivateLoyaltyAbilitiesEffect`, mirroring `IncreaseActivatedAbilityCost.loyaltyAbilitiesOnly`:
  *  - The Immortal Sun: `PlayersCantActivateAbilities(Player.Each,
- *    permanentFilter = GameObjectFilter.Planeswalker, loyaltyAbilitiesOnly = true)`
+ *    permanentFilter = GameObjectFilter.Planeswalker, abilities = LOYALTY)`
  *    ("Players can't activate planeswalkers' loyalty abilities.")
+ *  - Overwhelming Splendor: `PlayersCantActivateAbilities(Player.EnchantedPlayer,
+ *    abilities = NON_MANA_NON_LOYALTY, anyZone = true)` ("Enchanted player can't activate
+ *    abilities that aren't mana abilities or loyalty abilities.")
+ *
+ * [Player.EnchantedPlayer] resolves to the player this Aura is attached to.
  *
  * @property affected Who is forbidden, relative to the source's controller.
  * @property permanentFilter Which permanents' abilities are forbidden (matched against the source).
  * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
- * @property nonManaAbilitiesOnly When true, mana abilities stay activatable.
+ * @property abilities Which kinds of activated ability are forbidden.
  * @property anyZone When true, abilities of cards outside the battlefield are forbidden too.
- * @property loyaltyAbilitiesOnly When true, only loyalty abilities are forbidden; every other
- *   activated ability of a matching permanent stays activatable.
  */
 @SerialName("PlayersCantActivateAbilities")
 @Serializable
@@ -1684,9 +1685,8 @@ data class PlayersCantActivateAbilities(
     val affected: Player = Player.EachOpponent,
     val permanentFilter: GameObjectFilter = GameObjectFilter.Any,
     val condition: Condition? = null,
-    val nonManaAbilitiesOnly: Boolean = false,
-    val anyZone: Boolean = false,
-    val loyaltyAbilitiesOnly: Boolean = false
+    val abilities: ActivatedAbilityScope = ActivatedAbilityScope.ALL,
+    val anyZone: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
         when (condition) {
@@ -1701,11 +1701,9 @@ data class PlayersCantActivateAbilities(
         }
         append(
             when {
-                loyaltyAbilitiesOnly && permanentFilter == GameObjectFilter.Any -> "loyalty abilities"
-                loyaltyAbilitiesOnly -> "loyalty abilities of ${permanentFilter.description}"
-                permanentFilter == GameObjectFilter.Any ->
-                    if (nonManaAbilitiesOnly) "abilities that aren't mana abilities" else "activated abilities"
-                else -> "abilities of ${permanentFilter.description}"
+                permanentFilter == GameObjectFilter.Any -> abilities.phrase
+                abilities == ActivatedAbilityScope.ALL -> "abilities of ${permanentFilter.description}"
+                else -> "${abilities.phrase} of ${permanentFilter.description}"
             }
         )
         when (condition) {
@@ -1718,6 +1716,31 @@ data class PlayersCantActivateAbilities(
         val newCondition = condition?.applyTextReplacement(replacer)
         return if (newFilter === permanentFilter && newCondition === condition) this
         else copy(permanentFilter = newFilter, condition = newCondition)
+    }
+}
+
+/**
+ * Which kinds of activated ability a [PlayersCantActivateAbilities] prohibition covers, by the two
+ * ability kinds printed exemptions name: mana abilities (CR 605) and loyalty abilities (CR 606).
+ * Each value is a printed wording, carried in [phrase].
+ */
+@Serializable
+enum class ActivatedAbilityScope(val phrase: String) {
+    /** "can't activate abilities" — every activated ability. */
+    ALL("activated abilities"),
+    /** "abilities that aren't mana abilities" (Yuriko, Blade of the Mighty). */
+    NON_MANA("abilities that aren't mana abilities"),
+    /** "loyalty abilities" (The Immortal Sun). */
+    LOYALTY("loyalty abilities"),
+    /** "abilities that aren't mana abilities or loyalty abilities" (Overwhelming Splendor). */
+    NON_MANA_NON_LOYALTY("abilities that aren't mana abilities or loyalty abilities");
+
+    /** True when an ability of the given kind is forbidden by this scope. */
+    fun covers(isManaAbility: Boolean, isLoyaltyAbility: Boolean): Boolean = when (this) {
+        ALL -> true
+        NON_MANA -> !isManaAbility
+        LOYALTY -> isLoyaltyAbility
+        NON_MANA_NON_LOYALTY -> !isManaAbility && !isLoyaltyAbility
     }
 }
 

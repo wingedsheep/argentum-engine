@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -39,7 +39,7 @@ val TheImmortalSun = card("The Immortal Sun") {
         ability = PlayersCantActivateAbilities(
             affected = Player.Each,
             permanentFilter = GameObjectFilter.Planeswalker,
-            loyaltyAbilitiesOnly = true
+            abilities = ActivatedAbilityScope.LOYALTY
         )
     }
 

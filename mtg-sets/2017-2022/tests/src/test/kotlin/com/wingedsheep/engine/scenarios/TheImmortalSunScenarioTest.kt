@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldNotBe
  * beginning of your draw step, draw an additional card. Spells you cast cost {1} less to cast.
  * Creatures you control get +1/+1."
  *
- * The loyalty lock is `PlayersCantActivateAbilities(loyaltyAbilitiesOnly = true)`: it binds every
+ * The loyalty lock is `PlayersCantActivateAbilities(abilities = LOYALTY)`: it binds every
  * player, its controller included, but leaves a planeswalker's non-loyalty activated abilities alone.
  */
 class TheImmortalSunScenarioTest : ScenarioTestBase() {
