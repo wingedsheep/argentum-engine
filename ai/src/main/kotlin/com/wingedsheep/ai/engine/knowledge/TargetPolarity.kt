@@ -76,6 +76,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
+import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
@@ -562,10 +563,10 @@ object TargetPolarityAnalyzer {
                 biteSourceSlot(leaf, requirements)?.let { biteSources += it }
             }
             if (requirements.size == 1) implicitTargetPolarity(leaf)?.let { perSlot[0] += it }
-            // "N damage divided as you choose among …" names no target of its own: it is damage to
-            // every target of the requirement it is scoped to (Magma Opus's `among`), or to every
-            // target of the ability when unscoped (Huatli, Warrior Poet's −X; Arc Lightning).
-            if (leaf is DividedDamageEffect) {
+            // "N damage divided as you choose among …" across several requirements (the single-slot
+            // case is [implicitTargetPolarity]'s): damage to every target of the requirement it is
+            // scoped to (Magma Opus's `among`), or to every target of the ability when unscoped.
+            if (leaf is DividedDamageEffect && requirements.size > 1) {
                 val scoped = leaf.among?.let { id -> requirements.indices.filter { requirements[it].id == id } }
                 for (slot in scoped ?: requirements.indices.toList()) perSlot[slot] += TargetPolarity.HARMFUL
             }
@@ -1016,10 +1017,15 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * The leaves that act on "target spell" without naming it: the counter, the spell-exile and the redirect.
+     * The leaves that act on their target without naming it: the counter, the spell-exile and the
+     * redirect on "target spell", and damage divided among the chosen targets.
      * Only "counter *target* spell" — one that counters the triggering spell aims at nothing chosen.
      */
     private fun implicitTargetPolarity(leaf: Effect): TargetPolarity? = when (leaf) {
+        // "Deals 2 damage divided as you choose among one or two targets" (Samut, the Tested,
+        // Electrolyze, Arc Lightning): damage to each target the requirement chose, like the
+        // named [DealDamageEffect] — the leaf carries no target of its own, so the slot is read here.
+        is DividedDamageEffect -> TargetPolarity.HARMFUL
         is CounterEffect ->
             if (leaf.targetSource == CounterTargetSource.Chosen) TargetPolarity.HARMFUL else null
         is ExileTargetSpellEffect -> TargetPolarity.HARMFUL
@@ -1093,6 +1099,10 @@ object TargetPolarityAnalyzer {
             is DealDamageEffect -> leaf.target to TargetPolarity.HARMFUL
             is GainControlEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBlockEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Creatures target opponent controls don't untap during their next untap step"
+            // (Imaginary Threats, Exhaustion, Mana Vapors): the target player's permanents stay
+            // tapped through a turn — a tapper's lock on that player, never a gift.
+            is SkipUntapEffect -> leaf.target to TargetPolarity.HARMFUL
             // Forcing a block can trade the target into a blocker or draw blockers away from its
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).

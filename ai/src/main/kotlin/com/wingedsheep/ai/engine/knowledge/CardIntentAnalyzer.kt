@@ -1308,6 +1308,12 @@ object CardIntentAnalyzer {
                 shrinks && hitsAnotherPermanent(effect.target) -> removalTags(effect.target)
 
                 shrinks -> emptySet()
+                // "Target creature an opponent controls gets -2/-0 until end of turn" (Ominous
+                // Sphinx, Dizzy Spell): a cut to power alone answers nothing — the creature lives —
+                // but blunts it as an attacker or blocker for the fight: a combat effect, the
+                // opposing side of a first-strike grant. A creature's cut to its own power is a price.
+                AmountSign.of(effect.powerModifier) == AmountSign.LOSS && hitsAnotherPermanent(effect.target) ->
+                    setOf(IntentTag.COMBAT_ENHANCEMENT)
                 // "+X/+X where X is …" is a pump whenever X cannot go negative — see [AmountSign].
                 raises(effect.powerModifier) || raises(effect.toughnessModifier) -> setOf(IntentTag.PUMP)
                 else -> emptySet()
@@ -1361,6 +1367,12 @@ object CardIntentAnalyzer {
         is DoubleCountersEffect -> effect.counterType?.let { counterTags(it, effect.target) } ?: emptySet()
 
         is TapUntapEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
+        // "Creatures target opponent controls don't untap during their next untap step" (Imaginary
+        // Threats, Exhaustion): keeps their permanents tapped — the tapper's payoff, a turn later.
+        // A chosen target player reads like a cast ban's ([bansAnOpponent]): it is cast at an
+        // opponent. The god spells' "lands you control don't untap" price binds its controller,
+        // which `AiReadingAudit` reads as needing no intent.
+        is SkipUntapEffect -> if (bansAnOpponent(effect.target)) setOf(IntentTag.TAPPER) else emptySet()
         is TapUntapCollectionEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
 
         is DrawCardsEffect, is DrawUpToEffect -> setOf(IntentTag.DRAW)

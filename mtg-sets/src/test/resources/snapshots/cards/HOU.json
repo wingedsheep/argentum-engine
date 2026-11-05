@@ -403,6 +403,86 @@
     ]
 }
 
+// Ambuscade
+{
+    "name": "Ambuscade",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +1/+0 until end of turn. It deals damage equal to its power to target creature an opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Kev Walker",
+        "flavorText": "\"Spent a lifetime learning from predators. Picked up a few tricks.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfc06303-cb35-4feb-b23d-7ac0a2fa7ce3.jpg?1783936021",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If the creature you control leaves the battlefield before Ambuscade resolves, Ambuscade has no effect and no damage is dealt. If the creature an opponent controls leaves the battlefield instead, the creature you control gets +1/+0 even though it won't deal any damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ammit Eternal
 {
     "name": "Ammit Eternal",
@@ -1226,6 +1306,144 @@
     ]
 }
 
+// Bloodwater Entity
+{
+    "name": "Bloodwater Entity",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhen this creature enters, you may put target instant or sorcery card from your graveyard on top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodwater Entity:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Bloodwater Entity:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Library",
+                        "placement": "Top"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/474d0a04-b640-4d1d-b538-2d946c1ff913.jpg?1783936011"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Blur of Blades
+{
+    "name": "Blur of Blades",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Put a -1/-1 counter on target creature. Blur of Blades deals 2 damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Anna Steinbauer",
+        "flavorText": "Samut battled her way through the hordes, shouting the names of those who'd died in her crop and those she hoped yet to save.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b53f5b9b-d24b-4e9a-bc90-7ed198cd1132.jpg?1783936033",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If the targeted creature is an illegal target by the time Blur of Blades resolves, it won't resolve and none of its effects will happen. Blur of Blades won't deal damage to any player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bontu's Last Reckoning
 {
     "name": "Bontu's Last Reckoning",
@@ -1393,6 +1611,144 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Champion of Wits
+{
+    "name": "Champion of Wits",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Snake Wizard",
+    "oracleText": "When this creature enters, you may draw cards equal to its power. If you do, discard two cards.\nEternalize {5}{U}{U} ({5}{U}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Snake Wizard with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "ETERNALIZE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Champion of Wits:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 2 cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{5}{U}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {5}{U}{U} ({5}{U}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Even Amundsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d765221d-9718-47eb-aa49-9c0719337139.jpg?1783936053",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Use Champion of Wits's power as the first ability resolves to determine if you want to use the ability and how many cards you draw if you do. If you use the ability, you discard two cards regardless of how many cards you draw. If Champion of Wits leaves the battlefield before that ability resolves, use its last known power."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card copied by the token had any \"when [this permanent] enters the battlefield\" abilities, then the token also has those abilities and will trigger them when it's created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1786,6 +2142,52 @@
     "hasNoManaCost": true
 }
 
+// Countervailing Winds
+{
+    "name": "Countervailing Winds",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1} for each card in your graveyard.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Tyler Jacobson",
+        "flavorText": "The Eternals had long since mastered every technique taught during the trials.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de1c0ef3-b32c-403a-93cb-29cf05795711.jpg?1783936054"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Crash Through
 {
     "name": "Crash Through",
@@ -2120,6 +2522,77 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Cunning Survivor
+{
+    "name": "Cunning Survivor",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever you cycle or discard a card, this creature gets +1/+0 until end of turn and can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cunning Survivor:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, this creature gets +1/+0 until end of turn and can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Zoltan Boros",
+        "flavorText": "Initiates who had been through the Trial of Knowledge learned to see everything as pieces of a larger puzzle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f9093e7-c129-4efa-9f25-a2366f92e15a.jpg?1783936052",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3259,6 +3732,67 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Dune Diviner
+{
+    "name": "Dune Diviner",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Cleric",
+    "oracleText": "{1}, Tap an untapped Desert you control: You gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dune Diviner:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Min Yum",
+        "flavorText": "The desert had once been a place of endless horror. It was now the last refuge as the city of Naktamun fell.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01818188-e18e-4dc0-b7ef-34cedef64f7e.jpg?1783936021",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "You can’t tap a single untapped Desert both to pay {1} and also to pay “Tap an untapped Desert you control.”"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Dunes of the Dead
@@ -5810,6 +6344,75 @@
     "colorIdentityOverride": []
 }
 
+// Imaginary Threats
+{
+    "name": "Imaginary Threats",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures target opponent controls attack this turn if able. During that player's next untap step, creatures they control don't untap.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MustAttackGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:target-opponent"
+                    }
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Liliana always knew Jace's illusions would come in handy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50c3a6a5-9a50-4a38-9f5f-b8caa320909d.jpg?1783936052",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "No creatures that player controls will untap during their next untap step, even creatures that don't attack. This includes creatures that enter the battlefield or become tapped after this spell resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the opponent exerts any creatures they control, exert and the effect from Imaginary Threats stopping them from untapping both apply in the same untap step. Those creatures will untap as normal in the player's subsequent untap step."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If, during that player's declare attackers step, a creature that player controls is tapped or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having a creature attack, its controller isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Imminent Doom
 {
     "name": "Imminent Doom",
@@ -7293,6 +7896,88 @@
     ]
 }
 
+// Nimble Obstructionist
+{
+    "name": "Nimble Obstructionist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flash\nFlying\nCycling {2}{U} ({2}{U}, Discard this card: Draw a card.)\nWhen you cycle this card, counter target activated or triggered ability you don't control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nimble Obstructionist:1",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "Counter",
+                    "target": "CounterTarget.Ability"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsActivatedOrTriggeredAbility"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        },
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cycle this card, counter target activated or triggered ability you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Shreya Shetty",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26012b65-7e0a-427e-945e-de24738517fb.jpg?1783936052",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "When you cycle this card, first the cycling ability goes on the stack, then the triggered ability goes on the stack on top of it. The triggered ability will resolve before you draw a card from the cycling ability."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "The cycling ability and the triggered ability are separate. If the triggered ability doesn't resolve (because, for example, it has been countered, or all of its targets have become illegal), the cycling ability will still resolve, and you'll draw a card."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you counter a delayed triggered ability that triggers at the beginning of the \"next\" occurrence of a specified step or phase, that ability won't trigger again the following time that phase or step occurs."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Abilities that create replacement effects, such as a permanent entering the battlefield tapped or with counters on it, can't be targeted. Abilities that apply \"as [this creature] enters the battlefield\" are also replacement effects and can't be targeted."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Mana abilities can't be targeted. An activated mana ability is one that could add mana as it resolves, doesn't have a target, and isn't a loyalty ability. A triggered mana ability is one that could add mana as it resolves and triggers on an activated mana ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nissa's Defeat
 {
     "name": "Nissa's Defeat",
@@ -7466,6 +8151,95 @@
     ]
 }
 
+// Obelisk Spider
+{
+    "name": "Obelisk Spider",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach\nWhenever this creature deals combat damage to a creature, put a -1/-1 counter on that creature.\nWhenever you put one or more -1/-1 counters on a creature, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Obelisk Spider:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                }
+            },
+            {
+                "id": "Obelisk Spider:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "filter": "creature",
+                    "placedBy": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "YW Tang",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae054604-0d77-45d0-b17b-55a83fb18e39.jpg?1783936011",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Obelisk Spider's first triggered ability puts only one -1/-1 counter on the creature, no matter how much combat damage it dealt."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Obelisk Spider deals combat damage to a creature but that creature isn't on the battlefield as Obelisk Spider's first triggered ability resolves, that ability won't put a -1/-1 counter on it."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you put one or more -1/-1 counters on each of multiple creatures at the same time, Obelisk Spider's last ability triggers once for each of those creatures."
+            }
+        ]
+    }
+}
+
 // Oketra's Avenger
 {
     "name": "Oketra's Avenger",
@@ -7576,6 +8350,81 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ominous Sphinx
+{
+    "name": "Ominous Sphinx",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhenever you cycle or discard a card, target creature an opponent controls gets -2/-0 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ominous Sphinx:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, target creature an opponent controls gets -2/-0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "flavorText": "The sphinxes began to speak only after the Second Sun aligned. They whispered dire warnings, though no one listened.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2361bd3b-9ae0-4198-9296-6d278feff042.jpg?1783936049",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8081,6 +8930,78 @@
             {
                 "date": "2017-07-14",
                 "text": "Ramunap Excavator doesn't allow you to activate activated abilities (such as cycling) of land cards in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ramunap Hydra
+{
+    "name": "Ramunap Hydra",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Snake Hydra",
+    "oracleText": "Reach, vigilance, trample\nThis creature gets +1/+1 as long as you control a Desert.\nThis creature gets +1/+1 as long as there is a Desert card in your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Desert"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "Desert"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Mike Burns",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/953f3722-2126-4eb3-a3d8-cff4b0703a9c.jpg?1783936014",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Unlike other cards in this set that care only whether you control a Desert or there is a Desert card in your graveyard, Ramunap Hydra's abilities reward you for meeting both conditions. If you control one or more Deserts and have one or more Desert cards in your graveyard, it'll get +2/+2."
             }
         ]
     },
@@ -8826,6 +9747,96 @@
     ]
 }
 
+// Rhonas's Stalwart
+{
+    "name": "Rhonas's Stalwart",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, it gets +1/+1 until end of turn and can't be blocked by creatures with power 2 or less this turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rhonas's Stalwart:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "CantBeBlockedBy",
+                                "blockerFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "PowerAtMost",
+                                            "max": 2
+                                        }
+                                    ]
+                                }
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Bram Sels",
+        "flavorText": "\"Give me some room.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99d4f791-9084-4644-a1f5-85adbf6dc790.jpg?1783936013",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Once a creature with power 3 or greater has blocked an exerted Rhonas’s Stalwart, changing the power of the blocking creature won’t cause Rhonas’s Stalwart to become unblocked."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Riddleform
 {
     "name": "Riddleform",
@@ -9018,6 +10029,224 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Samut, the Tested
+{
+    "name": "Samut, the Tested",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Planeswalker — Samut",
+    "oracleText": "+1: Up to one target creature gains double strike until end of turn.\n−2: Samut deals 2 damage divided as you choose among one or two targets.\n−7: Search your library for up to two creature and/or planeswalker cards, put them onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Samut, the Tested:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Up to one target creature gains double strike until end of turn."
+            },
+            {
+                "id": "Samut, the Tested:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 2,
+                    "maxTargets": 2
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "count": 2,
+                        "minCount": 1
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Samut deals 2 damage divided as you choose among one or two targets."
+            },
+            {
+                "id": "Samut, the Tested:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature|planeswalker"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for up to two creature or planeswalker cards to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Search your library for up to two creature and/or planeswalker cards, put them onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09f06f55-7918-46c4-80ff-0bf39e091a4a.jpg?1783936008",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "You divide the damage as you activate Samut's second ability, not as it resolves. Each target must be assigned at least 1 damage. In other words, as you activate the ability, you choose whether to have it deal 2 damage to a single target, or deal 1 damage to each of two targets."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Samut's second ability has two targets and one becomes an illegal target, the remaining target is dealt 1 damage, not 2."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "While resolving Samut's last ability, all of the creatures and planeswalkers put onto the battlefield this way enter at the same time. If any have triggered abilities that trigger on something else entering the battlefield, they'll see each other."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Sand Strangler
+{
+    "name": "Sand Strangler",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature enters, if you control a Desert or there is a Desert card in your graveyard, you may have this creature deal 3 damage to target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sand Strangler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Desert"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "Desert"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "The bombardment of sand disorients, chokes, and ultimately tenderizes its prey.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd7153be-ad6c-47ff-8f45-bc8df17973cb.jpg?1783936024",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn’t matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "For abilities that trigger only if you control a Desert or there is a Desert card in your graveyard, one condition must be true as the ability triggers and one must be true as the ability resolves. They don’t have to be the same condition, though. For example, you could sacrifice your only Desert after the ability triggers but before it has resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
