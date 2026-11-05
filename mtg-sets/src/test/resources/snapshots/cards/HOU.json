@@ -130,6 +130,69 @@
     ]
 }
 
+// Accursed Horde
+{
+    "name": "Accursed Horde",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "{1}{B}: Target attacking Zombie gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it. If its toughness is 0 or less, it still dies.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Accursed Horde:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Zombie attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{B}: Target attacking Zombie gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/691b79ef-87da-4b52-8311-2f6f46c6368d.jpg?1783936043",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Accursed Horde's ability can target itself while it's attacking."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The target Zombie gains indestructible for the rest of the turn, even after it stops being an attacking creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Aerial Guide
 {
     "name": "Aerial Guide",
@@ -290,6 +353,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Apocalypse Demon
+{
+    "name": "Apocalypse Demon",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nApocalypse Demon's power and toughness are each equal to the number of cards in your graveyard.\nAt the beginning of your upkeep, tap this creature unless you sacrifice another creature.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard"
+            }
+        }
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Apocalypse Demon:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "suffer": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, tap this creature unless you sacrifice another creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Piotr Jabłoński",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39dfbf99-55e8-468b-bcd9-9179cad7cab6.jpg?1783936042",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The ability that defines Apocalypse Demon's power and toughness works in all zones, not just the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -597,6 +732,106 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Banewhip Punisher
+{
+    "name": "Banewhip Punisher",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, you may put a -1/-1 counter on target creature.\n{B}, Sacrifice this creature: Destroy target creature that has a -1/-1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Banewhip Punisher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Banewhip Punisher:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "MINUS_ONE_MINUS_ONE"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{B}, Sacrifice this creature: Destroy target creature that has a -1/-1 counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Murphy",
+        "flavorText": "\"If I die, it will not be alone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/005a19e2-c334-4b87-bc8b-55f62fc9abd9.jpg?1783936042"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -976,6 +1211,57 @@
         "artist": "Kieran Yanner",
         "flavorText": "\"Fire? Is that your only trick, Chandra?\"\n—Nicol Bolas",
         "imageUri": "https://cards.scryfall.io/normal/front/f/3/f38c6613-b1f7-4b38-b956-7860d041e593.jpg?1783936031"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chaos Maw
+{
+    "name": "Chaos Maw",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "When this creature enters, it deals 3 damage to each other creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chaos Maw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Steve Argyle",
+        "flavorText": "The food chain doesn't end at sandwurms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8094908b-1d3a-42df-bc27-8456fbb98e65.jpg?1783936032"
     },
     "colorIdentityOverride": [
         "RED"
@@ -1816,6 +2102,296 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Doomfall
+{
+    "name": "Doomfall",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Target opponent exiles a creature they control.\n• Target opponent reveals their hand. You choose a nonland card from it. Exile that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Battlefield",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a creature to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target opponent exiles a creature they control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "nonland",
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a nonland card to exile",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target opponent reveals their hand. You choose a nonland card from it. Exile that card"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "\"This place has outlived its usefulness.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17db6ef5-1aa9-4b8c-b0b7-d6668a2347a1.jpg?1783936041",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If you choose Doomfall's first mode, the target opponent chooses which creature to exile. That creature isn't targeted, so a creature with hexproof can be exiled this way."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you choose Doomfall's second mode, you must exile a nonland card from that player's hand if able. If you can't, most likely because that player's hand contains only land cards, nothing happens. That player won't exile a creature they control instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dreamstealer
+{
+    "name": "Dreamstealer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Menace\nWhenever this creature deals combat damage to a player, that player discards that many cards.\nEternalize {4}{B}{B} ({4}{B}{B}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Human Wizard with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE",
+        "ETERNALIZE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreamstealer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{4}{B}{B}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{B}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {4}{B}{B} ({4}{B}{B}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c4fcde3-03c9-43e6-a34b-29f6ce44e7c4.jpg?1783936042",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "For each card with eternalize, a corresponding game play supplement token can be found in some Hour of Devastation booster packs. These supplements are not required to play with cards with eternalize; you can use the same items to represent an eternalized token as you would any other token."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If a creature card with eternalize is put into your graveyard during your main phase, you'll have priority immediately afterward. You can activate its eternalize ability before any player can try to exile it, such as with Crook of Condemnation, if it's legal for you to do so."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Once you've activated an eternalize ability, the card is immediately exiled. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token is a Zombie in addition to its other types and is black instead of its other colors. Its base power and toughness are 4/4. It has no mana cost, and thus its mana value is 0. These are copiable values of the token that other effects may copy."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card copied by the token had any \"when [this permanent] enters the battlefield\" abilities, then the token also has those abilities and will trigger them when it's created. Similarly, any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities that the token has copied will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2976,6 +3552,58 @@
     ]
 }
 
+// Graven Abomination
+{
+    "name": "Graven Abomination",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Horror",
+    "oracleText": "Whenever this creature attacks, exile target card from defending player's graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Graven Abomination:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "controllerPredicate": {
+                                "type": "OwnedByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "DefendingPlayer"
+                                }
+                            }
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile target card from defending player's graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Ironically, the statues had been constructed as a warning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89880f30-aa38-4231-8d16-25c644bde6bf.jpg?1783936002"
+    },
+    "colorIdentityOverride": []
+}
+
 // Grind // Dust
 {
     "name": "Grind // Dust",
@@ -3085,6 +3713,67 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Grisly Survivor
+{
+    "name": "Grisly Survivor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "Whenever you cycle or discard a card, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grisly Survivor:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, this creature gets +2/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Seb McKinnon",
+        "flavorText": "No cartouches to earn. No afterlife to enter. Only the glory of a well-struck blow and the growing pile of felled enemies at her feet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/035ee44d-63ef-45b7-b36b-38ac341a2ca7.jpg?1783936041",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Harrier Naga
@@ -3326,6 +4015,72 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Hollow One
+{
+    "name": "Hollow One",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "This spell costs {2} less to cast for each card you've cycled or discarded this turn.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "CARDS_DISCARDED"
+                            },
+                            "multiplier": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "The embodiment of yearning, forever drifting the deserts to find what had once made it whole.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43fe9c6d-4fa2-4f9a-9025-1bf12fe7ed9f.jpg?1783936002",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Hollow One's cost is reduced even if the cards you've cycled or discarded aren't in your graveyard."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Hollow One). The mana value of the spell is determined by only its mana cost, no matter what the total cost to cast that spell was."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Once you've discarded three cards during one turn, Hollow One costs {0} to cast. It won't stop at {1} or cost negative amounts of mana."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Hollow One's first ability doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them, such as a cycling ability."
+            }
+        ]
+    }
 }
 
 // Hope Tender
@@ -4808,6 +5563,73 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Magmaroth
+{
+    "name": "Magmaroth",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "At the beginning of your upkeep, put a -1/-1 counter on this creature.\nWhenever you cast a noncreature spell, remove a -1/-1 counter from this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Magmaroth:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Magmaroth:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Sand into glass and flesh into ash—such are the markers of its domain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76f87128-2d12-467b-895d-943f318b7c38.jpg?1783936027",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Magmaroth’s second ability resolves before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8429,6 +9251,132 @@
     ]
 }
 
+// Torment of Hailfire
+{
+    "name": "Torment of Hailfire",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Repeat the following process X times. Each opponent loses 3 life unless that player sacrifices a nonland permanent of their choice or discards a card.",
+    "script": {
+        "spellEffect": {
+            "type": "RepeatDynamicTimes",
+            "amount": "XValue",
+            "body": {
+                "type": "ForEach",
+                "space": {
+                    "type": "IterationSpace.Players",
+                    "players": "EachOpponent"
+                },
+                "body": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "Choice",
+                        "options": [
+                            {
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": "nonland permanent"
+                                }
+                            },
+                            {
+                                "type": "PayAtom",
+                                "atom": "AtomDiscard"
+                            }
+                        ]
+                    },
+                    "suffer": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "Controller"
+                    },
+                    "consequenceDescription": "lose 3 life"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "\"Your God-Pharaoh has returned.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f69d77d1-5980-436c-bf48-790939b069aa.jpg?1783936036"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Torment of Scarabs
+{
+    "name": "Torment of Scarabs",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAt the beginning of enchanted player's upkeep, that player loses 3 life unless they sacrifice a nonland permanent of their choice or discard a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Torment of Scarabs:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "Choice",
+                        "options": [
+                            {
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": "nonland permanent"
+                                }
+                            },
+                            {
+                                "type": "PayAtom",
+                                "atom": "AtomDiscard"
+                            }
+                        ]
+                    },
+                    "suffer": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EnchantedPlayer"
+                        }
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "EnchantedPlayer"
+                    },
+                    "consequenceDescription": "lose 3 life"
+                }
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "Like a carpet unrolling for their god, the scarabs poured out from the necropolis.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01651f67-cc25-4240-9698-58b7d906a160.jpg?1783936035"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Torment of Venom
 {
     "name": "Torment of Venom",
@@ -8685,6 +9633,156 @@
     ]
 }
 
+// Unraveling Mummy
+{
+    "name": "Unraveling Mummy",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "{1}{W}: Target attacking Zombie gains lifelink until end of turn.\n{1}{B}: Target attacking Zombie gains deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Unraveling Mummy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Zombie attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{W}: Target attacking Zombie gains lifelink until end of turn."
+            },
+            {
+                "id": "Unraveling Mummy:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Zombie attacking"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{1}{B}: Target attacking Zombie gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"We are no longer in control.\"\n—Elekh, vizier of embalming",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe3802f3-feb3-4dcd-a5ba-f493baf3d447.jpg?1783936008",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Unraveling Mummy's abilities can target itself while it's attacking."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The target Zombie will still have lifelink or deathtouch even after combat when it stops being an attacking creature."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Multiple instances of lifelink and deathtouch are redundant."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Vile Manifestation
+{
+    "name": "Vile Manifestation",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "This creature gets +1/+0 for each card with cycling in your graveyard.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": {
+                        "cardPredicates": [
+                            "HasCycling"
+                        ]
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "The glyphs writhed and twisted, spewing out dark, vengeful magic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/7160bc31-bdfa-4654-9d69-95ee2a5fe870.jpg?1783936034"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Vizier of the Anointed
 {
     "name": "Vizier of the Anointed",
@@ -8868,6 +9966,80 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Wall of Forgotten Pharaohs
+{
+    "name": "Wall of Forgotten Pharaohs",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Wall",
+    "oracleText": "Defender\n{T}: This creature deals 1 damage to target player or planeswalker. Activate only if you control a Desert or there is a Desert card in your graveyard.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wall of Forgotten Pharaohs:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "permanent Desert"
+                                },
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "Desert"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3f8f211-79f9-4d34-8e23-c0835703cd91.jpg?1783935999",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If an ability checks whether you control a Desert or there is a Desert card in your graveyard, having more than one doesn't matter. Controlling one is the same as controlling five. There is also no extra bonus for both controlling one and having one in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Wildfire Eternal

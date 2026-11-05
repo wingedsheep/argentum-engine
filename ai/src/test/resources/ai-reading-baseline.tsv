@@ -96,6 +96,7 @@ Accorder's Shield
 Accumulate Wisdom
 Accursed Centaur	intent: SacrificeEffect
 Accursed Duneyard
+Accursed Horde
 Accursed Marauder
 Accursed Spirit
 Acererak the Archlich	intent: ForEach>PayOrSufferEffect; intent: VentureIntoTheDungeonEffect
@@ -629,6 +630,7 @@ Aphetto Exterminator
 Aphetto Grifter
 Aphetto Runecaster
 Aphetto Vulture
+Apocalypse Demon
 Apocalypse Runner
 Apostle of Invasion
 Apostle of Purifying Light
@@ -1216,6 +1218,7 @@ Baneblade Scoundrel
 Banefire
 Banehound
 Baneslayer Angel
+Banewhip Punisher
 Banish from Edoras
 Banish into Fable
 Banishing Betrayal
@@ -1559,7 +1562,7 @@ Bishop's Soldier
 Bite Down
 Bite Down on Crime
 Biting Rain
-Biting-Palm Ninja	intent: Pipeline(hand→exile); intent: RevealHandEffect
+Biting-Palm Ninja
 Bitter Chill
 Bitter Downfall
 Bitter Reunion
@@ -1645,7 +1648,7 @@ Blazing Firesinger
 Blazing Hellhound
 Blazing Hope
 Blazing Rootwalla
-Blazing Specter	intent: Pipeline(hand→graveyard)
+Blazing Specter
 Blazing Torch
 Blazing Volley
 Bleachbone Verge
@@ -2020,7 +2023,7 @@ Bottle Gnomes
 Bottle of Suleiman	intent: FlipCoinEffect
 Bottle-Cap Blast
 Bottled Cloister	intent: Pipeline(hand→exile)
-Bottomless Pit	intent: Pipeline(hand→graveyard)
+Bottomless Pit
 Bottomless Pool // Locker Room
 Bottomless Vault
 Boughside Wanderers
@@ -2342,7 +2345,7 @@ Cabal Initiate
 Cabal Interrogator
 Cabal Paladin
 Cabal Ritual
-Cabal Slaver	intent: Pipeline(hand→graveyard)
+Cabal Slaver
 Cabal Stronghold
 Cabal Trainee	intent: ModifyStatsEffect
 Cabaretti Ascendancy
@@ -2774,6 +2777,7 @@ Channeled Force
 Channeler Initiate
 Chant of Vitu-Ghazi
 Chaos Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: RollDiceEffect
+Chaos Maw
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
 Chaos Spewer	intent: PayOrSufferEffect
 Chaos Wand	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→exile|library)
@@ -3989,7 +3993,7 @@ Deathsprout
 Debilitating Injury
 Debris Beetle
 Debris Field Crusher
-Debt to the Kami	intent: ModalEffect; polarity: Pipeline(battlefield→exile)
+Debt to the Kami	intent: ModalEffect
 Debtors' Transport
 Decadent Dragon	polarity: Pipeline(TopOfLibrary→exile)
 Decanter of Endless Water
@@ -4479,6 +4483,7 @@ Doom Whisperer
 Doomed Dissenter
 Doomed Necromancer
 Doomed Traveler
+Doomfall
 Doomsday
 Doomsday Excruciator	intent: ForEach>Pipeline(TopOfLibrary→exile)
 Doomskar
@@ -4677,6 +4682,7 @@ Dreamshackle Geist
 Dreamshaper Shaman	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library)
 Dreamspoiler Witches
 Dreamstalker Manticore
+Dreamstealer
 Dreamstone Hedron
 Dreamtail Heron
 Dreamtide Whale
@@ -4876,7 +4882,7 @@ Eagle's Rescue	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSe
 Eagles of the North
 Eardrum Rattler
 Early Frost
-Early Winter	polarity: Pipeline(battlefield→exile)
+Early Winter
 Earnest Fellowship
 Earth Elemental
 Earth King's Lieutenant
@@ -5817,7 +5823,7 @@ Felidar Savior
 Felidar Sovereign
 Feline Sovereign
 Fell
-Fell Flagship	intent: Pipeline(hand→graveyard)
+Fell Flagship
 Fell Gravship
 Fell Horseman
 Fell Specter
@@ -7302,6 +7308,7 @@ Gravelgill Axeshark
 Gravelgill Duo
 Gravelgill Scoundrel
 Gravelighter
+Graven Abomination
 Graven Cairns
 Graven Lore
 Graveshifter
@@ -7414,6 +7421,7 @@ Grishnákh, Brash Instigator
 Grisly Ritual
 Grisly Salvage
 Grisly Sigil
+Grisly Survivor
 Grist, Voracious Larva	intent: ExileAndReturnTransformedEffect
 Gristle Glutton
 Grixis Battlemage	combat: CantBlockEffect; timing: CantBlockEffect
@@ -7749,7 +7757,7 @@ He's Dead, Jim
 Head Games
 Head of the Homestead
 Head of the Hunt
-Headhunter	intent: Pipeline(hand→graveyard)
+Headhunter
 Headless Horseman
 Headless Rider
 Headlong Rush
@@ -8024,8 +8032,9 @@ Hold for Ransom	polarity: Aura>CantAttack; polarity: Aura>CantBlock; polarity: A
 Hold the Line
 Hollow Dogs
 Hollow Marauder
+Hollow One
 Hollow Scavenger
-Hollow Specter	intent: Pipeline(hand→graveyard)
+Hollow Specter
 Hollow Trees
 Hollowhead Sliver
 Hollowhenge Beast
@@ -8270,7 +8279,7 @@ Hymn to Tourach
 Hyperion Blacksmith
 Hypnotic Cloud
 Hypnotic Grifter
-Hypnotic Specter	intent: Pipeline(hand→graveyard)
+Hypnotic Specter
 Hypnotic Sprite
 Hypochondria
 Hypothesizzle
@@ -10255,6 +10264,7 @@ Magma Sliver
 Magma Vein
 Magmablood Archaic	intent: ForEach>ModifyStatsEffect
 Magmakin Artillerist
+Magmaroth
 Magmatic Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Magmatic Galleon
 Magmatic Hellkite
@@ -11416,7 +11426,7 @@ Necrodominance
 Necroduality
 Necrogen Censer
 Necrogen Communion	polarity: Aura>GrantKeyword; polarity: Aura>MoveToZoneEffect
-Necrogen Mists	intent: Pipeline(hand→graveyard)
+Necrogen Mists
 Necrogen Rotpriest
 Necrogen Scudder
 Necrogen Spellbomb
@@ -11533,7 +11543,7 @@ Niblis of the Urn
 Nicanzil, Current Conductor	intent: Pipeline(hand→battlefield)
 Nick Fury, Agent of S.H.I.E.L.D.	intent: ForEach>TransformEffect; intent: Pipeline(TopOfLibrary→battlefield|library)
 Nick Valentine, Private Eye
-Nicol Bolas	intent: Pipeline(hand→graveyard)
+Nicol Bolas
 Nicol Bolas, Dragon-God
 Nicol Bolas, God-Pharaoh	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(?→exile); polarity: GatherUntilMatchEffect; polarity: GrantMayPlayFromExileEffect; polarity: GrantPlayWithoutPayingCostEffect; polarity: Pipeline(?→exile)
 Nicol Bolas, the Ravager	intent: ExileAndReturnTransformedEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
@@ -11946,7 +11956,7 @@ Ophiomancer
 Opportunistic Dragon
 Opportunity
 Opposition Agent
-Oppression	intent: Pipeline(hand→graveyard)
+Oppression
 Opt
 Optimistic Scavenger
 Opulent Palace
@@ -12037,7 +12047,7 @@ Orzhov Basilica
 Orzhov Enforcer
 Orzhov Guildgate
 Orzhov Locket
-Orzhov Racketeers	intent: Pipeline(hand→graveyard)
+Orzhov Racketeers
 Orzhov Signet
 Osai Vultures
 Oscorp Industries
@@ -15263,7 +15273,7 @@ Silent Departure
 Silent Gravestone
 Silent Hallcreeper
 Silent Observer
-Silent Specter	intent: Pipeline(hand→graveyard)
+Silent Specter
 Silent Submersible
 Silent-Blade Oni
 Silent-Chant Zubera
@@ -17167,7 +17177,7 @@ Tenth District Guard
 Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect
 Tenth District Legionnaire
 Tenth District Veteran
-Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffect
+Tenuous Truce
 Tenured Concocter
 Tenured Inkcaster
 Tenured Oilcaster
@@ -17926,6 +17936,8 @@ Torens, Fist of the Angels	intent: EmitKeywordCounterEventEffect
 Torgaar, Famine Incarnate
 Torgal, A Fine Hound
 Tori D'Avenant, Fury Rider
+Torment of Hailfire
+Torment of Scarabs
 Torment of Venom
 Tormented Angel
 Tormented Soul
@@ -18485,6 +18497,7 @@ Unnerving Grasp
 Unpredictable Cyclone
 Unquestioned Authority
 Unravel
+Unraveling Mummy
 Unrooted Ancestor
 Unruly Catapult
 Unruly Mob
@@ -18873,6 +18886,7 @@ Vigorspore Wurm
 Vile Consumption
 Vile Deacon
 Vile Entomber
+Vile Manifestation
 Vile Mutilator
 Vilespawn Spider
 Vilis, Broker of Blood
@@ -19167,6 +19181,7 @@ Wall of Distortion
 Wall of Dust	intent: CantAttackEffect
 Wall of Earth
 Wall of Fire
+Wall of Forgotten Pharaohs
 Wall of Glare
 Wall of Granite
 Wall of Heat
@@ -19432,7 +19447,7 @@ Wei Ambush Force
 Wei Assassins
 Wei Elite Companions
 Wei Infantry
-Wei Night Raiders	intent: Pipeline(hand→graveyard)
+Wei Night Raiders
 Wei Scout
 Wei Strike Force
 Weigh Down
@@ -20037,7 +20052,7 @@ Zhalfirin Shapecraft
 Zhalfirin Void
 Zhang Fei, Fierce Warrior
 Zhang He, Wei General
-Zhang Liao, Hero of Hefei	intent: Pipeline(hand→graveyard)
+Zhang Liao, Hero of Hefei
 Zhao Zilong, Tiger General
 Zhao, Ruthless Admiral
 Zhao, the Moon Slayer

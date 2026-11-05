@@ -89,6 +89,12 @@ class AiReadingByAbilityTest : FunSpec({
         reading.readFully shouldBe true
     }
 
+    test("a static that only changes the card's own casting cost is part of the card, not an unread ability") {
+        val reading = AiReadingAudit.read(card("Hollow One"))
+        reading.abilities.single { it.ability.kind == AbilityKind.STATIC }.body shouldBe true
+        AiCardRating.of(card("Hollow One"), listOf("HOU")).intent.unrecognised shouldBe false
+    }
+
     test("a counter on its own source needs no intent, and reads as understood rather than unchecked") {
         val reading = AiReadingAudit.read(card("Ajani's Pridemate"))
         reading.readFully shouldBe true

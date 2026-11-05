@@ -20,7 +20,9 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -193,7 +195,7 @@ object AiReadingAudit {
      * [body] marks a static that only grants its own creature a keyword ("this creature has
      * vigilance as long as you control another Dinosaur") — part of the creature's body, which the
      * evaluator prices from its projected keywords the way it prices a printed one, so nothing an
-     * intent reader is meant to place.
+     * intent reader is meant to place — or that only changes the card's own casting cost.
      */
     data class AbilityReading(val ability: AbilityRef, val findings: List<Finding>, val body: Boolean = false) {
         /** Whether any reader was asked about this ability. Static abilities are not. */
@@ -231,6 +233,10 @@ object AiReadingAudit {
         // A creature's own printed penalty ("this creature gets -2/-2 as long as …") is part of its
         // body, read by the evaluator through projected P/T — not an ability a reader missed.
         is ModifyStats -> static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0
+        // "This spell costs {2} less to cast for each card you've cycled or discarded this turn"
+        // (Hollow One, affinity's Tangle Golem): a change to the card's own cost, which the legal
+        // actions the AI is offered already price — part of the card, like its mana cost.
+        is ModifySpellCost -> static.target == SpellCostTarget.SelfCast
         is ConditionalStaticAbility -> isBodyStatic(static.ability)
         is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::isBodyStatic)
         else -> false

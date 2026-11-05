@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
@@ -804,7 +805,8 @@ object TargetPolarityAnalyzer {
      * of — "target player discards two cards" (Mind Rot), "target opponent reveals their hand; you
      * choose a nonland card from it; exile that card" (Null Summoner), "target opponent sacrifices a
      * creature or planeswalker with the greatest mana value" (Break Under Pressure), Liliana of the
-     * Veil's piles: a gather from the slot's hand, or from the permanents the slot controls, whose
+     * Veil's piles, "target opponent exiles a creature they control" (Debt to the Kami, Doomfall —
+     * a gather from that player's battlefield zone): a gather from the slot's hand, or from the permanents the slot controls, whose
      * cards, or the ones picked from among them, go to a graveyard, exile or a library. Losing cards
      * from hand or permanents from the battlefield is bad for the player who held them, so the slot
      * reads harmful.
@@ -824,7 +826,9 @@ object TargetPolarityAnalyzer {
         for (leaf in leaves) {
             if (leaf !is GatherCardsEffect) continue
             val player = when (val source = leaf.source) {
-                is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.HAND || source.zone == Zone.GRAVEYARD }
+                is CardSource.FromZone -> source.player.takeIf {
+                    source.zone == Zone.HAND || source.zone == Zone.GRAVEYARD || source.zone == Zone.BATTLEFIELD
+                }
                 is CardSource.ControlledPermanents -> source.player
                 else -> null
             } ?: continue
@@ -1433,6 +1437,10 @@ object TargetPolarityAnalyzer {
             // other abilities.
             if (choosesOwnBranchSomewhere(effect) && combine(hostReadings) == TargetPolarity.UNKNOWN) continue
             readings += hostReadings
+            // "Enchant player … at the beginning of enchanted player's upkeep, that player loses 3
+            // life unless they sacrifice a nonland permanent or discard a card" (Torment of Scarabs):
+            // the host is the player, named by the leaves that act on them.
+            readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
         }
         // A replacement effect on an Aura (Sandskin's "prevent all combat damage dealt to and by
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
@@ -1563,6 +1571,26 @@ object TargetPolarityAnalyzer {
             // Knife's Blood, Infantry Shield's mobilized Warriors).
             is CreateTokenEffect -> if (leaf.controller.let { it == null || isController(it) }) TargetPolarity.BENEFICIAL else null
             is CreatePredefinedTokenEffect -> if (leaf.controller.let { it == null || isController(it) }) TargetPolarity.BENEFICIAL else null
+            else -> null
+        }
+    }
+
+    /**
+     * What a triggered or activated leaf of an "Enchant player" Aura does to the player it
+     * enchants: life lost, damage dealt, or an unless-clause they must pay or suffer from is a
+     * curse; life gained or cards drawn a gift. Null for a leaf that doesn't name them.
+     */
+    private fun enchantedPlayerLeafPolarity(leaf: Effect): TargetPolarity? {
+        val enchanted = EffectTarget.PlayerRef(Player.EnchantedPlayer)
+        return when (leaf) {
+            is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == enchanted }
+            is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == enchanted }
+            is PayOrSufferEffect -> TargetPolarity.HARMFUL.takeIf {
+                leaf.player == enchanted &&
+                    EffectWalker.payoffLeaves(leaf.suffer).all { enchantedPlayerLeafPolarity(it) == TargetPolarity.HARMFUL }
+            }
+            is GainLifeEffect -> TargetPolarity.BENEFICIAL.takeIf { leaf.target == enchanted }
+            is DrawCardsEffect -> TargetPolarity.BENEFICIAL.takeIf { leaf.target == enchanted }
             else -> null
         }
     }

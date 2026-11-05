@@ -33,6 +33,13 @@ class EnchantedPlayerCurseReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a Curse's upkeep punisher on the enchanted player is a curse, and its discard option reads as discard") {
+            withClue("'that player loses 3 life unless they sacrifice or discard' hurts the enchanted player") {
+                TargetPolarityAnalyzer.forSpell(card("Torment of Scarabs")) shouldBe listOf(TargetPolarity.HARMFUL)
+            }
+            CardIntentAnalyzer.analyze(card("Torment of Scarabs")).tags shouldContain IntentTag.DISCARD
+        }
+
         test("an enchanted-creature 'loses all abilities' Aura neutralizes its host") {
             CardIntentAnalyzer.analyze(card("Lignify")).tags shouldContain IntentTag.NEUTRALIZE
         }
