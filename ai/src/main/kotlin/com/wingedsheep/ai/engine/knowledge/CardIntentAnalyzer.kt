@@ -603,11 +603,13 @@ object CardIntentAnalyzer {
      */
     /**
      * Whether [payoff] goes on to use the card a graveyard exile took — cast it, play it, or copy
-     * it — so the exile is the way in rather than the point: recursion, not hate.
+     * it — so the exile is the way in rather than the point: recursion, not hate. Casting any
+     * number of them, or of their copies, under a budget (Uldaros Theorix) is the same use.
      */
     internal fun usesTheExiledCard(payoff: List<Effect>): Boolean = payoff.any {
         it is GrantFreeCastTargetFromExileEffect || it is GrantMayPlayFromExileEffect ||
             it is GrantPlayWithoutPayingCostEffect || it is CastFromCollectionWithoutPayingCostEffect ||
+            it is CastAnyNumberFromCollectionWithoutPayingCostEffect ||
             it is CreateTokenCopyOfTargetEffect || it is EachPermanentBecomesCopyOfTargetEffect
     }
 

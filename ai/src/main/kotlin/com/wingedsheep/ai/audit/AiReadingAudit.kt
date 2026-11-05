@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.LegendRuleDoesNotApplyTo
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SpellCostTarget
@@ -46,6 +47,7 @@ import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
@@ -54,6 +56,7 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
@@ -627,9 +630,18 @@ object AiReadingAudit {
             // on the bounce in the same way, so when to cast it is the removal's question too.
             // "A creature dealt damage this way can't block this turn" (Ballista Wielder, Blood
             // Aspirant) rides on the damage the same way: when to ping is the removal's question.
+            // "… loses all abilities until end of turn. Target creature you control deals damage equal
+            // to its power to that permanent" (Flourishing Grapple): the strip clears the way for the
+            // damage as the spell resolves, so it too is spent on the removal's timing.
             val ridesOnRemoval = (leaf is MarkExileOnDeathEffect || expiring is EachPermanentBecomesCopyOfTargetEffect ||
-                expiring is CantBlockEffect || expiring is CantAttackEffect) && removal
-            if (isRead(leaf) || ridesOnRemoval) {
+                expiring is CantBlockEffect || expiring is CantAttackEffect || expiring is RemoveAllAbilitiesEffect) && removal
+            // "This land becomes a copy of target creature you control until end of turn. The legend
+            // rule doesn't apply to permanents you control this turn" (Hall of Echoes): the waiver only
+            // keeps a copied legend alive beside its original, so it lasts exactly as long as the copy
+            // it rides on, and when to spend it is the copy's question, which the copy's reading answers.
+            val ridesOnCopy = expiring is GrantStaticAbilityEffect && expiring.ability is LegendRuleDoesNotApplyTo &&
+                leaves.any { it is EachPermanentBecomesCopyOfTargetEffect && isRead(it) }
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),
