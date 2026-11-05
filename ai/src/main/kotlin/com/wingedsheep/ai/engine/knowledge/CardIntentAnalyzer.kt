@@ -453,7 +453,10 @@ object CardIntentAnalyzer {
         // our side, a reanimation whoever owned them — read as the single-card return it adds up to.
         val reanimates = reanimatesChosenGraveyardTargets(effect, requirements)
         return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) +
-            (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) + payoff.flatMap { leaf ->
+            (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) +
+            // Hour of Eternity's exile-and-copy pipeline: the single-card exile to use, below.
+            (if (exilesChosenGraveyardTargetsToUse(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
+            payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
@@ -608,6 +611,34 @@ object CardIntentAnalyzer {
         return putsChosenTargetsOntoOurBattlefield(effect)
     }
 
+    /**
+     * Whether [effect] exiles its own chosen targets out of a graveyard and goes on to use the
+     * exiled cards ([usesTheExiledCard]) — "exile X target creature cards from your graveyard. For
+     * each card exiled this way, create a token that's a copy of that card" (Hour of Eternity). The
+     * pipeline spelling of the single-card exile-and-copy (The Scarab God): the exile is the way in,
+     * so the cards are ours to use again — recursion, not hate.
+     */
+    internal fun exilesChosenGraveyardTargetsToUse(effect: Effect, requirements: List<TargetRequirement>): Boolean {
+        val objects = requirements.map { ((it as? TargetOther)?.baseRequirement ?: it) as? TargetObject }
+        if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
+        }
+        if (chosen.isEmpty()) return false
+        do {
+            val before = chosen.size
+            for (leaf in leaves) chosen += derivedCollections(leaf, chosen)
+        } while (chosen.size != before)
+        val exiles = leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in chosen && leaf.faceDown == null &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+        }
+        return exiles && usesTheExiledCard(leaves.flatMap { leaf ->
+            if (leaf is ForEachEffect) EffectWalker.payoffLeaves(leaf.body) else listOf(leaf)
+        })
+    }
+
     internal fun graveyardMoveOf(move: MoveToZoneEffect, requirements: List<TargetRequirement>): GraveyardMove? {
         if (move.destination != Zone.EXILE && move.destination != Zone.LIBRARY) return null
         val slot = when (val target = move.target) {
@@ -758,22 +789,29 @@ object CardIntentAnalyzer {
      * `MoveToZoneEffect` spelling does in [readingLeaves]. Our own graveyard exiled is a cost or
      * fuel (delve, escape-likes), never an answer.
      */
-    private fun graveyardExileTags(root: Effect): Set<IntentTag> {
+    private fun graveyardExileTags(root: Effect, eachPlayer: Player? = null): Set<IntentTag> {
         val leaves = readingLeaves(root)
         // Exiled to be cast from exile (Mnemonic Betrayal, Shadow of the Enemy): a theft, not hate.
         if (usesTheExiledCard(leaves)) return emptySet()
+        // Inside "each player …" / "each opponent …" ([eachPlayer]), `You` is the player iterated,
+        // whose graveyard is an opponent's too.
+        val iteratesOpponents = eachPlayer == Player.Each || eachPlayer in OPPONENT_PLAYERS
         val seed = leaves.mapNotNullTo(HashSet()) { leaf ->
             val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
-            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && source.player != Player.You }
+            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && (source.player != Player.You || iteratesOpponents) }
         }
         if (seed.isEmpty()) return emptySet()
         do {
             val before = seed.size
             for (leaf in leaves) seed += derivedCollections(leaf, seed)
         } while (seed.size != before)
+        // "Each player shuffles their graveyard into their library" (Survive) takes every
+        // opponent's graveyard away as surely as an exile does. A lone
+        // player's graveyard shuffled back (Elixir of Immortality, Gaea's Blessing) is a refill.
+        val takenTo = if (iteratesOpponents) setOf(Zone.EXILE, Zone.LIBRARY) else setOf(Zone.EXILE)
         val exiles = leaves.any { leaf ->
             leaf is MoveCollectionEffect && leaf.from in seed &&
-                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+                (leaf.destination as? CardDestination.ToZone)?.zone in takenTo
         }
         return if (exiles) setOf(IntentTag.GRAVEYARD_HATE) else emptySet()
     }
@@ -1277,7 +1315,8 @@ object CardIntentAnalyzer {
                 // gathers `You` — the iterated player — so it only reads as a wrath in the
                 // iteration's frame. See [destroyAll].
                 space is IterationSpace.Players -> inner + destroyAll(effect.body, eachPlayer = space.players).tags +
-                    handDisruptionTags(effect.body, eachPlayer = space.players)
+                    handDisruptionTags(effect.body, eachPlayer = space.players) +
+                    graveyardExileTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
                 space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP

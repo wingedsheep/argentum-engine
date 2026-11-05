@@ -78,6 +78,23 @@ class GraveyardHateReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("each player's graveyard shuffled into their library is graveyard hate; one's own is a refill") {
+            val survive = cardRegistry.getCard("Struggle // Survive")!!.cardFaces.first { it.name == "Survive" }
+            CardIntentAnalyzer.analyzeEffect(survive.script.spellEffect!!, survive.script.targetRequirements).tags shouldContain
+                IntentTag.GRAVEYARD_HATE
+            withClue("Feldon's Cane shuffles only its controller's graveyard back: a refill, not hate") {
+                intent("Feldon's Cane").tags shouldNotContain IntentTag.GRAVEYARD_HATE
+            }
+        }
+
+        test("our own graveyard's creature cards exiled to become token copies are recursion, aimed at our best") {
+            val hour = cardRegistry.getCard("Hour of Eternity")!!
+            intent("Hour of Eternity").tags shouldContain IntentTag.RECURSION
+            intent("Hour of Eternity").tags shouldNotContain IntentTag.GRAVEYARD_HATE
+            intents.effectTargetPolarities(hour.script.spellEffect!!, hour.script.targetRequirements) shouldBe
+                listOf(TargetPolarity.BENEFICIAL)
+        }
+
         test("graveyard hate is priced well below removal") {
             withClue("Mourner's Shield no longer prices as a repeatable removal engine") {
                 intent("Mourner's Shield").staticPriorValue shouldBeLessThan 4.0
