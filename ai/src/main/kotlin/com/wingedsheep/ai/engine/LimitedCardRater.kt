@@ -551,6 +551,7 @@ object LimitedCardRater {
         var score = 0.0
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
         return score
     }
 
@@ -605,12 +606,17 @@ object LimitedCardRater {
                 } else tagValue(CardIntentAnalyzer.leafTags(effect))
             }
             // Removal — the most valuable effect type in limited
-            is MoveToZoneEffect -> when {
+            is MoveToZoneEffect -> when (CardIntentAnalyzer.graveyardMoveOf(effect, targets)) {
+                // A card out of a graveyard is no permanent off the board: hate, or our own fuel.
+                CardIntentAnalyzer.GraveyardMove.HATE -> TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
+                CardIntentAnalyzer.GraveyardMove.OWN_EXILE -> 0.0
+                null -> when {
                 effect.byDestruction -> DESTROY_SCORE     // destroy
                 effect.destination == Zone.EXILE -> 1.6    // exile (better than destroy)
                 effect.destination == Zone.HAND -> 0.8     // bounce
                 effect.destination == Zone.LIBRARY -> 1.0  // tuck
                 else -> 0.3
+                }
             }
             is MoveUntilSourceLeavesEffect -> when (effect.destination) {
                 Zone.EXILE -> 1.4
@@ -781,6 +787,9 @@ object LimitedCardRater {
         // A second helping of a spell already cast: worth as much as the deck's best instant or
         // sorcery, and nothing without one — a little under a redirect.
         IntentTag.SPELL_COPY to 0.4,
+        // A graveyard answered before it is used: real against recursion, flashback or delirium,
+        // a blank against everything else — a sideboard card's worth in Limited.
+        IntentTag.GRAVEYARD_HATE to 0.2,
         IntentTag.ANTHEM to 0.8,
         IntentTag.DRAW to 0.6,
         IntentTag.TUTOR to 0.6,

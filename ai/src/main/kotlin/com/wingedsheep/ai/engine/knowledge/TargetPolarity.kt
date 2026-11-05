@@ -487,8 +487,15 @@ object TargetPolarityAnalyzer {
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
             val gift = tokenGiftSlot(leaf, requirements)
+            // A card exiled or tucked out of a graveyard that may be an opponent's (Scavenging Ooze,
+            // Junktroller): graveyard hate, aimed at the card a recursion would want back.
+            val hate = (leaf as? MoveToZoneEffect)
+                ?.takeIf { CardIntentAnalyzer.graveyardMoveOf(it, requirements) == CardIntentAnalyzer.GraveyardMove.HATE }
+                ?.let { slotOf(it.target, requirements) }
             if (recursion != null) {
                 recursions += recursion
+            } else if (hate != null) {
+                perSlot[hate] += TargetPolarity.HARMFUL
             } else if (copy != null) {
                 perSlot[copy] += TargetPolarity.BENEFICIAL
                 // What becomes the copy of our best permanent is still the board's question.
@@ -741,16 +748,22 @@ object TargetPolarityAnalyzer {
      * from hand or permanents from the battlefield is bad for the player who held them, so the slot
      * reads harmful.
      *
+     * A slot's **graveyard** exiled — "exile target player's graveyard" (Tormod's Crypt, Bojuka
+     * Bog) — is the same loss: the cards a recursion or flashback would have used. Only exile
+     * counts there; a graveyard shuffled back into its library (Elixir of Immortality's kin) is
+     * a refill, not hate.
+     *
      * A slot that also draws keeps its draw's reading ([forRequirements] adds this only when it has
      * none): "target player draws three cards, then discards a card" is a loot aimed at ourselves,
      * and calling it two-sided would undo what the draw already reads right.
      */
     private fun lossSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> {
         val slotOfHand = HashMap<String, Int>()
+        val graveyards = HashSet<String>()
         for (leaf in leaves) {
             if (leaf !is GatherCardsEffect) continue
             val player = when (val source = leaf.source) {
-                is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.HAND }
+                is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.HAND || source.zone == Zone.GRAVEYARD }
                 is CardSource.ControlledPermanents -> source.player
                 else -> null
             } ?: continue
@@ -762,20 +775,26 @@ object TargetPolarityAnalyzer {
                 else -> null
             } ?: continue
             slotOfHand[leaf.storeAs] = slot
+            if ((leaf.source as? CardSource.FromZone)?.zone == Zone.GRAVEYARD) graveyards += leaf.storeAs
         }
         if (slotOfHand.isEmpty()) return emptySet()
         do {
             val before = slotOfHand.size
             for (leaf in leaves) {
                 for ((name, slot) in slotOfHand.toList()) {
-                    CardIntentAnalyzer.derivedCollections(leaf, setOf(name)).forEach { slotOfHand.putIfAbsent(it, slot) }
+                    CardIntentAnalyzer.derivedCollections(leaf, setOf(name)).forEach {
+                        if (slotOfHand.putIfAbsent(it, slot) == null && name in graveyards) graveyards += it
+                    }
                 }
             }
         } while (slotOfHand.size != before)
         return leaves.mapNotNullTo(HashSet()) { leaf ->
             val move = leaf as? MoveCollectionEffect ?: return@mapNotNullTo null
             val zone = (move.destination as? CardDestination.ToZone)?.zone
-            slotOfHand[move.from]?.takeIf { zone == Zone.GRAVEYARD || zone == Zone.EXILE || zone == Zone.LIBRARY }
+            slotOfHand[move.from]?.takeIf {
+                if (move.from in graveyards) zone == Zone.EXILE
+                else zone == Zone.GRAVEYARD || zone == Zone.EXILE || zone == Zone.LIBRARY
+            }
         }
     }
 

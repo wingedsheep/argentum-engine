@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Graveyard hate (Scavenging Ooze, Tormod's Crypt, Junktroller) reads as graveyard hate, not removal: it is priced and drafted as a sideboard answer, aims its exile or tuck at the opponent's graveyard, and own-graveyard exiles to cast a spell again read as recursion
 - Reads "copy target spell" (Fork, Twincast, Lithoform Engine, Echo, Perceptive Prodigy): the copy's new targets follow what the copied spell does — a copy of their Giant Growth pumps our best creature, a copy of their Lightning Bolt goes at their side — instead of the removal-first ranking that pumped their creature again, spell copiers count as their own kind of card in drafts, and instant-or-sorcery copiers pull the deck toward instants and sorceries
 - #4434 Reads "prevent all damage a source of your choice would deal this turn" (Mourner's Shield, Burrenton Forge-Tender, Safeguard): names the threat — an opposing spell on the stack, then the hardest-hitting opposing creature in combat — instead of one of its own creatures, waits for blocks to raise it, and no longer spends it when no damage is left to come this turn
 - Reads "Enchant player" Curses that strip and shrink a player's creatures or lock their abilities (Overwhelming Splendor) as aimed at an opponent, and reads "loses all abilities" Auras (Lignify) as neutralizing their host

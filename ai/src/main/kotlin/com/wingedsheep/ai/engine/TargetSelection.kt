@@ -140,7 +140,7 @@ object TargetSelection {
                 // Our best permanent first, theirs last; ourselves ahead of an opponent.
                 return { entityId -> -rank(state, entityId, playerId, intents) }
             }
-            if (polarity == TargetPolarity.HARMFUL) return { entityId -> rank(state, entityId, playerId, intents) }
+            if (polarity == TargetPolarity.HARMFUL) return { entityId -> harmfulRank(state, entityId, playerId, intents) }
         }
         val activation = action.action as? ActivateAbility
         val name = activation?.let { state.getEntity(it.sourceId)?.get<CardComponent>()?.name }
@@ -192,6 +192,22 @@ object TargetSelection {
             value + if (isOurs(state, entityId, playerId)) 0.0 else RIGHT_SIDE
         }
     }
+
+    /**
+     * [rank] for a harmful slot. A card in a graveyard is nobody's permanent, so [rank] orders every
+     * one of them least valuable first, whoever owns it — right for our own card, but graveyard hate
+     * ("exile target card from a graveyard", Scavenging Ooze; Junktroller's tuck) wants the
+     * opponent's best card. An opponent's graveyard card ranks by its value, ahead of all of ours.
+     */
+    private fun harmfulRank(state: GameState, entityId: EntityId, playerId: EntityId, intents: IntentCatalog): Double {
+        val value = rank(state, entityId, playerId, intents)
+        val owner = state.getEntity(entityId)?.get<OwnerComponent>()?.playerId ?: return value
+        if (entityId !in state.getZone(owner, Zone.GRAVEYARD) || !state.isOpponentTo(owner, playerId)) return value
+        return -value + OPPONENT_GRAVEYARD_CARD
+    }
+
+    /** Puts an opponent's graveyard card ahead of ours in [harmfulRank], as [rank]'s +10 does for permanents. */
+    private const val OPPONENT_GRAVEYARD_CARD = 10.0
 
     /** Puts every right-side candidate of a [hostSplitPolarity] slot ahead of every wrong-side one. */
     private const val RIGHT_SIDE = 1_000.0
