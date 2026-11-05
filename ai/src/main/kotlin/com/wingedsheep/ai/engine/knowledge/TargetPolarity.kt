@@ -43,6 +43,7 @@ import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect
+import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
@@ -1184,6 +1185,18 @@ object TargetPolarityAnalyzer {
                 leaf.target.isSlot() -> listOf(leaf.target to TargetPolarity.HARMFUL)
                 else -> emptyList()
             }
+            // "Target player's life total becomes 1" (Vraska, Relic Seeker's −10, Sorin Markov's −3):
+            // a total set low is a loss for whoever holds it, and set high (20 or more) a gain. A
+            // total in between, or one that depends on the board, could go either way for either
+            // player, so the slot stays open and the simulation prices the new total.
+            is SetLifeTotalEffect -> if (leaf.target.isSlot()) leaf.target to when (val amount = leaf.amount) {
+                is DynamicAmount.Fixed -> when {
+                    amount.amount <= 10 -> TargetPolarity.HARMFUL
+                    amount.amount >= 20 -> TargetPolarity.BENEFICIAL
+                    else -> TargetPolarity.FLEXIBLE
+                }
+                else -> TargetPolarity.FLEXIBLE
+            } else return emptyList()
             // "Look at target player's hand" reveals what it holds — information only worth having
             // about someone else. Beside a "that player draws" (Vendilion Clique, Oildeep Gearhulk)
             // the two disagree and the slot stays two-sided, as Sign in Blood's does.
@@ -1472,6 +1485,13 @@ object TargetPolarityAnalyzer {
                 }
                 continue
             }
+            // "When this creature dies, return it to its owner's hand" (Verdant Rebirth, Ashnod's
+            // Intervention): a trigger that brings its own holder back out of the graveyard or
+            // exile is recursion for the creature's side — the same gift an Aura's would be.
+            if (returnsItselfFromAGraveyard(leaf)) {
+                readings += TargetPolarity.BENEFICIAL
+                continue
+            }
             val classified = classify(leaf)
             val reading = when {
                 classified.isNotEmpty() -> classified.map { (target, polarity) ->
@@ -1487,6 +1507,11 @@ object TargetPolarityAnalyzer {
         }
         return combine(readings)
     }
+
+    private fun returnsItselfFromAGraveyard(leaf: Effect): Boolean =
+        leaf is MoveToZoneEffect && leaf.target == EffectTarget.Self &&
+            (leaf.fromZone == Zone.GRAVEYARD || leaf.fromZone == Zone.EXILE) &&
+            (leaf.destination == Zone.HAND || leaf.destination == Zone.BATTLEFIELD)
 
     /**
      * A slot of an ability its controller resolves: they aim a harmful leaf at someone else and a

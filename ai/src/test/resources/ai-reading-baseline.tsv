@@ -20,7 +20,7 @@ Aang's Iceberg
 Aang's Journey
 Aang, Airbending Master
 Aang, Swift Savior
-Aang, at the Crossroads	intent: Pipeline(TopOfLibrary→battlefield|library); polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Aang, at the Crossroads	intent: Pipeline(TopOfLibrary→battlefield|library)
 Aang, the Last Airbender
 Aarakocra Sneak	intent: TakeDesignationEffect
 Aatchik, Emerald Radian
@@ -39,7 +39,7 @@ Aberrant Researcher
 Abhorrent Oculus	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Abigale, Eloquent First-Year
 Abigale, Poet Laureate
-Abnormal Endurance	polarity: GrantTriggeredAbilityEffect
+Abnormal Endurance
 Abomination
 Abomination of Gudul
 Abomination of Llanowar
@@ -911,7 +911,7 @@ Ashling, Rekindled
 Ashnod's Altar
 Ashnod's Battle Gear	polarity: ModifyStatsEffect
 Ashnod's Harvester
-Ashnod's Intervention	polarity: GrantTriggeredAbilityEffect
+Ashnod's Intervention
 Ashnod's Transmogrant
 Ashnod, Flesh Mechanist
 Ashroot Animist
@@ -1043,7 +1043,7 @@ Avarax
 Avatar Aang
 Avatar Destiny	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Avatar Enthusiasts
-Avatar Kyoshi, Earthbender	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Avatar Kyoshi, Earthbender
 Avatar of Burgeoning Echoes
 Avatar's Wrath	intent: CantCastSpellsFromNonHandZonesEffect; intent: EmitBendEventEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(BattlefieldMatching→exile); polarity: CantCastSpellsFromNonHandZonesEffect; polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(BattlefieldMatching→exile)
 Aven Archer
@@ -1138,7 +1138,7 @@ Azure Beastbinder	polarity: RemoveAllAbilitiesEffect
 Azure Drake
 Azusa's Many Journeys	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
 Azusa, Lost but Seeking
-Ba Sing Se	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Ba Sing Se
 Back for More	polarity: ReflexiveTriggerEffect
 Back for Seconds	intent: Pipeline(ChosenTargets→battlefield|hand); polarity: Pipeline(ChosenTargets→battlefield|hand)
 Back on Track
@@ -1152,8 +1152,8 @@ Backup Agent
 Bad Deal
 Bad Moon
 Bad River
-Badgermole	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Badgermole Cub	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Badgermole
+Badgermole Cub
 Badlands
 Badlands Revival
 Baffling End
@@ -1372,7 +1372,7 @@ Bazaar of Baghdad
 Beacon Behemoth
 Beacon Bolt
 Beacon of Destiny	intent: RedirectDamageFromChosenSourceEffect; timing: RedirectDamageFromChosenSourceEffect
-Beacon of Immortality	polarity: SetLifeTotalEffect
+Beacon of Immortality
 Beaming Defiance
 Beamsaw Prospector
 Beamsplitter Mage
@@ -1422,7 +1422,7 @@ Behind the Mask	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; ti
 Behold the Multiverse
 Behold the Sinister Six!
 Behold the Unspeakable
-Beifong's Bounty Hunters	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Beifong's Bounty Hunters
 Bejeweled Warg
 Belbe's Percher
 Beledros Witherbloom
@@ -1563,7 +1563,7 @@ Bitter Downfall
 Bitter Reunion
 Bitter Revelation
 Bitter Triumph
-Bitter Work	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Bitter Work
 Bitterbloom Bearer
 Bitterblossom
 Bitterbow Sharpshooters
@@ -2258,9 +2258,9 @@ Bulwark Giant
 Bulwark Ox
 Bumbleflower's Sharepot
 Bumi Bash
-Bumi, Eclectic Earthbender	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Bumi, King of Three Trials	polarity: AnimateLandEffect; polarity: EmitScriedEventEffect; polarity: GrantTriggeredAbilityEffect; polarity: Pipeline(TopOfLibrary→library)
-Bumi, Unleashed	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Bumi, Eclectic Earthbender
+Bumi, King of Three Trials	polarity: EmitScriedEventEffect; polarity: Pipeline(TopOfLibrary→library)
+Bumi, Unleashed
 Bump in the Night
 Buoyancy
 Burden of Proof	polarity: Aura>ConditionalStaticAbility
@@ -3715,8 +3715,8 @@ Daggerfang Duo
 Daggermaw Megalodon
 Daggersail Aeronaut
 Dahar Master
-Dai Li Agents	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Dai Li Indoctrination	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Dai Li Agents
+Dai Li Indoctrination
 Daily Bugle Building
 Daily Bugle Reporters
 Dakkon Blackblade
@@ -3966,6 +3966,7 @@ Deathcap Marionette
 Deathcoil Wurm
 Deathcurse Ogre
 Deathgaze Cockatrice
+Deathgorge Scavenger
 Deathgrip
 Deathknell Berserker
 Deathlace	intent: ChangeColorEffect; polarity: ChangeColorEffect
@@ -4112,7 +4113,7 @@ Demonic Attorney	intent: ForEach>Pipeline(TopOfLibrary→ante)
 Demonic Bargain
 Demonic Counsel
 Demonic Embrace
-Demonic Gifts	polarity: GrantTriggeredAbilityEffect
+Demonic Gifts
 Demonic Hordes	intent: PayOrSufferEffect
 Demonic Junker	intent: Pipeline(ChosenTargets→graveyard); polarity: AddCountersEffect; polarity: Pipeline(ChosenTargets→graveyard)
 Demonic Pact
@@ -4872,7 +4873,7 @@ Early Winter	polarity: Pipeline(battlefield→exile)
 Earnest Fellowship
 Earth Elemental
 Earth King's Lieutenant
-Earth Kingdom General	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Earth Kingdom General
 Earth Kingdom Jailer
 Earth Kingdom Protectors
 Earth Kingdom Soldier
@@ -4881,23 +4882,23 @@ Earth Rumble	polarity: ReflexiveTriggerEffect
 Earth Rumble Wrestlers
 Earth Servant
 Earth Tremor
-Earth Village Ruffians	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Earth Village Ruffians
 Earth's Mightiest Heroes	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Earth, Sector 001
 Earth-Cult Elemental
-Earthbender Ascension	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Earthbending Lesson	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Earthbending Student	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Earthbender Ascension
+Earthbending Lesson
+Earthbending Student
 Earthbind
 Earthblighter
 Earthcraft
-Earthen Ally	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Earthen Ally
 Earthquake
 Earthquake Dragon
 Earthrumbler	intent: AddCardTypeEffect; timing: AddCardTypeEffect
 Earthshaker
 Earthshaker Dreadmaw
-Earthshape	polarity: AnimateLandEffect; polarity: ForEachEffect; polarity: GrantTriggeredAbilityEffect; timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
+Earthshape	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
 East Wind Avatar
 East-Mark Cavalier
 Easterling Vanguard
@@ -5794,7 +5795,7 @@ Feedback	polarity: Aura>DealDamageEffect
 Feedback Bolt
 Feeding Frenzy	timing: ModifyStatsEffect
 Feeling of Dread
-Feign Death	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Feign Death
 Feint	timing: ForEach>PreventDamageEffect
 Feisty Spikeling
 Feldon's Cane	intent: Pipeline(graveyard→library)
@@ -6388,6 +6389,7 @@ Frontier Bivouac
 Frontier Mastodon
 Frontier Seeker
 Frontier Siege
+Frontline Devastator
 Frontline Rush
 Frontline Strategist
 Frontline War-Rager
@@ -7675,7 +7677,7 @@ Harsh Judgment
 Harsh Justice
 Harsh Mentor
 Harsh Mercy
-Haru, Hidden Talent	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Haru, Hidden Talent
 Harvest Hand	intent: ReturnSelfFromZoneTransformedEffect
 Harvest Season
 Harvester of Misery
@@ -8485,7 +8487,7 @@ Infirmary Healer
 Information Dealer	intent: Pipeline(TopOfLibrary→library)
 Informed Inkwright
 Infuriate
-Infuse with Vitality	polarity: GrantTriggeredAbilityEffect; timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
+Infuse with Vitality	timing: GrantKeywordEffect
 Inga Rune-Eyes
 Inga and Esika
 Ingenious Infiltrator
@@ -9138,7 +9140,7 @@ Kavu Monarch
 Kavu Runner
 Kavu Scout
 Kavu Titan
-Kaya the Inexorable	intent: AddCountersEffect; intent: CreateGlobalTriggeredAbilityEffect; intent: GrantTriggeredAbilityEffect; polarity: AddCountersEffect; polarity: GrantTriggeredAbilityEffect
+Kaya the Inexorable	intent: CreateGlobalTriggeredAbilityEffect; polarity: AddCountersEffect
 Kaya's Ghostform	intent: MoveToZoneEffect; polarity: Aura>MoveToZoneEffect
 Kaya's Onslaught
 Kaya's Wrath
@@ -9230,6 +9232,7 @@ Khalni Heart Expedition
 Khan, Despot by Design
 Khan, Vengeful Heart
 Khenra Charioteer
+Khenra Eternal
 Khenra Spellspear
 Kheru Bloodsucker
 Kheru Dreadmaw
@@ -9517,6 +9520,7 @@ Kumano Faces Kakkazan
 Kumano's Pupils
 Kumano, Master Yamabushi
 Kumena's Awakening
+Kumena's Speaker
 Kumena, Tyrant of Orazca
 Kunoros, Hound of Athreos
 Kura, the Boundless Sky
@@ -10275,7 +10279,7 @@ Malachite Talisman	intent: TapUntapEffect
 Malakir Blood-Priest
 Malakir Bloodwitch
 Malakir Familiar
-Malakir Rebirth	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Malakir Rebirth
 Malamet Battle Glyph
 Malamet Brawler
 Malamet Scythe
@@ -11635,7 +11639,7 @@ Norwood Ranger
 Norwood Riders
 Norwood Warrior
 Nosy Goblin
-Not Dead After All	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Not Dead After All	polarity: GrantTriggeredAbilityEffect
 Not Forgotten
 Not on My Watch
 Notion Rain
@@ -11820,6 +11824,7 @@ Old Man of the Sea
 Old Rutstein
 Old Stickfingers	intent: GatherUntilMatchEffect; intent: Pipeline(?→graveyard|library)
 Old Thrush
+Old-Growth Dryads
 Old-Growth Educator
 Old-Growth Troll	intent: PutOntoBattlefieldAsAuraEffect
 Oliphaunt
@@ -12115,7 +12120,7 @@ Padeem, Consul of Innovation
 Page, Loose Leaf	intent: GatherUntilMatchEffect; intent: Pipeline(?→hand|library)
 Pah-Wraith
 Pain // Suffering
-Pain 101	polarity: GrantTriggeredAbilityEffect; timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
+Pain 101
 Pain Kami
 Pain for All	polarity: Aura>DealDamageEffect
 Painful Quandary
@@ -12282,7 +12287,7 @@ Perennial Behemoth
 Perfect Intimidation	polarity: RemoveAllCountersEffect
 Perfected Theory
 Perforating Artist
-Perigee Beckoner	polarity: GrantTriggeredAbilityEffect
+Perigee Beckoner
 Perilous Forays
 Perilous Landscape
 Perilous Myr
@@ -13373,7 +13378,7 @@ Reave Soul
 Reaver Ambush
 Rebel Salvo	timing: RemoveKeywordEffect
 Rebellion of the Flamekin
-Rebellious Captives	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Rebellious Captives
 Rebellious Strike
 Rebirth	intent: ForEach>Pipeline(TopOfLibrary→ante)
 Rebuild the City	polarity: CreateTokenCopyOfTargetEffect
@@ -13865,6 +13870,7 @@ River Boa
 River Darter
 River Herald Guide
 River Herald Scout
+River Heralds' Boon
 River Hoopoe
 River Kaijin
 River Kelpie
@@ -13919,7 +13925,7 @@ Rock Badger
 Rock Hydra
 Rock Jockey	intent: PreventLandPlaysThisTurnEffect
 Rock Soldiers
-Rockalanche	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Rockalanche
 Rockcaster Platoon
 Rocket Launcher
 Rocket-Powered Goblin Glider
@@ -14310,7 +14316,7 @@ Sandals of Abdallah
 Sandbar Merfolk
 Sandbar Serpent
 Sandbender Scavengers
-Sandbenders' Storm	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Sandbenders' Storm
 Sandblast
 Sandman's Quicksand
 Sandman, Shifting Scoundrel
@@ -14403,6 +14409,7 @@ Savage Mansion
 Savage Offensive
 Savage Punch
 Savage Smash
+Savage Stomp
 Savage Surge
 Savage Thallid
 Savage Twister
@@ -14959,6 +14966,8 @@ Shantotto, Tactician Magician
 Shape the Sands
 Shaper Apprentice
 Shaper Guildmage
+Shapers of Nature
+Shapers' Sanctuary
 Shapesharer
 Shapeshifter	intent: ChooseNumberForSourceEffect
 Sharae of Numbing Depths
@@ -17252,7 +17261,7 @@ The Blackstaff of Waterdeep	intent: BecomeCreatureEffect; polarity: BecomeCreatu
 The Bloodsky Massacre
 The Book of Exalted Deeds	intent: AddCountersEffect; intent: GrantStaticAbilityEffect; polarity: AddCountersEffect; polarity: GrantStaticAbilityEffect
 The Book of Vile Darkness
-The Boulder, Ready to Rumble	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+The Boulder, Ready to Rumble
 The Brute
 The Cabbage Merchant
 The Caretaker	intent: CastFromCollectionWithoutPayingCostEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→exile); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→exile)
@@ -17766,6 +17775,7 @@ Tireless Tracker
 Tireless Tribe
 Tishana's Tidebinder
 Tishana's Wayfinder
+Tishana, Voice of Thunder
 Titan of Industry
 Titan's Grave
 Titan's Presence
@@ -17848,11 +17858,11 @@ Tooth of Chiss-Goria
 Tooth of Ramos
 Topan Ascetic
 Topan Freeblade
-Toph, Earthbending Master	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Toph, Greatest Earthbender	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Toph, Hardheaded Teacher	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Toph, the Blind Bandit	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
-Toph, the First Metalbender	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
+Toph, Earthbending Master
+Toph, Greatest Earthbender
+Toph, Hardheaded Teacher
+Toph, the Blind Bandit
+Toph, the First Metalbender
 Topiary Lecturer
 Topiary Panther
 Topiary Stomper
@@ -17870,7 +17880,7 @@ Torch Gauntlet
 Torch the Tower
 Torch the Witness
 Torens, Fist of the Angels	intent: EmitKeywordCounterEventEffect
-Torgaar, Famine Incarnate	polarity: SetLifeTotalEffect
+Torgaar, Famine Incarnate
 Torgal, A Fine Hound
 Tori D'Avenant, Fury Rider
 Torment of Venom
@@ -18374,7 +18384,7 @@ Underworld Sentinel
 Undo
 Undulating Witness
 Undying Beast
-Undying Malice	polarity: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Undying Malice
 Unearth
 Unearthly Blizzard	intent: ForEach>CantBlockEffect
 Uneasy Alliance
@@ -18730,6 +18740,8 @@ Verdant Force
 Verdant Kraken
 Verdant Mastery
 Verdant Outrider	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
+Verdant Rebirth
+Verdant Sun's Avatar
 Verdeloth the Ancient
 Verdigris
 Verduran Emissary
@@ -18831,7 +18843,7 @@ Villainous Ogre
 Villainous Wealth	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: Pipeline(TopOfLibrary→exile)
 Villainous Wrath
 Vincent Valentine
-Vincent's Limit Break	polarity: GrantTriggeredAbilityEffect
+Vincent's Limit Break
 Vindicate
 Vindictive Flamestoker
 Vindictive Mob	intent: SacrificeEffect
@@ -18848,6 +18860,7 @@ Vineglimmer Snarl
 Vinelasher Adept
 Vinelasher Kudzu
 Vinereap Mentor
+Vineshaper Mystic
 Vineshaper Prodigy
 Vineweft
 Violent Echoes
@@ -19048,6 +19061,7 @@ Vraska's Stoneglare
 Vraska, Betrayal's Sting	intent: BecomeArtifactEffect; polarity: AddDynamicCountersEffect; polarity: BecomeArtifactEffect
 Vraska, Golgari Queen
 Vraska, Regal Gorgon
+Vraska, Relic Seeker
 Vraska, Scheming Gorgon
 Vraska, Soul of Stone
 Vraska, Swarm's Eminence
@@ -19083,6 +19097,7 @@ Wake to Slaughter	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEf
 Wakedancer
 Wakening Sun's Avatar
 Waker of Waves
+Waker of the Wilds
 Wakeroot Elemental	intent: BecomeCreatureEffect
 Waking Nightmare
 Waking the Trolls
@@ -19517,6 +19532,7 @@ Wildfire Emissary
 Wildfire Howl
 Wildfire Wickerfolk
 Wildgrowth Archaic
+Wildgrowth Walker
 Wildheart Invoker
 Wildsear, Scouring Maw	intent: CascadeEffect
 Wildsize

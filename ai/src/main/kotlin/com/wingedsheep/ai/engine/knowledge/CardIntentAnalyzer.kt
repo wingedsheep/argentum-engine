@@ -1267,7 +1267,10 @@ object CardIntentAnalyzer {
                 // "For each player, destroy the creatures they control (but one)": the pipeline
                 // gathers `You` — the iterated player — so it only reads as a wrath in the
                 // iteration's frame. See [destroyAll].
-                space is IterationSpace.Players -> inner + destroyAll(effect.body, eachPlayer = space.players).tags +
+                // Over opponents only, the body's `you` is the opponent visited: what it gains is
+                // theirs, not ours (see [OPPONENT_GIFTS]).
+                space is IterationSpace.Players -> (if (includesYou(space.players)) inner else inner - OPPONENT_GIFTS) +
+                    destroyAll(effect.body, eachPlayer = space.players).tags +
                     handDisruptionTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
@@ -1400,16 +1403,43 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * Whether [ability] is a trigger of the permanent itself leaving the battlefield that puts that
-     * same permanent back onto it — "when this creature dies, return it to the battlefield".
+     * Whether [ability] is a trigger of the permanent itself leaving the battlefield that gets that
+     * same card back — "when this creature dies, return it to the battlefield" (Feign Death) or
+     * "… to its owner's hand" (Verdant Rebirth, Ashnod's Intervention). Either way the removal
+     * aimed at it costs its controller nothing but tempo.
      */
-    private fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
+    internal fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
         if (ability.binding != TriggerBinding.SELF) return false
         val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
         if (pattern.from != Zone.BATTLEFIELD) return false
         return EffectWalker.payoffLeaves(ability.effect).any {
-            it is MoveToZoneEffect && it.target == EffectTarget.Self && it.destination == Zone.BATTLEFIELD
+            it is MoveToZoneEffect && it.target == EffectTarget.Self &&
+                (it.destination == Zone.BATTLEFIELD || it.destination == Zone.HAND)
         }
+    }
+
+    /**
+     * What an iteration over opponents' *own* gains reads as: nothing. "Each opponent may search
+     * their library for a basic land card and put it onto the battlefield" (Old-Growth Dryads),
+     * "each opponent draws a card" — the body's `you` is the opponent being visited, so a tutor,
+     * ramp, draw or token it makes is theirs: a drawback of the card, never its point. What it
+     * takes from them (a discard, a sacrifice, life) stays read.
+     */
+    private val OPPONENT_GIFTS: Set<IntentTag> = setOf(
+        IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION, IntentTag.RAMP, IntentTag.LIFEGAIN,
+        IntentTag.TOKEN_MAKER, IntentTag.RECURSION, IntentTag.PROTECTION, IntentTag.PUMP, IntentTag.ANTHEM,
+    )
+
+    /**
+     * Whether [effect] iterates over opponents only and everything its body does is a gain for the
+     * opponent visited — [OPPONENT_GIFTS] — so the whole node is a drawback to its controller
+     * (Old-Growth Dryads). [com.wingedsheep.ai.engine.LimitedCardRater] prices it as one.
+     */
+    internal fun giftsOnlyToOpponents(effect: ForEachEffect): Boolean {
+        val space = effect.space as? IterationSpace.Players ?: return false
+        if (includesYou(space.players)) return false
+        val inner = effectTags(effect.body)
+        return inner.isNotEmpty() && inner.all { it in OPPONENT_GIFTS }
     }
 
     /**

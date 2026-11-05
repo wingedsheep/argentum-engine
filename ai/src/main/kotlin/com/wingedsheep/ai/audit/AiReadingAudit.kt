@@ -340,6 +340,9 @@ object AiReadingAudit {
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect ||
+                            // A death-return grant (Verdant Rebirth, Feign Death): HoldPolicy holds
+                            // it for the removal it answers or the fight its target is in.
+                            (ExpiringGrantWindow.returnsFromDeathThisTurn(leaf) && IntentTag.PROTECTION in intent.tags) ||
                             // An instant-speed cast ban on an opponent: HoldPolicy rewards casting it
                             // before their main phase, where it covers their whole turn. Not a face
                             // (Revel in Silence): CastBanWindow reads the card's own spell only.
@@ -741,6 +744,10 @@ object AiReadingAudit {
         // what the Equipment is *for* is the card's reading of its "equipped creature" statics
         // (CardIntentAnalyzer tags those), and which creature gets it is the polarity check.
         if (leaf is AttachEquipmentEffect) return true
+        // "Each opponent may search their library for a basic land card …" (Old-Growth Dryads): an
+        // opponents-only iteration whose body is only their gain is the card's drawback, with
+        // nothing to aim or hold; the rater prices it as one.
+        if (leaf is ForEachEffect && CardIntentAnalyzer.giftsOnlyToOpponents(leaf)) return true
         // A card moving itself — "return this card to its owner's hand" when it dies, ninjutsu,
         // "shuffle it into its owner's library" — has no target to aim and is no spell to time:
         // whether it is worth doing is the simulation's call on the activation or trigger.
