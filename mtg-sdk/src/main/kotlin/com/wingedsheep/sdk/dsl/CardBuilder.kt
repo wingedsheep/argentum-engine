@@ -492,6 +492,15 @@ class CardBuilder(private val name: String) {
         keywordAbilityList.add(KeywordAbility.rampage(n))
     }
 
+    /**
+     * Add Afflict N (CR 702.130) — "Whenever this creature becomes blocked, defending player loses
+     * N life." Only the keyword is stored: the engine derives the trigger from the projected
+     * keyword — see [com.wingedsheep.sdk.scripting.Afflict].
+     */
+    fun afflict(n: Int) {
+        keywordAbilityList.add(KeywordAbility.afflict(n))
+    }
+
     // The set-mechanic helpers mobilize / firebending / sneak / decayed / vivid* / impending /
     // renew / craft now live as CardBuilder extensions in `dsl/mechanics/` (SDK plan §2.2).
 

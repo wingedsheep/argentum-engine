@@ -1551,6 +1551,78 @@
     ]
 }
 
+// Frontline Devastator
+{
+    "name": "Frontline Devastator",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Zombie Minotaur Warrior",
+    "oracleText": "Afflict 2 (Whenever this creature becomes blocked, defending player loses 2 life.)\n{1}{R}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Frontline Devastator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Tommy Arnold",
+        "flavorText": "The God-Pharaoh's benevolence concealed the factory he created to produce an army of Eternals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c869cc4-eed9-4b24-b60f-2d7f85b885dc.jpg?1783936029",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
+}
+
 // Gift of Strength
 {
     "name": "Gift of Strength",
@@ -1870,6 +1942,52 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Khenra Eternal
+{
+    "name": "Khenra Eternal",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Jackal Warrior",
+    "oracleText": "Afflict 1 (Whenever this creature becomes blocked, defending player loses 1 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "AFFLICT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "AFFLICT",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "For many years, servant mummies toiled in the mines to extract lazotep. The emergence of the Eternals revealed the sacred substance's true purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abbdc277-4a76-44a9-aeda-edabab1f579e.jpg?1783936040",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If multiple creatures block a creature with afflict, afflict triggers only once."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict causes the defending player to lose life; it's not damage or combat damage."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Afflict resolves before combat damage is dealt. If this loss of life brings a player to 0 life or less, that player loses the game immediately. A blocking creature with lifelink won't deal combat damage in time to save that player."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "If a creature is attacking a planeswalker, that planeswalker's controller is the defending player. If a creature is attacking a battle, that battle's protector is the defending player."
+            }
+        ]
+    }
 }
 
 // Lethal Sting
