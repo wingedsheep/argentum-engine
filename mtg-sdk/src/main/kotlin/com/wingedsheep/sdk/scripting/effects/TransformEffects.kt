@@ -58,7 +58,8 @@ enum class ReturnFace { TRANSFORMED, FRONT, BACK }
 
 /**
  * Exile a double-faced permanent, then return it to the battlefield as a **new object** on the
- * chosen face under its owner's control (FIN "Dominant" / eikon transform).
+ * chosen face under its owner's control — or the ability controller's, via [controllerOverride] (FIN
+ * "Dominant" / eikon transform; Conqueror's Galleon).
  *
  * Unlike [TransformEffect] (CR 701.27 — turning a permanent already on the battlefield over in
  * place, preserving counters/damage/attachments and firing transform triggers), this models the
