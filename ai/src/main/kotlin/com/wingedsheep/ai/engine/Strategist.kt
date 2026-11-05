@@ -1941,8 +1941,9 @@ class Strategist(
             if (targetPolarityFromEffect) TargetSelection.polarities(state, action, intents) else emptyList()
         fun rankSlot(index: Int) =
             TargetSelection.slotRanker(state, playerId, intents, rankTarget, slotPolarities.getOrNull(index))
+        val taken = if (targetPolarityFromEffect) TargetSelection.takenSlots(state, action, intents) else emptySet()
         fun worth(index: Int, candidates: List<EntityId>) = TargetSelection.worthTargeting(
-            state, targetInfos[index], candidates, playerId, slotPolarities.getOrNull(index),
+            state, targetInfos[index], candidates, playerId, slotPolarities.getOrNull(index), index in taken,
         )
         // Heuristic baseline for every requirement, then refine each one by simulation.
         val chosenTargets = mutableListOf<com.wingedsheep.engine.state.components.stack.ChosenTarget>()

@@ -310,10 +310,12 @@ object TargetSelection {
         val polarities = polarities(state, action, intents)
         if (polarities.isEmpty()) return false
         val infos = targetInfosFor(action) ?: autoSelectedPlayerSlot(action) ?: return false
-        return infos.zip(polarities).any { (info, polarity) ->
+        val taken by lazy(LazyThreadSafetyMode.NONE) { takenSlots(state, action, intents) }
+        return infos.zip(polarities).withIndex().any { (index, slot) ->
+            val (info, polarity) = slot
             info.minTargets > 0 && info.validTargets.isNotEmpty() && when (polarity) {
                 TargetPolarity.HARMFUL -> info.validTargets.all { sideOf(state, it, playerId) == Side.OURS }
-                TargetPolarity.BENEFICIAL -> info.validTargets.all { sideOf(state, it, playerId) == Side.THEIRS }
+                TargetPolarity.BENEFICIAL -> info.validTargets.all { sideOf(state, it, playerId, index in taken) == Side.THEIRS }
                 TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN -> false
             }
         }
@@ -482,12 +484,12 @@ object TargetSelection {
      * Whether [entityId] sits on our side of the table for [playerId] — the side a
      * [TargetPolarity.BENEFICIAL] slot wants. A teammate's permanent is ours (CR 810).
      */
-    fun isOurs(state: GameState, entityId: EntityId, playerId: EntityId): Boolean =
-        sideOf(state, entityId, playerId) == Side.OURS
+    fun isOurs(state: GameState, entityId: EntityId, playerId: EntityId, taken: Boolean = false): Boolean =
+        sideOf(state, entityId, playerId, taken) == Side.OURS
 
     /** Whether [entityId] sits on an opponent's side for [playerId]. */
-    fun isTheirs(state: GameState, entityId: EntityId, playerId: EntityId): Boolean =
-        sideOf(state, entityId, playerId) == Side.THEIRS
+    fun isTheirs(state: GameState, entityId: EntityId, playerId: EntityId, taken: Boolean = false): Boolean =
+        sideOf(state, entityId, playerId, taken) == Side.THEIRS
 
     private enum class Side { OURS, THEIRS, NEITHER }
 
@@ -496,8 +498,12 @@ object TargetSelection {
      * permanent its projected controller's, and a spell on the stack its caster's (the projection
      * covers the battlefield only, so the stack falls back to [ControllerComponent]). A teammate
      * is ours (CR 810).
+     *
+     * [taken]: the slot's effect puts its graveyard card under our control whoever owns it
+     * ([takenSlots]), so a card in any graveyard is ours to take.
      */
-    private fun sideOf(state: GameState, entityId: EntityId, playerId: EntityId): Side {
+    private fun sideOf(state: GameState, entityId: EntityId, playerId: EntityId, taken: Boolean = false): Side {
+        if (taken && inAGraveyard(state, entityId)) return Side.OURS
         val controller = when {
             state.getEntity(entityId)?.get<PlayerComponent>() != null -> entityId
             else -> state.projectedState.getController(entityId)
@@ -507,6 +513,52 @@ object TargetSelection {
             controller == playerId || controller in state.teamOf(playerId) -> Side.OURS
             state.isOpponentTo(controller, playerId) -> Side.THEIRS
             else -> Side.NEITHER
+        }
+    }
+
+    private fun inAGraveyard(state: GameState, entityId: EntityId): Boolean {
+        val owner = state.getEntity(entityId)?.get<OwnerComponent>()?.playerId ?: return false
+        return entityId in state.getZone(owner, Zone.GRAVEYARD)
+    }
+
+    /**
+     * The target slots of [action], in [targetInfosFor] order, whose graveyard card comes under our
+     * control whoever owns it — Rise from the Grave, Boneyard Parley. Read for a plain cast and a
+     * printed activated ability; empty for anything else (a modal, face-down, split, fused or
+     * transformed cast), which keeps the owner-sided reading.
+     */
+    fun takenSlots(state: GameState, action: LegalAction, intents: IntentCatalog): Set<Int> {
+        if (!intents.isEnabled || action.modalEnumeration != null) return emptySet()
+        return when (val base = action.action) {
+            is CastSpell -> {
+                if (base.castFaceDown || base.faceIndex != null || base.castFused || base.chosenModes.isNotEmpty() ||
+                    castsTransformed(state, base)) return emptySet()
+                state.getEntity(base.cardId)?.get<CardComponent>()?.name?.let(intents::spellTakenSlots).orEmpty()
+            }
+            is ActivateAbility -> state.getEntity(base.sourceId)?.get<CardComponent>()?.name
+                ?.let { intents.abilityTakenSlots(it, base.abilityId) }.orEmpty()
+            else -> emptySet()
+        }
+    }
+
+    /**
+     * [takenSlots] for a triggered ability's target decision ("when this enters, put target creature
+     * card from a graveyard onto the battlefield under your control"), keyed by requirement index
+     * as [decisionPolarities] is.
+     */
+    fun decisionTakenSlots(state: GameState, decision: ChooseTargetsDecision, intents: IntentCatalog): Set<Int> {
+        if (!intents.isEnabled) return emptySet()
+        val suspension = state.peekContinuation() as? Suspension ?: return emptySet()
+        if (suspension.question.id != decision.id) return emptySet()
+        return when (val answer = suspension.answer) {
+            is TriggeredAbilityContinuation ->
+                if (answer.sequentialTargets != null) emptySet()
+                else intents.effectTakenSlots(answer.effect, answer.targetRequirements)
+            is TriggerModalTargetSelectionContinuation ->
+                answer.chosenModeIndices.getOrNull(answer.currentOrdinal)?.let(answer.modes::getOrNull)
+                    ?.let { intents.effectTakenSlots(it.effect, it.targetRequirements) }.orEmpty()
+            // A copy's slots are re-aligned by [copySlots]; a copied reanimation keeps the owner-sided reading.
+            else -> emptySet()
         }
     }
 
@@ -543,6 +595,7 @@ object TargetSelection {
 
         val rankTarget = ranker(state, action, playerId, intents, polarityFromEffect)
         val slotPolarities = if (polarityFromEffect) polarities(state, action, intents) else emptyList()
+        val taken = if (polarityFromEffect) takenSlots(state, action, intents) else emptySet()
         val chosenTargets = mutableListOf<ChosenTarget>()
         val chosenIds = mutableSetOf<EntityId>()
         // How many targets each slot took, kept so a slot left empty *by choice* ahead of a filled
@@ -570,7 +623,7 @@ object TargetSelection {
             // (or the engine) to reject. Either beats `first()` on an empty list, which is what this
             // used to do — an `?: available.first()` that could only ever run when `available` was
             // empty, and so could only ever throw.
-            val worth = worthTargeting(state, info, available, playerId, slotPolarities.getOrNull(index))
+            val worth = worthTargeting(state, info, available, playerId, slotPolarities.getOrNull(index), index in taken)
             if (worth.isEmpty() && available.isNotEmpty()) {
                 // An optional slot whose every candidate is on the wrong side: leave it empty.
                 counts += 0
@@ -608,10 +661,12 @@ object TargetSelection {
         candidates: List<EntityId>,
         playerId: EntityId,
         polarity: TargetPolarity?,
+        /** The slot's graveyard card comes under our control whoever owns it — see [takenSlots]. */
+        taken: Boolean = false,
     ): List<EntityId> {
         if (info.minTargets > 0) return candidates
         return when (polarity) {
-            TargetPolarity.BENEFICIAL -> candidates.filterNot { isTheirs(state, it, playerId) }
+            TargetPolarity.BENEFICIAL -> candidates.filterNot { isTheirs(state, it, playerId, taken) }
             TargetPolarity.HARMFUL -> candidates.filterNot { isOurs(state, it, playerId) }
             TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN, null -> candidates
         }

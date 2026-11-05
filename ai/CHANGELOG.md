@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4443 Takes an opponent's graveyard creature when the spell puts it under our control: Boneyard Parley, Rise from the Grave and Virtue of Persistence-style reanimations name the best creature card in any graveyard instead of only our own, are no longer held when only an opponent's card is there to take, and Boneyard Parley's pile reanimation is priced as recursion in drafts
 - #4442 Values creatures with afflict above their bare body, in play and in the draft heuristic, since every block of them costs the defender life.
 - #4441 Reads graveyard cards brought back through piles or modes as recursion: Boneyard Parley-style reanimations (and Brought Back, Agadeem's Awakening, Nethroi's mutate return) name the best creature card instead of the cheapest and count as recursion in drafts, a modal "return target card from your graveyard to your hand" (March of the Drowned) is recursion rather than removal, and "can't attack unless you control an artifact" (Desperate Castaways) reads as the body's drawback instead of an unrecognised ability
 - Counts "search your library for a card and put it into your graveyard" (Entomb, Vizier of the Anointed) as stocking its graveyard, and eternalize as a graveyard keyword, when drafting and building graveyard decks.

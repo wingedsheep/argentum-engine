@@ -428,7 +428,7 @@ object LimitedCardRater {
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot, card: CardDefinition): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect, slot.targets)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
 
     // Four-mana activations are already slow; above that, retain only the share likely to be used.
     private fun activationDiscount(slot: EffectWalker.Slot): Double =
@@ -544,12 +544,17 @@ object LimitedCardRater {
      * and a gather or a move is worth nothing alone, so "destroy all creatures" and "look at the top
      * three, put one into your hand" scored zero. [CardIntentAnalyzer.pipelineTags] reads what the
      * stages add up to; this prices that reading like the leaf it stands for — a wrath or a picked
-     * destroy like a destroy, a dig like one card drawn.
+     * destroy like a destroy, a dig like one card drawn — and graveyard targets the pipeline brings
+     * onto our battlefield, however it splits them first (Boneyard Parley's piles), like the
+     * recursion they are.
      */
-    private fun pipelineScore(root: Effect): Double {
+    private fun pipelineScore(root: Effect, targets: List<TargetRequirement>): Double {
+        val reanimation = if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(root, targets)) {
+            TAG_VALUE.getValue(IntentTag.RECURSION)
+        } else 0.0
         val tags = CardIntentAnalyzer.pipelineTags(root)
-        if (tags.isEmpty()) return 0.0
-        var score = 0.0
+        if (tags.isEmpty()) return reanimation
+        var score = reanimation
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
         if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
