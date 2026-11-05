@@ -4747,6 +4747,60 @@
     }
 }
 
+// New Perspectives
+{
+    "name": "New Perspectives",
+    "manaCost": "{5}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw three cards.\nAs long as you have seven or more cards in hand, you may pay {0} rather than pay cycling costs.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "New Perspectives:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "FreeCyclingCosts",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Darek Zabrocki",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c56b5290-997d-44de-ac83-4bc9a9911858.jpg?1783936518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nimble-Blade Khenra
 {
     "name": "Nimble-Blade Khenra",

@@ -51,8 +51,11 @@ class CyclingEnumerator : ActionEnumerator {
                 val hasXCost = plainCycling.cost.hasX
                 // Cycling is an activated ability (CR 702.29a), so an "abilities you activate"
                 // reduction (Zirda) prices it — the same reduction the handler charges.
+                // A free-cycling grant (New Perspectives) swaps in {0} as an alternative cost
+                // before the reductions — for an {X} cost that's the X = 0 baseline.
                 val baseCost = context.castPermissionUtils.applyActivatedAbilityCostReduction(
-                    plainCycling.cost.withXAs(0), state, cardId, playerId
+                    context.castPermissionUtils.cyclingBaseCost(plainCycling.cost, 0, state, playerId),
+                    state, cardId, playerId
                 )
                 val canAfford = context.manaSolver.canPay(state, playerId, baseCost, precomputedSources = context.availableManaSources)
                 val autoTapPreview = if (context.skipAutoTapPreview) null else {
@@ -61,7 +64,12 @@ class CyclingEnumerator : ActionEnumerator {
                 }
                 val maxAffordableX = if (hasXCost) {
                     val available = context.manaSolver.getAvailableManaCount(state, playerId, context.availableManaSources)
-                    ((available - baseCost.cmc).coerceAtLeast(0)) / plainCycling.cost.xCount.coerceAtLeast(1)
+                    // X > 0 pays the printed cost (the {0} alternative fixes X at 0), so the
+                    // ceiling is measured against the printed cost's fixed part.
+                    val printedFixed = context.castPermissionUtils.applyActivatedAbilityCostReduction(
+                        plainCycling.cost.withXAs(0), state, cardId, playerId
+                    )
+                    ((available - printedFixed.cmc).coerceAtLeast(0)) / plainCycling.cost.xCount.coerceAtLeast(1)
                 } else null
                 result.add(
                     LegalAction(
@@ -71,7 +79,8 @@ class CyclingEnumerator : ActionEnumerator {
                         affordable = canAfford,
                         hasXCost = hasXCost,
                         maxAffordableX = maxAffordableX,
-                        manaCostString = if (hasXCost) plainCycling.cost.toString() else baseCost.toString(),
+                        // A free cycle (New Perspectives) prints as an empty cost; surface "{0}".
+                        manaCostString = if (hasXCost) plainCycling.cost.toString() else baseCost.toString().ifEmpty { "{0}" },
                         autoTapPreview = autoTapPreview
                     )
                 )
@@ -79,7 +88,8 @@ class CyclingEnumerator : ActionEnumerator {
 
             if (typedCycling != null) {
                 val cost = context.castPermissionUtils.applyActivatedAbilityCostReduction(
-                    typedCycling.cost, state, cardId, playerId
+                    context.castPermissionUtils.cyclingBaseCost(typedCycling.cost, null, state, playerId),
+                    state, cardId, playerId
                 )
                 val description = "${typedCycling.displayPrefix} ${cardComponent.name}"
                 val canAfford = context.manaSolver.canPay(state, playerId, cost, precomputedSources = context.availableManaSources)
@@ -93,7 +103,7 @@ class CyclingEnumerator : ActionEnumerator {
                         description = description,
                         action = TypecycleCard(playerId, cardId),
                         affordable = canAfford,
-                        manaCostString = cost.toString(),
+                        manaCostString = cost.toString().ifEmpty { "{0}" },
                         autoTapPreview = autoTapPreview
                     )
                 )

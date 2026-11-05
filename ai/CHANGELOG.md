@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Drafts and builds a free-cycling enchantment (New Perspectives) as a payoff its own cycling and typecycling cards feed, instead of reading it as a lone draw-three
 - Reads a creature that counters whatever targets it (Glyph Keeper) as self-protection rather than a counterspell, so playouts no longer treat casting it on an empty stack as a dead card, and prices the shield in its board value
 - #4472 Aims protection-from-a-colour, wither, infect, persist, undying, myriad and changeling grants at its own creatures instead of the opponent's, times "gains deathtouch and lifelink, and when it dies this turn …" tricks for a fight, and reads "opponent blights" (a -1/-1 counter on a creature they choose) as removal
 - #4468 Prices a standing free-cast enchantment (Omnipresence, Omniscience, Fires of Invention) as an engine to answer, so its enchantment removal goes there first; reads damage-by-toughness and attacking despite defender (Ghalta the Immovable, High Alert), keywords granted to its own spells (split second, storm, convoke, lifelink) and taxes on the opponent's spells (Thalia, the Survivor) when drafting and building, instead of "abilities not recognised".

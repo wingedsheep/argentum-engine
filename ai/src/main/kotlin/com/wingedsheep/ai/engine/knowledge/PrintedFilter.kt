@@ -105,6 +105,7 @@ internal object PrintedFilter {
             CardPredicate.ManaValueIsEven -> manaValue % 2 == 0
             CardPredicate.ManaValueIsOdd -> manaValue % 2 == 1
             CardPredicate.HasXInManaCost -> manaCost.hasX
+            CardPredicate.HasCycling -> card.hasCycling
             is CardPredicate.PowerEquals -> stat(card, power = true) { it == predicate.value }
             is CardPredicate.BasePowerEquals -> stat(card, power = true) { it == predicate.value }
             is CardPredicate.PowerAtMost -> stat(card, power = true) { it <= predicate.max }

@@ -57,6 +57,7 @@ import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EquipAbilitiesAtInstantSpeed
+import com.wingedsheep.sdk.scripting.FreeCyclingCosts
 import com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -633,7 +634,7 @@ class CastPermissionUtils(
      * (Forge Anew's "During your turn") — currently holds. Equip is otherwise sorcery-speed.
      */
     fun canEquipAtInstantSpeed(state: GameState, playerId: EntityId): Boolean =
-        hasActiveEquipPermission(state, playerId) { it is EquipAbilitiesAtInstantSpeed }
+        hasActiveControllerPermission(state, playerId) { it is EquipAbilitiesAtInstantSpeed }
 
     /**
      * True when [playerId] holds an instant-speed loyalty permission
@@ -665,7 +666,26 @@ class CastPermissionUtils(
      * `EquipActivationsThisTurnComponent.count == 0` so only the turn's *first* equip is free.
      */
     fun hasFreeFirstEquip(state: GameState, playerId: EntityId): Boolean =
-        hasActiveEquipPermission(state, playerId) { it is FreeFirstEquipEachTurn }
+        hasActiveControllerPermission(state, playerId) { it is FreeFirstEquipEachTurn }
+
+    /**
+     * The cycling cost [playerId] pays before cost increases and reductions: {0} when they control
+     * an active [FreeCyclingCosts] grant (New Perspectives, condition holding), otherwise [printed]
+     * with X substituted. The {0} is an alternative cost (CR 601.2f via CR 602.2b), so the caller
+     * still applies [applyActivatedAbilityCostReduction] on top. An `{X}` cycling cost is free only
+     * for X = 0 — an alternative cost without X sets X to 0 (CR 107.3), so announcing a larger X
+     * opts out of the {0} and pays the printed cost. Shared by the enumerator and both cycling
+     * handlers so the offered and paid costs agree; typecycling is cycling (CR 702.29e).
+     */
+    fun cyclingBaseCost(printed: ManaCost, xValue: Int?, state: GameState, playerId: EntityId): ManaCost {
+        val x = xValue ?: 0
+        if ((!printed.hasX || x == 0) && hasFreeCycling(state, playerId)) return ManaCost.ZERO
+        return printed.withXAs(x)
+    }
+
+    /** True when [playerId] controls a [FreeCyclingCosts] grant whose condition (if any) holds. */
+    fun hasFreeCycling(state: GameState, playerId: EntityId): Boolean =
+        hasActiveControllerPermission(state, playerId) { it is FreeCyclingCosts }
 
     /**
      * Total generic-mana reduction [playerId] has for activating equip abilities, summed across
@@ -753,7 +773,7 @@ class CastPermissionUtils(
      * [ConditionalStaticAbility] and evaluating its condition against the granting permanent.
      * Mirrors the permission-scan shape used by [hasGraveyardPlayPermissionForType].
      */
-    private fun hasActiveEquipPermission(
+    private fun hasActiveControllerPermission(
         state: GameState,
         playerId: EntityId,
         predicate: (com.wingedsheep.sdk.scripting.StaticAbility) -> Boolean
@@ -782,7 +802,7 @@ class CastPermissionUtils(
     /**
      * Sum the [ReduceEquipCost] amounts across [playerId]'s battlefield, unwrapping a
      * [ConditionalStaticAbility] and evaluating its condition against the granting permanent.
-     * Mirrors [hasActiveEquipPermission] but accumulates an amount instead of short-circuiting.
+     * Mirrors [hasActiveControllerPermission] but accumulates an amount instead of short-circuiting.
      */
     private fun sumActiveEquipReductions(
         state: GameState,

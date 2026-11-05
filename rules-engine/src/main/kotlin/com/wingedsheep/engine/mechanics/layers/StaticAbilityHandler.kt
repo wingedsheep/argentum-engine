@@ -1377,6 +1377,7 @@ class StaticAbilityHandler(
             // ActivatedAbilityEnumerator / ActivateAbilityHandler, not continuous effects):
             is EquipAbilitiesAtInstantSpeed,
             is FreeFirstEquipEachTurn,
+            is com.wingedsheep.sdk.scripting.FreeCyclingCosts,
             is ReduceEquipCost,
             is ReduceActivatedAbilityCost,
             is com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost,
