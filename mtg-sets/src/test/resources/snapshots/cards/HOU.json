@@ -4211,6 +4211,94 @@
     ]
 }
 
+// Torment of Venom
+{
+    "name": "Torment of Venom",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Put three -1/-1 counters on target creature. Its controller loses 3 life unless they sacrifice another nonland permanent of their choice or discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 3,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "Choice",
+                        "options": [
+                            {
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "StateNot",
+                                                "predicate": {
+                                                    "type": "IsEntity",
+                                                    "reference": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t0"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "type": "PayAtom",
+                                "atom": "AtomDiscard"
+                            }
+                        ]
+                    },
+                    "suffer": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "TargetController"
+                    },
+                    "player": "TargetController",
+                    "consequenceDescription": "lose 3 life"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Johann Bodin",
+        "flavorText": "The Scorpion God's sting sends venom strong enough to poison blood, bone, and spirit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f66410b-67a3-4f6a-b3ae-dcad9858a5da.jpg?1783936034"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tragic Lesson
 {
     "name": "Tragic Lesson",

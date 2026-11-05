@@ -1343,6 +1343,11 @@ would be a no-op (Wand of Ith splits the revealed card into a land pile and a no
 each ransom on its own pile). The resolving pipeline's collections *are* carried across the
 pay-or-decline pause, so a suffer effect can name them on either answer.
 
+**Cost filters are judged in the resolution's context**, with the payer as "you": a `Costs.pay` filter
+may name the resolving spell's targets, pipeline values and source — e.g. `otherThan(ContextTarget(0))`
+/ `otherThan(<bound target>)` for "sacrifice another nonland permanent" relative to the target
+(Torment of Venom), on both the single-cost and the `Costs.pay.Choice` paths.
+
 `PayOrSufferEffect(cost, suffer, player = EffectTarget.Controller)` defaults to charging the ability's
 controller, but **`player` may route the decision *and* the payment to any other player** — most
 usefully `EffectTarget.PlayerRef(Player.TriggeringPlayer)` on a death trigger, which resolves to the
@@ -8160,6 +8165,13 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `Targets.Any(GameObjectFilter.Any.notTriggeringEntity())`, where the damaged permanent is excluded but players
   stay legal. `TargetFilter`-based requirements keep `otherThanTriggeringEntity()`. False with no trigger
   context (projection, untap and trigger-matching evaluate it as false).
+- `IsEntity(reference)` (negated builder `otherThan(reference)`) — the candidate *is* the object a
+  `EffectTarget.SingleEntity` names: the general identity test behind "another … other than it" when "it"
+  is a role other than the source, granter or triggering entity (those keep `IsSource`,
+  `IsGrantingPermanent`, `IsTriggeringEntity`). Torment of Venom's "its controller loses 3 life unless they
+  sacrifice **another** nonland permanent" is `Costs.pay.Sacrifice(NonlandPermanent.otherThan(creature))`,
+  `creature` being the spell's target. A reference resolving to nothing matches nothing (so `otherThan`
+  then excludes nothing); false in projection, untap and trigger-matching contexts.
 - `HasGreatestPower` (filter builder `hasGreatestPower()`) / `HasLeastPower` (filter builder
   `hasLeastPower()`) — has the greatest / least projected power among creatures *its controller*
   controls (ties all qualify). Used for "creature with the greatest/least power" target and edict

@@ -2164,6 +2164,11 @@ class PredicateEvaluator(
                     container.get<BlockingComponent>()?.blockedAttackerIds?.contains(referenced) == true
             }
 
+            // Identity with a named reference — negated, "another … other than its target"
+            // (Torment of Venom). A reference resolving to nothing matches nothing.
+            is StatePredicate.IsEntity ->
+                resolveEntity(state, predicate.reference, context, projected) == entityId
+
             // Token created by the effect's source permanent (CR 111). Source-relative: the
             // candidate's stamped CreatedByComponent.creatorId equals context.sourceId. Inert with
             // no source context or for tokens with no recorded creator.

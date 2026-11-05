@@ -571,6 +571,8 @@ class BeginningPhaseManager(
         // Combat-partner history is cleared at cleanup, so nothing has blocked anything yet this turn.
         is StatePredicate.BlockPairedWithEntityThisTurn -> false
         is StatePredicate.IsBlockingEntity -> false
+        // Reference-relative identity; untap filtering carries no references.
+        is StatePredicate.IsEntity -> false
         // Untap candidates are battlefield permanents, so back face up is the whole CR 701.27g test.
         StatePredicate.IsTransformed ->
             container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.isBack == true
