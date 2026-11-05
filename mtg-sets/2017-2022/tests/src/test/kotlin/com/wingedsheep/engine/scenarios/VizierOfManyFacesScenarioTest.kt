@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.EmbalmedComponent
@@ -12,6 +14,7 @@ import com.wingedsheep.mtg.sets.definitions.akh.cards.VizierOfManyFaces
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.embalmAbility
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -44,6 +47,8 @@ class VizierOfManyFacesScenarioTest : FunSpec({
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
 
+    val seenEvents = mutableListOf<GameEvent>()
+
     fun GameTestDriver.resolveChoosing(pick: (SelectCardsDecision) -> List<EntityId>): List<EntityId> {
         var offered: List<EntityId> = emptyList()
         var guard = 0
@@ -53,6 +58,7 @@ class VizierOfManyFacesScenarioTest : FunSpec({
                 null -> bothPass()
                 else -> autoResolveDecision()
             }
+            seenEvents += events
         }
         return offered
     }
@@ -112,10 +118,19 @@ class VizierOfManyFacesScenarioTest : FunSpec({
     test("embalmed, copying nothing: the token is a 0/0 Vizier and dies") {
         val d = driver()
         val me = d.player1
-        d.putCreatureOnBattlefield(d.player2, "Centaur Courser")
+        val courser = d.putCreatureOnBattlefield(d.player2, "Centaur Courser")
         val vizier = d.putCardInGraveyard(me, "Vizier of Many Faces")
         d.embalm(me, vizier)
-        d.resolveChoosing { emptyList() }
-        d.findPermanent(me, "Vizier of Many Faces") shouldBe null
+        seenEvents.clear()
+        val offered = d.resolveChoosing { emptyList() }
+        offered shouldContain courser
+        val tokenEntered = seenEvents.any {
+            it is ZoneChangeEvent && it.entityName == "Vizier of Many Faces" && it.toZone == Zone.BATTLEFIELD
+        }
+        withClue("the declined token entered as a 0/0 Vizier and died to state-based actions") {
+            tokenEntered shouldBe true
+            d.findPermanent(me, "Vizier of Many Faces") shouldBe null
+            d.getExileCardNames(me) shouldContain "Vizier of Many Faces"
+        }
     }
 })

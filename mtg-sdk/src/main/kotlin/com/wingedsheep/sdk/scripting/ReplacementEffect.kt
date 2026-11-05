@@ -2782,7 +2782,11 @@ data class ConditionalCopyExceptions(
     val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions,
 ) {
     val description: String
-        get() = "if ${condition.description}, ${exceptions.clauses().joinToString(" and ")}"
+        get() {
+            // Source-state conditions already read "if this …"; don't double the "if".
+            val gate = condition.description.let { if (it.startsWith("if ")) it else "if $it" }
+            return "$gate, ${exceptions.clauses().joinToString(" and ")}"
+        }
 
     fun applyTextReplacement(replacer: TextReplacer): ConditionalCopyExceptions {
         val newCondition = condition.applyTextReplacement(replacer)

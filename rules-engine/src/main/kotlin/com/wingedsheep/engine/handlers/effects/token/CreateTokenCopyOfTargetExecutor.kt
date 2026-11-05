@@ -335,6 +335,9 @@ class CreateTokenCopyOfTargetExecutor(
         count: Int,
         auraHostId: EntityId?,
         prescribedHostId: EntityId? = null,
+        // Creation-order index of this call's first token: non-zero when the rest of a batch resumes
+        // after one token paused for an entry choice (CreateTokenCopyRemainingContinuation).
+        firstIndex: Int = 0,
     ): EffectResult {
         val targetContainer = copySource(state, effect, context)
             ?: return EffectResult.success(state)
@@ -374,7 +377,8 @@ class CreateTokenCopyOfTargetExecutor(
         } else null
         if (selfCopy != null) {
             EffectCopyEntry.prepareMinted(
-                state, effect, context, controllerId, tokenCard.name, selfCopy, cappedCount, amountEvaluator.predicates
+                state, effect, context, controllerId, tokenCard.name, selfCopy, firstIndex + cappedCount,
+                amountEvaluator.predicates
             )?.let { return it }
         }
         // CR 508.4: "its controller chooses ... as it enters" — every copy's defender is settled
@@ -391,7 +395,8 @@ class CreateTokenCopyOfTargetExecutor(
             effect.attackDefender == com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES
         ) {
             if (effect.attackedPlayer != null && namedDefendingPlayer == null) List(cappedCount) { null }
-            else EnteringAttackDefenderChooser.defenders(state, context, controllerId, cappedCount, namedDefendingPlayer)
+            else EnteringAttackDefenderChooser.defenders(state, context, controllerId, firstIndex + cappedCount, namedDefendingPlayer)
+                ?.drop(firstIndex)
                 ?: return EnteringAttackDefenderChooser.pause(
                     state, effect, context, controllerId, cappedCount, tokenCard.name, namedDefendingPlayer
                 )
@@ -427,7 +432,7 @@ class CreateTokenCopyOfTargetExecutor(
             // The token's own as-enters copy choice (see selfCopy above). Its "except if …"
             // clauses read the token itself — provenance included ("if it was embalmed") — so they
             // are settled against the token as built so far, just before it enters.
-            val entryChoice = selfCopy?.let { context.entryCopies[EffectCopyEntry.mintedKey(index)] }
+            val entryChoice = selfCopy?.let { context.entryCopies[EffectCopyEntry.mintedKey(firstIndex + index)] }
                 ?.takeIf { it.copiedCard != null }
                 ?.let { choice ->
                     val probe = newState.withEntity(tokenId, ComponentContainer.of(*components.toTypedArray()))
@@ -566,7 +571,9 @@ class CreateTokenCopyOfTargetExecutor(
                 initialCounters = initialCounters, predicateEvaluator = amountEvaluator.predicates
             )
 
-            for (ability in effect.triggeredAbilities) {
+            // "Except it has …" grants are part of the token-copy effect, which an as-enters copy
+            // overwrites (CR 707.9) — like the exceptions and added statics above.
+            if (!enteredAsCopy) for (ability in effect.triggeredAbilities) {
                 val grant = GrantedTriggeredAbility(
                     entityId = tokenId,
                     ability = ability,
@@ -580,7 +587,7 @@ class CreateTokenCopyOfTargetExecutor(
             // Activated abilities granted to the copy (e.g. Shelob's Food sacrifice ability). Tokens
             // have no CardDefinition, so granted abilities live in GameState.grantedActivatedAbilities,
             // which the legal-action enumerator and ActivateAbilityHandler consult for any entity.
-            for (ability in effect.activatedAbilities) {
+            if (!enteredAsCopy) for (ability in effect.activatedAbilities) {
                 val grant = GrantedActivatedAbility(
                     entityId = tokenId,
                     ability = ability,
@@ -596,7 +603,7 @@ class CreateTokenCopyOfTargetExecutor(
             // cost {2} less to activate\""). Like triggered/activated grants, these live in
             // GameState.grantedStaticAbilities since tokens have no CardDefinition; each static
             // reader (e.g. the equip-cost reducer) unions granted statics with printed ones.
-            for (ability in effect.addedStaticAbilities) {
+            if (!enteredAsCopy) for (ability in effect.addedStaticAbilities) {
                 val grant = GrantedStaticAbility(
                     entityId = tokenId,
                     ability = ability,
@@ -628,6 +635,7 @@ class CreateTokenCopyOfTargetExecutor(
                             context = context,
                             controllerId = controllerId,
                             remaining = remaining,
+                            firstIndex = firstIndex + index + 1,
                         )
                     )
                 }

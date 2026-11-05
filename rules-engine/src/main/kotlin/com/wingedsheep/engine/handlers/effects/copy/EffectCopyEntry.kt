@@ -91,7 +91,9 @@ object EffectCopyEntry {
      * a copy of; the answer accumulates under [mintedKey] and [effect] is executed again from the top
      * ([EffectCopyEntryContinuation]). Null once every token has an answer, or has no candidate.
      * A [EntersAsCopy.condition] here is read with no entrant object yet, so only a condition that
-     * doesn't look at the source (Protean Raider's raid) can hold.
+     * doesn't look at the source (Protean Raider's raid) can hold. A granted entry copy waiting for
+     * the token (Mystic Reflection) still applies after this choice and wins — one of the two orders
+     * CR 616.1 allows, though the controller isn't asked which.
      */
     fun prepareMinted(
         state: GameState,

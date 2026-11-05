@@ -297,7 +297,7 @@ class CoreAutoResumerModule(
                         targetFinder = services.targetFinder
                     ).createTokens(
                         state, e, continuation.context, continuation.controllerId,
-                        continuation.remaining, auraHostId = null,
+                        continuation.remaining, auraHostId = null, firstIndex = continuation.firstIndex,
                     )
                 is com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect ->
                     com.wingedsheep.engine.handlers.effects.token.CreateTokenCopyOfSourceExecutor(

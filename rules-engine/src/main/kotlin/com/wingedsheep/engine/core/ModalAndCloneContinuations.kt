@@ -697,6 +697,11 @@ data class CreateTokenCopyRemainingContinuation(
     val context: com.wingedsheep.engine.handlers.EffectContext,
     val controllerId: EntityId,
     val remaining: Int,
+    /**
+     * The creation-order index of the first remaining token, so the per-token answers prepared on
+     * [context] before any token existed (entry copies, CR 508.4 defenders) stay with their token.
+     */
+    val firstIndex: Int = 0,
 ) : AutomaticContinuation
 
 /**
