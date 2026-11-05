@@ -524,6 +524,9 @@ object TargetPolarityAnalyzer {
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = targetLeaves(effect)
+        // Graveyard cards a pipeline brings onto our battlefield, however it splits them first
+        // (Boneyard Parley's piles): the best creature card in any graveyard is the one to name.
+        if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(effect, requirements)) recursions += requirements.indices
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
