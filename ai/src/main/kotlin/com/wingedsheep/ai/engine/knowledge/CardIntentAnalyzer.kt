@@ -787,6 +787,8 @@ object CardIntentAnalyzer {
         addAll(regrowthTags(root, ownPile))
         addAll(wishTags(root))
         addAll(graveyardExileTags(root))
+        addAll(handToBattlefieldTags(root))
+        if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // Exile it, its owner may cast it again (Airbend, Release to the Wind): a bounce that skips
         // the hand, so it reads as a bounce's MoveToZone does in [tagsOf] — tempo removal.
@@ -917,6 +919,64 @@ object CardIntentAnalyzer {
             move.from in wished && to.zone == Zone.HAND && to.player == Player.You
         }
         return if (toOurHand) setOf(IntentTag.TUTOR) else emptySet()
+    }
+
+    /**
+     * "Put a creature card from your hand onto the battlefield" (Kinscaer Sentry, Goblin Lackey,
+     * Kaalia), "you may put a land card from your hand onto the battlefield" (Arboreal Grazer,
+     * Burgeoning) — a gather from **our own hand** whose cards, or the ones picked from among them,
+     * move onto our battlefield. Neither leaf says it: the gather is how a discard starts too.
+     *
+     * A land-only gather is an extra land drop, [IntentTag.RAMP]. Anything else is a permanent that
+     * skipped its mana cost — the payoff [IntentTag.FREE_SPELL] names for a spell cast for free.
+     * A face-down move (manifest) is a 2/2, not the card, and stays unread.
+     */
+    private fun handToBattlefieldTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val fromHand = HashMap<String, Boolean>()
+        for (leaf in leaves) {
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: continue
+            if (source.zone == Zone.HAND && source.player == Player.You) fromHand[leaf.storeAs] = isLandOnly(source.filter)
+        }
+        if (fromHand.isEmpty()) return emptySet()
+        do {
+            val before = fromHand.size
+            for (leaf in leaves) for (from in sourcesOf(leaf)) {
+                val landOnly = fromHand[from] ?: continue
+                derivedCollections(leaf, setOf(from)).forEach { fromHand.putIfAbsent(it, landOnly) }
+            }
+        } while (fromHand.size != before)
+        return leaves.flatMapTo(HashSet()) { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@flatMapTo emptySet()
+            val landOnly = fromHand[move.from] ?: return@flatMapTo emptySet()
+            val to = move.destination as? CardDestination.ToZone ?: return@flatMapTo emptySet()
+            if (move.faceDown != null || to.zone != Zone.BATTLEFIELD || to.player != Player.You) emptySet()
+            else setOf(if (landOnly) IntentTag.RAMP else IntentTag.FREE_SPELL)
+        }
+    }
+
+    private fun isLandOnly(filter: GameObjectFilter): Boolean =
+        filter.anyOf.isEmpty() &&
+            (CardPredicate.IsLand in filter.cardPredicates || CardPredicate.IsBasicLand in filter.cardPredicates)
+
+    /**
+     * "Look at the top four cards of your library, then put them back in any order" (Sage Owl),
+     * "mill four cards, then you may put a creature or land card from among them on top of your
+     * library" (Lluwen) — a gather from **our own** library top whose cards only go back to that
+     * library or into our graveyard, arranged or picked on the way: scry's card flow
+     * ([IntentTag.CARD_SELECTION]), spelled as a pipeline. A move to a hand, the battlefield or exile
+     * is a draw, a cheat or an impulse, read elsewhere; a random bottom with no pick arranges nothing.
+     *
+     * Internal so the reading audit can skip such a pipeline the way it skips a scry leaf.
+     */
+    internal fun selectsOwnLibraryTop(leaves: List<Effect>): Boolean {
+        val ours = collectionsFromTop(leaves) { it == Player.You }
+        if (ours.isEmpty()) return false
+        val moves = leaves.filterIsInstance<MoveCollectionEffect>().filter { it.from in ours }
+        val zones = moves.map { (it.destination as? CardDestination.ToZone)?.zone }
+        if (Zone.LIBRARY !in zones || zones.any { it != Zone.LIBRARY && it != Zone.GRAVEYARD }) return false
+        return leaves.any { it is SelectFromCollectionEffect && it.from in ours } ||
+            moves.any { it.order == CardOrder.ControllerChooses || it.order == CardOrder.OwnerChooses }
     }
 
     /**
@@ -1110,6 +1170,11 @@ object CardIntentAnalyzer {
                 leaf is MoveCollectionEffect && leaf.from in groups &&
                     (leaf.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD &&
                     (leaf.moveType == MoveType.Destroy || leaf.moveType == MoveType.Sacrifice) -> leaf.from
+                // "Return all non-Elemental creatures to their owners' hands" (Sunderflock,
+                // Aetherize, Hurkyl's Recall): the bounce-all, as the group-targeted bounce reads
+                // in [tagsOf] — tempo removal, a wrath when it is still a whole group.
+                leaf is MoveCollectionEffect && leaf.from in groups && leaf.faceDown == null &&
+                    (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND -> leaf.from
                 // "Each opponent blights 1", "target opponent blights 2" (High Perfect Morcant,
                 // Champion of the Weird): a -1/-1 counter on a creature they pick — the edict's
                 // shrinking cousin, the same answer [counterTags] reads in a targeted -1/-1 counter.
@@ -1284,8 +1349,16 @@ object CardIntentAnalyzer {
 
     /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
     private fun collectionsFromTop(leaves: List<Effect>, whose: (Player) -> Boolean): Set<String> {
-        val names = leaves.mapNotNullTo(HashSet()) {
-            (it as? GatherCardsEffect)?.takeIf { g -> (g.source as? CardSource.TopOfLibrary)?.player?.let(whose) == true }?.storeAs
+        val names = HashSet<String>()
+        for (leaf in leaves) when (leaf) {
+            is GatherCardsEffect ->
+                if ((leaf.source as? CardSource.TopOfLibrary)?.player?.let(whose) == true) names += leaf.storeAs
+            // "Reveal cards from the top of your library until you reveal X permanent cards" (Aurora
+            // Awakener, Sanar): a dig of unknown depth, the same cards off the same top.
+            is GatherUntilMatchEffect -> if (whose(leaf.player)) names += listOf(leaf.storeMatch, leaf.storeRevealed)
+            // "Each opponent exiles cards from the top of their library until …" (Dream Harvest).
+            is ExileLibraryUntilManaValueEffect -> if (whose(leaf.players)) names += leaf.storeAs
+            else -> {}
         }
         if (names.isEmpty()) return names
         do {
@@ -1572,6 +1645,11 @@ object CardIntentAnalyzer {
         // of a library or out of exile: a spell for free, see [IntentTag.FREE_SPELL]. A cast that
         // still pays the spell's mana cost is only a zone it may be cast from, and earns no tag.
         is CastFromCollectionWithoutPayingCostEffect -> if (effect.payManaCost) emptySet() else setOf(IntentTag.FREE_SPELL)
+        // "Until end of turn, you may cast cards exiled this way without paying their mana costs"
+        // (Dream Harvest, Mind's Desire, a hideaway land's "play the exiled card without paying its
+        // mana cost"): the same free spell, granted for later in the turn instead of cast now.
+        // Handed back to each card's owner, it is theirs to cast, not ours.
+        is GrantPlayWithoutPayingCostEffect -> if (effect.ownerControls) emptySet() else setOf(IntentTag.FREE_SPELL)
 
         // "Your opponents can't cast spells this turn" / "target player can't cast …": disruption whose
         // payoff is spells never cast. A ban that binds its controller too is a price, not a payoff.
@@ -2422,13 +2500,16 @@ object CardIntentAnalyzer {
             // leaves-play draw has already paid out, or pays out in the removal, so it is not counted,
             // and neither is a body that sacrifices itself at the end step (Frostbite Pyromental):
             // it is gone before the stream can run twice.
+            // A free permanent or spell every time it fires (Kinscaer Sentry and Goblin Lackey
+            // putting a creature from hand onto the battlefield, Goliath Daydreamer recasting a
+            // spell) is the same engine paid in mana instead of cards.
             val repeatableDraw = !repeatableRemoval && !sacrificesItselfAtEndStep(scripts) && scripts.any { script ->
                 script.triggeredAbilities.any { trigger ->
-                    canFireMoreThanOnce(trigger) && IntentTag.DRAW in analyzeEffect(
+                    canFireMoreThanOnce(trigger) && analyzeEffect(
                         trigger.effect,
                         trigger.allTargetRequirements,
                         turnAhead = EffectWalker.firesWithItsTurnAhead(trigger),
-                    ).tags
+                    ).tags.let { IntentTag.DRAW in it || IntentTag.FREE_SPELL in it }
                 } || script.activatedAbilities.any { ability ->
                     ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
                         !consumesSource(ability.cost) &&
