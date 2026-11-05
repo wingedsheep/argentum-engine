@@ -8,9 +8,6 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Hour of Devastation (2017)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
- *
  * Set Code: HOU
  * Release Date: 2017-07-14
  */
@@ -21,7 +18,6 @@ object HourOfDevastationSet : MtgSet {
     override val releaseDate = "2017-07-14"
     override val block = "Amonkhet"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
