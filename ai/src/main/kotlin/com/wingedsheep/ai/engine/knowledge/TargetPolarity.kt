@@ -54,6 +54,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect
@@ -883,6 +884,12 @@ object TargetPolarityAnalyzer {
             }
         } while (slotOfHand.size != before)
         return leaves.mapNotNullTo(HashSet()) { leaf ->
+            // "Target opponent blights 2" (Champion of the Weird): a -1/-1 counter on a creature
+            // that player controls is theirs to lose, as a sacrifice from among them would be.
+            if (leaf is AddCountersToCollectionEffect) {
+                return@mapNotNullTo slotOfHand[leaf.collectionName]
+                    ?.takeIf { counterPolarity(leaf.counterType) == TargetPolarity.HARMFUL }
+            }
             val move = leaf as? MoveCollectionEffect ?: return@mapNotNullTo null
             val zone = (move.destination as? CardDestination.ToZone)?.zone
             slotOfHand[move.from]?.takeIf {
@@ -1386,6 +1393,9 @@ object TargetPolarityAnalyzer {
      * and are bad. Anything else — flash, a casting keyword, an unrecognised flag — is unread.
      */
     private fun keywordPolarity(name: String): TargetPolarity? {
+        // "Gains protection from red" (Crimson Acolyte) is granted as `PROTECTION_FROM_RED`, the
+        // scoped form of [Keyword.PROTECTION] — the same gift.
+        if (name.uppercase().startsWith("PROTECTION_FROM_")) return TargetPolarity.BENEFICIAL
         runCatching { Keyword.valueOf(name.uppercase()) }.getOrNull()?.let { keyword ->
             return when (keyword) {
                 in BENEFICIAL_KEYWORDS -> TargetPolarity.BENEFICIAL
@@ -1766,5 +1776,10 @@ object TargetPolarityAnalyzer {
         Keyword.TRAMPLE, Keyword.DEATHTOUCH, Keyword.LIFELINK, Keyword.VIGILANCE, Keyword.REACH,
         Keyword.HASTE, Keyword.INDESTRUCTIBLE, Keyword.HEXPROOF, Keyword.SHROUD, Keyword.WARD,
         Keyword.PROTECTION,
+        // Damage as -1/-1 counters or poison, a return from death, a copy attacking each other
+        // opponent, every creature type for the tribal payoffs (Oko, Lorwyn Liege's +2): none of
+        // them costs the creature that gains it anything.
+        Keyword.WITHER, Keyword.INFECT, Keyword.PERSIST, Keyword.UNDYING, Keyword.MYRIAD,
+        Keyword.CHANGELING,
     )
 }

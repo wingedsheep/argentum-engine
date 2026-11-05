@@ -1084,11 +1084,20 @@ object CardIntentAnalyzer {
         } while (groups != before)
         var reading = DestroyAllReading.NONE
         for (leaf in leaves) {
-            if (leaf !is MoveCollectionEffect || leaf.from !in groups) continue
-            if ((leaf.destination as? CardDestination.ToZone)?.zone != Zone.GRAVEYARD) continue
-            if (leaf.moveType != MoveType.Destroy && leaf.moveType != MoveType.Sacrifice) continue
-            reading = if (groups[leaf.from] == true) {
-                DestroyAllReading(setOf(IntentTag.REMOVAL, IntentTag.SWEEPER), reading.hitsOwnSide || leaf.from in ours)
+            val from = when {
+                leaf is MoveCollectionEffect && leaf.from in groups &&
+                    (leaf.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD &&
+                    (leaf.moveType == MoveType.Destroy || leaf.moveType == MoveType.Sacrifice) -> leaf.from
+                // "Each opponent blights 1", "target opponent blights 2" (High Perfect Morcant,
+                // Champion of the Weird): a -1/-1 counter on a creature they pick — the edict's
+                // shrinking cousin, the same answer [counterTags] reads in a targeted -1/-1 counter.
+                leaf is AddCountersToCollectionEffect && leaf.collectionName in groups &&
+                    TargetPolarityAnalyzer.counterPolarity(leaf.counterType) == TargetPolarity.HARMFUL &&
+                    leaf.counterType.ptDelta != null -> leaf.collectionName
+                else -> continue
+            }
+            reading = if (groups[from] == true) {
+                DestroyAllReading(setOf(IntentTag.REMOVAL, IntentTag.SWEEPER), reading.hitsOwnSide || from in ours)
             } else {
                 DestroyAllReading(setOf(IntentTag.REMOVAL) + reading.tags, reading.hitsOwnSide)
             }
@@ -1892,6 +1901,10 @@ object CardIntentAnalyzer {
         // A keyword string also carries an [AbilityFlag]'s name: "can't be blocked" is the purest
         // evasion there is, and "can't be blocked by more than one creature" is menace's cousin.
         if (keyword in EVASION_FLAGS) return setOf(IntentTag.EVASION_GRANT)
+        // "Target creature gains protection from red" (Crimson Acolyte, Sygg's "protection from
+        // each color"): `Effects.GrantProtectionFromColor` grants it as a `PROTECTION_FROM_<X>`
+        // string, the keyword's scoped form — the same shield as [Keyword.PROTECTION].
+        if (keyword.startsWith(PROTECTION_FROM)) return setOf(IntentTag.PROTECTION)
         val parsed = runCatching { Keyword.valueOf(keyword.uppercase()) }.getOrNull()
             ?: return emptySet()
         return when (parsed) {
@@ -2500,10 +2513,21 @@ object CardIntentAnalyzer {
     private val COMBAT_KEYWORDS = setOf(
         Keyword.FIRST_STRIKE, Keyword.DOUBLE_STRIKE, Keyword.DEATHTOUCH, Keyword.LIFELINK,
         Keyword.VIGILANCE, Keyword.HASTE,
+        // Damage dealt as -1/-1 counters (Barbed Bloodletter's "gains wither"): the blocker it
+        // fights stays shrunk, and infect's poison is the fight's whole point.
+        Keyword.WITHER, Keyword.INFECT,
+        // A copy attacking each other opponent: spent attacking, as haste is.
+        Keyword.MYRIAD,
     )
 
     private val PROTECTIVE_KEYWORDS = setOf(
         Keyword.HEXPROOF, Keyword.SHROUD, Keyword.INDESTRUCTIBLE, Keyword.PROTECTION,
         Keyword.WARD,
+        // "Another target creature you control gains persist until end of turn" (Rhys, the
+        // Evermore): the creature comes back when it dies — a death shield, as regeneration is.
+        Keyword.PERSIST, Keyword.UNDYING,
     )
+
+    /** The prefix of a scoped protection grant's keyword string — see [keywordTags]. */
+    private const val PROTECTION_FROM = "PROTECTION_FROM_"
 }

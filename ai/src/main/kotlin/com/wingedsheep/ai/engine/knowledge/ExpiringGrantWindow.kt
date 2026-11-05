@@ -29,7 +29,9 @@ import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
@@ -991,6 +993,8 @@ internal object ExpiringGrantWindow {
         val payoffs = mutableListOf<Payoff>()
         // Leaves that are not payoffs of their own but ride on a borrow — see the end of the loop.
         var borrowRiders = 0
+        // What the end-of-turn delayed triggers riding on the payoffs watch — see the loop.
+        val watchRiders = mutableListOf<EffectTarget>()
         for (leaf in EffectWalker.leaves(effect)) {
             when {
                 readBorrows && leaf is GainControlEffect && leaf.duration == Duration.EndOfTurn ->
@@ -1003,6 +1007,13 @@ internal object ExpiringGrantWindow {
                 readBorrows && leaf is CreatePredefinedTokenEffect -> borrowRiders++
                 leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
                 leaf is ChooseOptionEffect -> Unit
+                // "When that creature dies this turn, create a 2/2 Elf" (Scarblade's Malice): a
+                // rider watching the creature the grant lands on, gone at cleanup, so it pays off
+                // only in the same fight the grant is spent in — it buys nothing a held card would
+                // not. Checked against the payoffs' targets once the loop is done.
+                leaf is CreateDelayedTriggerEffect && leaf.trigger != null &&
+                    leaf.expiry == DelayedTriggerExpiry.EndOfTurn && leaf.watchedTarget != null ->
+                    watchRiders += checkNotNull(leaf.watchedTarget)
                 leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
                     val body = expiringPayoffs(leaf.body, readShrinks) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
@@ -1059,6 +1070,7 @@ internal object ExpiringGrantWindow {
             }
         }
         if (borrowRiders > 0 && payoffs.none { it.kind == PayoffKind.BORROW }) return null
+        if (watchRiders.any { watched -> payoffs.none { it.target == watched } }) return null
         return payoffs.ifEmpty { null }
     }
 

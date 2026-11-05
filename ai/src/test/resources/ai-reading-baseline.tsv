@@ -438,7 +438,7 @@ Ambush Viper
 Ambush Wolf
 Ammit Eternal
 Amnesia
-Amoeboid Changeling	intent: GrantKeywordEffect; intent: LoseAllCreatureTypesEffect; polarity: GrantKeywordEffect; polarity: LoseAllCreatureTypesEffect; timing: LoseAllCreatureTypesEffect
+Amoeboid Changeling	intent: GrantKeywordEffect; intent: LoseAllCreatureTypesEffect; polarity: LoseAllCreatureTypesEffect; timing: LoseAllCreatureTypesEffect
 Amok Time
 Amonkhet Raceway
 Amped Raptor
@@ -1248,7 +1248,7 @@ Barbarian Ring
 Barbary Apes
 Barbed Batterfist
 Barbed Battlegear
-Barbed Bloodletter	intent: GrantKeywordEffect; polarity: AttachEquipmentEffect; polarity: GrantKeywordEffect
+Barbed Bloodletter
 Barbed Servitor	intent: SuspectEffect
 Barbed Sliver
 Barbtooth Wurm
@@ -1625,7 +1625,7 @@ Bladed Battle-Fan
 Bladed Pinions
 Bladegraft Aspirant
 Bladehold War-Whip
-Blades of Velis Vel	polarity: ForEachEffect; timing: ForEach>ModifyStatsEffect
+Blades of Velis Vel	timing: ForEach>ModifyStatsEffect
 Bladestitched Skaab
 Bladetusk Boar
 Bladewing the Risen
@@ -2738,7 +2738,7 @@ Champion of the Flame
 Champion of the Parish
 Champion of the Path
 Champion of the Perished
-Champion of the Weird	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?); polarity: AddCountersToCollectionEffect; polarity: Pipeline(ControlledPermanents→?)
+Champion of the Weird
 Champion's Helm
 Champion's Victory
 Champions of the Perfect
@@ -3519,7 +3519,7 @@ Crew Captain
 Crib Swap
 Crime Novelist
 Crimestopper Sprite
-Crimson Acolyte	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
+Crimson Acolyte
 Crimson Caravaneer
 Crimson Kobolds
 Crimson Manticore
@@ -5018,7 +5018,7 @@ Eiganjo Castle
 Eiganjo Exemplar
 Eiganjo Uprising
 Eiganjo, Seat of the Empire
-Eight-and-a-Half-Tails	intent: ChangeColorEffect; intent: GrantKeywordEffect; polarity: ChangeColorEffect; polarity: GrantKeywordEffect; timing: ChangeColorEffect
+Eight-and-a-Half-Tails	intent: ChangeColorEffect; polarity: ChangeColorEffect; timing: ChangeColorEffect
 Eightfold Maze
 Eirdu, Carrier of Dawn
 Eject
@@ -6909,7 +6909,7 @@ Gladiolus Amicitia
 Glaive of the Guildpact
 Glamdring
 Glamdring, Foe-hammer
-Glamer Gifter	polarity: GrantKeywordEffect
+Glamer Gifter
 Glamermite
 Glamorous Outlaw
 Glarb, Calamity's Augur
@@ -7160,7 +7160,7 @@ Goblin War Strike
 Goblin War Wagon
 Goblin Warchief
 Goblin Warrens
-Goblin Wizard	intent: GrantKeywordEffect; intent: Pipeline(hand→battlefield); polarity: GrantKeywordEffect
+Goblin Wizard	intent: Pipeline(hand→battlefield)
 Goblin Wizardry
 Goblin-town
 Goblin-town Flunkies
@@ -7984,7 +7984,7 @@ High Fae Negotiator
 High Fae Trickster
 High Market
 High Noon
-High Perfect Morcant	intent: ForEach>AddCountersToCollectionEffect; intent: ForEach>Pipeline(ControlledPermanents→?)
+High Perfect Morcant
 High Priest of Penance
 High Sentinels of Arashin
 High Stride
@@ -8797,7 +8797,7 @@ Ironroot Treefolk
 Ironroot Warlord
 Ironscale Hydra
 Ironshell Beetle
-Ironwill Forger	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
+Ironwill Forger
 Irradiate	timing: ModifyStatsEffect
 Irregular Cohort
 Irreverent Gremlin
@@ -11842,7 +11842,7 @@ Obsessive Astronomer
 Obsessive Pursuit
 Obsessive Stitcher
 Obsianus Golem
-Obsidian Acolyte	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
+Obsidian Acolyte
 Obsidian Giant
 Obsidian Order Operative
 Obstinate Baloth
@@ -11898,7 +11898,7 @@ Okiba Salvage
 Okina, Temple to the Grandfathers
 Oko's Accomplices
 Oko's Hospitality
-Oko, Lorwyn Liege	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
+Oko, Lorwyn Liege	intent: GrantKeywordEffect
 Oko, Thief of Crowns	intent: ExchangeControlEffect; polarity: BecomeArtifactEffect; polarity: ExchangeControlEffect
 Oko, the Ringleader
 Oko, the Trickster
@@ -13431,7 +13431,7 @@ Raze the Effigy
 Raze to the Ground
 Razia's Purification
 Razia, Boros Archangel	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
-Razor Barrier	intent: ChooseColorThenEffect; intent: GrantKeywordEffect; polarity: ChooseColorThenEffect; polarity: GrantKeywordEffect
+Razor Barrier
 Razor Golem
 Razor Rings
 Razorclaw Bear
@@ -13832,7 +13832,7 @@ Rhox Oracle
 Rhox Pummeler
 Rhox War Monk
 Rhuk, Hexgold Nabber
-Rhys, the Evermore	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
+Rhys, the Evermore
 Rhystic Study	intent: PayOrSufferEffect
 Rhythm of the Wild
 Ria Ivor, Bane of Bladehold
@@ -14567,7 +14567,7 @@ Scampering Surveyor
 Scapeshift
 Scar
 Scarblade Scout
-Scarblade's Malice	timing: GrantKeywordEffect
+Scarblade's Malice
 Scarecrone
 Scarecrow
 Scarecrow Guide
@@ -14792,7 +14792,7 @@ Season of the Burrow
 Season of the Witch
 Seasoned Consultant
 Seasoned Cryomancer
-Seasoned Dungeoneer	intent: TakeDesignationEffect; polarity: GrantKeywordEffect
+Seasoned Dungeoneer	intent: TakeDesignationEffect
 Seasoned Hallowblade
 Seasoned Marshal
 Seasoned Warrenguard
@@ -15160,7 +15160,7 @@ Shield-Wall Sentinel
 Shieldmage Elder
 Shieldmate's Blessing
 Shields Up!	timing: GrantKeywordEffect
-Shields of Velis Vel	polarity: ForEachEffect
+Shields of Velis Vel
 Shifting Ceratops
 Shifting Grift	intent: ModalEffect; polarity: ExchangeControlEffect
 Shifting Sliver
@@ -16885,7 +16885,7 @@ Sworn Companions
 Sworn Guardian
 Sygg's Command
 Sygg, River Guide	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
-Sygg, Wanderwine Wisdom	intent: GrantKeywordEffect; intent: GrantTriggeredAbilityEffect; polarity: GrantKeywordEffect
+Sygg, Wanderwine Wisdom	intent: GrantTriggeredAbilityEffect
 Sylvan Anthem
 Sylvan Awakening	intent: ForEach>BecomeCreatureEffect
 Sylvan Basilisk
@@ -19759,7 +19759,7 @@ Wingrattle Scarecrow
 Wings of Aesthir
 Wings of Hope
 Wings of Hubris	timing: ForEach>GrantKeywordEffect
-Wings of Velis Vel	polarity: GrantKeywordEffect
+Wings of Velis Vel
 Wings of the Cosmos
 Wingshield Agent
 Wingspan Mentor
