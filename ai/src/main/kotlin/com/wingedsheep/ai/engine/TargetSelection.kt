@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.StormCopyTargetContinuation
 import com.wingedsheep.engine.core.Suspension
+import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.core.TriggerModalTargetSelectionContinuation
 import com.wingedsheep.engine.core.TriggeredAbilityContinuation
 import com.wingedsheep.engine.core.GameAction
@@ -370,6 +371,24 @@ object TargetSelection {
         return decision.targetRequirements.mapNotNull { req ->
             read.getOrNull(req.index)?.let { req.index to it }
         }.toMap()
+    }
+
+    /**
+     * What slot [index] of a spell copy's "choose new targets" question keeps when left empty: the
+     * original spell's target in that slot (CR 707.10c). Null for any other question, or when the
+     * original is gone.
+     */
+    fun keptCopyTarget(state: GameState, decision: ChooseTargetsDecision, index: Int): EntityId? {
+        val suspension = state.peekContinuation() as? Suspension ?: return null
+        if (suspension.question.id != decision.id) return null
+        val copy = suspension.answer as? StormCopyTargetContinuation ?: return null
+        return when (val kept = state.getEntity(copy.sourceId)?.get<TargetsComponent>()?.targets?.getOrNull(index)) {
+            is ChosenTarget.Player -> kept.playerId
+            is ChosenTarget.Permanent -> kept.entityId
+            is ChosenTarget.Card -> kept.cardId
+            is ChosenTarget.Spell -> kept.spellEntityId
+            null -> null
+        }
     }
 
     /**

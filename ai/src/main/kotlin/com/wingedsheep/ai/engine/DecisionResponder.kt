@@ -347,7 +347,17 @@ class DecisionResponder(
                     kotlin.math.abs(skipScore - bestScore) <= TIE_EPSILON * maxOf(1.0, kotlin.math.abs(bestScore))
                 val evenButUseful = even && bestScore != Double.NEGATIVE_INFINITY &&
                     libraryAndGraveyardPreference(state, bestResult.state, playerId) > 0.0
-                if (skipScore >= bestScore && !evenButUseful) return skipResponse
+                // A spell copy's slot left empty keeps the original's target. On the wrong side of a
+                // read one-sided slot that is the worse pick even when the simulation can't tell the
+                // two apart — a copied Giant Growth wears off before the evaluator sees it.
+                val keepsWrongSide = TargetSelection.keptCopyTarget(state, decision, req.index)?.let { kept ->
+                    when (polarities[req.index]) {
+                        TargetPolarity.BENEFICIAL -> !TargetSelection.isOurs(state, kept, playerId)
+                        TargetPolarity.HARMFUL -> TargetSelection.isOurs(state, kept, playerId)
+                        else -> false
+                    }
+                } ?: false
+                if (skipScore >= bestScore && !evenButUseful && !(even && keepsWrongSide)) return skipResponse
             }
 
             return bestResponse
