@@ -13,11 +13,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *
  * Destroy target creature that blocked or was blocked by a legendary creature this turn.
  *
- * The target filter uses the new `StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn`
- * (`blockedOrWasBlockedByLegendaryThisTurn()`), backed by a per-creature marker stamped at
- * block declaration. The marker captures the legendary partner's status at pairing time, so
- * the spell can still target the creature even after that legendary creature has left the
- * battlefield (per the card's ruling).
+ * The target filter's `blockedOrWasBlockedByThisTurn(Creature.legendary())` reads the partner as it
+ * stood at block declaration, so the spell can still target the creature after that legendary
+ * creature has left the battlefield (per the card's ruling).
  */
 val YouCannotPass = card("You Cannot Pass!") {
     manaCost = "{W}"
@@ -26,7 +24,7 @@ val YouCannotPass = card("You Cannot Pass!") {
     oracleText = "Destroy target creature that blocked or was blocked by a legendary creature this turn."
 
     spell {
-        val t = target(TargetFilter(GameObjectFilter.Creature.blockedOrWasBlockedByLegendaryThisTurn()))
+        val t = target(TargetFilter(GameObjectFilter.Creature.blockedOrWasBlockedByThisTurn(GameObjectFilter.Creature.legendary())))
         effect = Effects.Destroy(t)
     }
 

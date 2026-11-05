@@ -571,6 +571,7 @@ class BeginningPhaseManager(
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // Combat-partner history is cleared at cleanup, so nothing has blocked anything yet this turn.
         is StatePredicate.BlockPairedWithEntityThisTurn -> false
+        is StatePredicate.BlockPairedWithMatchingThisTurn -> false
         is StatePredicate.IsBlockingEntity -> false
         // Reference-relative identity; untap filtering carries no references.
         is StatePredicate.IsEntity -> false
@@ -688,7 +689,6 @@ class BeginningPhaseManager(
         StatePredicate.AttackedThisCombat,
         StatePredicate.BlockedThisCombat,
         StatePredicate.BlockedThisTurn,
-        StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn,
         StatePredicate.IsFaceDown,
         StatePredicate.IsFaceUp,
         StatePredicate.HasMorphAbility,

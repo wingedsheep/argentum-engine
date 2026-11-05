@@ -8,7 +8,7 @@ import io.kotest.matchers.shouldNotBe
 
 /**
  * You Cannot Pass! — "Destroy target creature that blocked or was blocked by a legendary creature
- * this turn." Exercises the new `BlockedOrWasBlockedByLegendaryThisTurn` predicate (stamped at
+ * this turn." Exercises `BlockPairedWithMatchingThisTurn(Creature.legendary())` (partner snapshotted at
  * block declaration) in both directions, plus rejection of a creature that never fought a legendary.
  */
 class YouCannotPassScenarioTest : ScenarioTestBase() {

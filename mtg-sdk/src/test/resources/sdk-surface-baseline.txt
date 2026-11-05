@@ -1311,7 +1311,7 @@ StatePredicate.AttackedThisCombat — StatePredicate
 StatePredicate.AttackedThisTurn — StatePredicate
 StatePredicate.BecameTappedOnlyOnceThisTurn — StatePredicate
 StatePredicate.BlockPairedWithEntityThisTurn — StatePredicate
-StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn — StatePredicate
+StatePredicate.BlockPairedWithMatchingThisTurn — StatePredicate
 StatePredicate.BlockedThisCombat — StatePredicate
 StatePredicate.BlockedThisTurn — StatePredicate
 StatePredicate.ControllerDealtCombatDamageBySourceThisTurn — StatePredicate

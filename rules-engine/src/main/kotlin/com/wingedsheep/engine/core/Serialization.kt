@@ -740,7 +740,6 @@ val engineSerializersModule = SerializersModule {
         subclass(BlockingComponent::class)
         subclass(BlockedComponent::class)
         subclass(com.wingedsheep.engine.state.components.combat.BlockersThisCombatComponent::class)
-        subclass(BlockedOrWasBlockedByLegendaryThisTurnComponent::class)
         subclass(AttackedThisCombatComponent::class)
         subclass(com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent::class)
         subclass(BlockedThisCombatComponent::class)

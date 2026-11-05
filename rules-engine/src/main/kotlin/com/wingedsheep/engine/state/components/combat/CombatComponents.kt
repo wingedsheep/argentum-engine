@@ -54,17 +54,6 @@ data class BlockedComponent(
 ) : Component
 
 /**
- * Marks a creature that blocked, or was blocked by, a legendary creature at some point during
- * the current turn. Stamped at block-declaration time (capturing the partner's legendary status
- * at the moment of the pairing, so it survives that legendary creature leaving or losing
- * legendary-ness), and cleared at end-of-turn cleanup. Backs
- * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn]
- * (You Cannot Pass!, LTR).
- */
-@Serializable
-data object BlockedOrWasBlockedByLegendaryThisTurnComponent : Component
-
-/**
  * The creatures this creature blocked ([blockedIds]) and was blocked by ([blockedByIds]) at any
  * point during the current turn. Stamped on **both** creatures of each blocking pair at
  * block-declaration time — the blocker records the attacker in [blockedIds], the attacker records
@@ -78,12 +67,19 @@ data object BlockedOrWasBlockedByLegendaryThisTurnComponent : Component
  * creature the last time that blocker blocked it — overwritten on every new block, so it answers
  * "the player who controlled that creature the last time it became blocked by that Wall" (Glyph of
  * Reincarnation, via `CaptureControllersEffect.asLastBlockedBy`) even after control has changed.
+ *
+ * [partnerSnapshots] freezes each partner's characteristics at the moment of each pairing, so
+ * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithMatchingThisTurn] asks
+ * "blocked or was blocked by a legendary creature / a Zombie" of the partner as it was then —
+ * after it has left the battlefield (an embalmed token included) or stopped matching
+ * (You Cannot Pass!, Time to Reflect).
  */
 @Serializable
 data class CombatPartnersThisTurnComponent(
     val blockedIds: Set<EntityId> = emptySet(),
     val blockedByIds: Set<EntityId> = emptySet(),
-    val controllerWhenBlockedBy: Map<EntityId, EntityId> = emptyMap()
+    val controllerWhenBlockedBy: Map<EntityId, EntityId> = emptyMap(),
+    val partnerSnapshots: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList()
 ) : Component {
     /** Every creature this one was paired with in a block this turn, either way round. */
     val partnerIds: Set<EntityId> get() = blockedIds + blockedByIds
