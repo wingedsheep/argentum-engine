@@ -285,12 +285,12 @@ class Strategist(
     private val borrowedCreaturesGoHome: Boolean = false,
     /**
      * [AiProfile.castBansDenyTheirTurn] — refund the hand charge of a cast ban cast where it denies
-     * an opponent a whole turn ([castBanCredit]); [HoldPolicy] adds its window reward.
+     * an opponent a whole turn ([turnDenialCredit]); [HoldPolicy] adds its window reward.
      */
     private val castBansDenyTheirTurn: Boolean = false,
     /**
      * [AiProfile.forcedAttacksOnTheirTurn] — refund the hand charge of a forced attack cast where it
-     * makes an opponent attack this turn ([castBanCredit]); [HoldPolicy] adds its window reward.
+     * makes an opponent attack this turn ([turnDenialCredit]); [HoldPolicy] adds its window reward.
      */
     private val forcedAttacksOnTheirTurn: Boolean = false,
     /** [AiProfile.holdXSpellsForBiggerX] — see [com.wingedsheep.ai.engine.knowledge.XPatience]. */
@@ -1058,7 +1058,7 @@ class Strategist(
         if (spendFuelWalkers) fuelWalkerSpend(state, action, playerId, passScore, leafState)?.let { return it }
         val deployed = deploymentCredit(state, action, leafState, playerId)
         val fuel = fuelLoyaltyCredit(state, action, leafState, playerId)
-        val ban = castBanCredit(state, action, playerId)
+        val ban = turnDenialCredit(state, action, playerId)
         val credit = deployed + fuel + ban
         val leafScore = rawLeafScore + credit
         val creditNote = listOfNotNull(
@@ -1797,14 +1797,15 @@ class Strategist(
     }
 
     /**
-     * What the evaluator charged for taking a cast ban's card out of our hand, refunded when the ban
-     * denies an opponent a whole turn of casting — [AiProfile.castBansDenyTheirTurn].
+     * What the evaluator charged for taking a cast ban's or forced attack's card out of our hand,
+     * refunded when the ban denies an opponent a whole turn of casting ([AiProfile.castBansDenyTheirTurn])
+     * or the forced attack makes them attack this turn ([AiProfile.forcedAttacksOnTheirTurn]).
      *
      * The ban moves no permanent, so the leaf sees only the card spent; its payoff is the spells the
      * opponent does not cast, which [CastBanWindow] vouches for. Measured with the evaluator, as
      * [deploymentCredit] is, so the refund is exactly the charge. Never negative.
      */
-    private fun castBanCredit(root: GameState, action: LegalAction, playerId: EntityId): Double {
+    private fun turnDenialCredit(root: GameState, action: LegalAction, playerId: EntityId): Double {
         if (!castBansDenyTheirTurn && !forcedAttacksOnTheirTurn) return 0.0
         val cast = action.action as? CastSpell ?: return 0.0
         if (cast.faceIndex != null || cast.castFused) return 0.0
@@ -1816,7 +1817,7 @@ class Strategist(
         // A forced attack ([ForcedAttackWindow]) is the same shape: no permanent moves, and what it
         // buys is the opponent's turn played our way — an attack they didn't choose.
         val denies = (castBansDenyTheirTurn && IntentTag.CAST_BAN in tags && CastBanWindow.deniesATurn(root, playerId, definition)) ||
-            (forcedAttacksOnTheirTurn && IntentTag.FORCED_ATTACK in tags && ForcedAttackWindow.forcesAnAttack(root, playerId, definition))
+            (forcedAttacksOnTheirTurn && IntentTag.FORCED_ATTACK in tags && ForcedAttackWindow.forcesAnAttack(root, playerId, definition, cast.targets.mapNotNull { (it as? ChosenTarget.Player)?.playerId }))
         if (!denies) return 0.0
         val without = root.removeFromZone(hand, cast.cardId)
         val charge = evaluator.evaluate(root, root.projectedState, playerId) -

@@ -459,8 +459,8 @@ enum class IntentTag {
      * opponents control attacks … if able".
      *
      * Like a cast ban it moves no permanent, so the board simulation sees a card spent for nothing:
-     * the payoff is an attack the opponent didn't choose, into our blockers, leaving their creatures
-     * tapped. The tag is what tells the AI the card is disruption, and what [HoldPolicy] reads to cast
+     * the payoff is an attack the opponent didn't choose, and with an untap lock beside it their
+     * attackers stay tapped. The tag is what tells the AI the card is disruption, and what [HoldPolicy] reads to cast
      * an instant-speed one on the opponent's turn, before attackers are declared
      * ([ForcedAttackWindow]).
      */

@@ -18,9 +18,9 @@ import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
  *
  * "Creatures target opponent controls attack this turn if able" (Imaginary Threats) moves no
  * permanent, so the board score sees only a card leaving our hand. What it buys is an attack the
- * opponent didn't choose — into our blockers, leaving their team tapped for the turn after — and
- * that only exists on the opponent's own turn, before attackers are declared: cast on our turn, or
- * after their attack, "this turn" holds no attack of theirs at all.
+ * opponent didn't choose (with the untap lock beside it, their attackers stay tapped through our
+ * turn), and that only exists on the opponent's own turn, before attackers are declared: cast on
+ * our turn, or after their attack, "this turn" holds no attack of theirs at all.
  *
  * So the window is the opponent's turn from upkeep through the beginning of combat, and only while
  * they control a creature that could attack now and isn't already required to. Only a
@@ -29,8 +29,17 @@ import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
  */
 object ForcedAttackWindow {
 
-    /** Whether casting [definition]'s spell now, as [playerId], forces an opponent's attack this turn. */
-    fun forcesAnAttack(state: GameState, playerId: EntityId, definition: CardDefinition): Boolean {
+    /**
+     * Whether casting [definition]'s spell now, as [playerId], forces an opponent's attack this turn.
+     * [targetedPlayers] are the players the cast targets: aimed at an opponent whose turn it isn't
+     * (a multiplayer table), "this turn" binds no attack of theirs.
+     */
+    fun forcesAnAttack(
+        state: GameState,
+        playerId: EntityId,
+        definition: CardDefinition,
+        targetedPlayers: List<EntityId> = emptyList(),
+    ): Boolean {
         val spell = definition.script.spellEffect ?: return false
         val forces = EffectWalker.leaves(spell).filterIsInstance<MustAttackGroupEffect>().any {
             it.duration == Duration.EndOfTurn && IntentTag.FORCED_ATTACK in CardIntentAnalyzer.analyzeEffect(it).tags
@@ -38,6 +47,7 @@ object ForcedAttackWindow {
         if (!forces) return false
         if (state.isActiveTurnFor(playerId) || state.step !in BEFORE_THEIR_ATTACK) return false
         val attacker = state.activePlayerId ?: return false
+        if (targetedPlayers.isNotEmpty() && attacker !in targetedPlayers) return false
         val projected = state.projectedState
         return projected.getBattlefieldControlledBy(attacker).any { couldAttackUnforced(state, projected, it) }
     }

@@ -292,7 +292,7 @@ class HoldPolicy(
         // attack: the only window "this turn" holds an attack of theirs at all.
         if (forcedAttacksOnTheirTurn && cast != null && IntentTag.FORCED_ATTACK in intent.tags) {
             val definition = intents.definition(cardName)
-            if (definition != null && ForcedAttackWindow.forcesAnAttack(state, playerId, definition)) {
+            if (definition != null && ForcedAttackWindow.forcesAnAttack(state, playerId, definition, cast.targets.mapNotNull { (it as? ChosenTarget.Player)?.playerId })) {
                 return TimingVerdict.Adjust(
                     FORCED_ATTACK_WINDOW, reason = "forces their attack", onlyWhenIdle = intent.speed != Speed.INSTANT,
                 )
