@@ -1954,6 +1954,7 @@ Boneyard Desecrator
 Boneyard Lurker
 Boneyard Parley
 Bonny Pall, Clearcutter
+Bontu's Last Reckoning
 Bontu's Monument
 Book Devourer
 Book of Mazarbul
@@ -2731,6 +2732,7 @@ Chance for Glory
 Chance-Met Elves
 Chancellor of Tales
 Chandra Nalaar
+Chandra's Defeat
 Chandra's Embercat
 Chandra's Emberling
 Chandra's Firemaw
@@ -6784,6 +6786,7 @@ Gideon Blackblade
 Gideon the Oathless
 Gideon's Battle Cry
 Gideon's Company	intent: AddCountersEffect
+Gideon's Defeat
 Gideon's Lawkeeper
 Gideon's Memorial
 Gideon's Reproach
@@ -7689,6 +7692,7 @@ Harvestrite Host
 Harvesttide Infiltrator
 Harvesttide Sentry	intent: GrantStaticAbilityEffect
 Hashaton, Scarab's Fist
+Hashep Oasis
 Hasran Ogress
 Haste Magic
 Hatchery Spider	intent: Pipeline(TopOfLibrary→battlefield|library)
@@ -7731,6 +7735,7 @@ Hazel's Nocturne
 Hazerider Drake
 Hazezon Tamar
 Hazoret's Monument
+Hazoret's Undying Fury
 Hazoret, Godseeker
 He Who Hungers
 He's Dead, Jim
@@ -8317,6 +8322,7 @@ Idyllic Beachfront
 Idyllic Grange
 Idyllic Tutor
 Ifh-Bíff Efreet
+Ifnir Deadlands
 Igneous Cur
 Igneous Golem
 Igneous Inspiration
@@ -8682,6 +8688,7 @@ Involuntary Cooldown
 Involuntary Employment
 Ionize
 Ioreth of the Healing House	intent: TapUntapEffect
+Ipnu Rivulet
 Irascible Wolverine	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Irencrag Feat
 Irencrag Pyromancer
@@ -8792,6 +8799,7 @@ J. Jonah Jameson	intent: SuspectEffect; polarity: SuspectEffect
 Jace Beleren
 Jace Reawakened	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
 Jace's Archivist
+Jace's Defeat
 Jace's Ingenuity
 Jace's Machinations	timing: GrantLoyaltyActivationPermissionEffect
 Jace's Projection	intent: AddCountersEffect
@@ -9184,6 +9192,7 @@ Keeper of the Quiet Hour
 Keepers of the Faith
 Kefka, Court Mage
 Kefka, Dancing Mad	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→exile)
+Kefnet's Last Word
 Kei Takahashi
 Keiga, the Tide Star
 Keldon Flamesage
@@ -9859,6 +9868,7 @@ Liliana the Faultless
 Liliana the Repentant
 Liliana's Caress
 Liliana's Contract
+Liliana's Defeat
 Liliana's Devotee
 Liliana's Elite
 Liliana's Mastery
@@ -11587,6 +11597,7 @@ Ninth Bridge Patrol
 Nirkana Assassin
 Nishoba Brawler
 Nissa of Shadowed Boughs	intent: AddCountersToCollectionEffect; intent: BecomeCreatureEffect; intent: Pipeline(FromMultipleZones→battlefield)
+Nissa's Defeat
 Nissa's Triumph
 Nissa's Zendikon
 Nissa, Ascended Animist
@@ -11808,6 +11819,7 @@ Ojer Taq, Deepest Foundation	intent: ReturnSelfFromZoneTransformedEffect
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
+Oketra's Last Mercy
 Oketra's Monument
 Okiba Reckoner Raid
 Okiba Salvage
@@ -13232,6 +13244,7 @@ Rampart Hunter
 Rampart Smasher
 Ramses Overdark
 Ramunap Excavator
+Ramunap Ruins
 Ran and Shaw
 Rancor
 Rancorous Archaic
@@ -13726,6 +13739,7 @@ Rhino's Rampage
 Rhino, Barreling Brute
 Rhizome Lurcher
 Rhonas the Indomitable
+Rhonas's Last Stand
 Rhonas's Monument
 Rhovanion Rampager	intent: Pipeline(BattlefieldMatching→graveyard)
 Rhox Brute
@@ -15010,6 +15024,7 @@ Shauku's Minion
 Shaun, Father of Synths
 She-Hulk, Jade Defender
 Shefet Archfiend
+Shefet Dunes
 Shelkin Brownie	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Shell Shield
 Shell of the Last Kappa	intent: ExileTargetSpellEffect

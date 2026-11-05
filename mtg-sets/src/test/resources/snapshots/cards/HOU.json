@@ -555,6 +555,67 @@
     ]
 }
 
+// Bontu's Last Reckoning
+{
+    "name": "Bontu's Last Reckoning",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures. Lands you control don't untap during your next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": "Controller",
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "To the last, Bontu wanted only to be first among the God-Pharaoh's subjects.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b4d0102-c0d6-4d50-941a-dd1c3575a3a8.jpg?1783936042",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "No lands that you control will untap during your next untap step, even lands that aren't tapped as this spell resolves. This includes lands that enter the battlefield after this spell resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If more than one spell says that lands you control don't untap during your next untap step, the effects will all wear off during that untap step. You'll untap lands you control during your untap step after that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Brambleweft Behemoth
 {
     "name": "Brambleweft Behemoth",
@@ -661,6 +722,128 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Chandra's Defeat
+{
+    "name": "Chandra's Defeat",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Chandra's Defeat deals 5 damage to target red creature or red planeswalker. If that permanent is a Chandra planeswalker, you may discard a card. If you do, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "planeswalker Chandra"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 5
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker red"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Fire? Is that your only trick, Chandra?\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f38c6613-b1f7-4b38-b956-7860d041e593.jpg?1783936031"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1902,6 +2085,94 @@
     }
 }
 
+// Gideon's Defeat
+{
+    "name": "Gideon's Defeat",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target white creature that's attacking or blocking. If it was a Gideon planeswalker, you gain 5 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "planeswalker Gideon"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Exile"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasColor",
+                                "color": "WHITE"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsAttacking",
+                                    "IsBlocking"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Gideon, how easy it must be to play the protector when you think yourself untouchable. How wrong you are.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/4722eb81-1aa1-4863-8dfb-d9d6035bd6c6.jpg?1783936062"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gift of Strength
 {
     "name": "Gift of Strength",
@@ -2078,6 +2349,227 @@
     ]
 }
 
+// Hashep Oasis
+{
+    "name": "Hashep Oasis",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add {G}.\n{1}{G}{G}, {T}, Sacrifice a Desert: Target creature gets +3/+3 until end of turn. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hashep Oasis:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hashep Oasis:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hashep Oasis:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}{G}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bba75d2-3f1b-4828-be11-2da695f7bde7.jpg?1783935996",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a Desert has an ability with a cost of \"Sacrifice a Desert,\" you can sacrifice that Desert to pay the cost for its own ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Hazoret's Undying Fury
+{
+    "name": "Hazoret's Undying Fury",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Shuffle your library, then exile the top four cards. You may cast any number of spells with mana value 5 or less from among them without paying their mana costs. Lands you control don't untap during your next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "ShuffleLibrary",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "nonland mv<=5",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "matching2"
+                        }
+                    ]
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": "Controller",
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f578576-19ca-4e67-94da-2c0767d9a2bb.jpg?1783936027",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "No lands that you control will untap during your next untap step, even lands that aren't tapped as this spell resolves. This includes lands that enter the battlefield after this spell resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Each individual spell you cast this way must have mana value 5 or less. Their total mana value could be greater."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "No player may take any actions between the time you shuffle your library and the time you exile the top four cards."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as emerge costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Tormenting Voice, you must pay those to cast the card."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If any abilities trigger as you cast any of those cards, they won't be put on the stack until after you're done casting them. They'll resolve before any of those spells."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If you cast any of those cards, you do so as part of the resolution of Hazoret's Undying Fury. You can't wait to cast them later in the turn."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If a spell you cast this way targets another spell, it may target a spell you cast earlier during the resolution of Hazoret's Undying Fury. It may target Hazoret's Undying Fury as well, but Hazoret's Undying Fury will be put into your graveyard soon afterwards and the spell's target will become illegal."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If more than one spell says that lands you control don't untap during your next untap step, the effects will all wear off during that untap step. You'll untap lands you control during your untap step after that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hope Tender
 {
     "name": "Hope Tender",
@@ -2250,6 +2742,115 @@
     ]
 }
 
+// Ifnir Deadlands
+{
+    "name": "Ifnir Deadlands",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add {B}.\n{2}{B}{B}, {T}, Sacrifice a Desert: Put two -1/-1 counters on target creature an opponent controls. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ifnir Deadlands:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ifnir Deadlands:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ifnir Deadlands:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b88728b-9b18-40c6-b634-f87f8da83665.jpg?1783935996",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a Desert has an ability with a cost of \"Sacrifice a Desert,\" you can sacrifice that Desert to pay the cost for its own ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Inferno Jet
 {
     "name": "Inferno Jet",
@@ -2290,6 +2891,262 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ipnu Rivulet
+{
+    "name": "Ipnu Rivulet",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add {U}.\n{1}{U}, {T}, Sacrifice a Desert: Target player mills four cards. (They put the top four cards of their library into their graveyard.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ipnu Rivulet:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ipnu Rivulet:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ipnu Rivulet:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/203011ef-3737-4fd1-bd23-0e531b5a7c32.jpg?1783935996",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a Desert has an ability with a cost of \"Sacrifice a Desert,\" you can sacrifice that Desert to pay the cost for its own ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Jace's Defeat
+{
+    "name": "Jace's Defeat",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target blue spell. If it was a Jace planeswalker spell, scry 2.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "planeswalker Jace"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    "Counter",
+                    {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                ]
+            },
+            "otherwise": "Counter"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "blue",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"I had hoped for more from you, Jace. But I expected as much.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6b103c1-9b25-4bfe-9081-570977e9fdad.jpg?1783936052"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Kefnet's Last Word
+{
+    "name": "Kefnet's Last Word",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target artifact, creature, or enchantment. Lands you control don't untap during your next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": "Controller",
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "flavorText": "In his final moments, Kefnet reached into the minds of those around him, desperate for logic within the consuming chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d7e5103-ee7d-40d7-bcd4-c5d1a48e9821.jpg?1783936051",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The control-change effect of Kefnet's Last Word lasts indefinitely. It doesn't wear off during the cleanup step."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If the target permanent is an illegal target by the time Kefnet's Last Word resolves, the entire spell doesn't resolve. Your lands will untap during your next untap step as normal."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it. They'll remain attached, but an Aura's effect that affects \"you\" still affects its controller rather than you, the controller of an Equipment can move it during their next main phase, and so on."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "No lands that you control will untap during your next untap step, even lands that aren't tapped as this spell resolves. This includes lands that enter the battlefield after this spell resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If more than one spell says that lands you control don't untap during your next untap step, the effects will all wear off during that untap step. You'll untap lands you control during your untap step after that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2497,6 +3354,80 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Liliana's Defeat
+{
+    "name": "Liliana's Defeat",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target black creature or black planeswalker. If that permanent was a Liliana planeswalker, her controller loses 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "planeswalker Liliana"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "TargetController"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker black"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"All the power you have gathered for yourself, Liliana, I can take away.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f72b028-b9df-40c7-822f-4acc6bdcc719.jpg?1783936040"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3129,6 +4060,128 @@
     ]
 }
 
+// Nissa's Defeat
+{
+    "name": "Nissa's Defeat",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target Forest, green enchantment, or green planeswalker. If that permanent was a Nissa planeswalker, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "planeswalker Nissa"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsLand",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Forest"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsEnchantment",
+                                                    {
+                                                        "type": "HasColor",
+                                                        "color": "GREEN"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsPlaneswalker",
+                                            {
+                                                "type": "HasColor",
+                                                "color": "GREEN"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"The soul of this world is gone, Nissa, and I would gladly kill it again.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86326456-d188-4083-9141-a639b821b291.jpg?1783936018",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Most nonbasic lands that produce green mana aren't Forests. For example, Desert of the Indomitable isn't a Forest. Some nonbasic lands (such as Sheltered Thicket from the Amonkhet set) do have basic land types printed on the type line and may be Forests."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Oasis Ritualist
 {
     "name": "Oasis Ritualist",
@@ -3177,6 +4230,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Oketra's Last Mercy
+{
+    "name": "Oketra's Last Mercy",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Your life total becomes equal to your starting life total. Lands you control don't untap during your next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetLifeTotal",
+                    "amount": {
+                        "type": "StartingLifeTotal",
+                        "player": "You"
+                    }
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": "Controller",
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "To the end, all Oketra did was for others.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d3bf26-6003-4699-a26e-b3b5bcd3e8dc.jpg?1783936059",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "For your life total to become your starting life total (normally 20), you gain or lose the appropriate amount of life. For example, if your life total is 4 when Oketra's Last Mercy resolves, it will cause you to gain 16 life; alternatively, if your life total is 25 when it resolves, it will cause you to lose 5 life. Other cards that interact with life gain or life loss will interact with this effect accordingly."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "No lands that you control will untap during your next untap step, even lands that aren't tapped as this spell resolves. This includes lands that enter the battlefield after this spell resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If more than one spell says that lands you control don't untap during your next untap step, the effects will all wear off during that untap step. You'll untap lands you control during your untap step after that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3617,6 +4725,107 @@
     ]
 }
 
+// Ramunap Ruins
+{
+    "name": "Ramunap Ruins",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add {R}.\n{2}{R}{R}, {T}, Sacrifice a Desert: This land deals 2 damage to each opponent.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ramunap Ruins:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ramunap Ruins:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ramunap Ruins:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Florian de Gesincourt",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af11d41a-0d29-45e9-9d27-a41282b9e292.jpg?1783935995",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a Desert has an ability with a cost of \"Sacrifice a Desert,\" you can sacrifice that Desert to pay the cost for its own ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Razaketh's Rite
 {
     "name": "Razaketh's Rite",
@@ -3984,6 +5193,62 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Rhonas's Last Stand
+{
+    "name": "Rhonas's Last Stand",
+    "manaCost": "{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 5/4 green Snake creature token. Lands you control don't untap during your next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 4,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Snake"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/7/57708b3d-ddfb-4924-b5c9-123aa9e967ad.jpg?1783936064"
+                },
+                {
+                    "type": "SkipUntap",
+                    "target": "Controller",
+                    "permanents": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "Rhonas continued to fight until his last breath and even beyond.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e991d1eb-70ab-4e2c-862d-fb8bfcefc542.jpg?1783936013",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "No lands that you control will untap during your next untap step, even lands that aren't tapped as this spell resolves. This includes lands that enter the battlefield after this spell resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If more than one spell says that lands you control don't untap during your next untap step, the effects will all wear off during that untap step. You'll untap lands you control during your untap step after that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4380,6 +5645,118 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Shefet Dunes
+{
+    "name": "Shefet Dunes",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add {W}.\n{2}{W}{W}, {T}, Sacrifice a Desert: Creatures you control get +1/+1 until end of turn. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shefet Dunes:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shefet Dunes:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shefet Dunes:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}{W}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/6077f4e9-5717-4048-b798-4f8d535a4170.jpg?1783935993",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a Desert has an ability with a cost of \"Sacrifice a Desert,\" you can sacrifice that Desert to pay the cost for its own ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Solemnity

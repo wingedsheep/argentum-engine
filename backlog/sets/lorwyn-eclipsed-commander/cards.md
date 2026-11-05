@@ -84,7 +84,7 @@
 - [ ] Hoarder's Greed
 - [ ] Hoofprints of the Stag
 - [ ] Horde of Notions
-- [ ] Ifnir Deadlands
+- [x] Ifnir Deadlands
 - [ ] Ignoble Hierarch
 - [ ] Impulsivity
 - [ ] Incandescent Soulstoke

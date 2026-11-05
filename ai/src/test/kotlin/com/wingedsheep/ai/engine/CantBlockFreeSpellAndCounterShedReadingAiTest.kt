@@ -23,6 +23,9 @@ import io.kotest.matchers.shouldBe
  *    [IntentTag.FREE_SPELL], and the draft heuristic prices it.
  *  - **Removing all -1/-1 counters from itself** (Ammit Eternal) is a counter shed on its own source,
  *    which needs no intent, as a single-counter removal from itself already did.
+ *  - **"Lands you control don't untap during your next untap step"** (Oketra's Last Mercy, Bontu's
+ *    Last Reckoning) binds its own caster: a price, which needs no intent. Skipping an opponent's
+ *    untap (Mana Vapors) stays flagged.
  */
 class CantBlockFreeSpellAndCounterShedReadingAiTest : FunSpec({
 
@@ -57,5 +60,15 @@ class CantBlockFreeSpellAndCounterShedReadingAiTest : FunSpec({
 
     test("removing all -1/-1 counters from itself needs no intent") {
         flags("Ammit Eternal").shouldBeEmpty()
+    }
+
+    test("skipping your own lands' next untap is a price that needs no intent") {
+        for (name in listOf("Oketra's Last Mercy", "Bontu's Last Reckoning", "Hazoret's Undying Fury")) withClue(name) {
+            flags(name).shouldBeEmpty()
+            AiCardRating.of(card(name), listOf("HOU")).intent.unrecognised shouldBe false
+        }
+        withClue("Mana Vapors skips an opponent's untap: a payoff, still flagged") {
+            flags("Mana Vapors") shouldContain "intent: SkipUntapEffect"
+        }
     }
 })
