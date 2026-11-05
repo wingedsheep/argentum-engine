@@ -137,6 +137,18 @@ class GameSimulator(
     }
 
     /**
+     * [action] applied as one engine step, with nothing resolved after it: a cast leaves its spell
+     * on the stack and priority with whoever the rules give it to. Null when the engine rejects
+     * the action or pauses for a decision. For a caller that hands priority around the stack
+     * itself — [TargetResponses] letting an opponent answer a spell before it resolves.
+     */
+    fun step(state: GameState, action: GameAction): GameState? {
+        if (state.pendingDecision != null) return null
+        val result = processor.process(state, action).result
+        return if (result.error == null && result.outcome !is Outcome.Paused) result.state else null
+    }
+
+    /**
      * Get all legal actions for a player.
      */
     fun getLegalActions(state: GameState, playerId: EntityId): List<LegalAction> {
