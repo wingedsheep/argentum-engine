@@ -271,7 +271,9 @@ enum class IntentTag {
      * The one-shot form reads the same: another creature losing all its abilities, or having its
      * base power and toughness set to 1/1 or less without dying (Warkite Marauder's "loses all
      * abilities and has base power and toughness 0/1 until end of turn") — still on the
-     * battlefield, no longer a threat or a blocker worth the name.
+     * battlefield, no longer a threat or a blocker worth the name. Removing an opponent's creature
+     * from combat (Spires of Orazca, False Orders) reads the same way: that attacker or blocker is
+     * answered for the fight that matters, though it stays on the battlefield.
      */
     NEUTRALIZE,
 

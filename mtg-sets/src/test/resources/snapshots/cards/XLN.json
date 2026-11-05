@@ -3309,6 +3309,152 @@
     ]
 }
 
+// Dowsing Dagger
+{
+    "name": "Dowsing Dagger",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, target opponent creates two 0/2 green Plant creature tokens with defender.\nEquipped creature gets +2/+1.\nWhenever equipped creature deals combat damage to a player, you may transform this Equipment.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dowsing Dagger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 0,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Plant"
+                    ],
+                    "keywords": [
+                        "DEFENDER"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/4/642d1d93-22d0-43f9-8691-6790876185a0.jpg?1783935809",
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Equipment enters, target opponent creates two 0/2 green Plant creature tokens with defender."
+            },
+            {
+                "id": "Dowsing Dagger:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "descriptionOverride": "Whenever equipped creature deals combat damage to a player, you may transform this Equipment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dowsing Dagger:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "backFace": {
+        "name": "Lost Vale",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Dowsing Dagger.)\n{T}: Add three mana of any one color.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Lost Vale:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add three mana of any one color."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "235",
+            "rarity": "RARE",
+            "artist": "Florian de Gesincourt",
+            "flavorText": "The pirates had ventured into the interior for treasure. They found something far greater.",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/1/514d53be-6ade-4f73-a844-e9ae2dafd6ce.jpg?1783935712"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "RARE",
+        "artist": "Florian de Gesincourt",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/514d53be-6ade-4f73-a844-e9ae2dafd6ce.jpg?1783935712",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Attacking with an equipped creature doesn't cause Equipment attached to it to become tapped. Dowsing Dagger will normally be untapped when it transforms into Lost Vale."
+            }
+        ]
+    }
+}
+
 // Dreamcaller Siren
 {
     "name": "Dreamcaller Siren",
@@ -6880,6 +7026,125 @@
     ]
 }
 
+// Legion's Landing
+{
+    "name": "Legion's Landing",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Legion's Landing enters, create a 1/1 white Vampire creature token with lifelink.\nWhen you attack with three or more creatures, transform Legion's Landing.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Legion's Landing:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Vampire"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                },
+                "descriptionOverride": "When Legion's Landing enters, create a 1/1 white Vampire creature token with lifelink."
+            },
+            {
+                "id": "Legion's Landing:2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 3
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "descriptionOverride": "When you attack with three or more creatures, transform Legion's Landing."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Adanto, the First Fort",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Legion's Landing.)\n{T}: Add {W}.\n{2}{W}, {T}: Create a 1/1 white Vampire creature token with lifelink.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Adanto, the First Fort:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add {W}."
+                },
+                {
+                    "id": "Adanto, the First Fort:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{W}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Vampire"
+                        ],
+                        "keywords": [
+                            "LIFELINK"
+                        ]
+                    },
+                    "descriptionOverride": "{2}{W}, {T}: Create a 1/1 white Vampire creature token with lifelink."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "22",
+            "rarity": "RARE",
+            "artist": "Svetlin Velinov",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/5/05e2a5e6-3aaa-4096-bdd0-fcc1afe5a36c.jpg?1783935808"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"I claim this land in the name of the queen.\"\n—Adrian Adanto of Lujio",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05e2a5e6-3aaa-4096-bdd0-fcc1afe5a36c.jpg?1783935808",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Once you've attacked with three or more creatures, Legion's Landing will transform even if some of those creatures leave the battlefield or are removed from combat."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "The last ability of Legion's Landing only counts creatures that you declare as attacking creatures. Creatures that enter the battlefield attacking won't count."
+            }
+        ]
+    }
+}
+
 // Lightning-Rig Crew
 {
     "name": "Lightning-Rig Crew",
@@ -7138,6 +7403,106 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/5/65689442-e679-4844-91a8-f6a39a7c1f9b.jpg"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Marauding Looter
+{
+    "name": "Marauding Looter",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Raid — At the beginning of your end step, if you attacked this turn, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Marauding Looter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Raid — At the beginning of your end step, if you attacked this turn, you may draw a card. If you do, discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"I'll be taking that.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c41fee8-7b03-4dc8-babb-f8c8369a74c2.jpg?1783935711"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
@@ -7864,6 +8229,50 @@
     ]
 }
 
+// Pillar of Origins
+{
+    "name": "Pillar of Origins",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a creature type.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pillar of Origins:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "OfChosenType",
+                        "creatureOnly": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "UNCOMMON",
+        "artist": "Dimitar Marinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f888facd-e462-4794-a774-d765d1a1edfd.jpg?1783935705",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "To choose a creature type, you must choose an existing creature type, such as Vampire or Knight. You can't choose multiple creature types, such as \"Vampire Knight.\" Card types such as artifact can't be chosen, nor can subtypes that aren't creature types, such as Jace, Vehicle, or Treasure."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Pious Interdiction
 {
     "name": "Pious Interdiction",
@@ -8220,6 +8629,182 @@
     ]
 }
 
+// Primal Amulet
+{
+    "name": "Primal Amulet",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Instant and sorcery spells you cast cost {1} less to cast.\nWhenever you cast an instant or sorcery spell, put a charge counter on this artifact. Then if there are four or more charge counters on it, you may remove those counters and transform it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Primal Amulet:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "CHARGE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "CHARGE"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "RemoveCounters",
+                                            "counterType": "CHARGE",
+                                            "count": {
+                                                "type": "EntityProperty",
+                                                "entity": "Self",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": "CHARGE"
+                                                }
+                                            },
+                                            "target": "Self"
+                                        },
+                                        "Transform"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, put a charge counter on this artifact. Then if there are four or more charge counters on it, you may remove those counters and transform it."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Primal Wellspring",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Primal Amulet.)\n{T}: Add one mana of any color. When that mana is spent to cast an instant or sorcery spell, copy that spell and you may choose new targets for the copy.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Primal Wellspring:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "riders": [
+                            {
+                                "type": "TriggersWhenSpent",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsInstant",
+                                                "IsSorcery"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "effect": {
+                                    "type": "CopyTargetSpell",
+                                    "target": "TriggeringEntity"
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add one mana of any color. When that mana is spent to cast an instant or sorcery spell, copy that spell and you may choose new targets for the copy."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "243",
+            "rarity": "RARE",
+            "artist": "John Avon",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/4/d4d379b5-7f56-4a7d-a4ac-131fc3d579c6.jpg?1783935709",
+            "rulings": [
+                {
+                    "date": "2017-09-29",
+                    "text": "The mana produced by Primal Wellspring can be spent on anything, not just an instant or sorcery spell."
+                },
+                {
+                    "date": "2017-09-29",
+                    "text": "If more than one mana produced by a Primal Wellspring is spent to cast a single instant or sorcery spell, the delayed triggered ability associated with each mana spent will trigger. That many copies will be created."
+                },
+                {
+                    "date": "2017-09-29",
+                    "text": "Primal Wellspring's delayed triggered ability can copy the spell even if that spell is countered before the ability resolves."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4d379b5-7f56-4a7d-a4ac-131fc3d579c6.jpg?1783935709",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Primal Amulet's last ability triggers once you've completed casting a spell. Notably, you can't use Primal Wellspring to pay for the spell that gives Primal Amulet its fourth counter."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a fourth charge counter is put on Primal Amulet by something other than the resolution of its ability (as modified by any applicable replacement effects), you won't be able to remove those counters and transform it yet. You'll have to wait until you cast an instant or sorcery spell again."
+            }
+        ]
+    }
+}
+
 // Prosperous Pirates
 {
     "name": "Prosperous Pirates",
@@ -8517,6 +9102,117 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Raiders' Wake
+{
+    "name": "Raiders' Wake",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent discards a card, that player loses 2 life.\nRaid — At the beginning of your end step, if you attacked this turn, target opponent discards a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raiders' Wake:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Raiders' Wake:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Raid — At the beginning of your end step, if you attacked this turn, target opponent discards a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "One was spared to tell the gruesome tale.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd81dd41-a982-46d2-a572-432580be73c5.jpg?1783935756"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9397,6 +10093,118 @@
     ]
 }
 
+// Rowdy Crew
+{
+    "name": "Rowdy Crew",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Trample\nWhen this creature enters, draw three cards, then discard two cards at random. If two cards that share a card type are discarded this way, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rowdy Crew:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "Random",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionSharesCardType",
+                                    "collection": "discarded"
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, draw three cards, then discard two cards at random. If two cards that share a card type are discarded this way, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "MYTHIC",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdb3821a-ecc8-478d-93de-57200476868c.jpg?1783935739",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Once Rowdy Crew's triggered ability begins to resolve, no player may take other actions until it's done. Notably, you can't discard or cast any of the cards you draw to try to rig the results of the random discard."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "The discarded cards just need to share one card type. For example, Rowdy Crew will get two +1/+1 counters if you discard an artifact creature and an enchantment creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Rowdy Crew doesn't get more than two +1/+1 counters if the discarded cards happen to share more than one card type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ruin Raider
 {
     "name": "Ruin Raider",
@@ -9510,6 +10318,77 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ruthless Knave
+{
+    "name": "Ruthless Knave",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "{2}{B}, Sacrifice a creature: Create two Treasure tokens. (They're artifacts with \"{T}, Sacrifice this token: Add one mana of any color.\")\nSacrifice three Treasures: Draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ruthless Knave:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Ruthless Knave:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure",
+                        "count": 3
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "\"This scum is barely worth the trouble.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1ce91e38-4601-4354-ad1b-2c5c1c70da17.jpg?1783935755"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9956,6 +10835,71 @@
     ]
 }
 
+// Sentinel Totem
+{
+    "name": "Sentinel Totem",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, scry 1. (Look at the top card of your library. You may put that card on the bottom.)\n{T}, Exile this artifact: Exile all graveyards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sentinel Totem:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sentinel Totem:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Exile this artifact: Exile all graveyards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d8097eb-518a-4b8e-8d6a-a139d4ddcc8f.jpg?1783935701"
+    },
+    "colorIdentityOverride": []
+}
+
 // Settle the Wreckage
 {
     "name": "Settle the Wreckage",
@@ -10092,6 +11036,53 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Shadowed Caravel
+{
+    "name": "Shadowed Caravel",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever a creature you control explores, put a +1/+1 counter on this Vehicle.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadowed Caravel:1",
+                "trigger": {
+                    "type": "ExploredEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b28ab3ed-32cd-4168-9763-96884491aaa1.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Shaper Apprentice
@@ -11316,6 +12307,66 @@
     ]
 }
 
+// Star of Extinction
+{
+    "name": "Star of Extinction",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land. Star of Extinction deals 20 damage to each creature and each planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature|planeswalker"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 20
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "\"The visions haunt me. I see the end of the world, brought on by the search for the Immortal Sun.\"\n—Shaper Pashona",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/021f57dc-80f3-4ede-99d5-4a44aade44e2.jpg?1783935738"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Steadfast Armasaur
 {
     "name": "Steadfast Armasaur",
@@ -11923,6 +12974,192 @@
     ]
 }
 
+// Sword-Point Diplomacy
+{
+    "name": "Sword-Point Diplomacy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top three cards of your library. For each of those cards, put that card into your hand unless any opponent pays 3 life. Then exile the rest.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Choose the card opponents decide on first"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "selected1"
+                    },
+                    "body": {
+                        "type": "AnyPlayerMayPay",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        "consequenceIfNonePaid": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Hand"
+                        },
+                        "eligiblePlayers": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "remainder1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected4",
+                    "storeRemainder": "remainder4",
+                    "prompt": "Choose the card opponents decide on next"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected4"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "selected4"
+                    },
+                    "body": {
+                        "type": "AnyPlayerMayPay",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        "consequenceIfNonePaid": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Hand"
+                        },
+                        "eligiblePlayers": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "remainder4"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "remainder4"
+                    },
+                    "body": {
+                        "type": "AnyPlayerMayPay",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        "consequenceIfNonePaid": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Hand"
+                        },
+                        "eligiblePlayers": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Library"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching9"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching9",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Take my blood if you want. Just don't take my gold!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25750098-02a1-48e4-917d-187c41e111b6.jpg?1783935754",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You reveal all three cards before opponents choose whether to pay life for any of them."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "In a multiplayer game, each opponent in turn order chooses whether to pay life for one card before proceeding to the next card. You choose the order to perform this process for the cards, but opponents may discuss them before making any choices. Opponents will then know choices made by earlier opponents when making their choices."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tempest Caller
 {
     "name": "Tempest Caller",
@@ -12014,6 +13251,176 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Thaumatic Compass
+{
+    "name": "Thaumatic Compass",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.\nAt the beginning of your end step, if you control seven or more lands, transform this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thaumatic Compass:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you control seven or more lands, transform this artifact."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Thaumatic Compass:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Spires of Orazca",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Thaumatic Compass.)\n{T}: Add {C}.\n{T}: Untap target attacking creature an opponent controls and remove it from combat.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Spires of Orazca:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Spires of Orazca:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "RemoveFromCombat",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "Untap target attacking creature an opponent controls and remove it from combat."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "249",
+            "rarity": "RARE",
+            "artist": "Yeong-Hao Han",
+            "flavorText": "\". . . a cryptic objective.\"\n—Jace Beleren",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/9/392af78e-34d5-4b1b-8b29-0e702271e4d7.jpg?1783935706",
+            "rulings": [
+                {
+                    "date": "2017-09-29",
+                    "text": "Removing a creature from combat doesn't change the fact that it attacked, even though it's no longer an attacking creature. Notably, raid abilities will still be satisfied if every attacking creature is removed from combat."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"Clearly, it indicates the aetheric azimuth of . . .\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/392af78e-34d5-4b1b-8b29-0e702271e4d7.jpg?1783935706"
+    }
 }
 
 // Thrash of Raptors
@@ -12644,6 +14051,161 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Vance's Blasting Cannons
+{
+    "name": "Vance's Blasting Cannons",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "At the beginning of your upkeep, exile the top card of your library. If it's a nonland card, you may cast that card this turn.\nWhenever you cast your third spell in a turn, you may transform Vance's Blasting Cannons.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vance's Blasting Cannons:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "vancesCannonsExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "vancesCannonsExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "vancesCannonsExiled",
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, exile the top card of your library. If it's a nonland card, you may cast that card this turn."
+            },
+            {
+                "id": "Vance's Blasting Cannons:2",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 3,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "descriptionOverride": "Whenever you cast your third spell in a turn, you may transform Vance's Blasting Cannons."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Spitfire Bastion",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Vance's Blasting Cannons.)\n{T}: Add {R}.\n{2}{R}, {T}: Spitfire Bastion deals 3 damage to any target.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Spitfire Bastion:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add {R}."
+                },
+                {
+                    "id": "Spitfire Bastion:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{R}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{2}{R}, {T}: Spitfire Bastion deals 3 damage to any target."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "173",
+            "rarity": "RARE",
+            "artist": "Jonas De Ro",
+            "flavorText": "Now instead of a ship, Ripley Vance commands a fortress.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/e/9e8c0009-787f-480b-84b6-bf297f1fb466.jpg?1783935737"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "flavorText": "With a broadside assault, Captain Vance carved the cliffs to form her new home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e8c0009-787f-480b-84b6-bf297f1fb466.jpg?1783935737",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "The second ability of Vance's Blasting Cannons counts all the spells you've cast, including Vance's Blasting Cannons itself if you cast it this turn. The ability won't trigger unless Vance's Blasting Cannons is on the battlefield as you cast your third spell of the turn."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Casting the exiled card follows the normal rules for casting that card. You must pay its costs, and you must follow all applicable timing rules. For example, if you exile a creature card this way, you must wait until your main phase to cast it."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If you don't cast the exiled card, it remains in exile."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "The second ability of Vance's Blasting Cannons resolves before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13399,6 +14961,53 @@
         "artist": "Kieran Yanner",
         "flavorText": "When Captain Thorn adds a new ship to his fleet, he gives the crew a simple choice: follow me, or fall in the sea.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/0/0038ac6a-318f-44fb-bb64-7ae172c4aca3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wanted Scoundrels
+{
+    "name": "Wanted Scoundrels",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "When this creature dies, target opponent creates two Treasure tokens. (They're artifacts with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wanted Scoundrels:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "count": 2,
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Trust me. The reward's not worth it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6704e4c9-3b5e-4ba5-a5bc-6d684e2983e9.jpg?1783935750"
     },
     "colorIdentityOverride": [
         "BLACK"

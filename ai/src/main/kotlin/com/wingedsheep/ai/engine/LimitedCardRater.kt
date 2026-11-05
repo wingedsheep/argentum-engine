@@ -428,7 +428,7 @@ object LimitedCardRater {
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot, card: CardDefinition): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect, slot.targets)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect, slot.targets, slot.turnAhead)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
 
     // Four-mana activations are already slow; above that, retain only the share likely to be used.
     private fun activationDiscount(slot: EffectWalker.Slot): Double =
@@ -548,11 +548,11 @@ object LimitedCardRater {
      * onto our battlefield, however it splits them first (Boneyard Parley's piles), like the
      * recursion they are.
      */
-    private fun pipelineScore(root: Effect, targets: List<TargetRequirement>): Double {
+    private fun pipelineScore(root: Effect, targets: List<TargetRequirement>, turnAhead: Boolean = false): Double {
         val reanimation = if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(root, targets)) {
             TAG_VALUE.getValue(IntentTag.RECURSION)
         } else 0.0
-        val tags = CardIntentAnalyzer.pipelineTags(root)
+        val tags = CardIntentAnalyzer.pipelineTags(root, turnAhead)
         if (tags.isEmpty()) return reanimation
         var score = reanimation
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE

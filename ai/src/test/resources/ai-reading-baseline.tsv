@@ -2820,7 +2820,7 @@ Charmed Stray
 Charming Prince
 Charming Scoundrel
 Charnel Troll
-Charred Foyer // Warped Space	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Charred Foyer // Warped Space
 Chart a Course
 Chartooth Cougar
 Chase Inspiration
@@ -3404,7 +3404,7 @@ Council of Advisors
 Council of Echoes
 Council's Deliberation
 Counsel of the Soratami
-Count on Luck	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Count on Luck
 Counterbalance
 Counterintelligence
 Countersculpt
@@ -4521,6 +4521,7 @@ Dovin, Hand of Control	polarity: mixed(PreventDamageEffect)
 Down in the Valley
 Down, Down to Goblin-town
 Downwind Ambusher
+Dowsing Dagger
 Dowsing Device
 Dowsing Shaman
 Dr. Beverly Crusher
@@ -5249,7 +5250,7 @@ Endless Wurm
 Endoskeleton
 Endrek Sahr, Master Breeder
 Endrider Catalyzer
-Endrider Spikespitter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Endrider Spikespitter
 Endurance	intent: Pipeline(graveyard→library); polarity: Pipeline(graveyard→library)
 Endurance Bobblehead
 Enduring Angel
@@ -5673,7 +5674,7 @@ Fallowsage
 False Cure	intent: CreateGlobalTriggeredAbilityEffect; timing: CreateGlobalTriggeredAbilityEffect
 False Defeat
 False Mourning
-False Orders	intent: BecomeBlockingEffect; intent: Pipeline(BattlefieldMatching→?); intent: RemoveFromCombatEffect; polarity: BecomeBlockingEffect; polarity: Pipeline(BattlefieldMatching→?); polarity: RemoveFromCombatEffect
+False Orders	polarity: BecomeBlockingEffect; polarity: Pipeline(BattlefieldMatching→?); polarity: RemoveFromCombatEffect
 False Peace	intent: SkipCombatPhasesEffect; polarity: SkipCombatPhasesEffect
 False Summoning
 Familiar's Ruse
@@ -8365,7 +8366,7 @@ Illuminator Virtuoso
 Illuna, Apex of Wishes	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|exile|hand)
 Illusion Spinners
 Illusionary Mask
-Illusionist's Gambit	intent: AddCombatPhaseEffect; intent: ForEach>GrantStaticAbilityEffect; intent: ForEach>MarkMustAttackEffect; intent: ForEach>RemoveFromCombatEffect; intent: ForEach>TapUntapEffect; timing: ForEach>GrantStaticAbilityEffect
+Illusionist's Gambit	timing: ForEach>GrantStaticAbilityEffect
 Illusory Ambusher
 Illustrious Historian
 Illvoi Galeblade
@@ -9585,7 +9586,7 @@ La'An Noonien-Singh, Security
 Lab Rats
 Laboratory Maniac
 Labyrinth Raptor
-Labyrinth of Skophos	intent: RemoveFromCombatEffect; polarity: RemoveFromCombatEffect
+Labyrinth of Skophos	polarity: RemoveFromCombatEffect
 Lace with Moonglove	timing: GrantKeywordEffect
 Lacerate Flesh
 Lady Caleria
@@ -9662,7 +9663,7 @@ Lathliss, Dragon Queen
 Lathnu Sailback
 Lathril, Blade of the Elves
 Lattice-Blade Mantis
-Laughing Jasper Flint	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
+Laughing Jasper Flint	polarity: Pipeline(TopOfLibrary→exile)
 Laughing Mad
 Launch Mishap
 Lava Axe
@@ -9740,6 +9741,7 @@ Legion Lieutenant
 Legion Warboss
 Legion's End	polarity: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); polarity: StoreCardNameEffect
 Legion's Judgment
+Legion's Landing
 Legions to Ashes	intent: Pipeline(BattlefieldMatching|ChosenTargets→exile); intent: StoreCardNameEffect; polarity: Pipeline(BattlefieldMatching|ChosenTargets→exile); polarity: StoreCardNameEffect
 Legolas, Counter of Kills
 Legolas, Master Archer
@@ -10035,7 +10037,7 @@ Looming Shade
 Looming Spires
 Loot, Exuberant Explorer	intent: Pipeline(TopOfLibrary→battlefield|library)
 Loot, the Anomaly
-Loot, the Key to Everything	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Loot, the Key to Everything
 Loot, the Nexus
 Loot, the Pathfinder
 Loporrit Scout
@@ -10401,6 +10403,7 @@ Marauding Boneslasher
 Marauding Brinefang
 Marauding Dreadship
 Marauding Knight
+Marauding Looter
 Marauding Mako
 Marauding Raptor
 Marauding Sphinx
@@ -12085,7 +12088,7 @@ Outlaws' Merriment
 Outmuscle
 Outnumber
 Outpace Oblivion
-Outpost Siege	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Outpost Siege
 Outrageous Robbery	polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(TopOfLibrary→exile)
 Ovalchase Daredevil
 Ovalchase Dragster
@@ -12493,6 +12496,7 @@ Pillage the Bog
 Pillaging Horde
 Pillar Launch
 Pillar of Flame
+Pillar of Origins
 Pillardrop Rescuer
 Pillardrop Warden
 Pillarfield Ox
@@ -12774,6 +12778,7 @@ Priest of the Blood Rite
 Priest of the Haunted Edge
 Priest of the Wakening Sun
 Primal Adversary	intent: ForEach>BecomeCreatureEffect
+Primal Amulet
 Primal Boost
 Primal Clay
 Primal Command	polarity: Pipeline(graveyard→library)
@@ -13167,6 +13172,7 @@ Ragost, Deft Gastronaut
 Raid Bombardment
 Raiders' Karve	intent: Pipeline(TopOfLibrary→battlefield)
 Raiders' Spoils
+Raiders' Wake
 Raiding Nightstalker
 Raiding Party
 Raiding Schemes
@@ -13486,7 +13492,7 @@ Red Sun's Twilight	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→g
 Red Sun's Zenith
 Red Tiger Mechan
 Red Ward
-Redcap Gutter-Dweller	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Redcap Gutter-Dweller
 Redcap Heelslasher
 Redcap Melee
 Redcap Raiders
@@ -14097,6 +14103,7 @@ Rowan's Stalwarts
 Rowan, Fearless Sparkmage	combat: ForEach>CantBlockEffect
 Rowan, Scholar of Sparks	combat: SetBaseStatsEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
 Rowan, Scion of War	intent: ModifySpellCostsEffect
+Rowdy Crew
 Rowdy Research
 Rowdy Snowballers
 Roxanne, Starfall Savant
@@ -14217,6 +14224,7 @@ Rustwing Falcon
 Rutherford, Upgraded Ensign
 Ruthless Deathfang
 Ruthless Disposal
+Ruthless Knave
 Ruthless Lawbringer
 Ruthless Negotiation
 Ruthless Predation
@@ -14859,6 +14867,7 @@ Sentinel	combat: SetBaseStatsEffect; polarity: SetBaseStatsEffect
 Sentinel Sarah Lyons
 Sentinel Sliver
 Sentinel Spider
+Sentinel Totem
 Sentinel of Lost Lore	polarity: MoveToZoneEffect
 Sentinel of the Nameless City
 Sentinel of the Pearl Trident
@@ -14974,6 +14983,7 @@ Shadowblood Egg
 Shadowblood Ridge
 Shadowborn Demon	intent: SacrificeEffect
 Shadowcloak Vampire
+Shadowed Caravel
 Shadowfax, Lord of Horses	intent: Pipeline(hand→battlefield)
 Shadowfeed
 Shadowmage Infiltrator
@@ -16180,6 +16190,7 @@ Standing Troops
 Stangg
 Star Charter
 Star Pupil
+Star of Extinction
 Star-Crowned Stag
 Starbreach Whale
 Starfall Invocation
@@ -16342,7 +16353,7 @@ Stoic Sphinx
 Stoke the Flames
 Stolen Grain
 Stolen Stark Tech
-Stolen Strategy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Stolen Strategy
 Stolen Uniform
 Stolen Vitality
 Stolen by the Fae
@@ -16802,6 +16813,7 @@ Sword of the Ages
 Sword of the Animist
 Sword of the Meek
 Sword of the Squeak
+Sword-Point Diplomacy
 Swords to Plowshares
 Swordsman, Sharp Scoundrel
 Swordsworn Cavalier
@@ -17283,6 +17295,7 @@ Thanos, the Mad Titan
 Thassa's Intervention
 Thassa's Oracle
 Thassa, Deep-Dwelling	polarity: MoveToZoneEffect
+Thaumatic Compass
 Thaumatog
 Thaumaton Torpedo
 Thaumaturge's Familiar
@@ -18148,7 +18161,7 @@ Trinket Mage
 Trip Noose
 Trip Up
 Trip Wire
-Triple Triad	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Triple Triad
 Triplicate Spirits
 Triskaidekaphile
 Triskaidekaphobia
@@ -18546,7 +18559,7 @@ Ur-Golem's Eye
 Urabrask	intent: ExileAndReturnTransformedEffect
 Urabrask's Anointer
 Urabrask's Forge
-Urabrask, Heretic Praetor	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: ReplaceNextDrawWithEffect
+Urabrask, Heretic Praetor	intent: ReplaceNextDrawWithEffect
 Urban Retreat
 Urban Utopia
 Urborg	intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect
@@ -18608,7 +18621,7 @@ Utter End
 Utter Insignificance
 Utvara Hellkite
 Uurg, Spawn of Turg
-Uvilda, Dean of Perfection	intent: ForEach>AddCountersEffect; intent: ForEach>GrantTriggeredAbilityEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: Pipeline(hand→exile)
+Uvilda, Dean of Perfection	intent: ForEach>AddCountersEffect; intent: ForEach>GrantTriggeredAbilityEffect; intent: Pipeline(hand→exile)
 Uyo, Silent Prophet
 V'Ger, the Intruder
 V.A.T.S.	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
@@ -18681,6 +18694,7 @@ Vampiric Rites
 Vampiric Spirit
 Vampiric Touch
 Vampiric Tutor
+Vance's Blasting Cannons
 Vandalblast
 Vandalize
 Vanguard Seraph
@@ -18957,7 +18971,7 @@ Vision of Love
 Visionary Augmenter
 Visionary's Dance
 Visions	intent: Pipeline(TopOfLibrary→?); polarity: Pipeline(TopOfLibrary→?)
-Visions of Phyrexia	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Visions of Phyrexia
 Visions of Villainy
 Vitality Charm
 Vitalize	intent: ForEach>TapUntapEffect
@@ -19241,6 +19255,7 @@ Wanderwine Hub
 Wanderwine Prophets	intent: EmitChampionedEventEffect
 Waning Wurm
 Wanted Griffin
+Wanted Scoundrels
 War Balloon
 War Barge
 War Behemoth
@@ -19579,7 +19594,7 @@ Wild Ride
 Wild Roads
 Wild Shape
 Wild Unraveling
-Wild Wasteland	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Wild Wasteland
 Wild-Field Scarecrow
 Wildborn Preserver
 Wilderland Scrounger
