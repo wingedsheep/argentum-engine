@@ -1131,7 +1131,7 @@ Azorius Signet
 Azorius Skyguard
 Azra Smokeshaper
 Azula Always Lies
-Azula, Cunning Usurper
+Azula, Cunning Usurper	intent: GrantMayPlayFromExileEffect; intent: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile); polarity: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile)
 Azula, On the Hunt
 Azure Beastbinder	polarity: RemoveAllAbilitiesEffect
 Azure Drake
@@ -10923,7 +10923,7 @@ Mizzix, Replica Rider
 Mjölnir, Hammer of Thor
 Mm'menon, Uthros Exile
 Mm'menon, the Right Hand
-Mnemonic Betrayal
+Mnemonic Betrayal	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile|graveyard)
 Mnemonic Nexus	intent: ForEach>Pipeline(graveyard→library)
 Mnemonic Sliver
 Mnemonic Sphere
@@ -14895,7 +14895,7 @@ Shadow Summoning
 Shadow Urchin	intent: AddCountersToCollectionEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ControlledPermanents→?); intent: Pipeline(TopOfLibrary→exile)
 Shadow of Doubt	timing: CantSearchLibrariesEffect
 Shadow of Mortality
-Shadow of the Enemy
+Shadow of the Enemy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
 Shadow of the Goblin
 Shadow of the Second Sun	intent: AddBeginningPhaseEffect; polarity: Aura>AddBeginningPhaseEffect
 Shadow-Rite Priest

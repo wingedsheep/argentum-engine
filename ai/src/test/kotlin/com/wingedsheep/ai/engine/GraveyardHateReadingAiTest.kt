@@ -50,6 +50,21 @@ class GraveyardHateReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a graveyard card exiled to be copied or cast is recursion, not hate") {
+            listOf("The Scarab God", "Dimir Doppelganger", "Daring Waverider").forEach { name ->
+                withClue(name) {
+                    val tags = intent(name).tags
+                    tags shouldContain IntentTag.RECURSION
+                    tags shouldNotContain IntentTag.GRAVEYARD_HATE
+                }
+            }
+            withClue("The Scarab God copies the best creature card in any graveyard") {
+                val ability = cardRegistry.getCard("The Scarab God")!!.script.activatedAbilities
+                    .first { it.targetRequirements.isNotEmpty() }
+                intents.effectTargetPolarities(ability.effect, ability.targetRequirements) shouldBe listOf(TargetPolarity.BENEFICIAL)
+            }
+        }
+
         test("our own graveyard put back on our library stays recursion") {
             val tags = intent("Mortuary Mire").tags
             tags shouldContain IntentTag.RECURSION
@@ -83,6 +98,7 @@ class GraveyardHateReadingAiTest : ScenarioTestBase() {
                 .withActivePlayer(1)
                 .withCardOnBattlefield(1, "Junktroller")
                 .withCardInGraveyard(1, "Grizzly Bears")
+                .withCardInGraveyard(2, "Raging Goblin")
                 .withCardInGraveyard(2, "Serra Angel")
                 .withCardInLibrary(1, "Island")
                 .withCardInLibrary(2, "Island")
@@ -98,7 +114,7 @@ class GraveyardHateReadingAiTest : ScenarioTestBase() {
             ) as ActivateAbility
 
             val target = filled.targets.single().toEntityId()
-            withClue("the tuck is graveyard hate: the opponent's Serra Angel, not our Grizzly Bears") {
+            withClue("the tuck is graveyard hate: the opponent's Serra Angel, not their Raging Goblin or our Grizzly Bears") {
                 game.state.getEntity(target)?.get<CardComponent>()?.name shouldBe "Serra Angel"
                 game.state.getZone(game.player2Id, Zone.GRAVEYARD) shouldContain target
             }

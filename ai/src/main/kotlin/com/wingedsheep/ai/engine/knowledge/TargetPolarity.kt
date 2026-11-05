@@ -488,10 +488,15 @@ object TargetPolarityAnalyzer {
             val copy = ownCopySlot(leaf, requirements)
             val gift = tokenGiftSlot(leaf, requirements)
             // A card exiled or tucked out of a graveyard that may be an opponent's (Scavenging Ooze,
-            // Junktroller): graveyard hate, aimed at the card a recursion would want back.
-            val hate = (leaf as? MoveToZoneEffect)
+            // Junktroller): graveyard hate, aimed at the card a recursion would want back. Exiled to
+            // be used (The Scarab God's token copy, Dimir Doppelganger) it is the best card on
+            // either side: the slot reads as the recursion it is.
+            val graveyardSlot = (leaf as? MoveToZoneEffect)
                 ?.takeIf { CardIntentAnalyzer.graveyardMoveOf(it, requirements) == CardIntentAnalyzer.GraveyardMove.HATE }
                 ?.let { slotOf(it.target, requirements) }
+            val reused = graveyardSlot != null && CardIntentAnalyzer.usesTheExiledCard(EffectWalker.payoffLeaves(effect))
+            val hate = graveyardSlot.takeIf { !reused }
+            if (reused) recursions += graveyardSlot!!
             if (recursion != null) {
                 recursions += recursion
             } else if (hate != null) {
@@ -792,7 +797,8 @@ object TargetPolarityAnalyzer {
             val move = leaf as? MoveCollectionEffect ?: return@mapNotNullTo null
             val zone = (move.destination as? CardDestination.ToZone)?.zone
             slotOfHand[move.from]?.takeIf {
-                if (move.from in graveyards) zone == Zone.EXILE
+                // Exiled to be cast (Mnemonic Betrayal's kin) is a theft, not a loss to read here.
+                if (move.from in graveyards) zone == Zone.EXILE && !CardIntentAnalyzer.usesTheExiledCard(leaves)
                 else zone == Zone.GRAVEYARD || zone == Zone.EXILE || zone == Zone.LIBRARY
             }
         }
