@@ -1344,9 +1344,11 @@ each ransom on its own pile). The resolving pipeline's collections *are* carried
 pay-or-decline pause, so a suffer effect can name them on either answer.
 
 **Cost filters are judged in the resolution's context**, with the payer as "you": a `Costs.pay` filter
-may name the resolving spell's targets, pipeline values and source — e.g. `otherThan(ContextTarget(0))`
-/ `otherThan(<bound target>)` for "sacrifice another nonland permanent" relative to the target
-(Torment of Venom), on both the single-cost and the `Costs.pay.Choice` paths.
+may name the resolving spell's source and targets — e.g. `otherThan(ContextTarget(0))` /
+`otherThan(<bound target>)` for "sacrifice another nonland permanent" relative to the target (Torment
+of Venom) — on both the single-cost and the `Costs.pay.Choice` paths. Pipeline values beyond named
+targets and stored collections are seen on the single-cost path only: the `Choice` continuation
+carries just those two across its pause.
 
 `PayOrSufferEffect(cost, suffer, player = EffectTarget.Controller)` defaults to charging the ability's
 controller, but **`player` may route the decision *and* the payment to any other player** — most
