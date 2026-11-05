@@ -2284,6 +2284,16 @@ object CardIntentAnalyzer {
         }
     }
 
+    /** "At the beginning of the end step, sacrifice this creature" — a body that leaves the turn it arrives. */
+    private fun sacrificesItselfAtEndStep(scripts: List<CardScript>): Boolean = scripts.any { script ->
+        script.triggeredAbilities.any { trigger ->
+            (trigger.trigger as? EventPattern.StepEvent)?.step == com.wingedsheep.sdk.core.Step.END &&
+                EffectWalker.leaves(trigger.effect).any {
+                    it is SacrificeSelfEffect || (it is SacrificeTargetEffect && it.target == EffectTarget.Self)
+                }
+        }
+    }
+
     private fun consumesSource(cost: AbilityCost): Boolean = when (cost) {
         AbilityCost.SacrificeSelf, AbilityCost.ExileSelf, AbilityCost.ReturnSelfToHand,
         is AbilityCost.PutSelfIntoLibrary -> true
@@ -2381,9 +2391,29 @@ object CardIntentAnalyzer {
                     }
                 }
             }
+            // A body that hands its controller a card again and again (Dark Confidant's upkeep,
+            // a combat-damage draw, Fireglass Mentor's second-main impulse) is a card-advantage
+            // engine the creature's stats can't see: kill it and the stream stops. Below repeatable
+            // removal: a card a turn is worth less than answering a threat a turn. An ETB or
+            // leaves-play draw has already paid out, or pays out in the removal, so it is not counted,
+            // and neither is a body that sacrifices itself at the end step (Frostbite Pyromental):
+            // it is gone before the stream can run twice.
+            val repeatableDraw = !repeatableRemoval && !sacrificesItselfAtEndStep(scripts) && scripts.any { script ->
+                script.triggeredAbilities.any { trigger ->
+                    canFireMoreThanOnce(trigger) && IntentTag.DRAW in analyzeEffect(
+                        trigger.effect,
+                        trigger.allTargetRequirements,
+                        turnAhead = EffectWalker.firesWithItsTurnAhead(trigger),
+                    ).tags
+                } || script.activatedAbilities.any { ability ->
+                    ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
+                        !consumesSource(ability.cost) &&
+                        IntentTag.DRAW in analyzeEffect(ability.effect, ability.targetRequirements).tags
+                }
+            }
             val ability = when {
                 repeatableRemoval -> 1.5
-                shieldsItself -> 1.0
+                shieldsItself || repeatableDraw -> 1.0
                 repeatableHate -> 0.5
                 else -> 0.0
             }

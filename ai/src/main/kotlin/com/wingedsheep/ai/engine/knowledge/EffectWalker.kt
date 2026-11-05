@@ -9,6 +9,9 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
@@ -191,14 +194,34 @@ object EffectWalker {
     )
 
     /**
-     * "At the beginning of your upkeep" / "your draw step": a trigger that resolves with its
-     * controller's whole turn — both main phases — still ahead. What it grants "this turn" (Vance's
-     * Blasting Cannons' exiled card) can be spent as freely as a card drawn that turn.
+     * A trigger that resolves on its controller's own turn with a main phase of that turn still
+     * ahead — or the main phase it fires in still open. What it grants "this turn" (Vance's
+     * Blasting Cannons' exiled card, Fireglass Mentor's pick) can be spent as freely as a card
+     * drawn that turn, sorcery-speed cards included.
+     *
+     *  - "At the beginning of your upkeep / draw step / main phase / combat / second main phase":
+     *    every step of our own turn before the end step. One that fires at the second main phase
+     *    resolves in it, and the stack empties there before the phase ends.
+     *  - "Whenever this creature / a creature you control attacks", "whenever you attack": attacks
+     *    are declared on their controller's turn, with the second main phase still to come. A
+     *    filtered [EventPattern.AttackEvent] watches any player's creatures, so it is left out.
+     *  - "Whenever this creature deals combat damage to a player": a creature hits a player in
+     *    combat only as an attacker (CR 510.1), so on our turn, before the second main phase.
+     *
+     * A trigger on a spell cast, a creature becoming a target, or an end step is not: it can fire on
+     * an opponent's turn or after the last main phase, and what it grants "this turn" may have no
+     * window left to be spent in.
      */
-    fun firesWithItsTurnAhead(trigger: TriggeredAbility): Boolean {
-        val pattern = trigger.trigger as? EventPattern.StepEvent ?: return false
-        return pattern.player == Player.You && (pattern.step == Step.UPKEEP || pattern.step == Step.DRAW)
+    fun firesWithItsTurnAhead(trigger: TriggeredAbility): Boolean = when (val pattern = trigger.trigger) {
+        is EventPattern.StepEvent -> pattern.player == Player.You && pattern.step in STEPS_BEFORE_OUR_LAST_MAIN
+        is EventPattern.AttackEvent -> pattern.filter == null
+        is EventPattern.YouAttackEvent -> pattern.player == Player.You
+        is EventPattern.DealsDamageEvent -> trigger.binding == TriggerBinding.SELF && pattern.sourceFilter == null &&
+            pattern.damageType == DamageType.Combat && pattern.recipient is Recipient.Player
+        else -> false
     }
+
+    private val STEPS_BEFORE_OUR_LAST_MAIN = Step.entries.takeWhile { it != Step.END }.toSet() - Step.UNTAP
 
     /**
      * Every effect slot on [script] that the walk knows how to read: the spell effect, each
