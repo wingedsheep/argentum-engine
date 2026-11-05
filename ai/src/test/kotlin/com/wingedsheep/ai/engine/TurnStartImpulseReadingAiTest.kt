@@ -61,6 +61,13 @@ class TurnStartImpulseReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("an until-your-next-end-step impulse is card draw from any trigger, entering included") {
+            val dragonhawk = card("Dragonhawk, Fate's Tempest")
+            withClue("both the enters and the attack trigger read fully") {
+                AiReadingAudit.audit(dragonhawk).shouldBeEmpty()
+            }
+        }
+
         test("a this-turn impulse we time ourselves, or one that can fire on their turn, still is not read as a draw") {
             CardIntentAnalyzer.analyze(card("Act on Impulse")).tags shouldNotContain IntentTag.DRAW
             CardIntentAnalyzer.analyzeSelf(card("Harnesser of Storms")).tags shouldNotContain IntentTag.DRAW

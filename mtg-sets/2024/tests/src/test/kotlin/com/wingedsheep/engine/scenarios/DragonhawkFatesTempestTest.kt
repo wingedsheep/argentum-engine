@@ -156,7 +156,7 @@ class DragonhawkFatesTempestTest : FunSpec({
 
     test("impulse-play window closes after the current turn, not a turn later") {
         // "Until your next end step" aligns with the delayed trigger timing: once the
-        // current turn's end step has happened, the exiled cards can no longer be played.
+        // current turn's end step has begun, the exiled cards can no longer be played.
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Mountain" to 30),
@@ -198,6 +198,45 @@ class DragonhawkFatesTempestTest : FunSpec({
 
         // On P1's next turn's main phase, the impulse component should be gone.
         driver.state.mayPlayPermissions.any { exiledMountain in it.cardIds } shouldBe false
+    }
+
+    test("impulse-play window closes as the end step begins, not at cleanup") {
+        // "You may play those cards until your next end step": the permission ends when that
+        // end step starts — the same moment the delayed trigger counts the cards still exiled —
+        // so the exiled cards can't be played in response to the damage trigger.
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Mountain" to 30),
+            startingLife = 20
+        )
+
+        val p1 = driver.activePlayer!!
+        val p2 = driver.getOpponent(p1)
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.putCardOnTopOfLibrary(p1, "Mountain")
+
+        val dragonhawkId = driver.putCardInHand(p1, "Dragonhawk, Fate's Tempest")
+        driver.giveMana(p1, Color.RED, 2)
+        driver.giveColorlessMana(p1, 3)
+        driver.castSpell(p1, dragonhawkId)
+
+        driver.passPriority(p1)
+        driver.passPriority(p2)
+        driver.passPriority(p1)
+        driver.passPriority(p2)
+
+        val exiledMountain = driver.getExile(p1).first()
+        driver.state.mayPlayPermissions.any { exiledMountain in it.cardIds } shouldBe true
+
+        // End step: the delayed damage trigger is waiting on the stack, the window already shut.
+        driver.passPriorityUntil(Step.END, maxPasses = 200)
+        driver.state.activePlayerId shouldBe p1
+        driver.state.mayPlayPermissions.any { exiledMountain in it.cardIds } shouldBe false
+
+        driver.passPriority(p1)
+        driver.passPriority(p2)
+        driver.getLifeTotal(p2) shouldBe 18
     }
 
     test("attack trigger's damage resolves at the same turn's end step") {

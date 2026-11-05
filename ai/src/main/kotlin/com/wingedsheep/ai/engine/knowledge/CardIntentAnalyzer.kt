@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
@@ -1283,19 +1284,24 @@ object CardIntentAnalyzer {
     /**
      * An impulse draw whose cards we can still play after this turn — "until the end of your next
      * turn", "for as long as it remains exiled" — is a draw, the cards only waiting in exile instead
-     * of in hand. One that closes this turn ("until end of turn", "until your next end step") is not
+     * of in hand. One that closes this turn ("until end of turn") is not
      * read as one: a DRAW reading earns the idle-mana and end-step windows, and cards that must be
      * spent before cleanup are worth nothing cast into them.
      *
      * Unless the grant is made at the start of our own turn ([turnAhead]: an "at the beginning of
      * your upkeep" trigger, Vance's Blasting Cannons): the ability is never ours to time, and both
      * main phases of the turn are still ahead to spend the card in, as a card drawn that turn is.
+     *
+     * "Until your next end step" is a draw from any source (Dragonhawk, Fate's Tempest): granted on
+     * our turn before the end step, a main phase is still ahead or under way; granted in our end
+     * step or on an opponent's turn, the window runs through our whole next turn.
      */
     private fun isLastingImpulse(grant: GrantMayPlayFromExileEffect, turnAhead: Boolean = false): Boolean =
         grant.recipient == EffectTarget.Controller && !grant.ownerControls && grant.condition == null &&
             when (val expiry = grant.expiry) {
                 MayPlayExpiry.EndOfTurn -> turnAhead
-                is MayPlayExpiry.UntilControllerStep -> !expiry.includeCurrentTurn
+                is MayPlayExpiry.UntilControllerStep -> !expiry.includeCurrentTurn || expiry.step == Step.END ||
+                    (turnAhead && expiry.step == Step.CLEANUP)
                 else -> true
             }
 

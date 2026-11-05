@@ -5055,7 +5055,11 @@
                         },
                         {
                             "type": "GrantMayPlayFromExile",
-                            "from": "gathered0"
+                            "from": "gathered0",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "END"
+                            }
                         },
                         {
                             "type": "CreateDelayedTrigger",
@@ -5103,7 +5107,11 @@
                         },
                         {
                             "type": "GrantMayPlayFromExile",
-                            "from": "gathered0"
+                            "from": "gathered0",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "END"
+                            }
                         },
                         {
                             "type": "CreateDelayedTrigger",
@@ -18986,17 +18994,17 @@
                             }
                         },
                         {
-                            "type": "GrantMayPlayFromExile",
-                            "from": "matched0"
-                        },
-                        {
-                            "type": "GrantPlayWithoutPayingCost",
-                            "from": "matched0"
-                        },
-                        {
-                            "type": "GrantPlayWithAdditionalCost",
+                            "type": "SelectFromCollection",
                             "from": "matched0",
-                            "additionalCost": {
+                            "selection": "ChooseSpell",
+                            "storeSelected": "selected3",
+                            "prompt": "You may cast the exiled card by discarding a card rather than paying its mana cost",
+                            "selectedLabel": "Cast by discarding"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected3",
+                            "alternativeCost": {
                                 "type": "AdditionalAtom",
                                 "atom": "AtomDiscard"
                             }
