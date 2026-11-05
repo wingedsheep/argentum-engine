@@ -9,6 +9,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.StormCopyTargetContinuation
 import com.wingedsheep.engine.core.Suspension
 import com.wingedsheep.engine.core.TriggerModalTargetSelectionContinuation
 import com.wingedsheep.engine.core.TriggeredAbilityContinuation
@@ -336,7 +337,8 @@ object TargetSelection {
      * asked it, when that continuation carries the effect the targets are for: a triggered ability
      * being put on the stack ([TriggeredAbilityContinuation]), or one mode of a modal triggered
      * ability ([TriggerModalTargetSelectionContinuation] — Proud Pack-Rhino's "put a shield counter
-     * on target permanent"). Empty — UNKNOWN everywhere — for any other question, and for a
+     * on target permanent"), or a spell copy's new targets ([StormCopyTargetContinuation] — Fork,
+     * Double Major, storm). Empty — UNKNOWN everywhere — for any other question, and for a
      * trigger whose dependent targets are asked one slot at a time.
      */
     fun decisionPolarities(
@@ -357,6 +359,12 @@ object TargetSelection {
                 if (mode == null) emptyList()
                 else intents.effectTargetPolarities(mode.effect, mode.targetRequirements)
             }
+            // "Choose new targets for the copy" (Fork, Double Major, a storm copy): the copy is ours,
+            // so each slot wants what the copied effect does to it — the copy of their Shock at
+            // their creature, the copy of our Giant Growth on ours.
+            is StormCopyTargetContinuation ->
+                answer.spellEffect?.let { intents.effectTargetPolarities(it, answer.spellTargetRequirements, answer.spellName) }
+                    ?: emptyList()
             else -> emptyList()
         }
         return decision.targetRequirements.mapNotNull { req ->
