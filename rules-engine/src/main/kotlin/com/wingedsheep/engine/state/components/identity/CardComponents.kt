@@ -169,6 +169,16 @@ data object TokenComponent : Component
 data class CreatedByComponent(val creatorId: com.wingedsheep.sdk.model.EntityId) : Component
 
 /**
+ * Marks a token as **embalmed** — created by a resolving embalm ability (CR 702.128b). Stamped by
+ * a `CreateTokenCopyOfTargetEffect` with `embalmed = true` and read by
+ * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEmbalmed]. Provenance, not a copiable
+ * value: a copy of an embalmed token isn't embalmed, and the mark stays on the token when it enters
+ * as a copy of something else (Vizier of Many Faces).
+ */
+@Serializable
+data object EmbalmedComponent : Component
+
+/**
  * Tracks that an entity is a copy of another card.
  * The originalCardDefinitionId preserves what the card originally was (e.g., Clone),
  * while copiedCardDefinitionId tracks what it's currently copying.

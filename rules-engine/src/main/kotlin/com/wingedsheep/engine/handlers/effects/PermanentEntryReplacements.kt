@@ -251,6 +251,28 @@ object PermanentEntryReplacements {
     }
 
     /**
+     * [effect] with its [EntersAsCopy.conditionalExceptions] settled as [entityId] would enter:
+     * each clause whose condition holds (the entrant as the source, [controllerId] as "you") is
+     * layered over [EntersAsCopy.exceptions], and the clause list is emptied — so every resumer
+     * downstream reads one plain [EntersAsCopy.exceptions]. "Except if Vizier of Many Faces was
+     * embalmed, the token has no mana cost, it's white, and it's a Zombie …" (CR 707.9b).
+     */
+    fun withConditionalExceptions(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        effect: EntersAsCopy,
+        predicateEvaluator: PredicateEvaluator
+    ): EntersAsCopy {
+        if (effect.conditionalExceptions.isEmpty()) return effect
+        val context = EffectContext(sourceId = entityId, controllerId = controllerId)
+        val folded = effect.conditionalExceptions
+            .filter { predicateEvaluator.conditions.evaluate(state, it.condition, context) }
+            .fold(effect.exceptions) { base, clause -> clause.exceptions.over(base) }
+        return effect.copy(exceptions = folded, conditionalExceptions = emptyList())
+    }
+
+    /**
      * Copy candidates for an [EntersAsCopy] on a permanent already on the battlefield: land/permanent
      * cards in graveyards ([Zone.GRAVEYARD]) or permanents on the battlefield matching
      * [EntersAsCopy.copyFilter], excluding [entityId] itself. Exposed so callers (e.g.
@@ -307,6 +329,7 @@ object PermanentEntryReplacements {
         entryNewObject: com.wingedsheep.engine.state.ObjectRef? = state.objectRef(entityId),
         predicateEvaluator: PredicateEvaluator
     ): ExecutionResult? {
+        val effect = withConditionalExceptions(state, entityId, controllerId, effect, predicateEvaluator)
         val copyFromGraveyard = effect.copyFromZone == Zone.GRAVEYARD
         val candidates = entersAsCopyCandidates(state, entityId, controllerId, effect, predicateEvaluator = predicateEvaluator)
         if (candidates.isEmpty()) return null

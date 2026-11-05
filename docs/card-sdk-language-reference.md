@@ -7697,6 +7697,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   and its payoffs gate on ("as long as this creature is renowned", "if it's renowned").
 - `.monstrous()` — permanent has the **monstrous** designation (CR 701.37b); backed by
   `StatePredicate.IsMonstrous` and the engine's `MonstrousComponent`. Sticky like `.renowned()`.
+- `.embalmed()` — a token that is **embalmed**, i.e. created by a resolving embalm ability (CR 702.128b);
+  backed by `StatePredicate.IsEmbalmed` and the engine's `EmbalmedComponent`, stamped by
+  `CreateTokenCopyOfTargetEffect(embalmed = true)` — which `embalmAbility(cost)` (printed `embalm(cost)`
+  and `GrantEmbalm` alike) sets. Provenance, not a copiable value: a copy of an embalmed token isn't
+  embalmed, and the mark survives the token entering as a copy of something else.
 - `.solved()` — permanent has the **solved** designation (CR 719.3b); backed by `StatePredicate.IsSolved` and the engine's `SolvedComponent`. Component-backed like `.saddled()` rather than projected like `.suspected()`, and sticky: a Case stays solved until it leaves the battlefield, and there is no "unsolve". Not a copiable value.
 - `.suspected()` — permanent is suspected (CR 701.60a); backed by `StatePredicate.IsSuspected`. Unlike
   saddled it has **no duration** — a suspected permanent stays suspected until it changes zones. The
@@ -16750,6 +16755,8 @@ that works in both resolution and static-ability (projection) contexts.
   renown payoff — "as long as this creature is renowned, it has menace" (Goblin Glory Chaser),
   "if it's renowned" (Consul's Lieutenant, Enshrouding Mist). Wrapped in `Conditions.Not(…)` it is
   renown's own intervening-`if`, CR 702.112a's "if it isn't renowned".
+- `SourceWasEmbalmed` — source is an embalmed token (CR 702.128b) — `SourceMatches(Any.embalmed())`.
+  "Except if Vizier of Many Faces was embalmed, …" — an `EntersAsCopy.conditionalExceptions` clause.
 - `SourceIsMonstrous` — source has the monstrous designation (CR 701.37b). "As long as this
   creature is monstrous, it has flying" (Chillerpillar); negated, it is the check inside
   `Effects.Monstrosity`.
@@ -20168,6 +20175,22 @@ not update an existing copy.
   battlefield" is `EntersAsCopy(optional = true, condition = Conditions.YouAttackedThisTurn)`. All three
   self-choice paths (resolving spell, land play, zone-moving effect) read it; it can't combine with
   `copyOf` (gate the grant instead).
+  **`conditionalExceptions: List<ConditionalCopyExceptions(condition, exceptions)>`** (default empty) is
+  "except **if** [condition], [exceptions]": each clause whose condition holds as the permanent enters
+  (entrant as the source, read like `condition`) is layered over `exceptions` and becomes part of the
+  copy's copiable values; a failing clause changes nothing. Vizier of Many Faces: "except if this
+  creature was embalmed, the token has no mana cost, it's white, and it's a Zombie in addition to its
+  other types" is `EntersAsCopy(conditionalExceptions = listOf(ConditionalCopyExceptions(
+  Conditions.SourceWasEmbalmed, CopyExceptions(noManaCost = true, overrideColors = setOf(WHITE),
+  addedSubtypes = setOf(Subtype("Zombie"))))))`. Every self-choice path settles the clauses before it
+  asks (`PermanentEntryReplacements.withConditionalExceptions`); not allowed with `copyOf`.
+  **Minted token copies** honour their own `EntersAsCopy` too: a `CreateTokenCopyOfTargetEffect` whose
+  copied card has one (a token copy of a Clone *card* — Vizier of Many Faces embalmed from the
+  graveyard) asks each token's controller, before any token exists and one question per token, what it
+  enters as a copy of; the token's conditional clauses are then settled against the token itself, so
+  its provenance ("was embalmed") is visible. A minted token's `condition` is read with no entrant
+  object, so only a source-independent condition (raid) can hold there. Aura copies and copies with a
+  prescribed `attachedTo` host skip the choice.
   **`copyOf: EffectTarget?`** (default null — the as-enters choice above) makes the entrant copy *one
   bound object* instead, and makes the replacement apply to **other** objects entering: "the next
   time one or more creatures or planeswalkers enter this turn, they enter as copies of the chosen

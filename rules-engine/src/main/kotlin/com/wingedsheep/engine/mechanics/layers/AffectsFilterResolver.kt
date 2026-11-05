@@ -891,6 +891,8 @@ internal class AffectsFilterResolver(
         // this creature is monstrous, it has trample" (Domesticated Hydra) be a conditional static.
         StatePredicate.IsMonstrous ->
             container.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>()
+        // Embalmed (CR 702.128b) — token provenance stamped at creation, evaluable here.
+        StatePredicate.IsEmbalmed -> container.has<com.wingedsheep.engine.state.components.identity.EmbalmedComponent>()
         // Suspected (CR 701.60a) is itself a Layer-ability modification, so it is read off the
         // values accumulated so far in this projection pass — the same source `ProjectedState`
         // exposes as `isSuspected`, and the same self-referential caveat as IsModified above.

@@ -1065,6 +1065,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Must have the monstrous designation (CR 701.37b) — see [StatePredicate.IsMonstrous]. */
     fun monstrous() = withStatePredicate(StatePredicate.IsMonstrous)
 
+    /** Must be an embalmed token (CR 702.128b) — see [StatePredicate.IsEmbalmed]. */
+    fun embalmed() = withStatePredicate(StatePredicate.IsEmbalmed)
+
     /**
      * Must have crewed (CR 702.122) or saddled (CR 702.171) the effect's source permanent this
      * turn. Source-relative — see [StatePredicate.CrewedOrSaddledSourceThisTurn].

@@ -2657,6 +2657,14 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   turn, you may have this creature enter as a copy of …", `Conditions.YouAttackedThisTurn`).
  *                   When it doesn't hold the permanent simply enters as its printed self, with none of
  *                   the copy riders. Not allowed with [copyOf] — condition the grant instead.
+ * @param conditionalExceptions "except **if** [condition], [exceptions]" clauses — copy exceptions
+ *                   that apply only when their condition holds as the permanent enters, evaluated
+ *                   like [condition] (the entrant as the source, its controller as "you"). Vizier of
+ *                   Many Faces: "except if Vizier of Many Faces was embalmed, the token has no mana
+ *                   cost, it's white, and it's a Zombie in addition to its other types"
+ *                   (`Conditions.SourceWasEmbalmed`). A holding clause is layered over [exceptions]
+ *                   and becomes part of the copy's copiable values (CR 707.9b) like any other
+ *                   exception; a failing one changes nothing. Not allowed with [copyOf].
  */
 @SerialName("EntersAsCopy")
 @Serializable
@@ -2679,12 +2687,16 @@ data class EntersAsCopy(
     val duration: Duration = Duration.Permanent,
     val copyOf: EffectTarget? = null,
     val condition: Condition? = null,
+    val conditionalExceptions: List<ConditionalCopyExceptions> = emptyList(),
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
     init {
+        require(copyOf == null || conditionalExceptions.isEmpty()) {
+            "EntersAsCopy(copyOf = …) is a granted copy; it has no entrant-relative conditional exceptions"
+        }
         require(copyOf == null || condition == null) {
             "EntersAsCopy(copyOf = …) is a granted copy; gate the grant, not the copy, with a condition"
         }
@@ -2741,6 +2753,7 @@ data class EntersAsCopy(
             }
             val allExceptions = exceptions + this@EntersAsCopy.exceptions.clauses()
             if (allExceptions.isNotEmpty()) append(", except ${allExceptions.joinToString(" and ")}")
+            conditionalExceptions.forEach { append(if (allExceptions.isEmpty()) ", except " else ", and ").append(it.description) }
             if (exileCopiedCard) append(". When you do, exile that card")
         }
     }
@@ -2749,8 +2762,37 @@ data class EntersAsCopy(
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
         val newExceptions = exceptions.applyTextReplacement(replacer)
         val newCondition = condition?.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo || newExceptions !== exceptions || newCondition !== condition)
-            copy(appliesTo = newAppliesTo, exceptions = newExceptions, condition = newCondition) else this
+        val newConditional = conditionalExceptions.map { it.applyTextReplacement(replacer) }
+        val conditionalChanged = newConditional.indices.any { newConditional[it] !== conditionalExceptions[it] }
+        return if (newAppliesTo !== appliesTo || newExceptions !== exceptions || newCondition !== condition ||
+            conditionalChanged)
+            copy(appliesTo = newAppliesTo, exceptions = newExceptions, condition = newCondition,
+                conditionalExceptions = newConditional) else this
+    }
+}
+
+/**
+ * One "except **if** [condition], [exceptions]" clause of an [EntersAsCopy] — see
+ * [EntersAsCopy.conditionalExceptions]. [condition] is read as the permanent enters, with the
+ * entrant as the source ("if Vizier of Many Faces was embalmed").
+ */
+@Serializable
+data class ConditionalCopyExceptions(
+    val condition: Condition,
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions,
+) {
+    val description: String
+        get() {
+            // Source-state conditions already read "if this …"; don't double the "if".
+            val gate = condition.description.let { if (it.startsWith("if ")) it else "if $it" }
+            return "$gate, ${exceptions.clauses().joinToString(" and ")}"
+        }
+
+    fun applyTextReplacement(replacer: TextReplacer): ConditionalCopyExceptions {
+        val newCondition = condition.applyTextReplacement(replacer)
+        val newExceptions = exceptions.applyTextReplacement(replacer)
+        return if (newCondition !== condition || newExceptions !== exceptions)
+            copy(condition = newCondition, exceptions = newExceptions) else this
     }
 }
 

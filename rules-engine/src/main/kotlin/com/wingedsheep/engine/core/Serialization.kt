@@ -565,6 +565,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TeamComponent::class)
         subclass(TokenComponent::class)
         subclass(CreatedByComponent::class)
+        subclass(EmbalmedComponent::class)
         subclass(FaceDownComponent::class)
         subclass(RevealedToComponent::class)
         subclass(com.wingedsheep.engine.state.components.identity.HandObjectRestrictionsComponent::class)
