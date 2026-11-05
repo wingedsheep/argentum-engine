@@ -234,7 +234,7 @@ Agent of Shauku
 Agent of Treachery
 Agents of HYDRA
 Agents of S.H.I.E.L.D.
-Aggravated Assault	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>TapUntapEffect
+Aggravated Assault
 Aggressive Mammoth
 Aggressive Negotiations
 Aggressive Sabotage
@@ -375,7 +375,7 @@ All That Glitters
 All Will Be One
 All-Fates Scroll
 All-Fates Stalker
-All-Out Assault	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>TapUntapEffect
+All-Out Assault
 All-Seeing Arbiter	intent: ModifyStatsEffect
 Alley Assailant
 Alley Strangler
@@ -621,7 +621,7 @@ Antiquities on the Loose
 Anurid Murkdiver
 Anvilwrought Raptor
 Anzrag's Rampage
-Anzrag, the Quake-Mole	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
+Anzrag, the Quake-Mole
 Ao, the Dawn Sky
 Apex Devastator
 Apex Witchstalker
@@ -1016,7 +1016,7 @@ Auratouched Mage
 Aurelia's Vindicator	intent: Pipeline(ChosenTargets→exile); intent: Pipeline(FromLinkedExile→hand); polarity: Pipeline(ChosenTargets→exile)
 Aurelia, Exemplar of Justice
 Aurelia, the Law Above
-Aurelia, the Warleader	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
+Aurelia, the Warleader
 Aurification	intent: AddCountersEffect; intent: ForEach>RemoveCountersEffect
 Auriok Bladewarden
 Auriok Champion
@@ -3171,7 +3171,7 @@ Colossus Hammer
 Colossus of Sardia
 Colossus of the Blood Age
 Combadge
-Combat Celebrant	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
+Combat Celebrant
 Combat Courier
 Combat Medic
 Combat Professor
@@ -7414,7 +7414,7 @@ Grim Haruspex
 Grim Initiate
 Grim Javelineer
 Grim Physician
-Grim Reaper's Sprint	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
+Grim Reaper's Sprint
 Grim Reaper, Lethal Legionnaire
 Grim Reminder
 Grim Repriser
@@ -8194,6 +8194,7 @@ Huatli's Final Strike
 Huatli's Raptor
 Huatli's Snubhorn
 Huatli's Spurring
+Huatli, Dinosaur Knight
 Huatli, Poet of Unity
 Huatli, Radiant Champion
 Huatli, the Sun's Heart
@@ -8844,6 +8845,7 @@ Jace's Sentinel
 Jace's Triumph
 Jace, Arcane Strategist	combat: CantBeBlockedGroupEffect
 Jace, Cunning Castaway
+Jace, Ingenious Mind-Mage
 Jace, Mirror Mage
 Jace, Reality Sculptor	intent: ForEach>Pipeline(TopOfLibrary→exile); intent: ModifyStatsEffect
 Jace, Unraveler of Secrets
@@ -9944,7 +9946,7 @@ Lionheart Glimmer
 Liquimetal Coating	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Liquimetal Torque	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Lita, Little Orphan Amphibian
-Lita, Mechanical Engineer	intent: ForEach>TapUntapEffect
+Lita, Mechanical Engineer
 Lithatog
 Lithobraking
 Lithoform Blight
@@ -11009,7 +11011,7 @@ Mob
 Mob Lookout
 Mobile Homestead	intent: Pipeline(TopOfLibrary→battlefield)
 Mobilization
-Mobilize	intent: ForEach>TapUntapEffect
+Mobilize
 Mobilized District
 Mobilizer Mech	intent: AddCardTypeEffect; polarity: AddCardTypeEffect
 Mocking Sprite
@@ -13254,7 +13256,7 @@ Rally the Monastery
 Rally the Peasants
 Rally the Ranks
 Rally the Righteous
-Rally the Troops	intent: ForEach>TapUntapEffect
+Rally the Troops
 Rally to Battle
 Rallying Roar
 Ram Through
@@ -16623,6 +16625,7 @@ Sun Titan
 Sun Warriors
 Sun-Blessed Guardian
 Sun-Blessed Healer
+Sun-Blessed Mount
 Sun-Blessed Peak
 Sun-Collared Raptor
 Sun-Crested Pterodon
@@ -17815,6 +17818,7 @@ Tigra, Feline Fury
 Tiller of Flesh
 Tilonalli's Crown
 Tilonalli's Knight
+Tilonalli's Skinshifter
 Tilonalli's Summoner
 Timber Gorge
 Timber Protector
@@ -18851,7 +18855,7 @@ Vesuvan Drifter
 Vesuvan Duplimancy
 Veteran Adventurer
 Veteran Armorer
-Veteran Beastrider	intent: ForEach>TapUntapEffect
+Veteran Beastrider
 Veteran Bodyguard
 Veteran Cathar
 Veteran Cavalier
@@ -18920,7 +18924,7 @@ Vile Manifestation
 Vile Mutilator
 Vilespawn Spider
 Vilis, Broker of Blood
-Village Bell-Ringer	intent: ForEach>TapUntapEffect
+Village Bell-Ringer
 Village Messenger
 Village Rites
 Village Watch
@@ -18990,7 +18994,7 @@ Visions	intent: Pipeline(TopOfLibrary→?); polarity: Pipeline(TopOfLibrary→?)
 Visions of Phyrexia
 Visions of Villainy
 Vitality Charm
-Vitalize	intent: ForEach>TapUntapEffect
+Vitalize
 Vitalizing Cascade
 Vitalizing Wind
 Vitaspore Thallid
@@ -19560,7 +19564,7 @@ White Lotus Tile
 White Mage's Staff
 White Mana Battery
 White Orchid Phantom
-White Plume Adventurer	intent: ForEach>TapUntapEffect; intent: Pipeline(BattlefieldMatching→?); intent: TakeDesignationEffect; intent: TapUntapCollectionEffect
+White Plume Adventurer	intent: TakeDesignationEffect
 White Sun's Twilight
 White Sun's Zenith
 White Tiger, Ava Ayala
@@ -20157,7 +20161,7 @@ Zurgo's Vanguard
 Zurgo, Thunder's Decree
 Éomer of the Riddermark
 Éomer, King of Rohan	polarity: TakeDesignationEffect
-Éomer, Marshal of Rohan	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
+Éomer, Marshal of Rohan
 Éowyn, Fearless Knight
 Éowyn, Lady of Rohan
 Éowyn, Shieldmaiden
