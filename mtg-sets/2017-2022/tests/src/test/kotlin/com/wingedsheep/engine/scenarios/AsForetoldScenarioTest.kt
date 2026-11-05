@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.akh.cards.AsForetold
+import com.wingedsheep.mtg.sets.definitions.tsp.cards.AncestralVision
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -29,6 +30,7 @@ class AsForetoldScenarioTest : FunSpec({
         val d = GameTestDriver()
         d.registerCards(TestCards.all)
         d.registerCard(AsForetold)
+        d.registerCard(AncestralVision)
         d.initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true)
         return d
     }
@@ -109,5 +111,32 @@ class AsForetoldScenarioTest : FunSpec({
         d.submitSuccess(CastSpell(p1, bears, useWithoutPayingManaCost = true))
         d.bothPass()
         d.getCreatures(p1).size shouldBe 1
+    }
+
+    test("a spell with no mana cost has mana value 0 and is free with no time counters (ruling)") {
+        val d = driver()
+        val p1 = d.activePlayer!!
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val foretold = d.putPermanentOnBattlefield(p1, "As Foretold")
+        val vision = d.putCardInHand(p1, "Ancestral Vision")
+        d.timeCounters(foretold) shouldBe 0
+
+        // Only the free variant is offered — no normal cast of an unpayable cost.
+        val casts = d.legalActions(p1).map { it.action }.filterIsInstance<CastSpell>().filter { it.cardId == vision }
+        casts.isNotEmpty() shouldBe true
+        casts.all { it.useWithoutPayingManaCost } shouldBe true
+
+        val handBefore = d.getHandSize(p1)
+        d.submitSuccess(CastSpell(p1, vision, targets = listOf(ChosenTarget.Player(p1)), useWithoutPayingManaCost = true))
+        d.bothPass()
+        d.getHandSize(p1) shouldBe handBefore - 1 + 3
+    }
+
+    test("without As Foretold, a spell with no mana cost is still not castable from hand") {
+        val d = driver()
+        val p1 = d.activePlayer!!
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val vision = d.putCardInHand(p1, "Ancestral Vision")
+        d.legalActions(p1).map { it.action }.filterIsInstance<CastSpell>().none { it.cardId == vision } shouldBe true
     }
 })
