@@ -1185,7 +1185,7 @@ object TargetPolarityAnalyzer {
                 leaf.target.isSlot() -> listOf(leaf.target to TargetPolarity.HARMFUL)
                 else -> emptyList()
             }
-            // "Target player's life total becomes 1" (Vraska, Relic Seeker's −10, Sorin Markov's −3):
+            // "Target player's life total becomes 1" (Vraska, Relic Seeker's −10):
             // a total set low is a loss for whoever holds it, and set high (20 or more) a gain. A
             // total in between, or one that depends on the board, could go either way for either
             // player, so the slot stays open and the simulation prices the new total.

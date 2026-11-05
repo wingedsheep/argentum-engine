@@ -1268,8 +1268,9 @@ object CardIntentAnalyzer {
                 // gathers `You` — the iterated player — so it only reads as a wrath in the
                 // iteration's frame. See [destroyAll].
                 // Over opponents only, the body's `you` is the opponent visited: what it gains is
-                // theirs, not ours (see [OPPONENT_GIFTS]).
-                space is IterationSpace.Players -> (if (includesYou(space.players)) inner else inner - OPPONENT_GIFTS) +
+                // theirs, not ours (see [OPPONENT_GIFTS]) — unless a leaf hands it to the source's
+                // controller by name (Adeline's tokens, Garruk, Veiled Butcher's draw).
+                space is IterationSpace.Players -> (if (includesYou(space.players)) inner else opponentIterationTags(effect.body, inner)) +
                     destroyAll(effect.body, eachPlayer = space.players).tags +
                     handDisruptionTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
@@ -1438,8 +1439,30 @@ object CardIntentAnalyzer {
     internal fun giftsOnlyToOpponents(effect: ForEachEffect): Boolean {
         val space = effect.space as? IterationSpace.Players ?: return false
         if (includesYou(space.players)) return false
+        if (readingLeaves(effect.body).any(::giftsTheSourceController)) return false
         val inner = effectTags(effect.body)
         return inner.isNotEmpty() && inner.all { it in OPPONENT_GIFTS }
+    }
+
+    /** An opponents-only body's tags: the visited opponent's gains dropped, ours by name kept. */
+    private fun opponentIterationTags(body: Effect, inner: Set<IntentTag>): Set<IntentTag> =
+        (inner - OPPONENT_GIFTS) + readingLeaves(body).filter(::giftsTheSourceController).flatMap { tagsOf(it) }
+
+    /**
+     * Whether [leaf] names the source's controller as the one who gains — "for each opponent,
+     * create a 1/1 token" under `ControllerOfSource` (Adeline, Resplendent Cathar), "you draw a
+     * card" for each opponent who didn't discard (Garruk, Veiled Butcher). Inside an iteration
+     * over players `you` is rebound to the player visited, so only this spelling reaches us.
+     */
+    private fun giftsTheSourceController(leaf: Effect): Boolean {
+        val recipient = when (leaf) {
+            is DrawCardsEffect -> leaf.target
+            is GainLifeEffect -> leaf.target
+            is CreateTokenEffect -> leaf.controller
+            is CreatePredefinedTokenEffect -> leaf.controller
+            else -> null
+        }
+        return recipient == EffectTarget.PlayerRef(Player.ControllerOfSource)
     }
 
     /**

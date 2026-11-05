@@ -6,6 +6,7 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 
 /**
@@ -35,6 +36,22 @@ class OpponentGiftIterationReadingAiTest : ScenarioTestBase() {
             LimitedCardRater.effectValue(trigger.effect) shouldBeLessThan 0.0
             withClue("a 1-mana 3/3 with a drawback is no 4.0 pick") {
                 LimitedCardRater.rate(dryads) shouldBeLessThan 4.0
+            }
+        }
+
+        test("a gain the body hands to the source's controller by name stays ours") {
+            withClue("Adeline: 'for each opponent, create a 1/1' under ControllerOfSource makes our tokens") {
+                CardIntentAnalyzer.analyze(card("Adeline, Resplendent Cathar")).tags shouldContain IntentTag.TOKEN_MAKER
+                val trigger = card("Adeline, Resplendent Cathar").script.triggeredAbilities.single()
+                LimitedCardRater.effectValue(trigger.effect) shouldBeGreaterThan 0.0
+            }
+            withClue("Ainok Strike Leader: the same per-opponent token is ours") {
+                CardIntentAnalyzer.analyze(card("Ainok Strike Leader")).tags shouldContain IntentTag.TOKEN_MAKER
+            }
+            withClue("Garruk, Veiled Butcher's −3: 'you draw a card' for each opponent stays our draw") {
+                val minusThree = card("Garruk, Veiled Butcher").script.activatedAbilities
+                    .single { it.description.startsWith("Each opponent discards two cards") }
+                CardIntentAnalyzer.analyzeEffect(minusThree.effect).tags shouldContain IntentTag.DRAW
             }
         }
     }

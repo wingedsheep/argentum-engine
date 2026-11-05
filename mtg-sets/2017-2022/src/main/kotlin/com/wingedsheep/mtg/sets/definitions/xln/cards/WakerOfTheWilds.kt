@@ -53,6 +53,7 @@ val WakerOfTheWilds = card("Waker of the Wilds") {
         rarity = Rarity.RARE
         collectorNumber = "215"
         artist = "Shreya Shetty"
+        flavorText = "\"Our foes are many and mighty, but not as many as the trees or as mighty as the sea.\""
         imageUri = "https://cards.scryfall.io/normal/front/7/d/7d46c4db-e12e-4c79-a17f-2166ed78e9bc.jpg?1783935715"
 
         ruling("2017-09-29", "The land-animation effect lasts indefinitely. It doesn't wear off during the cleanup step or when you lose control of Waker of the Wilds.")
