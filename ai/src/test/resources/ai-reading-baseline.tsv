@@ -653,6 +653,7 @@ Applied Geometry
 Apprentice Sharpshooter	intent: EmitKeywordCounterEventEffect
 Apprentice Sorcerer
 Apprentice Wizard
+Approach of the Second Sun
 April O'Neil, Hacktivist
 April O'Neil, Kunoichi Trainee
 April, Reporter of the Weird
@@ -8367,7 +8368,7 @@ Icon of Ancestry
 Icy Blast
 Icy Manipulator
 Icy Reception
-Identity Echo
+Identity Echo	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library)
 Idol of Endurance	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
 Idol of False Gods
 Idol of Oblivion
@@ -10174,7 +10175,7 @@ Lucky Offering
 Ludevic, Necrogenius
 Luke Cage, Power Man
 Lukka, Bound to Ruin
-Lukka, Coppercoat Outcast	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Lukka, Coppercoat Outcast	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(?→battlefield|library); intent: Pipeline(TopOfLibrary→exile); intent: StoreNumberEffect
 Lull
 Lullmage's Domination
 Lullmage's Familiar
@@ -19079,6 +19080,7 @@ Vivien, Monsters' Advocate
 Vivisection
 Vivisection Evangelist
 Vivisurgeon's Insight
+Vizier of Many Faces
 Vizier of Tumbling Sands
 Vizier of the Anointed
 Vizier of the Menagerie

@@ -287,6 +287,8 @@ object SynergyAxes {
         for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
             addAll(effectFeeds(ability.effect))
             if (sacrifices(ability.cost, creatureSource)) add(SynergyAxis.DEATH)
+            // "{T}, Discard a card: …" bins our cards as a discard effect does (Murmuring Volume).
+            if (discards(ability.cost)) add(SynergyAxis.GRAVEYARD)
         }
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
     }
@@ -374,6 +376,12 @@ object SynergyAxes {
 
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =
         if (type == CounterType.PLUS_ONE_PLUS_ONE) setOf(SynergyAxis.PLUS_COUNTERS) else emptySet()
+
+    private fun discards(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Atom -> cost.atom is CostAtom.Discard
+        is AbilityCost.Composite -> cost.costs.any(::discards)
+        else -> false
+    }
 
     private fun sacrifices(cost: AbilityCost, creatureSource: Boolean): Boolean = when (cost) {
         is AbilityCost.Atom -> cost.atom is CostAtom.Sacrifice

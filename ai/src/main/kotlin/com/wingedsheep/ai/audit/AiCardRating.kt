@@ -174,7 +174,10 @@ object AiCardRating {
                     "Repeatable mill, removal and damage amplification include their ability priors; other abilities are valued when they trigger or are activated.",
             )
         }
-        val ladder = CardIntentAnalyzer.priorLadder(intent)
+        // The live AI prices a permanent already in play ([CardIntentAnalyzer.analyzeInPlay]): its
+        // spent "when this enters" triggers and its hand- or graveyard-only abilities left out.
+        val inPlay = CardIntentAnalyzer.analyzeInPlay(card)
+        val ladder = CardIntentAnalyzer.priorLadder(inPlay)
         val best = ladder.maxByOrNull { it.value }
         val floor = when {
             CardType.PLANESWALKER in type.cardTypes -> 4.0
@@ -190,8 +193,8 @@ object AiCardRating {
         val rule = when {
             CardType.PLANESWALKER in type.cardTypes ->
                 "In play it scales with loyalty: about ${BoardPresence.LOYALTY_VALUE} per counter."
-            intent.anthemBonus > 0 ->
-                "Plus ${"%.2f".format(0.25 * intent.anthemBonus)} for each creature it pumps."
+            inPlay.anthemBonus > 0 ->
+                "Plus ${"%.2f".format(0.25 * inPlay.anthemBonus)} for each creature it pumps."
             best == null -> "The AI recognises nothing this permanent does, so it gets the generic price."
             else -> null
         }

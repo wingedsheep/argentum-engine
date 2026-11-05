@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
@@ -173,8 +174,19 @@ object CardIntentAnalyzer {
      */
     fun analyzeInPlay(card: CardDefinition): CardIntent = inPlayCache.getOrPut(card.name) {
         val entries = card.script.triggeredAbilities.filter(::isOwnEntry)
-        if (entries.isEmpty()) return@getOrPut analyzeSelf(card)
-        compute(card, listOf(card.script.copy(triggeredAbilities = card.script.triggeredAbilities - entries.toSet())))
+        // An ability activated only from another zone — "{1}{W}, Discard this card: …" from the
+        // hand (Gideon's Memorial), a graveyard return — is no longer the permanent's to use.
+        val offBoard = card.script.activatedAbilities.filter { it.activateFromZone != Zone.BATTLEFIELD }
+        if (entries.isEmpty() && offBoard.isEmpty()) return@getOrPut analyzeSelf(card)
+        compute(
+            card,
+            listOf(
+                card.script.copy(
+                    triggeredAbilities = card.script.triggeredAbilities - entries.toSet(),
+                    activatedAbilities = card.script.activatedAbilities - offBoard.toSet(),
+                ),
+            ),
+        )
     }
 
     /** "When this enters" — bound to the permanent itself, on its way onto the battlefield. */
@@ -294,8 +306,12 @@ object CardIntentAnalyzer {
         val ownPile = stashesOwnPermanents(scripts)
         for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root }, ownPile = ownPile)
         if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
+        // "Discard a card: draw a card" (Murmuring Volume) trades a card for a card: it filters the
+        // hand, it gains none. Its draw reads as the card selection it is.
+        val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
+            .flatMap { readingLeaves(it.effect, it.targetRequirements) }
         for (effect in leaves) {
-            tags += tagsOf(effect)
+            tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else tagsOf(effect)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
             drawsOf(effect)?.let { cardsDrawn = maxOf(cardsDrawn ?: 0, it) }
             if (isExpiringPump(effect)) {
@@ -364,8 +380,10 @@ object CardIntentAnalyzer {
             arrivalTags = arrivalTags.takeIf { it != tags },
             grantsInstantSpeedLoyalty = leaves.any { it is GrantLoyaltyActivationPermissionEffect && it.instantSpeed },
             counterTax = counterTaxOf(leaves),
-            cashableTags = activated.filterNot { it.isManaAbility }
-                .flatMapTo(HashSet()) { effectTags(it.effect, it.targetRequirements, ownPile) },
+            cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) {
+                val cashed = effectTags(it.effect, it.targetRequirements, ownPile)
+                if (isRummage(it)) asRummage(cashed) else cashed
+            },
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent, scripts))
     }
@@ -508,8 +526,17 @@ object CardIntentAnalyzer {
                     // "{2}, {T}: Exile target creature you control" linked to this permanent
                     // (Endless Sands, Safe Haven): a stash of our own creature to bring back later,
                     // not removal — [OWN_STASH].
-                    null -> if (isOwnStash(leaf, requirements)) listOf(OWN_STASH)
-                        else listOf(withSourceZone(leaf, requirements))
+                    null -> when {
+                        isOwnStash(leaf, requirements) -> listOf(OWN_STASH)
+                        // "Exile target creature or planeswalker you control. Reveal cards until …"
+                        // (Identity Echo): a permanent of ours taken off the battlefield is the price
+                        // or fuel of what follows, never an answer to the opponent's board.
+                        // Returned straight away ("… then return it to the battlefield under your
+                        // control", Cloudshift, Thassa) it is a blink of ours: it saves the creature.
+                        removesOurOwnPermanent(leaf, requirements) ->
+                            if (returnedStraightAway(effect, leaf)) listOf(DELAYED_BLINK) else emptyList()
+                        else -> listOf(withSourceZone(leaf, requirements))
+                    }
                 }
                 // "Untap target land" / "untap two target lands" (Arbor Elf, Hope Tender): see [untapsATargetLand].
                 // Only when the untap is the ability's whole payoff: beside another step on the same
@@ -770,6 +797,35 @@ object CardIntentAnalyzer {
     internal fun isOwnStash(leaf: MoveToZoneEffect, requirements: List<TargetRequirement>): Boolean =
         leaf.linkToSource && leaf.destination == Zone.EXILE &&
             TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)
+
+    /**
+     * An exile or destroy aimed at a slot only our own permanents can fill ("target creature you
+     * control"): what it takes away is ours, so it is no removal. A bounce of our own permanent is a
+     * save or a re-buy, read elsewhere, and is left alone here.
+     */
+    internal fun removesOurOwnPermanent(leaf: MoveToZoneEffect, requirements: List<TargetRequirement>): Boolean =
+        (leaf.destination == Zone.EXILE || leaf.destination == Zone.GRAVEYARD) &&
+            (leaf.fromZone == null || leaf.fromZone == Zone.BATTLEFIELD) &&
+            TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)
+
+    /**
+     * Whether [exile] is followed, later in the same sequence of [root] and unconditionally, by a move of
+     * its target back onto the battlefield — the second half of a blink. A return behind a condition
+     * is not one: it may never happen.
+     */
+    private fun returnedStraightAway(root: Effect, exile: MoveToZoneEffect): Boolean {
+        if (root !is CompositeEffect) return false
+        val index = root.effects.indexOfFirst { it === exile }
+        if (index >= 0) {
+            // A later step, not only the next one: Don & Leo exile an artifact and a creature, then
+            // return both.
+            return root.effects.drop(index + 1).any { next ->
+                next is MoveToZoneEffect && next.destination == Zone.BATTLEFIELD && next.target == exile.target &&
+                    (next.fromZone == null || next.fromZone == Zone.EXILE)
+            }
+        }
+        return root.effects.any { returnedStraightAway(it, exile) }
+    }
 
     /**
      * What the gather → move pipelines in [root] add up to, which no single leaf of them says.
@@ -2029,6 +2085,29 @@ object CardIntentAnalyzer {
                 isExpiringPump(it) && (it as ModifyStatsEffect).target == EffectTarget.IterationEntity
             }
 
+    /**
+     * An activated ability that pays for its draw with as many discarded cards ("{2}, {T}, Discard a
+     * card: Draw a card", Murmuring Volume; Solitary Cell's "discard a legendary card"): card for
+     * card, a filter of the hand, never card advantage.
+     */
+    private fun isRummage(ability: ActivatedAbility): Boolean {
+        val discarded = discardedBy(ability.cost)
+        if (discarded == 0) return false
+        val draws = EffectWalker.leaves(ability.effect).filterIsInstance<DrawCardsEffect>()
+        if (draws.isEmpty()) return false
+        val drawn = draws.sumOf { fixed(it.count) ?: return false }
+        return drawn <= discarded
+    }
+
+    private fun discardedBy(cost: AbilityCost): Int = when (cost) {
+        is AbilityCost.Atom -> (cost.atom as? CostAtom.Discard)?.count ?: 0
+        is AbilityCost.Composite -> cost.costs.sumOf { discardedBy(it) }
+        else -> 0
+    }
+
+    private fun asRummage(tags: Set<IntentTag>): Set<IntentTag> =
+        if (IntentTag.DRAW in tags) tags - IntentTag.DRAW + IntentTag.CARD_SELECTION else tags
+
     private fun drawsOf(effect: Effect): Int? = when (effect) {
         is DrawCardsEffect -> fixed(effect.count)
         is DrawUpToEffect -> effect.maxCards
@@ -2297,7 +2376,9 @@ object CardIntentAnalyzer {
     private fun repeatableOf(card: CardDefinition, scripts: List<CardScript>): Boolean {
         if (!card.typeLine.isPermanent) return false
         return scripts.any { script ->
-            script.activatedAbilities.any { !it.isManaAbility && !consumesSource(it.cost) } ||
+            script.activatedAbilities.any {
+                it.activateFromZone == Zone.BATTLEFIELD && !it.isManaAbility && !consumesSource(it.cost)
+            } ||
                 script.triggeredAbilities.any { canFireMoreThanOnce(it, isAura = script.auraTarget != null) }
         }
     }
@@ -2425,7 +2506,7 @@ object CardIntentAnalyzer {
                     ).tags
                 } || script.activatedAbilities.any { ability ->
                     ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
-                        !consumesSource(ability.cost) &&
+                        !consumesSource(ability.cost) && !isRummage(ability) &&
                         IntentTag.DRAW in analyzeEffect(ability.effect, ability.targetRequirements).tags
                 }
             }
@@ -2510,7 +2591,9 @@ object CardIntentAnalyzer {
     /**
      * What [readingLeaves] reads an exile-then-return-at-the-end-step of our own permanent as
      * (Liberate, Niko, Light of Hope): the blink an immediate exile-and-return is
-     * ([pipelineTags]'s PROTECTION), only coming back later. Compared by identity.
+     * ([pipelineTags]'s PROTECTION), only coming back later. Also an immediate blink of ours whose
+     * return names a controller (Cloudshift's "under your control"), which [EffectWalker.blinkMoves]
+     * leaves out because aimed at anyone's creature it would be a theft. Compared by identity.
      */
     private val DELAYED_BLINK: Effect = CompositeEffect(
         listOf(MoveToZoneEffect(EffectTarget.Self, Zone.EXILE), MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD)),
