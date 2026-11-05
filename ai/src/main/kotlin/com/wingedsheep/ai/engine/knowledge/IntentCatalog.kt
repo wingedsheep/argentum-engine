@@ -317,6 +317,23 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     }
 
     /**
+     * The target slots of the card called [cardName] cast as a spell whose graveyard card ends up
+     * under our control whoever owns it — see [TargetPolarityAnalyzer.takenSlots]. Empty when the
+     * catalog is off or the name is not a real card.
+     */
+    fun spellTakenSlots(cardName: String): Set<Int> =
+        registry?.getCard(cardName)?.let(TargetPolarityAnalyzer::takenSlotsForSpell).orEmpty()
+
+    /** [spellTakenSlots] for the printed activated ability [abilityId] on the card called [cardName]. */
+    fun abilityTakenSlots(cardName: String, abilityId: AbilityId): Set<Int> =
+        activatedAbility(cardName, abilityId)
+            ?.let { TargetPolarityAnalyzer.takenSlots(it.effect, it.targetRequirements) }.orEmpty()
+
+    /** [spellTakenSlots] for [effect] over [requirements] — a triggered ability being put on the stack. */
+    fun effectTakenSlots(effect: Effect, requirements: List<TargetRequirement>): Set<Int> =
+        if (!isEnabled) emptySet() else TargetPolarityAnalyzer.takenSlots(effect, requirements)
+
+    /**
      * The per-candidate side of the Aura called [cardName] when what it does turns on the
      * creature type of what it enchants (Sea Legs) — see [HostSplit]. Null for every other card.
      */

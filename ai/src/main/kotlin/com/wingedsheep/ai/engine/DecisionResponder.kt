@@ -266,9 +266,10 @@ class DecisionResponder(
         } else {
             emptyMap()
         }
+        val taken = if (targetPolarityFromEffect) TargetSelection.decisionTakenSlots(state, decision, intents) else emptySet()
         fun heuristicFor(req: TargetRequirementInfo): (EntityId) -> Double =
             when (polarities[req.index]) {
-                TargetPolarity.BENEFICIAL -> { id -> beneficialTargetHeuristic(state, id, playerId) }
+                TargetPolarity.BENEFICIAL -> { id -> beneficialTargetHeuristic(state, id, playerId, req.index in taken) }
                 TargetPolarity.HARMFUL -> { id -> harmfulTargetHeuristic(state, id, playerId) }
                 else -> { id -> targetHeuristic(state, id, playerId) }
             }
@@ -300,7 +301,7 @@ class DecisionResponder(
                 ?.let { all -> req.totalCap?.let { cap -> all.filter { (req.targetValues?.get(it) ?: 0) <= cap } } ?: all }
                 ?: return cancelOrFirst(decision)
             if (legal.isEmpty()) return cancelOrFirst(decision)
-            val targets = polarityPool(state, legal, playerId, polarities[req.index], optional = req.minTargets == 0)
+            val targets = polarityPool(state, legal, playerId, polarities[req.index], optional = req.minTargets == 0, taken = req.index in taken)
             // An optional slot whose every legal target is on the wrong side stays empty.
             if (targets.isEmpty()) return TargetsResponse(decision.id, mapOf(req.index to emptyList()))
             val heuristic = heuristicFor(req)
@@ -380,7 +381,7 @@ class DecisionResponder(
         for (req in decision.targetRequirements) {
             val targets = polarityPool(
                 state, decision.legalTargetsFor(req.index, selected), playerId, polarities[req.index],
-                optional = req.minTargets == 0,
+                optional = req.minTargets == 0, taken = req.index in taken,
             )
             val heuristic = heuristicFor(req)
             val groups = req.selectionGroups
@@ -497,18 +498,20 @@ class DecisionResponder(
         playerId: EntityId,
         polarity: TargetPolarity?,
         optional: Boolean,
+        /** The slot's graveyard card comes under our control whoever owns it ([TargetSelection.takenSlots]). */
+        taken: Boolean = false,
     ): List<EntityId> {
         if (optional) {
             return when (polarity) {
-                TargetPolarity.BENEFICIAL -> legal.filter { TargetSelection.isOurs(state, it, playerId) }
-                    .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
+                TargetPolarity.BENEFICIAL -> legal.filter { TargetSelection.isOurs(state, it, playerId, taken) }
+                    .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId, taken) } }
                 TargetPolarity.HARMFUL -> legal.filterNot { TargetSelection.isOurs(state, it, playerId) }
                 TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN, null -> legal
             }
         }
         if (polarity != TargetPolarity.BENEFICIAL) return legal
-        return legal.filter { TargetSelection.isOurs(state, it, playerId) }
-            .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
+        return legal.filter { TargetSelection.isOurs(state, it, playerId, taken) }
+            .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId, taken) } }
             .ifEmpty { legal }
     }
 
@@ -533,12 +536,13 @@ class DecisionResponder(
 
     /**
      * [targetHeuristic]'s mirror for a [TargetPolarity.BENEFICIAL] slot: our side first, our most
-     * valuable creature ahead of a lesser one, an opponent's permanent last.
+     * valuable creature ahead of a lesser one, an opponent's permanent last. A [taken] slot's
+     * graveyard card is ours whoever owns it ([TargetSelection.takenSlots]).
      */
-    private fun beneficialTargetHeuristic(state: GameState, targetId: EntityId, playerId: EntityId): Double {
+    private fun beneficialTargetHeuristic(state: GameState, targetId: EntityId, playerId: EntityId, taken: Boolean = false): Double {
         val side = when {
-            TargetSelection.isOurs(state, targetId, playerId) -> 10.0
-            TargetSelection.isTheirs(state, targetId, playerId) -> -10.0
+            TargetSelection.isOurs(state, targetId, playerId, taken) -> 10.0
+            TargetSelection.isTheirs(state, targetId, playerId, taken) -> -10.0
             else -> 0.0
         }
         val projected = state.projectedState

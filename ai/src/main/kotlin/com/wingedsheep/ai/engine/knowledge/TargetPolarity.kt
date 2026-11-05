@@ -325,6 +325,42 @@ object TargetPolarityAnalyzer {
     }
 
     /**
+     * The slots of [requirements] whose card [effect] takes out of **any** graveyard and puts onto
+     * the battlefield under our control — "put target creature card from a graveyard onto the
+     * battlefield under your control" (Rise from the Grave), or Boneyard Parley's chosen targets,
+     * however its piles split them. Such a card is ours once the effect resolves, whoever owns it,
+     * so a [TargetPolarity.BENEFICIAL] reading of the slot ("good for the card's owner") must not
+     * keep it on its owner's side: an opponent's best creature card is the best one to name.
+     *
+     * A move that leaves the card under its owner's control (a return to its owner's hand, a
+     * reanimation without "under your control"), or one only out of our own graveyard, takes
+     * nothing; every slot of an unreadable effect is left out.
+     */
+    fun takenSlots(effect: Effect?, requirements: List<TargetRequirement>): Set<Int> {
+        if (effect == null || requirements.isEmpty()) return emptySet()
+        if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(effect, requirements)) {
+            return requirements.indices.filterTo(HashSet()) { !ownGraveyardOnly(objectFilter(requirements[it])) }
+        }
+        return EffectWalker.leaves(effect).mapNotNullTo(HashSet()) { leaf ->
+            val move = leaf as? MoveToZoneEffect ?: return@mapNotNullTo null
+            if (move.destination != Zone.BATTLEFIELD || move.faceDown != null) return@mapNotNullTo null
+            if (move.controllerOverride != EffectTarget.Controller) return@mapNotNullTo null
+            val slot = slotOf(move.target, requirements) ?: return@mapNotNullTo null
+            val filter = objectFilter(requirements[slot])
+            val fromGraveyard = move.fromZone == Zone.GRAVEYARD || (move.fromZone == null && filter?.zone == Zone.GRAVEYARD)
+            slot.takeIf { fromGraveyard && !ownGraveyardOnly(filter) }
+        }
+    }
+
+    /** [takenSlots] of [card] cast as a spell; empty for a card with faces, as [forSpell] is. */
+    fun takenSlotsForSpell(card: CardDefinition): Set<Int> =
+        if (card.cardFaces.isNotEmpty()) emptySet()
+        else takenSlots(card.script.spellEffect, card.script.targetRequirements)
+
+    private fun objectFilter(requirement: TargetRequirement) =
+        (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+
+    /**
      * Polarity of each of [requirements], read off [effect]. Not memoized — see the callers.
      *
      * [source] is the card the effect is printed on, when the caller knows it: "attach this
