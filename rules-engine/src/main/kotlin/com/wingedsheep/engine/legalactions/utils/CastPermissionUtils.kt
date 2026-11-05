@@ -769,16 +769,18 @@ class CastPermissionUtils(
     }
 
     /**
-     * Scan [playerId]'s battlefield for a static ability matching [predicate], unwrapping a
+     * Scan the permanents [playerId] controls (projected control, so a stolen New Perspectives or
+     * Forge Anew grants its new controller) for a static ability matching [predicate], unwrapping a
      * [ConditionalStaticAbility] and evaluating its condition against the granting permanent.
-     * Mirrors the permission-scan shape used by [hasGraveyardPlayPermissionForType].
      */
     private fun hasActiveControllerPermission(
         state: GameState,
         playerId: EntityId,
         predicate: (com.wingedsheep.sdk.scripting.StaticAbility) -> Boolean
     ): Boolean {
-        for (entityId in state.getBattlefield(playerId)) {
+        val projected = state.projectedState
+        for (entityId in state.getBattlefield()) {
+            if (projected.getController(entityId) != playerId) continue
             val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             val classLevel = state.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
