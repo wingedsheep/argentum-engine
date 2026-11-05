@@ -615,6 +615,13 @@ class DecisionResponder(
             spellRedirect.choose(state, decision, playerId, redirect)?.let { return CardsSelectedResponse(decision.id, it) }
         }
 
+        // "A source of your choice" for a damage shield: the threat it is raised against, not the
+        // card worth keeping most — the generic ranking named one of our own creatures.
+        val sourceChoice = (state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }?.answer
+        if (DamageSourceChoice.isSourceChoice(sourceChoice)) {
+            DamageSourceChoice.choose(state, decision, playerId)?.let { return CardsSelectedResponse(decision.id, it) }
+        }
+
         // Proliferate: each recipient is its own yes/no. The generic branches below answer an
         // "any number of" selection all-or-nothing, which proliferated the opponent's +1/+1 and
         // loyalty counters along with ours.
