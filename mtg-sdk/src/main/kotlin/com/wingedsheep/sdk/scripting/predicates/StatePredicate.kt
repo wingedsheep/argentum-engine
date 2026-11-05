@@ -391,6 +391,26 @@ sealed interface StatePredicate {
     }
 
     /**
+     * The candidate **is** the object [reference] names — an identity test, so negated with [Not]
+     * it reads "other than it" against a role the ability names rather than its source: Torment of
+     * Venom's "its controller loses 3 life unless they sacrifice **another** nonland permanent",
+     * where "another" means other than the spell's target creature
+     * ([com.wingedsheep.sdk.scripting.targets.EffectTarget.ContextTarget]). The source-, granter-
+     * and triggering-entity roles keep their own predicates ([IsSource], [IsGrantingPermanent],
+     * [IsTriggeringEntity]); this is the general form for every other reference.
+     *
+     * A reference that resolves to nothing matches nothing (so `Not(IsEntity(..))` excludes
+     * nothing). Inert in group/projection and trigger-gating contexts, which carry no references.
+     */
+    @SerialName("IsEntity")
+    @Serializable
+    data class IsEntity(
+        val reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity
+    ) : Entity {
+        override val description: String = reference.description
+    }
+
+    /**
      * A token that was *created by the effect's source permanent* — its provenance creator id (the
      * `CreatedByComponent` stamped when a `CreateTokenEffect` with `stampCreator = true` made it)
      * equals the source entity supplied in the evaluation context. Source-relative; yields false
@@ -1780,7 +1800,10 @@ sealed interface StatePredicate {
     @SerialName("StateNot")
     @Serializable
     data class Not(val predicate: StatePredicate) : StatePredicate {
-        override val description: String = "not ${predicate.description}"
+        // An identity test negates to "other than it" — "a nonland permanent other than target
+        // creature", never "a nonland permanent not target creature".
+        override val description: String =
+            if (predicate is IsEntity) "other than ${predicate.description}" else "not ${predicate.description}"
     }
 }
 
