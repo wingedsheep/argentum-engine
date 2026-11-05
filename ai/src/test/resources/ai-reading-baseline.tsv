@@ -5696,7 +5696,7 @@ Faller's Faithful
 Falling Star
 Fallow Earth
 Fallowsage
-False Cure	intent: CreateGlobalTriggeredAbilityEffect; timing: CreateGlobalTriggeredAbilityEffect
+False Cure	timing: CreateGlobalTriggeredAbilityEffect
 False Defeat
 False Mourning
 False Orders	polarity: BecomeBlockingEffect; polarity: Pipeline(BattlefieldMatching→?); polarity: RemoveFromCombatEffect
@@ -10045,7 +10045,7 @@ Lofty Denial
 Lofty Dreams
 Loki Laufeyson
 Loki, God of Mischief
-Lolth, Spider Queen	intent: CreateGlobalTriggeredAbilityEffect
+Lolth, Spider Queen
 Lone Missionary
 Lone Wolf
 Lonely Arroyo
@@ -12271,7 +12271,7 @@ Parhelion Patrol
 Pariah's Shield
 Parish-Blade Trainee	intent: EmitKeywordCounterEventEffect
 Park Heights Pegasus
-Parker Luck	intent: Pipeline(TopOfLibrary→hand)
+Parker Luck
 Part Water
 Part in Friendship	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|hand|library)
 Part the Veil
@@ -12887,7 +12887,7 @@ Profane Prayers
 Profane Procession
 Professional Face-Breaker	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Professional Wrestler
-Professor Dellian Fel	intent: CreateGlobalTriggeredAbilityEffect
+Professor Dellian Fel
 Professor Onyx
 Professor Zei, Anthropologist
 Professor of Symbology
@@ -17532,7 +17532,7 @@ The Rollercrusher Ride
 The Royal Scions
 The Ruinous Wrecking Crew
 The Sackville-Bagginses
-The Scarab God	intent: EmitScriedEventEffect; intent: Pipeline(TopOfLibrary→library)
+The Scarab God
 The Scarlet Witch
 The Scorpion God
 The Seedcore
@@ -18277,7 +18277,7 @@ Trusty Packbeast
 Trusty Retriever
 Trygon Predator
 Trystan's Command
-Trystan, Callous Cultivator	intent: Pipeline(TopOfLibrary|graveyard→exile|graveyard)
+Trystan, Callous Cultivator
 Tsabo Tavoc
 Tsabo's Assassin
 Tsabo's Decree

@@ -704,7 +704,7 @@ object AiReadingAudit {
         IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
         IntentTag.DAMAGE_AMPLIFIER -> "amplifies damage from our sources"
-        IntentTag.DAMAGE_TO_PLAYERS -> "deals damage to players"
+        IntentTag.DAMAGE_TO_PLAYERS -> "damages or drains players"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"

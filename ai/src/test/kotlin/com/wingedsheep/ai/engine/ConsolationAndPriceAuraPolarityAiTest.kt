@@ -60,6 +60,28 @@ class ConsolationAndPriceAuraPolarityAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a helpful trigger granted to the host reads as what it does; an opponent's life loss as a clock") {
+            val sense = CardIntentAnalyzer.analyze(cardRegistry.getCard("Sixth Sense")!!)
+            sense.tags shouldContain IntentTag.DRAW
+            TargetPolarityAnalyzer.forSpell(cardRegistry.getCard("Sixth Sense")!!) shouldBe listOf(TargetPolarity.BENEFICIAL)
+            CardIntentAnalyzer.analyze(cardRegistry.getCard("Throne of the God-Pharaoh")!!).tags shouldContain
+                IntentTag.DAMAGE_TO_PLAYERS
+        }
+
+        test("Sixth Sense goes on our creature, not on the opponent's") {
+            decide({ s ->
+                s.withPlayers()
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withCardInHand(1, "Sixth Sense")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .build()
+            }) {
+                shouldCast("Sixth Sense")
+                shouldTarget("Grizzly Bears")
+            }
+        }
+
         test("Compulsory Rest goes on the opponent's attacker, not on our own creature") {
             decide({ s ->
                 s.withPlayers()

@@ -43,6 +43,8 @@ import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.*
@@ -1317,6 +1319,10 @@ object CardIntentAnalyzer {
             EffectTarget.Self -> emptySet()
             else -> removalTags(effect.target)
         }
+        // "Each opponent loses life equal to …" (Throne of the God-Pharaoh), "target player loses 2
+        // life": the same clock on a player as face damage, minus the source. Life its controller
+        // loses is the card's price, not its point.
+        is LoseLifeEffect -> if (losesAnOpponent(effect.target)) setOf(IntentTag.DAMAGE_TO_PLAYERS) else emptySet()
 
         is DividedDamageEffect -> setOf(IntentTag.REMOVAL)
 
@@ -1964,6 +1970,16 @@ object CardIntentAnalyzer {
             if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.ANTHEM) else setOf(IntentTag.PUMP)
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "Enchanted creature has 'Whenever this creature deals combat damage to a player, you may
+        // draw a card'" (Sixth Sense): a trigger handed to the host for good that serves whoever
+        // controls it is that creature's own ability from then on — read as if printed, as the
+        // one-shot [GrantTriggeredAbilityEffect] is. A harmful grant (a curse's upkeep drain) is
+        // read by the Aura's polarity instead, and tags nothing here.
+        is GrantTriggeredAbility ->
+            if (static.filter.scope == Scope.AttachedTo &&
+                TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.BENEFICIAL
+            ) analyzeEffect(static.ability.effect, static.ability.allTargetRequirements).tags
+            else emptySet()
         is CantAttack -> neutralizeTags(static.filter)
         is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
             else neutralizeTags(static.filter)
