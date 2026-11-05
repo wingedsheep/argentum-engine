@@ -1412,6 +1412,10 @@ object CardIntentAnalyzer {
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
                 space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP
+                // "Untap all creatures you control" (Jace, Ingenious Mind-Mage; an extra combat's
+                // "untap all creatures that attacked"): our attackers stand back up to block or attack
+                // again — the vigilance a granted keyword gives, read the same way.
+                space is IterationSpace.Group && untapsOurCreatures(space.filter, effect.body) -> inner + IntentTag.COMBAT_ENHANCEMENT
                 else -> inner
             }
         }
@@ -1513,6 +1517,18 @@ object CardIntentAnalyzer {
     private fun untapsOurLands(group: GroupFilter, body: Effect): Boolean {
         val filter = group.baseFilter
         if (filter.anyOf.isNotEmpty() || CardPredicate.IsLand !in filter.cardPredicates) return false
+        if (filter.controllerPredicate != ControllerPredicate.ControlledByYou) return false
+        return EffectWalker.payoffLeaves(body).any { it is TapUntapEffect && !it.tap && it.target == EffectTarget.IterationEntity }
+    }
+
+    /**
+     * Whether [body], run over each permanent of [group], untaps creatures of ours and nothing
+     * else's — "untap all creatures you control". A symmetric untap (Intruder Alarm's "untap all
+     * creatures") helps the opponent's board as much as ours and stays unread.
+     */
+    private fun untapsOurCreatures(group: GroupFilter, body: Effect): Boolean {
+        val filter = group.baseFilter
+        if (filter.anyOf.isNotEmpty() || CardPredicate.IsCreature !in filter.cardPredicates) return false
         if (filter.controllerPredicate != ControllerPredicate.ControlledByYou) return false
         return EffectWalker.payoffLeaves(body).any { it is TapUntapEffect && !it.tap && it.target == EffectTarget.IterationEntity }
     }

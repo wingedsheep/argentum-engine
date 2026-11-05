@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads "untap all creatures you control" (Jace, Ingenious Mind-Mage's +1, extra-combat untaps) as a combat enhancement for its own team, as it reads a granted vigilance.
 - #4450 Reads a permanent that exiles itself and returns transformed (Conqueror's Galleon, the FIN eikons, Huatli, Poet of Unity) as needing no intent, so those cards are no longer drafted as "abilities not recognised"
 - #4448 Reads an "exile the top card, you may cast it this turn" made at the start of its own turn (Vance's Blasting Cannons, Outpost Siege, Visions of Phyrexia) and a "put each into your hand unless an opponent pays life" dig (Sword-Point Diplomacy) as card draw, valuing and drafting them as such; and reads removing an opponent's creature from combat (Spires of Orazca, Labyrinth of Skophos, False Orders) as neutralizing it
 - #4449 Aims "target opponent exiles a creature they control" (Doomfall, Debt to the Kami, Early Winter) and "enchant player" Curses that make their player lose life, take damage or pay-or-suffer (Torment of Scarabs) at the opponent, and drafts "that player discards" combat-damage triggers (Dreamstealer, Hypnotic Specter) and lose-life-unless-you-discard punishers (Torment of Hailfire) as discard.

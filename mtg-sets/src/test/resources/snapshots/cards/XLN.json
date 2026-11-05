@@ -6189,6 +6189,144 @@
     ]
 }
 
+// Huatli, Dinosaur Knight
+{
+    "name": "Huatli, Dinosaur Knight",
+    "manaCost": "{4}{R}{W}",
+    "typeLine": "Legendary Planeswalker — Huatli",
+    "oracleText": "+2: Put two +1/+1 counters on up to one target Dinosaur you control.\n−3: Target Dinosaur you control deals damage equal to its power to target creature you don't control.\n−7: Dinosaurs you control get +4/+4 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Huatli, Dinosaur Knight:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "permanent Dinosaur ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put two +1/+1 counters on up to one target Dinosaur you control."
+            },
+            {
+                "id": "Huatli, Dinosaur Knight:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Dinosaur ctrl:you"
+                        },
+                        "id": "t1"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target Dinosaur you control deals damage equal to its power to target creature you don't control."
+            },
+            {
+                "id": "Huatli, Dinosaur Knight:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dinosaur ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Dinosaurs you control get +4/+4 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "285",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a5a6f7b-149d-46d3-9814-d38a302db17c.jpg?1783935684",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If either creature is an illegal target as Huatli's second ability resolves, the creature you control won't deal damage."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Huatli's last ability affects only Dinosaurs you control at the time it resolves. Dinosaurs you begin to control later in the turn or creatures that become Dinosaurs later in the turn won't get +4/+4."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Imperial Aerosaur
 {
     "name": "Imperial Aerosaur",
@@ -6736,6 +6874,108 @@
         ]
     },
     "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jace, Ingenious Mind-Mage
+{
+    "name": "Jace, Ingenious Mind-Mage",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "+1: Draw a card.\n+1: Untap all creatures you control.\n−9: Gain control of up to three target creatures.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jace, Ingenious Mind-Mage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, Ingenious Mind-Mage:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, Ingenious Mind-Mage:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.TargetsOf",
+                        "group": "t0"
+                    },
+                    "body": {
+                        "type": "GainControl",
+                        "target": "IterationEntity"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "280",
+        "rarity": "MYTHIC",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3b274f6-833f-430f-ac1a-d1d1d5b03e71.jpg?1783935685",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "The control-change effect of Jace's last ability lasts indefinitely. It doesn't wear off during the cleanup step or when you lose control of Jace."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well, and any effects that give the player control of permanents immediately end."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLUE"
     ]
@@ -12930,6 +13170,186 @@
     ]
 }
 
+// Sun-Blessed Mount
+{
+    "name": "Sun-Blessed Mount",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "When this creature enters, you may search your library and/or graveyard for a card named Huatli, Dinosaur Knight, reveal it, then put it into your hand. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sun-Blessed Mount:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Huatli, Dinosaur Knight"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Huatli, Dinosaur Knight to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Huatli, Dinosaur Knight"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Huatli, Dinosaur Knight to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Huatli, Dinosaur Knight"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Huatli, Dinosaur Knight to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may search your library and/or graveyard for a card named Huatli, Dinosaur Knight, reveal it, then put it into your hand. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "rarity": "RARE",
+        "artist": "Joe Slucher",
+        "flavorText": "When Huatli chooses a mount, its eyes glow with the flames of the sun.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f06ac1f-0bae-4aaa-9ff4-28c806828c40.jpg?1783935682"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Sun-Crowned Hunters
 {
     "name": "Sun-Crowned Hunters",
@@ -13781,6 +14201,83 @@
         "artist": "Lius Lasahido",
         "flavorText": "The people of the Sun Empire worship the sun in three aspects. Tilonalli is the Burning Sun, associated with ferocity, fire, and passion.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/2/b25c2f33-1707-4ff3-a22e-58f51936b733.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Tilonalli's Skinshifter
+{
+    "name": "Tilonalli's Skinshifter",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Haste\nWhenever this creature attacks, it becomes a copy of another target nonlegendary attacking creature until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tilonalli's Skinshifter:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn",
+                    "affected": "Self"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonlegendary"
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        },
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, it becomes a copy of another target nonlegendary attacking creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "\"I am the ferocity of the Burning Sun. I am hide and feather, fang and claw.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aab2765d-cfc4-4381-8cce-adce5aaf05ad.jpg?1783935734",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If the target of the ability of Tilonalli's Skinshifter becomes an illegal target, Tilonalli's Skinshifter won't become a copy of anything. It will remain a 0/1 attacking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Tilonalli's Skinshifter copies the printed values of the target creature, plus any copy effects that have been applied to it. It won't copy counters on that creature or effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Because attackers have already been declared, any abilities Tilonalli's Skinshifter copies that trigger when it or other creatures attack won't trigger."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Tilonalli's Skinshifter remains a copy of the creature through the end step. Damage is removed from it at the same time that it stops being a copy."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
