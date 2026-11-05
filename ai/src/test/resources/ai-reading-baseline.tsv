@@ -244,7 +244,7 @@ Agility Bobblehead	combat: ForEach>GrantCantBeBlockedExceptByEffect; timing: For
 Agna Qel'a
 Agonasaur Rex
 Agonizing Demise
-Agonizing Remorse	intent: Pipeline(FromMultipleZones→exile); intent: RevealHandEffect
+Agonizing Remorse
 Agonizing Syphon
 Agrus Kos, Eternal Soldier
 Agrus Kos, Spirit of Justice
@@ -505,7 +505,7 @@ Ancient Spider
 Ancient Spring
 Ancient Stirrings
 Ancient Tomb
-Ancient Vendetta	intent: ChooseOptionEffect; intent: Pipeline(FromMultipleZones→exile); polarity: Pipeline(FromMultipleZones→exile)
+Ancient Vendetta
 Ancient Ziggurat
 Andoria
 Andradite Leech
@@ -3447,10 +3447,10 @@ Coveted Falcon	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Coveted Jewel
 Coveted Prize
 Covetous Castaway
-Covetous Urge	intent: GrantMayPlayFromExileEffect; intent: Pipeline(FromMultipleZones→exile); intent: RevealHandEffect
+Covetous Urge
 Cowabunga!
 Cowl Prowler
-Crabomination	polarity: Pipeline(FromMultipleZones|TopOfLibrary|graveyard|hand→exile)
+Crabomination
 Crack Open
 Cracked Skull
 Crackle with Power
@@ -3471,7 +3471,7 @@ Cragsmasher Yeti
 Craig Boone, Novac Guard	intent: GatedEffect; intent: StoreNumberEffect
 Cram Session
 Cranial Archive	polarity: DrawCardsEffect; polarity: Pipeline(graveyard→library)
-Cranial Extraction	intent: ChooseOptionEffect; intent: Pipeline(FromMultipleZones→exile); polarity: Pipeline(FromMultipleZones→exile)
+Cranial Extraction
 Cranial Ram
 Crash Through
 Crash and Burn
@@ -4391,6 +4391,7 @@ Displacer Beast	intent: VentureIntoTheDungeonEffect
 Displacer Kitten
 Display of Power	polarity: CopyEachTargetSpellEffect
 Disposal Mummy
+Dispossess
 Disrupt
 Disrupting Scepter
 Disruption Protocol
@@ -10028,7 +10029,7 @@ Loathsome Chimera
 Loathsome Troll
 Lobber Crew
 Lobelia Sackville-Baggins
-Lobotomy	intent: Pipeline(FromMultipleZones|hand→exile); intent: RevealHandEffect; intent: StoreCardNameEffect
+Lobotomy
 Loch Dragon
 Loch Korrigan
 Loch Mare
@@ -10668,7 +10669,7 @@ Memories Returning
 Memory Deluge
 Memory Drain
 Memory Guardian
-Memory Leak	intent: Pipeline(FromMultipleZones→exile); intent: RevealHandEffect
+Memory Leak
 Memory Theft
 Memory Trap
 Memory Vessel
@@ -11551,7 +11552,7 @@ Neurok Spy
 Neutralize
 Neutralize the Guards
 Neva, Stalked by Nightmares
-Never Happened	intent: Pipeline(FromMultipleZones→exile); intent: RevealHandEffect
+Never Happened
 Neverwinter Dryad
 Nevinyrral's Disk
 New Benalia

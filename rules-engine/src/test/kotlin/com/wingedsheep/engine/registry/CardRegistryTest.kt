@@ -115,4 +115,16 @@ class CardRegistryTest : FunSpec({
         overlay.cardNamesIn(CardNamePool.NONBASIC_LAND) shouldContainExactlyInAnyOrder listOf("Field of Ruin", "Okina, Temple to the Grandfathers")
         overlay.cardNamesIn(CardNamePool.LAND) shouldContainExactlyInAnyOrder listOf("Forest", "Wastes", "Field of Ruin", "Okina, Temple to the Grandfathers")
     }
+
+    test("the artifact pool offers every card whose type line includes Artifact, across both layers") {
+        val relic = land("Darksteel Relic", "Artifact")
+        val live = CardRegistry().apply { register(listOf(forest(), relic, bear("Grizzly Bears", 2))) }
+        val overlay = CardRegistry(parent = live).apply { register(land("Sol Ring", "Artifact")) }
+
+        live.cardNamesIn(CardNamePool.ARTIFACT) shouldContainExactly listOf("Darksteel Relic")
+        overlay.cardNamesIn(CardNamePool.ARTIFACT) shouldContainExactlyInAnyOrder listOf("Darksteel Relic", "Sol Ring")
+        // The overlay redefines the relic as a non-artifact: its parent entry is shadowed, not merged.
+        CardRegistry(parent = live).apply { register(bear("Darksteel Relic", 1)) }
+            .cardNamesIn(CardNamePool.ARTIFACT) shouldBe emptySet()
+    }
 })

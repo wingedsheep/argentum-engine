@@ -937,7 +937,8 @@ object CardIntentAnalyzer {
     /**
      * "Target player discards two cards" (Mind Rot), "each opponent discards a card" (Rank Rat),
      * "target opponent reveals their hand; you choose a nonland card from it; exile that card"
-     * (Null Summoner) — a gather from **another player's hand** whose cards (or the ones picked
+     * (Null Summoner), "search target player's graveyard, hand, and library for all cards with that
+     * name and exile them" (Cranial Extraction) — a gather from **another player's hand** whose cards (or the ones picked
      * from among them) are moved to a graveyard, exile or a library — reads as [IntentTag.DISCARD].
      * `Patterns.Hand` lowers every one of these to the same gather → select → move pipeline, so no
      * single leaf says it.
@@ -953,8 +954,15 @@ object CardIntentAnalyzer {
         val leaves = readingLeaves(root)
         val draws = leaves.any { it is DrawCardsEffect || it is DrawUpToEffect }
         val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
-            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
-            leaf.storeAs.takeIf { source.zone == Zone.HAND && isAnotherPlayersHand(source.player, eachPlayer, draws) }
+            // "Search target player's graveyard, hand, and library for all cards with that name"
+            // (Cranial Extraction, Dispossess, Necromentia): a several-zone search that reaches the
+            // hand strips it the same way.
+            val (zones, player) = when (val source = (leaf as? GatherCardsEffect)?.source) {
+                is CardSource.FromZone -> listOf(source.zone) to source.player
+                is CardSource.FromMultipleZones -> source.zones to source.player
+                else -> return@mapNotNullTo null
+            }
+            leaf.storeAs.takeIf { Zone.HAND in zones && isAnotherPlayersHand(player, eachPlayer, draws) }
         }
         if (theirHand.isEmpty()) return emptySet()
         do {

@@ -558,6 +558,10 @@ object LimitedCardRater {
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
         if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
+        // Cards taken out of another player's hand by a gather → move pipeline (Null Summoner's
+        // "choose a nonland card from it; exile that card", Cranial Extraction's named search):
+        // no single leaf says discard, so the pipeline reading prices it.
+        if (IntentTag.DISCARD in tags) score += TAG_VALUE.getValue(IntentTag.DISCARD)
         // A wish (Burning Wish): the sideboard gather and the move to hand read as nothing alone.
         // A library search is priced at its own gather leaf, which a wish's gather isn't.
         if (IntentTag.TUTOR in tags) score += TAG_VALUE.getValue(IntentTag.TUTOR)
