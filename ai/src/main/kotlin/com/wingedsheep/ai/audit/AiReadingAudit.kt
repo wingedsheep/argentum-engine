@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
@@ -866,6 +867,9 @@ object AiReadingAudit {
         // answers nothing on the board, and life lost now or one window later is the same life.
         // Which player a targeted one aims at is the polarity check's question, not intent's.
         if (leaf is DealDamageEffect && isPlayerTarget(leaf.target)) return true
+        // The same clock counted per card left in a zone (Dragonhawk's "2 damage to each opponent
+        // for each of those cards that are still exiled"): damage to a player, priced on resolution.
+        if (leaf is DealDamagePerEntityInZoneEffect && isPlayerTarget(leaf.target)) return true
         // Life loss always lands on a player, so it is the same clock — or, on "you lose N life",
         // a drawback the simulation already prices on resolution. Either way there is nothing to tag.
         if (leaf is LoseLifeEffect) return true
