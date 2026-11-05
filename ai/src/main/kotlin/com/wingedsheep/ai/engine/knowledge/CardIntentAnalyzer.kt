@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -721,6 +722,7 @@ object CardIntentAnalyzer {
         addAll(digTags(root, turnAhead))
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
+        addAll(discardPunisherTags(root, eachPlayer = null))
         addAll(regrowthTags(root))
         addAll(graveyardExileTags(root))
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
@@ -859,11 +861,46 @@ object CardIntentAnalyzer {
         return if (takesThem) setOf(IntentTag.DISCARD) else emptySet()
     }
 
+    /**
+     * "Each opponent loses 3 life unless that player sacrifices a nonland permanent or discards a
+     * card" (Torment of Hailfire, Torment of Scarabs' upkeep trigger) — an unless-clause an opponent
+     * pays out of their hand — reads as [IntentTag.DISCARD], the same punisher
+     * [EachPlayerDiscardsOrLoseLifeEffect] reads as: whichever they pick, the card or the life is
+     * theirs to lose. The payer decides it, as in [handDisruptionTags]: an opponent by name, the
+     * enchanted player (a Curse's victim), a target player slot, or `you` inside an iteration over
+     * opponents. Our own "unless" is an upkeep cost and stays unread.
+     */
+    private fun discardPunisherTags(root: Effect, eachPlayer: Player?): Set<IntentTag> {
+        val punishes = readingLeaves(root).any { leaf ->
+            leaf is PayOrSufferEffect && paidByAnOpponent(leaf.player, eachPlayer) && offersDiscard(leaf.cost)
+        }
+        return if (punishes) setOf(IntentTag.DISCARD) else emptySet()
+    }
+
+    private fun paidByAnOpponent(payer: EffectTarget, eachPlayer: Player?): Boolean = when (payer) {
+        is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
+        is EffectTarget.PlayerRef -> payer.player in OPPONENT_PLAYERS || payer.player == Player.EnchantedPlayer ||
+            payer.player == Player.TriggeringPlayer ||
+            (payer.player == Player.You && eachPlayer != null && !includesYou(eachPlayer))
+        EffectTarget.Controller -> eachPlayer != null && !includesYou(eachPlayer)
+        else -> false
+    }
+
+    private fun offersDiscard(cost: PayCost): Boolean = when (cost) {
+        is PayCost.Atom -> cost.atom is CostAtom.Discard || cost.atom is CostAtom.DiscardHand
+        is PayCost.Choice -> cost.options.any(::offersDiscard)
+        else -> false
+    }
+
     /** Whether a gather from [player]'s hand reaches someone other than the ability's controller — see [handDisruptionTags]. */
     private fun isAnotherPlayersHand(player: Player, eachPlayer: Player?, draws: Boolean): Boolean = when (player) {
         in OPPONENT_PLAYERS -> true
         Player.You -> eachPlayer != null && !includesYou(eachPlayer)
-        Player.TargetPlayer, Player.EachTargetedPlayer, is Player.ContextPlayer, is Player.BoundVariable -> !draws
+        // "That player discards that many cards" off a combat-damage trigger (Dreamstealer,
+        // Hypnotic Specter): the player the trigger names is the one hit, as [losesAnOpponent]
+        // reads them. An any-player trigger (Necrogen Mists, Oppression) names its controller too,
+        // but those are the discard deck's locks, not a wheel's price.
+        Player.TargetPlayer, Player.EachTargetedPlayer, Player.TriggeringPlayer, is Player.ContextPlayer, is Player.BoundVariable -> !draws
         else -> false
     }
 
@@ -1370,6 +1407,7 @@ object CardIntentAnalyzer {
                 space is IterationSpace.Players -> (if (includesYou(space.players)) inner else opponentIterationTags(effect.body, inner)) +
                     destroyAll(effect.body, eachPlayer = space.players).tags +
                     handDisruptionTags(effect.body, eachPlayer = space.players) +
+                    discardPunisherTags(effect.body, eachPlayer = space.players) +
                     graveyardExileTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
