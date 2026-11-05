@@ -367,6 +367,15 @@ class CombatContinuationResumer(
             return ExecutionResult.error(state, "Expected distribution response for divided damage")
         }
 
+        if (continuation.effect != null && continuation.context != null) {
+            // The division a DividedDamageEffect asked for at resolution is dealt as if it had
+            // been announced, through the effect's own executor, so its outputs are handed on.
+            val result = services.effectExecutorRegistry.execute(state, continuation.effect,
+                continuation.context.copy(damageDistribution = response.distribution))
+            if (result.outcome is Outcome.Paused) return ExecutionResult.propagatePause(result.state, result.events)
+            return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+        }
+
         val instances = response.distribution.filterValues { it > 0 }.map { (target, amount) ->
             com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain.Instance(
                 continuation.sourceId, target, amount,

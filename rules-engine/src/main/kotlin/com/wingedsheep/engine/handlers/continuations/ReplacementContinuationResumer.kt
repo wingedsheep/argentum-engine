@@ -43,7 +43,7 @@ class ReplacementContinuationResumer(
         else com.wingedsheep.engine.handlers.effects.damage.DamageReplacementChain.deal(
             services.zones, replay, continuation.instances, excessToController = continuation.excessToController)
         if (result.outcome is Outcome.Paused) return ExecutionResult.propagatePause(result.state, result.events)
-        val published = exposeCollectionsToNextFrame(result.state, emptyMap(), numbers = result.updatedStoredNumbers)
+        val published = exposeCollectionsToNextFrame(result.state, result.updatedCollections, numbers = result.updatedStoredNumbers)
         return checkForMore(published, result.events)
     }
 

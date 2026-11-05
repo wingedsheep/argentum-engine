@@ -71,7 +71,7 @@ Abyssal Nightstalker
 Abzan Ascendancy
 Abzan Banner
 Abzan Battle Priest
-Abzan Charm	polarity: DistributeCountersAmongTargetsEffect
+Abzan Charm
 Abzan Devotee
 Abzan Falconer
 Abzan Guide
@@ -167,7 +167,7 @@ Aerial Modification
 Aerial Predation
 Aerial Responder
 Aerial Surveyor
-Aerial Volley	polarity: DividedDamageEffect
+Aerial Volley
 Aerid Konstrari
 Aerie Auxiliary
 Aerie Bowmasters
@@ -670,7 +670,7 @@ Aradara Express
 Aradesh, the Founder
 Aragorn and Arwen, Wed
 Aragorn, Company Leader	intent: AddCountersEffect
-Aragorn, Hornburg Hero	intent: DoubleCountersEffect
+Aragorn, Hornburg Hero
 Aragorn, King of Gondor	intent: TakeDesignationEffect
 Aragorn, the Uniter
 Arahbo, the First Fang
@@ -687,7 +687,7 @@ Arborea Pegasus
 Arboreal Grazer	intent: Pipeline(hand→battlefield)
 Arboretum Elemental
 Arboria
-Arc Lightning	polarity: DividedDamageEffect
+Arc Lightning
 Arc Reactor
 Arc Runner
 Arc Spitter
@@ -805,8 +805,8 @@ Armadillo Cloak
 Armageddon
 Armageddon Clock
 Armaggon, Future Shark
-Armament Corps	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
-Armament Dragon	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Armament Corps
+Armament Dragon
 Armasaur Guide
 Armed and Armored	timing: ForEach>AddCardTypeEffect
 Armguard Familiar	intent: UnattachEquipmentEffect
@@ -1537,7 +1537,7 @@ Binding the Old Gods
 Bioengineered Future
 Bioessence Hydra
 Biogenic Ooze
-Biogenic Upgrade	polarity: DividedDamageEffect
+Biogenic Upgrade
 Biolume Egg	intent: ReturnSelfFromZoneTransformedEffect
 Biomancer's Familiar	intent: AdaptAsThoughNoCountersEffect
 Biomass Mutation	timing: ForEach>SetBaseStatsEffect
@@ -2336,7 +2336,7 @@ Buzz Bots
 Buzzard-Wasp Colony
 By Invitation Only	intent: ChooseNumberThenEffect
 Bygone Colossus
-Byrke, Long Ear of the Law	intent: DoubleCountersEffect
+Byrke, Long Ear of the Law
 Byway Barterer
 C.A.M.P.
 Cabal Archon
@@ -2557,7 +2557,7 @@ Case of the Pilfered Proof	intent: BecomeSolvedEffect
 Case of the Ransacked Lab	intent: BecomeSolvedEffect
 Case of the Shattered Pact	intent: BecomeSolvedEffect
 Case of the Stashed Skeleton	intent: BecomeSolvedEffect
-Case of the Trampled Garden	intent: BecomeSolvedEffect; intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Case of the Trampled Garden	intent: BecomeSolvedEffect
 Case of the Uneaten Feast	intent: BecomeSolvedEffect; intent: ForEach>GrantStaticAbilityEffect; intent: Pipeline(graveyard→?); timing: ForEach>GrantStaticAbilityEffect
 Case the Joint
 Casey Jones, Jury-Rig Justiciar
@@ -2749,7 +2749,7 @@ Chandra's Incinerator
 Chandra's Magmutt
 Chandra's Outrage
 Chandra's Pyreling
-Chandra's Pyrohelix	polarity: DividedDamageEffect
+Chandra's Pyrohelix
 Chandra's Regulator
 Chandra's Spitfire
 Chandra's Triumph
@@ -2760,7 +2760,7 @@ Chandra, Dressed to Kill	intent: GrantMayPlayFromExileEffect; intent: Pipeline(T
 Chandra, Fire Artisan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
 Chandra, Flame's Fury
-Chandra, Flameshaper	polarity: DividedDamageEffect
+Chandra, Flameshaper
 Chandra, Heart of Fire	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary|hand→exile|graveyard)
 Chandra, Hope's Beacon
 Chandra, Novice Pyromancer
@@ -3080,7 +3080,7 @@ Cloudsculpt Technician
 Cloudshift	polarity: MoveToZoneEffect
 Cloudspire Captain
 Cloudspire Coordinator
-Cloudspire Skycycle	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Cloudspire Skycycle
 Cloudsteel Kirin	intent: UnattachEquipmentEffect
 Cloudstone Curio
 Cloudthresher
@@ -4044,7 +4044,7 @@ Deep-Sea Serpent
 Deep-Slumber Titan
 Deepchannel Duelist
 Deepfathom Echo
-Deepglow Skate	intent: ForEach>DoubleCountersEffect; polarity: ForEachEffect
+Deepglow Skate	intent: ForEach>DoubleCountersEffect
 Deepmuck Desperado
 Deeproot Champion
 Deeproot Elite
@@ -4062,7 +4062,7 @@ Defabricate
 Deface
 Defeat
 Defend the Campus
-Defend the Celestus	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Defend the Celestus
 Defend the Rider
 Defender of Chaos
 Defender of Law
@@ -4596,7 +4596,7 @@ Dragonfly Swarm
 Dragonhawk, Fate's Tempest	intent: DealDamagePerEntityInZoneEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Dragonkin Berserker
 Dragonloft Idol
-Dragonlord Atarka	polarity: DividedDamageEffect
+Dragonlord Atarka
 Dragonlord Dromoka
 Dragonlord's Servant
 Dragonmaster Outcast
@@ -5041,7 +5041,7 @@ Electro's Bolt
 Electro, Assaulting Battery
 Electrodominance
 Electroduplicate
-Electrolyze	polarity: DividedDamageEffect; polarity: DrawCardsEffect
+Electrolyze
 Electrosiphon
 Electrostatic Bolt
 Electrostatic Field
@@ -5105,7 +5105,7 @@ Elspeth, Sun's Nemesis
 Elspeth, Undaunted Hero
 Elturgard Ranger
 Eluge, the Shoreless Sea	intent: AddCountersEffect; polarity: AddCountersEffect
-Elusive Otter	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Elusive Otter
 Elven Ambush
 Elven Bow
 Elven Cache
@@ -6089,7 +6089,7 @@ Flamekin Brawler
 Flamekin Gildweaver
 Flamekin Harbinger
 Flamekin Spitfire
-Flames of the Firebrand	polarity: DividedDamageEffect
+Flames of the Firebrand
 Flames of the Raze-Boar
 Flamescroll Celebrant	timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
 Flameskull	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity|TopOfLibrary|exile→exile)
@@ -6302,7 +6302,7 @@ Forgotten Cave
 Forgotten Monument
 Forgotten Sentinel
 Fork
-Forked Lightning	polarity: DividedDamageEffect
+Forked Lightning
 Forlorn Flats
 Form a Posse
 Form of the Dinosaur
@@ -6569,7 +6569,7 @@ Gandalf the White
 Gandalf's Sanction
 Gandalf, Friend of the Shire
 Gandalf, Goblins' Bane	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Gandalf, Spark Starter	polarity: DividedDamageEffect
+Gandalf, Spark Starter
 Gandalf, Wandering Wizard
 Gandalf, White Rider
 Gangly Stompling
@@ -6944,7 +6944,7 @@ Glimpse the Future
 Glimpse the Impossible
 Glimpse the Unthinkable
 Glint
-Glint Weaver	polarity: DistributeCountersAmongTargetsEffect; polarity: GainLifeEffect
+Glint Weaver
 Glint-Horn Buccaneer
 Glint-Nest Crane
 Glint-Sleeve Artisan
@@ -8197,6 +8197,7 @@ Huatli's Spurring
 Huatli, Dinosaur Knight
 Huatli, Poet of Unity
 Huatli, Radiant Champion
+Huatli, Warrior Poet	combat: ForEach>CantBlockEffect
 Huatli, the Sun's Heart
 Hugs, Grisly Guardian
 Hulk, Gamma Goliath
@@ -8362,7 +8363,7 @@ Igneous Cur
 Igneous Golem
 Igneous Inspiration
 Ignis Scientia	intent: Pipeline(TopOfLibrary→battlefield|library); polarity: CreatePredefinedTokenEffect; polarity: Pipeline(ChosenTargets→exile)
-Ignite Disorder	polarity: DividedDamageEffect
+Ignite Disorder
 Ignite the Beacon
 Ignite the Future
 Ignoble Hierarch
@@ -8515,7 +8516,7 @@ Inferno
 Inferno Fist
 Inferno Hellion
 Inferno Jet
-Inferno Titan	polarity: DividedDamageEffect
+Inferno Titan
 Inferno of the Star Mounts
 Infest
 Infestation Expert
@@ -8869,7 +8870,7 @@ Jade Leech
 Jade Mage
 Jade Monolith	intent: RedirectDamageFromChosenSourceEffect; polarity: RedirectDamageFromChosenSourceEffect; timing: RedirectDamageFromChosenSourceEffect
 Jade Orb of Dragonkind
-Jade Seedstones	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Jade Seedstones
 Jade Statue
 Jade-Cast Sentinel
 Jadecraft Artisan
@@ -9018,7 +9019,7 @@ Judgment Bolt
 Judith, Carnage Connoisseur
 Judith, the Scourge Diva
 Jugan Defends the Temple
-Jugan, the Rising Star	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Jugan, the Rising Star
 Juggernaut
 Jukai Messenger
 Jukai Naturalist
@@ -9091,7 +9092,7 @@ Kalakscion, Hunger Tyrant
 Kalastria Healer
 Kalastria Highborn
 Kalastria Nightwatch
-Kalonian Hydra	intent: ForEach>DoubleCountersEffect
+Kalonian Hydra
 Kalonian Tusker
 Kamahl's Druidic Vow	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Kamahl's Summons
@@ -9561,7 +9562,7 @@ Kudzu	polarity: Aura>ForEachEffect; polarity: Aura>MoveToZoneEffect
 Kuja, Genome Sorcerer
 Kujar Seedsculptor
 Kuldotha Cackler
-Kuldotha Flamefiend	polarity: DividedDamageEffect
+Kuldotha Flamefiend
 Kuldotha Forgemaster
 Kuldotha Rebirth
 Kulrath Mystic
@@ -9673,7 +9674,7 @@ Lasyd Prowler
 Lat-Nam Adept
 Latch Seeker
 Late to Dinner
-Lathiel, the Bounteous Dawn	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Lathiel, the Bounteous Dawn
 Lathliss, Dragon Queen
 Lathnu Sailback
 Lathril, Blade of the Elves
@@ -10149,7 +10150,7 @@ Lucky Clover
 Lucky Offering
 Ludevic, Necrogenius
 Luke Cage, Power Man
-Lukka, Bound to Ruin	polarity: DividedDamageEffect
+Lukka, Bound to Ruin
 Lukka, Coppercoat Outcast	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Lull
 Lullmage's Domination
@@ -10264,7 +10265,7 @@ Mages' Contest	intent: OpenLifeBidEffect; polarity: OpenLifeBidEffect
 Mageta's Boon
 Maggot Therapy	polarity: Aura>ModifyStats
 Magic Damper
-Magic Missile	polarity: DividedDamageEffect
+Magic Missile
 Magic Pot
 Magical Hack	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
 Magistrate's Scepter
@@ -10273,7 +10274,7 @@ Magitek Infantry
 Magitek Scythe
 Magma Giant
 Magma Jet
-Magma Opus	polarity: CreateTokenEffect; polarity: DividedDamageEffect; polarity: DrawCardsEffect; polarity: TapUntapEffect
+Magma Opus
 Magma Phoenix
 Magma Pummeler
 Magma Rift
@@ -10737,7 +10738,7 @@ Metathran Transport	intent: ChangeColorEffect; polarity: ChangeColorEffect; timi
 Metathran Zombie
 Meteor Golem
 Meteor Storm
-Meteor Swarm	polarity: DividedDamageEffect
+Meteor Swarm
 Meteor Sword
 Meteoric Mace	intent: CascadeEffect
 Meteorite
@@ -11018,7 +11019,7 @@ Mocking Sprite
 Mockingbird
 Mockingbird, Ace Agent
 Mogg Fanatic
-Mogg Mob	polarity: DividedDamageEffect
+Mogg Mob
 Mogg Raider
 Mogg War Marshal
 Moggcatcher
@@ -11364,7 +11365,7 @@ Nahiri's Binding
 Nahiri's Lithoforming
 Nahiri's Machinations
 Nahiri's Resolve	intent: Pipeline(BattlefieldMatching→battlefield|exile)
-Nahiri's Sacrifice	polarity: DividedDamageEffect
+Nahiri's Sacrifice
 Nahiri's Stoneblades	timing: ForEach>ModifyStatsEffect
 Nahiri's Warcrafting
 Nahiri, Forged in Fury	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -11928,7 +11929,7 @@ Omni-Cheese Pizza
 Omnipresence
 Omniscience
 Omnispell Adept
-Omnivorous Flytrap	intent: DistributeCountersAmongTargetsEffect; intent: ForEach>DoubleCountersEffect; polarity: ForEachEffect
+Omnivorous Flytrap
 On Serra's Wings
 On the Job
 Onakke Javelineer
@@ -11939,7 +11940,7 @@ Ondu Champion
 Ondu Giant
 Ondu Greathorn
 Ondu Inversion
-Ondu Knotmaster	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Ondu Knotmaster
 One Dozen Eyes
 One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
 One Ring to Rule Them All
@@ -12046,7 +12047,7 @@ Ornamental Courage
 Ornery Dilophosaur
 Ornery Goblin
 Ornery Kudu
-Ornery Tumblewagg	intent: DoubleCountersEffect; polarity: DoubleCountersEffect
+Ornery Tumblewagg
 Ornithopter
 Ornithopter of Paradise
 Orochi Eggwatcher
@@ -12487,7 +12488,7 @@ Pianna, Nomad Captain
 Picard, Leading by Example
 Pick Your Poison
 Picklock Prankster
-Picnic Ruiner	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Picnic Ruiner
 Pictures of Spider-Man
 Pierce Strider
 Pierce the Sky
@@ -12973,7 +12974,7 @@ Punishing Punch
 Punk Frogs
 Puppet Crafting
 Puppet Master	intent: Pipeline(Entity→hand); polarity: Aura>ConditionalOnCollectionEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
-Pure Energy	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Pure Energy
 Pure Reflection
 Purelace	intent: ChangeColorEffect; polarity: ChangeColorEffect
 Puresteel Paladin
@@ -13028,7 +13029,7 @@ Pyromancer's Goggles
 Pyromania
 Pyrostatic Pillar
 Pyrotechnic Performer
-Pyrotechnics	polarity: DividedDamageEffect
+Pyrotechnics
 Pyrrhic Blast
 Pyrrhic Strike
 Python
@@ -13104,7 +13105,7 @@ Quintessential Katana
 Quintorius Kand
 Quintorius, Field Historian
 Quintorius, Loremaster	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
-Quirion Beastcaller	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Quirion Beastcaller
 Quirion Dryad
 Quirion Elves
 Quirion Ranger	intent: TapUntapEffect
@@ -13242,10 +13243,10 @@ Ral's Dispersal
 Ral's Outburst
 Ral's Reinforcements
 Ral's Staticaster
-Ral, Caller of Storms	polarity: DividedDamageEffect
+Ral, Caller of Storms
 Ral, Crackling Wit	combat: GrantSpellKeywordEffect
 Ral, Izzet Viceroy
-Ral, Monsoon Mage	intent: FlipCoinEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: ModifySpellCostsEffect; intent: Pipeline(TopOfLibrary→exile); polarity: DividedDamageEffect; polarity: DrawCardsEffect
+Ral, Monsoon Mage	intent: FlipCoinEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: ModifySpellCostsEffect; intent: Pipeline(TopOfLibrary→exile)
 Ral, Storm Conduit
 Rally
 Rally Maneuver
@@ -15076,7 +15077,7 @@ Shatterskull Charger
 Shatterskull Giant
 Shatterskull Minotaur
 Shatterskull Recruit
-Shatterskull Smashing	polarity: DividedDamageEffect
+Shatterskull Smashing
 Shatterstorm
 Shatterwing Pegasus
 Shauku's Minion
@@ -15412,7 +15413,7 @@ Sizzling Soloist
 Skaab Goliath
 Skaab Wrangler
 Skalla Wolf
-Skarrgan Hellkite	polarity: DividedDamageEffect
+Skarrgan Hellkite
 Skateboard
 Skatewing Spy	intent: AdaptEffect
 Skeletal Changeling
@@ -15440,7 +15441,7 @@ Skirk Fire Marshal
 Skirk Marauder
 Skirk Outrider
 Skirk Prospector
-Skirk Volcanist	polarity: DividedDamageEffect
+Skirk Volcanist
 Skirmish Rhino
 Skirsdag Cultist
 Skirsdag High Priest
@@ -16434,7 +16435,7 @@ Storm of Saruman
 Storm of Souls
 Storm the Citadel
 Storm the Festival	intent: Pipeline(TopOfLibrary→battlefield|library)
-Storm the Seedcore	polarity: DistributeCountersAmongTargetsEffect; polarity: ForEachEffect
+Storm the Seedcore
 Storm the Vault
 Storm's Wrath
 Storm, Windrider
@@ -16873,7 +16874,7 @@ Symmetry Matrix
 Symmetry Sage
 Synapse Necromage
 Synapse Sliver
-Synchronized Charge	polarity: DistributeCountersAmongTargetsEffect; polarity: ForEachEffect
+Synchronized Charge
 Synchronized Eviction
 Synchronized Spellcraft
 Synchronous Sliver
@@ -16999,7 +17000,7 @@ Tamiyo, Compleated Sage
 Tamiyo, Field Researcher	polarity: ForEachEffect
 Tamiyo, Inquisitive Student	intent: ModifyStatsEffect
 Tamiyo, the Moon Sage	polarity: DrawCardsEffect
-Tanazir Quandrix	intent: DoubleCountersEffect; polarity: DoubleCountersEffect
+Tanazir Quandrix
 Tandem Lookout	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
 Tandem Tactics	timing: ForEach>ModifyStatsEffect
 Tandem Takedown
@@ -17374,7 +17375,7 @@ The Dragon-Kami Reborn
 The Dross Pits
 The Duras Sisters
 The Eagles Are Coming!	polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→hand)
-The Earth Crystal	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+The Earth Crystal
 The Earth King
 The Echoverse Fulcrum
 The Elder Dragon War
@@ -18294,7 +18295,7 @@ Twilight Panther
 Twilight Prophet
 Twilight's Call	intent: Pipeline(graveyard→battlefield)
 Twin Blades
-Twin Bolt	polarity: DividedDamageEffect
+Twin Bolt
 Twin-Silk Spider
 Twinblade Assassins
 Twinblade Blessing
@@ -18441,7 +18442,7 @@ Undercity Scrounger
 Undercity Sewers
 Undercity Shade
 Undercity Troll
-Undercity Upheaval	polarity: DistributeCountersAmongTargetsEffect; polarity: ForEachEffect
+Undercity Upheaval
 Undercity Uprising
 Undercity's Embrace
 Undercover Crocodelf
@@ -18595,7 +18596,7 @@ Urborg Volcano
 Urborg, Tomb of Yawgmoth
 Ureni of the Unwritten	intent: Pipeline(TopOfLibrary→battlefield|library)
 Ureni's Rebuff
-Ureni, the Song Unending	polarity: DividedDamageEffect
+Ureni, the Song Unending
 Urgent Exorcism
 Urgent Necropsy	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
 Urgoros, the Empty One
@@ -19919,7 +19920,7 @@ Wu Warship
 Wumpus Aberration	intent: ForEach>Pipeline(hand→battlefield); polarity: ForEachEffect
 Wurm's Tooth
 Wurmcoil Larva
-Wurmskin Forger	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
+Wurmskin Forger
 Wurmwall Sweeper
 Wydwen, the Biting Gale
 Wyleth, Soul of Steel
@@ -20102,7 +20103,7 @@ Zilortha, Strength Incarnate
 Zimone and Dina	polarity: DrainLifeEffect
 Zimone's Experiment
 Zimone, All-Questioning
-Zimone, Paradox Sculptor	intent: ForEach>DoubleCountersEffect; polarity: ForEachEffect
+Zimone, Paradox Sculptor	intent: ForEach>DoubleCountersEffect
 Zimone, Quandrix Prodigy	intent: Pipeline(hand→battlefield)
 Zinnia, Valley's Voice
 Zirda, the Dawnwaker	combat: CantBlockEffect

@@ -51,7 +51,7 @@ class AiReadingAuditSnapshotTest : FunSpec({
         // Unread — the effect types the audit names as the work to do.
         // A draw beside the trample outlasts the turn, so the keyword floor does not read the spell.
         "Charge Through" to listOf("timing: GrantKeywordEffect"),
-        "Abzan Charm" to listOf("polarity: DistributeCountersAmongTargetsEffect"),
+        "Abzan Charm" to emptyList(),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         // "Target creature can't attack or block this turn": the can't-block reads as evasion for our
         // attack, which reads the ability's intent; combat and end-of-turn timing are still unread.

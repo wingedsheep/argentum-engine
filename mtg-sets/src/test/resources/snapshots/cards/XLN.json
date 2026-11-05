@@ -6327,6 +6327,131 @@
     ]
 }
 
+// Huatli, Warrior Poet
+{
+    "name": "Huatli, Warrior Poet",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Legendary Planeswalker — Huatli",
+    "oracleText": "+2: You gain life equal to the greatest power among creatures you control.\n0: Create a 3/3 green Dinosaur creature token with trample.\n−X: Huatli deals X damage divided as you choose among any number of target creatures. Creatures dealt damage this way can't block this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Huatli, Warrior Poet:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You gain life equal to the greatest power among creatures you control."
+            },
+            {
+                "id": "Huatli, Warrior Poet:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Dinosaur"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 3/3 green Dinosaur creature token with trample."
+            },
+            {
+                "id": "Huatli, Warrior Poet:3",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DividedDamage",
+                            "totalDamage": 0,
+                            "dynamicTotal": "XValue",
+                            "storeDamagedAs": "stored0"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "stored0"
+                            },
+                            "body": {
+                                "type": "CantBlockTargetCreatures",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "unlimited": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0",
+                        "dynamicMaxCount": "XValue"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Huatli deals X damage divided as you choose among any number of target creatures. Creatures dealt damage this way can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0cc61ba-e91a-4b30-841c-cae8dd288b40.jpg?1783935711",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "The greatest power among creatures you control is determined as Huatli's first ability resolves. If that number is negative, you won't gain or lose any life."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You can activate Huatli's first ability even if you control no creatures. You simply won't gain any life."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You divide the damage among the target creatures as you activate Huatli's last ability. Each target must be assigned at least 1 damage. If X is 0, you can't choose any targets."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If some (but not all) of the targets become illegal, the original division of damage still applies, but no damage is dealt to illegal targets. If all targets become illegal, the ability won't resolve."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Imperial Aerosaur
 {
     "name": "Imperial Aerosaur",

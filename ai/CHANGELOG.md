@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Aims "N damage divided as you choose among …" (Arc Lightning, Electrolyze, Lukka's −4, Huatli, Warrior Poet's −X) at opponents' creatures and players instead of choosing its targets blind, and "distribute N +1/+1 counters among …" / "double the +1/+1 counters on …" (Armament Corps, Biogenic Upgrade, Kalonian Hydra) at its own creatures as a pump; no longer reads an X-sized division as damage that answers only toughness 0.
 - #4452 Reads "untap all creatures you control" (Jace, Ingenious Mind-Mage's +1, extra-combat untaps) as a combat enhancement for its own team, as it reads a granted vigilance, without flashing in a mass-untap body before combat.
 - #4451 Reads "return each creature card exiled with this to the battlefield under its owner's control" on cards that only exile their controller's own creatures (Endless Sands, Safe Haven) as recursion and their "exile target creature you control" as a protective stash rather than removal, and damage-redirection shields (Saving Grace, Gideon's Sacrifice, Glarecaster) as protection.
 - #4450 Reads a permanent that exiles itself and returns transformed (Conqueror's Galleon, the FIN eikons, Huatli, Poet of Unity) as needing no intent, so those cards are no longer drafted as "abilities not recognised"

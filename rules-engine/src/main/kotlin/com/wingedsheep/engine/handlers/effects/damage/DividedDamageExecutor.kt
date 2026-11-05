@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.DistributeDamageContinuation
+import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -59,7 +60,7 @@ class DividedDamageExecutor(
 
         // "Any number of targets" forms can resolve with zero targets — nothing happens. (A spell
         // whose every required target became illegal never gets here; it doesn't resolve.)
-        if (targets.isEmpty()) return EffectResult.success(state)
+        if (targets.isEmpty()) return storeDamaged(effect, context, EffectResult.success(state))
 
         val distribution = context.damageDistribution
         if (distribution != null) {
@@ -69,22 +70,37 @@ class DividedDamageExecutor(
             // the survivors keep exactly what they were assigned. This is why the assigned shares
             // can sum to less than [total] and must not be recomputed from the surviving count.
             val stillLegal = targets.toSet()
-            return DamageReplacementChain.deal(zones, state, distribution
+            return storeDamaged(effect, context, DamageReplacementChain.deal(zones, state, distribution
                 .filter { (targetId, amount) -> amount > 0 && targetId in stillLegal }
                 .map { (targetId, amount) -> DamageReplacementChain.Instance(context.sourceId, targetId, amount,
-                    sourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef)) }, effect, context)
+                    sourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef)) }, effect, context))
         }
 
         // No division was announced. A single target takes the whole total with nothing to divide;
         // otherwise fall back to asking for the division now (the path non-interactive controllers
         // and engine-direct actions take).
         if (targets.size == 1) {
-            return DamageReplacementChain.deal(zones, state,
+            return storeDamaged(effect, context, DamageReplacementChain.deal(zones, state,
                 listOf(DamageReplacementChain.Instance(context.sourceId, targets.first(), total,
-                    sourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))), effect, context)
+                    sourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))), effect, context))
         }
 
         return createDistributionDecision(state, effect, context, targets, total)
+    }
+
+    /**
+     * Store what this effect actually dealt damage to under [DividedDamageEffect.storeDamagedAs] —
+     * "creatures dealt damage this way": every recipient of a damage event from this source with
+     * an amount of at least 1, so a share wholly prevented leaves its target out. A paused result
+     * (a replacement choice) is returned as is: the replay runs this executor again.
+     */
+    private fun storeDamaged(effect: DividedDamageEffect, context: EffectContext, result: EffectResult): EffectResult {
+        val key = effect.storeDamagedAs ?: return result
+        if (result.outcome is Outcome.Paused) return result
+        val damaged = result.events.filterIsInstance<DamageDealtEvent>()
+            .filter { it.amount > 0 && it.sourceId == context.sourceId }
+            .map { it.targetId }.distinct()
+        return result.copy(updatedCollections = result.updatedCollections + (key to damaged))
     }
 
     /**
@@ -120,7 +136,9 @@ class DividedDamageExecutor(
             sourceId = context.sourceId,
             objectReferences = context.objectReferences,
             controllerId = context.controllerId,
-            targets = targets
+            targets = targets,
+            effect = effect,
+            context = context
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation, eventType = "DISTRIBUTE"))
