@@ -295,6 +295,8 @@ object AiReadingAudit {
         val script = face.script
         val faceName = face.name.takeIf { named }
         val intent = CardIntentAnalyzer.analyze(card)
+        // A pile only ever filled with our own permanents comes back to us (Endless Sands).
+        val ownPile = CardIntentAnalyzer.stashesOwnPermanents(listOf(card.script) + card.cardFaces.map { it.script })
         val out = mutableListOf<AbilityReading>()
 
         // ── The spell ───────────────────────────────────────────────────────
@@ -333,7 +335,7 @@ object AiReadingAudit {
                 }
             }
             if (spell != null) {
-                intent(spell, sink, script.targetRequirements)
+                intent(spell, sink, script.targetRequirements, ownPile)
                 if (face.instantSpeed) {
                     // HoldPolicy holds a COMBAT_TRICK spell whole, so every expiring leaf on it (the
                     // keyword beside the pump, too) waits for the same fight or response. Not a
@@ -381,7 +383,7 @@ object AiReadingAudit {
             abilityPolarity(ability.effect, ability.targetRequirements, lookup, sink) {
                 TargetPolarityAnalyzer.forAbility(card, ability, lookup)
             }
-            intent(ability.effect, sink, ability.targetRequirements)
+            intent(ability.effect, sink, ability.targetRequirements, ownPile)
             combat(ability, sink)
             if (ability.timing == TimingRule.InstantSpeed) {
                 timing(ability.effect, sink) { ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true) }
@@ -408,7 +410,7 @@ object AiReadingAudit {
             ) {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
-                intent(trigger.effect, sink, reqs, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger))
+                intent(trigger.effect, sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger))
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
@@ -417,7 +419,7 @@ object AiReadingAudit {
         // ── State triggers ──────────────────────────────────────────────────
         script.stateTriggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
-            intent(trigger.effect, sink, emptyList())
+            intent(trigger.effect, sink, emptyList(), ownPile)
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.STATE_TRIGGER, i + 1, faceName, describe { trigger.description }), sink.findings)
         }
@@ -502,7 +504,7 @@ object AiReadingAudit {
      * Intent per ability, not per leaf: a pipeline's plumbing ("shuffle", "select from the gathered
      * cards") earns no tag of its own and needs none when a sibling leaf reads the ability.
      */
-    private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>, turnAhead: Boolean = false) {
+    private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>, ownPile: Boolean = false, turnAhead: Boolean = false) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
         val noIntent = { leaf: Effect ->
@@ -516,7 +518,7 @@ object AiReadingAudit {
                 (leaf is MoveToZoneEffect &&
                     CardIntentAnalyzer.graveyardMoveOf(leaf, reqs) == CardIntentAnalyzer.GraveyardMove.OWN_EXILE)
         }
-        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead).tags
+        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
         if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {

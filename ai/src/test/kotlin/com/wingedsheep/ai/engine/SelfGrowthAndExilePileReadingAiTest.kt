@@ -23,7 +23,8 @@ import io.kotest.matchers.shouldBe
  *    graveyard return draws on, so it reads as recursion instead of "no intent". Only onto our
  *    battlefield and never under its owners' control: a hand is its owner's, so returning that pile
  *    to hand can give an opponent their card back (Ashiok's Erasure), as "under its owner's control"
- *    does (Lagrella, Safe Haven); and a pile the same resolution fills is a blink (Ghostly Flicker).
+ *    does (Lagrella) — unless the card only stashes its own permanents there (Safe Haven, see
+ *    OwnStashAndDamageRedirectReadingAiTest); and a pile the same resolution fills is a blink (Ghostly Flicker).
  */
 class SelfGrowthAndExilePileReadingAiTest : FunSpec({
 
@@ -44,7 +45,7 @@ class SelfGrowthAndExilePileReadingAiTest : FunSpec({
         withClue("the Tomb's put-onto-the-battlefield ability now reads fully") {
             AiReadingAudit.read(procession).abilities.filter { it.checked }.all { it.readFully } shouldBe true
         }
-        for (name in listOf("Ashiok's Erasure", "Lagrella, the Magpie", "Safe Haven", "Ghostly Flicker", "Another Round")) {
+        for (name in listOf("Ashiok's Erasure", "Lagrella, the Magpie", "Ghostly Flicker", "Another Round")) {
             withClue("$name hands the pile back to its owners or blinks what it just exiled: not a recursion") {
                 CardIntentAnalyzer.analyze(card(name)).tags shouldNotContain IntentTag.RECURSION
             }

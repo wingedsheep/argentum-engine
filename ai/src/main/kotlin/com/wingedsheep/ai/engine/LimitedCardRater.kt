@@ -617,6 +617,8 @@ object LimitedCardRater {
                 CardIntentAnalyzer.GraveyardMove.HATE -> TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
                 CardIntentAnalyzer.GraveyardMove.OWN_EXILE -> 0.0
                 null -> when {
+                // "Exile target creature you control" into a linked pile: a stash, worth a blink.
+                CardIntentAnalyzer.isOwnStash(effect, targets) -> 0.3
                 effect.byDestruction -> DESTROY_SCORE     // destroy
                 effect.destination == Zone.EXILE -> 1.6    // exile (better than destroy)
                 effect.destination == Zone.HAND -> 0.8     // bounce
