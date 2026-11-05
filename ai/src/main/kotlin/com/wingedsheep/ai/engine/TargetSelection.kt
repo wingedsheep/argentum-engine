@@ -310,7 +310,7 @@ object TargetSelection {
         val polarities = polarities(state, action, intents)
         if (polarities.isEmpty()) return false
         val infos = targetInfosFor(action) ?: autoSelectedPlayerSlot(action) ?: return false
-        val taken = takenSlots(state, action, intents)
+        val taken by lazy(LazyThreadSafetyMode.NONE) { takenSlots(state, action, intents) }
         return infos.zip(polarities).withIndex().any { (index, slot) ->
             val (info, polarity) = slot
             info.minTargets > 0 && info.validTargets.isNotEmpty() && when (polarity) {
@@ -550,9 +550,16 @@ object TargetSelection {
         if (!intents.isEnabled) return emptySet()
         val suspension = state.peekContinuation() as? Suspension ?: return emptySet()
         if (suspension.question.id != decision.id) return emptySet()
-        val answer = suspension.answer as? TriggeredAbilityContinuation ?: return emptySet()
-        if (answer.sequentialTargets != null) return emptySet()
-        return intents.effectTakenSlots(answer.effect, answer.targetRequirements)
+        return when (val answer = suspension.answer) {
+            is TriggeredAbilityContinuation ->
+                if (answer.sequentialTargets != null) emptySet()
+                else intents.effectTakenSlots(answer.effect, answer.targetRequirements)
+            is TriggerModalTargetSelectionContinuation ->
+                answer.chosenModeIndices.getOrNull(answer.currentOrdinal)?.let(answer.modes::getOrNull)
+                    ?.let { intents.effectTakenSlots(it.effect, it.targetRequirements) }.orEmpty()
+            // A copy's slots are re-aligned by [copySlots]; a copied reanimation keeps the owner-sided reading.
+            else -> emptySet()
+        }
     }
 
     /**

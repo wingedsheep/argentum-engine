@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.doubles.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -48,12 +48,12 @@ class TakenGraveyardTargetAiTest : ScenarioTestBase() {
             taken("Boneyard Parley") shouldBe setOf(0)
             taken("Rise from the Grave") shouldBe setOf(0)
             withClue("to its owner's hand, the card stays its owner's") { taken("March of the Drowned").shouldBeEmpty() }
-            withClue("out of our own graveyard there is no one else's card to take") { taken("Zombify").shouldBeEmpty() }
+            withClue("without \"under your control\" the card returns under its owner's") { taken("Zombify").shouldBeEmpty() }
         }
 
         test("Boneyard Parley's pile reanimation is priced as the recursion it is in the draft heuristic") {
             val terms = LimitedCardRater.explain(cardRegistry.getCard("Boneyard Parley")!!).heuristic
-            withClue("$terms") { terms.single { it.part == "Spell" }.value shouldBeGreaterThan 0.0 }
+            withClue("$terms") { terms.single { it.part == "Spell" }.value shouldBeGreaterThanOrEqual 0.55 }
         }
 
         test("Boneyard Parley names the opponent's best creature card, not only ours") {
