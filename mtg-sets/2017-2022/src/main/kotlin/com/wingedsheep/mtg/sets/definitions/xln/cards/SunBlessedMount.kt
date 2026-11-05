@@ -44,6 +44,7 @@ val SunBlessedMount = card("Sun-Blessed Mount") {
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "288"
+        inBooster = false
         artist = "Joe Slucher"
         flavorText = "When Huatli chooses a mount, its eyes glow with the flames of the sun."
         imageUri = "https://cards.scryfall.io/normal/front/6/f/6f06ac1f-0bae-4aaa-9ff4-28c806828c40.jpg?1783935682"

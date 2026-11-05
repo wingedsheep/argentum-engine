@@ -353,7 +353,7 @@ Alchemist's Gift
 Alchemist's Greeting
 Alchemist's Retrieval
 Alchemist's Talent
-Alchemist's Vial	combat: CantBlockEffect; timing: CantAttackEffect; timing: CantBlockEffect
+Alchemist's Vial
 Alchor's Tomb	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Alela, Artful Provocateur
 Alela, Cunning Conqueror	intent: GoadEffect; polarity: GoadEffect
@@ -1196,7 +1196,7 @@ Balin, Loremaster
 Ball Lightning
 Ballista Charger
 Ballista Squad
-Ballista Watcher	combat: CantBlockEffect; timing: CantBlockEffect
+Ballista Watcher
 Balloon Peddler
 Ballroom Brawlers	polarity: ModalEffect
 Ballyrush Banneret
@@ -1701,7 +1701,7 @@ Blind Phantasm
 Blind Seer	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Blind with Anger	polarity: mixed(GainControlEffect+GrantKeywordEffect+TapUntapEffect); timing: GrantKeywordEffect
 Blind-Spot Giant
-Blindblast	timing: CantBlockEffect
+Blindblast
 Blinding Beam
 Blinding Fog	timing: ForEach>GrantKeywordEffect
 Blinding Light
@@ -1734,7 +1734,7 @@ Blockade Runner
 Blockbuster
 Blood Age General
 Blood Artist
-Blood Aspirant	combat: CantBlockEffect; timing: CantBlockEffect
+Blood Aspirant
 Blood Bairn
 Blood Beckoning
 Blood Burglar
@@ -2067,7 +2067,7 @@ Bramble Armor
 Bramble Elemental
 Bramble Familiar	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Bramble Wurm
-Brambleback Brute	combat: CantBlockEffect
+Brambleback Brute
 Bramblecrush
 Bramblefort Fink	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Brambleguard Captain
@@ -2141,7 +2141,7 @@ Briar Hydra
 Briarbridge Tracker
 Briarhorn
 Briarpack Alpha
-Briber's Purse	combat: CantBlockEffect; timing: CantAttackEffect; timing: CantBlockEffect
+Briber's Purse
 Bride's Gown
 Bridgeworks Battle
 Bridled Bighorn
@@ -2715,7 +2715,7 @@ Chains of Custody
 Chains of Mephistopheles
 Chainsaw
 Chainweb Aracnir
-Chainwhip Cyclops	combat: CantBlockEffect; timing: CantBlockEffect
+Chainwhip Cyclops
 Chakram Retriever	intent: TapUntapEffect; polarity: ForEachEffect
 Chalice of Life
 Chalice of the Void
@@ -2973,7 +2973,7 @@ Claim the Precious
 Clammy Prowler
 Clamor Shaman
 Clamorous Ironclad
-Clan Guildmage	combat: CantBlockEffect; intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: CantBlockEffect
+Clan Guildmage	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Clandestine Meddler	intent: SuspectEffect; polarity: SuspectEffect
 Clarion Cathars
 Clarion Conqueror
@@ -4985,7 +4985,7 @@ Edgewalker
 Edgewall Inn
 Edgewall Innkeeper
 Edgewall Pack
-Edifice of Authority	combat: CantBlockEffect; intent: CantAttackEffect; polarity: CantAttackEffect; timing: CantAttackEffect
+Edifice of Authority	intent: CantAttackEffect; polarity: CantAttackEffect
 Eerie Gravestone
 Eerie Interference
 Eerie Interlude
@@ -5256,7 +5256,7 @@ End of the Hunt	intent: Pipeline(BattlefieldMatching→exile); polarity: Pipelin
 End the Festivities
 End-Blaze Epiphany
 End-Raze Forerunners
-Endbringer	combat: CantBlockEffect; timing: CantAttackEffect; timing: CantBlockEffect
+Endbringer
 Endemic Plague
 Endless Cockroaches
 Endless Detour
@@ -5946,7 +5946,7 @@ Fiery Inscription	intent: TheRingTemptsYouEffect
 Fiery Intervention
 Fiery Islet
 Fiery Temper
-Fifty Feet of Rope	combat: CantBlockEffect; intent: GrantKeywordEffect; intent: VentureIntoTheDungeonEffect; timing: CantBlockEffect
+Fifty Feet of Rope	intent: GrantKeywordEffect; intent: VentureIntoTheDungeonEffect
 Fight On!
 Fight Rigging	intent: Pipeline(TopOfLibrary→exile|library)
 Fight as One
@@ -7281,7 +7281,7 @@ Grand Ball Guest
 Grand Coliseum
 Grand Crescendo	timing: ForEach>GrantKeywordEffect
 Grand Entryway // Elegant Rotunda
-Grand Master of Flowers	combat: CantBlockEffect
+Grand Master of Flowers
 Grand Melee
 Grand Nagus Zek
 Grand Warlord Radha
@@ -7444,7 +7444,7 @@ Grisly Sigil
 Grisly Survivor
 Grist, Voracious Larva
 Gristle Glutton
-Grixis Battlemage	combat: CantBlockEffect; timing: CantBlockEffect
+Grixis Battlemage
 Grixis Charm
 Grizzled Angler	intent: ForEach>MarkMustAttackEffect
 Grizzled Leotau
@@ -7613,7 +7613,7 @@ Half-Elf Monk
 Halfdane	polarity: SetBaseStatsEffect
 Haliya, Ascendant Cadet
 Haliya, Guided by Light
-Hall Monitor	combat: CantBlockEffect; timing: CantBlockEffect
+Hall Monitor
 Hall of Echoes	timing: GrantStaticAbilityEffect
 Hall of Heliod's Generosity
 Hall of Oracles
@@ -8204,7 +8204,7 @@ Huatli's Spurring
 Huatli, Dinosaur Knight
 Huatli, Poet of Unity
 Huatli, Radiant Champion
-Huatli, Warrior Poet	combat: ForEach>CantBlockEffect
+Huatli, Warrior Poet
 Huatli, the Sun's Heart
 Hugs, Grisly Guardian
 Hulk, Gamma Goliath
@@ -9094,7 +9094,7 @@ Kaito Shizuki	intent: PhaseOutEffect
 Kaito's Pursuit
 Kaito, Bane of Nightmares
 Kaito, Cunning Infiltrator
-Kaito, Dancing Shadow	combat: CantBlockEffect; intent: AllowLoyaltyActivationsThisTurnEffect
+Kaito, Dancing Shadow	intent: AllowLoyaltyActivationsThisTurnEffect
 Kalain, Reclusive Painter
 Kalakscion, Hunger Tyrant
 Kalastria Healer
@@ -9636,7 +9636,7 @@ Lake-town Mariners	intent: Pipeline(ChosenTargets|FromLinkedExile→battlefield|
 Lake-town Toymaker
 Lakeshore Apothecary
 Lakeside Shack
-Lambholt Harrier	combat: CantBlockEffect; timing: CantBlockEffect
+Lambholt Harrier
 Lambholt Raconteur
 Lammastide Weave
 Lampad of Death's Vigil
@@ -10683,7 +10683,7 @@ Merchant of the Vale
 Merciless Enforcers
 Merciless Eternal
 Merciless Executioner
-Merciless Javelineer	combat: CantBlockEffect; timing: CantBlockEffect
+Merciless Javelineer
 Merciless Repurposing
 Merciless Resolve
 Mercurial Kite
@@ -14131,7 +14131,7 @@ Rowan Treefolk
 Rowan's Battleguard
 Rowan's Grim Search
 Rowan's Stalwarts
-Rowan, Fearless Sparkmage	combat: ForEach>CantBlockEffect
+Rowan, Fearless Sparkmage
 Rowan, Scholar of Sparks	combat: SetBaseStatsEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
 Rowan, Scion of War	intent: ModifySpellCostsEffect
 Rowdy Crew
@@ -14418,7 +14418,7 @@ Sandstone Bridge
 Sandstone Warrior
 Sandstorm
 Sandstorm Salvager
-Sandstorm Verge	combat: CantBlockEffect
+Sandstorm Verge
 Sandworm
 Sangrite Surge
 Sanguinary Mage
@@ -14666,7 +14666,7 @@ Screaming Swarm
 Screamreach Brawler
 Screeching Buzzard
 Screeching Drake
-Screeching Griffin	combat: CantBlockEffect; timing: CantBlockEffect
+Screeching Griffin	combat: CantBlockEffect
 Screeching Harpy
 Screeching Scorchbeast
 Screeching Skaab
@@ -15279,7 +15279,7 @@ Siege Wurm
 Siege Zombie
 Siege-Gang Commander
 Siege-Gang Lieutenant
-Siegebreaker Giant	combat: CantBlockEffect; timing: CantBlockEffect
+Siegebreaker Giant
 Siegecraft
 Siegehorn Ceratops
 Sierra, Nuka's Biggest Fan
@@ -15878,7 +15878,7 @@ Southern Air Temple
 Southern Elephant
 Sovereign Okinec Ahau
 Sovereign's Bite
-Sower of Chaos	combat: CantBlockEffect; timing: CantBlockEffect
+Sower of Chaos
 Sower of Temptation
 Sowing Mycospawn
 Sozin's Comet	intent: ForEach>GrantTriggeredAbilityEffect
@@ -17792,7 +17792,7 @@ Thunderous Velocipede
 Thunderous Wrath
 Thunderscape Apprentice
 Thunderscape Master
-Thundersong Trumpeter	combat: CantBlockEffect; timing: CantAttackEffect; timing: CantBlockEffect
+Thundersong Trumpeter
 Thundersteel Colossus
 Thundertrap Trainer
 Thwart the Enemy
@@ -20122,7 +20122,7 @@ Zimone, All-Questioning
 Zimone, Paradox Sculptor	intent: ForEach>DoubleCountersEffect
 Zimone, Quandrix Prodigy	intent: Pipeline(hand→battlefield)
 Zinnia, Valley's Voice
-Zirda, the Dawnwaker	combat: CantBlockEffect
+Zirda, the Dawnwaker
 Zo-Zu the Punisher
 Zodiac Dog
 Zodiac Dragon

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AmassEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -46,7 +47,16 @@ internal enum class CombatReach {
      * Puts a new body on the battlefield — a token, an animated land or permanent. Only worth
      * anything to a defending player before blockers are declared.
      */
-    BLOCKER;
+    BLOCKER,
+
+    /**
+     * Keeps a creature out of a block — "target creature can't block this turn", "creatures dealt
+     * damage this way can't block". Only worth anything to an attacking player before blockers are
+     * declared: the opponent clearing one of our blockers on their own turn, which
+     * [com.wingedsheep.ai.engine.CrackBackStress] plays out against the swing back. A can't-block
+     * on the ability's own source is a drawback, not a reach.
+     */
+    BLOCK_DENIAL;
 
     companion object {
         /** [IntentTag]s whose effect reshapes a fight: the analyzer's removal, pump, protection, combat-enhancement and Equipment-moving reads. */
@@ -91,6 +101,9 @@ internal enum class CombatReach {
                 // Damage aimed only at a player is a clock, not a combat answer.
                 is DealDamageEffect -> if (leaf.target !is EffectTarget.PlayerRef) reach += FIGHT
                 is AnimateLandEffect, is BecomeCreatureEffect, is MassAnimateEffect -> reach += BLOCKER
+                // "Can't block this creature" restricts one pairing, which the crack-back's blocker
+                // count does not see; only a creature kept out of every block is a denial.
+                is CantBlockEffect -> if (leaf.target != EffectTarget.Self && leaf.attacker == null) reach += BLOCK_DENIAL
                 else -> Unit
             }
         }

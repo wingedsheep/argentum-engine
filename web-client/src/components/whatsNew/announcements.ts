@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-xln',
+    date: '2026-11-05',
+    kind: 'set',
+    setCode: 'XLN',
+    title: 'Ixalan is complete',
+    body: 'Sail for the hidden golden city as Pirates, Dinosaurs, Merfolk and Vampires race to claim it. Explore grows your creatures while it digs for lands, raid pays off attacking every turn, enrage Dinosaurs punish every block, and Treasure fuels the Pirates\' biggest plays across ten two-colour decks.',
+    tryIf: 'tribal decks and attacking every turn',
+  },
+  {
     id: 'set-rix',
     date: '2026-11-04',
     kind: 'set',

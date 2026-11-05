@@ -7,7 +7,10 @@ import com.wingedsheep.engine.core.doesntUntapDuringUntapStep
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -23,7 +26,8 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * This reads that: the opponent's board as it will stand on their turn (their permanents untapped,
  * except those that don't untap), and each non-mana activated ability it can then afford that can
- * touch a fight ([CombatReach.FIGHT]: removal, a pump, damage to a creature) — the engine's own
+ * touch a fight ([CombatReach.FIGHT]: removal, a pump, damage to a creature) or keep one of our
+ * blockers out of it ([CombatReach.BLOCK_DENIAL]: "target creature can't block") — the engine's own
  * legal actions, so mana, sacrifice and tap costs are the rules' answer. Each is played out once,
  * on the creatures it can hit, and the crack-back is re-estimated on what it leaves. The caller
  * takes the worst.
@@ -90,16 +94,30 @@ internal class CrackBackStress(
         return worst
     }
 
-    /** [state] as [opponent]'s turn finds it: their permanents untapped, and priority theirs. */
+    /**
+     * [state] as [opponent]'s precombat main phase finds it: their permanents untapped, their
+     * per-turn activation counts reset, the turn and priority theirs. A main phase of their own
+     * is where they would spend a sorcery-speed answer — an equip, "activate only as a sorcery",
+     * a planeswalker's loyalty ability — before attacking, so those are offered too.
+     */
     private fun onTheirTurn(state: GameState, opponent: EntityId): GameState {
         val projected = state.projectedState
         var out = state
         for (id in projected.getBattlefieldControlledBy(opponent)) {
+            if (out.getEntity(id)?.has<AbilityActivatedThisTurnComponent>() == true) {
+                out = out.updateEntity(id) { it.without<AbilityActivatedThisTurnComponent>() }
+            }
             if (out.getEntity(id)?.has<TappedComponent>() != true) continue
             if (projected.doesntUntapDuringUntapStep(id)) continue
             out = out.updateEntity(id) { it.without<TappedComponent>() }
         }
-        return out.copy(priorityPlayerId = opponent)
+        if (out.stack.isNotEmpty()) return out.copy(priorityPlayerId = opponent)
+        return out.copy(
+            activePlayerId = opponent,
+            priorityPlayerId = opponent,
+            phase = Phase.PRECOMBAT_MAIN,
+            step = Step.PRECOMBAT_MAIN,
+        )
     }
 
     /** Concrete activations [opponent] could use at [state], aimed at the creatures they matter to. */
@@ -144,11 +162,15 @@ internal class CrackBackStress(
         return out.toList()
     }
 
-    /** An affordable non-mana activation whose effect can change a fight. */
+    /**
+     * An affordable non-mana activation whose effect can change a fight — or keep one of our
+     * creatures out of the block that would hold their attack off ([CombatReach.BLOCK_DENIAL]).
+     */
     private fun usable(state: GameState, offer: LegalAction): Boolean {
         if (!offer.affordable || offer.isManaAbility || offer.hasUnfillableTargetRequirement) return false
         val activation = offer.action as? ActivateAbility ?: return false
-        return CombatReach.FIGHT in CombatResponses.reachOf(state, activation, cardRegistry).orEmpty()
+        val reach = CombatResponses.reachOf(state, activation, cardRegistry).orEmpty()
+        return CombatReach.FIGHT in reach || CombatReach.BLOCK_DENIAL in reach
     }
 
     companion object {

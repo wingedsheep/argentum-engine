@@ -490,18 +490,7 @@ internal object ExpiringGrantWindow {
         activation: ActivateAbility,
         intents: IntentCatalog,
     ): Boolean {
-        val restrictions = mutableListOf<Pair<Boolean, EffectTarget>>() // (isCantAttack, target)
-        var sideBenefit = false
-        for (leaf in EffectWalker.leaves(ability.effect)) {
-            when {
-                leaf is CantAttackEffect && leaf.duration == Duration.EndOfTurn -> restrictions += true to leaf.target
-                leaf is CantBlockEffect && leaf.duration == Duration.EndOfTurn -> restrictions += false to leaf.target
-                leaf is AddCountersEffect && leaf.target == EffectTarget.Self -> sideBenefit = true
-                leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
-                else -> return false
-            }
-        }
-        if (restrictions.isEmpty()) return false
+        val (restrictions, sideBenefit) = restrictionShape(ability.effect) ?: return false
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
 
         val projected = state.projectedState
@@ -527,6 +516,32 @@ internal object ExpiringGrantWindow {
         // The side benefit is bought again in the restriction's own window, unless activating now
         // keeps the source tapped through it.
         return tapsItsSource(ability) && ourTurn && restrictions.all { (cantAttack, _) -> cantAttack }
+    }
+
+    /**
+     * Whether [effect] is the shape [restrictionHasNoWindow] judges: until-end-of-turn can't-attack
+     * and can't-block restrictions, with at most a counter on or a tap of the source beside them.
+     * The AI reading audit asks it to know which activations have a window reading.
+     */
+    fun readsRestriction(effect: Effect): Boolean = restrictionShape(effect) != null
+
+    /**
+     * The (isCantAttack, target) restrictions of [effect], and whether it also puts a counter on
+     * its source; null when anything else rides along, or when there is no restriction.
+     */
+    private fun restrictionShape(effect: Effect): Pair<List<Pair<Boolean, EffectTarget>>, Boolean>? {
+        val restrictions = mutableListOf<Pair<Boolean, EffectTarget>>()
+        var sideBenefit = false
+        for (leaf in EffectWalker.leaves(effect)) {
+            when {
+                leaf is CantAttackEffect && leaf.duration == Duration.EndOfTurn -> restrictions += true to leaf.target
+                leaf is CantBlockEffect && leaf.duration == Duration.EndOfTurn -> restrictions += false to leaf.target
+                leaf is AddCountersEffect && leaf.target == EffectTarget.Self -> sideBenefit = true
+                leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
+                else -> return null
+            }
+        }
+        return if (restrictions.isEmpty()) null else restrictions to sideBenefit
     }
 
     /** Whether a can't-block on an opposing [creature] still keeps it out of a block this turn. */

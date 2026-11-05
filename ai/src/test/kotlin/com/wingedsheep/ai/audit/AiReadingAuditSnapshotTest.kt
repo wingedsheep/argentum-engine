@@ -55,10 +55,9 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Charge Through" to listOf("timing: GrantKeywordEffect"),
         "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         // "Target creature can't attack or block this turn": the can't-block reads as evasion for our
-        // attack, which reads the ability's intent; combat and end-of-turn timing are still unread.
-        "Alchemist's Vial" to listOf(
-            "combat: CantBlockEffect", "timing: CantAttackEffect", "timing: CantBlockEffect",
-        ),
+        // attack (intent), as a blocker taken out of the crack-back (combat), and the restriction
+        // window judges when it is worth spending (timing).
+        "Alchemist's Vial" to emptyList(),
         // "Target player reveals their hand and discards all nonland cards": read as discard, aimed at
         // the other side's hand.
         "Amnesia" to emptyList(),

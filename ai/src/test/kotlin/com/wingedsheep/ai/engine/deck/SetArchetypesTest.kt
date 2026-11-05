@@ -26,6 +26,39 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Ixalan exposes its ten colour-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("xln"))
+
+        synergies.setName shouldBe "Ixalan"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers Tempo",
+            "Pirate Treasure",
+            "Pirate Raiders",
+            "Dinosaur Stompy",
+            "Dinosaur Toughness",
+            "Vampire Lifegain",
+            "Pirate Spells",
+            "Explore Value",
+            "Sky Aggro",
+            "Merfolk Explore",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLUE),
+            setOf(Color.BLUE, Color.BLACK),
+            setOf(Color.BLACK, Color.RED),
+            setOf(Color.RED, Color.GREEN),
+            setOf(Color.GREEN, Color.WHITE),
+            setOf(Color.WHITE, Color.BLACK),
+            setOf(Color.BLUE, Color.RED),
+            setOf(Color.BLACK, Color.GREEN),
+            setOf(Color.RED, Color.WHITE),
+            setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.creatureTypes.single() } shouldContainExactly listOf(
+            "Pirate", "Pirate", "Dinosaur", "Dinosaur", "Vampire", "Pirate", "Merfolk",
+        )
+    }
+
     "Rivals of Ixalan exposes its ten signpost colour pairs" {
         val synergies = requireNotNull(SetArchetypes.getForSet("rix"))
 

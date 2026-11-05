@@ -16,4 +16,5 @@ val StoneQuarryReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/0/6/06da82de-fd37-4c8f-a37d-61da66db567e.jpg",
     releaseDate = "2017-09-29",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

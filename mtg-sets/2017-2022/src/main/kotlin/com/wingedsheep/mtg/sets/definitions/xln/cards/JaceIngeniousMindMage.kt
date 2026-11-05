@@ -52,6 +52,7 @@ val JaceIngeniousMindMage = card("Jace, Ingenious Mind-Mage") {
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "280"
+        inBooster = false
         artist = "Clint Cearley"
         imageUri = "https://cards.scryfall.io/normal/front/e/3/e3b274f6-833f-430f-ac1a-d1d1d5b03e71.jpg?1783935685"
         ruling(

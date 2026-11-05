@@ -40,6 +40,7 @@ val CastawaysDespair = card("Castaway's Despair") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "281"
+        inBooster = false
         artist = "Chris Rahn"
         imageUri = "https://cards.scryfall.io/normal/front/b/3/b3a26ba9-84b8-4f54-918c-f75d4cacad0b.jpg?1783935685"
     }
