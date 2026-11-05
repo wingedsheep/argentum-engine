@@ -2371,7 +2371,7 @@
             {
                 "type": "PreventActivatedAbilities",
                 "filter": "artifact|creature",
-                "nonManaAbilitiesOnly": true
+                "abilities": "NON_MANA"
             }
         ]
     },

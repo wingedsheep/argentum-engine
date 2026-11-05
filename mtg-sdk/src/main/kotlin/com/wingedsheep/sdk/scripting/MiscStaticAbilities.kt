@@ -1152,9 +1152,9 @@ data object PreventCycling : StaticAbility {
  * granted by static effects (e.g., basic-land mana abilities granted to creature-lands
  * while they are creatures).
  *
- * When [nonManaAbilitiesOnly] is true, mana abilities are still allowed and only non-mana
- * activated abilities are blocked — the "… can't be activated unless they're mana abilities"
- * wording (Sharkey, Tyrant of the Shire on opponents' lands). Combine with
+ * [abilities] picks which kinds of activated ability are blocked ([ActivatedAbilityScope]);
+ * `NON_MANA` keeps mana abilities usable — the "… can't be activated unless they're mana
+ * abilities" wording (Sharkey, Tyrant of the Shire on opponents' lands). Combine with
  * [filter].opponentControls() to scope the lock to opponents' permanents.
  *
  * Loyalty abilities of planeswalkers and ability costs that only animate a noncreature
@@ -1164,8 +1164,8 @@ data object PreventCycling : StaticAbility {
  * type-changing effects flow through correctly.
  *
  * @property filter Which permanents' activated abilities are locked (matched via projected state).
- * @property nonManaAbilitiesOnly When true, mana abilities are exempt; only non-mana abilities
- *   are blocked. Defaults to false (block everything, the Cursed Totem shape).
+ * @property abilities Which kinds of activated ability are blocked. Defaults to
+ *   [ActivatedAbilityScope.ALL] (block everything, the Cursed Totem shape).
  * @property anyZone When true, the lock also reaches abilities of cards outside the battlefield —
  *   cycling and typecycling, channel and other hand abilities, graveyard and command-zone
  *   abilities — matched against the card in its zone. This is the "sources with the chosen name"
@@ -1177,13 +1177,15 @@ data object PreventCycling : StaticAbility {
 @Serializable
 data class PreventActivatedAbilities(
     val filter: GameObjectFilter,
-    val nonManaAbilitiesOnly: Boolean = false,
+    val abilities: ActivatedAbilityScope = ActivatedAbilityScope.ALL,
     val anyZone: Boolean = false
 ) : StaticAbility {
-    override val description: String =
-        if (nonManaAbilitiesOnly)
+    override val description: String = when (abilities) {
+        ActivatedAbilityScope.ALL -> "Activated abilities of ${filter.description} can't be activated"
+        ActivatedAbilityScope.NON_MANA ->
             "Activated abilities of ${filter.description} can't be activated unless they're mana abilities"
-        else "Activated abilities of ${filter.description} can't be activated"
+        else -> "${abilities.phrase.replaceFirstChar { it.uppercase() }} of ${filter.description} can't be activated"
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

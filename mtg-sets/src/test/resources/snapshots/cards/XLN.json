@@ -9282,7 +9282,7 @@
                         "NameEqualsChosenComponent"
                     ]
                 },
-                "nonManaAbilitiesOnly": true,
+                "abilities": "NON_MANA",
                 "anyZone": true
             }
         ],

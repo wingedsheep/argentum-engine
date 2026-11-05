@@ -27,7 +27,7 @@ import io.kotest.matchers.shouldNotBe
  * lookAtOpponentHand = true): the ANY pool offers every registered card name (not just lands), and
  * the look reveals the opponent's hand to the controller before the choice. The pick is stored
  * durably under ChoiceSlot.CARD_NAME and read by the name-keyed static
- * PreventActivatedAbilities(nonManaAbilitiesOnly = true) via .namedFromChosenComponent().
+ * PreventActivatedAbilities(abilities = NON_MANA) via .namedFromChosenComponent().
  */
 class SorcerousSpyglassScenarioTest : ScenarioTestBase() {
 

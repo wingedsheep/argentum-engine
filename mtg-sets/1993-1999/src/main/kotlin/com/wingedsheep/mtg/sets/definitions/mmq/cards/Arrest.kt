@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * permanent, plus the Cursed Totem-style activation lock narrowed to just this Aura's host via
  * [PreventActivatedAbilities] with `attachedToBySource()`. The lock covers mana abilities too —
  * Arrest has no "unless they're mana abilities" clause (CR 605.1a abilities are still activated
- * abilities), so `nonManaAbilitiesOnly` stays false.
+ * abilities), so `abilities` stays `ALL`.
  */
 val Arrest = card("Arrest") {
     manaCost = "{2}{W}"

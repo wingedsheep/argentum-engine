@@ -1522,7 +1522,7 @@ object CardIntentAnalyzer {
         // Splendor) leave the creatures on the battlefield, no longer threats worth the name.
         is LoseAllAbilities -> neutralizeTags(static.filter)
         is SetBasePowerToughnessStatic ->
-            if ((static.power ?: 0) <= 1 && (static.toughness ?: 0) <= 1) neutralizeTags(static.filter) else emptySet()
+            if (static.shrinksToAtMostOneOne()) neutralizeTags(static.filter) else emptySet()
         // A composite static is each of its parts (a conditional one is read above, by the
         // ability it gates).
         is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
@@ -1557,12 +1557,6 @@ object CardIntentAnalyzer {
      */
     private fun neutralizeTags(filter: GroupFilter): Set<IntentTag> =
         if (filter.scope == Scope.AttachedTo || filter.reachesEnchantedPlayer()) setOf(IntentTag.NEUTRALIZE) else emptySet()
-
-    /** "… enchanted player controls": an "Enchant player" Aura reaching that player's permanents. */
-    private fun GroupFilter.reachesEnchantedPlayer(): Boolean =
-        baseFilter.anyOf.isEmpty() && baseFilter.controllerPredicate ==
-            ControllerPredicate.ControlledByReferencedPlayer(EffectTarget.PlayerRef(Player.EnchantedPlayer))
-
     /**
      * Total P+T a battlefield-wide anthem hands to each creature it covers. Zero for an
      * Aura/Equipment bonus, which lands on one creature and is therefore already visible in that

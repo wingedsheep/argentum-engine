@@ -2007,7 +2007,7 @@ Families:
 - `PlayersPlayWithHandsRevealed` — **Every** player plays with their hand revealed (to all players).
 - `PlayersRevealTopOfLibrary` — **Every** player plays with the top card of their library revealed (to all players), without granting anyone permission to play it from there.
 - `PlotFromTopOfLibrary(filter: GameObjectFilter)` — You may **plot** (CR 718) the top card of your library if it matches filter, paying a plot cost equal to its mana cost.
-- `PreventActivatedAbilities(filter: GameObjectFilter, nonManaAbilitiesOnly: Boolean, anyZone: Boolean)` — Activated abilities of permanents matching filter can't be activated.
+- `PreventActivatedAbilities(filter: GameObjectFilter, abilities: ActivatedAbilityScope, anyZone: Boolean)` — Activated abilities of permanents matching filter can't be activated.
 - `PreventCycling` — Prevents all players from cycling cards.
 - `PreventEnchantment(auras: GameObjectFilter, exceptSource: Boolean, filter: GroupFilter)` — Prevents matching Auras from enchanting the affected permanents.
 - `PreventManaPoolEmptying` — Prevents mana pools from emptying as steps and phases end.

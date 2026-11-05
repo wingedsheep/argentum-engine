@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 
 /**
@@ -27,7 +28,7 @@ import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
  *       any card. Masking is automatic: the hand shows only to the controller.
  *   The pick is stored durably on the permanent's `CastChoicesComponent` under `ChoiceSlot.CARD_NAME`.
  * - "Activated abilities of sources with the chosen name can't be activated unless they're mana
- *   abilities" → [PreventActivatedAbilities]`(filter, nonManaAbilitiesOnly = true, anyZone = true)`.
+ *   abilities" → [PreventActivatedAbilities]`(filter, abilities = NON_MANA, anyZone = true)`.
  *   "Sources" is any object, so the filter is the bare chosen-name predicate ([GameObjectFilter.namedFromChosenComponent],
  *   → `CardPredicate.NameEqualsChosenComponent`), which keys off this permanent's durable choice and
  *   is static-projection / activation-legality safe. Mana abilities of the named source still work;
@@ -56,7 +57,7 @@ val SorcerousSpyglass = card("Sorcerous Spyglass") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Any.namedFromChosenComponent(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
             anyZone = true,
         )
     }

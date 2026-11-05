@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * activated unless they're mana abilities.
  *
  * Arrest's shape over any permanent, plus [AbilityFlag.CANT_CREW] on the host and the
- * "unless they're mana abilities" carve-out (`nonManaAbilitiesOnly = true`). Enchanting a Vehicle
+ * "unless they're mana abilities" carve-out (`abilities = NON_MANA`). Enchanting a Vehicle
  * shuts off its crew ability too — crew is an activated ability of the Vehicle (CR 702.122a).
  */
 val IntercessorsArrest = card("Intercessor's Arrest") {
@@ -50,7 +51,7 @@ val IntercessorsArrest = card("Intercessor's Arrest") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Permanent.attachedToBySource(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
         )
     }
 

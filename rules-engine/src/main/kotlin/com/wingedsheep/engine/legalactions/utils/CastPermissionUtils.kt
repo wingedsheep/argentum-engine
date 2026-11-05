@@ -1325,7 +1325,8 @@ class CastPermissionUtils(
     fun isActivationPrevented(
         state: GameState,
         sourceId: EntityId,
-        abilityIsManaAbility: Boolean = false
+        abilityIsManaAbility: Boolean = false,
+        abilityIsLoyaltyAbility: Boolean = false
     ): Boolean {
         val projected = state.projectedState
         val sourceOnBattlefield = sourceId in state.getBattlefield()
@@ -1335,7 +1336,7 @@ class CastPermissionUtils(
             for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 val prevent = ability as? PreventActivatedAbilities ?: continue
                 // "… can't be activated unless they're mana abilities" — exempt mana abilities.
-                if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+                if (!prevent.abilities.covers(abilityIsManaAbility, abilityIsLoyaltyAbility)) continue
                 if (!sourceOnBattlefield && !prevent.anyZone) continue
                 if (context == null) {
                     // Evaluate from the granting permanent's controller's perspective.
@@ -1353,7 +1354,7 @@ class CastPermissionUtils(
         // anchored to the holder entity instead of a card definition.
         for (grant in state.grantedStaticAbilities) {
             val prevent = grant.ability as? PreventActivatedAbilities ?: continue
-            if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+            if (!prevent.abilities.covers(abilityIsManaAbility, abilityIsLoyaltyAbility)) continue
             if (!sourceOnBattlefield && !prevent.anyZone) continue
             if (!state.getBattlefield().contains(grant.entityId)) continue
             // Per-frame gate for conditional durations — the mirror of StateProjector's gate

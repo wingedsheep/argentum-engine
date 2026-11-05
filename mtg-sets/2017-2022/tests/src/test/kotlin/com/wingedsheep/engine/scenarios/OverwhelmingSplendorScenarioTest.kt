@@ -3,8 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.hou.cards.OverwhelmingSplendor
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -111,6 +113,16 @@ class OverwhelmingSplendorScenarioTest : ScenarioTestBase() {
             projected.hasKeyword(mine, Keyword.FLYING) shouldBe true
         }
 
+        test("+1/+1 counters still apply on top of the base 1/1") {
+            val game = cursedOpponent(activePlayer = 1)
+            val theirs = game.owned("Splendor Test Flyer", 2)
+            game.state = game.state.updateEntity(theirs) {
+                it.with(CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 2)))
+            }
+            game.state.projectedState.getPower(theirs) shouldBe 3
+            game.state.projectedState.getToughness(theirs) shouldBe 3
+        }
+
         test("enchanted player keeps mana and loyalty abilities but no others, in any zone") {
             val game = cursedOpponent(activePlayer = 2)
             val (relicMana, relicLife) = abilities("Splendor Test Relic").partition { it.isManaAbility }
@@ -135,6 +147,7 @@ class OverwhelmingSplendorScenarioTest : ScenarioTestBase() {
             }
             withClue("cycling from hand is forbidden (the wording reaches every zone)") {
                 val cycler = game.findCardsInHand(2, "Splendor Test Cycler").single()
+                game.getLegalActions(2).any { (it.action as? CycleCard)?.cardId == cycler } shouldBe false
                 game.execute(CycleCard(game.player2Id, cycler)).error shouldNotBe null
             }
             withClue("the planeswalker's loyalty ability is still offered and activates") {

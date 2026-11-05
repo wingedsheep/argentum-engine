@@ -1720,7 +1720,8 @@ data class PlayersCantActivateAbilities(
 }
 
 /**
- * Which kinds of activated ability a [PlayersCantActivateAbilities] prohibition covers, by the two
+ * Which kinds of activated ability an activation prohibition covers ([PlayersCantActivateAbilities],
+ * [PreventActivatedAbilities]), by the two
  * ability kinds printed exemptions name: mana abilities (CR 605) and loyalty abilities (CR 606).
  * Each value is a printed wording, carried in [phrase].
  */

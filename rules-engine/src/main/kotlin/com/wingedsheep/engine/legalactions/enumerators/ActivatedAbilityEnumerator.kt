@@ -80,21 +80,19 @@ class ActivatedAbilityEnumerator(
             val isFaceDown = container.has<FaceDownComponent>()
 
             // Activated abilities of permanents matching a PreventActivatedAbilities filter
-            // (Cursed Totem etc.) can't be activated — applies to both mana and non-mana
-            // abilities, including those granted by static effects.
-            if (context.castPermissionUtils.isActivationPrevented(state, entityId)) continue
-
-            // PlayersCantActivateAbilities (Grand Abolisher etc.) blocks abilities scoped by who
-            // is activating and when — e.g. "During your turn, your opponents can't activate
-            // abilities of artifacts, creatures, or enchantments." Its scope can split a
-            // planeswalker's abilities by kind (The Immortal Sun forbids only loyalty abilities,
-            // Overwhelming Splendor all but them), so it is asked once per kind, below.
+            // (Cursed Totem etc.) can't be activated, including those granted by static effects;
+            // PlayersCantActivateAbilities (Grand Abolisher etc.) additionally scopes by who is
+            // activating and when. Either one's ability scope can split a planeswalker's
+            // abilities by kind (The Immortal Sun forbids only loyalty abilities, Overwhelming
+            // Splendor all but them), so both are asked once per kind, below.
             val nonLoyaltyPrevented =
-                context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId)
+                context.castPermissionUtils.isActivationPrevented(state, entityId) ||
+                    context.castPermissionUtils.isActivationPreventedForPlayer(state, entityId, playerId)
             val loyaltyPrevented by lazy {
-                context.castPermissionUtils.isActivationPreventedForPlayer(
-                    state, entityId, playerId, abilityIsLoyaltyAbility = true
-                )
+                context.castPermissionUtils.isActivationPrevented(state, entityId, abilityIsLoyaltyAbility = true) ||
+                    context.castPermissionUtils.isActivationPreventedForPlayer(
+                        state, entityId, playerId, abilityIsLoyaltyAbility = true
+                    )
             }
 
             // Resolve by definition id, never by name. A copy effect may rename the copy

@@ -29,7 +29,6 @@ import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
@@ -1474,17 +1473,10 @@ object TargetPolarityAnalyzer {
         is PlayersCantActivateAbilities -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
         is PlayersCantCastSpells -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
         is LoseAllAbilities -> if (static.filter.reachesEnchantedPlayer()) TargetPolarity.HARMFUL else null
-        is SetBasePowerToughnessStatic -> if (static.filter.reachesEnchantedPlayer() &&
-            (static.power ?: 0) <= 1 && (static.toughness ?: 0) <= 1
-        ) TargetPolarity.HARMFUL else null
+        is SetBasePowerToughnessStatic ->
+            if (static.filter.reachesEnchantedPlayer() && static.shrinksToAtMostOneOne()) TargetPolarity.HARMFUL else null
         else -> null
     }
-
-    private val ENCHANTED_PLAYER_CONTROLS =
-        ControllerPredicate.ControlledByReferencedPlayer(EffectTarget.PlayerRef(Player.EnchantedPlayer))
-
-    private fun GroupFilter.reachesEnchantedPlayer(): Boolean =
-        baseFilter.anyOf.isEmpty() && baseFilter.controllerPredicate == ENCHANTED_PLAYER_CONTROLS
 
     private fun hostStaticPolarity(static: StaticAbility): TargetPolarity? = when (static) {
         is ModifyStats -> if (static.filter.scope != Scope.AttachedTo) null

@@ -3273,7 +3273,7 @@
                         "IsAttachedToBySource"
                     ]
                 },
-                "nonManaAbilitiesOnly": true
+                "abilities": "NON_MANA"
             }
         ],
         "auraTarget": {
