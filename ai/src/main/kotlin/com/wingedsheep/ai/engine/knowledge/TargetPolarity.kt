@@ -107,6 +107,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
@@ -642,6 +643,14 @@ object TargetPolarityAnalyzer {
                         slotOf(target, requirements) == slot && polarity == TargetPolarity.HARMFUL
                     } }.let { harmful -> harmful.isNotEmpty() && harmful.all { it is DealDamageEffect } } ->
                     TargetPolarity.FLEXIBLE
+                // "Loses all abilities. Put a flying, first strike and lifelink counter on it"
+                // (Abigale): a vanilla creature only gains, a bomb mostly loses — the trade is the
+                // creature's own abilities, which only the board shows, so both sides stay open.
+                readings.toSet() == setOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL) &&
+                    leaves.filter { leaf -> classify(leaf, definitions, source).any { (target, polarity) ->
+                        slotOf(target, requirements) == slot && polarity == TargetPolarity.HARMFUL
+                    } }.let { harmful -> harmful.isNotEmpty() && harmful.all { it is RemoveAllAbilitiesEffect } } ->
+                    TargetPolarity.FLEXIBLE
                 drawsForItsLife(slot, readings, leaves, requirements, definitions, source) -> TargetPolarity.BENEFICIAL
                 else -> combine(readings)
             }
@@ -688,10 +697,46 @@ object TargetPolarityAnalyzer {
             leaf is com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect -> targetLeaves(leaf.body)
             leaf is ChooseActionEffect && EffectWalker.choosesOwnBranch(leaf) ->
                 leaf.choices.flatMap { targetLeaves(it.effect) }
+            // "Target creature gains your choice of double strike or lifelink" (Practiced Offense,
+            // Manifold Mouse): modes that declare no targets of their own all act on a slot the
+            // ability declared, so whichever is chosen, the slot reads as the modes agree — the
+            // controller-chosen branch shape above.
+            leaf is ModalEffect && sharesAbilityTargets(leaf) -> leaf.modes.flatMap { targetLeaves(it.effect) }
             leaf !is com.wingedsheep.sdk.scripting.effects.GatedEffect || leaf.decisionMaker != null -> listOf(leaf)
             else -> listOfNotNull(leaf.then, leaf.otherwise).flatMap(::targetLeaves)
         }
     }
+
+    /**
+     * The punisher on a chosen player — "target opponent loses 3 life unless they sacrifice a
+     * nonland permanent or discard a card" — written as an unless-clause that player pays
+     * ([PayOrSufferEffect], Starseer Mentor) or as a choice of branches that player makes
+     * ([ChooseActionEffect], Thornplate Intimidator). Every way out costs them something: a payment
+     * is a loss, so the slot is harmful whenever what they suffer for not paying is; a branch choice
+     * is harmful when every branch read on that player hurts them (an unread branch — a discard
+     * pipeline — doesn't make it a gift). Null when the shape isn't one, or its reading isn't known.
+     */
+    private fun punisherReading(
+        leaf: Effect,
+        definitions: CardLookup,
+        source: CardDefinition?,
+    ): List<Pair<EffectTarget, TargetPolarity>>? {
+        fun readings(effect: Effect) = targetLeaves(effect).flatMap { classify(it, definitions, source) }
+        fun hurts(on: List<Pair<EffectTarget, TargetPolarity>>, player: EffectTarget) =
+            on.filter { it.first == player }.let { mine -> mine.isNotEmpty() && mine.all { it.second == TargetPolarity.HARMFUL } }
+        return when {
+            leaf is PayOrSufferEffect && leaf.player.isSlot() ->
+                readings(leaf.suffer).takeIf { hurts(it, leaf.player) }
+            leaf is ChooseActionEffect && !EffectWalker.choosesOwnBranch(leaf) && leaf.player.isSlot() ->
+                leaf.choices.flatMap { readings(it.effect) }.takeIf { hurts(it, leaf.player) }
+            else -> null
+        }
+    }
+
+    /** A choose-one the controller makes whose modes declare no targets: they all act on the ability's own slots. */
+    private fun sharesAbilityTargets(effect: ModalEffect): Boolean =
+        effect.chooseCount == 1 && !effect.chooseAtRandom && !effect.chooseAllIfBlightPaid &&
+            effect.dynamicChooseCount == null && effect.modes.all { it.targetRequirements.isEmpty() }
 
     /** A controller-chosen tap/untap pair can help either side; sequential tap then untap cannot. */
     private fun tapOrUntapTargets(effect: Effect): List<EffectTarget> {
@@ -1112,6 +1157,7 @@ object TargetPolarityAnalyzer {
         if (leaf is CopyTargetSpellOrAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         if (leaf is CopyTargetSpellEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         if (leaf is CopyTargetTriggeredAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
+        punisherReading(leaf, definitions, source)?.let { return it }
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
             // library (Expel from Orazca's "on top of its owner's library instead", Chaos Warp): it
@@ -1153,6 +1199,10 @@ object TargetPolarityAnalyzer {
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
             is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is CantBeRegeneratedEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Target creature loses all abilities" strips its holder — the static LoseAllAbilities
+            // an Aura grants reads the same. A drawback-only creature gains from it, but that is a
+            // board fact the cards that aim it (Lizard, Connors's Curse; Azure Beastbinder) don't rely on.
+            is RemoveAllAbilitiesEffect -> leaf.target to TargetPolarity.HARMFUL
             // "That player can't get counters" (Suncleanser): a prohibition on the player — the
             // energy, experience and other counters they build toward stop coming. Locking out
             // poison would help them, but the cards aim it at an opponent to shut off their engine.

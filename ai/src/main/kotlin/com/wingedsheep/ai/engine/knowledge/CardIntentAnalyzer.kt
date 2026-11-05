@@ -988,10 +988,17 @@ object CardIntentAnalyzer {
      * theirs to lose. The payer decides it, as in [handDisruptionTags]: an opponent by name, the
      * enchanted player (a Curse's victim), a target player slot, or `you` inside an iteration over
      * opponents. Our own "unless" is an upkeep cost and stays unread.
+     *
+     * The same punisher written as the opponent's choice between branches — "target opponent loses
+     * 3 life unless they sacrifice a nonland permanent or discard a card" as a [ChooseActionEffect]
+     * that player makes (Thornplate Intimidator) — reads the same when one branch takes a card from
+     * their hand.
      */
     private fun discardPunisherTags(root: Effect, eachPlayer: Player?): Set<IntentTag> {
         val punishes = readingLeaves(root).any { leaf ->
-            leaf is PayOrSufferEffect && paidByAnOpponent(leaf.player, eachPlayer) && offersDiscard(leaf.cost)
+            (leaf is PayOrSufferEffect && paidByAnOpponent(leaf.player, eachPlayer) && offersDiscard(leaf.cost)) ||
+                (leaf is ChooseActionEffect && !EffectWalker.choosesOwnBranch(leaf) && paidByAnOpponent(leaf.player, eachPlayer) &&
+                    leaf.choices.any { IntentTag.DISCARD in handDisruptionTags(it.effect, eachPlayer) })
         }
         return if (punishes) setOf(IntentTag.DISCARD) else emptySet()
     }

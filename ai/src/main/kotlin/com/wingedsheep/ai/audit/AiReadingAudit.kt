@@ -73,6 +73,8 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.effects.ForagedEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
@@ -600,7 +602,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles a card from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -836,6 +838,14 @@ object AiReadingAudit {
         // response to removal too, is the simulation's call; no intent tag would change it.
         // Sacrificing another stays flagged.
         if (leaf == SacrificeSelfEffect) return true
+        // Its controller sacrificing permanents of its own choosing — Lotus Field's two lands, Korvold's
+        // "sacrifice another permanent", forage's Food — is the same price with the pick left to
+        // resolution: no target, nothing to time, and what is lost is the board the simulation sees.
+        // An edict aimed at another player is a ForceSacrificeEffect and reads as removal.
+        if (leaf is SacrificeEffect) return true
+        // "Forage" happened: the marker a forage's payment emits for "whenever you forage" triggers.
+        // Bookkeeping, never a payoff of its own; the "if you do" rider beside it is read on its own leaf.
+        if (leaf == ForagedEffect) return true
         // Its controller losing the game (Phage the Untouchable entering from anywhere but the hand)
         // is the card's price, never a play: no target to aim, nothing to time, and no tag would
         // make the AI choose it. An opponent losing is GAME_WIN and never reaches here.
@@ -1070,6 +1080,13 @@ object AiReadingAudit {
      */
     private fun noIntentPipeline(label: String, stages: List<Effect>): Boolean {
         if (label in NO_INTENT_PIPELINES) return true
+        // Cards exiled out of our own graveyard — forage's three, delve-like fuel (Specter of
+        // Mortality) — are the price or fuel of what follows, as the single-card move is (see
+        // [intent]'s OWN_EXILE). Playing them afterwards is a grant leaf, read and flagged on its own.
+        if (label == "Pipeline(graveyard→exile)") {
+            val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
+            return sources.isNotEmpty() && sources.all { it is CardSource.FromZone && it.zone == Zone.GRAVEYARD && it.player == Player.You }
+        }
         if (label != "Pipeline(BattlefieldMatching→hand)" && label != "Pipeline(BattlefieldMatching→exile)") return false
         val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
         return sources.isNotEmpty() && sources.all { source ->
