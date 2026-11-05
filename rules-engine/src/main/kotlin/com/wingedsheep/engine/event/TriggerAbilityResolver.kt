@@ -138,11 +138,13 @@ class TriggerAbilityResolver(
         // keyword) plus one per granted `RENOWN_<n>` instance (Aragorn, Hornburg Hero).
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        // Bushido N (CR 702.45) and rampage N (CR 702.23) — the combat pump is intrinsic to the
-        // keyword, printed on no card as a separate line. Printed instances as renown; a granted
-        // `BUSHIDO_<n>` (Sensei Golden-Tail) / `RAMPAGE_<n>` (Rapid Fire) adds one more trigger.
+        // Bushido N (CR 702.45), rampage N (CR 702.23) and afflict N (CR 702.130) — the combat
+        // trigger is intrinsic to the keyword, printed on no card as a separate line. Printed
+        // instances as renown; a granted `BUSHIDO_<n>` (Sensei Golden-Tail) / `RAMPAGE_<n>` (Rapid
+        // Fire) adds one more trigger.
         val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state) +
-            getRampageTriggeredAbilities(entityId, cardDefinitionId, state)
+            getRampageTriggeredAbilities(entityId, cardDefinitionId, state) +
+            getAfflictTriggeredAbilities(entityId, cardDefinitionId, state)
 
         // Exalted (CR 702.83) — one "attacks alone" pump per instance: the printed keyword plus
         // one per exalted counter (CR 122.1b).
@@ -354,11 +356,13 @@ class TriggerAbilityResolver(
         // keyword) plus one per granted `RENOWN_<n>` instance (Aragorn, Hornburg Hero).
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        // Bushido N (CR 702.45) and rampage N (CR 702.23) — the combat pump is intrinsic to the
-        // keyword, printed on no card as a separate line. Printed instances as renown; a granted
-        // `BUSHIDO_<n>` (Sensei Golden-Tail) / `RAMPAGE_<n>` (Rapid Fire) adds one more trigger.
+        // Bushido N (CR 702.45), rampage N (CR 702.23) and afflict N (CR 702.130) — the combat
+        // trigger is intrinsic to the keyword, printed on no card as a separate line. Printed
+        // instances as renown; a granted `BUSHIDO_<n>` (Sensei Golden-Tail) / `RAMPAGE_<n>` (Rapid
+        // Fire) adds one more trigger.
         val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state) +
-            getRampageTriggeredAbilities(entityId, cardDefinitionId, state)
+            getRampageTriggeredAbilities(entityId, cardDefinitionId, state) +
+            getAfflictTriggeredAbilities(entityId, cardDefinitionId, state)
 
         // Exalted (CR 702.83) — one "attacks alone" pump per instance: the printed keyword plus
         // one per exalted counter (CR 122.1b).
@@ -935,8 +939,23 @@ class TriggerAbilityResolver(
     )
 
     /**
+     * Afflict N (CR 702.130) — the same printed derivation as bushido: one "becomes blocked,
+     * defending player loses N life" trigger per printed instance (CR 702.130b) while the projected
+     * bare `AFFLICT` keyword survives. See [com.wingedsheep.sdk.scripting.Afflict].
+     */
+    private fun getAfflictTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+    ): List<TriggeredAbility> = getNumericKeywordTriggeredAbilities(
+        entityId, cardDefinitionId, state, com.wingedsheep.sdk.core.Keyword.AFFLICT,
+        printedCounts = com.wingedsheep.sdk.scripting.Afflict::printedCounts,
+        trigger = com.wingedsheep.sdk.scripting.Afflict::trigger,
+    )
+
+    /**
      * The shared shape of a numeric keyword whose triggered ability the engine derives (bushido,
-     * rampage): one trigger per printed instance while the projected bare [keyword] survives, plus
+     * rampage, afflict): one trigger per printed instance while the projected bare [keyword] survives, plus
      * one for the summed N of every projected granted `<KEYWORD>_<n>`.
      */
     private fun getNumericKeywordTriggeredAbilities(
