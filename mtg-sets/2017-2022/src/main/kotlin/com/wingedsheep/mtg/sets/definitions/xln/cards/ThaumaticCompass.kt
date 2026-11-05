@@ -61,7 +61,7 @@ private val ThaumaticCompassFront = card("Thaumatic Compass") {
         interveningIf = Conditions.ControlLandsAtLeast(7)
         effect = Effects.Transform(EffectTarget.Self)
         description = "At the beginning of your end step, if you control seven or more lands, " +
-            "transform Thaumatic Compass."
+            "transform this artifact."
     }
 
     metadata {

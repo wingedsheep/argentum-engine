@@ -13282,7 +13282,7 @@
                         "amount": 7
                     }
                 },
-                "descriptionOverride": "At the beginning of your end step, if you control seven or more lands, transform Thaumatic Compass."
+                "descriptionOverride": "At the beginning of your end step, if you control seven or more lands, transform this artifact."
             }
         ],
         "activatedAbilities": [
