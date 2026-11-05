@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- #TBD Aims "don't untap during their next untap step" (Mana Vapors, Imaginary Threats, Exhaustion) and divided damage (Samut, the Tested, Electrolyze, Arc Lightning) at the opponent's side, reads the untap lock as a tapper, and reads a power-only cut to an opposing creature (Ominous Sphinx, Dizzy Spell) as a combat effect.
+- #4455 Aims "don't untap during their next untap step" (Mana Vapors, Imaginary Threats, Exhaustion) and divided damage (Samut, the Tested, Electrolyze, Arc Lightning) at the opponent's side, reads the untap lock as a tapper, and reads a power-only cut to an opposing creature (Ominous Sphinx, Dizzy Spell) as a combat effect.
 - #4452 Reads "untap all creatures you control" (Jace, Ingenious Mind-Mage's +1, extra-combat untaps) as a combat enhancement for its own team, as it reads a granted vigilance, without flashing in a mass-untap body before combat.
 - #4451 Reads "return each creature card exiled with this to the battlefield under its owner's control" on cards that only exile their controller's own creatures (Endless Sands, Safe Haven) as recursion and their "exile target creature you control" as a protective stash rather than removal, and damage-redirection shields (Saving Grace, Gideon's Sacrifice, Glarecaster) as protection.
 - #4450 Reads a permanent that exiles itself and returns transformed (Conqueror's Galleon, the FIN eikons, Huatli, Poet of Unity) as needing no intent, so those cards are no longer drafted as "abilities not recognised"
