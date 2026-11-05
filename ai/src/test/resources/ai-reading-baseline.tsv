@@ -287,7 +287,7 @@ Ajani's Welcome
 Ajani, Adversary of Tyrants
 Ajani, Caller of the Pride
 Ajani, Inspiring Leader
-Ajani, Nacatl Pariah	intent: ExileAndReturnTransformedEffect
+Ajani, Nacatl Pariah
 Ajani, Outland Chaperone	intent: Pipeline(TopOfLibrary→battlefield|library)
 Ajani, Sleeper Agent	intent: CreateGlobalTriggeredAbilityEffect
 Ajani, Strength of the Pride	intent: Pipeline(BattlefieldMatching→exile)
@@ -3025,7 +3025,7 @@ Cling to Dust
 Clinging Darkness
 Clinquant Skymage
 Clive's Hideaway	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile|library)
-Clive, Ifrit's Dominant	intent: ExileAndReturnTransformedEffect
+Clive, Ifrit's Dominant
 Cloak and Dagger, Entwined
 Cloak and Phaser
 Cloak of Feathers
@@ -3267,6 +3267,7 @@ Conifer Strider
 Conjurer's Closet
 Connecting the Dots	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(TopOfLibrary→exile)
 Connive // Concoct
+Conqueror's Galleon
 Conquest Mission
 Conscripted Infantry
 Consecrate // Consume
@@ -3608,7 +3609,7 @@ Crystacean
 Crystal Ball
 Crystal Barricade
 Crystal Carapace
-Crystal Fragments	intent: ExileAndReturnTransformedEffect
+Crystal Fragments
 Crystal Grotto
 Crystal Quarry
 Crystal Rod
@@ -4294,7 +4295,7 @@ Dingus Egg
 Dinosaur Hunter
 Dinosaur Stampede
 Dinotomaton
-Dion, Bahamut's Dominant	intent: ExileAndReturnTransformedEffect
+Dion, Bahamut's Dominant
 Dionus, Elvish Archdruid
 Diplomatic Immunity
 Diplomatic Relations
@@ -5055,7 +5056,7 @@ Elenda, Saint of Dusk
 Elenda, the Dusk Rose
 Elephant Ambush
 Elephant Graveyard
-Elesh Norn	intent: ExileAndReturnTransformedEffect
+Elesh Norn
 Elesh Norn, Grand Cenobite
 Elesh Norn, Mother of Machines
 Elf Replica
@@ -7423,7 +7424,7 @@ Grisly Ritual
 Grisly Salvage
 Grisly Sigil
 Grisly Survivor
-Grist, Voracious Larva	intent: ExileAndReturnTransformedEffect
+Grist, Voracious Larva
 Gristle Glutton
 Grixis Battlemage	combat: CantBlockEffect; timing: CantBlockEffect
 Grixis Charm
@@ -8181,7 +8182,7 @@ Huatli's Final Strike
 Huatli's Raptor
 Huatli's Snubhorn
 Huatli's Spurring
-Huatli, Poet of Unity	intent: ExileAndReturnTransformedEffect
+Huatli, Poet of Unity
 Huatli, Radiant Champion
 Huatli, the Sun's Heart
 Hugs, Grisly Guardian
@@ -8894,7 +8895,7 @@ Jaya, Fiery Negotiator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Top
 Jaya, Venerated Firemage
 Jayemdae Tome
 Jazal Goldmane
-Jecht, Reluctant Guardian	intent: ExileAndReturnTransformedEffect
+Jecht, Reluctant Guardian
 Jedit Ojanen
 Jedit's Dragoons
 Jeering Instigator
@@ -8948,8 +8949,8 @@ Jiang Yanggu, Wildcrafter
 Jibbirik Omnivore
 Jidoor, Aristocratic Capital
 Jihad
-Jill, Shiva's Dominant	intent: ExileAndReturnTransformedEffect
-Jin-Gitaxias	intent: ExileAndReturnTransformedEffect
+Jill, Shiva's Dominant
+Jin-Gitaxias
 Jin-Gitaxias, Core Augur
 Jin-Gitaxias, Progress Tyrant
 Jinnie Fay, Jetmir's Second
@@ -8982,7 +8983,7 @@ Joraga Invocation
 Joraga Visionary
 Jorn, God of Winter	intent: ForEach>TapUntapEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
 Jorubai Murk Lurker
-Joshua, Phoenix's Dominant	intent: ExileAndReturnTransformedEffect
+Joshua, Phoenix's Dominant
 Josu Vess, Lich Knight
 Journey of Discovery
 Journey to Eternity	polarity: Aura>MoveToZoneEffect; polarity: Aura>ReturnSelfFromZoneTransformedEffect
@@ -11549,7 +11550,7 @@ Nick Valentine, Private Eye
 Nicol Bolas
 Nicol Bolas, Dragon-God
 Nicol Bolas, God-Pharaoh	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(?→exile); polarity: GatherUntilMatchEffect; polarity: GrantMayPlayFromExileEffect; polarity: GrantPlayWithoutPayingCostEffect; polarity: Pipeline(?→exile)
-Nicol Bolas, the Ravager	intent: ExileAndReturnTransformedEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
+Nicol Bolas, the Ravager	intent: Pipeline(TopOfLibrary→exile); polarity: Pipeline(TopOfLibrary→exile)
 Night Clubber
 Night Dealings
 Night Market
@@ -15078,7 +15079,7 @@ Sheltering Boughs
 Sheltering Landscape
 Sheltering Light
 Sheltering Word
-Sheoldred	intent: ExileAndReturnTransformedEffect
+Sheoldred
 Sheoldred's Edict
 Sheoldred's Headcleaver
 Sheoldred's Restoration
@@ -15771,7 +15772,7 @@ Sorceress Queen	combat: SetBaseStatsEffect
 Sorceress's Schemes
 Sorcerous Sight
 Sorcerous Spyglass
-Sorin of House Markov	intent: ExileAndReturnTransformedEffect; polarity: AddCreatureTypeEffect
+Sorin of House Markov	polarity: AddCreatureTypeEffect
 Sorin the Mirthless
 Sorin's Guide
 Sorin's Thirst
@@ -16978,7 +16979,7 @@ Tamiyo's Safekeeping
 Tamiyo, Collector of Tales
 Tamiyo, Compleated Sage
 Tamiyo, Field Researcher	polarity: ForEachEffect
-Tamiyo, Inquisitive Student	intent: ExileAndReturnTransformedEffect; intent: ModifyStatsEffect
+Tamiyo, Inquisitive Student	intent: ModifyStatsEffect
 Tamiyo, the Moon Sage	polarity: DrawCardsEffect
 Tanazir Quandrix	intent: DoubleCountersEffect; polarity: DoubleCountersEffect
 Tandem Lookout	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
@@ -17211,7 +17212,7 @@ Termination Facilitator	intent: AddCountersEffect; polarity: AddCountersEffect
 Teroh's Faithful
 Terra Eternal
 Terra Stomper
-Terra, Magical Adept	intent: ExileAndReturnTransformedEffect
+Terra, Magical Adept
 Terraformer	intent: ChooseOptionEffect; intent: ForEach>SetLandTypeEffect
 Terrain Elemental
 Terrain Generator	intent: Pipeline(hand→battlefield)
@@ -18556,7 +18557,7 @@ Upriser Renegade
 Upwelling
 Ur-Drago
 Ur-Golem's Eye
-Urabrask	intent: ExileAndReturnTransformedEffect
+Urabrask
 Urabrask's Anointer
 Urabrask's Forge
 Urabrask, Heretic Praetor	intent: ReplaceNextDrawWithEffect
@@ -19104,7 +19105,7 @@ Voracious Typhon
 Voracious Vampire
 Voracious Varmint
 Voracious Vermin
-Vorinclex	intent: ExileAndReturnTransformedEffect
+Vorinclex
 Vorinclex, Monstrous Raider
 Vorosh, the Hunter
 Vorpal Sword	timing: GrantTriggeredAbilityEffect

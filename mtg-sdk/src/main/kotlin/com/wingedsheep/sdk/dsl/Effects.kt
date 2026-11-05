@@ -1357,11 +1357,17 @@ object Effects {
      * Distinct from [Transform], which flips a permanent in place; this re-enters a fresh object,
      * so counters/auras drop, ETB/LTB triggers fire, and a Saga face re-enters with one lore
      * counter. Defaults to the source returning [ReturnFace.TRANSFORMED] (opposite face).
+     * [underYourControl]: "…transformed under your control" (Conqueror's Galleon) — it re-enters
+     * under the ability's controller rather than its owner.
      */
     fun ExileAndReturnTransformed(
         target: EffectTarget = EffectTarget.Self,
-        returnAs: ReturnFace = ReturnFace.TRANSFORMED
-    ): Effect = ExileAndReturnTransformedEffect(target, returnAs)
+        returnAs: ReturnFace = ReturnFace.TRANSFORMED,
+        underYourControl: Boolean = false
+    ): Effect = ExileAndReturnTransformedEffect(
+        target, returnAs,
+        controllerOverride = if (underYourControl) EffectTarget.Controller else null
+    )
 
     /**
      * Meld (CR 701.42) — "If you both own and control [this] and a [partner], exile them, then

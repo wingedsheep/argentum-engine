@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #4450 Reads a permanent that exiles itself and returns transformed (Conqueror's Galleon, the FIN eikons, Huatli, Poet of Unity) as needing no intent, so those cards are no longer drafted as "abilities not recognised"
 - #4448 Reads an "exile the top card, you may cast it this turn" made at the start of its own turn (Vance's Blasting Cannons, Outpost Siege, Visions of Phyrexia) and a "put each into your hand unless an opponent pays life" dig (Sword-Point Diplomacy) as card draw, valuing and drafting them as such; and reads removing an opponent's creature from combat (Spires of Orazca, Labyrinth of Skophos, False Orders) as neutralizing it
 - #4449 Aims "target opponent exiles a creature they control" (Doomfall, Debt to the Kami, Early Winter) and "enchant player" Curses that make their player lose life, take damage or pay-or-suffer (Torment of Scarabs) at the opponent, and drafts "that player discards" combat-damage triggers (Dreamstealer, Hypnotic Specter) and lose-life-unless-you-discard punishers (Torment of Hailfire) as discard.
 - #4447 Aims harm at a target's controller (Refuse, Backlash) at an opponent's object, names the best graveyard cards for exile-to-use pipelines (Hour of Eternity's token copies, Practiced Scrollsmith and Rooting Moloch's cast-from-exile) as recursion, and reads "each player shuffles their graveyard into their library" (Survive, Mnemonic Nexus) as graveyard hate.
