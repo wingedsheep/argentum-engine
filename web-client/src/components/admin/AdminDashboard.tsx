@@ -1,6 +1,6 @@
 /**
  * Admin Stats: global, cross-user stats served from `/api/stats/admin/*`. Headline totals, a
- * games-per-day chart, mode (broken down by format) / color distributions, the most-played cards and
+ * games-over-time chart (bucketed to the period), mode (broken down by format) / color distributions, the most-played cards and
  * per-card win rates, the sets played most in tournaments, recorded tournaments, and an IP-based
  * geolocation estimate of where players connect from.
  *
@@ -22,15 +22,16 @@ import {
 import {
   type CardStat,
   type CardWinRate,
-  type DailyCount,
+  type AiBucket,
   type DatabaseStats,
   type GeoBucket,
+  type GamesOverTime,
   type GlobalOverview,
   type TournamentSummary,
   fetchCardWinRates,
   fetchColorDistribution,
   fetchDatabaseStats,
-  fetchGamesPerDay,
+  fetchGamesOverTime,
   fetchGeo,
   fetchModeDistribution,
   fetchOverview,
@@ -62,9 +63,31 @@ const WHO_PLAYED = [
 /** How many card rows to show before the "Show all" toggle — keeps the tables from running forever. */
 const CARD_PREVIEW = 12
 
+const BUCKET_NOUN: Record<AiBucket, string> = { DAY: 'day', WEEK: 'week', MONTH: 'month' }
+
+// Bucket starts are UTC calendar days; format them in UTC so a viewer west of Greenwich doesn't see
+// the day before.
+const utc = (d: string) => new Date(`${d}T00:00:00Z`)
+const dayFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+const dayYearFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+const monthFmt = new Intl.DateTimeFormat(undefined, { month: 'short', year: '2-digit', timeZone: 'UTC' })
+const monthLongFmt = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' })
+
+/** The x-axis tick for a bucket: "Nov 5" for days and weeks, "Nov 26" for months. */
+function bucketTick(day: string, bucket: AiBucket): string {
+  return (bucket === 'MONTH' ? monthFmt : dayFmt).format(utc(day))
+}
+
+/** The tooltip heading: the exact day, "Week of Nov 2, 2026", or "November 2026". */
+function bucketLabel(day: string, bucket: AiBucket): string {
+  if (bucket === 'MONTH') return monthLongFmt.format(utc(day))
+  const date = dayYearFmt.format(utc(day))
+  return bucket === 'WEEK' ? `Week of ${date}` : date
+}
+
 export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () => void }) {
   const [overview, setOverview] = useState<GlobalOverview | null>(null)
-  const [perDay, setPerDay] = useState<DailyCount[]>([])
+  const [overTime, setOverTime] = useState<GamesOverTime | null>(null)
   const [modes, setModes] = useState<StatBucket[]>([])
   const [colors, setColors] = useState<StatBucket[]>([])
   const [cards, setCards] = useState<CardStat[]>([])
@@ -85,7 +108,7 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
       try {
         const [ov, pd, md, cl, cs, wr, tn, ts] = await Promise.all([
           fetchOverview(auth, filter),
-          fetchGamesPerDay(auth, 30, filter.vs),
+          fetchGamesOverTime(auth, filter),
           fetchModeDistribution(auth, filter),
           fetchColorDistribution(auth, filter),
           fetchTopCards(auth, 100, filter),
@@ -95,7 +118,7 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
         ])
         if (cancelled) return
         setOverview(ov)
-        setPerDay(pd)
+        setOverTime(pd)
         setModes(md)
         setColors(cl)
         setCards(cs)
@@ -124,7 +147,9 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
   }, [auth])
 
   const sliceLabel = isAllGames(filter) ? null : describeFilter(filter)
-  const perDayStacked = perDay.map((d) => ({ ...d, mixed: Math.max(0, d.count - d.vsHumans - d.vsAi) }))
+  const bucket = overTime?.bucket ?? 'DAY'
+  const overTimeStacked = (overTime?.points ?? []).map((d) => ({ ...d, mixed: Math.max(0, d.count - d.vsHumans - d.vsAi) }))
+  const lastBucket = overTimeStacked.at(-1)?.day
 
   return (
     <AdminScreen title="Stats" subtitle="Global activity across every recorded game" onBack={onBack} backLabel="← Dashboard">
@@ -147,13 +172,20 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
         <StatCard label="Games (7d)" value={overview?.gamesLast7d} accent />
       </div>
 
-      <Panel title="Games per day (last 30 days)" subtitle={filter.vs === 'all' ? 'Split by who was at the table' : 'Counted games only'}>
+      <Panel
+        title={`Games per ${BUCKET_NOUN[bucket]} · ${describeFilter({ ...filter, vs: 'all' }) || 'all time'}`}
+        subtitle={filter.vs === 'all' ? 'Split by who was at the table' : `Counted games ${describeFilter({ ...filter, days: 0 })}`}
+      >
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={perDayStacked} margin={{ top: 8, right: 16, bottom: 0, left: -16 }} barCategoryGap={2}>
+          <BarChart data={overTimeStacked} margin={{ top: 8, right: 16, bottom: 0, left: -16 }} barCategoryGap={bucket === 'DAY' && overTimeStacked.length > 40 ? 1 : 2}>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="day" stroke="#8f98ac" fontSize={11} tickFormatter={(d: string) => d.slice(5)} />
+            <XAxis dataKey="day" stroke="#8f98ac" fontSize={11} tickFormatter={(d: string) => bucketTick(d, bucket)} minTickGap={12} />
             <YAxis stroke="#8f98ac" fontSize={11} allowDecimals={false} />
-            <Tooltip contentStyle={chartTooltipStyle} cursor={{ fill: 'rgba(255,255,255,0.06)' }} />
+            <Tooltip
+              contentStyle={chartTooltipStyle}
+              cursor={{ fill: 'rgba(255,255,255,0.06)' }}
+              labelFormatter={(d) => bucketLabel(String(d), bucket) + (d === lastBucket ? ' (so far)' : '')}
+            />
             {filter.vs === 'all' ? (
               WHO_PLAYED.map((w, i) => (
                 <Bar
