@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
@@ -420,6 +421,8 @@ object TargetPolarityAnalyzer {
         }
         val theftGifts = theftFollowUps(effect)
         val biteSources = mutableSetOf<Int>()
+        // What the effect does to "its controller" — the controller of the first target.
+        val controllerReadings = mutableListOf<TargetPolarity>()
         for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
             if (theftGifts.any { it === leaf }) {
@@ -548,6 +551,7 @@ object TargetPolarityAnalyzer {
                 perSlot[gift.first] += gift.second
             } else {
                 for ((target, polarity) in classify(withRequirementZone(leaf, requirements), definitions, source)) {
+                    if (target == EffectTarget.TargetController) controllerReadings += polarity
                     val slot = slotOf(target, requirements) ?: continue
                     perSlot[slot] += polarity
                 }
@@ -561,9 +565,22 @@ object TargetPolarityAnalyzer {
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = targetLeaves(effect)
+        // "Deals damage to target spell's controller equal to that spell's mana value" (Refuse),
+        // "that creature deals damage equal to its power to its controller" (Backlash): harm aimed
+        // at the first target's controller is harm to that object's side, so the object to name is
+        // an opponent's. Only when nothing else reads the slot and the harm is all there is — a
+        // gift to the controller beside removal ("its controller gains life") is the price.
+        if (perSlot[0].isEmpty() && controllerReadings.isNotEmpty() &&
+            controllerReadings.all { it == TargetPolarity.HARMFUL } &&
+            requirements[0].let { it !is TargetPlayer && it !is TargetOpponent }
+        ) perSlot[0] += TargetPolarity.HARMFUL
         // Graveyard cards a pipeline brings onto our battlefield, however it splits them first
         // (Boneyard Parley's piles): the best creature card in any graveyard is the one to name.
         if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(effect, requirements)) recursions += requirements.indices
+        // Graveyard cards a pipeline exiles to use — "exile X target creature cards from your
+        // graveyard; for each, create a token that's a copy of it" (Hour of Eternity): the single-card
+        // exile-and-copy above (The Scarab God), as a pipeline. The best card is the one to name.
+        if (CardIntentAnalyzer.exilesChosenGraveyardTargetsToUse(effect, requirements)) recursions += requirements.indices
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
@@ -1404,6 +1421,11 @@ object TargetPolarityAnalyzer {
             }
             staticPolarity(static)?.let(readings::add)
         }
+        // "Enchanted artifact is a creature with base power and toughness 4/4" (Mightstone's
+        // Animation, Zoetic Glyph, Puppet Crafting): the creature type and the body arrive together,
+        // so the host's controller gains a creature. The base P/T alone stays unread above — on a
+        // creature it can shrink as well as grow — and the type alone could leave a 0/0.
+        if (animatesHost(card.script.staticAbilities)) readings += TargetPolarity.BENEFICIAL
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
@@ -1427,6 +1449,17 @@ object TargetPolarityAnalyzer {
         if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
         return readings
     }
+
+    /**
+     * Whether [statics] make the attached permanent a creature with a real body: a "CREATURE"
+     * [GrantCardType] on the host beside a [SetBasePowerToughnessStatic] of at least 2/2 on it.
+     */
+    private fun animatesHost(statics: List<StaticAbility>): Boolean =
+        statics.any { it is GrantCardType && it.cardType == "CREATURE" && it.filter.scope == Scope.AttachedTo } &&
+            statics.any {
+                it is SetBasePowerToughnessStatic && it.filter.scope == Scope.AttachedTo &&
+                    (it.power ?: 0) >= 2 && (it.toughness ?: 0) >= 2
+            }
 
     /**
      * Whether every harm [card] does to its host is damage from one of its triggered or activated

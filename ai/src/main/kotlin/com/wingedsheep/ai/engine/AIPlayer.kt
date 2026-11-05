@@ -400,6 +400,7 @@ class AIPlayer(
                     setupFromHandFirst = profile.marksBeforeTheSweep,
                     fetchedLandDropFollowUp = profile.fetchedLandDropFollowUp,
                     recastBouncedPermanents = profile.recastBouncedPermanents,
+                    anticipateTargetResponses = profile.anticipateTargetResponses,
                     precombatPumpsForThePlan = profile.precombatPumpsForThePlan,
                     holdInstantSpeedDeploys = profile.holdInstantSpeedDeploys,
                     taxCountersReadTheirMana = profile.taxCountersReadTheirMana,
