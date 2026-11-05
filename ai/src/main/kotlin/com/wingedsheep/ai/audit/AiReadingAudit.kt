@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
@@ -359,6 +360,11 @@ object AiReadingAudit {
                             // before their main phase, where it covers their whole turn. Not a face
                             // (Revel in Silence): CastBanWindow reads the card's own spell only.
                             (leaf is CantCastSpellsEffect && IntentTag.CAST_BAN in intent.tags &&
+                                script === card.script && card.cardFaces.isEmpty()) ||
+                            // A forced attack on an opponent's creatures: HoldPolicy rewards casting
+                            // it on their turn before they attack ([ForcedAttackWindow]), the only
+                            // window "this turn" binds an attack of theirs. Own spell only, as above.
+                            (leaf is MustAttackGroupEffect && IntentTag.FORCED_ATTACK in intent.tags &&
                                 script === card.script && card.cardFaces.isEmpty()) ||
                             // A spell that only grants keywords until end of turn is floored where no
                             // fight is left; the floor asks it of the whole spell, not one leaf. Not
@@ -684,6 +690,7 @@ object AiReadingAudit {
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
         IntentTag.CAST_BAN -> "stops opponents casting spells"
+        IntentTag.FORCED_ATTACK -> "makes an opponent's creatures attack"
         IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
         IntentTag.DAMAGE_AMPLIFIER -> "amplifies damage from our sources"

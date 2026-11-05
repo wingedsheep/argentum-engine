@@ -250,6 +250,7 @@ object AiCardRating {
         IntentTag.PERMANENT_COPY to "Copies a permanent",
         IntentTag.SACRIFICE_OUTLET to "Sacrifice outlet",
         IntentTag.CAST_BAN to "Stops opponents casting spells",
+        IntentTag.FORCED_ATTACK to "Forces opponents' creatures to attack",
         IntentTag.MILL to "Mills opponents toward running out of cards",
         IntentTag.TRIBAL_ENABLER to "Enables a chosen creature type",
         IntentTag.DAMAGE_AMPLIFIER to "Amplifies damage from our sources",

@@ -1447,6 +1447,11 @@ object CardIntentAnalyzer {
         // payoff is spells never cast. A ban that binds its controller too is a price, not a payoff.
         is CantCastSpellsEffect -> if (bansAnOpponent(effect.target)) setOf(IntentTag.CAST_BAN) else emptySet()
 
+        // "Creatures target opponent controls attack this turn if able" (Imaginary Threats), "each
+        // creature your opponents control attacks … if able" (Kardur): an attack the
+        // opponent didn't choose. A requirement on our own creatures is a price, not a payoff.
+        is MustAttackGroupEffect -> if (opponentsOnly(effect.filter.baseFilter.controllerPredicate)) setOf(IntentTag.FORCED_ATTACK) else emptySet()
+
         // "Each token that would be created under an opponent's control this turn is created under
         // your control instead" (Crafty Cutpurse): the opponent's tokens become ours for the turn.
         // Only a redirect toward its controller from the opponents' side reads; other granted
@@ -2311,6 +2316,7 @@ object CardIntentAnalyzer {
 
     private val OPPONENT_FACING = setOf(
         IntentTag.CAST_BAN,
+        IntentTag.FORCED_ATTACK,
         IntentTag.GRAVEYARD_HATE,
         IntentTag.MILL,
         IntentTag.REMOVAL,

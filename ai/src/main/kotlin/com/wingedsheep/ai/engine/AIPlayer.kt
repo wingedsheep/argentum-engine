@@ -409,6 +409,7 @@ class AIPlayer(
                     tapToGrowAtTheirEndStep = profile.tapToGrowAtTheirEndStep,
                     borrowedCreaturesGoHome = profile.borrowedCreaturesGoHome,
                     castBansDenyTheirTurn = profile.castBansDenyTheirTurn,
+                    forcedAttacksOnTheirTurn = profile.forcedAttacksOnTheirTurn,
                     holdXSpellsForBiggerX = profile.holdXSpellsForBiggerX,
                     convokeLandsFirst = profile.convokeLandsFirst,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves

@@ -1460,6 +1460,20 @@ data class AiProfile(
      */
     val castBansDenyTheirTurn: Boolean = false,
     /**
+     * Cast a forced attack on an opponent's creatures
+     * ([com.wingedsheep.ai.engine.knowledge.IntentTag.FORCED_ATTACK]) on their turn, before they
+     * attack ([com.wingedsheep.ai.engine.knowledge.ForcedAttackWindow]): Imaginary Threats in their
+     * precombat main phase.
+     *
+     * "Attack this turn if able" moves no permanent, so the leaf scored every cast as a card thrown
+     * away, and nothing told the AI that on its own turn the requirement binds no attack at all. With
+     * this on, `Strategist` refunds the hand charge of a forced attack cast in that window (as it does
+     * for [castBansDenyTheirTurn]) and [com.wingedsheep.ai.engine.knowledge.HoldPolicy] adds its window
+     * reward. Pinned by `ForcedAttackReadingAiTest`. Unmeasured in the arena: too few cards force
+     * attacks to move a win rate.
+     */
+    val forcedAttacksOnTheirTurn: Boolean = false,
+    /**
      * Hold a free-`{X}` spell while our mana is still growing into a bigger X, instead of casting it
      * the first turn it is affordable.
      *
@@ -2558,6 +2572,7 @@ data class AiProfile(
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,
             castBansDenyTheirTurn = true,
+            forcedAttacksOnTheirTurn = true,
             holdXSpellsForBiggerX = true,
             curveAwareMulligan = true,
             surplusLandsReadTheHand = true,

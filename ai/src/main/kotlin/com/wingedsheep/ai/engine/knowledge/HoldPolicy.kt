@@ -168,6 +168,11 @@ class HoldPolicy(
      */
     private val castBansDenyTheirTurn: Boolean = false,
     /**
+     * [AiProfile.forcedAttacksOnTheirTurn][com.wingedsheep.ai.engine.AiProfile.forcedAttacksOnTheirTurn]
+     * — reward a forced attack where it makes an opponent attack this turn ([ForcedAttackWindow]).
+     */
+    private val forcedAttacksOnTheirTurn: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -279,6 +284,17 @@ class HoldPolicy(
             if (definition != null && CastBanWindow.deniesATurn(state, playerId, definition)) {
                 return TimingVerdict.Adjust(
                     CAST_BAN_WINDOW, reason = "ban denies their turn", onlyWhenIdle = intent.speed != Speed.INSTANT,
+                )
+            }
+        }
+
+        // "Creatures target opponent controls attack this turn if able", on their turn before they
+        // attack: the only window "this turn" holds an attack of theirs at all.
+        if (forcedAttacksOnTheirTurn && cast != null && IntentTag.FORCED_ATTACK in intent.tags) {
+            val definition = intents.definition(cardName)
+            if (definition != null && ForcedAttackWindow.forcesAnAttack(state, playerId, definition)) {
+                return TimingVerdict.Adjust(
+                    FORCED_ATTACK_WINDOW, reason = "forces their attack", onlyWhenIdle = intent.speed != Speed.INSTANT,
                 )
             }
         }
@@ -900,6 +916,12 @@ class HoldPolicy(
          * better spent in, which the board score is blind to.
          */
         const val CAST_BAN_WINDOW = 1.5
+
+        /**
+         * The reward for an [IntentTag.FORCED_ATTACK] cast on the opponent's turn before they attack
+         * ([ForcedAttackWindow]) — sized like [CAST_BAN_WINDOW], for the same reason.
+         */
+        const val FORCED_ATTACK_WINDOW = 1.5
 
         val COMBAT_STEPS = setOf(
             Step.BEGIN_COMBAT, Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS,

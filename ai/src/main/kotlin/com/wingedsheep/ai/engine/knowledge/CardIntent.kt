@@ -454,6 +454,19 @@ enum class IntentTag {
     CAST_BAN,
 
     /**
+     * Makes an opponent's creatures attack this turn if able — Imaginary Threats' "creatures target
+     * opponent controls attack this turn if able", Kardur's "each creature your
+     * opponents control attacks … if able".
+     *
+     * Like a cast ban it moves no permanent, so the board simulation sees a card spent for nothing:
+     * the payoff is an attack the opponent didn't choose, into our blockers, leaving their creatures
+     * tapped. The tag is what tells the AI the card is disruption, and what [HoldPolicy] reads to cast
+     * an instant-speed one on the opponent's turn, before attackers are declared
+     * ([ForcedAttackWindow]).
+     */
+    FORCED_ATTACK,
+
+    /**
      * Stops permanents entering (or dying) from triggering abilities — Torpor Orb's and Tocatli
      * Honor Guard's "creatures entering the battlefield don't cause abilities to trigger", Hushbringer's
      * enters-or-dies lock, Elesh Norn, Mother of Machines' opponents-only half.
