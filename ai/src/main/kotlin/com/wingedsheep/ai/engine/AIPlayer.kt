@@ -407,6 +407,7 @@ class AIPlayer(
                     refuseWastedPayoffs = profile.refuseWastedPayoffs,
                     lifelinkWaitsForBlocks = profile.lifelinkWaitsForBlocks,
                     tapToGrowAtTheirEndStep = profile.tapToGrowAtTheirEndStep,
+                    tapToPingAtTheirEndStep = profile.tapToPingAtTheirEndStep,
                     borrowedCreaturesGoHome = profile.borrowedCreaturesGoHome,
                     castBansDenyTheirTurn = profile.castBansDenyTheirTurn,
                     forcedAttacksOnTheirTurn = profile.forcedAttacksOnTheirTurn,

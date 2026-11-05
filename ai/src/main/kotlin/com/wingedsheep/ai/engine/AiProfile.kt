@@ -1397,6 +1397,17 @@ data class AiProfile(
      */
     val tapToGrowAtTheirEndStep: Boolean = false,
     /**
+     * Hold a creature's "{T}: deal N damage to each opponent" (Lightning-Rig Crew) until the tap
+     * costs nothing: an opponent's turn, after blockers, with our own turn next — unless the damage
+     * kills an opponent now.
+     *
+     * Production game `3d30821e` turn 15: at 2 life facing a 6/5 lifelinker, the AI tapped
+     * Lightning-Rig Crew — its only untapped creature, kept home as a chump blocker — to ping a
+     * player on 31, and died to the swing back. See
+     * [com.wingedsheep.ai.engine.knowledge.SelfTapPingWindow]. Pinned by `SelfTapPingWindowTest`.
+     */
+    val tapToPingAtTheirEndStep: Boolean = false,
+    /**
      * In a pod, make a lethal attack with only what the kill needs and keep the rest home for the
      * opponents still at the table.
      *
@@ -2562,6 +2573,7 @@ data class AiProfile(
             pressWhenAhead = true,
             lifelinkWaitsForBlocks = true,
             tapToGrowAtTheirEndStep = true,
+            tapToPingAtTheirEndStep = true,
             minimalLethalInPods = true,
             blockTriggersKill = true,
             stressCrackBack = true,

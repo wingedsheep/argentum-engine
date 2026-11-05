@@ -70,7 +70,7 @@ internal object SelfTapGrowthWindow {
      * being over, keeps the counter available as a combat pump for a creature that is blocking —
      * the leaf, which can see that fight, decides there.
      */
-    private fun tapIsFree(state: GameState, playerId: EntityId): Boolean {
+    fun tapIsFree(state: GameState, playerId: EntityId): Boolean {
         if (state.isActiveTurnFor(playerId)) return false
         val active = state.activePlayerId ?: return false
         if (!state.turnAfterIsOurs(active, playerId)) return false
@@ -83,7 +83,7 @@ internal object SelfTapGrowthWindow {
         return next == playerId || (format.sharesTeamTurns && teamOf(next).contains(playerId))
     }
 
-    private fun tapsItself(cost: AbilityCost): Boolean = when (cost) {
+    fun tapsItself(cost: AbilityCost): Boolean = when (cost) {
         AbilityCost.Tap -> true
         is AbilityCost.Composite -> cost.costs.any(::tapsItself)
         else -> false

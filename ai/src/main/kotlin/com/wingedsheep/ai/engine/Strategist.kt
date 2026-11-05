@@ -44,6 +44,8 @@ import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.core.SaddleMount
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.core.doesntUntapDuringUntapStep
+import com.wingedsheep.ai.engine.knowledge.SelfTapGrowthWindow
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
 import com.wingedsheep.engine.legalactions.LegalAction
@@ -279,6 +281,11 @@ class Strategist(
      */
     private val tapToGrowAtTheirEndStep: Boolean = false,
     /**
+     * [AiProfile.tapToPingAtTheirEndStep] — passed straight through to [HoldPolicy], which hands it
+     * to [com.wingedsheep.ai.engine.knowledge.SelfTapPingWindow].
+     */
+    private val tapToPingAtTheirEndStep: Boolean = false,
+    /**
      * [AiProfile.borrowedCreaturesGoHome] — passed straight through to [HoldPolicy], which hands
      * it to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
      */
@@ -344,6 +351,7 @@ class Strategist(
         refuseWastedPayoffs = refuseWastedPayoffs,
         lifelinkWaitsForBlocks = lifelinkWaitsForBlocks,
         tapToGrowAtTheirEndStep = tapToGrowAtTheirEndStep,
+        tapToPingAtTheirEndStep = tapToPingAtTheirEndStep,
         borrowedCreaturesGoHome = borrowedCreaturesGoHome,
         castBansDenyTheirTurn = castBansDenyTheirTurn,
         forcedAttacksOnTheirTurn = forcedAttacksOnTheirTurn,
@@ -1059,12 +1067,14 @@ class Strategist(
         val deployed = deploymentCredit(state, action, leafState, playerId)
         val fuel = fuelLoyaltyCredit(state, action, leafState, playerId)
         val ban = turnDenialCredit(state, action, playerId)
-        val credit = deployed + fuel + ban
+        val freeTap = freeTapCredit(state, action, leafState, playerId)
+        val credit = deployed + fuel + ban + freeTap
         val leafScore = rawLeafScore + credit
         val creditNote = listOfNotNull(
             if (deployed > 0.0) "deployed, not spent %+.2f".format(deployed) else null,
             if (fuel > 0.0) "loyalty is only fuel %+.2f".format(fuel) else null,
             if (ban > 0.0) "denies their turn %+.2f".format(ban) else null,
+            if (freeTap > 0.0) "tap is free: it untaps before it is needed %+.2f".format(freeTap) else null,
         ).joinToString("; ").ifEmpty { null }
         rideForTheAttack(state, action, playerId, leafState, passScore)?.let { return it }
         val cardName = resolveCardName(state, action) ?: return AdjustedScore(leafScore, creditNote)
@@ -1822,6 +1832,39 @@ class Strategist(
         val without = root.removeFromZone(hand, cast.cardId)
         val charge = evaluator.evaluate(root, root.projectedState, playerId) -
             evaluator.evaluate(without, without.projectedState, playerId)
+        return charge.coerceAtLeast(0.0)
+    }
+
+    /**
+     * The tap a creature's self-tapping ability pays, refunded where the tap costs nothing —
+     * [AiProfile.tapToPingAtTheirEndStep]. In an opponent's turn after blockers, with our turn
+     * next, the creature untaps before it can attack or block again, but the leaf still reads it
+     * as a tapped creature: `ThreatAssessment` counts no defence for it and saw the opponent's
+     * board as lethal, so Lightning-Rig Crew's free end-step ping scored below passing at low
+     * life. Measured with the evaluator itself, as [fuelLoyaltyCredit] is:
+     * `evaluate(leaf with the source untapped) − evaluate(leaf)`. Never negative.
+     */
+    private fun freeTapCredit(
+        root: GameState,
+        action: LegalAction,
+        leaf: GameState,
+        playerId: EntityId,
+    ): Double {
+        if (!tapToPingAtTheirEndStep) return 0.0
+        val activation = action.action as? ActivateAbility ?: return 0.0
+        val sourceId = activation.sourceId
+        if (!SelfTapGrowthWindow.tapIsFree(root, playerId)) return 0.0
+        if (root.getEntity(sourceId)?.has<TappedComponent>() != false) return 0.0
+        val name = root.getEntity(sourceId)?.get<CardComponent>()?.name ?: return 0.0
+        val ability = intents.activatedAbility(name, activation.abilityId) ?: return 0.0
+        if (ability.isManaAbility || !SelfTapGrowthWindow.tapsItself(ability.cost)) return 0.0
+        if (sourceId !in leaf.getBattlefield(playerId)) return 0.0
+        val leafProjected = leaf.projectedState
+        if (!leafProjected.isCreature(sourceId) || leafProjected.doesntUntapDuringUntapStep(sourceId)) return 0.0
+        if (leaf.getEntity(sourceId)?.has<TappedComponent>() != true) return 0.0
+        val untapped = leaf.updateEntity(sourceId) { it.without<TappedComponent>() }
+        val charge = evaluator.evaluate(untapped, untapped.projectedState, playerId) -
+            evaluator.evaluate(leaf, leafProjected, playerId)
         return charge.coerceAtLeast(0.0)
     }
 
