@@ -855,6 +855,10 @@ object TargetPolarityAnalyzer {
                     source.zone == Zone.HAND || source.zone == Zone.GRAVEYARD || source.zone == Zone.BATTLEFIELD
                 }
                 is CardSource.ControlledPermanents -> source.player
+                // "Search target player's graveyard, hand, and library for all cards with that name
+                // and exile them" (Cranial Extraction, Dispossess): the hand and graveyard it reaches
+                // are that player's to lose.
+                is CardSource.FromMultipleZones -> source.player.takeIf { Zone.HAND in source.zones || Zone.GRAVEYARD in source.zones }
                 else -> null
             } ?: continue
             val slot = when (player) {

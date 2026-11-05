@@ -135,28 +135,16 @@ class CardRegistry(private val parent: CardRegistry? = null) {
      * Get the names of every registered card whose type line includes Land (e.g. for
      * Petrified Hamlet's "choose a land card name"). Unique names only.
      */
-    fun landCardNames(): Set<String> {
-        val own = cardsByName.values.filter { it.isLand }.map { it.name }.toSet()
-        // An overlay only shadows definitions; a name is a land name if it is one in either layer.
-        return if (parent == null) own else own + parent.landCardNames().filter { it !in cardsByName }
-    }
+    fun landCardNames(): Set<String> = namesWhere { it.isLand }
 
     /**
-     * Get the names of every registered card whose type line does *not* include Land (Skyseer's
-     * Chariot's "choose a nonland card name"). Unique names only; the mirror of [landCardNames].
+     * The registered names whose definition matches [predicate]. Unique names only. An overlay
+     * only shadows definitions: a name the overlay redefines is judged by the overlay's definition
+     * alone, every other name by the parent's.
      */
-    fun nonlandCardNames(): Set<String> {
-        val own = cardsByName.values.filter { !it.isLand }.map { it.name }.toSet()
-        return if (parent == null) own else own + parent.nonlandCardNames().filter { it !in cardsByName }
-    }
-
-    /**
-     * Get the names of every registered land card that isn't a basic land (Alpine Moon's "choose a
-     * nonbasic land card name"). Unique names only; [landCardNames] minus the Basic supertype.
-     */
-    fun nonbasicLandCardNames(): Set<String> {
-        val own = cardsByName.values.filter { it.isLand && !it.typeLine.isBasicLand }.map { it.name }.toSet()
-        return if (parent == null) own else own + parent.nonbasicLandCardNames().filter { it !in cardsByName }
+    private fun namesWhere(predicate: (CardDefinition) -> Boolean): Set<String> {
+        val own = cardsByName.values.filter(predicate).map { it.name }.toSet()
+        return if (parent == null) own else own + parent.namesWhere(predicate).filter { it !in cardsByName }
     }
 
     /**
@@ -167,8 +155,9 @@ class CardRegistry(private val parent: CardRegistry? = null) {
     fun cardNamesIn(pool: com.wingedsheep.sdk.scripting.CardNamePool): Set<String> = when (pool) {
         com.wingedsheep.sdk.scripting.CardNamePool.ANY -> allCardNames()
         com.wingedsheep.sdk.scripting.CardNamePool.LAND -> landCardNames()
-        com.wingedsheep.sdk.scripting.CardNamePool.NONLAND -> nonlandCardNames()
-        com.wingedsheep.sdk.scripting.CardNamePool.NONBASIC_LAND -> nonbasicLandCardNames()
+        com.wingedsheep.sdk.scripting.CardNamePool.NONLAND -> namesWhere { !it.isLand }
+        com.wingedsheep.sdk.scripting.CardNamePool.NONBASIC_LAND -> namesWhere { it.isLand && !it.typeLine.isBasicLand }
+        com.wingedsheep.sdk.scripting.CardNamePool.ARTIFACT -> namesWhere { it.isArtifact }
     }
 
     /**
