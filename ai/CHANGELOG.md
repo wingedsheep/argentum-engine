@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Reads "you can't lose the game" and "your opponents can't win the game" (Platinum Angel, Gideon of the Trials' emblem) as protection, so a planeswalker ability that hands out that emblem is no longer an unknown effect.
 - #4480 Holds "one or two target creatures each get +N/+N until end of turn" tricks (Appeal to Eirdu, Coordinated Assault, Tandem Tactics) for a fight or a response, as it does single-target pumps.
 - #4478 Reads a "you may play those cards until your next end step" impulse as card draw wherever it comes from (Dragonhawk, Fate's Tempest, Questing Druid, Inti, Unlucky Witness), since a main phase is always left before that window closes.
 - Drafts and builds a free-cycling enchantment (New Perspectives) as a payoff its own cycling and typecycling cards feed, instead of reading it as a lone draw-three

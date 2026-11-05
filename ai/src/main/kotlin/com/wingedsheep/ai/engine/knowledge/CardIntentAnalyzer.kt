@@ -24,6 +24,8 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
+import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
@@ -2046,6 +2048,10 @@ object CardIntentAnalyzer {
 
     private fun tagsOf(static: StaticAbility): Set<IntentTag> = when (static) {
         is ConditionalStaticAbility -> tagsOf(static.ability)
+        // "You can't lose the game and your opponents can't win the game" (Platinum Angel, Gideon of
+        // the Trials' emblem): a shield over its controller rather than any permanent — the game
+        // can't be taken from them while it holds.
+        is GrantCantLoseGame, is GrantOpponentsCantWinGame -> setOf(IntentTag.PROTECTION)
         is CanBlockAdditionalForCreatureGroup ->
             if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
