@@ -9769,6 +9769,108 @@
     "hasNoManaCost": true
 }
 
+// Sunscourge Champion
+{
+    "name": "Sunscourge Champion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, you gain life equal to its power.\nEternalize—{2}{W}{W}, Discard a card. ({2}{W}{W}, Discard a card, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie Human Wizard with no mana cost. Eternalize only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "ETERNALIZE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sunscourge Champion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "eternalize_{2}{W}{W}_Discard a card",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overridePower": 4,
+                    "overrideToughness": 4,
+                    "overrideColors": [
+                        "BLACK"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "exceptions": {
+                        "noManaCost": true
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize—{2}{W}{W}, Discard a card ({2}{W}{W}, Discard a card, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0bb41cc-6edb-4a31-92cb-b17850b49432.jpg?1783936056",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "The amount of life you gain is determined as Sunscourge Champion's triggered ability resolves. Players may respond to the ability by attempting to change its power."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If Sunscourge Champion leaves the battlefield before its triggered ability resolves, use its power as it last existed on the battlefield to determine how much life to gain. If that number is negative, you don't gain any life and you don't lose any life."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Several cards have an eternalize cost that includes \"Discard a card.\" You can't discard the card with eternalize to pay its own cost because the card has to be in your graveyard to begin activating its eternalize ability."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The token copies exactly what was printed on the original card and nothing else, except the characteristics specifically modified by eternalize. It doesn't copy any information about the object the card was before it was put into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sunset Pyramid
 {
     "name": "Sunset Pyramid",
