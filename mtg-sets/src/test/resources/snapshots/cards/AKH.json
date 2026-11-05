@@ -3670,6 +3670,127 @@
     ]
 }
 
+// Insult // Injury
+{
+    "name": "Insult // Injury",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Damage can't be prevented this turn. If a source you control would deal damage this turn, it deals double that damage instead.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nInjury deals 2 damage to target creature and 2 damage to target player or planeswalker.",
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeac671f-2606-43ed-ad60-a69df5c150f6.jpg?1783936458",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If an effect such as that of Chandra's Pyrohelix asks you to divide damage among targets, you must divide the unmodified damage before doubling it."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you cast two Insults in one turn, damage dealt by sources you control this turn will be multiplied by 4. If you cast three Insults, it will be multiplied by 8, and so on. How rude."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a creature with trample you control would deal combat damage to a blocking creature this turn, you must assign its unmodified damage. For example, a 3/3 creature with trample blocked by a 2/2 creature can only have 1 damage assigned to the defending player. It will then deal 4 damage to the blocking creature and 2 to the defending player."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You can't cast Injury unless you target both a creature and a player. If one target is illegal as Injury resolves, the spell deals damage to the remaining legal target."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Insult",
+            "manaCost": "{2}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Damage can't be prevented this turn. If a source you control would deal damage this turn, it deals double that damage instead.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        "DamageCantBePreventedThisTurn",
+                        {
+                            "type": "AmplifyDamageThisTurn",
+                            "bonus": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "appliesTo": {
+                                "source": {
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            },
+                            "multiplier": 2
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Injury",
+            "manaCost": "{2}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nInjury deals 2 damage to target creature and 2 damage to target player or planeswalker.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Irrigated Farmland
 {
     "name": "Irrigated Farmland",

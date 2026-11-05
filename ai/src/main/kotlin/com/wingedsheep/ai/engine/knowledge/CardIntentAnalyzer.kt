@@ -1325,6 +1325,11 @@ object CardIntentAnalyzer {
     }
 
     private fun leafTagsOf(effect: Effect): Set<IntentTag> = when (effect) {
+        // "If a source you control would deal damage this turn, it deals double that damage
+        // instead" (Insult): a one-sided multiplier for the turn — the same payoff a DoubleDamage
+        // permanent reads as, cashed in by what attacks or burns after it resolves.
+        is AmplifyDamageThisTurnEffect ->
+            if (DamageAmplifiers.reads(effect)) setOf(IntentTag.DAMAGE_AMPLIFIER) else emptySet()
         is ReflexiveTriggerEffect -> analyzeEffect(effect.reflexiveEffect, effect.reflexiveTargetRequirements).tags
         is MoveToZoneEffect -> when {
             // A group-targeted move is a wrath; a single-target one is spot removal. Both only

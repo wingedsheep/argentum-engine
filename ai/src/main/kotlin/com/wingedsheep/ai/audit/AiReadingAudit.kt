@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
@@ -864,6 +865,9 @@ object AiReadingAudit {
         // drawback as the two above, and the evaluator prices the new total on resolution. Whether
         // a targeted one aims at the right player is the polarity check's question, not intent's.
         if (leaf is SetLifeTotalEffect) return true
+        // "Damage can't be prevented this turn" (Insult, Skullcrack's rider) has no target and is a
+        // rider on the damage beside it: what it buys is the damage the simulation already sees land.
+        if (leaf is DamageCantBePreventedThisTurnEffect) return true
         // "Lands you control don't untap during your next untap step" (Hour of Devastation's god
         // spells: Bontu's Last Reckoning, Oketra's Last Mercy) binds its own controller: the price of
         // the card's payoff, with no target to aim and nothing to hold. Skipping an opponent's untap

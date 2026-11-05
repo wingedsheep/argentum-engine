@@ -26,6 +26,8 @@ import kotlin.reflect.KClass
  * permanent or player this turn, it deals that much damage plus X instead."
  * Rankle and Torbran: "If a source would deal damage to a player or battle this turn, it deals that
  * much damage plus 2 instead."
+ * Insult // Injury (multiplier 2): "If a source you control would deal damage this turn, it deals
+ * double that damage instead."
  */
 class AmplifyDamageThisTurnExecutor(
     private val amountEvaluator: DynamicAmountEvaluator
@@ -39,13 +41,13 @@ class AmplifyDamageThisTurnExecutor(
         effect: AmplifyDamageThisTurnEffect,
         context: EffectContext
     ): EffectResult {
-        val bonus = amountEvaluator.evaluate(state, effect.bonus, context)
-        // X may be 0 — installing a +0 shield is a harmless no-op, but skip it to avoid clutter.
-        if (bonus <= 0) return EffectResult.success(state)
+        val bonus = amountEvaluator.evaluate(state, effect.bonus, context).coerceAtLeast(0)
+        // X may be 0 — installing a ×1 +0 shield is a harmless no-op, but skip it to avoid clutter.
+        if (bonus == 0 && effect.multiplier <= 1) return EffectResult.success(state)
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.AmplifyDamage(bonus, effect.appliesTo),
+            modification = SerializableModification.AmplifyDamage(bonus, effect.appliesTo, effect.multiplier),
             // affectedEntities is unused for this read-at-damage-time modification; the controller
             // (ActiveFloatingEffect.controllerId, set from context.controllerId) is what scopes it.
             affectedEntities = setOf(context.controllerId),

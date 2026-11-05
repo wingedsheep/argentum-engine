@@ -8631,6 +8631,7 @@ Instill Energy	intent: TapUntapEffect
 Instill Furor	polarity: Aura>GrantTriggeredAbility
 Instrument of the Bards
 Instruments of War
+Insult // Injury
 Insurrection
 Intangible Virtue
 Integrity // Intervention
@@ -15029,6 +15030,7 @@ Shadow of Doubt	timing: CantSearchLibrariesEffect
 Shadow of Mortality
 Shadow of the Enemy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyard→exile); polarity: Pipeline(graveyard→exile)
 Shadow of the Goblin
+Shadow of the Grave
 Shadow of the Second Sun	intent: AddBeginningPhaseEffect; polarity: Aura>AddBeginningPhaseEffect
 Shadow-Rite Priest
 Shadowbeast Sighting

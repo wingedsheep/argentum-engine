@@ -113,6 +113,16 @@ class DamageAmplifierAiTest : ScenarioTestBase() {
             d.getLifeTotal(d.player2) shouldBe 18
         }
 
+        test("a turn-scoped one-sided doubler (Insult) reads as a damage amplifier; a plus-N bonus does not") {
+            CardIntentAnalyzer.analyze(definition("Insult // Injury")).tags shouldContain IntentTag.DAMAGE_AMPLIFIER
+            CardIntentAnalyzer.analyze(definition("Taii Wakeen, Perfect Shot")).tags shouldNotContain IntentTag.DAMAGE_AMPLIFIER
+            val symmetric = card("Symmetric Turn Doubler") {
+                typeLine = "Sorcery"
+                spell { effect = Effects.DoubleDamageThisTurn(EventPattern.DamageEvent()) }
+            }
+            CardIntentAnalyzer.analyze(symmetric).tags shouldNotContain IntentTag.DAMAGE_AMPLIFIER
+        }
+
         test("one-sided multipliers have intent, a rating term, and permanent value") {
             for (name in listOf("Angrath's Marauders", "Fiery Emancipation", "Twinflame Tyrant")) {
                 val card = definition(name)

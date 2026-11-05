@@ -402,6 +402,18 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.AmplifyDamageThisTurnEffect(bonus, appliesTo)
 
     /**
+     * Install a turn-duration replacement that doubles every damage instance matching [appliesTo]
+     * for the rest of the turn (CR 616) — the multiplying form of [AmplifyDamageThisTurn]. Each
+     * install doubles once, so two of them quadruple.
+     *
+     * - Insult // Injury (Insult): `DoubleDamageThisTurn(DamageEvent(source = GameObjectFilter.Any.youControl()))`.
+     */
+    fun DoubleDamageThisTurn(appliesTo: EventPattern.DamageEvent): Effect =
+        com.wingedsheep.sdk.scripting.effects.AmplifyDamageThisTurnEffect(
+            DynamicAmount.Fixed(0), appliesTo, multiplier = 2
+        )
+
+    /**
      * Install a duration-bounded replacement that doubles all damage — any source, combat or
      * noncombat — dealt to [target] (a player) and to any permanent that player controls, for
      * [duration]. The player is captured at resolution, so the doubling outlives the source that

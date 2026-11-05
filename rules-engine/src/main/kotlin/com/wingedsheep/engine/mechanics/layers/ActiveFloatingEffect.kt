@@ -845,17 +845,20 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
-     * Turn-duration damage amplification (CR 616): every damage instance matching [appliesTo] is
-     * increased by [bonus] this turn. [appliesTo]'s source / recipient filters are "you"-relative to
+     * Turn-duration damage amplification (CR 616): every damage instance matching [appliesTo] becomes
+     * `amount * [multiplier] + [bonus]` this turn (Insult // Injury doubles: multiplier 2, bonus 0). [appliesTo]'s source / recipient filters are "you"-relative to
      * [ActiveFloatingEffect.controllerId]. Read directly during damage resolution by
      * `DamageUtils.applyStaticDamageAmplification` (not a layer modification). Installed by
-     * `AmplifyDamageThisTurnEffect` — Taii Wakeen, Perfect Shot; Rankle and Torbran.
+     * `AmplifyDamageThisTurnEffect` — Taii Wakeen, Perfect Shot; Rankle and Torbran; Insult // Injury.
      */
     @Serializable
     data class AmplifyDamage(
         val bonus: Int,
         val appliesTo: EventPattern.DamageEvent,
-    ) : SerializableModification
+        val multiplier: Int = 1,
+    ) : SerializableModification {
+        fun apply(amount: Int): Int = amount * multiplier + bonus
+    }
 
     /**
      * Duration-bounded damage-doubling scoped to a single player (CR 616): all damage — any source,
