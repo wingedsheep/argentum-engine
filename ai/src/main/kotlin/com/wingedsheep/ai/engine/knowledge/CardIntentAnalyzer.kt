@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.MustAttack
@@ -447,7 +448,12 @@ object CardIntentAnalyzer {
             .flatten()
         val blinks = EffectWalker.blinkMoves(effect) + delayed
         val payoff = leaves.filterNot { leaf -> blinks.any { it === leaf } }
-        return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) + payoff.flatMap { leaf ->
+        // "Exile up to five target creature cards from graveyards … put the pile of your choice onto
+        // the battlefield under your control" (Boneyard Parley): graveyard cards brought back onto
+        // our side, a reanimation whoever owned them — read as the single-card return it adds up to.
+        val reanimates = reanimatesChosenGraveyardTargets(effect, requirements)
+        return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) +
+            (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) + payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
@@ -476,11 +482,21 @@ object CardIntentAnalyzer {
                 // land (Wakeroot Elemental's "untap target land you control. It becomes a 5/5
                 // Elemental"), the untap sets that step up, and reading it as ramp would hide it.
                 is TapUntapEffect -> if (payoff.size == 1 && untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
-                is ForEachEffect -> if (payoff.size == 1 && leaf.space == IterationSpace.Targets &&
-                    EffectWalker.payoffLeaves(leaf.body).let { body ->
-                        body.size == 1 && body.all { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
-                    }
-                ) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
+                is ForEachEffect -> when {
+                    payoff.size == 1 && leaf.space == IterationSpace.Targets &&
+                        EffectWalker.payoffLeaves(leaf.body).let { body ->
+                            body.size == 1 && body.all { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
+                        } -> listOf(UNTAP_OUR_LANDS)
+                    // "Return two target Pirate cards from your graveyard to your hand" (March of the
+                    // Drowned) runs its body once per target, each seeing it as `ContextTarget(0)`.
+                    // With one declared slot that is every pick of that slot, so the body reads
+                    // against it — a return out of our graveyard is the recursion it is, not the
+                    // bounce an unplaced move to hand reads as. (TargetPolarityAnalyzer does the same.)
+                    leaf.space == IterationSpace.Targets && requirements.size == 1 &&
+                        EffectWalker.payoffLeaves(leaf.body).all { it is MoveToZoneEffect } ->
+                        readingLeaves(leaf.body, requirements)
+                    else -> listOf(leaf)
+                }
                 is GatherCardsEffect -> {
                     val source = leaf.source as? CardSource.TopOfLibrary
                     val slot = when (val player = source?.player) {
@@ -555,6 +571,41 @@ object CardIntentAnalyzer {
         it is GrantFreeCastTargetFromExileEffect || it is GrantMayPlayFromExileEffect ||
             it is GrantPlayWithoutPayingCostEffect || it is CastFromCollectionWithoutPayingCostEffect ||
             it is CreateTokenCopyOfTargetEffect || it is EachPermanentBecomesCopyOfTargetEffect
+    }
+
+    /**
+     * Whether [effect] puts its own chosen targets — or the cards split, picked or piled from among
+     * them — onto the battlefield under our control: "exile up to five target creature cards from
+     * graveyards. An opponent separates those cards into two piles. Put all cards from the pile of
+     * your choice onto the battlefield under your control" (Boneyard Parley). Whatever the pile
+     * steps in between (Fact or Fiction's split, a tracked exile), the chosen cards end up ours.
+     */
+    internal fun putsChosenTargetsOntoOurBattlefield(effect: Effect): Boolean {
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
+        }
+        if (chosen.isEmpty()) return false
+        do {
+            val before = chosen.size
+            for (leaf in leaves) chosen += derivedCollections(leaf, chosen)
+        } while (chosen.size != before)
+        return leaves.any { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@any false
+            val to = move.destination as? CardDestination.ToZone ?: return@any false
+            move.from in chosen && move.faceDown == null && !move.underOwnersControl &&
+                to.zone == Zone.BATTLEFIELD && to.player == Player.You
+        }
+    }
+
+    /**
+     * [putsChosenTargetsOntoOurBattlefield] over target slots that all sit in a graveyard: a
+     * reanimation onto our side. Slots on the battlefield would make the same pipeline a blink.
+     */
+    internal fun reanimatesChosenGraveyardTargets(effect: Effect, requirements: List<TargetRequirement>): Boolean {
+        val objects = requirements.map { ((it as? TargetOther)?.baseRequirement ?: it) as? TargetObject }
+        if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
+        return putsChosenTargetsOntoOurBattlefield(effect)
     }
 
     internal fun graveyardMoveOf(move: MoveToZoneEffect, requirements: List<TargetRequirement>): GraveyardMove? {
@@ -1296,7 +1347,9 @@ object CardIntentAnalyzer {
         // spell when every mode counters, so [IntentTag.COUNTERSPELL] alone needs all of them.
         // A cast with its modes chosen is read off those modes instead — [analyzeModes].
         is ModalEffect -> {
-            val perMode = effect.modes.map { mode -> effectTags(mode.effect) }
+            // Each mode reads against its own targets: "return target creature card from your
+            // graveyard to your hand" is recursion only once its slot puts the card in a graveyard.
+            val perMode = effect.modes.map { mode -> effectTags(mode.effect, mode.targetRequirements) }
             val union = perMode.flatMapTo(HashSet()) { it }
             if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
         }
@@ -1583,6 +1636,9 @@ object CardIntentAnalyzer {
         is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
             else neutralizeTags(static.filter)
         is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature can't attack unless you control an artifact" (Desperate Castaways, Gadrak):
+        // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
+        is CantAttackUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature attacks or blocks each combat if able" (Relentless Raptor, Juggernaut) binds
         // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
@@ -1936,6 +1992,13 @@ object CardIntentAnalyzer {
      * exile as: the return a recursion's `MoveToZoneEffect` out of the graveyard is
      * ([IntentTag.RECURSION]), only by way of exile.
      */
+    /**
+     * What a [reanimatesChosenGraveyardTargets] pipeline reads as: a card out of a graveyard onto
+     * our battlefield — [IntentTag.RECURSION], as the single-card return is in [tagsOf].
+     */
+    private val REANIMATE_FROM_A_GRAVEYARD: Effect =
+        MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
+
     private val RECAST_FROM_OUR_GRAVEYARD: Effect =
         MoveToZoneEffect(EffectTarget.Self, Zone.HAND, fromZone = Zone.GRAVEYARD)
 

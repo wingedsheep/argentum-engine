@@ -318,6 +318,160 @@
     ]
 }
 
+// Arguel's Blood Fast
+{
+    "name": "Arguel's Blood Fast",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "{1}{B}, Pay 2 life: Draw a card.\nAt the beginning of your upkeep, if you have 5 or less life, you may transform Arguel's Blood Fast.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arguel's Blood Fast:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you have 5 or less life, you may transform Arguel's Blood Fast."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Arguel's Blood Fast:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Aclazotz",
+        "manaCost": "",
+        "typeLine": "Legendary Land",
+        "oracleText": "(Transforms from Arguel's Blood Fast.)\n{T}: Add {B}.\n{T}, Sacrifice a creature: You gain life equal to the sacrificed creature's toughness.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Temple of Aclazotz:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "Temple of Aclazotz:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": "creature"
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "SacrificedAsCost",
+                            "numericProperty": "Toughness"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "90",
+            "rarity": "RARE",
+            "artist": "Daarken",
+            "flavorText": ". . . to the lost temple of a bat-god of night, eternal enemy to the Threefold Sun.",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/4/c4ac7570-e74e-4081-ac53-cf41e695b7eb.jpg?1783935780"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "Arguel's vision led him into the jungles of Ixalan . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4ac7570-e74e-4081-ac53-cf41e695b7eb.jpg?1783935780",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If your life total is 6 or greater as your upkeep begins, the second ability of Arguel's Blood Fast won't trigger. You can't take any actions during your turn before your upkeep begins."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If your life total is 6 or greater as the second ability of Arguel's Blood Fast tries to resolve, it won't do anything."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once you've announced the last ability of Temple of Aclazotz, it's too late for anyone to interrupt you by trying to remove the creature you sacrifice."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For the last ability of Temple of Aclazotz, use the creature's toughness as it last existed on the battlefield to determine how much life you gain."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ashes of the Abhorrent
 {
     "name": "Ashes of the Abhorrent",
@@ -654,6 +808,55 @@
     ]
 }
 
+// Bishop of the Bloodstained
+{
+    "name": "Bishop of the Bloodstained",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "When this creature enters, target opponent loses 1 life for each Vampire you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bishop of the Bloodstained:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Vampire"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"They shall give us all they have as penance for their resistance. Their ships. Their goods. Their rebellious blood.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/373131be-bd66-49f5-80fa-836ced03fedf.jpg?1783935766"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bishop's Soldier
 {
     "name": "Bishop's Soldier",
@@ -798,6 +1001,42 @@
     ]
 }
 
+// Bloodcrazed Paladin
+{
+    "name": "Bloodcrazed Paladin",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "Flash\nThis creature enters with a +1/+1 counter on it for each creature that died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "TurnTracking",
+                    "player": "Each",
+                    "tracker": "CREATURES_DIED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e2160e9-14a0-4c75-b7b0-fb09051ddb32.jpg?1783935766"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blossom Dryad
 {
     "name": "Blossom Dryad",
@@ -905,6 +1144,110 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Boneyard Parley
+{
+    "name": "Boneyard Parley",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile up to five target creature cards from graveyards. An opponent separates those cards into two piles. Put all cards from the pile of your choice onto the battlefield under your control and the rest into their owners' graveyards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "moved1",
+                    "selection": "ChooseAnyNumber",
+                    "chooser": "Opponent",
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Separate the exiled creature cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                    "selectedLabel": "Pile 1",
+                    "remainderLabel": "Pile 2",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ChoosePile",
+                    "pileA": "selected2",
+                    "pileB": "remainder2",
+                    "storeChosenAs": "chosenPile3",
+                    "storeOtherAs": "otherPile3",
+                    "prompt": "Choose which pile enters the battlefield under your control; the other goes to its owners' graveyards."
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenPile3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "otherPile3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 5,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "MYTHIC",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35989b1e-9bad-4f8d-a559-bf14d1342aa3.jpg?1783935765",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "The creature cards may come from different graveyards."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You (not your opponent) choose which pile to put onto the battlefield and which to return to graveyards."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "A pile can have no cards in it. In this case, you'll choose whether to put all the exiled cards onto the battlefield or into graveyards."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "In multiplayer games, you choose an opponent to separate the cards when the ability resolves. This doesn't target that opponent. Because the cards are revealed, all players may see the cards and offer opinions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2143,6 +2486,95 @@
     ]
 }
 
+// Deadeye Tracker
+{
+    "name": "Deadeye Tracker",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "{1}{B}, {T}: Exile two target cards from an opponent's graveyard. This creature explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Deadeye Tracker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Exile"
+                            }
+                        },
+                        {
+                            "type": "Explore",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "filter": {
+                            "baseFilter": "own:opponent",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "sameOwner": true
+                    }
+                ],
+                "descriptionOverride": "Exile two target cards from an opponent's graveyard, then explore"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/848902db-7a10-4754-b50a-57a9e845705a.jpg?1783935762",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If one target card is an illegal target by the time Deadeye Tracker's ability resolves, the remaining legal target is exiled and Deadeye Tracker explores."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If each target card is an illegal target by the time Deadeye Tracker's ability resolves, the entire ability doesn't resolve. Deadeye Tracker won't explore."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You can't activate Deadeye Tracker's ability without targeting two cards in a single opponent's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deathless Ancient
 {
     "name": "Deathless Ancient",
@@ -2371,6 +2803,45 @@
     ]
 }
 
+// Desperate Castaways
+{
+    "name": "Desperate Castaways",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "This creature can't attack unless you control an artifact.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98a92dde-7a84-40fb-a11e-54c7d3057126.jpg?1783935762",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Once Desperate Castaways has attacked, it will remain in combat even if you no longer control an artifact."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dinosaur Stampede
 {
     "name": "Dinosaur Stampede",
@@ -2427,6 +2898,68 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/3/a31bda74-8455-45ab-8142-65fbde2f39c3.jpg"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dire Fleet Captain
+{
+    "name": "Dire Fleet Captain",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "Whenever this creature attacks, it gets +1/+1 until end of turn for each other attacking Pirate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dire Fleet Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature Pirate attacking",
+                        "excludeSelf": true
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature Pirate attacking",
+                        "excludeSelf": true
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature attacks, it gets +1/+1 until end of turn for each other attacking Pirate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "flavorText": "Orcs are happiest under captains who steer toward battle. Orcs of the Dire Fleet are downright jovial.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8200f8a3-d60b-470a-a558-0c3555d1f10b.jpg?1783935713",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Count the number of other attacking Pirates as the ability resolves to determine the size of the bonus."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once the ability resolves, the bonus won't change later in the turn, even if the number of other attacking Pirates does."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "In a Two-Headed Giant game, attacking Pirates controlled by your teammate will count for Dire Fleet Captain's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -2500,6 +3033,80 @@
         "collectorNumber": "103",
         "artist": "John Severin Brassell",
         "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2e3f7ee-98d0-45bd-97ae-3dc8050085a1.jpg?1783935762"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dire Fleet Ravager
+{
+    "name": "Dire Fleet Ravager",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Orc Pirate Wizard",
+    "oracleText": "Menace, deathtouch\nWhen this creature enters, each player loses a third of their life, rounded up.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dire Fleet Ravager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "target": "Controller"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, each player loses a third of their life, rounded up."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "MYTHIC",
+        "artist": "Bram Sels",
+        "flavorText": "His fists fume with the decay of death, each strike a plague on the hearts of his enemies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53bd7ccc-aa71-4a3f-a86e-936cb3b2cce3.jpg?1783935761",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "For example, if you have 13 life, you'll lose 5 life."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a player has 1 life, that player loses 1 life. If each player has 0 life after that, the game's a draw."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "In a Two-Headed Giant game, each player loses a third of the team's life total rounded up. For example, if a team has 13 life, each player on that team loses 5 life and the team loses 10 life total."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3167,6 +3774,87 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Fathom Fleet Captain
+{
+    "name": "Fathom Fleet Captain",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Menace\nWhenever this creature attacks, if you control another nontoken Pirate, you may pay {2}. If you do, create a 2/2 black Pirate creature token with menace.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fathom Fleet Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Pirate"
+                        ],
+                        "keywords": [
+                            "MENACE"
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Pirate nontoken",
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Join me, and take the world for yourself!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36cd7467-ff8c-4a92-ae55-6894213d6c0b.jpg?1783935760",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "While resolving Fathom Fleet Captain's triggered ability, you can't pay {2} multiple times to create more than one Pirate token."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If you don't control another nontoken Pirate at the moment Fathom Fleet Captain attacks, its triggered ability won't trigger. If you don't control another nontoken Pirate as that ability resolves, you can't pay {2}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4230,6 +4918,170 @@
     ]
 }
 
+// Grim Captain's Call
+{
+    "name": "Grim Captain's Call",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return a Pirate card from your graveyard to your hand, then do the same for Vampire, Dinosaur, and Merfolk.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "Pirate"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Return a Pirate card from your graveyard to your hand",
+                    "selectedLabel": "Return to hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "Vampire"
+                    },
+                    "storeAs": "gathered3"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered3",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected4",
+                    "prompt": "Return a Vampire card from your graveyard to your hand",
+                    "selectedLabel": "Return to hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "Dinosaur"
+                    },
+                    "storeAs": "gathered6"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered6",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected7",
+                    "prompt": "Return a Dinosaur card from your graveyard to your hand",
+                    "selectedLabel": "Return to hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected7",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "Merfolk"
+                    },
+                    "storeAs": "gathered9"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered9",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected10",
+                    "prompt": "Return a Merfolk card from your graveyard to your hand",
+                    "selectedLabel": "Return to hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected10",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ],
+            "descriptionOverride": "Return a Pirate card from your graveyard to your hand, then do the same for Vampire, Dinosaur, and Merfolk."
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "When the battle is over, the bitterest foes at last find common ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0055934f-1567-4207-aaad-d32d0fe1cdba.jpg?1783935759",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Grim Captain's Call doesn't target the cards to return. You choose them while it's resolving. No players may take actions between the time you make each choice and the time you return each card to your hand."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a card in your graveyard has more than one of these types (such as a Dinosaur that's a Vampire Dinosaur due to Arcane Adaptation's effect), you may choose to return it for one of its types and return another card of the other type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If you don't have a card in your graveyard of one of the listed creature types, you just continue to the next listed type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Growing Rites of Itlimoc
 {
     "name": "Growing Rites of Itlimoc",
@@ -4440,6 +5292,98 @@
     ]
 }
 
+// Heartless Pillage
+{
+    "name": "Heartless Pillage",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards.\nRaid — If you attacked this turn, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "PLAYER_ATTACKED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Treasure"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5e791ce-1380-4de0-b314-246ea6dfc3cc.jpg?1783935759"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Herald of Secret Streams
 {
     "name": "Herald of Secret Streams",
@@ -4548,6 +5492,121 @@
         "flavorText": "In the Rite of Redemption, nobles take the same vows as Elenda, the first vampire, and make the same eternal sacrifice.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e8be52c-25ce-49da-8435-58797550f058.jpg?1783935703"
     }
+}
+
+// Hostage Taker
+{
+    "name": "Hostage Taker",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "When this creature enters, exile another target creature or artifact until this creature leaves the battlefield. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hostage Taker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ExileUntilLeaves",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "FromLinkedExile",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent",
+                                    "withAnyManaType": true,
+                                    "nonLandOnly": true
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile another target creature or artifact until this creature leaves the battlefield. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+            },
+            {
+                "id": "Hostage Taker:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8dc67a0-05d9-463e-9794-30a7e951c240.jpg?1783935713",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If Hostage Taker leaves the battlefield before its triggered ability resolves, the target permanent won't be exiled."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield. You can't cast it."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once you begin to cast the exiled card, it's considered a new object. You'll control that spell and the permanent that spell becomes even if Hostage Taker leaves the battlefield."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If it's still in exile, the exiled card returns to the battlefield immediately after Hostage Taker leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Huatli's Snubhorn
@@ -5770,6 +6829,62 @@
     ]
 }
 
+// Lurking Chupacabra
+{
+    "name": "Lurking Chupacabra",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Beast Horror",
+    "oracleText": "Whenever a creature you control explores, target creature an opponent controls gets -2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lurking Chupacabra:1",
+                "trigger": {
+                    "type": "ExploredEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "YW Tang",
+        "flavorText": "\"Shadow birthed it. The moon gave it eyes, and the jungle gave it teeth. But it was Death that taught it cruelty.\"\n—Huatli",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abdbaa34-1ee5-4a2a-bdb3-2f04809a5b42.jpg?1783935759"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Makeshift Munitions
 {
     "name": "Makeshift Munitions",
@@ -5828,6 +6943,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// March of the Drowned
+{
+    "name": "March of the Drowned",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Return target creature card from your graveyard to your hand.\n• Return two target Pirate cards from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target creature card from your graveyard to your hand"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "filter": {
+                                "baseFilter": "Pirate own:you",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "description": "Return two target Pirate cards from your graveyard to your hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Ben Wootten",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfb8ae9-c6ea-4fab-ac9e-b25c62c540c6.jpg?1783935761",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If an effect refers to a \"[subtype] spell\" or \"[subtype] card,\" it refers only to a spell or card that has that subtype. For example, March of the Drowned is a card that benefits Pirates and features Pirates in its illustration, but it isn't a Pirate card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7856,6 +9046,85 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ruin Raider
+{
+    "name": "Ruin Raider",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Orc Pirate",
+    "oracleText": "Raid — At the beginning of your end step, if you attacked this turn, reveal the top card of your library and put that card into your hand. You lose life equal to the card's mana value.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruin Raider:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/457ba695-3637-40de-a8a8-e3a43a71674f.jpg?1783935755"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

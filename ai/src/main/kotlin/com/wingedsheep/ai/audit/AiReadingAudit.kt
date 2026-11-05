@@ -531,8 +531,11 @@ object AiReadingAudit {
             // loyalty it adds is on the board the simulation prices when it next activates them.
             val ownGroup = (each.space as? IterationSpace.Group)?.filter?.baseFilter?.controllerPredicate ==
                 ControllerPredicate.ControlledByYou
+            // Over one declared slot, `ContextTarget(0)` is each pick of that slot, so the body reads
+            // against it as the ability's own leaves do (Steward of the Harvest exiling our own land cards).
+            val oneSlot = each.space == IterationSpace.Targets && reqs.size == 1
             val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot {
-                needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
+                (oneSlot && noIntent(it)) || needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
                     (ownTargets && it is TapUntapEffect && !it.tap && it.target is EffectTarget.ContextTarget) ||
                     (ownGroup && it is AddCountersEffect && it.counterType == CounterType.LOYALTY &&
                         it.target == EffectTarget.IterationEntity)

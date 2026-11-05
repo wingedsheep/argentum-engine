@@ -202,11 +202,11 @@ Affa Guard Hound
 Affectionate Indrik
 Afflict
 Afterburner Expert
-Afterlife from the Loam	intent: ForEach>AddCreatureTypeEffect; intent: Pipeline(ChosenTargets→battlefield); polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Afterlife from the Loam
 Aftermath Analyst
 Aftershock
 Afterthought Sentry
-Agadeem's Awakening	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Agadeem's Awakening
 Against All Odds
 Agate Assault
 Agate Instigator
@@ -782,6 +782,7 @@ Argothian Pixies
 Argothian Sprite
 Argothian Swine
 Argothian Treefolk
+Arguel's Blood Fast
 Arid Archway
 Arid Mesa
 Arisen Gorgon
@@ -1112,7 +1113,7 @@ Axiom Engraver
 Axis of Mortality
 Ayara's Oathsworn
 Ayara, First of Locthwain
-Ayara, Widow of the Realm	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Ayara, Widow of the Realm
 Ayesha Tanaka
 Ayli, Eternal Pilgrim
 Ayula's Influence
@@ -1172,7 +1173,7 @@ Balamb T-Rexaur
 Balan, Wandering Knight
 Balance	intent: ForEach>Pipeline(ControlledPermanents→?); intent: ForEach>Pipeline(hand→?); intent: Pipeline(?→graveyard)
 Balance of Power	polarity: DrawCardsEffect
-Balduvian Atrocity	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Balduvian Atrocity
 Balduvian Barbarians
 Balduvian Bears
 Balduvian Berserker
@@ -1419,7 +1420,7 @@ Behemoth Sledge
 Behemoth of Vault 0	polarity: ReflexiveTriggerEffect
 Behind the Mask	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Behold the Multiverse
-Behold the Sinister Six!	intent: ForEach>MoveToZoneEffect
+Behold the Sinister Six!
 Behold the Unspeakable
 Beifong's Bounty Hunters	polarity: AnimateLandEffect; polarity: GrantTriggeredAbilityEffect
 Bejeweled Warg
@@ -1551,6 +1552,7 @@ Birthing Ritual	intent: Pipeline(BattlefieldMatching|TopOfLibrary→battlefield|
 Bishop of Binding
 Bishop of Rebirth
 Bishop of Wings
+Bishop of the Bloodstained
 Bishop's Soldier
 Bite Down
 Bite Down on Crime
@@ -1764,6 +1766,7 @@ Bloodbond Vampire
 Bloodbraid Elf	intent: CascadeEffect
 Bloodchief Ascension
 Bloodchief's Thirst
+Bloodcrazed Paladin
 Bloodcrazed Socialite
 Bloodcurdling Scream
 Bloodfeather Phoenix
@@ -1948,6 +1951,7 @@ Bonesplitter Sliver
 Bonethorn Valesk
 Boneyard Desecrator
 Boneyard Lurker
+Boneyard Parley
 Bonny Pall, Clearcutter
 Bontu's Monument
 Book Devourer
@@ -2215,7 +2219,7 @@ Brotherhood Vertibird
 Brotherhood's End
 Brothers Yamazaki
 Brothers of Fire
-Brought Back	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Brought Back
 Brown Ouphe
 Bruce Banner	intent: AddCombatPhaseEffect
 Bruenor Battlehammer
@@ -2379,7 +2383,7 @@ Call Damage Control
 Call In a Professional	timing: LockLifeGainEffect
 Call a Surprise Witness
 Call of the Conclave
-Call of the Death-Dweller	intent: AddCountersToCollectionEffect; intent: Pipeline(ChosenTargets→battlefield); polarity: AddCountersToCollectionEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Call of the Death-Dweller
 Call of the Herd
 Call of the Ring	intent: TheRingTemptsYouEffect
 Call the Bloodline
@@ -2411,7 +2415,7 @@ Campus Composer
 Campus Crier
 Campus Guide
 Campus Renovation
-Can't Stay Away	intent: MarkExileOnDeathEffect; intent: Pipeline(ChosenTargets→battlefield); polarity: MarkExileOnDeathEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Can't Stay Away
 Canal Monitor
 Cancel
 Candelabra of Tawnos
@@ -2595,7 +2599,7 @@ Cathodion
 Caught Red-Handed	timing: GrantKeywordEffect
 Caught in the Brights
 Caught in the Crossfire
-Cauldron Dance	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets|hand→battlefield)
+Cauldron Dance
 Cauldron Familiar
 Cauldron of Essence
 Cauldron's Gift
@@ -3175,7 +3179,7 @@ Command Decision
 Command Subadjunct
 Command Tower
 Command of Unsummoning
-Command the Dreadhorde	polarity: DealDamageEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Command the Dreadhorde
 Command the Stage
 Command the Storm
 Commandeer
@@ -3738,7 +3742,7 @@ Damping Matrix
 Damping Sphere
 Dance of Many	intent: Pipeline(BattlefieldMatching→exile); polarity: CreateTokenCopyOfTargetEffect
 Dance of Shadows
-Dance of the Manse	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Dance of the Manse
 Dance of the Tumbleweeds
 Dance with Devils
 Dancer's Chakrams
@@ -3910,6 +3914,7 @@ Deadeye Plunderers
 Deadeye Quartermaster
 Deadeye Rig-Hauler
 Deadeye Tormentor
+Deadeye Tracker
 Deadfall
 Deadly Alliance
 Deadly Allure
@@ -4172,6 +4177,7 @@ Desolation Twin
 Desolation of Smaug
 Despark
 Desperate Bloodseeker
+Desperate Castaways
 Desperate Charge
 Desperate Farmer
 Desperate Futurescribe
@@ -4283,11 +4289,13 @@ Diplomatic Immunity
 Diplomatic Relations
 Dire Downdraft
 Dire Flail
+Dire Fleet Captain
 Dire Fleet Daredevil
 Dire Fleet Hoarder
 Dire Fleet Interloper
 Dire Fleet Neckbreaker
 Dire Fleet Poisoner
+Dire Fleet Ravager
 Dire Fleet Warmonger
 Dire Tactics
 Dire Wolf Prowler
@@ -5534,7 +5542,7 @@ Extinguisher Battleship
 Extra Arms	polarity: Aura>DealDamageEffect
 Extract a Confession
 Extract the Truth
-Extraction Specialist	intent: CantAttackEffect; intent: CantBlockEffect; intent: Pipeline(ChosenTargets→battlefield); polarity: CantAttackEffect; polarity: CantBlockEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Extraction Specialist
 Extraordinary Journey
 Extraplanar Lens
 Extrapolate the Impossible	intent: Pipeline(FromVariable→hand)
@@ -5718,6 +5726,7 @@ Fates' Reversal
 Fateshaper Aspirant
 Fatespinner	intent: ChooseActionEffect
 Fathom Fleet Boarder
+Fathom Fleet Captain
 Fathom Fleet Cutthroat
 Fathom Fleet Firebrand
 Fathom Trawl	intent: GatherUntilMatchEffect; intent: Pipeline(?→hand|library)
@@ -7302,7 +7311,7 @@ Grayscaled Gharial
 Grazilaxx, Illithid Scholar
 Grazing Gladehart
 Grazing Whiptail
-Greasefang, Okiba Boss	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Greasefang, Okiba Boss
 Greasewrench Goblin
 Great Arashin City
 Great Defender
@@ -7364,6 +7373,7 @@ Grifter's Blade
 Grim Backwoods
 Grim Bauble
 Grim Bounty
+Grim Captain's Call
 Grim Discovery
 Grim Draugr
 Grim Haruspex
@@ -7752,6 +7762,7 @@ Hearthborn Battler
 Hearthcage Giant
 Hearthhull, the Worldseed
 Heartless Act
+Heartless Pillage
 Heartless Summoning
 Heartstring Puller
 Heartwarming Redemption
@@ -8091,6 +8102,7 @@ Horseshoe Crab
 Horta
 Hoshi Sato, Exolinguist
 Host of the Hereafter
+Hostage Taker
 Hostile Hostel	intent: PhaseOutEffect; intent: RemoveAllCountersOfTypeEffect
 Hostile Investigator
 Hostile Minotaur
@@ -9039,7 +9051,7 @@ Kambal, Consul of Allocation
 Kambal, Profiteering Mayor
 Kami of Ancient Law
 Kami of Fire's Roar	intent: CantBlockEffect
-Kami of Industry	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Kami of Industry
 Kami of Jealous Thirst
 Kami of Lunacy
 Kami of Old Stone
@@ -10119,6 +10131,7 @@ Lupinflower Village
 Lurching Rotbeast
 Lure	polarity: Aura>MustBeBlocked
 Lurker
+Lurking Chupacabra
 Lurking Deadeye
 Lurking Informant	intent: Pipeline(TopOfLibrary→graveyard|library); polarity: Pipeline(TopOfLibrary→graveyard|library)
 Lurking Lizards
@@ -10332,7 +10345,7 @@ Mantis Engine
 Mantis Rider
 Mantle of Tides
 Mantle of Webs
-Mantle of the Ancients	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Mantle of the Ancients
 Mantle of the Wolf
 Many Partings
 Map the Frontier
@@ -10359,6 +10372,7 @@ March of Otherworldly Light
 March of Reckless Joy
 March of Swirling Mist	intent: ForEach>PhaseOutEffect; polarity: ForEachEffect
 March of Wretched Sorrow
+March of the Drowned
 March of the Machines
 March of the Multitudes
 March of the World Ooze
@@ -10720,7 +10734,7 @@ Mijae Djinn	intent: FlipCoinEffect
 Mikaeus, the Unhallowed
 Mikey & Don, Party Planners
 Mikey & Leo, Chaos & Order
-Mila, Crafty Companion	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Mila, Crafty Companion
 Mild-Mannered Librarian
 Miles Morales	combat: GrantEvasionKeywordEffect; intent: ForEach>DoubleCountersEffect; timing: ChangeColorEffect
 Miles O'Brien, Transporter Ops
@@ -11437,7 +11451,7 @@ Nether Traitor
 Nether Void
 Netherborn Phalanx
 Nethergoyf
-Nethroi, Apex of Death	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Nethroi, Apex of Death
 Nettle Guard
 Nettle Swine
 Nettletooth Djinn
@@ -11861,7 +11875,7 @@ Ondu Greathorn
 Ondu Inversion
 Ondu Knotmaster	intent: DistributeCountersAmongTargetsEffect; polarity: DistributeCountersAmongTargetsEffect
 One Dozen Eyes
-One Last Job	intent: ModalEffect; polarity: PutOntoBattlefieldAttachedToChosenEffect
+One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
 One Ring to Rule Them All
 One With the Wind
 One with Nature	polarity: Aura>EmitLibrarySearchedEventEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect; polarity: Aura>SelectFromCollectionEffect; polarity: Aura>ShuffleLibraryEffect
@@ -12176,7 +12190,7 @@ Passenger Ferry
 Passwall Adept
 Patagia Golem
 Patagia Tiger
-Patch Up	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Patch Up
 Patched Plaything
 Patchwork Automaton
 Patchwork Banner
@@ -12873,7 +12887,7 @@ Public Thoroughfare
 Puca's Eye
 Pugnacious Hammerskull
 Pugnacious Pugilist
-Pull Through the Weft	intent: Pipeline(ChosenTargets→battlefield|hand); polarity: Pipeline(ChosenTargets→battlefield|hand)
+Pull Through the Weft
 Pull Under
 Pull from Tomorrow
 Pull from the Grave
@@ -12909,7 +12923,7 @@ Pursue Glory
 Pursue the Past
 Pursued Whale
 Pursuit of Flight
-Push // Pull	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Push // Pull
 Push the Limit
 Putrefy
 Putrid Goblin
@@ -13511,7 +13525,7 @@ Relic of Sauron
 Relic's Roar	intent: AddSubtypeEffect; intent: BecomeCreatureEffect; polarity: AddSubtypeEffect; polarity: BecomeCreatureEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
 Reliquary Monk
 Reliquary Tower
-Relive the Past	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Relive the Past
 Relm's Sketching	polarity: CreateTokenCopyOfTargetEffect
 Reluctant Dounguard
 Reluctant Role Model	intent: AddCountersEffect
@@ -14058,6 +14072,7 @@ Rugged Highlands
 Rugged Prairie
 Ruham Djinn
 Ruin Crab
+Ruin Raider
 Ruin in Their Wake
 Ruin-Lurker Bat
 Ruination Wurm
@@ -14522,7 +14537,7 @@ Scourge of the Throne	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffe
 Scourgemark
 Scouring Sands
 Scouring Swarm
-Scout for Survivors	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Scout for Survivors
 Scout the Borders
 Scout the City
 Scout the Wilderness
@@ -17377,7 +17392,7 @@ The Reaver Cleaver
 The Regalia	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library)
 The Restoration of Eiganjo
 The Ring Goes South	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|library); intent: TheRingTemptsYouEffect
-The Rise of Sozin	intent: Pipeline(ChosenTargets→battlefield)
+The Rise of Sozin
 The Rollercrusher Ride
 The Royal Scions
 The Ruinous Wrecking Crew
@@ -17656,7 +17671,7 @@ Thundering Rebuke
 Thundering Sparkmage
 Thundering Spineback
 Thundering Wurm
-Thunderkin Awakener	intent: Pipeline(ChosenTargets→battlefield); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield)
+Thunderkin Awakener
 Thundermane Dragon
 Thundermare
 Thunderous Debut
@@ -17781,7 +17796,7 @@ Toby, Beastie Befriender
 Tocasia's Dig Site
 Tocasia's Onulet
 Tocasia's Welcome
-Tocasia, Dig Site Mentor	intent: Pipeline(ChosenTargets→battlefield); polarity: Pipeline(ChosenTargets→battlefield)
+Tocasia, Dig Site Mentor
 Tocatli Honor Guard
 Together as One
 Tokka & Rahzar, Terrible Twos
