@@ -64,7 +64,7 @@ echo "{\\"type\\":\\"result\\",\\"result\\":\\"$VERDICT\\",\\"num_turns\\":1,\\"
         prompt = self.prompt()
         self.assertIn("[agent-loop: claude-opus-5-5] AI reading:", prompt)
         self.assertIn('startswith("loop-ai-reading-")', prompt)
-        self.assertIn("just ai-reading-baseline", prompt)
+        self.assertIn("just test-class AiReadingRatchetTest", prompt)
         self.assertIn("AUDIT FALSE POSITIVE", prompt)
         self.assertIn("PR LIFECYCLE", prompt)
         self.assertIn(str(self.root / ".claude" / "loop-runs" / "ai-reading.md"), prompt)

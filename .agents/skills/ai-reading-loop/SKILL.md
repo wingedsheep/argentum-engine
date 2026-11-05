@@ -68,9 +68,9 @@ Never touch a PR, branch or worktree without our prefix. Work on our PR in its w
 'git worktree add' if missing). Never work in the main checkout.
 
 1-4. Our PR is open -> follow the PR LIFECYCLE below (CI failed, conflicts, unreviewed, or ready to merge).
-   Merge bookkeeping: mark the group [x] (or [a]) in the ledger with the PR number. On conflicts, never
-   hand-merge ai/src/test/resources/ai-reading-baseline.tsv: take main's and regenerate it with
-   'just ai-reading-baseline' after the rebase.
+   Merge bookkeeping: mark the group [x] (or [a]) in the ledger with the PR number. Our PR never edits
+   ai/src/test/resources/ai-reading-baseline.tsv (main re-blesses it after merge); if a rebase shows it
+   changed on our branch, take main's.
 5. No PR open -> work the next group. 'git fetch', new worktree + 'loop-ai-reading-' branch from origin/main.
    a. PICK. In the worktree run 'just ai-reading-audit' and read
       ai/build/reports/ai-reading-audit/report.md (groups sorted by card count, with example cards);
@@ -120,20 +120,22 @@ Never touch a PR, branch or worktree without our prefix. Work on our PR in its w
       change than the reading (a new evaluator feature), don't: note 'value gap: <what>' on the group's ledger
       line and in the PR body. Polarity, combat and timing readings often have nothing to carry into value;
       then say 'no value change' and why. A value change can move other AI tests; 'just loop-gate' shows it.
-   f. RE-AUDIT and RE-BLESS: 'just ai-reading-audit' again (the group's count must drop; record before -> after
-      and the overall read-fully fraction), then 'just ai-reading-baseline'. Read the baseline diff: cards
-      may only LOSE flags, and the ones that do should be the group's. A card that gains a flag is a reader
-      regression: fix it, never bless it. Update AiReadingAuditSnapshotTest when a pinned card's flags move.
-   g. CHANGELOG: add a line at the top of ai/CHANGELOG.md's list ('- #<pr> <what the AI now does
-      differently>', following its header) ONLY when the new reading or value changes how the AI plays a common card —
+   f. RE-AUDIT and RATCHET: 'just ai-reading-audit' again (the group's count must drop; record before -> after
+      and the overall read-fully fraction), then 'just test-class AiReadingRatchetTest'. It must pass, and its
+      summary line ('N card(s) improved') is the evidence for the PR body. A card that gains a flag is a reader
+      regression: fix it, never bless it. Do NOT run 'just ai-reading-baseline' or commit the baseline: the
+      'Lock in AI reading gains' workflow re-blesses on main after merge, and a baseline diff in two open PRs
+      is what made them conflict. Update AiReadingAuditSnapshotTest when a pinned card's flags move.
+   g. CHANGELOG: add ai/changelog.d/<branch>.md holding one line ('- #<pr> <what the AI now does
+      differently>', following ai/CHANGELOG.md's header) — never edit ai/CHANGELOG.md itself ONLY when the new reading or value changes how the AI plays a common card —
       a group of commonly played effects (removal, pump, counters, tricks), not a niche one. A pure audit fix
       or a reading no common card reaches gets none; say which in the PR body.
    h. Commit by explicit path, never 'git add -A': reader + test (and any value change from (e)); then the
-      audit/snapshot changes and the re-blessed baseline. Gate with 'just loop-gate' and review per the PR LIFECYCLE, then open the PR titled
+      audit/snapshot changes. Gate with 'just loop-gate' and review per the PR LIFECYCLE, then open the PR titled
       '[agent-loop: <MODEL_ID>] AI reading: <group key>' (or '... AI reading audit: stop flagging <shape>').
       The body gives: the group key and sub-shape, the JUDGE verdict and why, the reader change in one
       paragraph, the decision test and the failure it showed before the fix, the group's unread count and the
-      read-fully fraction before -> after, a summary of the baseline diff, the value check (the example
+      read-fully fraction before -> after, the ratchet's summary line, the value check (the example
       cards' 'ai-card' value before -> after, and the value change made, the 'value gap' left, or why there is
       no value change), the changelog line or why there is
       none, and that it came from an agentic loop driven by <MODEL_ID>. Mark the group [r] with the PR number.

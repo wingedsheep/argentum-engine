@@ -1,23 +1,29 @@
 # Engine AI changelog
 
-One line per change to how the built-in engine AI **plays or builds its decks** — the changes whose
+One entry per change to how the built-in engine AI **plays or builds its decks** — the changes whose
 effect you'd expect to see in its record against humans. The admin dashboard's **AI vs humans**
-screen reads this file (baked into the server jar at build time by `game-server`'s
+screen reads these entries (baked into the server jar at build time by `game-server`'s
 `generateEngineAiHistory` task): each entry becomes a marker on the win-rate timeline, an item in its
 "Engine AI changes" list, and a count against the first deployed build that carried it.
 
-**When you open a PR that changes the engine AI's behaviour, add a line at the top of the list in the
-same PR.** That's a change under `ai/src/main/kotlin/com/wingedsheep/ai/engine/` that alters a
-decision — what it casts, attacks, blocks, targets, pays, keeps or drafts — or which profile live
-players face. Leave out refactors, performance work, tooling, per-card AI advisors, and set archetype
-data — they'd bury the changes worth correlating with the win rate.
+**When you open a PR that changes the engine AI's behaviour, add an entry file in the same PR:**
+`ai/changelog.d/<your-branch-name>.md`, holding one bullet. That's a change under
+`ai/src/main/kotlin/com/wingedsheep/ai/engine/` that alters a decision — what it casts, attacks,
+blocks, targets, pays, keeps or drafts — or which profile live players face. Leave out refactors,
+performance work, tooling, per-card AI advisors, and set archetype data — they'd bury the changes
+worth correlating with the win rate.
 
-Format — newest first, one bullet each:
+**Never add the line to this file.** Every PR prepending to one list made any two AI PRs open at the
+same time conflict here. A file of your own can't conflict, and the bake orders entries by when they
+merged, not by where they sit. The "Changes" list below is the archive of entries from before that.
+
+Format — one bullet per file (two only for a PR that really made two separate changes):
 
 ```
 - #<pr> <what the AI now does differently, in a sentence>
 ```
 
+- Name the file for your branch (`loop-ai-reading-bounce-alls.md`), so no two PRs pick the same name.
 - Anchor the line with the PR number. Don't know it yet? Write the line without one: the build then
   ties it to the commit that added the line, which on `main` is the PR's own merge. Add `#<pr>` once
   the PR exists if you like.

@@ -67,7 +67,7 @@ only the summary. Prompt each with the log paths, the repo path `$WT` to read co
   illegal option offered) and decision-prompt problems (confusing options, a forced choice asked) seen
   along the way. Check the card's real text (its `cardDef` under `mtg-sets/`) before calling a card
   wrong; verify any CR number cited (AGENTS.md rule).
-- **Don't re-report known or fixed issues.** Read `ai/CHANGELOG.md`, `gh pr list --state open --search
+- **Don't re-report known or fixed issues.** Read `ai/CHANGELOG.md` and `ai/changelog.d/`, `gh pr list --state open --search
   <keywords>`, and — since a game may be recorded on an older build — `git -C $WT log --oneline
   <engineVersion>..origin/main -- ai/ rules-engine/` (skip when the version is `unknown`/`dev`). A misplay
   a later commit already fixed is not a finding; say so in one line.
@@ -123,7 +123,7 @@ issue, one fresh `general-purpose` subagent, prompted with the issue block, `$RU
   `ai/src/test/kotlin/com/wingedsheep/ai/engine/` (or a puzzle in `ai/.../puzzles/PuzzleCatalog.kt`)
   that fails before the fix and passes after. The AI must clearly prefer the better play — don't trade
   one judgment call for another. Engine bugs get a scenario/engine test instead.
-- Follow the matching skill and AGENTS.md hard rules — notably the `ai/CHANGELOG.md` line for an AI
+- Follow the matching skill and AGENTS.md hard rules — notably the `ai/changelog.d/<branch>.md` entry for an AI
   behaviour change (`- #<pr> <what the AI now does differently>`; add the PR number after opening it).
 - Gate with `just loop-gate`; never `just build`/`just test`.
 - Commit, push, open a PR in house style. Body: the misplay, the game evidence (log lines, game id),

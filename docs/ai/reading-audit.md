@@ -145,7 +145,11 @@ Everything else passes on purpose:
   baseline already has. Set loops add cards all the time. Failing every new card in a known gap would
   make each card PR edit the baseline, and every two card PRs would then conflict on it. Growth into a
   known gap isn't a reader regression, and the group is already on the A3 work list.
-- **Coverage gains and removed cards** pass. The test prints a hint to re-bless and lock the gain in.
+- **Coverage gains and removed cards** pass, and a PR leaves them in the baseline as they are. The
+  `Lock in AI reading gains` workflow (`.github/workflows/ai-reading-baseline.yml`) re-blesses on main
+  after each merge, and only when the ratchet passes there, so a regression is never blessed in. Two
+  PRs that each re-blessed their own gains rewrote neighbouring lines and conflicted; now they don't
+  touch the file.
 
 When it fails, read the message. It lists the cards and groups that moved. If a reader change caused
 it, fix the reader. If it's expected (a card whose effect type the AI can't read yet), re-bless and
@@ -155,8 +159,9 @@ commit the baseline in the same PR:
 just ai-reading-baseline
 ```
 
-The baseline diff is the review: it shows exactly which cards gained or lost flags. A PR that teaches a
-reader an effect type re-blesses too, so the cards it fixed move to read-fully in the diff. The file holds
+The baseline diff is the review: it shows exactly which cards gained flags. A PR that teaches a reader
+an effect type does **not** re-bless: the ratchet's summary line (`N card(s) improved`) and the audit's
+before → after counts are its evidence, and main locks the gain in after merge. The file holds
 no totals line on purpose, because every two re-blesses would conflict on it. The test prints the totals
 instead. `just loop-gate` runs the ratchet whenever cards, the SDK or the engine changed.
 
@@ -190,9 +195,9 @@ Each step:
    before the reader change, in a position where the better play is clearly better.
 4. Teaches the reader the effect type, never a card. It composes existing readings before adding new
    ones and changes no SDK or engine code.
-5. Re-runs the audit, re-blesses the baseline with `just ai-reading-baseline`, and checks that cards only
-   lose flags.
-6. Gates with `just loop-gate` and opens the PR. It adds an `ai/CHANGELOG.md` line only when the new
+5. Re-runs the audit and the ratchet, and checks that cards only lose flags. It leaves the baseline
+   alone; main re-blesses it after merge.
+6. Gates with `just loop-gate` and opens the PR. It adds an `ai/changelog.d/<branch>.md` entry only when the new
    reading changes how the AI plays a common card.
 
 The loop stops when the top groups are all in the ledger, in flight, judgment calls, or too small to

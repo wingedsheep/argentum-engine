@@ -307,8 +307,10 @@ same for `Pick`, but only when it comes from the effect heuristic; a Draftsim/17
 its table rating. When no value should move (a pure targeting or timing reading), say so and why. When
 closing the gap would be a feature of its own, name it in the PR body as `value gap: <what>`.
 
-Prove each reading with an AI test (a decision that changes, a profile or score that's pinned), re-bless
-`just ai-reading-baseline` so the cards it fixed move to read-fully, and add the `ai/CHANGELOG.md` line.
+Prove each reading with an AI test (a decision that changes, a profile or score that's pinned), and add
+an `ai/changelog.d/<branch>.md` entry (rules in `ai/CHANGELOG.md`'s header). Don't re-bless
+`just ai-reading-baseline` for the gain: main does that after merge (`docs/ai/reading-audit.md`, "The
+ratchet").
 
 - **Don't leave a part for later.** The capability and its AI reading ship together: a reader entry for
   the effect type you just added or widened is a few lines, and you are the one who knows its

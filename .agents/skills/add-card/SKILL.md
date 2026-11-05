@@ -334,8 +334,8 @@ something, is a gap to close:
 - **A gap a classifier entry closes** — one `when` branch in `TargetPolarityAnalyzer`,
   `CardIntentAnalyzer.tagsOf`, `CombatReach` / `ExpiringGrantWindow`, or `LimitedCardRater`'s `LimitedScoreFold`
   — close it in this PR: it fixes every card on that effect type, and you know the semantics now. Add an
-  AI test for the decision it changes, re-bless `just ai-reading-baseline`, and add the
-  `ai/CHANGELOG.md` line (`docs/ai/reading-audit.md` has the readers and the ratchet).
+  AI test for the decision it changes and add an `ai/changelog.d/<branch>.md` entry; leave the
+  reading baseline to main's post-merge re-bless (`docs/ai/reading-audit.md` has the readers and the ratchet).
 - **A gap bigger than that** (a reader that needs a new concept, not just a new `when` branch): split it
   out as its own `add-feature` PR, opened next, and say in this PR body why it couldn't be closed here.
   Never defer a gap because it is pre-existing, because other cards share the effect, or because "it
@@ -356,7 +356,7 @@ something, is a gap to close:
   tables are never hand-edited, and a set with no table at all gets one from the set's finishing PR.
 - **Heuristic-only and clearly off** — a bomb scored like a filler common, or a heuristic breakdown with
   no term for the card's main ability — means `LimitedCardRater`'s `LimitedScoreFold` has no term for that
-  effect type: give it one (same PR when it's a single term; same AI test + `ai/CHANGELOG.md` rule).
+  effect type: give it one (same PR when it's a single term; same AI test + changelog-entry rule).
 - **In play** reads 0 or a bare-body value for a card whose worth is its abilities: that is the same
   understanding gap as above, seen from the evaluator.
 

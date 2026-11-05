@@ -22,10 +22,11 @@ import java.util.Locale
  * loop added since the last re-bless) passes when it is read fully or lands only in groups the
  * baseline already has: corpus growth into known gaps isn't a regression, and failing it would turn
  * every card PR into a baseline edit and every pair of card PRs into a merge conflict. Shrinking
- * flags and removed cards pass too, with a hint to re-bless and lock the gain in.
+ * flags and removed cards pass too, and a PR leaves them to `.github/workflows/ai-reading-baseline.yml`,
+ * which re-blesses on main after merge: two PRs that each re-blessed a gain conflicted on the file.
  *
- * Re-bless with `just ai-reading-baseline` (`-DaiReadingBaseline=<path>` rewrites the file and
- * passes). See `docs/ai/reading-audit.md`, "The ratchet".
+ * Re-bless by hand only when this fails on a regression you mean to record — a new unread effect
+ * type: `just ai-reading-baseline` (`-DaiReadingBaseline=<path>` rewrites the file and passes). See `docs/ai/reading-audit.md`, "The ratchet".
  */
 class AiReadingRatchetTest : FunSpec({
 
@@ -104,7 +105,7 @@ private class RatchetDiff(
             "Since the baseline: ${regressions.size} card(s) gained flags, ${newGroups.size} new group(s), " +
             "$improved card(s) improved, $gone gone, $unbaselinedRead new card(s) read fully, " +
             "$unbaselinedUnread new card(s) in known groups." +
-            if (!failed && (improved > 0 || gone > 0)) "\nCoverage rose: run `just ai-reading-baseline` to lock it in." else ""
+            if (!failed && (improved > 0 || gone > 0)) "\nCoverage rose: main's \"Lock in AI reading gains\" workflow re-blesses after merge; don't re-bless in the PR." else ""
     }
 
     fun failureMessage(): String = buildString {

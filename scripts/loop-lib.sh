@@ -26,7 +26,7 @@ LOOP_PR_PROTOCOL="PR LIFECYCLE — every PR is reviewed BEFORE it is opened, so 
 - AI CHECK — before review, on any unit that adds or changes cards or SDK vocabulary: run
   \`just ai-card \"<every card the unit adds or touches>\"\` and close every understanding, rating and synergy gap it
   shows IN THIS PR, per add-card / add-feature Step 10: a reader entry keyed by the effect type, an AI decision test,
-  \`just ai-reading-baseline\` re-blessed, the ai/CHANGELOG.md line. \"Pre-existing\", \"other cards share it\" and
+  the ai/changelog.d/<branch>.md entry (never edit ai/CHANGELOG.md, and leave the reading baseline to main's post-merge re-bless). \"Pre-existing\", \"other cards share it\" and
   \"belongs to the AI reading loop\" are never reasons to skip. Only a gap needing a brand-new reader concept may be
   split out — record it as the next unit in the ledger and say why in the PR body. Put the per-card
   \`AI: reads n/n · pick … · intent … · synergy …\` line in the PR body. A review finding about an AI gap is blocking:

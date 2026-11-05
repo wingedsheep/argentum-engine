@@ -158,7 +158,7 @@ Strictly sequential: **at most one implementation in flight and one Gradle build
   that worktree; use `/usr/bin/git` there (the rtk rewrite trips the worktree guard).
 - Follow the matching skill (`add-feature` for engine/SDK/AI/server/client capability, `add-card` for a
   card's definition) and the AGENTS.md hard rules — SDK reference + `just sdk-index` on SDK changes,
-  `ai/CHANGELOG.md` line for AI behaviour changes, Help wiki for user-facing changes, one test file per
+  `ai/changelog.d/<branch>.md` entry for AI behaviour changes, Help wiki for user-facing changes, one test file per
   card.
 - **Reproduce first**: a test that fails before the fix and passes after (a `<Card>ScenarioTest`, an
   engine/mechanic test, an AI decision test or puzzle). A UI fix gets the manual UI check from

@@ -199,8 +199,9 @@ ai-card NAMES:
         -DaiCardOut={{justfile_directory()}}/ai/build/reports/ai-card.txt
     @cat {{justfile_directory()}}/ai/build/reports/ai-card.txt
 
-# Re-bless the AI card-reading ratchet's baseline (ai/src/test/resources/ai-reading-baseline.tsv) after
-# coverage rose, or to record a card that brings an effect type the AI can't read yet.
+# Re-bless the AI card-reading ratchet's baseline (ai/src/test/resources/ai-reading-baseline.tsv) to
+# record a card that brings an effect type the AI can't read yet. Coverage gains need no re-bless in a
+# PR: the ai-reading-baseline workflow locks them in on main after merge.
 # AiReadingRatchetTest (in :ai:test) fails when it is behind; docs/ai/reading-audit.md, "The ratchet".
 [group: 'ai']
 ai-reading-baseline:

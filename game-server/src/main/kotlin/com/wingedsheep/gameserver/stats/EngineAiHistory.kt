@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.OffsetDateTime
 
-/** One change to the engine AI: an `ai/CHANGELOG.md` entry, placed on the commit that merged it to main. */
+/** One change to the engine AI: an `ai/CHANGELOG.md` / `ai/changelog.d/` entry, placed on the commit that merged it to main. */
 data class EngineAiChange(
     val sha: String,
     val committedAt: Instant,

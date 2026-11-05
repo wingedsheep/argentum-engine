@@ -53,9 +53,13 @@ dependencies {
 }
 
 /**
- * Bakes the engine AI changelog (`ai/CHANGELOG.md`) into `engine-ai-history.tsv` on the classpath, for
+ * Bakes the engine AI changelog into `engine-ai-history.tsv` on the classpath, for
  * the admin "AI vs humans" view: each entry becomes a marker on the win-rate timeline, and is
  * credited to the first deployed build that carried it.
+ *
+ * The changelog is `ai/CHANGELOG.md`'s "## Changes" list (the archive) plus one file per PR under
+ * `ai/changelog.d/`. Each PR writes its own file, so two AI PRs never edit the same lines; the order
+ * comes from git history below, never from where a line sits.
  *
  * Every entry is resolved to its commit on main's first-parent line — by its `#pr` (the squash's
  * `(#pr)` suffix or the merge's "Merge pull request #pr"), by an explicit sha, or, with neither, by
@@ -71,6 +75,7 @@ abstract class GenerateEngineAiHistory : DefaultTask() {
     @get:Inject abstract val exec: ExecOperations
     @get:Internal abstract val repoDir: DirectoryProperty
     @get:InputFile abstract val changelog: RegularFileProperty
+    @get:InputFiles abstract val fragments: ConfigurableFileCollection
     @get:OutputDirectory abstract val outputDir: DirectoryProperty
 
     init {
@@ -115,29 +120,32 @@ abstract class GenerateEngineAiHistory : DefaultTask() {
         val byPr = commits.filter { it.pr != null }.associateBy { it.pr }
         val bySha = commits.associateBy { it.sha }
 
-        val changelogFile = changelog.get().asFile
-        val relativePath = changelogFile.relativeTo(repoDir.get().asFile).invariantSeparatorsPath
         val entryLine = Regex("""^- (?:(#\d+|[0-9a-f]{7,40})\s+)?(.+)$""")
-        val entries = changelogFile.readLines()
-            .dropWhile { it.trim() != "## Changes" }
-            .mapNotNull { entryLine.matchEntire(it.trim()) }
+        // Each source with the lines that hold its entries: the archive's "## Changes" list, then
+        // every changelog.d fragment whole.
+        val archive = changelog.get().asFile
+        val sources = listOf(archive to archive.readLines().dropWhile { it.trim() != "## Changes" }) +
+            fragments.files.sortedBy { it.name }.map { it to it.readLines() }
         val resolved = LinkedHashMap<String, MutableList<String>>()
-        for (match in entries) {
-            val (anchor, text) = match.destructured
-            val commit = when {
-                anchor.startsWith("#") -> byPr[anchor.drop(1)]
-                anchor.isNotEmpty() -> commits.firstOrNull { it.sha.startsWith(anchor) }
-                // No anchor: the oldest first-parent commit that added this exact line.
-                else -> git("log", "--first-parent", "--format=%H", "-S", match.value, "--", relativePath)
-                    ?.lines()?.lastOrNull { it.isNotBlank() }?.let { bySha[it] }
+        for ((source, lines) in sources) {
+            val relativePath = source.relativeTo(repoDir.get().asFile).invariantSeparatorsPath
+            for (match in lines.mapNotNull { entryLine.matchEntire(it.trim()) }) {
+                val (anchor, text) = match.destructured
+                val commit = when {
+                    anchor.startsWith("#") -> byPr[anchor.drop(1)]
+                    anchor.isNotEmpty() -> commits.firstOrNull { it.sha.startsWith(anchor) }
+                    // No anchor: the oldest first-parent commit that added this exact line.
+                    else -> git("log", "--first-parent", "--format=%H", "-S", match.value, "--", relativePath)
+                        ?.lines()?.lastOrNull { it.isNotBlank() }?.let { bySha[it] }
+                }
+                if (commit == null) {
+                    logger.warn("{}: can't place \"{}\" on main's history yet; leaving it out", relativePath, match.value)
+                    continue
+                }
+                val pr = anchor.takeIf { it.startsWith("#") }?.drop(1) ?: commit.pr ?: "-"
+                resolved.getOrPut(commit.sha) { mutableListOf() } +=
+                    "${commit.sha.take(12)}\t${commit.date}\t$pr\t${text.replace('\t', ' ')}"
             }
-            if (commit == null) {
-                logger.warn("ai/CHANGELOG.md: can't place \"{}\" on main's history yet; leaving it out", match.value)
-                continue
-            }
-            val pr = anchor.takeIf { it.startsWith("#") }?.drop(1) ?: commit.pr ?: "-"
-            resolved.getOrPut(commit.sha) { mutableListOf() } +=
-                "${commit.sha.take(12)}\t${commit.date}\t$pr\t${text.replace('\t', ' ')}"
         }
         val oldest = commits.indexOfLast { it.sha in resolved }
         val body = commits.take(oldest + 1).flatMap { resolved[it.sha] ?: listOf(it.sha.take(12)) }
@@ -148,6 +156,7 @@ abstract class GenerateEngineAiHistory : DefaultTask() {
 val generateEngineAiHistory = tasks.register<GenerateEngineAiHistory>("generateEngineAiHistory") {
     repoDir.set(rootProject.layout.projectDirectory)
     changelog.set(rootProject.layout.projectDirectory.file("ai/CHANGELOG.md"))
+    fragments.from(rootProject.fileTree("ai/changelog.d") { include("*.md"); exclude("README.md") })
     outputDir.set(layout.buildDirectory.dir("generated/engine-ai-history"))
 }
 
