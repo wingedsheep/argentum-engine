@@ -35,6 +35,8 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
+import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
+import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -1514,6 +1516,12 @@ object CardIntentAnalyzer {
         is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
             setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
+        // "Players can't get counters" (Solemnity) and a battlefield-wide "can't have counters put
+        // on them" lock counters out; an Aura's or the creature's own (Blossombind) is read by
+        // whatever else the card does to what it enchants.
+        is PlayersCantGetCounters -> setOf(IntentTag.COUNTER_LOCK)
+        is CantReceiveCounters ->
+            if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.COUNTER_LOCK) else emptySet()
         // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a
         // standing permission to cast cards back out of our graveyard is recursion, every turn.
         is MayCastFromGraveyard -> setOf(IntentTag.RECURSION)

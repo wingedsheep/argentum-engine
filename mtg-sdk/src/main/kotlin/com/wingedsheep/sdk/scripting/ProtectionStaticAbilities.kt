@@ -293,6 +293,42 @@ data class CantReceiveCounters(
 }
 
 /**
+ * "Players can't get counters" (Solemnity) — a static prohibition on players getting counters
+ * (CR 122.1: players can have counters too), for the [affected] players relative to the source's
+ * controller: every kind, or only [counterType] when it is set ("You can't get poison counters" —
+ * Melira, Sylvok Outcast).
+ *
+ * Every counter-placing path already asks `ProjectedState.canReceiveCounters` of a player, so the
+ * prohibition reaches effect placement (poison, energy, experience), proliferate, infect and toxic
+ * damage, and costs that would give the payer counters (a ward cost "get N poison counters" can't be
+ * paid). Counters a player already has stay, and paying counters a player already has (energy) is
+ * untouched. The prohibition holds only while the source is on the battlefield with its abilities.
+ *
+ * Closest types: [CantReceiveCounters] prohibits *permanents* through a projected flag over a
+ * [GroupFilter] — players aren't projected and no group filter names them;
+ * `LockPlayerCountersEffect` (Suncleanser) is a one-shot that stamps a lock on a player for a
+ * duration, so it can't follow a static's source losing its abilities and would leave a window
+ * between the source entering and its trigger resolving.
+ */
+@SerialName("PlayersCantGetCounters")
+@Serializable
+data class PlayersCantGetCounters(
+    val affected: Player = Player.Each,
+    val counterType: CounterType? = null
+) : StaticAbility {
+    override val description: String = run {
+        val who = when (affected) {
+            is Player.You -> "You"
+            is Player.EachOpponent -> "Your opponents"
+            is Player.Each -> "Players"
+            else -> affected.description.replaceFirstChar { it.uppercase() }
+        }
+        val what = counterType?.let { "${it.printed} counters" } ?: "counters"
+        "$who can't get $what"
+    }
+}
+
+/**
  * "This permanent can't have more than [max] [counterType] counters on it" (Rasputin Dreamweaver).
  *
  * A rule on the holder, not a replacement: a placement that would take it past [max] puts only as

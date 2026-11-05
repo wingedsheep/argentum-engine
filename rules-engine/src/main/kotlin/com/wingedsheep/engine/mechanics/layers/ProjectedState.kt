@@ -337,7 +337,8 @@ class ProjectedState(
      * so blight target pools must exclude such creatures rather than silently dropping the counter.
      *
      * Players answer here too: a player can't get counters while a `LockPlayerCountersEffect` lock
-     * on them holds (Suncleanser) — players aren't projected, so that lock is read off the player.
+     * on them holds (Suncleanser) or a `PlayersCantGetCounters` static covers them (Solemnity) —
+     * players aren't projected, so both are read through `GameState.cantGetCounters`.
      */
     fun canReceiveCounters(entityId: EntityId): Boolean =
         !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS) &&
@@ -349,7 +350,9 @@ class ProjectedState(
      * Blightbeetle) applies. Every path that places a known kind asks this one.
      */
     fun canReceiveCounters(entityId: EntityId, counterType: com.wingedsheep.sdk.core.CounterType): Boolean =
-        canReceiveCounters(entityId) && !hasKeyword(entityId, cantReceiveCountersKeyword(counterType))
+        !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS) &&
+            !hasKeyword(entityId, cantReceiveCountersKeyword(counterType)) &&
+            !baseState.cantGetCounters(entityId, counterType)
 
     companion object {
         /** The projected keyword a kind-scoped `CantReceiveCounters` grants: `CANT_RECEIVE_COUNTERS_<KIND>`. */
