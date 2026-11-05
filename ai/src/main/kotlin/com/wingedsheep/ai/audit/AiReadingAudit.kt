@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
@@ -585,7 +586,11 @@ object AiReadingAudit {
                 (oneSlot && noIntent(it)) || needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
                     (ownTargets && it is TapUntapEffect && !it.tap && it.target is EffectTarget.ContextTarget) ||
                     (ownGroup && it is AddCountersEffect && it.counterType == CounterType.LOYALTY &&
-                        it.target == EffectTarget.IterationEntity)
+                        it.target == EffectTarget.IterationEntity) ||
+                    // "Untap each other Merfolk you control" (Deepway Navigator), "untap all nonland
+                    // permanents you control" (Dramatic Reversal): [untapsOwnTarget] over a group of
+                    // ours — worth what tapping them again buys, which the simulation sees on the board.
+                    (ownGroup && it is TapUntapEffect && !it.tap && it.target == EffectTarget.IterationEntity)
             }
             // Over each player, "you" in the body is the player iterated (ControllerOfTriggeringEntity's
             // land for Confounding Conundrum), so an own-permanents return is only ours over Players(You).
@@ -851,6 +856,10 @@ object AiReadingAudit {
         // "Forage" happened: the marker a forage's payment emits for "whenever you forage" triggers.
         // Bookkeeping, never a payoff of its own; the "if you do" rider beside it is read on its own leaf.
         if (leaf == ForagedEffect) return true
+        // "Exile that card with a dream counter on it instead of putting it into your graveyard"
+        // (Goliath Daydreamer, All Hallow's Eve): where our own resolving spell goes, marked for another
+        // ability of the card that later spends the pile. No target, nothing to time; that ability is read on its own.
+        if (leaf is MarkSpellExileWithCountersEffect) return true
         // Its controller losing the game (Phage the Untouchable entering from anywhere but the hand)
         // is the card's price, never a play: no target to aim, nothing to time, and no tag would
         // make the AI choose it. An opponent losing is GAME_WIN and never reaches here.
@@ -1119,6 +1128,9 @@ object AiReadingAudit {
      */
     private fun noIntentPipeline(label: String, stages: List<Effect>): Boolean {
         if (label in NO_INTENT_PIPELINES) return true
+        // A look at our own library top that only puts cards back or into our graveyard (Sage Owl,
+        // Lluwen) reads as card selection: skipped like a scry leaf, so a sibling leaf is still asked about.
+        if (label.startsWith("Pipeline(TopOfLibrary→") && CardIntentAnalyzer.selectsOwnLibraryTop(stages)) return true
         // Cards exiled out of our own graveyard — forage's three, delve-like fuel (Specter of
         // Mortality) — are the price or fuel of what follows, as the single-card move is (see
         // [intent]'s OWN_EXILE). Playing them afterwards is a grant leaf, read and flagged on its own.
