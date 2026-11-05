@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Keeps enough blockers home when the opponent's board holds a "target creature can't block" activation it can pay for on its turn: the crack-back now plays that activation out against our blockers.
 - #4454 Aims "N damage divided as you choose among …" (Arc Lightning, Electrolyze, Lukka's −4, Huatli, Warrior Poet's −X) at opponents' creatures and players instead of choosing its targets blind, and "distribute N +1/+1 counters among …" / "double the +1/+1 counters on …" (Armament Corps, Biogenic Upgrade, Kalonian Hydra) at its own creatures as a pump; no longer reads an X-sized division as damage that answers only toughness 0.
 - #4455 Aims "don't untap during their next untap step" (Mana Vapors, Imaginary Threats, Exhaustion) and divided damage (Samut, the Tested, Electrolyze, Arc Lightning) at the opponent's side, reads the untap lock as a tapper, and reads a power-only cut to an opposing creature (Ominous Sphinx, Dizzy Spell) as a combat effect.
 - #4452 Reads "untap all creatures you control" (Jace, Ingenious Mind-Mage's +1, extra-combat untaps) as a combat enhancement for its own team, as it reads a granted vigilance, without flashing in a mass-untap body before combat.

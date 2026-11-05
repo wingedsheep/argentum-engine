@@ -28,17 +28,16 @@ class AiReadingServiceTest : FunSpec({
     }
 
     test("an implemented card is read from the engine's own definition, ability by ability") {
-        val service = AiReadingService(registryOf("Alchemist's Vial"))
-        val card = service.implemented("Alchemist's Vial").shouldNotBeNull()
+        val service = AiReadingService(registryOf("Abbot of Keral Keep"))
+        val card = service.implemented("Abbot of Keral Keep").shouldNotBeNull()
         val view = service.read(card)
         view.readFully shouldBe false
-        val activated = view.abilities.single { it.kind == "ACTIVATED" }
-        activated.readFully shouldBe false
-        activated.findings.first { it.check == "combat" && !it.read }.reason shouldBe "combat can't see this blocking change"
-        view.abilities.single { it.kind == "TRIGGERED" }.readFully shouldBe true
+        view.abilities.count { it.readFully } shouldBe 1
+        val impulse = view.abilities.single { !it.readFully }
+        impulse.kind shouldBe "TRIGGERED"
+        impulse.findings.any { it.check == "intent" && !it.read } shouldBe true
         view.flags shouldBe listOf(
-            "combat: CantBlockEffect",
-            "timing: CantAttackEffect", "timing: CantBlockEffect",
+            "intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)",
         )
     }
 
@@ -59,12 +58,12 @@ class AiReadingServiceTest : FunSpec({
     }
 
     test("the corpus index answers per card and per set once built, and nothing before") {
-        val service = AiReadingService(registryOf("Lightning Bolt", "Alchemist's Vial"))
+        val service = AiReadingService(registryOf("Lightning Bolt", "Abbot of Keral Keep"))
         eventually(30.seconds) {
             service.corpusReady() shouldBe true
         }
         service.readsFully("Lightning Bolt") shouldBe true
-        service.readsFully("Alchemist's Vial") shouldBe false
+        service.readsFully("Abbot of Keral Keep") shouldBe false
         service.readsFully("Not A Card") shouldBe null
         val summary = service.setSummary()
         summary.ready shouldBe true
@@ -81,10 +80,10 @@ class AiReadingServiceTest : FunSpec({
         val score = detail.score.shouldNotBeNull()
         detail.unread.size shouldBe score.total - score.readFully
         detail.groups.zipWithNext().forEach { (a, b) -> a.cards.size shouldBeGreaterThanOrEqual b.cards.size }
-        val vial = detail.unread.single { it.name == "Alchemist's Vial" }
-        detail.groups.single { it.key == "combat: CantBlockEffect" }.cards shouldContain "Alchemist's Vial"
-        vial.flags shouldContain "timing: CantAttackEffect"
-        vial.abilitiesRead shouldBeLessThan vial.abilities
+        val abbot = detail.unread.single { it.name == "Abbot of Keral Keep" }
+        detail.groups.single { it.key == "intent: GrantMayPlayFromExileEffect" }.cards shouldContain "Abbot of Keral Keep"
+        abbot.flags shouldContain "intent: Pipeline(TopOfLibrary→exile)"
+        abbot.abilitiesRead shouldBeLessThan abbot.abilities
         service.setDetail("NOPE") shouldBe null
     }
 })
