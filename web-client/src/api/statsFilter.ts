@@ -38,7 +38,7 @@ export function isAllGames(f: StatsFilter): boolean {
 /**
  * The filter as query parameters, `&`-prefixed so it appends to a path that already has `?…`, or ''
  * for no filter. [periodParam] names the period parameter (the admin dashboard's games-per-day
- * endpoint already uses `days` for its chart window, so its siblings take `period`).
+ * endpoint takes the period as `days`, a name it had first, so its siblings take `period`).
  */
 export function filterQuery(f: StatsFilter, periodParam = 'days'): string {
   let q = ''

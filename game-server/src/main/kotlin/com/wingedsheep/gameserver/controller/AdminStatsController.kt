@@ -55,6 +55,10 @@ class AdminStatsController(
         ResponseEntity.ok(statsQuery.overview(GameFilter.of(vs, period)))
     }
 
+    /**
+     * Counted games over time for the dashboard chart. `days = 0` means all time; the bucket (day,
+     * week or month) follows the span and comes back with the points.
+     */
     @GetMapping("/games-per-day")
     fun gamesPerDay(
         @RequestHeader("X-Admin-Password", required = false) password: String?,
@@ -62,7 +66,7 @@ class AdminStatsController(
         @RequestParam(defaultValue = "30") days: Int,
         @RequestParam(required = false) vs: String?,
     ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
-        ResponseEntity.ok(statsQuery.gamesPerDay(days.coerceIn(1, 365), OpponentFilter.parse(vs)))
+        ResponseEntity.ok(statsQuery.gamesOverTime(days.takeIf { it > 0 }?.coerceAtMost(3650), OpponentFilter.parse(vs)))
     }
 
     /**

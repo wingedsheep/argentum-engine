@@ -8,6 +8,9 @@ import com.wingedsheep.sdk.core.CardType
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 /** A `(label, count)` bucket for a stats breakdown. */
@@ -140,7 +143,10 @@ data class GlobalOverview(
     val notCountedGames: Long = 0,
 )
 
-/** One day's game count for the games-per-day chart, split by who played. */
+/**
+ * One bucket's game count for the games-over-time chart, split by who played. [day] is the bucket's
+ * first UTC day (`YYYY-MM-DD`).
+ */
 data class DailyCount(
     val day: String,
     val count: Long,
@@ -149,6 +155,39 @@ data class DailyCount(
     /** Of [count], games where one person played the AI. */
     val vsAi: Long = 0,
 )
+
+/** The games-over-time chart: [points] oldest first, gap-filled, one per [bucket]. */
+data class GamesOverTime(val bucket: AiBucket, val points: List<DailyCount>) {
+    companion object {
+        /** Daily up to 90 days (≤ 91 bars), weekly up to two years (≤ 105), monthly beyond. */
+        fun bucketFor(spanDays: Long): AiBucket = when {
+            spanDays <= 91 -> AiBucket.DAY
+            spanDays <= 731 -> AiBucket.WEEK
+            else -> AiBucket.MONTH
+        }
+
+        /**
+         * Folds per-day counts into buckets from the start of the range — [days] before [today], or
+         * the first game's day for all time — through [today], filling empty buckets with zeros so
+         * quiet stretches show as gaps instead of disappearing from the axis.
+         */
+        fun of(daily: List<DailyCount>, days: Int?, today: LocalDate): GamesOverTime {
+            val first = days?.let { today.minusDays(it.toLong()) }
+                ?: daily.firstOrNull()?.let { LocalDate.parse(it.day) }
+                ?: today
+            val bucket = bucketFor(ChronoUnit.DAYS.between(first, today) + 1)
+            val byStart = daily.groupBy { bucket.startOf(LocalDate.parse(it.day)) }
+            val points = generateSequence(bucket.startOf(first)) { bucket.next(it) }
+                .takeWhile { !it.isAfter(today) }
+                .map { start ->
+                    val inBucket = byStart[start].orEmpty()
+                    DailyCount(start.toString(), inBucket.sumOf { it.count }, inBucket.sumOf { it.vsHumans }, inBucket.sumOf { it.vsAi })
+                }
+                .toList()
+            return GamesOverTime(bucket, points)
+        }
+    }
+}
 
 /** One table's row count and on-disk footprint, for the admin dashboard's database panel. */
 data class DatabaseTableStat(
@@ -1187,14 +1226,15 @@ class StatsQueryService(
     }
 
     /**
-     * Counted games per calendar day (UTC) over the last [days] days, oldest first, each split into
-     * people-only games and games against the AI. [opponents] narrows the total the same way.
+     * Counted games over the last [days] days (null = all time), each bucket split into people-only
+     * games and games against the AI; [opponents] narrows the total the same way. The bucket size
+     * follows the span ([GamesOverTime.bucketFor]) so the chart stays readable from a week to all time.
      */
-    fun gamesPerDay(days: Int, opponents: OpponentFilter = OpponentFilter.ALL): List<DailyCount> {
+    fun gamesOverTime(days: Int?, opponents: OpponentFilter = OpponentFilter.ALL): GamesOverTime {
         val f = GameFilter(opponents, days).matchSql("r")
         val humans = GameFilter(OpponentFilter.HUMANS).matchSql("r").clause
         val ai = GameFilter(OpponentFilter.AI).matchSql("r").clause
-        return jdbc.query(
+        val daily = jdbc.query(
             """
             SELECT to_char(date_trunc('day', r.ended_at), 'YYYY-MM-DD') AS day, count(*) AS n,
                    count(*) FILTER (WHERE $humans) AS vs_humans,
@@ -1207,6 +1247,7 @@ class StatsQueryService(
             { rs, _ -> DailyCount(rs.getString("day"), rs.getLong("n"), rs.getLong("vs_humans"), rs.getLong("vs_ai")) },
             *f.args.toTypedArray(),
         )
+        return GamesOverTime.of(daily, days, LocalDate.now(ZoneOffset.UTC))
     }
 
     /**
