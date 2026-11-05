@@ -612,6 +612,8 @@ data class AdditionalCostData(
     val validRevealTargets: List<EntityId> = emptyList(),
     val revealCount: Int = 0,
     val counterRemovalCreatures: List<CounterRemovalCreatureData> = emptyList(),
+    /** Permanents a "put N counters on a permanent you control" spell cost may place on (Lethal Sting). */
+    val validCounterPlacementTargets: List<EntityId> = emptyList(),
     val validBlightTargets: List<EntityId> = emptyList(),
     val blightAmount: Int = 0,
     /**

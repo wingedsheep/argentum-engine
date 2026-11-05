@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CopiedAbilities
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -19,7 +20,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * Mana of any type can be spent to activate Sharkey's abilities.
  *
  * Modeled with three reusable static abilities:
- *  - [PreventActivatedAbilities] with `nonManaAbilitiesOnly = true` over `Land.opponentControls()`
+ *  - [PreventActivatedAbilities] with `abilities = NON_MANA` over `Land.opponentControls()`
  *    locks opponents' lands' non-mana abilities while leaving their mana abilities usable (piece 1).
  *  - [GainActivatedAbilitiesOfPermanents] grants Sharkey (Self) copies of the non-mana activated
  *    abilities of opponents' lands; the copies use Sharkey as their source (piece 2).
@@ -40,7 +41,7 @@ val SharkeyTyrantOfTheShire = card("Sharkey, Tyrant of the Shire") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Land.opponentControls(),
-            nonManaAbilitiesOnly = true
+            abilities = ActivatedAbilityScope.NON_MANA
         )
     }
     staticAbility {

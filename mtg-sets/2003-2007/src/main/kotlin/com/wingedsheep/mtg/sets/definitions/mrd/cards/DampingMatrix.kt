@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 
 /**
@@ -12,7 +13,7 @@ import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
  * Activated abilities of artifacts and creatures can't be activated unless they're mana abilities.
  *
  * The Cursed Totem shape widened by one axis: [PreventActivatedAbilities] over
- * `Artifact or Creature` with `nonManaAbilitiesOnly = true`, which is exactly the printed
+ * `Artifact or Creature` with `abilities = NON_MANA`, which is exactly the printed
  * "unless they're mana abilities" exemption. The union is homogeneous (both branches are bare
  * card-type predicates with no controller or state gate), so it collapses to a single
  * `CardPredicate.Or` — the flat shape the activation-legality check already understands, matched
@@ -32,7 +33,7 @@ val DampingMatrix = card("Damping Matrix") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Artifact or GameObjectFilter.Creature,
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
         )
     }
 

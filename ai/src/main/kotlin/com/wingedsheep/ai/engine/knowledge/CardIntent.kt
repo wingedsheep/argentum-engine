@@ -340,6 +340,40 @@ enum class IntentTag {
     /** Counters a spell. */
     COUNTERSPELL,
 
+    /**
+     * Changes the target of a spell or ability on the stack — "change the target of target spell
+     * with a single target" (Bolt Bend, Misdirection), "change a target of target spell or ability
+     * to this creature" (Spellskite, Hydroelectric Specimen). Like [COUNTERSPELL] it answers only
+     * something already on the stack — an instant one needs a spell to target before it can be
+     * cast at all. It is not [PROTECTION]: that tag releases a flash body's ambush hold before
+     * combat, and a redirect on arrival is worth nothing without a spell to catch. Where the
+     * spell goes is the decision's question, read off what the redirected object does to the slot
+     * (`SpellRedirectChoice`).
+     */
+    SPELL_REDIRECT,
+
+    /**
+     * Copies a spell or ability — "copy target instant or sorcery spell; you may choose new targets
+     * for the copy" (Fork, Double Major, Twincast), "copy target activated or triggered ability"
+     * (Lithoform Engine, Echo, Perceptive Prodigy), "when you next cast an instant or sorcery spell
+     * this turn, copy that spell" (Double Vision's kin). The copy is ours whoever controls the
+     * original, and worth what that object does, so the card is a second helping of the deck's best
+     * spell — it rewards instants and sorceries the way prowess does (`SynergyAxes`). Like
+     * [SPELL_REDIRECT] the targeted forms answer only what is already on the stack; which spell to
+     * copy is the polarity reader's two-sided slot, and where the copy's new targets go is read off
+     * the copied effect (`TargetSelection.decisionPolarities`).
+     */
+    SPELL_COPY,
+
+    /**
+     * Takes cards out of a graveyard that isn't only ours — "exile target card from a graveyard"
+     * (Scavenging Ooze, Carrion Locust, Mourner's Shield's imprint), "exile target player's
+     * graveyard" (Tormod's Crypt, Bojuka Bog), "put target card from a graveyard on the bottom of
+     * its owner's library" (Junktroller). It answers recursion, flashback and delirium before they
+     * happen, but no permanent on the board: never [REMOVAL], and worth little in Limited on its own.
+     */
+    GRAVEYARD_HATE,
+
     /** Gains life. */
     LIFEGAIN,
 
@@ -422,6 +456,17 @@ enum class IntentTag {
     TRIGGER_LOCK,
 
     /**
+     * Stops counters going on players or permanents — Solemnity's "Players can't get counters.
+     * Counters can't be put on artifacts, creatures, enchantments, or lands", a battlefield-wide
+     * "can't have +1/+1 counters put on them" (Blightbeetle's opponents-only form).
+     *
+     * Like [TRIGGER_LOCK], a lock moves nothing — its payoff is counters that never arrive (poison,
+     * -1/-1, +1/+1, undying and persist returns) — so no board simulation sees it. The symmetric
+     * form also starves its controller's own counters, so the draft heuristic prices it as a hoser.
+     */
+    COUNTER_LOCK,
+
+    /**
      * Takes the tokens an opponent would create — Crafty Cutpurse's "each token that would be
      * created under an opponent's control this turn is created under your control instead".
      *
@@ -453,6 +498,16 @@ enum class IntentTag {
      * "no intent". An extra turn handed to an opponent is never a play and earns no tag.
      */
     EXTRA_TURN,
+
+    /**
+     * Casts a spell without paying its mana cost — Wildfire Eternal's and Omnispell Adept's "cast an
+     * instant or sorcery spell from your hand without paying its mana cost", a cascade-like "cast it
+     * without paying its mana cost" off the top of a library or out of exile. Its payoff is the mana
+     * the spell didn't cost (and, from outside the hand, the card itself), which the board
+     * simulation only sees once the spell resolves, so without the tag the ability read as
+     * "no intent". A cast that still pays the spell's mana cost earns no tag.
+     */
+    FREE_SPELL,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */

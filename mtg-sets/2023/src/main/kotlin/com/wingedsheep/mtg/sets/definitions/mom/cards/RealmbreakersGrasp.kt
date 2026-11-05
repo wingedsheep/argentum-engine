@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -20,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * activated unless they're mana abilities.
  *
  * Petrify's artifact-or-creature lock with Faith's Fetters' mana-ability carve-out:
- * [PreventActivatedAbilities] scoped to the host with `nonManaAbilitiesOnly = true`.
+ * [PreventActivatedAbilities] scoped to the host with `abilities = NON_MANA`.
  * [GroupFilter.attachedCreature] is a scope-based `Permanent` filter, so an artifact host
  * is covered too (and the combat halves bite if it later animates).
  */
@@ -45,7 +46,7 @@ val RealmbreakersGrasp = card("Realmbreaker's Grasp") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Permanent.attachedToBySource(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
         )
     }
 

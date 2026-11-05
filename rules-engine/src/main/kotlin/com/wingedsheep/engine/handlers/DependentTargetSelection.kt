@@ -65,6 +65,7 @@ object DependentTargetSelection {
         else -> isTargetReference(when (predicate) {
             is StatePredicate.BlockPairedWithEntityThisTurn -> predicate.reference
             is StatePredicate.IsBlockingEntity -> predicate.reference
+            is StatePredicate.IsEntity -> predicate.reference
             is StatePredicate.IsAttackingDefenderOf -> predicate.reference
             is StatePredicate.IsAttackingPlayer -> predicate.player
             else -> null

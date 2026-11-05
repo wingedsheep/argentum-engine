@@ -391,6 +391,7 @@ object LimitedCardRater {
         Keyword.DEATHTOUCH to 0.5,
         Keyword.LIFELINK to 0.4,
         Keyword.VIGILANCE to 0.2,
+        Keyword.AFFLICT to 0.3,
         // Speed
         Keyword.HASTE to 0.3,
         Keyword.FLASH to 0.3,
@@ -427,7 +428,7 @@ object LimitedCardRater {
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot, card: CardDefinition): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect, slot.targets)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
 
     // Four-mana activations are already slow; above that, retain only the share likely to be used.
     private fun activationDiscount(slot: EffectWalker.Slot): Double =
@@ -543,14 +544,20 @@ object LimitedCardRater {
      * and a gather or a move is worth nothing alone, so "destroy all creatures" and "look at the top
      * three, put one into your hand" scored zero. [CardIntentAnalyzer.pipelineTags] reads what the
      * stages add up to; this prices that reading like the leaf it stands for — a wrath or a picked
-     * destroy like a destroy, a dig like one card drawn.
+     * destroy like a destroy, a dig like one card drawn — and graveyard targets the pipeline brings
+     * onto our battlefield, however it splits them first (Boneyard Parley's piles), like the
+     * recursion they are.
      */
-    private fun pipelineScore(root: Effect): Double {
+    private fun pipelineScore(root: Effect, targets: List<TargetRequirement>): Double {
+        val reanimation = if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(root, targets)) {
+            TAG_VALUE.getValue(IntentTag.RECURSION)
+        } else 0.0
         val tags = CardIntentAnalyzer.pipelineTags(root)
-        if (tags.isEmpty()) return 0.0
-        var score = 0.0
+        if (tags.isEmpty()) return reanimation
+        var score = reanimation
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
         return score
     }
 
@@ -605,12 +612,17 @@ object LimitedCardRater {
                 } else tagValue(CardIntentAnalyzer.leafTags(effect))
             }
             // Removal — the most valuable effect type in limited
-            is MoveToZoneEffect -> when {
+            is MoveToZoneEffect -> when (CardIntentAnalyzer.graveyardMoveOf(effect, targets)) {
+                // A card out of a graveyard is no permanent off the board: hate, or our own fuel.
+                CardIntentAnalyzer.GraveyardMove.HATE -> TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
+                CardIntentAnalyzer.GraveyardMove.OWN_EXILE -> 0.0
+                null -> when {
                 effect.byDestruction -> DESTROY_SCORE     // destroy
                 effect.destination == Zone.EXILE -> 1.6    // exile (better than destroy)
                 effect.destination == Zone.HAND -> 0.8     // bounce
                 effect.destination == Zone.LIBRARY -> 1.0  // tuck
                 else -> 0.3
+                }
             }
             is MoveUntilSourceLeavesEffect -> when (effect.destination) {
                 Zone.EXILE -> 1.4
@@ -665,6 +677,9 @@ object LimitedCardRater {
             // the analyzer's sweeper reading of it like the pipeline spelling (see [pipelineScore]).
             is ForEachEffect ->
                 if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE
+                // "Each opponent may search their library for a basic land" (Old-Growth Dryads):
+                // the body's gain is the opponent's, so it is the card's price, not a payoff.
+                else if (CardIntentAnalyzer.giftsOnlyToOpponents(effect)) -EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
                 // Iteration can rebind context targets; do not mistake an outer own-side
                 // slot for the object visited by the loop.
                 else EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
@@ -775,6 +790,15 @@ object LimitedCardRater {
         IntentTag.NEUTRALIZE to 1.0,
         IntentTag.FIGHT to 1.0,
         IntentTag.COUNTERSPELL to 0.8,
+        // Turns their removal back on them or onto a sponge: a narrower counterspell, since it
+        // needs a single-target spell and a legal place to send it.
+        IntentTag.SPELL_REDIRECT to 0.5,
+        // A second helping of a spell already cast: worth as much as the deck's best instant or
+        // sorcery, and nothing without one — a little under a redirect.
+        IntentTag.SPELL_COPY to 0.4,
+        // A graveyard answered before it is used: real against recursion, flashback or delirium,
+        // a blank against everything else — a sideboard card's worth in Limited.
+        IntentTag.GRAVEYARD_HATE to 0.2,
         IntentTag.ANTHEM to 0.8,
         IntentTag.DRAW to 0.6,
         IntentTag.TUTOR to 0.6,
@@ -803,6 +827,9 @@ object LimitedCardRater {
         // A trigger lock shuts off enter triggers on both sides — in Limited, where most decks run
         // a few, it is a sideboard hoser more than a maindeck card.
         IntentTag.TRIGGER_LOCK to 0.1,
+        // A counter lock blanks poison, -1/-1 and +1/+1 plans on both sides — a sideboard hoser
+        // against a counters deck, priced like the trigger lock.
+        IntentTag.COUNTER_LOCK to 0.1,
         IntentTag.TRIBAL_ENABLER to 0.1,
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
@@ -813,6 +840,9 @@ object LimitedCardRater {
         // A whole extra turn — another untap, draw and attack — is a Limited bomb's effect on a
         // sorcery, though usually a pricey or conditional one: a little over a counterspell.
         IntentTag.EXTRA_TURN to 1.0,
+        // A spell cast for free is the mana it didn't cost — usually an attack or a cast trigger
+        // away and only as good as the spells beside it: priced like ramp.
+        IntentTag.FREE_SPELL to 0.4,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

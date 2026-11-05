@@ -37,7 +37,7 @@ class AiReadingServiceTest : FunSpec({
         activated.findings.first { it.check == "combat" && !it.read }.reason shouldBe "combat can't see this blocking change"
         view.abilities.single { it.kind == "TRIGGERED" }.readFully shouldBe true
         view.flags shouldBe listOf(
-            "combat: CantBlockEffect", "intent: CantAttackEffect", "intent: CantBlockEffect",
+            "combat: CantBlockEffect",
             "timing: CantAttackEffect", "timing: CantBlockEffect",
         )
     }

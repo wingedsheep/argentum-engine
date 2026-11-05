@@ -645,6 +645,15 @@ data class AdditionalCostPayment(
     val blightTargets: List<EntityId> = emptyList(),
 
     /**
+     * The permanent chosen to take the counters of a
+     * [com.wingedsheep.sdk.scripting.costs.CostAtom.PutCountersOnPermanent] spell cost — "put a
+     * -1/-1 counter on a creature you control" (Lethal Sting). Its own channel rather than
+     * [blightTargets]: blight is a keyword action a later "if the blight cost was paid" reads, and
+     * this cost is not blight even when it places the same counter.
+     */
+    val counterPlacementTargets: List<EntityId> = emptyList(),
+
+    /**
      * X chosen for [AdditionalCost.BlightVariable] — the number of -1/-1
      * counters placed on [blightTargets] (singular target). Zero when no
      * variable-blight cost is in play, or when the player chose X = 0.
@@ -692,6 +701,7 @@ data class AdditionalCostPayment(
                 tappedPermanents.isEmpty() &&
                 bouncedPermanents.isEmpty() &&
                 blightTargets.isEmpty() &&
+                counterPlacementTargets.isEmpty() &&
                 blightAmount == 0 &&
                 payXLifeAmount == 0 &&
                 distributedCounterRemovals.isEmpty() &&

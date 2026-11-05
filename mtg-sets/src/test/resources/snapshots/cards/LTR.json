@@ -15882,7 +15882,7 @@
             {
                 "type": "PreventActivatedAbilities",
                 "filter": "land ctrl:opponent",
-                "nonManaAbilitiesOnly": true
+                "abilities": "NON_MANA"
             },
             {
                 "type": "GainActivatedAbilitiesOfPermanents",

@@ -291,7 +291,10 @@ internal class ActivationValidator(
         // matching permanents — mana and non-mana alike. Loyalty abilities of
         // planeswalkers and Crew-style animation abilities are not blocked because the
         // filter (typically `Creature`) is matched in projected state.
-        if (castPermissionUtils.isActivationPrevented(state, action.sourceId, abilityIsManaAbility = ability.isManaAbility)) {
+        if (castPermissionUtils.isActivationPrevented(
+                state, action.sourceId, abilityIsManaAbility = ability.isManaAbility,
+                abilityIsLoyaltyAbility = ability.isPlaneswalkerAbility
+            )) {
             return "Activated abilities of this permanent can't be activated"
         }
 

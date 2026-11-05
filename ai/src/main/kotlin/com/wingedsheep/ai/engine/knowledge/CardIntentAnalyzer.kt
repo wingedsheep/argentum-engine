@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
+import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
@@ -20,6 +21,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.MustAttack
@@ -34,6 +36,8 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
+import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
+import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -42,6 +46,8 @@ import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -337,7 +343,7 @@ object CardIntentAnalyzer {
             arrivalTags = arrivalTags.takeIf { it != tags },
             grantsInstantSpeedLoyalty = leaves.any { it is GrantLoyaltyActivationPermissionEffect && it.instantSpeed },
             counterTax = counterTaxOf(leaves),
-            cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) { effectTags(it.effect) },
+            cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) { effectTags(it.effect, it.targetRequirements) },
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent, scripts))
     }
@@ -368,23 +374,26 @@ object CardIntentAnalyzer {
         if (!card.typeLine.isPermanent) return tags
         // A creature without haste cannot pay a tap or untap cost on the turn it arrives (CR 302.6).
         val sick = card.typeLine.isCreature && Keyword.HASTE !in card.keywords
-        val deferred = mutableListOf<Effect>()
-        val immediate = mutableListOf<Effect>()
+        val deferred = mutableListOf<Pair<Effect, List<TargetRequirement>>>()
+        val immediate = mutableListOf<Pair<Effect, List<TargetRequirement>>>()
         for (script in scripts) {
-            script.spellEffect?.let { immediate += it }
-            immediate += script.stateTriggeredAbilities.map { it.effect }
+            script.spellEffect?.let { immediate += it to script.targetRequirements }
+            immediate += script.stateTriggeredAbilities.map { it.effect to emptyList() }
             for (trigger in script.triggeredAbilities) {
-                if (waitsForALaterEventOfItsOwn(trigger)) deferred += trigger.effect else immediate += trigger.effect
+                val slot = trigger.effect to trigger.allTargetRequirements
+                if (waitsForALaterEventOfItsOwn(trigger)) deferred += slot else immediate += slot
             }
             for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
-                if (sick && tapsOrUntapsItself(ability.cost)) deferred += ability.effect else immediate += ability.effect
+                val slot = ability.effect to ability.targetRequirements
+                if (sick && tapsOrUntapsItself(ability.cost)) deferred += slot else immediate += slot
             }
         }
         // A mana ability is [IntentTag.RAMP] — and a summoning-sick dork's taps for nothing yet.
         val manaAbilities = scripts.flatMap { it.activatedAbilities }.filter { it.isManaAbility }
         val sickRamp = sick && manaAbilities.isNotEmpty() && manaAbilities.all { tapsOrUntapsItself(it.cost) }
         if (deferred.isEmpty() && !sickRamp) return tags
-        fun tagsOfRoots(roots: List<Effect>) = roots.flatMapTo(HashSet()) { effectTags(it) }
+        fun tagsOfRoots(roots: List<Pair<Effect, List<TargetRequirement>>>) =
+            roots.flatMapTo(HashSet()) { (effect, requirements) -> effectTags(effect, requirements) }
         val later = tagsOfRoots(deferred) + if (sickRamp) setOf(IntentTag.RAMP) else emptySet()
         val onlyLater = later - tagsOfRoots(immediate) -
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
@@ -439,7 +448,15 @@ object CardIntentAnalyzer {
             .flatten()
         val blinks = EffectWalker.blinkMoves(effect) + delayed
         val payoff = leaves.filterNot { leaf -> blinks.any { it === leaf } }
-        return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) + payoff.flatMap { leaf ->
+        // "Exile up to five target creature cards from graveyards … put the pile of your choice onto
+        // the battlefield under your control" (Boneyard Parley): graveyard cards brought back onto
+        // our side, a reanimation whoever owned them — read as the single-card return it adds up to.
+        val reanimates = reanimatesChosenGraveyardTargets(effect, requirements)
+        return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) +
+            (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) +
+            // Hour of Eternity's exile-and-copy pipeline: the single-card exile to use, below.
+            (if (exilesChosenGraveyardTargetsToUse(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
+            payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
@@ -449,17 +466,40 @@ object CardIntentAnalyzer {
                 // (Emrakul, the Promised End) is the price of the hijack, not a turn of ours.
                 is TakeExtraTurnEffect -> if (namesAnOpponentSlot(leaf.target, requirements)) emptyList()
                     else listOf(leaf)
-                is MoveToZoneEffect -> listOf(withSourceZone(leaf, requirements))
+                is MoveToZoneEffect -> when (graveyardMoveOf(leaf, requirements)) {
+                    // Exiled from any graveyard to be used — a token copy (The Scarab God, Abyssal
+                    // Harvester), a copy of it (Dimir Doppelganger), a cast (Reenact the Crime): the
+                    // card is ours to use again, a recursion whoever owned it.
+                    GraveyardMove.HATE -> if (usesTheExiledCard(payoff)) listOf(RECAST_FROM_OUR_GRAVEYARD)
+                        else listOf(GRAVEYARD_HATE_LEAF)
+                    // Exiled from our own graveyard to be cast from exile (Daring Waverider, The
+                    // Dawning Archaic, Seifer Almasy): a spell of ours again — recursion. Otherwise
+                    // it is the price or the fuel of what follows (Patchwork Crawler's abilities,
+                    // Trove Warden's stored pile), not an answer to anything.
+                    GraveyardMove.OWN_EXILE ->
+                        if (usesTheExiledCard(payoff)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()
+                    null -> listOf(withSourceZone(leaf, requirements))
+                }
                 // "Untap target land" / "untap two target lands" (Arbor Elf, Hope Tender): see [untapsATargetLand].
                 // Only when the untap is the ability's whole payoff: beside another step on the same
                 // land (Wakeroot Elemental's "untap target land you control. It becomes a 5/5
                 // Elemental"), the untap sets that step up, and reading it as ramp would hide it.
                 is TapUntapEffect -> if (payoff.size == 1 && untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
-                is ForEachEffect -> if (payoff.size == 1 && leaf.space == IterationSpace.Targets &&
-                    EffectWalker.payoffLeaves(leaf.body).let { body ->
-                        body.size == 1 && body.all { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
-                    }
-                ) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
+                is ForEachEffect -> when {
+                    payoff.size == 1 && leaf.space == IterationSpace.Targets &&
+                        EffectWalker.payoffLeaves(leaf.body).let { body ->
+                            body.size == 1 && body.all { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
+                        } -> listOf(UNTAP_OUR_LANDS)
+                    // "Return two target Pirate cards from your graveyard to your hand" (March of the
+                    // Drowned) runs its body once per target, each seeing it as `ContextTarget(0)`.
+                    // With one declared slot that is every pick of that slot, so the body reads
+                    // against it — a return out of our graveyard is the recursion it is, not the
+                    // bounce an unplaced move to hand reads as. (TargetPolarityAnalyzer does the same.)
+                    leaf.space == IterationSpace.Targets && requirements.size == 1 &&
+                        EffectWalker.payoffLeaves(leaf.body).all { it is MoveToZoneEffect } ->
+                        readingLeaves(leaf.body, requirements)
+                    else -> listOf(leaf)
+                }
                 is GatherCardsEffect -> {
                     val source = leaf.source as? CardSource.TopOfLibrary
                     val slot = when (val player = source?.player) {
@@ -507,6 +547,116 @@ object CardIntentAnalyzer {
         }
     }
 
+    /** What a single-card move out of a graveyard is — see [graveyardMoveOf]. */
+    enum class GraveyardMove {
+        /** A card of a graveyard that may be an opponent's, exiled or put into its library. */
+        HATE,
+
+        /** A card only our own graveyard can supply, exiled. */
+        OWN_EXILE,
+    }
+
+    /**
+     * What [move] is when it takes a card out of a graveyard into exile or a library, or null when
+     * it does neither (a return to hand or battlefield is recursion, read by [withSourceZone]).
+     *
+     * The move rarely says where its card comes from: `Effects.Exile` leaves `fromZone` unset and
+     * the target *requirement* is what puts the card in a graveyard. A slot any graveyard can fill
+     * — "exile target card from a graveyard" (Scavenging Ooze), "from an opponent's graveyard"
+     * (Carrion Locust) — is [GraveyardMove.HATE]: it took no permanent off the board, so it is not
+     * removal. Into a library out of our own graveyard (Mortuary Mire) stays the recursion it is.
+     */
+    /**
+     * Whether [payoff] goes on to use the card a graveyard exile took — cast it, play it, or copy
+     * it — so the exile is the way in rather than the point: recursion, not hate.
+     */
+    internal fun usesTheExiledCard(payoff: List<Effect>): Boolean = payoff.any {
+        it is GrantFreeCastTargetFromExileEffect || it is GrantMayPlayFromExileEffect ||
+            it is GrantPlayWithoutPayingCostEffect || it is CastFromCollectionWithoutPayingCostEffect ||
+            it is CreateTokenCopyOfTargetEffect || it is EachPermanentBecomesCopyOfTargetEffect
+    }
+
+    /**
+     * Whether [effect] puts its own chosen targets — or the cards split, picked or piled from among
+     * them — onto the battlefield under our control: "exile up to five target creature cards from
+     * graveyards. An opponent separates those cards into two piles. Put all cards from the pile of
+     * your choice onto the battlefield under your control" (Boneyard Parley). Whatever the pile
+     * steps in between (Fact or Fiction's split, a tracked exile), the chosen cards end up ours.
+     */
+    internal fun putsChosenTargetsOntoOurBattlefield(effect: Effect): Boolean {
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
+        }
+        if (chosen.isEmpty()) return false
+        do {
+            val before = chosen.size
+            for (leaf in leaves) chosen += derivedCollections(leaf, chosen)
+        } while (chosen.size != before)
+        return leaves.any { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@any false
+            val to = move.destination as? CardDestination.ToZone ?: return@any false
+            move.from in chosen && move.faceDown == null && !move.underOwnersControl &&
+                to.zone == Zone.BATTLEFIELD && to.player == Player.You
+        }
+    }
+
+    /**
+     * [putsChosenTargetsOntoOurBattlefield] over target slots that all sit in a graveyard: a
+     * reanimation onto our side. Slots on the battlefield would make the same pipeline a blink.
+     */
+    internal fun reanimatesChosenGraveyardTargets(effect: Effect, requirements: List<TargetRequirement>): Boolean {
+        val objects = requirements.map { ((it as? TargetOther)?.baseRequirement ?: it) as? TargetObject }
+        if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
+        return putsChosenTargetsOntoOurBattlefield(effect)
+    }
+
+    /**
+     * Whether [effect] exiles its own chosen targets out of a graveyard and goes on to use the
+     * exiled cards ([usesTheExiledCard]) — "exile X target creature cards from your graveyard. For
+     * each card exiled this way, create a token that's a copy of that card" (Hour of Eternity). The
+     * pipeline spelling of the single-card exile-and-copy (The Scarab God): the exile is the way in,
+     * so the cards are ours to use again — recursion, not hate.
+     */
+    internal fun exilesChosenGraveyardTargetsToUse(effect: Effect, requirements: List<TargetRequirement>): Boolean {
+        val objects = requirements.map { ((it as? TargetOther)?.baseRequirement ?: it) as? TargetObject }
+        if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
+        }
+        if (chosen.isEmpty()) return false
+        do {
+            val before = chosen.size
+            for (leaf in leaves) chosen += derivedCollections(leaf, chosen)
+        } while (chosen.size != before)
+        val exiles = leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in chosen && leaf.faceDown == null &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+        }
+        return exiles && usesTheExiledCard(leaves.flatMap { leaf ->
+            if (leaf is ForEachEffect) EffectWalker.payoffLeaves(leaf.body) else listOf(leaf)
+        })
+    }
+
+    internal fun graveyardMoveOf(move: MoveToZoneEffect, requirements: List<TargetRequirement>): GraveyardMove? {
+        if (move.destination != Zone.EXILE && move.destination != Zone.LIBRARY) return null
+        val slot = when (val target = move.target) {
+            is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name }
+            is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
+            else -> null
+        } ?: return null
+        val filter = (slot as? TargetObject)?.filter
+        val fromGraveyard = move.fromZone == Zone.GRAVEYARD || (move.fromZone == null && filter?.zone == Zone.GRAVEYARD)
+        if (!fromGraveyard) return null
+        val own = TargetPolarityAnalyzer.ownGraveyardOnly(filter)
+        return when {
+            !own -> GraveyardMove.HATE
+            move.destination == Zone.EXILE -> GraveyardMove.OWN_EXILE
+            else -> null
+        }
+    }
+
     /**
      * [move] with the zone its target comes from filled in from that target's requirement, when the
      * move leaves it unsaid: `Effects.Move(target, Zone.BATTLEFIELD)` over "target creature card in
@@ -549,8 +699,8 @@ object CardIntentAnalyzer {
         }
 
     /** Every tag [root] reads as: its leaves' own, plus what the pipeline among them adds up to ([pipelineTags]). */
-    private fun effectTags(root: Effect): Set<IntentTag> =
-        readingLeaves(root).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root)
+    private fun effectTags(root: Effect, requirements: List<TargetRequirement> = emptyList()): Set<IntentTag> =
+        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root)
 
     /**
      * What the gather → move pipelines in [root] add up to, which no single leaf of them says.
@@ -563,6 +713,7 @@ object CardIntentAnalyzer {
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(regrowthTags(root))
+        addAll(graveyardExileTags(root))
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // Exile it, its owner may cast it again (Airbend, Release to the Wind): a bounce that skips
         // the hand, so it reads as a bounce's MoveToZone does in [tagsOf] — tempo removal.
@@ -629,6 +780,40 @@ object CardIntentAnalyzer {
             }
         }
         return if (returnsThem) setOf(IntentTag.RECURSION) else emptySet()
+    }
+
+    /**
+     * "Exile target player's graveyard" (Tormod's Crypt, Bojuka Bog), "exile each opponent's
+     * graveyard" — a gather from a graveyard that is not only ours whose cards, or the ones picked
+     * from among them, go to exile — reads as [IntentTag.GRAVEYARD_HATE], as the single-card
+     * `MoveToZoneEffect` spelling does in [readingLeaves]. Our own graveyard exiled is a cost or
+     * fuel (delve, escape-likes), never an answer.
+     */
+    private fun graveyardExileTags(root: Effect, eachPlayer: Player? = null): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        // Exiled to be cast from exile (Mnemonic Betrayal, Shadow of the Enemy): a theft, not hate.
+        if (usesTheExiledCard(leaves)) return emptySet()
+        // Inside "each player …" / "each opponent …" ([eachPlayer]), `You` is the player iterated,
+        // whose graveyard is an opponent's too.
+        val iteratesOpponents = eachPlayer == Player.Each || eachPlayer in OPPONENT_PLAYERS
+        val seed = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
+            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && (source.player != Player.You || iteratesOpponents) }
+        }
+        if (seed.isEmpty()) return emptySet()
+        do {
+            val before = seed.size
+            for (leaf in leaves) seed += derivedCollections(leaf, seed)
+        } while (seed.size != before)
+        // "Each player shuffles their graveyard into their library" (Survive) takes every
+        // opponent's graveyard away as surely as an exile does. A lone
+        // player's graveyard shuffled back (Elixir of Immortality, Gaea's Blessing) is a refill.
+        val takenTo = if (iteratesOpponents) setOf(Zone.EXILE, Zone.LIBRARY) else setOf(Zone.EXILE)
+        val exiles = leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in seed &&
+                (leaf.destination as? CardDestination.ToZone)?.zone in takenTo
+        }
+        return if (exiles) setOf(IntentTag.GRAVEYARD_HATE) else emptySet()
     }
 
     /**
@@ -925,6 +1110,7 @@ object CardIntentAnalyzer {
 
     private fun tagsOf(effect: Effect): Set<IntentTag> = when {
         effect === DELAYED_BLINK -> setOf(IntentTag.PROTECTION)
+        effect === GRAVEYARD_HATE_LEAF -> setOf(IntentTag.GRAVEYARD_HATE)
         else -> leafTagsOf(effect)
     }
 
@@ -1036,6 +1222,12 @@ object CardIntentAnalyzer {
         // only ever pays off; which creature it readies is the polarity check's question.
         is BecomePreparedEffect -> setOf(IntentTag.DRAW)
         is CounterEffect, is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
+        is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
+        // "Copy target spell", "copy target activated or triggered ability", "when you next cast an
+        // instant or sorcery spell this turn, copy it": see [IntentTag.SPELL_COPY].
+        is CopyTargetSpellEffect, is CopyTargetSpellOrAbilityEffect, is CopyTargetTriggeredAbilityEffect,
+        is CopyEachTargetSpellEffect, is CopyForOtherPossibleTargetsEffect, is CopyNextSpellCastEffect,
+        is CopyEachSpellCastEffect -> setOf(IntentTag.SPELL_COPY)
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         // An exchange is carried out as a gain for the player whose total goes up (rule 701.12c),
         // and its controller only casts it to be that player: Psychic Transfer at 4 against 9.
@@ -1068,6 +1260,15 @@ object CardIntentAnalyzer {
         // "Creatures your opponents control can't block this turn" / "creatures you control can't be
         // blocked this turn": a turn of team-wide evasion, the same alpha-strike payoff.
         is CantBlockGroupEffect, is CantBeBlockedGroupEffect -> setOf(IntentTag.EVASION_GRANT)
+        // "Target creature can't block this turn" (Earthshaker Khenra, Gilded Cerodon): one blocker
+        // taken out of the opponent's defence — the single-creature form of the team-wide evasion
+        // above. "This creature can't block" on its own source is a drawback, not a payoff.
+        is CantBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.EVASION_GRANT) else emptySet()
+        // "You may cast an instant or sorcery spell from your hand without paying its mana cost"
+        // (Wildfire Eternal, Omnispell Adept), "… cast it without paying its mana cost" off the top
+        // of a library or out of exile: a spell for free, see [IntentTag.FREE_SPELL]. A cast that
+        // still pays the spell's mana cost is only a zone it may be cast from, and earns no tag.
+        is CastFromCollectionWithoutPayingCostEffect -> if (effect.payManaCost) emptySet() else setOf(IntentTag.FREE_SPELL)
 
         // "Your opponents can't cast spells this turn" / "target player can't cast …": disruption whose
         // payoff is spells never cast. A ban that binds its controller too is a price, not a payoff.
@@ -1113,8 +1314,13 @@ object CardIntentAnalyzer {
                 // "For each player, destroy the creatures they control (but one)": the pipeline
                 // gathers `You` — the iterated player — so it only reads as a wrath in the
                 // iteration's frame. See [destroyAll].
-                space is IterationSpace.Players -> inner + destroyAll(effect.body, eachPlayer = space.players).tags +
-                    handDisruptionTags(effect.body, eachPlayer = space.players)
+                // Over opponents only, the body's `you` is the opponent visited: what it gains is
+                // theirs, not ours (see [OPPONENT_GIFTS]) — unless a leaf hands it to the source's
+                // controller by name (Adeline's tokens, Garruk, Veiled Butcher's draw).
+                space is IterationSpace.Players -> (if (includesYou(space.players)) inner else opponentIterationTags(effect.body, inner)) +
+                    destroyAll(effect.body, eachPlayer = space.players).tags +
+                    handDisruptionTags(effect.body, eachPlayer = space.players) +
+                    graveyardExileTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
                 space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP
@@ -1193,7 +1399,9 @@ object CardIntentAnalyzer {
         // spell when every mode counters, so [IntentTag.COUNTERSPELL] alone needs all of them.
         // A cast with its modes chosen is read off those modes instead — [analyzeModes].
         is ModalEffect -> {
-            val perMode = effect.modes.map { mode -> effectTags(mode.effect) }
+            // Each mode reads against its own targets: "return target creature card from your
+            // graveyard to your hand" is recursion only once its slot puts the card in a graveyard.
+            val perMode = effect.modes.map { mode -> effectTags(mode.effect, mode.targetRequirements) }
             val union = perMode.flatMapTo(HashSet()) { it }
             if (perMode.all { IntentTag.COUNTERSPELL in it }) union else union - IntentTag.COUNTERSPELL
         }
@@ -1244,16 +1452,65 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * Whether [ability] is a trigger of the permanent itself leaving the battlefield that puts that
-     * same permanent back onto it — "when this creature dies, return it to the battlefield".
+     * Whether [ability] is a trigger of the permanent itself leaving the battlefield that gets that
+     * same card back — "when this creature dies, return it to the battlefield" (Feign Death) or
+     * "… to its owner's hand" (Verdant Rebirth, Ashnod's Intervention). Either way the removal
+     * aimed at it costs its controller nothing but tempo.
      */
-    private fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
+    internal fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
         if (ability.binding != TriggerBinding.SELF) return false
         val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
         if (pattern.from != Zone.BATTLEFIELD) return false
         return EffectWalker.payoffLeaves(ability.effect).any {
-            it is MoveToZoneEffect && it.target == EffectTarget.Self && it.destination == Zone.BATTLEFIELD
+            it is MoveToZoneEffect && it.target == EffectTarget.Self &&
+                (it.destination == Zone.BATTLEFIELD || it.destination == Zone.HAND)
         }
+    }
+
+    /**
+     * What an iteration over opponents' *own* gains reads as: nothing. "Each opponent may search
+     * their library for a basic land card and put it onto the battlefield" (Old-Growth Dryads),
+     * "each opponent draws a card" — the body's `you` is the opponent being visited, so a tutor,
+     * ramp, draw or token it makes is theirs: a drawback of the card, never its point. What it
+     * takes from them (a discard, a sacrifice, life) stays read.
+     */
+    private val OPPONENT_GIFTS: Set<IntentTag> = setOf(
+        IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION, IntentTag.RAMP, IntentTag.LIFEGAIN,
+        IntentTag.TOKEN_MAKER, IntentTag.RECURSION, IntentTag.PROTECTION, IntentTag.PUMP, IntentTag.ANTHEM,
+    )
+
+    /**
+     * Whether [effect] iterates over opponents only and everything its body does is a gain for the
+     * opponent visited — [OPPONENT_GIFTS] — so the whole node is a drawback to its controller
+     * (Old-Growth Dryads). [com.wingedsheep.ai.engine.LimitedCardRater] prices it as one.
+     */
+    internal fun giftsOnlyToOpponents(effect: ForEachEffect): Boolean {
+        val space = effect.space as? IterationSpace.Players ?: return false
+        if (includesYou(space.players)) return false
+        if (readingLeaves(effect.body).any(::giftsTheSourceController)) return false
+        val inner = effectTags(effect.body)
+        return inner.isNotEmpty() && inner.all { it in OPPONENT_GIFTS }
+    }
+
+    /** An opponents-only body's tags: the visited opponent's gains dropped, ours by name kept. */
+    private fun opponentIterationTags(body: Effect, inner: Set<IntentTag>): Set<IntentTag> =
+        (inner - OPPONENT_GIFTS) + readingLeaves(body).filter(::giftsTheSourceController).flatMap { tagsOf(it) }
+
+    /**
+     * Whether [leaf] names the source's controller as the one who gains — "for each opponent,
+     * create a 1/1 token" under `ControllerOfSource` (Adeline, Resplendent Cathar), "you draw a
+     * card" for each opponent who didn't discard (Garruk, Veiled Butcher). Inside an iteration
+     * over players `you` is rebound to the player visited, so only this spelling reaches us.
+     */
+    private fun giftsTheSourceController(leaf: Effect): Boolean {
+        val recipient = when (leaf) {
+            is DrawCardsEffect -> leaf.target
+            is GainLifeEffect -> leaf.target
+            is CreateTokenEffect -> leaf.controller
+            is CreatePredefinedTokenEffect -> leaf.controller
+            else -> null
+        }
+        return recipient == EffectTarget.PlayerRef(Player.ControllerOfSource)
     }
 
     /**
@@ -1480,6 +1737,9 @@ object CardIntentAnalyzer {
         is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
             else neutralizeTags(static.filter)
         is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature can't attack unless you control an artifact" (Desperate Castaways, Gadrak):
+        // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
+        is CantAttackUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature attacks or blocks each combat if able" (Relentless Raptor, Juggernaut) binds
         // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
@@ -1510,6 +1770,21 @@ object CardIntentAnalyzer {
         is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
             setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
+        // "Players can't get counters" (Solemnity) and a battlefield-wide "can't have counters put
+        // on them" lock counters out; an Aura's or the creature's own (Blossombind) is read by
+        // whatever else the card does to what it enchants.
+        is PlayersCantGetCounters -> setOf(IntentTag.COUNTER_LOCK)
+        is CantReceiveCounters ->
+            if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.COUNTER_LOCK) else emptySet()
+        // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a
+        // standing permission to cast cards back out of our graveyard is recursion, every turn.
+        is MayCastFromGraveyard -> setOf(IntentTag.RECURSION)
+        // "Enchanted creature loses all abilities" (Lignify) and "creatures enchanted player
+        // controls lose all abilities and have base power and toughness 1/1" (Overwhelming
+        // Splendor) leave the creatures on the battlefield, no longer threats worth the name.
+        is LoseAllAbilities -> neutralizeTags(static.filter)
+        is SetBasePowerToughnessStatic ->
+            if (static.shrinksToAtMostOneOne()) neutralizeTags(static.filter) else emptySet()
         // A composite static is each of its parts (a conditional one is read above, by the
         // ability it gates).
         is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
@@ -1543,8 +1818,7 @@ object CardIntentAnalyzer {
      * kind of trade.
      */
     private fun neutralizeTags(filter: GroupFilter): Set<IntentTag> =
-        if (filter.scope == Scope.AttachedTo) setOf(IntentTag.NEUTRALIZE) else emptySet()
-
+        if (filter.scope == Scope.AttachedTo || filter.reachesEnchantedPlayer()) setOf(IntentTag.NEUTRALIZE) else emptySet()
     /**
      * Total P+T a battlefield-wide anthem hands to each creature it covers. Zero for an
      * Aura/Equipment bonus, which lands on one creature and is therefore already visible in that
@@ -1714,8 +1988,22 @@ object CardIntentAnalyzer {
                             }
                 }
             }
+            // A graveyard answered every turn (Scavenging Ooze, Ashnod's Harvester) keeps a
+            // recursion deck honest, but answers nothing on the board — a third of removal's term.
+            val repeatableHate = !repeatableRemoval && scripts.any { script ->
+                script.activatedAbilities.any { ability ->
+                    ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
+                        !consumesSource(ability.cost) &&
+                        IntentTag.GRAVEYARD_HATE in analyzeEffect(ability.effect, ability.targetRequirements).tags
+                }
+            }
             val amplifier = if (IntentTag.DAMAGE_AMPLIFIER in intent.tags) 1.5 else 0.0
-            return CardIntent.UNKNOWN.staticPriorValue + maxOf(if (repeatableRemoval) 1.5 else 0.0, amplifier)
+            val ability = when {
+                repeatableRemoval -> 1.5
+                repeatableHate -> 0.5
+                else -> 0.0
+            }
+            return CardIntent.UNKNOWN.staticPriorValue + maxOf(ability, amplifier)
         }
         return priorLadder(intent).maxOfOrNull { it.value } ?: CardIntent.UNKNOWN.staticPriorValue
     }
@@ -1766,6 +2054,9 @@ object CardIntentAnalyzer {
             if (IntentTag.TUTOR in cashable || IntentTag.RECURSION in cashable) add(PriorRung("one-shot tutor or recursion", 0.8))
             if (IntentTag.CARD_SELECTION in cashable) add(PriorRung("one-shot card selection", 0.7))
             if (IntentTag.LIFEGAIN in cashable) add(PriorRung("one-shot life gain", 0.6))
+            // A graveyard answer waiting on the board (Tormod's Crypt): real against recursion, idle
+            // against anything else. A repeatable one is priced by the generic repeatable rung.
+            if (IntentTag.GRAVEYARD_HATE in cashable) add(PriorRung("one-shot graveyard hate", 0.6))
             if (IntentTag.PUMP in tags) add(PriorRung("pump", 1.0))
         }
     }
@@ -1789,8 +2080,32 @@ object CardIntentAnalyzer {
         listOf(MoveToZoneEffect(EffectTarget.Self, Zone.EXILE), MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD)),
     )
 
+    /**
+     * What [readingLeaves] reads a single graveyard card exiled or tucked from a graveyard that may
+     * be an opponent's as ([GraveyardMove.HATE]): [IntentTag.GRAVEYARD_HATE], never the removal its
+     * move would read as on the battlefield. Compared by identity.
+     */
+    private val GRAVEYARD_HATE_LEAF: Effect =
+        MoveToZoneEffect(EffectTarget.Self, Zone.EXILE, fromZone = Zone.GRAVEYARD)
+
+    /**
+     * What a [reanimatesChosenGraveyardTargets] pipeline reads as: a card out of a graveyard onto
+     * our battlefield — [IntentTag.RECURSION], as the single-card return is in [tagsOf].
+     */
+    private val REANIMATE_FROM_A_GRAVEYARD: Effect =
+        MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
+
+    /**
+     * What [readingLeaves] reads a card exiled from our own graveyard and then granted a cast from
+     * exile as: the return a recursion's `MoveToZoneEffect` out of the graveyard is
+     * ([IntentTag.RECURSION]), only by way of exile.
+     */
+    private val RECAST_FROM_OUR_GRAVEYARD: Effect =
+        MoveToZoneEffect(EffectTarget.Self, Zone.HAND, fromZone = Zone.GRAVEYARD)
+
     private val OPPONENT_FACING = setOf(
         IntentTag.CAST_BAN,
+        IntentTag.GRAVEYARD_HATE,
         IntentTag.MILL,
         IntentTag.REMOVAL,
         IntentTag.EXILE_REMOVAL,

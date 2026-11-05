@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
+import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
@@ -201,7 +202,11 @@ internal object ExpiringGrantWindow {
         if (!expires) return false
         if (shieldFacesTheStack(state, expiringPayoffs(ability.effect).orEmpty())) return false
 
-        val untilBlocks = lifelinkWaitsForBlocks && waitsForBlocks(ability.effect)
+        // A silence names its source only as it resolves (Mourner's Shield, Burrenton Forge-Tender:
+        // "a source of your choice"), so it is best raised once blocks show which source deals the
+        // damage — the same reasoning [waitsForBlocks] gives lifelink, on every profile that reads it.
+        val untilBlocks = (lifelinkWaitsForBlocks && waitsForBlocks(ability.effect)) ||
+            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.SILENCE } == true
         if (!laterWindowIsStillAhead(state, playerId, untilBlocks)) return false
 
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
@@ -290,6 +295,10 @@ internal object ExpiringGrantWindow {
                 return@none shieldCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets, sourceTaps)
                     ?: return false
             }
+            if (payoff.kind == PayoffKind.SILENCE) {
+                return@none silenceCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets)
+                    ?: return false
+            }
             val affected = affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
                 ?: return false
             when (payoff.kind) {
@@ -308,7 +317,7 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
-                PayoffKind.SHIELD -> true // answered above: a shield can land on a player
+                PayoffKind.SHIELD, PayoffKind.SILENCE -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -417,7 +426,7 @@ internal object ExpiringGrantWindow {
     }
 
     /** Whether [creature] is attacking or blocking in a combat whose damage is still to come. */
-    private fun inFightNow(state: GameState, creature: EntityId): Boolean {
+    internal fun inFightNow(state: GameState, creature: EntityId): Boolean {
         if (state.step !in FIGHT_STILL_AHEAD) return false
         val entity = state.getEntity(creature) ?: return false
         return entity.has<AttackingComponent>() || entity.has<BlockingComponent>()
@@ -751,6 +760,37 @@ internal object ExpiringGrantWindow {
         }
     }
 
+    /**
+     * Whether a [PayoffKind.SILENCE] can still stop damage this turn, or null when it silences a
+     * source this does not judge — which keeps the leaf in charge.
+     *
+     * Damage that does not use the stack is combat damage; a spell or ability that would deal it
+     * releases the floor before this is asked ([shieldFacesTheStack]). So off the stack a silence is
+     * spent only on an opposing creature that still has a fight this turn — [opposingCanStillFight],
+     * the same test a shrink on their creature takes. A source chosen on resolution ([target] null)
+     * can be any of theirs; a targeted one must be the one it names. Silencing a creature of our own
+     * (Moonlight Geist's "dealt by this creature") is not a shape this reads.
+     */
+    private fun silenceCanStillPrevent(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        target: EffectTarget?,
+        sourceId: EntityId?,
+        targets: List<ChosenTarget>,
+    ): Boolean? {
+        val silenced = when (target) {
+            null -> state.getBattlefield().filter { id ->
+                val controller = projected.getController(id)
+                controller != null && controller != playerId
+            }
+            EffectTarget.Self -> listOfNotNull(sourceId)
+            else -> targets.mapNotNull { (it as? ChosenTarget.Permanent)?.entityId }.ifEmpty { return null }
+        }
+        if (silenced.any { it in state.getBattlefield() && projected.getController(it) == playerId }) return null
+        return silenced.any { opposingCanStillFight(state, projected, playerId, it) }
+    }
+
     /** Whether paying for [ability] taps its own source — `{T}` in the cost, or "Tap it." on resolution. */
     private fun tapsItsSource(ability: ActivatedAbility): Boolean {
         fun costTaps(cost: AbilityCost): Boolean = when (cost) {
@@ -868,6 +908,18 @@ internal object ExpiringGrantWindow {
          * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants].
          */
         SHIELD,
+
+        /**
+         * Damage a **source** would deal is prevented until end of turn, whatever it would hit —
+         * "prevent all damage that would be dealt this turn by a source of your choice" (Mourner's
+         * Shield, Burrenton Forge-Tender) or "…by target creature" (Safeguard, Lady Evangela): a
+         * [PreventionDirection.FromTarget] shield. The mirror of [SHIELD]: its payoff is damage that
+         * does not happen, judged from the source's side — an opposing creature that can still
+         * fight ([silenceCanStillPrevent]), or anything on the stack. With the source chosen on
+         * resolution, the window after blocks is strictly better than any before it, so the
+         * deferral waits for blocks ([holds]).
+         */
+        SILENCE,
     }
 
     /**
@@ -879,13 +931,13 @@ internal object ExpiringGrantWindow {
      * stack and prices what it prevents.
      */
     private fun shieldFacesTheStack(state: GameState, payoffs: List<Payoff>): Boolean =
-        state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD }
+        state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD || it.kind == PayoffKind.SILENCE }
 
     /** The stat-change payoffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
     private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE)
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
-    private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD)
+    private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE)
 
     /** One leaf of an ability whose payoff ends at cleanup, and where it lands. */
     private data class Payoff(
@@ -953,10 +1005,21 @@ internal object ExpiringGrantWindow {
                 leaf is EachPermanentBecomesCopyOfTargetEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.affected ?: EffectTarget.IterationEntity, animates = true)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
+                // A source chosen on resolution has no target to land on: null.
+                isSilence(leaf) -> payoffs += Payoff(
+                    PayoffKind.SILENCE,
+                    (leaf as PreventDamageEffect).target.takeUnless { leaf.sourceFilter is PreventionSourceFilter.Chosen },
+                )
                 leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
                 leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "Until end of turn, target creature gains 'when this creature dies, return it'"
+                // (Feign Death, Verdant Rebirth): a shield against dying rather than damage — it
+                // buys something only while the creature can still die this turn, in a fight or to
+                // something on the stack, which is exactly when a [PayoffKind.SHIELD] is spendable.
+                returnsFromDeathThisTurn(leaf) ->
+                    payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
                 leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     firesOnlyInAFight(leaf.ability) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
@@ -1049,9 +1112,31 @@ internal object ExpiringGrantWindow {
         }
     }
 
+    /**
+     * Whether [effect] grants, until end of turn, a "when this creature dies, return it to the
+     * battlefield / its owner's hand" trigger (Feign Death, Verdant Rebirth, Ashnod's
+     * Intervention): protection that is spent only if the creature dies before cleanup. Public for
+     * [HoldPolicy], which holds such a spell for that window, and for the AI card-reading audit.
+     */
+    fun returnsFromDeathThisTurn(effect: Effect): Boolean =
+        effect is GrantTriggeredAbilityEffect && effect.duration == Duration.EndOfTurn &&
+            CardIntentAnalyzer.returnsItselfWhenItLeaves(effect.ability)
+
     private fun isShield(effect: Effect): Boolean =
         effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&
             effect.direction == PreventionDirection.ToTarget && effect.recipientGroup == null
+
+    /**
+     * Whether [effect] is a [PayoffKind.SILENCE]: all damage a source would deal this turn
+     * prevented, with no recipient clause — a chosen source, or the target it names. A reflecting
+     * shield ([PreventDamageEffect.onPrevented], Deflecting Palm) buys the reflected damage too, and
+     * stays unread.
+     */
+    private fun isSilence(effect: Effect): Boolean =
+        effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&
+            effect.direction == PreventionDirection.FromTarget && effect.recipientGroup == null &&
+            effect.onPrevented == null && effect.amount == null &&
+            (effect.sourceFilter is PreventionSourceFilter.Chosen || effect.sourceFilter == PreventionSourceFilter.AnySource)
 
     /** Whether [effect] only ever adds stats — see [everyPayoffExpiresThisTurn]. */
     private fun isPump(effect: ModifyStatsEffect): Boolean {

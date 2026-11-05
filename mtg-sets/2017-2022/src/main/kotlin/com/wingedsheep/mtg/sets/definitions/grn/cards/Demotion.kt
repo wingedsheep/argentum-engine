@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Enchanted creature can't block, and its activated abilities can't be activated.
  *
  * Arrest (MMQ) without the attack lock. The activation lock covers mana abilities too — there is
- * no "unless they're mana abilities" clause — so `nonManaAbilitiesOnly` stays false.
+ * no "unless they're mana abilities" clause — so `abilities` stays `ALL`.
  */
 val Demotion = card("Demotion") {
     manaCost = "{W}"

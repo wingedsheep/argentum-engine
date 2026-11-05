@@ -292,6 +292,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'Behold',
       'ChooseEntity',
       'Blight',
+      'PutCounters',
       'Conspire',
       'Casualty',
       'Craft',
@@ -579,7 +580,9 @@ export function mergeResult(
                       ? { beheldCards: selectedTargets }
                       : costType === 'Blight' || costType === 'BlightVariable'
                         ? { blightTargets: selectedTargets }
-                        : { sacrificedPermanents: selectedTargets }
+                        : costType === 'PutCounters'
+                          ? { counterPlacementTargets: selectedTargets }
+                          : { sacrificedPermanents: selectedTargets }
         // Spread the existing additionalCostPayment so prior phases' fields
         // (e.g. `blightAmount` from a preceding BlightVariable phase) survive.
         const additionalCostPayment = {
@@ -1184,6 +1187,13 @@ export function enterPhase(
             costType === 'BlightVariable'
               ? `Choose a creature to receive ${(action as { additionalCostPayment?: { blightAmount?: number } }).additionalCostPayment?.blightAmount ?? 0} -1/-1 counter(s)`
               : costInfo.description
+          break
+        case 'PutCounters':
+          // "Put a -1/-1 counter on a creature you control" (Lethal Sting): pick it on the battlefield.
+          validTargets = [...(costInfo.validCounterPlacementTargets ?? [])]
+          minTargets = 1
+          maxTargets = 1
+          flags.targetDescription = costInfo.description
           break
         case 'Craft':
           // Craft materials span both battlefield and graveyard (CR 702.167a-b). Route to the

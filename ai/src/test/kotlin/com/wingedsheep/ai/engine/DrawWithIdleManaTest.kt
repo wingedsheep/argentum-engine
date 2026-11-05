@@ -168,7 +168,8 @@ class DrawWithIdleManaTest : ScenarioTestBase() {
                 .single { !it.isManaAbility }
             val activation = ActivateAbility(game.player1Id, game.findPermanent("Isochron Scepter")!!, copy.id)
 
-            CardIntentAnalyzer.analyzeEffect(copy.effect).tags shouldBe setOf(IntentTag.DRAW)
+            // The copy is cast without paying its mana cost, so it reads as a free spell too.
+            CardIntentAnalyzer.analyzeEffect(copy.effect).tags shouldBe setOf(IntentTag.DRAW, IntentTag.FREE_SPELL)
             on.verdictFor(game.state, game.player1Id, "Isochron Scepter", activation = activation) shouldBe
                 TimingVerdict.Neutral
         }

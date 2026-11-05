@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
  *   Enchanted creature can't attack or block, and its activated abilities can't be activated.
  *
  * Same three-static shape as Petrify, but restricted to creature hosts. The activation lock
- * is deliberately not `nonManaAbilitiesOnly`, so mana abilities are locked too.
+ * is deliberately not `abilities = NON_MANA`, so mana abilities are locked too.
  */
 class ArrestScenarioTest : ScenarioTestBase() {
 

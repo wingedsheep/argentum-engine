@@ -6,11 +6,15 @@ import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.core.CardsRevealedEvent
+import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.sdk.scripting.util.quantify
+import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
@@ -1103,8 +1107,8 @@ internal object PayLifeCostKind : SpellCostKind<CostAtom.PayLife> {
 }
 
 /**
- * The atoms that are never a spell's additional cost: mana isn't produced as one; put-counters and
- * reveal-the-noted-type are ability-scoped (a spell on the stack has no permanent to accrue counters
+ * The atoms that are never a spell's additional cost: mana isn't produced as one; put-counters-on-self
+ * and reveal-the-noted-type are ability-scoped (a spell on the stack has no permanent to accrue counters
  * on, nor one carrying a secret note); a spell is attached to nothing, so unattaching is ability-only;
  * putting cards from hand on the library (Leashling) is only printed on abilities;
  * mill and exile-from-library-top are activated-ability costs. Never payable here, so validation and
@@ -1112,6 +1116,107 @@ internal object PayLifeCostKind : SpellCostKind<CostAtom.PayLife> {
  */
 internal object AbilityOnlyAtomCostKind : SpellCostKind<CostAtom> {
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom, costHandler: CostHandler) = false
+}
+
+/**
+ * "As an additional cost to cast this spell, put a -1/-1 counter on a creature you control" (Lethal
+ * Sting). The caster picks one matching permanent they control that can take the counters; paying
+ * places them before the spell's targets are checked again, so the chosen creature may be the target
+ * too (and may die to state-based actions before the spell resolves).
+ *
+ * Not blight: the counters land through the cost's own channel
+ * ([AdditionalCostPayment.counterPlacementTargets]), so "if this spell's blight cost was paid" stays
+ * false.
+ */
+internal object PutCountersOnPermanentCostKind : SpellCostKind<CostAtom.PutCountersOnPermanent> {
+    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.PutCountersOnPermanent, costHandler: CostHandler) =
+        eligible(state, payerId, cost, costHandler.predicateEvaluator).isNotEmpty()
+
+    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.PutCountersOnPermanent, offer: SpellCostOffer): Boolean {
+        val targets = candidates(env, cost)
+        offer.counterPlacementCost = cost
+        offer.counterPlacementTargets = targets
+        return targets.isNotEmpty()
+    }
+
+    override fun candidates(env: SpellCostEnumeration, cost: CostAtom.PutCountersOnPermanent) =
+        eligible(env.state, env.playerId, cost, env.predicateEvaluator)
+
+    override fun selectionCount(cost: CostAtom.PutCountersOnPermanent) = cost.selectionCount
+
+    override fun present(env: SpellCostEnumeration, cost: CostAtom.PutCountersOnPermanent, candidates: List<EntityId>) =
+        "Put counters" to data(cost, candidates)
+
+    /** The client picker payload — on-battlefield selection of the one permanent to take the counters. */
+    fun data(cost: CostAtom.PutCountersOnPermanent, candidates: List<EntityId>) = AdditionalCostData(
+        // The client prefixes "Select", so this names the pick: "creature to put a -1/-1 counter on".
+        description = "${cost.filter.description} to put " +
+            "${quantify(cost.count, "${cost.counterType.printed} counter")} on",
+        costType = "PutCounters",
+        validCounterPlacementTargets = candidates,
+    )
+
+    override fun selectionSupplied(cost: CostAtom.PutCountersOnPermanent, payment: AdditionalCostPayment) =
+        payment.counterPlacementTargets.isNotEmpty()
+
+    override fun validate(check: SpellCostCheck, cost: CostAtom.PutCountersOnPermanent): String? {
+        val state = check.state
+        val projected = state.projectedState
+        val chosen = check.payment?.counterPlacementTargets ?: emptyList()
+        if (chosen.size != 1) return "You must choose one ${cost.filter.description} you control to ${cost.description}"
+        val id = chosen.single()
+        val card = state.getEntity(id)?.get<CardComponent>() ?: return "Chosen permanent not found: $id"
+        if (id !in state.getBattlefield()) return "${card.name} is not on the battlefield"
+        if (projected.getController(id) != check.playerId) return "You can only choose a permanent you control"
+        if (!check.predicateEvaluator.matches(state, projected, id, cost.filter, PredicateContext(controllerId = check.playerId))) {
+            return "${card.name} doesn't match the required filter: ${cost.filter.description}"
+        }
+        if (!projected.canReceiveCounters(id, cost.counterType)) return "${card.name} can't have counters put on it"
+        return null
+    }
+
+    override fun pay(ledger: SpellCostLedger, cost: CostAtom.PutCountersOnPermanent): String? {
+        val id = ledger.payment.counterPlacementTargets.firstOrNull() ?: return "No permanent chosen for the counters"
+        val container = ledger.state.getEntity(id) ?: return null
+        // A cost's counters are still a placement (placement replacements apply), but not an
+        // effect's — Doubling Season's "if an effect would put" passes them by.
+        val amount = ReplacementEffectUtils.applyCounterPlacementModifiers(
+            ledger.state, id, cost.counterType, cost.count, placerId = ledger.playerId,
+            predicateEvaluator = ledger.zones.predicateEvaluator, byEffect = false
+        )
+        if (amount <= 0) return null
+        ledger.state = ledger.state.updateEntity(id) { c ->
+            c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(cost.counterType, amount))
+        }
+        val (marked, firstThisTurn, firstOfTypeThisTurn) =
+            DamageUtils.recordCounterPlacement(ledger.state, id, cost.counterType, placerId = ledger.playerId)
+        ledger.state = marked
+        ledger.events.add(CountersAddedEvent(
+            entityId = id,
+            counterType = cost.counterType,
+            amount = amount,
+            entityName = container.get<CardComponent>()?.name ?: "Permanent",
+            firstThisTurn = firstThisTurn,
+            firstOfTypeThisTurn = firstOfTypeThisTurn,
+            placedBy = ledger.playerId
+        ))
+        return null
+    }
+
+    /** Permanents [payerId] controls that match the cost's filter and can take its counters. */
+    fun eligible(
+        state: GameState,
+        payerId: EntityId,
+        cost: CostAtom.PutCountersOnPermanent,
+        predicateEvaluator: PredicateEvaluator,
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = payerId)
+        return projected.getBattlefieldControlledBy(payerId).filter {
+            projected.canReceiveCounters(it, cost.counterType) &&
+                predicateEvaluator.matches(state, projected, it, cost.filter, context)
+        }
+    }
 }
 
 /** Player-counter costs have no selection payload; their amount is announced with the spell. */

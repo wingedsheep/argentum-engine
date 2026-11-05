@@ -1309,7 +1309,7 @@ enum class ActivatedAbilityReach(
  * @property excludeManaAbilities Leave mana abilities (CR 605) untaxed — Suppression Field's
  *   "unless they're mana abilities". A board-wide tax without this would price every land's
  *   `{T}: Add …` at {2} more, which is the opposite of what the card says. The flag is the mirror of
- *   [PreventActivatedAbilities]'s `nonManaAbilitiesOnly`; the ability's own `isManaAbility` flag
+ *   [PreventActivatedAbilities]'s `abilities = NON_MANA`; the ability's own `isManaAbility` flag
  *   (CR 605.1a, enforced by `CardLinter`) is what the engine reads.
  * @property loyaltyAbilitiesOnly Tax only loyalty abilities (the ability's `isPlaneswalkerAbility`
  *   flag) — Eidolon of Obstruction's "Loyalty abilities of planeswalkers your opponents control cost

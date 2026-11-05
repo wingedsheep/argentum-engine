@@ -150,8 +150,11 @@ object AiCardRating {
                 }
                 val abilityValue = (inPlayIntent.staticPriorValue - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
                 if (abilityValue > 0.0) {
-                    val label = if (IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags) "Damage amplification"
-                        else "Repeatable removal"
+                    val label = when {
+                        IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags -> "Damage amplification"
+                        IntentTag.REMOVAL in inPlayIntent.tags || IntentTag.EXILE_REMOVAL in inPlayIntent.tags -> "Repeatable removal"
+                        else -> "Repeatable graveyard hate"
+                    }
                     add(Part(label, abilityValue))
                 }
                 add(Part("Power", body(power, 0, none), statDetail(power, 1.0, StatRelevance.POWER_KNEE)))
@@ -232,6 +235,9 @@ object AiCardRating {
         IntentTag.COMBAT_TRICK to "Combat trick",
         IntentTag.FIGHT to "Fight",
         IntentTag.COUNTERSPELL to "Counterspell",
+        IntentTag.SPELL_REDIRECT to "Redirects a spell",
+        IntentTag.SPELL_COPY to "Copies a spell",
+        IntentTag.GRAVEYARD_HATE to "Graveyard hate",
         IntentTag.LIFEGAIN to "Life gain",
         IntentTag.DISCARD to "Discard",
         IntentTag.RECURSION to "Recursion",
@@ -249,9 +255,11 @@ object AiCardRating {
         IntentTag.DAMAGE_AMPLIFIER to "Amplifies damage from our sources",
         IntentTag.DAMAGE_TO_PLAYERS to "Deals damage to players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
+        IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.EXTRA_TURN to "Takes an extra turn",
+        IntentTag.FREE_SPELL to "Casts spells for free",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
         IntentTag.EXTRA_BLOCKING to "Blocks additional creatures",
     )

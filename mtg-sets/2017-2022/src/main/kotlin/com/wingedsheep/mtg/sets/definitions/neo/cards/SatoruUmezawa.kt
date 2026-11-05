@@ -41,7 +41,7 @@ val SatoruUmezawa = card("Satoru Umezawa") {
         "Each creature card in your hand has ninjutsu {2}{U}{B}."
 
     triggeredAbility {
-        trigger = Triggers.you.activatesAbility(keyword = Keyword.NINJUTSU)
+        trigger = Triggers.you.activatesAbility(keywords = setOf(Keyword.NINJUTSU))
         oncePerTurn = true
         effect = Patterns.Library.lookAtTopAndKeep(
             count = 3,

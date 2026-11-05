@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ActivatedAbilityScope
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * activated unless they're mana abilities.
  *
  * Same shape as Intercessor's Arrest: Arrest over any permanent, [AbilityFlag.CANT_CREW] on the
- * host, and the non-mana-ability activation lock (`nonManaAbilitiesOnly = true`).
+ * host, and the non-mana-ability activation lock (`abilities = NON_MANA`).
  */
 val BoundInGold = card("Bound in Gold") {
     manaCost = "{2}{W}"
@@ -49,7 +50,7 @@ val BoundInGold = card("Bound in Gold") {
     staticAbility {
         ability = PreventActivatedAbilities(
             filter = GameObjectFilter.Permanent.attachedToBySource(),
-            nonManaAbilitiesOnly = true,
+            abilities = ActivatedAbilityScope.NON_MANA,
         )
     }
 

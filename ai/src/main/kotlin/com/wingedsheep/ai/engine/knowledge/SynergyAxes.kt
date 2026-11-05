@@ -17,6 +17,11 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
+import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -26,6 +31,9 @@ import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import java.util.concurrent.ConcurrentHashMap
@@ -168,6 +176,16 @@ object SynergyAxes {
                         .any(::carriesCounters)
                 }
             ) add(SynergyAxis.PLUS_COUNTERS)
+            // Copying an instant or sorcery — Fork, Lithoform Engine, "when you next cast an instant
+            // or sorcery spell this turn, copy it" — is a second helping of the spells the deck
+            // casts: with none to copy, it does nothing. Copying a creature spell (Double Major)
+            // rewards creatures, not spells.
+            if (scripts.any { script ->
+                    copiesSpells(script.spellEffect, script.targetRequirements) ||
+                        script.activatedAbilities.any { copiesSpells(it.effect, it.targetRequirements) } ||
+                        script.triggeredAbilities.any { copiesSpells(it.effect, it.allTargetRequirements) }
+                }
+            ) add(SynergyAxis.SPELLS)
         }
         val feeds = buildSet {
             scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }
@@ -306,9 +324,14 @@ object SynergyAxes {
         is com.wingedsheep.sdk.scripting.effects.ExploreEffect -> setOf(SynergyAxis.PLUS_COUNTERS, SynergyAxis.GRAVEYARD)
         is com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect -> {
             val destination = leaf.destination as? com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone
-            if (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard && destination?.player == Player.You) {
-                setOf(SynergyAxis.GRAVEYARD)
-            } else emptySet()
+            // A discard, or a plain move of gathered cards into your own graveyard — "search your
+            // library for a card, put it into your graveyard" (Entomb, Vizier of the Anointed) —
+            // stocks the graveyard the same way a self-mill does.
+            val binsOwnCards = destination?.player == Player.You && (
+                leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard ||
+                    (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Default && destination.zone == Zone.GRAVEYARD)
+                )
+            if (binsOwnCards) setOf(SynergyAxis.GRAVEYARD) else emptySet()
         }
         is GatherCardsEffect -> {
             val source = leaf.source
@@ -323,6 +346,30 @@ object SynergyAxes {
 
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
         it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect
+    }
+
+    /**
+     * Whether [effect] copies an instant or sorcery: a delayed "copy the next / each spell you cast"
+     * whose filter names one, or a "copy target spell" whose target requirement does.
+     */
+    private fun copiesSpells(effect: Effect?, requirements: List<TargetRequirement>): Boolean {
+        if (effect == null) return false
+        val leaves = EffectWalker.leaves(effect).toList()
+        if (leaves.any {
+                (it is CopyNextSpellCastEffect && rewardsSpells(it.spellFilter)) ||
+                    (it is CopyEachSpellCastEffect && rewardsSpells(it.spellFilter))
+            }
+        ) return true
+        val copiesTarget = leaves.any {
+            it is CopyTargetSpellEffect || it is CopyTargetSpellOrAbilityEffect || it is CopyEachTargetSpellEffect
+        }
+        return copiesTarget && requirements.any { req ->
+            when (req) {
+                is TargetObject -> rewardsSpells(req.filter.baseFilter)
+                is TargetSpellOrPermanent -> req.spellFilter?.let(::rewardsSpells) ?: false
+                else -> false
+            }
+        }
     }
 
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =

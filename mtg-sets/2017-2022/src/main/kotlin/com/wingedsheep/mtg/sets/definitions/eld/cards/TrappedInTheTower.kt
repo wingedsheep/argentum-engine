@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Arrest's three-static lock behind a narrower enchant restriction. The `auraTarget` filter is
  * also the enchant state-based action's filter, read against projected state, so a host that
  * later gains flying puts this Aura into its owner's graveyard (per the ruling). The activation
- * lock has no mana-ability carve-out, so `nonManaAbilitiesOnly` stays false.
+ * lock has no mana-ability carve-out, so `abilities` stays `ALL`.
  */
 val TrappedInTheTower = card("Trapped in the Tower") {
     manaCost = "{1}{W}"

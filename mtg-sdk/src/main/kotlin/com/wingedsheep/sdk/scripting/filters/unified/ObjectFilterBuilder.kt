@@ -970,6 +970,14 @@ interface ObjectFilterBuilder<out Self> {
     fun notGrantingPermanent() = withStatePredicate(StatePredicate.Not(StatePredicate.IsGrantingPermanent))
 
     /**
+     * Must NOT be the object [reference] names — "another nonland permanent" where "another" is
+     * relative to a target rather than the source (Torment of Venom: other than the target
+     * creature, `EffectTarget.ContextTarget(0)`). See [StatePredicate.IsEntity].
+     */
+    fun otherThan(reference: EffectTarget.SingleEntity) =
+        withStatePredicate(StatePredicate.Not(StatePredicate.IsEntity(reference)))
+
+    /**
      * Must NOT be the triggering entity of the resolving trigger — "any target other than that
      * permanent" (Toralf, God of Fury). See [StatePredicate.IsTriggeringEntity].
      */

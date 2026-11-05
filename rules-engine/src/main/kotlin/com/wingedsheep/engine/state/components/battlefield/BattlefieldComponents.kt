@@ -1398,6 +1398,20 @@ data class ForbidsLibrarySearchComponent(
 ) : Component
 
 /**
+ * Marks a permanent whose static abilities forbid players to get counters —
+ * [com.wingedsheep.sdk.scripting.PlayersCantGetCounters] (Solemnity). Read through
+ * [com.wingedsheep.engine.state.GameState.cantGetCounters]; leaves with the permanent, and is
+ * ignored while the permanent has lost its abilities.
+ *
+ * Unconditional by construction, as [ForbidsLibrarySearchComponent] is: `StaticAbilityHandler`
+ * stamps only the bare abilities.
+ */
+@Serializable
+data class ForbidsPlayerCountersComponent(
+    val prohibitions: List<com.wingedsheep.sdk.scripting.PlayersCantGetCounters>
+) : Component
+
+/**
  * Marks a permanent whose static abilities take over its controller's opponents' library searches —
  * [com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches] (Opposition Agent). Read through
  * [com.wingedsheep.engine.handlers.effects.library.LibrarySearchControl]; leaves with the permanent,

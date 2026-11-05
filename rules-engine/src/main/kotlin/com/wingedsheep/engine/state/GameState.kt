@@ -402,6 +402,15 @@ data class GameState(
     val pendingDiscardCauseControllers: Map<EntityId, EntityId> = emptyMap(),
 
     /**
+     * Cards currently being discarded to pay a cycling or typecycling cost — being *cycled*
+     * (CR 702.29c, 702.29f). Stamped by `ZoneTransitionService.discardCards(asCyclingCost = true)`
+     * just before the move and consumed by `moveToZone` like [pendingDiscardCauseControllers], so
+     * `ZoneChangeCause.NotCycled` can tell the cycled card apart from every other graveyard move
+     * (Abandoned Sarcophagus). Transient: it never outlives the single zone move.
+     */
+    val pendingCyclingDiscardIds: Set<EntityId> = emptySet(),
+
+    /**
      * Players (by entity id) who have committed a crime this turn (CR 700-level Outlaws of Thunder
      * Junction rule). Populated wherever a [com.wingedsheep.engine.core.CommitCrimeEvent] is emitted
      * (spell cast, activated ability, triggered ability), and cleared at every turn boundary. Read by
@@ -1318,14 +1327,37 @@ data class GameState(
     }
 
     /**
-     * Whether [playerId] can't get counters right now — a
-     * [com.wingedsheep.engine.state.components.player.CantGetCountersComponent] lock on them is in
-     * force (Suncleanser). False for any entity that isn't a locked player, so it is safe to ask of
-     * a permanent; `ProjectedState.canReceiveCounters` asks it of every counter recipient.
+     * Whether [playerId] can't get counters — of [counterType], or of any kind when it is null —
+     * right now: a [com.wingedsheep.engine.state.components.player.CantGetCountersComponent] lock on
+     * them is in force (Suncleanser), or a battlefield permanent's
+     * [com.wingedsheep.sdk.scripting.PlayersCantGetCounters] covers them (Solemnity). A kind-scoped
+     * prohibition answers only when asked about its kind. False for any entity that isn't a player,
+     * so it is safe to ask of a permanent; `ProjectedState.canReceiveCounters` asks it of every
+     * counter recipient.
      */
-    fun cantGetCounters(playerId: EntityId): Boolean =
-        getEntity(playerId)?.get<com.wingedsheep.engine.state.components.player.CantGetCountersComponent>()
-            ?.locks?.any { it.holds(this) } == true
+    fun cantGetCounters(playerId: EntityId, counterType: com.wingedsheep.sdk.core.CounterType? = null): Boolean {
+        val player = getEntity(playerId) ?: return false
+        if (player.get<com.wingedsheep.engine.state.components.player.CantGetCountersComponent>()
+                ?.locks?.any { it.holds(this) } == true
+        ) return true
+        if (playerId !in turnOrder) return false
+        return getBattlefield().any { entityId ->
+            val marker = getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.ForbidsPlayerCountersComponent>()
+                ?: return@any false
+            val sourceController = projectedState.getController(entityId) ?: return@any false
+            !projectedState.hasLostAllAbilities(entityId) && marker.prohibitions.any { prohibition ->
+                (prohibition.counterType == null || prohibition.counterType == counterType) &&
+                    when (prohibition.affected) {
+                        is com.wingedsheep.sdk.scripting.references.Player.Each -> true
+                        is com.wingedsheep.sdk.scripting.references.Player.You -> playerId == sourceController
+                        is com.wingedsheep.sdk.scripting.references.Player.EachOpponent ->
+                            isOpponentOf(playerId, sourceController)
+                        else -> false
+                    }
+            }
+        }
+    }
 
     /**
      * Whether [playerId] can pay [amount] life: paying 0 always can (CR 119.4 / 118.3); otherwise

@@ -334,7 +334,7 @@ class HiddenIdentityForkChecker(private val registry: CardRegistry) {
      * `pendingTriggers`, `floatingEffects`, the `pending*Spell*` lists, `spellCostModifiers`,
      * `spellsCastThisTurnByPlayer`, `enlistmentsThisCombat`, `resolutionControls`, `zoneReturns`,
      * `departedLinkedExile`, `sourceObjectRecords`, `pendingSacrificeIds`,
-     * `pendingDiscardCauseControllers`, `pendingReplacementRiders` and `activeReplacementChain`.
+     * `pendingDiscardCauseControllers`, `pendingCyclingDiscardIds`, `pendingReplacementRiders` and `activeReplacementChain`.
      * A field not named here is not checked. The list belongs in [HiddenSlotRewrite] itself, which
      * the AI's determinizer would then share; that is an engine change and left for later.
      */
@@ -391,6 +391,7 @@ class HiddenIdentityForkChecker(private val registry: CardRegistry) {
         state.spellsCastThisTurnByPlayer.values.any { records -> records.any { it.sourceEntityId == id } } -> "spellsCastThisTurnByPlayer"
         id in state.pendingSacrificeIds -> "pendingSacrificeIds"
         id in state.pendingDiscardCauseControllers.keys -> "pendingDiscardCauseControllers"
+        id in state.pendingCyclingDiscardIds -> "pendingCyclingDiscardIds"
         state.activeReplacementChain.orEmpty().any { identity ->
             (identity is ReplacementEffectIdentity.BattlefieldIdentity && identity.sourceEntityId == id) ||
                 (identity is ReplacementEffectIdentity.CardZoneIdentity && identity.sourceEntityId == id)

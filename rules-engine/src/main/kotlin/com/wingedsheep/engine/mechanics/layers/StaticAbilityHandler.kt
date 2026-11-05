@@ -398,6 +398,14 @@ class StaticAbilityHandler(
                 )
             }
 
+        // "Players can't get counters" (Solemnity) — read by GameState.cantGetCounters.
+        allStaticAbilities.filterIsInstance<com.wingedsheep.sdk.scripting.PlayersCantGetCounters>()
+            .takeIf { it.isNotEmpty() }?.let {
+                result = result.with(
+                    com.wingedsheep.engine.state.components.battlefield.ForbidsPlayerCountersComponent(it)
+                )
+            }
+
         // "You control your opponents while they're searching their libraries" (Opposition Agent) —
         // read by LibrarySearchControl.
         if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches }) {
@@ -1465,6 +1473,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor,
             is com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts,
             is com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries,
+            is com.wingedsheep.sdk.scripting.PlayersCantGetCounters,
             is com.wingedsheep.sdk.scripting.ControlOpponentsLibrarySearches,
             is com.wingedsheep.sdk.scripting.ModifyDevotion,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,

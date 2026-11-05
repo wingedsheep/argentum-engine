@@ -162,6 +162,8 @@ class SpellCostOffer {
     var revealTargets = emptyList<EntityId>()
     var revealCount = 0
     var blightOrPayCost: AdditionalCost.BlightOrPay? = null
+    var counterPlacementCost: CostAtom.PutCountersOnPermanent? = null
+    var counterPlacementTargets = emptyList<EntityId>()
     var blightCreatures = emptyList<EntityId>()
     var blightVariableCost: AdditionalCost.BlightVariable? = null
     var blightVariableCreatures = emptyList<EntityId>()

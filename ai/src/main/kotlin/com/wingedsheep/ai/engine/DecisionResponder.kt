@@ -143,6 +143,7 @@ class DecisionResponder(
     private val lookDigsForLand: Boolean = false,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
+    private val spellRedirect = SpellRedirectChoice(simulator.cardRegistry, intents)
 
     var forcedPlayPicker: (GameState, EntityId) -> GameAction = simulator::completeForcedPlay
 
@@ -265,9 +266,10 @@ class DecisionResponder(
         } else {
             emptyMap()
         }
+        val taken = if (targetPolarityFromEffect) TargetSelection.decisionTakenSlots(state, decision, intents) else emptySet()
         fun heuristicFor(req: TargetRequirementInfo): (EntityId) -> Double =
             when (polarities[req.index]) {
-                TargetPolarity.BENEFICIAL -> { id -> beneficialTargetHeuristic(state, id, playerId) }
+                TargetPolarity.BENEFICIAL -> { id -> beneficialTargetHeuristic(state, id, playerId, req.index in taken) }
                 TargetPolarity.HARMFUL -> { id -> harmfulTargetHeuristic(state, id, playerId) }
                 else -> { id -> targetHeuristic(state, id, playerId) }
             }
@@ -299,7 +301,7 @@ class DecisionResponder(
                 ?.let { all -> req.totalCap?.let { cap -> all.filter { (req.targetValues?.get(it) ?: 0) <= cap } } ?: all }
                 ?: return cancelOrFirst(decision)
             if (legal.isEmpty()) return cancelOrFirst(decision)
-            val targets = polarityPool(state, legal, playerId, polarities[req.index], optional = req.minTargets == 0)
+            val targets = polarityPool(state, legal, playerId, polarities[req.index], optional = req.minTargets == 0, taken = req.index in taken)
             // An optional slot whose every legal target is on the wrong side stays empty.
             if (targets.isEmpty()) return TargetsResponse(decision.id, mapOf(req.index to emptyList()))
             val heuristic = heuristicFor(req)
@@ -346,7 +348,17 @@ class DecisionResponder(
                     kotlin.math.abs(skipScore - bestScore) <= TIE_EPSILON * maxOf(1.0, kotlin.math.abs(bestScore))
                 val evenButUseful = even && bestScore != Double.NEGATIVE_INFINITY &&
                     libraryAndGraveyardPreference(state, bestResult.state, playerId) > 0.0
-                if (skipScore >= bestScore && !evenButUseful) return skipResponse
+                // A spell copy's slot left empty keeps the original's target. On the wrong side of a
+                // read one-sided slot that is the worse pick even when the simulation can't tell the
+                // two apart — a copied Giant Growth wears off before the evaluator sees it.
+                val keepsWrongSide = TargetSelection.keptCopyTarget(state, decision, req.index)?.let { kept ->
+                    when (polarities[req.index]) {
+                        TargetPolarity.BENEFICIAL -> !TargetSelection.isOurs(state, kept, playerId)
+                        TargetPolarity.HARMFUL -> TargetSelection.isOurs(state, kept, playerId)
+                        else -> false
+                    }
+                } ?: false
+                if (skipScore >= bestScore && !evenButUseful && !(even && keepsWrongSide)) return skipResponse
             }
 
             return bestResponse
@@ -369,7 +381,7 @@ class DecisionResponder(
         for (req in decision.targetRequirements) {
             val targets = polarityPool(
                 state, decision.legalTargetsFor(req.index, selected), playerId, polarities[req.index],
-                optional = req.minTargets == 0,
+                optional = req.minTargets == 0, taken = req.index in taken,
             )
             val heuristic = heuristicFor(req)
             val groups = req.selectionGroups
@@ -486,18 +498,20 @@ class DecisionResponder(
         playerId: EntityId,
         polarity: TargetPolarity?,
         optional: Boolean,
+        /** The slot's graveyard card comes under our control whoever owns it ([TargetSelection.takenSlots]). */
+        taken: Boolean = false,
     ): List<EntityId> {
         if (optional) {
             return when (polarity) {
-                TargetPolarity.BENEFICIAL -> legal.filter { TargetSelection.isOurs(state, it, playerId) }
-                    .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
+                TargetPolarity.BENEFICIAL -> legal.filter { TargetSelection.isOurs(state, it, playerId, taken) }
+                    .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId, taken) } }
                 TargetPolarity.HARMFUL -> legal.filterNot { TargetSelection.isOurs(state, it, playerId) }
                 TargetPolarity.FLEXIBLE, TargetPolarity.UNKNOWN, null -> legal
             }
         }
         if (polarity != TargetPolarity.BENEFICIAL) return legal
-        return legal.filter { TargetSelection.isOurs(state, it, playerId) }
-            .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId) } }
+        return legal.filter { TargetSelection.isOurs(state, it, playerId, taken) }
+            .ifEmpty { legal.filterNot { TargetSelection.isTheirs(state, it, playerId, taken) } }
             .ifEmpty { legal }
     }
 
@@ -522,12 +536,13 @@ class DecisionResponder(
 
     /**
      * [targetHeuristic]'s mirror for a [TargetPolarity.BENEFICIAL] slot: our side first, our most
-     * valuable creature ahead of a lesser one, an opponent's permanent last.
+     * valuable creature ahead of a lesser one, an opponent's permanent last. A [taken] slot's
+     * graveyard card is ours whoever owns it ([TargetSelection.takenSlots]).
      */
-    private fun beneficialTargetHeuristic(state: GameState, targetId: EntityId, playerId: EntityId): Double {
+    private fun beneficialTargetHeuristic(state: GameState, targetId: EntityId, playerId: EntityId, taken: Boolean = false): Double {
         val side = when {
-            TargetSelection.isOurs(state, targetId, playerId) -> 10.0
-            TargetSelection.isTheirs(state, targetId, playerId) -> -10.0
+            TargetSelection.isOurs(state, targetId, playerId, taken) -> 10.0
+            TargetSelection.isTheirs(state, targetId, playerId, taken) -> -10.0
             else -> 0.0
         }
         val projected = state.projectedState
@@ -603,6 +618,22 @@ class DecisionResponder(
                     }) keep.add(id)
             }
             return CardsSelectedResponse(decision.id, options.filter { it in keep })
+        }
+
+        // A redirect ("change the target of target spell"): the new target — or, with the new
+        // target fixed, the target to change — is read off what the redirected object does to
+        // that slot. The generic "keep the best" ranking below sent an opponent's Shock onto our
+        // own best creature.
+        ((state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
+            ?.answer as? ChangeSpellTargetContinuation)?.let { redirect ->
+            spellRedirect.choose(state, decision, playerId, redirect)?.let { return CardsSelectedResponse(decision.id, it) }
+        }
+
+        // "A source of your choice" for a damage shield: the threat it is raised against, not the
+        // card worth keeping most — the generic ranking named one of our own creatures.
+        val sourceChoice = (state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }?.answer
+        if (DamageSourceChoice.isSourceChoice(sourceChoice)) {
+            DamageSourceChoice.choose(state, decision, playerId)?.let { return CardsSelectedResponse(decision.id, it) }
         }
 
         // Proliferate: each recipient is its own yes/no. The generic branches below answer an

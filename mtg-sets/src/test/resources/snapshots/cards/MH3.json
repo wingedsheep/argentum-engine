@@ -4809,7 +4809,7 @@
                         "NameEqualsChosenComponent"
                     ]
                 },
-                "nonManaAbilitiesOnly": true,
+                "abilities": "NON_MANA",
                 "anyZone": true
             }
         ],
@@ -6840,6 +6840,9 @@
         "power": 1,
         "toughness": 4
     },
+    "keywords": [
+        "ETERNALIZE"
+    ],
     "script": {
         "activatedAbilities": [
             {
@@ -6878,7 +6881,7 @@
                 "isManaAbility": true
             },
             {
-                "id": "Fanatic of Rhonas:3",
+                "id": "eternalize_{2}{G}{G}",
                 "cost": {
                     "type": "CostComposite",
                     "costs": [
@@ -6908,7 +6911,9 @@
                     }
                 },
                 "timing": "SorcerySpeed",
-                "activateFromZone": "Graveyard"
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Eternalize {2}{G}{G} ({2}{G}{G}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.)",
+                "keyword": "ETERNALIZE"
             }
         ]
     },

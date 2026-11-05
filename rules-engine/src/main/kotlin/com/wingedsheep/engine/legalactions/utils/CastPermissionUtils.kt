@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
@@ -418,7 +419,7 @@ class CastPermissionUtils(
                 val controller = projected.getController(permanentId)
                     ?: container.get<ControllerComponent>()?.playerId
                     ?: continue
-                if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId)) continue
+                if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId, state, permanentId)) continue
                 // The "where" axis (Soulless Jailer's "from graveyards or exile"): the card is read
                 // in the zone it is being cast from — this check runs before it moves to the stack.
                 val fromZones = sa.fromZones
@@ -443,11 +444,23 @@ class CastPermissionUtils(
         return applicable ?: emptyList()
     }
 
-    /** Whether [affected] (interpreted relative to [controllerId]) includes [castingPlayerId]. */
-    private fun affectedPlayerMatches(affected: Player, controllerId: EntityId, castingPlayerId: EntityId): Boolean =
+    /**
+     * Whether [castingPlayerId] is in a prohibition's [affected] group, read relative to the
+     * controller of [sourcePermanentId], the permanent carrying the static. [Player.EnchantedPlayer]
+     * is the player that permanent (an Aura) is attached to — Overwhelming Splendor.
+     */
+    private fun affectedPlayerMatches(
+        affected: Player,
+        controllerId: EntityId,
+        castingPlayerId: EntityId,
+        state: GameState,
+        sourcePermanentId: EntityId
+    ): Boolean =
         when (affected) {
             is Player.You -> castingPlayerId == controllerId
             is Player.EachOpponent -> castingPlayerId != controllerId
+            is Player.EnchantedPlayer ->
+                TargetResolutionUtils.enchantedPlayer(sourcePermanentId, state) == castingPlayerId
             is Player.Each, is Player.Any, is Player.ActivePlayerFirst, is Player.EachStartingWithYou,
             is Player.EachStartingWithNextOpponent -> true
             // Target-bound references (TargetPlayer, …) have no meaning for a continuous static.
@@ -1312,7 +1325,8 @@ class CastPermissionUtils(
     fun isActivationPrevented(
         state: GameState,
         sourceId: EntityId,
-        abilityIsManaAbility: Boolean = false
+        abilityIsManaAbility: Boolean = false,
+        abilityIsLoyaltyAbility: Boolean = false
     ): Boolean {
         val projected = state.projectedState
         val sourceOnBattlefield = sourceId in state.getBattlefield()
@@ -1322,7 +1336,7 @@ class CastPermissionUtils(
             for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 val prevent = ability as? PreventActivatedAbilities ?: continue
                 // "… can't be activated unless they're mana abilities" — exempt mana abilities.
-                if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+                if (!prevent.abilities.covers(abilityIsManaAbility, abilityIsLoyaltyAbility)) continue
                 if (!sourceOnBattlefield && !prevent.anyZone) continue
                 if (context == null) {
                     // Evaluate from the granting permanent's controller's perspective.
@@ -1340,7 +1354,7 @@ class CastPermissionUtils(
         // anchored to the holder entity instead of a card definition.
         for (grant in state.grantedStaticAbilities) {
             val prevent = grant.ability as? PreventActivatedAbilities ?: continue
-            if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
+            if (!prevent.abilities.covers(abilityIsManaAbility, abilityIsLoyaltyAbility)) continue
             if (!sourceOnBattlefield && !prevent.anyZone) continue
             if (!state.getBattlefield().contains(grant.entityId)) continue
             // Per-frame gate for conditional durations — the mirror of StateProjector's gate
@@ -1393,17 +1407,18 @@ class CastPermissionUtils(
      * [isActivationPrevented] (Cursed Totem's who/when-blind block), but additionally scopes by
      * who is activating and when. Face-down permanents (no abilities) are skipped as granters.
      *
-     * [abilityIsManaAbility] exempts the ability from a
-     * [nonManaAbilitiesOnly][PlayersCantActivateAbilities.nonManaAbilitiesOnly] prohibition. A
+     * [abilityIsManaAbility] and [abilityIsLoyaltyAbility] say which kind of ability is being
+     * activated; a prohibition only catches the kinds its
+     * [abilities][PlayersCantActivateAbilities.abilities] scope covers. A
      * [sourceId] that isn't on the battlefield (a graveyard, hand, exile or command-zone ability —
      * cycling included) is only caught by a prohibition with
      * [anyZone][PlayersCantActivateAbilities.anyZone] set; the others speak of permanents only.
      * Yuriko, Blade of the Mighty: "During combat, players can't cast spells or activate
      * abilities that aren't mana abilities."
      *
-     * A [loyaltyAbilitiesOnly][PlayersCantActivateAbilities.loyaltyAbilitiesOnly] prohibition
-     * (The Immortal Sun) only catches a call with [abilityIsLoyaltyAbility] set; per-permanent
-     * callers that don't know the ability leave it false and so never drop a whole permanent.
+     * A `LOYALTY` prohibition (The Immortal Sun) only catches a call with [abilityIsLoyaltyAbility]
+     * set, and a `NON_MANA_NON_LOYALTY` one (Overwhelming Splendor) only a call with it clear, so a
+     * caller enumerating a planeswalker's abilities asks once per kind, never once per permanent.
      */
     fun isActivationPreventedForPlayer(
         state: GameState,
@@ -1422,13 +1437,12 @@ class CastPermissionUtils(
                 ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
             for (sa in cardDef.liveStaticAbilities(state, permanentId)) {
                 if (sa !is PlayersCantActivateAbilities) continue
-                if (sa.nonManaAbilitiesOnly && abilityIsManaAbility) continue
-                if (sa.loyaltyAbilitiesOnly && !abilityIsLoyaltyAbility) continue
+                if (!sa.abilities.covers(abilityIsManaAbility, abilityIsLoyaltyAbility)) continue
                 if (!sourceOnBattlefield && !sa.anyZone) continue
                 val controller = projected.getController(permanentId)
                     ?: container.get<ControllerComponent>()?.playerId
                     ?: continue
-                if (!affectedPlayerMatches(sa.affected, controller, activatingPlayerId)) continue
+                if (!affectedPlayerMatches(sa.affected, controller, activatingPlayerId, state, permanentId)) continue
                 val condition = sa.condition
                 if (condition != null) {
                     val ctx = EffectContext(sourceId = permanentId, controllerId = controller)

@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -62,6 +63,7 @@ import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
+import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -340,6 +342,9 @@ object AiReadingAudit {
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect ||
+                            // A death-return grant (Verdant Rebirth, Feign Death): HoldPolicy holds
+                            // it for the removal it answers or the fight its target is in.
+                            (ExpiringGrantWindow.returnsFromDeathThisTurn(leaf) && IntentTag.PROTECTION in intent.tags) ||
                             // An instant-speed cast ban on an opponent: HoldPolicy rewards casting it
                             // before their main phase, where it covers their whole turn. Not a face
                             // (Revel in Silence): CastBanWindow reads the card's own spell only.
@@ -498,7 +503,11 @@ object AiReadingAudit {
                 // Damage confined to our creatures is a drawback, not offensive removal.
                 // Polarity still reads the harm; simulation prices the damaged board.
                 (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)) ||
-                untapsOwnTarget(leaf, reqs)
+                untapsOwnTarget(leaf, reqs) ||
+                // A card exiled from our own graveyard is the price or fuel of what follows
+                // (Patchwork Crawler, Trove Warden), not an answer.
+                (leaf is MoveToZoneEffect &&
+                    CardIntentAnalyzer.graveyardMoveOf(leaf, reqs) == CardIntentAnalyzer.GraveyardMove.OWN_EXILE)
         }
         val tags = CardIntentAnalyzer.analyzeEffect(root, reqs).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
@@ -527,8 +536,11 @@ object AiReadingAudit {
             // loyalty it adds is on the board the simulation prices when it next activates them.
             val ownGroup = (each.space as? IterationSpace.Group)?.filter?.baseFilter?.controllerPredicate ==
                 ControllerPredicate.ControlledByYou
+            // Over one declared slot, `ContextTarget(0)` is each pick of that slot, so the body reads
+            // against it as the ability's own leaves do (Steward of the Harvest exiling our own land cards).
+            val oneSlot = each.space == IterationSpace.Targets && reqs.size == 1
             val body = fired(EffectWalker.payoffLeaves(each.body)).filterNot {
-                needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
+                (oneSlot && noIntent(it)) || needsNoIntent(it) || countsOnAPlayerSlot(it, playerSlots) ||
                     (ownTargets && it is TapUntapEffect && !it.tap && it.target is EffectTarget.ContextTarget) ||
                     (ownGroup && it is AddCountersEffect && it.counterType == CounterType.LOYALTY &&
                         it.target == EffectTarget.IterationEntity)
@@ -553,7 +565,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles a card from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -655,6 +667,9 @@ object AiReadingAudit {
         IntentTag.COMBAT_ENHANCEMENT -> "makes a creature better in combat"
         IntentTag.EQUIPMENT_RELOCATION -> "moves Equipment onto a creature"
         IntentTag.PERMANENT_COPY -> "turns a permanent into a copy of another"
+        IntentTag.SPELL_REDIRECT -> "changes the target of a spell or ability"
+        IntentTag.SPELL_COPY -> "copies a spell or ability"
+        IntentTag.GRAVEYARD_HATE -> "exiles cards from a graveyard"
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
@@ -664,9 +679,11 @@ object AiReadingAudit {
         IntentTag.DAMAGE_AMPLIFIER -> "amplifies damage from our sources"
         IntentTag.DAMAGE_TO_PLAYERS -> "deals damage to players"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
+        IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.EXTRA_TURN -> "takes an extra turn"
+        IntentTag.FREE_SPELL -> "casts a spell without paying its mana cost"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
     }
@@ -730,6 +747,10 @@ object AiReadingAudit {
         // what the Equipment is *for* is the card's reading of its "equipped creature" statics
         // (CardIntentAnalyzer tags those), and which creature gets it is the polarity check.
         if (leaf is AttachEquipmentEffect) return true
+        // "Each opponent may search their library for a basic land card …" (Old-Growth Dryads): an
+        // opponents-only iteration whose body is only their gain is the card's drawback, with
+        // nothing to aim or hold; the rater prices it as one.
+        if (leaf is ForEachEffect && CardIntentAnalyzer.giftsOnlyToOpponents(leaf)) return true
         // A card moving itself — "return this card to its owner's hand" when it dies, ninjutsu,
         // "shuffle it into its owner's library" — has no target to aim and is no spell to time:
         // whether it is worth doing is the simulation's call on the activation or trigger.
@@ -785,6 +806,11 @@ object AiReadingAudit {
         // drawback as the two above, and the evaluator prices the new total on resolution. Whether
         // a targeted one aims at the right player is the polarity check's question, not intent's.
         if (leaf is SetLifeTotalEffect) return true
+        // "Lands you control don't untap during your next untap step" (Hour of Devastation's god
+        // spells: Bontu's Last Reckoning, Oketra's Last Mercy) binds its own controller: the price of
+        // the card's payoff, with no target to aim and nothing to hold. Skipping an opponent's untap
+        // (Exhaustion, Mana Vapors) is a tempo payoff and stays flagged.
+        if (leaf is SkipUntapEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // A cast ban that binds its controller too — "you can't cast spells this turn" (Conduit of
         // Worlds), "each player can't cast noncreature spells this turn" (Calamity's Wake) — is the
         // price of the card's payoff, not its point. A ban on an opponent reads CAST_BAN.
@@ -816,6 +842,9 @@ object AiReadingAudit {
         // +1/+0 wearing off, a -1/-1 counter shed) has no target and nothing to hold: it is
         // bookkeeping or a grow the simulation sees on the board. Removing them from another stays flagged.
         if (leaf is RemoveCountersEffect && leaf.target == EffectTarget.Self) return true
+        // "Remove all -1/-1 counters from this creature" (Ammit Eternal) is the same shed, every
+        // counter of the kind at once: a recovery the simulation sees as the restored P/T.
+        if (leaf is RemoveAllCountersOfTypeEffect && leaf.target == EffectTarget.Self) return true
         // Counters moved between permanents or taken off one, whatever their kind — The Ozolith
         // storing a leaving creature's counters and moving them on, Essence Channeler's "put its
         // counters on target creature you control", Etched Slith's "remove a counter from another
