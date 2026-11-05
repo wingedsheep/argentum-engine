@@ -762,7 +762,7 @@ Archweaver
 Archwing Dragon
 Arclight Phoenix
 Arctic Treeline
-Ardent Dustspeaker	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Ardent Dustspeaker
 Ardent Electromancer
 Ardent Elementalist
 Ardent Militia
@@ -2104,7 +2104,7 @@ Brazen Blademaster
 Brazen Bluff	intent: GatedEffect; polarity: GatedEffect
 Brazen Borrower
 Brazen Buccaneers
-Brazen Cannonade	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Brazen Cannonade
 Brazen Collector
 Brazen Dwarf
 Brazen Freebooter
@@ -2788,7 +2788,7 @@ Channeled Dragonfire
 Channeled Force
 Channeler Initiate
 Chant of Vitu-Ghazi
-Chaos Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); intent: RollDiceEffect
+Chaos Channeler
 Chaos Maw
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
 Chaos Spewer	intent: PayOrSufferEffect
@@ -4447,7 +4447,7 @@ Diviner's Lockbox
 Diving Griffin
 Divining Duelist
 Dizzy Spell
-Djeru and Hazoret	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile|library)
+Djeru and Hazoret
 Djeru's Renunciation
 Djeru's Resolve
 Djeru, With Eyes Open
@@ -4609,7 +4609,7 @@ Dragonclaw Strike
 Dragonfire Blade
 Dragonfly Suit
 Dragonfly Swarm
-Dragonhawk, Fate's Tempest	intent: DealDamagePerEntityInZoneEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Dragonhawk, Fate's Tempest	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Dragonkin Berserker
 Dragonloft Idol
 Dragonlord Atarka
@@ -5693,7 +5693,7 @@ Fallaji Vanguard
 Fallaji Wayfarer
 Fallen Angel
 Fallen Cleric
-Fallen Shinobi	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Fallen Shinobi
 Faller's Faithful
 Falling Star
 Fallow Earth
@@ -6043,7 +6043,7 @@ Firefiend Elemental
 Firefist Adept
 Firefly
 Fireforger's Puzzleknot
-Fireglass Mentor	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Fireglass Mentor
 Firehoof Cavalry
 Firemane Angel
 Firemane Commando
@@ -6186,7 +6186,7 @@ Floodwaters
 Flopsie, Bumi's Buddy
 Floral Evoker
 Floral Spuzzem
-Florian, Voldaren Scion	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile|library)
+Florian, Voldaren Scion
 Floriferous Vinewall
 Flotsam // Jetsam
 Flourishing Bloom-Kin
@@ -7467,7 +7467,7 @@ Grolnok, the Omnivore
 Grond, the Gatebreaker
 Groom's Finery
 Grotag Bug-Catcher
-Grotag Night-Runner	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Grotag Night-Runner
 Grotesque Demise
 Grotesque Mutation
 Grothama, All-Devouring	intent: EachPlayerDrawsForDamageDealtToSourceEffect
@@ -9376,8 +9376,8 @@ Kiora, the Rising Tide
 Kira Nerys, Firebrand
 Kird Ape
 Kird Chieftain
-Kirk, Commanding Officer	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Kirk, Enterprising Captain	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Kirk, Commanding Officer
+Kirk, Enterprising Captain
 Kirol, Attentive First-Year
 Kirol, History Buff
 Kishla Skimmer
@@ -9635,7 +9635,7 @@ Lady Orca
 Lady Sun
 Lady Zhurong, Warrior Queen
 Lady of Laughter
-Laelia, the Blade Reforged	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Laelia, the Blade Reforged
 Lagac Lizard
 Lagomos, Hand of Hatred
 Lagonna-Band Elder
@@ -11423,12 +11423,12 @@ Narset of the Ancient Way
 Narset's Rebuke
 Narset's Reversal
 Narset, Enlightened Exile
-Narset, Enlightened Master	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Narset, Enlightened Master
 Narset, Jeskai Waymaster
 Narset, Parter of Veils
 Narstad Scrapper
 Naru Meha, Master Wizard
-Nashi, Moon Sage's Scion	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithAdditionalCostEffect; intent: GrantPlayWithoutPayingCostEffect; intent: Pipeline(TopOfLibrary→exile)
+Nashi, Moon Sage's Scion
 Nashi, Moon's Legacy
 Nashi, Searcher in the Dark
 Nasty End
@@ -12281,7 +12281,7 @@ Part in Friendship	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefi
 Part the Veil
 Parting Gust
 Party Dude
-Party Thrasher	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Party Thrasher
 Pashalik Mons
 Passageway Seer	intent: TakeDesignationEffect
 Passenger Ferry
@@ -13660,7 +13660,7 @@ Renewed Faith
 Renewed Solidarity
 Renewing Dawn	polarity: GainLifeEffect
 Renewing Touch	intent: Pipeline(ChosenTargets→library); polarity: Pipeline(ChosenTargets→library)
-Reno and Rude	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Reno and Rude
 Renowned Weaponsmith
 Rent Is Due
 Repair and Recharge
@@ -14127,7 +14127,7 @@ Rot Farm Mortipede
 Rot-Curse Rakshasa	intent: ForEach>AddCountersEffect; polarity: ForEachEffect
 Rot-Tide Gargantua
 Rotcrown Ghoul
-Rotisserie Elemental	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Rotisserie Elemental
 Rotlung Reanimator
 Rotted Hulk
 Rotted Hystrix
@@ -16553,7 +16553,7 @@ Stroke of Midnight
 Stromkirk Bloodthief
 Stromkirk Captain
 Stromkirk Noble
-Stromkirk Occultist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Stromkirk Occultist
 Strong Back
 Strong, the Brutish Thespian
 Strongarm Monk
@@ -16929,7 +16929,7 @@ Syndicate Infiltrator
 Syndicate Liquidators
 Syndicate Messenger
 Synod Sanctum
-Synth Eradicator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Synth Eradicator
 Synth Infiltrator
 Synthesizer Labship	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
 Syphon Essence
