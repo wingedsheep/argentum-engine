@@ -1123,28 +1123,29 @@ class MiscContinuationResumer(
         // counter" mandatory, so a client answering 0 under a floor of 1 can't skip the move.
         val chosen = response.number.coerceIn(continuation.currentMinAmount, continuation.currentMaxAmount)
         val move = MoveChosenCountersFlow.Move(
-            sourceId = continuation.sourceId,
             destinationId = continuation.destinationId,
             controllerId = continuation.controllerId,
-            sourceName = continuation.sourceName,
             destinationName = continuation.destinationName,
             drawCardOnMove = continuation.drawCardOnMove,
             objectReferences = continuation.objectReferences
         )
-        val (afterMove, moveEvents) = MoveChosenCountersFlow.moveCounters(
-            state, move, continuation.currentCounterType, chosen, services.predicateEvaluator
+        val taken = MoveChosenCountersFlow.take(
+            state, move, continuation.sourceId, continuation.currentCounterType, chosen
         )
 
-        val outcome = MoveChosenCountersFlow.advance(
-            state = afterMove,
-            move = move,
-            order = continuation.remainingCounterTypes.map { it.first },
-            budget = continuation.remainingBudget?.minus(chosen),
-            floor = (continuation.remainingFloor - chosen).coerceAtLeast(0),
-            anyMovedSoFar = continuation.anyMovedSoFar || moveEvents.isNotEmpty(),
-            predicates = services.predicateEvaluator,
-            priorEvents = moveEvents
-        )
+        val outcome = with(MoveChosenCountersFlow) {
+            advance(
+                state = taken.state,
+                move = move,
+                steps = continuation.remainingSteps,
+                budget = continuation.remainingBudget?.minus(chosen),
+                floor = (continuation.remainingFloor - chosen).coerceAtLeast(0),
+                pending = continuation.pendingPlacements.plusCount(continuation.currentCounterType, taken.count),
+                anyMovedSoFar = continuation.anyMovedSoFar || taken.count > 0,
+                predicates = services.predicateEvaluator,
+                priorEvents = taken.events
+            )
+        }
         return when (outcome) {
             is MoveChosenCountersFlow.Outcome.Prompt ->
                 ExecutionResult.propagatePause(outcome.state, outcome.events)

@@ -547,12 +547,15 @@ data class MoveCountersEachKindMissingEffect(
  * Grounds) is `minTotal = maxTotal = 1` — the player picks which *kind* moves, not whether one
  * does. The floor is clamped to what the source actually carries.
  *
- * [counterType] narrows the walk to one kind: "move any number of +1/+1 counters from other
- * permanents you control onto this creature" (Aetherborn Marauder) is this effect with
- * `counterType = PLUS_ONE_PLUS_ONE` inside a `ForEachInGroup` whose body names the visited
- * permanent as [source] — one prompt per permanent, kinds other than [counterType] untouched.
+ * [counterType] narrows the walk to one kind, leaving the others untouched. [source] may be an
+ * [EffectTarget.GroupRef]: the counters then come from every member of the group, one prompt per
+ * member and kind, and are put on [destination] in one placement per kind once every answer is in —
+ * so Hardened Scales adds one counter to the move, not one per member. "Move any number of +1/+1
+ * counters from other permanents you control onto this creature" (Aetherborn Marauder) is
+ * `source = GroupRef(other permanents you control with a +1/+1 counter)`,
+ * `counterType = PLUS_ONE_PLUS_ONE`.
  *
- * @property source The permanent counters are moved *from*
+ * @property source The permanent counters are moved *from*, or a [EffectTarget.GroupRef] of them
  * @property destination The permanent counters are moved *onto*
  * @property drawCardOnMove When true, the controller draws a card if any counter was moved
  * @property maxTotal Most counters moved in total across all kinds, or null for no cap
@@ -575,14 +578,16 @@ data class MoveChosenCountersToTargetEffect(
     }
 
     override val description: String = buildString {
+        val kind = counterType?.let { "${it.printed} " } ?: ""
         val what = when {
-            minTotal == 1 && maxTotal == 1 -> "a counter"
-            minTotal > 0 && minTotal == maxTotal -> "$minTotal counters"
-            maxTotal != null -> "up to $maxTotal counters"
-            counterType != null -> "any number of ${counterType.printed} counters"
+            minTotal == 1 && maxTotal == 1 -> "a ${kind}counter"
+            minTotal > 0 && minTotal == maxTotal -> "$minTotal ${kind}counters"
+            maxTotal != null -> "up to $maxTotal ${kind}counters"
+            counterType != null -> "any number of ${kind}counters"
             else -> "one or more counters"
         }
-        append("Move $what from ${source.description} onto ${destination.description}")
+        val from = (source as? EffectTarget.GroupRef)?.filter?.description?.removePrefix("all ") ?: source.description
+        append("Move $what from $from onto ${destination.description}")
         if (drawCardOnMove) append(". If you do, draw a card")
     }
 }

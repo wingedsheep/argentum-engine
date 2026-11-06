@@ -20,9 +20,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * When this creature enters, move any number of +1/+1 counters from other permanents you control
  * onto this creature.
  *
- * - The enters trigger visits every other permanent you control carrying a +1/+1 counter
- *   (snapshotted as it resolves) and asks, per permanent, how many of its +1/+1 counters move —
- *   zero included, so "any number" is the sum of those answers. Other counter kinds stay put.
+ * - As the trigger resolves it asks, per other permanent you control carrying +1/+1 counters, how
+ *   many of them move — zero included, so "any number" is the sum of those answers. Other counter
+ *   kinds stay put. The counters land together as one move, so Hardened Scales adds one, not one
+ *   per permanent.
  * - If the Marauder has left the battlefield by then, nothing moves.
  */
 val AetherbornMarauder = card("Aetherborn Marauder") {
@@ -39,15 +40,14 @@ val AetherbornMarauder = card("Aetherborn Marauder") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.ForEachInGroup(
-            GroupFilter(
-                GameObjectFilter.Permanent.youControl().withCounter(CounterType.PLUS_ONE_PLUS_ONE)
-            ).other(),
-            Effects.MoveChosenCountersToTarget(
-                source = EffectTarget.IterationEntity,
-                destination = EffectTarget.Self,
-                counterType = CounterType.PLUS_ONE_PLUS_ONE
-            )
+        effect = Effects.MoveChosenCountersToTarget(
+            source = EffectTarget.GroupRef(
+                GroupFilter(
+                    GameObjectFilter.Permanent.youControl().withCounter(CounterType.PLUS_ONE_PLUS_ONE)
+                ).other()
+            ),
+            destination = EffectTarget.Self,
+            counterType = CounterType.PLUS_ONE_PLUS_ONE
         )
     }
 

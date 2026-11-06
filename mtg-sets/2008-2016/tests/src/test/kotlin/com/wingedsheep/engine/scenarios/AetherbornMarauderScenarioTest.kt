@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.kld.cards.AetherbornMarauder
+import com.wingedsheep.mtg.sets.definitions.ktk.cards.HardenedScales
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
@@ -21,6 +22,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * "When this creature enters, move any number of +1/+1 counters from other permanents you control
  * onto this creature." Rulings: counters may come from any number of your other permanents, you
  * choose as the ability resolves, and zero is allowed. An opponent's permanents are never offered.
+ * The counters gathered from several permanents land as one move, so Hardened Scales adds one.
  */
 class AetherbornMarauderScenarioTest : FunSpec({
 
@@ -46,7 +48,7 @@ class AetherbornMarauderScenarioTest : FunSpec({
 
     test("gathers chosen +1/+1 counters from several of your permanents, never an opponent's") {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(AetherbornMarauder))
+        driver.registerCards(TestCards.all + listOf(AetherbornMarauder, HardenedScales))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val active = driver.activePlayer!!
@@ -82,7 +84,7 @@ class AetherbornMarauderScenarioTest : FunSpec({
 
     test("with no +1/+1 counters among your other permanents the trigger asks nothing") {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(AetherbornMarauder))
+        driver.registerCards(TestCards.all + listOf(AetherbornMarauder, HardenedScales))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val active = driver.activePlayer!!
@@ -92,5 +94,30 @@ class AetherbornMarauderScenarioTest : FunSpec({
 
         driver.pendingDecision shouldBe null
         driver.plusOnes(marauder) shouldBe 0
+    }
+
+    test("counters gathered from several permanents land as one move: Hardened Scales adds one, not one per source") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(AetherbornMarauder, HardenedScales))
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 40))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val active = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(active, "Hardened Scales")
+        val courser = driver.putCreatureOnBattlefield(active, "Centaur Courser")
+        val lions = driver.putCreatureOnBattlefield(active, "Savannah Lions")
+        driver.addCounters(courser, 1)
+        driver.addCounters(lions, 1)
+
+        val marauder = driver.castMarauder()
+        repeat(2) {
+            val decision = driver.pendingDecision
+            decision.shouldBeInstanceOf<ChooseNumberDecision>()
+            driver.submitDecision(active, NumberChosenResponse(decision.id, 1)).error shouldBe null
+        }
+        driver.pendingDecision shouldBe null
+
+        driver.plusOnes(courser) shouldBe 0
+        driver.plusOnes(lions) shouldBe 0
+        driver.plusOnes(marauder) shouldBe 3
     }
 })

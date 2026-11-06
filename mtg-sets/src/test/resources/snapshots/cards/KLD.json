@@ -258,9 +258,9 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Group",
+                    "type": "MoveChosenCountersToTarget",
+                    "source": {
+                        "type": "GroupRef",
                         "filter": {
                             "baseFilter": {
                                 "cardPredicates": [
@@ -277,12 +277,8 @@
                             "excludeSelf": true
                         }
                     },
-                    "body": {
-                        "type": "MoveChosenCountersToTarget",
-                        "source": "IterationEntity",
-                        "destination": "Self",
-                        "counterType": "PLUS_ONE_PLUS_ONE"
-                    }
+                    "destination": "Self",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
                 }
             }
         ]

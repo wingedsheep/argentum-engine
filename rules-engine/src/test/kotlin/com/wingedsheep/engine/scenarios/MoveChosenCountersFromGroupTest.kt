@@ -21,18 +21,19 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
- * `MoveChosenCountersToTarget(counterType = …)` — the one-kind form of the chosen-counters move,
- * composed in a `ForEachInGroup` to gather "any number of +1/+1 counters from other permanents you
- * control onto this creature" (Aetherborn Marauder). Driven through an inline creature with that
- * enters trigger:
+ * `MoveChosenCountersToTarget` from a `GroupRef` source, narrowed by `counterType` — "move any number
+ * of +1/+1 counters from other permanents you control onto this creature" (Aetherborn Marauder).
+ * Driven through an inline creature with that enters trigger:
  *  - one prompt per other permanent carrying the kind, bounded 0..its count; each answer moves
  *    exactly that many, and zero is a legal answer;
  *  - other counter kinds never move and raise no prompt;
  *  - permanents without the kind are never asked about;
  *  - a destination that has left the battlefield before resolution receives nothing, and no
- *    counter leaves a source.
+ *    counter leaves a source;
+ *  - the gathered counters are put on the destination as one placement per kind, after the last
+ *    answer (Hardened Scales' one-extra is pinned in AetherbornMarauderScenarioTest).
  */
-class MoveChosenCountersOfOneKindTest : FunSpec({
+class MoveChosenCountersFromGroupTest : FunSpec({
 
     val gatherer = card("Test Gatherer") {
         manaCost = "{B}"
@@ -44,15 +45,14 @@ class MoveChosenCountersOfOneKindTest : FunSpec({
             "permanents you control onto this creature."
         triggeredAbility {
             trigger = Triggers.self.enters()
-            effect = Effects.ForEachInGroup(
-                GroupFilter(
-                    GameObjectFilter.Permanent.youControl().withCounter(CounterType.PLUS_ONE_PLUS_ONE)
-                ).other(),
-                Effects.MoveChosenCountersToTarget(
-                    source = EffectTarget.IterationEntity,
-                    destination = EffectTarget.Self,
-                    counterType = CounterType.PLUS_ONE_PLUS_ONE
-                )
+            effect = Effects.MoveChosenCountersToTarget(
+                source = EffectTarget.GroupRef(
+                    GroupFilter(
+                        GameObjectFilter.Permanent.youControl().withCounter(CounterType.PLUS_ONE_PLUS_ONE)
+                    ).other()
+                ),
+                destination = EffectTarget.Self,
+                counterType = CounterType.PLUS_ONE_PLUS_ONE
             )
         }
     }

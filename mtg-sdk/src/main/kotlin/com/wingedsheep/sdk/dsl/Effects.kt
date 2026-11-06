@@ -2765,9 +2765,9 @@ object Effects {
      * Move a player-chosen set (one or more) of counters from [source] onto [destination]
      * (one prompt per counter kind on the source). When [drawCardOnMove] is true, the
      * controller draws a card if any counter was moved. Used by Goldberry, River-Daughter's
-     * second ability. [counterType] restricts the move to that one kind ("move any number of
-     * +1/+1 counters from …"): wrap it in [ForEachInGroup] with [EffectTarget.IterationEntity] as
-     * [source] to gather from several permanents (Aetherborn Marauder).
+     * second ability. [counterType] restricts the move to that one kind; a [EffectTarget.GroupRef]
+     * [source] gathers from every member of the group as one move ("move any number of +1/+1
+     * counters from other permanents you control onto this creature" — Aetherborn Marauder).
      */
     fun MoveChosenCountersToTarget(
         source: EffectTarget,
