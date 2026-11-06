@@ -3237,7 +3237,7 @@ Combat Research
 Combat Thresher
 Combat Tutorial
 Combine Guildmage	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
-Combustible Gearhulk	intent: GatedEffect
+Combustible Gearhulk
 Combustion Man	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Combustion Technique
 Come Back Wrong	intent: Pipeline(ChosenTargets→battlefield|graveyard); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield|graveyard)
@@ -3528,7 +3528,7 @@ Crafty Pathmage
 Cragcrown Pathway
 Cragplate Baloth
 Cragsmasher Yeti
-Craig Boone, Novac Guard	intent: GatedEffect; intent: StoreNumberEffect
+Craig Boone, Novac Guard
 Cram Session
 Cranial Archive	polarity: DrawCardsEffect; polarity: Pipeline(graveyard→library)
 Cranial Extraction
@@ -12423,7 +12423,7 @@ Paladin of the Bloodstained
 Paladin's Arms
 Paladin's Shield
 Palani's Hatcher
-Palantír of Orthanc	intent: GatedEffect
+Palantír of Orthanc
 Pale Bears
 Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
@@ -14162,7 +14162,7 @@ Rishadan Port
 Rishkar, Peema Renegade
 Rising Populace
 Rising of the Day
-Risk Factor	intent: GatedEffect
+Risk Factor
 Risky Move	intent: FlipCoinEffect; intent: GainControlByActivePlayerEffect; polarity: FlipCoinEffect
 Risky Research
 Risky Shortcut
@@ -17428,7 +17428,7 @@ Teleportation Circle
 Telethopter
 Telim'Tor
 Telim'Tor's Darts
-Tell Me What You See	intent: GatedEffect
+Tell Me What You See
 Tellah, Great Sage
 Teller of Tales
 Telling Time
