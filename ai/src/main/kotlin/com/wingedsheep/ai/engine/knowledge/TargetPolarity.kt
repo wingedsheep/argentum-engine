@@ -69,6 +69,9 @@ import com.wingedsheep.sdk.scripting.effects.CopyTargetTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
@@ -560,6 +563,11 @@ object TargetPolarityAnalyzer {
                     val reading = if (top.isMill) TargetPolarity.HARMFUL else libraryTopPolarity(leaf.storeAs, effect)
                     if (reading != null) slot?.let { perSlot[it] += reading }
                 }
+            }
+            val offenceWatch = offenceWatchSlot(leaf, requirements)
+            if (offenceWatch != null) {
+                perSlot[offenceWatch] += TargetPolarity.BENEFICIAL
+                continue
             }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
@@ -1822,6 +1830,36 @@ object TargetPolarityAnalyzer {
             readings += reading
         }
         return combine(readings)
+    }
+
+    /**
+     * "Choose target creature. Whenever it deals combat damage to a player this turn, you draw that
+     * many cards" (The Inner Light II, Captain Howler), "this turn, when target creature you control
+     * attacks and isn't blocked, you may gain life equal to its power" (Delif's Cone): a delayed
+     * trigger that watches a target and fires on that object's own offence — it attacks, goes
+     * unblocked, deals damage to anything but us — pays its controller for the watched creature
+     * connecting, so the creature to name is one that attacks for us. Not when what it fires harms
+     * the creature it watched on a slot that can name theirs.
+     */
+    private fun offenceWatchSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        if (leaf !is CreateDelayedTriggerEffect) return null
+        val watched = leaf.watchedTarget ?: return null
+        val offence = when (val event = leaf.trigger?.event) {
+            is EventPattern.AttackEvent, EventPattern.BecomesUnblockedEvent -> true
+            is EventPattern.DealsDamageEvent -> event.recipient != Recipient.You
+            else -> false
+        }
+        if (!offence) return null
+        val harmsWatched = EffectWalker.firedLeaves(leaf).any { fired ->
+            classify(fired).any { (target, polarity) ->
+                polarity == TargetPolarity.HARMFUL && (target == EffectTarget.TriggeringEntity || target == watched)
+            }
+        }
+        // Only an object watched attacks or deals the damage; a player slot names no attacker.
+        val slot = slotOf(watched, requirements)?.takeIf { it in objectSlots(requirements) } ?: return null
+        // On a slot kept to our own creatures, a harm the payoff sets on the watched one is its
+        // price (Delif's Cone: "if you do, it assigns no combat damage"), and still ours to pick.
+        return if (!harmsWatched || isOwnSide(requirements[slot])) slot else null
     }
 
     private fun returnsItselfFromAGraveyard(leaf: Effect): Boolean =
