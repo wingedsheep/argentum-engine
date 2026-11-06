@@ -27,6 +27,8 @@ import io.kotest.matchers.shouldBe
  *
  * The same change taught the readers the other shapes Reality Fracture leaned on — hand
  * disruption, regrowth pipelines, emblems, granted flashback — and the first test pins them.
+ * A non-mana grant reads as its own effect for the holder's controller (Quicksmith Spy's
+ * "{T}: Draw a card"), and as that effect's intent when it lasts beyond the turn.
  * Granted flashback reads right but changes no pick yet: an instant or sorcery card off the
  * battlefield has no value reading, so the best spell to give it to is a tie.
  */
@@ -69,6 +71,18 @@ class GrantActivatedAbilityReadingAiTest : ScenarioTestBase() {
             }
             withClue("Emrakul, the Exigent Doom: untapping our lands and granting a land a mana ability are ramp") {
                 tags("Emrakul, the Exigent Doom") shouldContain IntentTag.RAMP
+            }
+        }
+
+        test("Quicksmith Spy: a lasting granted '{T}: Draw a card' is a draw engine for our artifact") {
+            val trigger = card("Quicksmith Spy").script.triggeredAbilities.single()
+            withClue("the holder's controller activates the granted draw, so the slot is a gift") {
+                TargetPolarityAnalyzer.forRequirements(
+                    trigger.effect, listOfNotNull(trigger.targetRequirement) + trigger.additionalTargetRequirements,
+                ) shouldBe listOf(TargetPolarity.BENEFICIAL)
+            }
+            withClue("granted for as long as we control the Spy, the ability is ours from then on: card draw") {
+                tags("Quicksmith Spy") shouldContain IntentTag.DRAW
             }
         }
 

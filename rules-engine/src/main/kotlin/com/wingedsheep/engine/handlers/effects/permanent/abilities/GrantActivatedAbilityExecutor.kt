@@ -57,7 +57,8 @@ class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect
             ability = effect.ability,
             duration = effect.duration,
             sourceId = context.sourceId,
-            sourceObject = exiledSourceObject(state, effect, context)
+            sourceObject = exiledSourceObject(state, effect, context),
+            controllerId = context.effectControllerId ?: context.controllerId
         )
 
         val newState = state.copy(

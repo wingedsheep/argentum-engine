@@ -5485,6 +5485,65 @@
     "colorIdentityOverride": []
 }
 
+// Quicksmith Spy
+{
+    "name": "Quicksmith Spy",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, target artifact you control gains \"{T}: Draw a card\" for as long as you control this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quicksmith Spy:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Quicksmith Spy:1",
+                        "cost": "CostTap",
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "this creature"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "\"Let's just broaden its surveillance lens.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f922e87-1744-4966-9e3a-54917f7f3d9e.jpg?1783936769"
+    }
+}
+
 // Ravenous Intruder
 {
     "name": "Ravenous Intruder",

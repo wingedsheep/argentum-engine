@@ -2059,8 +2059,18 @@ object CardIntentAnalyzer {
         is GrantFlashbackEffect -> setOf(IntentTag.RECURSION)
 
         // "Target land gains '{T}: Add {C}{C}'" (Emrakul, the Exigent Doom): a mana ability handed
-        // to a permanent is a mana source, as a mana rock is.
-        is GrantActivatedAbilityEffect -> if (effect.ability.isManaAbility) setOf(IntentTag.RAMP) else emptySet()
+        // to a permanent is a mana source, as a mana rock is. Any other helpful ability granted for
+        // more than a turn is the holder's own ability from then on, read as if printed:
+        // Quicksmith Spy's artifact gaining "{T}: Draw a card" for as long as you control the Spy
+        // is a card-advantage engine. A turn-long grant still waits on its activation, so the
+        // HoldPolicy card-flow windows must not cash it.
+        is GrantActivatedAbilityEffect -> when {
+            effect.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            effect.duration != Duration.EndOfTurn &&
+                TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
+                analyzeEffect(effect.ability.effect, effect.ability.targetRequirements).tags
+            else -> emptySet()
+        }
 
         // "You get an emblem with 'Creatures you control get +2/+2'" (Ajani Resolute) is an anthem
         // nothing can remove; its keywords and statics read as the same grants printed on a lord.

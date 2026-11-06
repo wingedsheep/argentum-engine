@@ -1557,10 +1557,10 @@ object TargetPolarityAnalyzer {
             // "Target instant or sorcery card in your graveyard gains flashback": its owner may cast
             // it again, so the best card is the one to give it to — a recursion slot.
             is GrantFlashbackEffect -> leaf.target to TargetPolarity.BENEFICIAL
-            // "Target land gains '{T}: Add {C}{C}'": the mana is its controller's to spend. Other
-            // granted abilities do whatever their effect does and stay unread here.
-            is GrantActivatedAbilityEffect -> if (leaf.ability.isManaAbility) leaf.target to TargetPolarity.BENEFICIAL
-                else return emptyList()
+            // "Target land gains '{T}: Add {C}{C}'": the mana is its controller's to spend. Any
+            // other granted ability is activated by the holder's controller too, so it reads as
+            // that ability's effect would for them (Quicksmith Spy's "{T}: Draw a card").
+            is GrantActivatedAbilityEffect -> leaf.target to grantedActivatedPolarity(leaf.ability)
             // "Target player draws / gains / loses …" (Inspiration, Sign in Blood). Only a slot is
             // read here: a draw for "you" is not a target, and [grantedTriggerPolarity] reads it
             // through [controllerPolarity] instead. Sign in Blood's draw and life loss disagree
@@ -1919,6 +1919,14 @@ object TargetPolarityAnalyzer {
      */
     internal fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity =
         grantedEffectPolarity(ability.effect, listOfNotNull(ability.targetRequirement))
+
+    /**
+     * How a granted activated ability reads for the permanent holding it: a mana ability is the
+     * holder's controller's mana; any other does what its effect does for the player activating it.
+     */
+    internal fun grantedActivatedPolarity(ability: ActivatedAbility): TargetPolarity =
+        if (ability.isManaAbility) TargetPolarity.BENEFICIAL
+        else grantedEffectPolarity(ability.effect, ability.targetRequirements)
 
     private fun grantedEffectPolarity(effect: Effect, requirements: List<TargetRequirement>): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()
