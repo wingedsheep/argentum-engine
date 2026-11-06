@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * Same per-recipient trigger shape as Hapatra, Vizier of Poisons: "on **a** creature" fires once per
  * creature that got counters, any creature qualifies, and `placedBy = You` scopes it to counters you
- * put (CR 122.6a — wither damage counters are put by the source's controller). "That many" is the
+ * put (CR 120.3d — wither damage counters are put by the source's controller). "That many" is the
  * number of counters that one placement put on that creature.
  */
 val NestOfScarabs = card("Nest of Scarabs") {
