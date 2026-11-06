@@ -1850,12 +1850,13 @@ object TargetPolarityAnalyzer {
             else -> false
         }
         if (!offence) return null
-        val harmsWatched = EffectWalker.payoffLeaves(leaf.effect).any { fired ->
+        val harmsWatched = EffectWalker.firedLeaves(leaf).any { fired ->
             classify(fired).any { (target, polarity) ->
                 polarity == TargetPolarity.HARMFUL && (target == EffectTarget.TriggeringEntity || target == watched)
             }
         }
-        val slot = slotOf(watched, requirements) ?: return null
+        // Only an object watched attacks or deals the damage; a player slot names no attacker.
+        val slot = slotOf(watched, requirements)?.takeIf { it in objectSlots(requirements) } ?: return null
         // On a slot kept to our own creatures, a harm the payoff sets on the watched one is its
         // price (Delif's Cone: "if you do, it assigns no combat damage"), and still ours to pick.
         return if (!harmsWatched || isOwnSide(requirements[slot])) slot else null
