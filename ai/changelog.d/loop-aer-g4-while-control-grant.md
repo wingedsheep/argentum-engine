@@ -1,0 +1,1 @@
+- #4530 The AI reads a granted non-mana activated ability as its own effect for the holder's controller (Quicksmith Spy's "{T}: Draw a card" is a gift to our artifact and a draw engine).

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.sba.permanent
 import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
@@ -50,8 +51,9 @@ import com.wingedsheep.sdk.scripting.Duration
  *   projected controller is no longer the effect's controller. Drops the entire effect (not
  *   per-affected) — the source-controller half is binary, the source either is or isn't yours.
  *
- * The gates that depend only on the source or the affected object are additionally enforced for
- * duration-keyed grants in `grantedActivatedAbilities` / `grantedStaticAbilities`, which have no
+ * The gates that depend only on the source or the affected object — plus, for activated-ability
+ * grants, which record their controller, [Duration.WhileYouControlSource] — are additionally
+ * enforced for duration-keyed grants in `grantedActivatedAbilities` / `grantedStaticAbilities`, which have no
  * floating-effect representation and so would otherwise never expire — Kitesail Larcenist's
  * granted Treasure mana ability is the source-keyed case, Ultima's counter-keyed "{T}: Add {C}"
  * and Braided Net's activation lock the affected-keyed ones.
@@ -251,11 +253,15 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
      */
     private fun pruneEndedGrants(state: GameState): GameState {
         var result = state
-        if (state.grantedActivatedAbilities.any { grantConditionFails(state, it.entityId, it.sourceId, it.duration) }) {
+        // Activated grants also carry their "you" (Quicksmith Spy's "for as long as you control
+        // Quicksmith Spy"), so the controller-keyed WhileYouControlSource gate applies to them.
+        val activatedEnded = { grant: GrantedActivatedAbility ->
+            grantConditionFails(state, grant.entityId, grant.sourceId, grant.duration) ||
+                !GrantDurationGate.controllerGateHolds(state, grant.duration, grant.sourceId, grant.controllerId)
+        }
+        if (state.grantedActivatedAbilities.any(activatedEnded)) {
             result = result.copy(
-                grantedActivatedAbilities = state.grantedActivatedAbilities.filterNot {
-                    grantConditionFails(state, it.entityId, it.sourceId, it.duration)
-                }
+                grantedActivatedAbilities = state.grantedActivatedAbilities.filterNot(activatedEnded)
             )
         }
         if (state.grantedStaticAbilities.any { grantConditionFails(state, it.entityId, it.sourceId, it.duration) }) {
@@ -357,9 +363,9 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
      *
      * The projection-dependent gates ([Duration.WhileSourceTappedAndAffectedPowerAtMostSource]) and
      * the ones that need the *effect's* controller ([Duration.WhileControlledByController],
-     * [Duration.WhileYouControlSource]) are deliberately not handled: a grant record carries no
-     * controller, and both shapes only ever appear on floating control/pump effects, which the
-     * per-effect loop above already reaps.
+     * [Duration.WhileYouControlSource]) are not handled here: most grant records carry no
+     * controller. The activated-ability store does, and [pruneEndedGrants] adds
+     * [GrantDurationGate.controllerGateHolds] for it (Quicksmith Spy).
      */
     private fun grantConditionFails(
         state: GameState,

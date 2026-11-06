@@ -27,6 +27,11 @@ import kotlinx.serialization.Serializable
  *   for [Duration.UntilSourceCastFromExile], which ends when *that* exiled object is cast. A source
  *   that leaves exile any other way becomes a new object (CR 400.7) and no later cast matches, so
  *   the grant lasts indefinitely; null (the source wasn't in exile at grant time) means the same.
+ * @property controllerId The "you" of a [Duration.WhileYouControlSource] grant — the controller of
+ *   the effect that made it ("target artifact you control gains '…' for as long as you control
+ *   Quicksmith Spy"). `EndedDurationExpiryCheck` removes the grant once [sourceId] leaves the
+ *   battlefield or its *projected* controller stops being this player (CR 611.2b). A
+ *   [Duration.WhileYouControlSource] grant without it has no "you" to compare and fails closed.
  */
 @Serializable
 data class GrantedActivatedAbility(
@@ -34,5 +39,6 @@ data class GrantedActivatedAbility(
     val ability: ActivatedAbility,
     val duration: Duration,
     val sourceId: EntityId? = null,
-    val sourceObject: ObjectRef? = null
+    val sourceObject: ObjectRef? = null,
+    val controllerId: EntityId? = null
 )
