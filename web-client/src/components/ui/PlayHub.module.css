@@ -891,6 +891,24 @@
   .panelDescription { font-size: 13px; }
 }
 
+/* A short laptop: a denser catalogue rhythm, so all three groups fit above the footer without the
+   catalogue having to scroll. */
+@media (min-width: 901px) and (max-height: 800px) {
+  .catalog { padding: 14px 16px 16px; gap: 12px; }
+  .catalogHeading { font-size: 22px; }
+  .group { gap: 6px; }
+  .tile { min-height: 0; padding: 9px 12px; gap: 10px; }
+  .icon { width: 32px; height: 32px; border-radius: 9px; }
+  .icon svg { width: 18px; height: 18px; }
+  .tileLabel { font-size: 17px; }
+}
+
+/* A narrow laptop: the launch panel gives up 40px so the two-across tiles keep their captions on
+   one line. */
+@media (min-width: 901px) and (max-width: 1199.98px) {
+  .hub { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px); gap: 16px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel, .sheetBackdrop { animation: none; }
   .tile, .playButton { transition: none; }
