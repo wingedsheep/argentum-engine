@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
+import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
@@ -332,6 +333,11 @@ object CardIntentAnalyzer {
 
         if (scripts.any { script -> script.replacementEffects.any(DamageAmplifiers::reads) }) {
             tags += IntentTag.DAMAGE_AMPLIFIER
+        }
+        // A standing damage-prevention shield over us and our permanents (Protection of the Hekma,
+        // Gideon's Intervention) protects the way a protective static does ([DamageShields]).
+        if (scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) {
+            tags += IntentTag.PROTECTION
         }
 
         val activated = scripts.flatMap { it.activatedAbilities }
@@ -2393,6 +2399,11 @@ object CardIntentAnalyzer {
         // on them" lock counters out; an Aura's or the creature's own (Blossombind) is read by
         // whatever else the card does to what it enchants.
         is PlayersCantGetCounters -> setOf(IntentTag.COUNTER_LOCK)
+        // "Your opponents can't cast spells with the chosen name" (Gideon's Intervention), "…during
+        // your turn" (Dragonlord Dromoka): the standing form of a cast ban. A ban that binds us too
+        // ("each player") is a symmetric price; an Aura's on its enchanted player is the polarity
+        // reader's question.
+        is PlayersCantCastSpells -> if (static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_BAN) else emptySet()
         is CantReceiveCounters ->
             if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.COUNTER_LOCK) else emptySet()
         // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a
@@ -2526,7 +2537,8 @@ object CardIntentAnalyzer {
         if (Keyword.FLASH in card.keywords) return Speed.INSTANT
         if (scripts.any { script -> script.activatedAbilities.any { !it.isManaAbility } }) return Speed.ACTIVATED
         if (scripts.any { it.staticAbilities.isNotEmpty() } || IntentTag.ANTHEM in tags ||
-            IntentTag.DAMAGE_AMPLIFIER in tags) return Speed.STATIC
+            IntentTag.DAMAGE_AMPLIFIER in tags ||
+            scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) return Speed.STATIC
         return Speed.SORCERY
     }
 
