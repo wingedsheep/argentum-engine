@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-akh',
+    date: '2026-11-06',
+    kind: 'set',
+    setCode: 'AKH',
+    title: 'Amonkhet is complete',
+    body: "Prove your worth in the Trials of the five gods. Exert your creatures for bigger attacks, embalm the fallen back as Zombie tokens, cycle away what you don't need and cast aftermath spells a second time from the graveyard, across ten two-colour decks from Zombies to -1/-1 counters.",
+    tryIf: 'aggressive combat decks and graveyard value',
+  },
+  {
     id: 'set-hou',
     date: '2026-11-05',
     kind: 'set',
