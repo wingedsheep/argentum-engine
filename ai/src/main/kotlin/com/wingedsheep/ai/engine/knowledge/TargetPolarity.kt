@@ -119,6 +119,7 @@ import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
+import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
@@ -695,6 +696,12 @@ object TargetPolarityAnalyzer {
         // Graveyard cards a pipeline lets us cast (Zul Ashur, Torrential Gearhulk): recursion by way of the stack.
         recursions += castGraveyardSlots(effect, requirements)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
+        // "Exile up to two target creatures you control, then return those cards to the battlefield"
+        // (Illusionist's Stratagem) as a pipeline: the blink [EffectWalker.blinkMoves] reads in its
+        // single-move spelling — a save and an ETB re-buy on ours, either way on anyone's.
+        for (slot in pipelineBlinkSlots(effect, requirements)) {
+            perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
+        }
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
@@ -1305,6 +1312,35 @@ object TargetPolarityAnalyzer {
     }
 
     /**
+     * The permanent slots a pipeline blinks: it exiles its own chosen targets and, in the same
+     * resolution, moves them — the exiled collection, or the source's linked-exile pile it filled —
+     * back onto the battlefield. A move behind a condition is still a leaf here, so this reads the
+     * card's plan, as [EffectWalker.blinkMoves] does for "exile it, then return it".
+     */
+    private fun pipelineBlinkSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = chosenTargetCollections(effect)
+        if (chosen.isEmpty()) return emptyList()
+        val exiles = leaves.filterIsInstance<MoveCollectionEffect>()
+            .filter { it.from in chosen && (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE }
+        if (exiles.isEmpty()) return emptyList()
+        val exiled = exiles.flatMapTo(HashSet()) { listOfNotNull(it.from, it.storeMovedAs) }
+        if (exiles.any { it.linkToSource }) {
+            leaves.filterIsInstance<GatherCardsEffect>()
+                .filter { it.source is CardSource.FromLinkedExile }.mapTo(exiled) { it.storeAs }
+        }
+        val returned = leaves.any {
+            it is MoveCollectionEffect && it.from in exiled &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+        }
+        if (!returned) return emptyList()
+        return requirements.indices.filter { slot ->
+            val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+            requirement is TargetObject && requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+        }
+    }
+
+    /**
      * The leaves that act on their target without naming it: the counter, the spell-exile and the
      * redirect on "target spell", and damage divided among the chosen targets.
      * Only "counter *target* spell" — one that counters the triggering spell aims at nothing chosen.
@@ -1448,6 +1484,11 @@ object TargetPolarityAnalyzer {
             // "Double the number of +1/+1 counters on …" (Biogenic Upgrade, Deepglow Skate): more of
             // what it already holds, so the counter decides the side; every kind at once is open.
             is DoubleCountersEffect -> leaf.target to (leaf.counterType?.let(::counterPolarity) ?: TargetPolarity.FLEXIBLE)
+            // "For each kind of counter on target permanent or player, give that permanent or player
+            // another counter of that kind" (Skyship Plunderer, Powerful Broker): one more of
+            // whatever it holds — a +1/+1, loyalty or energy for our side, a -1/-1, poison or time
+            // counter for theirs. Which kinds are there only the board shows, as doubling every kind.
+            is ProliferateEffect -> (leaf.target ?: return emptyList()) to TargetPolarity.FLEXIBLE
             is MoveAllLastKnownCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is RemoveAnyNumberOfCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw,

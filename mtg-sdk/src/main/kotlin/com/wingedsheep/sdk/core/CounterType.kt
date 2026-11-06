@@ -961,6 +961,13 @@ value class CounterType(val name: String) {
          */
         val PREY = CounterType("PREY")
 
+        /**
+         * Unity counter (AER — Call for Unity). A tally with no inherent rule: the revolt end-step
+         * trigger puts one on the enchantment, and its static anthem gives creatures you control
+         * +1/+1 for each one on it.
+         */
+        val UNITY = CounterType("UNITY")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1129,6 +1136,7 @@ value class CounterType(val name: String) {
             PEACE,
             PROMOTION,
             PREY,
+            UNITY,
         )
 
         /**
