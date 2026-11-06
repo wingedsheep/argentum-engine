@@ -4160,7 +4160,7 @@ Defiler of Faith
 Defiler of Flesh
 Defiler of Instinct
 Defiler of Vigor
-Defiling Tears	polarity: ChangeColorEffect; polarity: GrantActivatedAbilityEffect; polarity: ModifyStatsEffect
+Defiling Tears	polarity: ChangeColorEffect; polarity: ModifyStatsEffect
 Deflecting Palm
 Deflecting Swat	intent: ChangeTriggeringObjectTargetsEffect; polarity: ChangeTriggeringObjectTargetsEffect
 Defossilize
@@ -9998,7 +9998,7 @@ Lieutenant Kirtar
 Life Chisel
 Life Goes On
 Life Insurance
-Life Matrix	intent: AddCountersEffect; intent: GrantActivatedAbilityEffect; polarity: AddCountersEffect; polarity: GrantActivatedAbilityEffect
+Life Matrix	polarity: AddCountersEffect
 Life from the Loam	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
 Life of Toshiro Umezawa
 Lifeblood
@@ -13304,6 +13304,7 @@ Quicksilver Fisher
 Quicksilver Fountain	intent: AddCountersEffect; intent: ForEach>RemoveAllCountersOfTypeEffect; polarity: AddCountersEffect
 Quicksilver, Brash Blur
 Quicksmith Genius
+Quicksmith Spy
 Quiet Contemplation
 Quiet Purity
 Quill-Blade Laureate
@@ -18919,7 +18920,7 @@ Urza's Power Plant
 Urza's Rage
 Urza's Rebuff
 Urza's Ruinous Blast
-Urza's Saga	intent: GrantActivatedAbilityEffect
+Urza's Saga
 Urza's Sylex
 Urza's Tome
 Urza's Tower
