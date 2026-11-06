@@ -4,6 +4,7 @@ import com.wingedsheep.ai.engine.knowledge.HoldPolicy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TimingVerdict
 import com.wingedsheep.ai.puzzles.advanceToPriority
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -73,6 +74,49 @@ class DynamicShrinkReadingAiTest : ScenarioTestBase() {
             withClue("dynamic shrink reading: two Swamps make Defile -2/-2, which kills the 2/2 Grizzly Bears") {
                 game.defileVerdict("Grizzly Bears") shouldNotBe TimingVerdict.NoWindow
                 ((game.choice() as? CastSpell)?.cardId == game.defileInHand()) shouldBe true
+            }
+        }
+
+        test("a counted sweep over every creature is removal even with no creature of ours to shrink") {
+            val game = scenario()
+                .withPlayers()
+                .withTurnNumber(8)
+                .withActivePlayer(1)
+                .withLandsOnBattlefield(1, "Swamp", 4)
+                .withCardInHand(1, "Drag to the Bottom")
+                .withCardOnBattlefield(2, "Grizzly Bears", tapped = true)
+                .withCardOnBattlefield(2, "Hill Giant", tapped = true)
+                .build()
+                .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+            val drag = game.state.getZone(game.player1Id, Zone.HAND).single()
+
+            withClue("dynamic shrink reading: a group shrink is a sweeper, never a wasted shrink on our own (empty) board") {
+                HoldPolicy(intents, refuseWastedPayoffs = true).verdictFor(
+                    game.state, game.player1Id, "Drag to the Bottom", cast = CastSpell(game.player1Id, drag),
+                ) shouldNotBe TimingVerdict.NoWindow
+            }
+        }
+
+        test("a base power set with no toughness beside it is judged without a shrink to sum") {
+            val game = scenario()
+                .withPlayers()
+                .withTurnNumber(8)
+                .withActivePlayer(1)
+                .withCardOnBattlefield(1, "Island of Wak-Wak")
+                .withCardOnBattlefield(2, "Serra Angel", tapped = true)
+                .build()
+                .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+            val island = game.findPermanent("Island of Wak-Wak")!!
+            val ability = intents.definition("Island of Wak-Wak")!!.script.activatedAbilities.single().id
+
+            withClue("set-base reading: base power 0 on a tapped flier on our turn changes no fight") {
+                HoldPolicy(intents, refuseWastedPayoffs = true).verdictFor(
+                    game.state, game.player1Id, "Island of Wak-Wak",
+                    activation = ActivateAbility(
+                        game.player1Id, island, ability,
+                        targets = listOf(ChosenTarget.Permanent(game.findPermanent("Serra Angel")!!)),
+                    ),
+                ) shouldBe TimingVerdict.NoWindow
             }
         }
     }

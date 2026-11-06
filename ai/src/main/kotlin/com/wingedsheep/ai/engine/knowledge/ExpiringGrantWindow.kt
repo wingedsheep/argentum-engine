@@ -295,6 +295,11 @@ internal object ExpiringGrantWindow {
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
         if (shieldFacesTheStack(state, payoffs)) return false
 
+        // A stat loss over a group ("all creatures get -1/-1", Shrivel; "each creature gets -X/-X",
+        // Drag to the Bottom) is a sweeper: [affectedBy] reads the iteration entity as our own
+        // creatures, which would call a wipe of their board wasted whenever ours is empty. When to
+        // sweep is the removal's question, so the leaf keeps it.
+        if (payoffs.any { it.kind in SHRINK_KINDS && it.target == EffectTarget.IterationEntity }) return false
         val projected = state.projectedState
         val shrinkLoss = shrinkLosses(state, playerId, payoffs, sourceId, targets, xValue, intents) ?: return false
         return payoffs.none { payoff ->
@@ -335,7 +340,7 @@ internal object ExpiringGrantWindow {
                         ?.let { set ->
                             (projected.getBaseToughness(id) ?: projected.getToughness(id) ?: return@any true) - set
                         }
-                        ?: shrinkLoss.getValue(payoff.target)
+                        ?: shrinkLoss[payoff.target] ?: payoff.toughnessLoss
                     killedBy(state, projected, id, toughnessLoss) ||
                         if (fightMustBeOn) {
                             inFightNow(state, id)
@@ -829,11 +834,6 @@ internal object ExpiringGrantWindow {
     }
 
     /**
-     * Whether a shrink that takes [toughnessLoss] toughness off [creature] kills it — the one way a
-     * shrink buys something that outlives the turn. Marked damage counts, as the state-based action
-     * will count it (CR 704.5g).
-     */
-    /**
      * The toughness every [PayoffKind.SHRINK] in [payoffs] takes from its target, summed per target —
      * "-2/-2, and if kicked another -X/-X" lands both on one creature, and only together do they
      * say whether it dies. A counted loss ([Payoff.toughnessModifier]: Defile's Swamps, Feeding
@@ -844,6 +844,10 @@ internal object ExpiringGrantWindow {
      * this board cannot see yet (an X not announced, cards exiled as a cost, a count captured as
      * the spell is cast), never a shrink the reader can call wasted. A count that cannot be
      * resolved at all is null for the same reason.
+     *
+     * The count is read before the effect resolves. That is exact only because [expiringPayoffs]
+     * fails any effect with a leaf that is not a payoff: a rider that ran first (Nightmare's
+     * Thirst's life gain) could raise the count, and judging it early would undercount a kill.
      */
     private fun shrinkLosses(
         state: GameState,
@@ -875,6 +879,11 @@ internal object ExpiringGrantWindow {
         return losses
     }
 
+    /**
+     * Whether a shrink that takes [toughnessLoss] toughness off [creature] kills it — the one way a
+     * shrink buys something that outlives the turn. Marked damage counts, as the state-based action
+     * will count it (CR 704.5g).
+     */
     private fun killedBy(state: GameState, projected: ProjectedState, creature: EntityId, toughnessLoss: Int): Boolean {
         val toughness = projected.getToughness(creature) ?: return false
         val damage = state.getEntity(creature)?.get<DamageComponent>()?.amount ?: 0
