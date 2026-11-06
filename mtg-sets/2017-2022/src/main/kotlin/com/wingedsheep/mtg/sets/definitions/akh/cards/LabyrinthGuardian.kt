@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Labyrinth Guardian — Amonkhet #60
- * {2}{U} · Creature — Illusion Warrior · Uncommon
+ * {1}{U} · Creature — Illusion Warrior · Uncommon
  * 2/3
  *
  * When this creature becomes the target of a spell, sacrifice it.
