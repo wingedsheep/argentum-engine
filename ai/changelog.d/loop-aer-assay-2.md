@@ -1,0 +1,1 @@
+- #TBD Holds indestructible-until-end-of-turn spells with a permanent rider (Renegade's Getaway's Servo) for the removal or fight they answer instead of casting them on an empty stack for the rider

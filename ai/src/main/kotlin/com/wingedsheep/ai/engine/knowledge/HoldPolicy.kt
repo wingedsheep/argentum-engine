@@ -511,13 +511,19 @@ class HoldPolicy(
                 it is com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
         }
 
-    /** Whether [cast] resolves a death-return grant — see [ExpiringGrantWindow.returnsFromDeathThisTurn]. */
-    private fun castReturnsFromDeath(state: GameState, cast: CastSpell?): Boolean {
+    /**
+     * Whether [cast] resolves a protection spent only if its permanent would leave before cleanup:
+     * a death-return grant ([ExpiringGrantWindow.returnsFromDeathThisTurn]) or indestructible
+     * until end of turn ([ExpiringGrantWindow.shieldsFromDestructionThisTurn], Renegade's Getaway).
+     */
+    private fun castProtectsUntilCleanup(state: GameState, cast: CastSpell?): Boolean {
         if (cast == null) return false
         val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
         val definition = intents.definition(name) ?: return false
         return castEffects(definition, cast)?.any { effect ->
-            EffectWalker.payoffLeaves(effect).any(ExpiringGrantWindow::returnsFromDeathThisTurn)
+            EffectWalker.payoffLeaves(effect).any {
+                ExpiringGrantWindow.returnsFromDeathThisTurn(it) || ExpiringGrantWindow.shieldsFromDestructionThisTurn(it)
+            }
         } == true
     }
 
@@ -671,7 +677,9 @@ class HoldPolicy(
             // so the grant is thrown away — and a cantrip's draw would otherwise pay for casting it
             // there. Held for the removal it answers ([responseWindowFor]) or the fight its target
             // is in; Patience's releases still let it go as a plain cantrip in a long game.
-            refuseUnspendableGrants && IntentTag.PROTECTION in intent.tags && castReturnsFromDeath(state, cast) -> when {
+            // Indestructible until end of turn is the same protection (Renegade's Getaway, whose
+            // Servo is the rider the cantrip's draw is here).
+            refuseUnspendableGrants && IntentTag.PROTECTION in intent.tags && castProtectsUntilCleanup(state, cast) -> when {
                 stackHasSomething -> responseWindowFor(state, playerId, intent)
                 cast!!.targets.any { (it as? ChosenTarget.Permanent)?.entityId?.let { id -> ExpiringGrantWindow.inFightNow(state, id) } == true } ->
                     TimingVerdict.Neutral
@@ -869,7 +877,9 @@ class HoldPolicy(
             val reach = threat.removalReach
             val protects = IntentTag.PROTECTION in pump.tags && threat.tags.any { it in REMOVAL_TAGS }
             if (reach == null) {
-                if (protects && victims.any { projected.isCreature(it) }) protectable = true
+                // Any permanent of ours, not only a creature: indestructible (Renegade's Getaway)
+                // answers a Shatter on an artifact too.
+                if (protects && victims.isNotEmpty()) protectable = true
                 continue
             }
             if (victims.any { savedByPump(state, projected, it, reach, pump) }) {

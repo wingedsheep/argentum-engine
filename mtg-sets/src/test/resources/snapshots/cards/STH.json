@@ -188,6 +188,65 @@
     ]
 }
 
+// Conviction
+{
+    "name": "Conviction",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+3.\n{W}: Return this Aura to its owner's hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Conviction:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 3
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Paolo Parente",
+        "flavorText": "It was not the minotaur's shoulders but his soul that bore the heaviest weight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/190332b3-6a1c-4c25-af61-d8923fc9a0c3.jpg",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Players don't have priority to cast spells and activate abilities between combat damage being assigned and being dealt. This means that if you want to return Conviction to its owner's hand before combat damage is dealt, you must do so before combat damage is assigned (and the creature will no longer get +1/+3)."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, nonlethal damage dealt to the enchanted creature may become lethal if you return Conviction to its owner's hand during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fling
 {
     "name": "Fling",

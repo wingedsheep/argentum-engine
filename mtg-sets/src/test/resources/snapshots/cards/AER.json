@@ -2482,6 +2482,200 @@
     ]
 }
 
+// Invigorated Rampage
+{
+    "name": "Invigorated Rampage",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature gets +4/+0 and gains trample until end of turn.\n• Two target creatures each get +2/+0 and gain trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature gets +4/+0 and gains trample until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "TRAMPLE",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Two target creatures each get +2/+0 and gain trample until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "Gremlins can change from pest to problem to plague in the span of a moment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c1d1727-99d4-4aee-b6f5-8399ac1d0184.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If you choose Invigorated Rampage's second mode and one target becomes an illegal target, the remaining target gets +2/+0 and gains trample. It doesn't get +4/+0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Irontread Crusher
+{
+    "name": "Irontread Crusher",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Crew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"We've been through a lot together.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81873223-29c7-466b-b922-6717ec84afff.jpg",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Each Vehicle is printed with a power and toughness, but it’s not a creature. If it becomes a creature (most likely through its crew ability), it will have that power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an effect causes a Vehicle to become an artifact creature with a specified power and toughness, that effect overwrites the Vehicle’s printed power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Vehicle is an artifact type, not a creature type. A Vehicle that’s crewed won’t normally have any creature type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a player announces that they are activating a crew ability, no player may take other actions until the ability has been paid for. Notably, players can’t try to stop the ability by changing a creature’s power or by removing or tapping a creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Any untapped creature you control can be tapped to pay a crew cost, even one that just came under your control."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may tap more creatures than necessary to activate a crew ability."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Creatures that crew a Vehicle aren’t attached to it or related in any other way. Effects that affect the Vehicle, such as by destroying it or giving it a +1/+1 counter, don’t affect the creatures that crewed it."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a Vehicle becomes a creature, it behaves exactly like any other artifact creature. It can’t attack unless you’ve controlled it continuously since your turn began, it can block if it’s untapped, it can be tapped to pay a Vehicle’s crew cost, and so on."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may activate a crew ability of a Vehicle even if it’s already an artifact creature. Doing so has no effect on the Vehicle. It doesn’t change its power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For a Vehicle to be able to attack, it must be a creature as the declare attackers step begins, so the latest you can activate its crew ability to attack with it is during the beginning of combat step. For a Vehicle to be able to block, it must be a creature as the declare blockers step begins, so the latest you can activate its crew ability to block with it is during the declare attackers step. In either case, players may take actions after the crew ability resolves but before the Vehicle has been declared as an attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "When a Vehicle becomes a creature, that doesn’t count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won’t trigger."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a permanent becomes a copy of a Vehicle, the copy won’t be a creature, even if the Vehicle it’s copying has become an artifact creature."
+            }
+        ]
+    }
+}
+
 // Kari Zev, Skyship Raider
 {
     "name": "Kari Zev, Skyship Raider",
@@ -2676,6 +2870,181 @@
     ]
 }
 
+// Lifecrafter's Gift
+{
+    "name": "Lifecrafter's Gift",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature, then put a +1/+1 counter on each creature you control with a +1/+1 counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "The best engineers recognize when a problem has already been solved.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6759f13b-e755-495d-87df-a685455cdf33.jpg",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Each +1/+1 counter put on the target creature is a separate event. Replacement effects may affect each of these counters being put on the creature."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the target creature is an illegal target by the time Lifecrafter's Gift tries to resolve, the spell doesn't resolve. No creatures receive +1/+1 counters."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If there is a +1/+1 counter on a noncreature permanent you control, such as a Vehicle that isn't crewed, it won't get another one from Lifecrafter's Gift."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The state-based action that removes matching +1/+1 and -1/-1 counters won't check until after Lifecrafter's Gift finishes resolving. It's possible put a +1/+1 counter on a creature with a -1/-1 counter on it and then give it a second +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Maverick Thopterist
+{
+    "name": "Maverick Thopterist",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nWhen this creature enters, create two 1/1 colorless Thopter artifact creature tokens with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Maverick Thopterist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd03a2b9-bfd7-4e1d-b660-e9f945699b78.jpg?1783937238",
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/cad17d67-538e-4c60-a582-a394032a5112.jpg",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "When using improvise to cast a spell with {X} in its mana cost, first choose the value for X. That choice, plus any cost increases or decreases, will determine the spell's total cost. Then you can tap artifacts you control to help pay that cost. For example, if you cast Saheeli's Directive and choose X to be 3, the total cost is {3}{R}{R}{R}. If you tap two artifacts, you'll have to pay {1}{R}{R}{R}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Mechanized Production
 {
     "name": "Mechanized Production",
@@ -2828,6 +3197,475 @@
     "colorIdentityOverride": []
 }
 
+// Metallic Rebuke
+{
+    "name": "Metallic Rebuke",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nCounter target spell unless its controller pays {3}.",
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{3}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Too little, too late. The machine is in motion.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f712ac26-dca4-459b-84c1-010597007f60.jpg",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Improvise can't pay for {U} in Metallic Rebuke's total cost."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Midnight Entourage
+{
+    "name": "Midnight Entourage",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Aetherborn Rogue",
+    "oracleText": "Other Aetherborn you control get +1/+1.\nWhenever this creature or another Aetherborn you control dies, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Midnight Entourage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Aetherborn ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Aetherborn ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/2838c6dd-d816-4363-a861-f2f8052d1430.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Midnight Entourage's triggered ability is mandatory. You draw a card and lose 1 life even if you don't want to."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If Midnight Entourage and another Aetherborn you control die at the same time, its ability triggers once for each of them."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If a creature has been dealt damage, that damage remains marked on it until the cleanup step. If Midnight Entourage leaves the battlefield and another Aetherborn creature you control has been dealt damage, that creature will be destroyed if the damage is now lethal. The same is true if an Aetherborn's toughness becomes 0 this way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mobile Garrison
+{
+    "name": "Mobile Garrison",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever this Vehicle attacks, untap another target artifact or creature you control.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mobile Garrison:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da443378-f5cb-4240-9524-2c40ec17c933.jpg",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If a permanent becomes a copy of a Vehicle, the copy won't be a creature, even if the Vehicle it's copying has become an artifact creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For a Vehicle to be able to attack, it must be a creature as the declare attackers step begins, so the latest you can activate its crew ability to attack with it is during the beginning of combat step. For a Vehicle to be able to block, it must be a creature as the declare blockers step begins, so the latest you can activate its crew ability to block with it is during the declare attackers step. In either case, players may take actions after the crew ability resolves but before the Vehicle has been declared as an attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "When a Vehicle becomes a creature, that doesn't count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Each Vehicle is printed with a power and toughness, but it's not a creature. If it becomes a creature (most likely through its crew ability), it will have that power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an effect causes a Vehicle to become an artifact creature with a specified power and toughness, that effect overwrites the Vehicle's printed power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Vehicle is an artifact type, not a creature type. A Vehicle that's crewed won't normally have any creature type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a player announces that they are activating a crew ability, no player may take other actions until the ability has been paid for. Notably, players can't try to stop the ability by changing a creature's power or by removing or tapping a creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Any untapped creature you control can be tapped to pay a crew cost, even one that just came under your control."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may tap more creatures than necessary to activate a crew ability."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Creatures that crew a Vehicle aren't attached to it or related in any other way. Effects that affect the Vehicle, such as by destroying it or giving it a +1/+1 counter, don't affect the creatures that crewed it."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a Vehicle becomes a creature, it behaves exactly like any other artifact creature. It can't attack unless you've controlled it continuously since your turn began, it can block if it's untapped, it can be tapped to pay a Vehicle's crew cost, and so on."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may activate a crew ability of a Vehicle even if it's already an artifact creature. Doing so has no effect on the Vehicle. It doesn't change its power and toughness."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Untapping an attacking creature doesn't remove it from combat."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "All attackers are chosen at once. You can't attack with Mobile Garrison, untap a tapped creature, and then attack with that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Oath of Ajani
+{
+    "name": "Oath of Ajani",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Ajani enters, put a +1/+1 counter on each creature you control.\nPlaneswalker spells you cast cost {1} less to cast.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Ajani:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "planeswalker"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"Until all have found their place, I will keep watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/968c7d5a-b037-4ff7-b6d2-df00adf5691b.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Outland Boar
+{
+    "name": "Outland Boar",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Boar",
+    "oracleText": "This creature can't be blocked by creatures with power 2 or less.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "The vibrant forest of Peema is awash with aether. Its animals are stronger, faster, and more aggressive than their counterparts elsewhere.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/135912b3-978b-4a9b-8758-7b138b190232.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Once a creature with power 3 or greater has blocked Outland Boar, changing the power of the blocking creature won't cause Outland Boar to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Pacification Array
+{
+    "name": "Pacification Array",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Tap target artifact or creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pacification Array:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "The Consulate had access to thousands of innovative devices displayed at the Inventors' Fair. A few small changes transformed some of them from marvels of ingenuity to instruments of oppression.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bed742a-a12a-4728-a771-07e3d1417419.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Players may respond to Pacification Array's ability by activating an ability of the target permanent if that ability's timing permissions allow it. Players may also respond by activating abilities or casting spells whose costs include tapping the target permanent."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Once a player has activated an ability with {T} in its cost, Pacification Array can't be used to undo or counter that ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you want to stop someone from attacking with a creature by using Pacification Array's ability, you must do so before attackers are declared. You can't wait until after attackers are declared and then try to use it to make a creature stop attacking. Note that your opponent can't start declaring attackers without letting you use your Pacification Array."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Paradox Engine
+{
+    "name": "Paradox Engine",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever you cast a spell, untap all nonland permanents you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Paradox Engine:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "nonland permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "MYTHIC",
+        "artist": "Christine Choi",
+        "flavorText": "\"One look at this glorious item convinced me that Kaladesh deserved my full attention. Sure enough, my time here has yielded exquisite fruit.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd8ccd81-9e11-47fa-8e16-064c52c24506.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Paradox Engine's triggered ability resolves before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Peacewalker Colossus
 {
     "name": "Peacewalker Colossus",
@@ -2969,6 +3807,143 @@
     "colorIdentityOverride": []
 }
 
+// Planar Bridge
+{
+    "name": "Planar Bridge",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{8}, {T}: Search your library for a permanent card, put it onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Planar Bridge:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{8}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "permanent"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a permanent card to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "flavorText": "\"It is finished. Now the real work can begin.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/991397cf-5c7d-4e8a-8f46-8e2e0ed29eff.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "A permanent card is an artifact, creature, enchantment, land, or planeswalker card."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Precise Strike
+{
+    "name": "Precise Strike",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+0 and gains first strike until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"Hit where it hurts, and always hit first.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3cd2e7ab-b63e-48e8-a32a-6ff8673241d9.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Prizefighter Construct
 {
     "name": "Prizefighter Construct",
@@ -2985,6 +3960,472 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e389c92-b54b-46b3-a7ab-b8a5a2a7d380.jpg?1783936720"
     },
     "colorIdentityOverride": []
+}
+
+// Ravenous Intruder
+{
+    "name": "Ravenous Intruder",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Gremlin",
+    "oracleText": "Sacrifice an artifact: This creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ravenous Intruder:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"I've made some fine acquisitions of late, so I'm planning to make commensurate improvements to my security systems. I have a consultant coming tomorrow.\"\n—Kurna Majan, Luminary League",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd793778-f099-4b8e-af19-fc0ec4292824.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Reckless Racer
+{
+    "name": "Reckless Racer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Pilot",
+    "oracleText": "First strike\nWhenever this creature becomes tapped, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reckless Racer:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "Illegal street races turned out to be perfect practice for avoiding Consulate patrols.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21c0afd6-1242-42bf-a13f-9f218c9d9dfc.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "This is a triggered ability, not an activated ability. It doesn't allow you to tap Reckless Racer whenever you want; rather, you need some other way of tapping it, such as by attacking or crewing a Vehicle."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "For the ability to trigger, Reckless Racer has to actually change from untapped to tapped. If an effect attempts to tap it, but it was already tapped at the time, this ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Renegade Map
+{
+    "name": "Renegade Map",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}, Sacrifice this artifact: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Renegade Map:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"We have safe houses in every zone, but you'll never find one without this.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac063445-d0e2-4015-96dc-97098433f30a.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Renegade Wheelsmith
+{
+    "name": "Renegade Wheelsmith",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Creature — Dwarf Pilot",
+    "oracleText": "Whenever this creature becomes tapped, target creature can't block this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Renegade Wheelsmith:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "Many veterans of the Ovalchase racetrack turned their talents to the renegade cause.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/6956a341-10fd-48af-b382-88c2b2934a3e.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "This is a triggered ability, not an activated ability. It doesn't allow you to tap Renegade Wheelsmith whenever you want; rather, you need some other way of tapping it, such as by attacking or crewing a Vehicle."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "For the ability to trigger, Renegade Wheelsmith has to actually change from untapped to tapped. If an effect attempts to tap it, but it was already tapped at the time, this ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Renegade's Getaway
+{
+    "name": "Renegade's Getaway",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target permanent gains indestructible until end of turn. Create a 1/1 colorless Servo artifact creature token. (Effects that say \"destroy\" don't destroy a permanent with indestructible, and if it's a creature, it can't be destroyed by damage.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Ryan Yee",
+        "flavorText": "You can't fight what you can't find.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49b0a5d5-99d7-492b-bd85-77c3cee12c8d.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "There's no way to have Renegade's Getaway's effect create a Servo token and give that token indestructible."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the target permanent becomes an illegal target, Renegade's Getaway doesn't resolve and none of its effects happen. You won't create a Servo token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Resourceful Return
+{
+    "name": "Resourceful Return",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to your hand. If you control an artifact, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Titus Lunter",
+        "flavorText": "When the salvage team brought in the shattered gearhulk, a wave of excitement swept through the renegade foundry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32f57d0b-ab6a-4074-885d-678659729b8a.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "You can't cast Resourceful Return without a target creature card in your graveyard."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Whether or not you control an artifact is checked as Resourceful Return resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Reverse Engineer
+{
+    "name": "Reverse Engineer",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nDraw three cards.",
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "The Hold, an illegal research facility in a derelict merchant ship, became a wellspring of renegade intelligence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d56f8cca-6b8f-45ea-926f-161938716ee9.jpg",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "When using improvise to cast a spell with {X} in its mana cost, first choose the value for X. That choice, plus any cost increases or decreases, will determine the spell's total cost. Then you can tap artifacts you control to help pay that cost. For example, if you cast Saheeli's Directive and choose X to be 3, the total cost is {3}{R}{R}{R}. If you tap two artifacts, you'll have to pay {1}{R}{R}{R}."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says “Counter target spell unless its controller pays {3}.”"
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Rishkar, Peema Renegade
@@ -3067,6 +4508,78 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Salvage Scuttler
+{
+    "name": "Salvage Scuttler",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Crab",
+    "oracleText": "Whenever this creature attacks, return an artifact you control to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Salvage Scuttler:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "artifact",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return a permanent you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "flavorText": "A hermit crab goes through many shells in its lifetime, and not all are natural in origin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/480be626-cf37-410d-a9c7-e5464345085f.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If you control no artifacts, you won’t return anything to your hand. There’s no penalty for being unable to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3230,6 +4743,224 @@
     ]
 }
 
+// Servo Schematic
+{
+    "name": "Servo Schematic",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters or is put into a graveyard from the battlefield, create a 1/1 colorless Servo artifact creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Servo Schematic:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            },
+            {
+                "id": "Servo Schematic:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "flavorText": "The Consulate prizes innovation when it is dependable and replicable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af2299e0-d31f-4ec4-9497-16e494ee21e6.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Servo Schematic's ability doesn't allow you to sacrifice it whenever you'd like. You must find another way to get Servo Schematic into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Sly Requisitioner
+{
+    "name": "Sly Requisitioner",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nWhenever a nontoken artifact you control is put into a graveyard from the battlefield, create a 1/1 colorless Servo artifact creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sly Requisitioner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2d05324-6d85-40da-a087-b5822bc8f42e.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Sly Requisitioner is put into a graveyard at the same time as a nontoken artifact you control, its ability triggers."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Spire Patrol
+{
+    "name": "Spire Patrol",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Flying\nWhen this creature enters, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spire Patrol:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"After I examine your cargo and check your papers, you can be on your way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1daaf494-70af-4a8d-836f-f6a9d6c1f080.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Spire Patrol’s ability can target a creature that’s already tapped. That creature won’t untap during its controller’s next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Spire of Industry
 {
     "name": "Spire of Industry",
@@ -3360,6 +5091,211 @@
             {
                 "date": "2025-06-06",
                 "text": "Sram's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sweatworks Brawler
+{
+    "name": "Sweatworks Brawler",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nMenace",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "IMPROVISE",
+        "MENACE"
+    ],
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Zack Stella",
+        "flavorText": "The residents of Embraal were never known for finesse, just for getting things done.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b477d12a-9ba5-4302-a3f0-af0afb5d87f4.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Take into Custody
+{
+    "name": "Take into Custody",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap target creature. It doesn't untap during its controller's next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "David Palumbo",
+        "flavorText": "\"You can tell me what I want to know, or you can talk to the Chief of Compliance. Why don't you make it easy on yourself?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b412718a-7bc7-4b16-af60-1b955c820b0f.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Take into Custody can target a creature that’s already tapped. That creature won’t untap during its controller’s next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Thopter Arrest
+{
+    "name": "Thopter Arrest",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target artifact or creature an opponent controls until this enchantment leaves the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thopter Arrest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Thopter Arrest:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "The Consulate's eyes—unblinking, unsleeping—are everywhere.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4e738cb-e4ea-41c2-99a1-55b6167eccb0.jpg",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Thopter Arrest leaves the battlefield before its triggered ability resolves, the target permanent won’t be exiled."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Auras attached to the exiled permanent will be put into their owners’ graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled permanent will cease to exist."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If a token is exiled this way, it will cease to exist and won’t return to the battlefield."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The exiled card returns to the battlefield immediately after Thopter Arrest leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "In a multiplayer game, if Thopter Arrest’s owner leaves the game, the exiled card will return to the battlefield. Because the one-shot effect that returns the card isn’t an ability that goes on the stack, it won’t cease to exist along with the leaving player’s spells and abilities on the stack."
             }
         ]
     },
@@ -3503,6 +5439,145 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f1b66b2-12b2-497b-a328-b43630c79e73.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Untethered Express
+{
+    "name": "Untethered Express",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Trample\nWhenever this Vehicle attacks, put a +1/+1 counter on it.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Untethered Express:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "Rules and rails are made to be broken.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dba729d8-fd5e-4183-806a-0997f443a58f.jpg",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If a permanent becomes a copy of a Vehicle, the copy won't be a creature, even if the Vehicle it's copying has become an artifact creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Each Vehicle is printed with a power and toughness, but it's not a creature. If it becomes a creature (most likely through its crew ability), it will have that power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an effect causes a Vehicle to become an artifact creature with a specified power and toughness, that effect overwrites the Vehicle's printed power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Vehicle is an artifact type, not a creature type. A Vehicle that's crewed won't normally have any creature type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a player announces that they are activating a crew ability, no player may take other actions until the ability has been paid for. Notably, players can't try to stop the ability by changing a creature's power or by removing or tapping a creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Any untapped creature you control can be tapped to pay a crew cost, even one that just came under your control."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may tap more creatures than necessary to activate a crew ability."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Creatures that crew a Vehicle aren't attached to it or related in any other way. Effects that affect the Vehicle, such as by destroying it or giving it a +1/+1 counter, don't affect the creatures that crewed it."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a Vehicle becomes a creature, it behaves exactly like any other artifact creature. It can't attack unless you've controlled it continuously since your turn began, it can block if it's untapped, it can be tapped to pay a Vehicle's crew cost, and so on."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may activate a crew ability of a Vehicle even if it's already an artifact creature. Doing so has no effect on the Vehicle. It doesn't change its power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For a Vehicle to be able to attack, it must be a creature as the declare attackers step begins, so the latest you can activate its crew ability to attack with it is during the beginning of combat step. For a Vehicle to be able to block, it must be a creature as the declare blockers step begins, so the latest you can activate its crew ability to block with it is during the declare attackers step. In either case, players may take actions after the crew ability resolves but before the Vehicle has been declared as an attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "When a Vehicle becomes a creature, that doesn't count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Any +1/+1 counters on Untethered Express remain on it when it stops being a creature."
+            }
+        ]
+    }
+}
+
+// Verdant Automaton
+{
+    "name": "Verdant Automaton",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{3}{G}: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Verdant Automaton:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "\"A perfect fusion of nature and artifice.\"\n—Irsi, Kujar gardener",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52c66c5a-0b1b-4936-9e07-2d169f16c1a6.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Walking Ballista
