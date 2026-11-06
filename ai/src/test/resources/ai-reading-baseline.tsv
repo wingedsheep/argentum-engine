@@ -1600,7 +1600,7 @@ Black Market Connections
 Black Market Tycoon
 Black Panther, Vanguard
 Black Poplar Shaman
-Black Sun's Twilight	timing: ModifyStatsEffect
+Black Sun's Twilight
 Black Sun's Zenith
 Black Vise
 Black Waltz No. 3
@@ -1835,7 +1835,7 @@ Bloodtallow Candle
 Bloodthirsty Adversary
 Bloodthirsty Aerialist
 Bloodthirsty Conqueror
-Bloodthirsty Ogre	timing: ModifyStatsEffect
+Bloodthirsty Ogre
 Bloodthorn Flail
 Bloodthorn Taunter
 Bloodthrone Vampire
@@ -3995,7 +3995,7 @@ Death Is Irrelevant
 Death Match
 Death Pulse
 Death Ward
-Death Wind	timing: ModifyStatsEffect
+Death Wind
 Death in the Family
 Death or Glory
 Death to Our Enemies
@@ -4113,7 +4113,7 @@ Defiant Stand
 Defiant Strike
 Defiant Survivor	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Defibrillating Current
-Defile	timing: ModifyStatsEffect
+Defile
 Defiled Crypt // Cadaver Lab
 Defiler of Dreams
 Defiler of Faith
@@ -4218,7 +4218,7 @@ Desert of the Glorified
 Desert of the Indomitable
 Desert of the Mindful
 Desert of the True
-Desert's Due	timing: ModifyStatsEffect
+Desert's Due
 Desert's Hold
 Deserted Beach
 Deserted Temple
@@ -5667,7 +5667,7 @@ Faebloom Trick
 Faeburrow Elder
 Faerie Dreamthief
 Faerie Duelist
-Faerie Fencing	timing: ModifyStatsEffect
+Faerie Fencing
 Faerie Formation
 Faerie Guidemother
 Faerie Harbinger
@@ -5867,7 +5867,7 @@ Feed the Serpent
 Feed the Swarm
 Feedback	polarity: Aura>DealDamageEffect
 Feedback Bolt
-Feeding Frenzy	timing: ModifyStatsEffect
+Feeding Frenzy
 Feeling of Dread
 Feign Death
 Feint	timing: ForEach>PreventDamageEffect
@@ -5947,7 +5947,7 @@ Festival Crasher
 Festival of Embers
 Festival of Trokin
 Festival of the Guildpact
-Festive Funeral	timing: ModifyStatsEffect
+Festive Funeral
 Fetid Gargantua	intent: AdaptEffect
 Fetid Heath
 Fetid Horror
@@ -6247,7 +6247,7 @@ Flowstone Wyvern
 Flubs, the Fool
 Flummoxed Cyclops	intent: CantBlockEffect
 Flumph
-Flunk	timing: ModifyStatsEffect
+Flunk
 Flurry of Horns
 Flurry of Wings
 Flusterstorm
@@ -8850,7 +8850,7 @@ Ironroot Warlord
 Ironscale Hydra
 Ironshell Beetle
 Ironwill Forger
-Irradiate	timing: ModifyStatsEffect
+Irradiate
 Irregular Cohort
 Irreverent Gremlin
 Irreverent Revelers
@@ -10293,7 +10293,7 @@ Lyra, Tolarian Archangel
 Lys Alana Dignitary
 Lys Alana Huntmaster
 Lys Alana Informant
-Lys Alana Scarblade	timing: ModifyStatsEffect
+Lys Alana Scarblade
 Lyse Hext
 Lórien Revealed
 M.O.D.O.K.
@@ -11540,7 +11540,7 @@ Necromentia
 Necropanther
 Necroplasm
 Necropolis	intent: Pipeline(ExiledAsCost→?)
-Necropolis Fiend	timing: ModifyStatsEffect
+Necropolis Fiend
 Necropotence
 Necroskitter
 Necrosquito
@@ -11548,7 +11548,7 @@ Necrosynthesis
 Necrotic Fumes
 Necrotic Ooze
 Necrotic Sliver
-Necrotic Wound	timing: ModifyStatsEffect
+Necrotic Wound
 Nectar Faerie
 Need for Speed
 Needle Drop
@@ -11676,7 +11676,7 @@ Nightmare Lash
 Nightmare Shepherd
 Nightmare Sower
 Nightmare Void
-Nightmare's Thirst	timing: ModifyStatsEffect
+Nightmare's Thirst
 Nightpack Ambusher
 Nightscape Apprentice	polarity: MoveToZoneEffect
 Nightscape Familiar
@@ -13836,7 +13836,7 @@ Retreat to Coralhelm
 Retreat to Hagra
 Retreat to Kazandu
 Retreat to Valakut
-Retribution of the Ancients	timing: ModifyStatsEffect
+Retribution of the Ancients
 Retributive Wand
 Retrieval Agent
 Retrieve
@@ -15722,7 +15722,7 @@ Sleeper's Robe
 Sleight of Hand
 Sleight of Mind	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
 Slice and Dice
-Slice from the Shadows	timing: ModifyStatsEffect
+Slice from the Shadows
 Slice in Twain
 Slick Imitator
 Slick Sequence
@@ -16315,7 +16315,7 @@ Staggering Insight
 Staggering Size
 Staggershock
 Stalactite Dagger
-Stalactite Stalker	timing: ModifyStatsEffect
+Stalactite Stalker
 Stalked Researcher	intent: CanAttackDespiteDefenderThisTurnEffect
 Stalking Assassin
 Stalking Bloodsucker
@@ -18317,7 +18317,7 @@ Tribal Unity
 Tributary Vaulter
 Tribute to Horobi
 Tribute to Hunger
-Tribute to Urborg	timing: ModifyStatsEffect
+Tribute to Urborg
 Tribute to the World Tree
 Triceraton Commander
 Trick Shot
@@ -19893,7 +19893,7 @@ Winter Soldier, Icy Assassin
 Winter's Grasp
 Winter's Intervention
 Winter's Rest
-Winter, Cursed Rider	timing: ForEach>ModifyStatsEffect
+Winter, Cursed Rider
 Winter, Misanthropic Guide
 Winter, Team Player
 Winter, Tormented Loner
