@@ -957,7 +957,7 @@ Assert Authority
 Assert Perfection
 Assimilate Essence
 Assimilation Aegis	intent: BecomeCopyOfLinkedExileEffect
-Assure // Assemble	timing: GrantKeywordEffect
+Assure // Assemble
 Astelli Reclaimer
 Astor, Bearer of Blades
 Astral Cornucopia
@@ -3363,6 +3363,7 @@ Convalescent Care
 Convenient Target	intent: SuspectEffect
 Conversion
 Converter Beast
+Conviction
 Convolute
 Cool but Rude
 Cooped Up
@@ -8810,6 +8811,7 @@ Invert Polarity	intent: FlipCoinEffect; polarity: FlipCoinEffect
 Inverted Iceberg
 Investigator's Journal
 Invigorate
+Invigorated Rampage
 Invigorating Boon
 Invigorating Hot Spring
 Invigorating Surge
@@ -8879,6 +8881,7 @@ Ironroot Treefolk
 Ironroot Warlord
 Ironscale Hydra
 Ironshell Beetle
+Irontread Crusher
 Ironwill Forger
 Irradiate
 Irregular Cohort
@@ -9953,6 +9956,7 @@ Life of Toshiro Umezawa
 Lifeblood
 Lifecraft Engine
 Lifecrafter's Bestiary
+Lifecrafter's Gift
 Lifecreed Duo
 Lifeforce
 Lifelace	intent: ChangeColorEffect; polarity: ChangeColorEffect
@@ -10685,6 +10689,7 @@ Mausoleum Harpy
 Mausoleum Secrets
 Mausoleum Turnkey
 Mausoleum Wanderer
+Maverick Thopterist
 Mavinda, Students' Advocate	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithCostIncreaseEffect; intent: Pipeline(ChosenTargets→?)
 Mavren Fein, Dusk Apostle
 Maw of the Mire
@@ -10837,6 +10842,7 @@ Messenger's Speed
 Metal Fatigue
 Metalhead
 Metallic Mimic
+Metallic Rebuke
 Metallic Sliver
 Metallurgeon
 Metamorphic Alteration	polarity: Aura>(nothing on the host)
@@ -10878,6 +10884,7 @@ Midnight Charm
 Midnight Clock
 Midnight Covenant
 Midnight Duelist
+Midnight Entourage
 Midnight Guard
 Midnight Haunting
 Midnight Mangler
@@ -11123,6 +11130,7 @@ Moat
 Moat Piranhas
 Mob
 Mob Lookout
+Mobile Garrison
 Mobile Homestead
 Mobilization
 Mobilize
@@ -11899,6 +11907,7 @@ Oashra Cultivator
 Oasis
 Oasis Gardener
 Oasis Ritualist
+Oath of Ajani
 Oath of Kaya
 Oath of Teferi
 Oath of the Ancient Wood
@@ -11927,7 +11936,7 @@ Obliterate
 Obliterating Bolt
 Oblivion Ring
 Oblivion Stone	intent: AddCountersEffect; polarity: AddCountersEffect
-Oblivion's Hunger	timing: GrantKeywordEffect
+Oblivion's Hunger
 Oblivious Bookworm	intent: Pipeline(hand→graveyard)
 Obosh, the Preypiercer
 Obscura Ascendancy
@@ -12227,6 +12236,7 @@ Out of the Way
 Outcaster Greenblade
 Outcaster Trailblazer
 Outflank
+Outland Boar
 Outland Colossus
 Outland Liberator
 Outlaw Medic
@@ -12298,6 +12308,7 @@ Ozai's Cruelty
 Ozai, the Phoenix King
 Ozolith, the Shattered Spire
 Pacesetter Paragon
+Pacification Array
 Pacifism
 Pack Guardian
 Pack Hunt	polarity: Pipeline(library→hand)
@@ -12351,6 +12362,7 @@ Papalymo Totolymo	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: For
 Papercraft Decoy
 Paperfin Rascal
 Paradise Druid
+Paradox Engine
 Paradox Gardens
 Paradox Haze	intent: AddAdditionalUpkeepStepsEffect; polarity: Aura>AddAdditionalUpkeepStepsEffect
 Paradox Shaper
@@ -12720,6 +12732,7 @@ Plan for All Outcomes
 Plan the Heist
 Planar Ally
 Planar Atlas
+Planar Bridge
 Planar Cleansing
 Planar Disruption
 Planar Engineering
@@ -12872,6 +12885,7 @@ Preacher of the Schism
 Precinct Captain
 Precipitous Drop
 Precise Redaction
+Precise Strike
 Precision Bolt
 Precognition Field	intent: Pipeline(TopOfLibrary→exile)
 Precognitive Perception
@@ -13517,6 +13531,7 @@ Ravenous Daggertooth
 Ravenous Giant
 Ravenous Gigamole
 Ravenous Harpy
+Ravenous Intruder
 Ravenous Lindwurm
 Ravenous Necrotitan
 Ravenous Rats
@@ -13606,6 +13621,7 @@ Reckless Impulse
 Reckless Lackey
 Reckless One
 Reckless Pyrosurfer	intent: GrantTriggeredAbilityEffect
+Reckless Racer
 Reckless Rage
 Reckless Ransacking
 Reckless Scholar
@@ -13761,8 +13777,11 @@ Rending Flame
 Renegade Demon
 Renegade Firebrand
 Renegade Freighter
+Renegade Map
 Renegade Reaper
 Renegade Troops
+Renegade Wheelsmith
+Renegade's Getaway
 Renet, Temporal Apprentice
 Renewed Faith
 Renewed Solidarity
@@ -13831,6 +13850,7 @@ Resounding Roar
 Resounding Silence
 Resounding Thunder
 Resounding Wave
+Resourceful Return
 Respite
 Resplendent Angel
 Resplendent Griffin
@@ -13905,10 +13925,11 @@ Reverent Hoplite
 Reverent Howl
 Reverent Silence
 Reverse Damage
+Reverse Engineer
 Reverse Polarity
 Reverse the Sands	intent: RedistributeLifeTotalsEffect
 Revitalize
-Revitalizing Repast	timing: GrantKeywordEffect
+Revitalizing Repast
 Revival // Revenge
 Revival of the Ancestors
 Revive
@@ -14486,6 +14507,7 @@ Saltfield Recluse
 Saltwater Stalwart
 Salvage
 Salvage Scout
+Salvage Scuttler
 Salvaged Manaworker
 Salvager of Ruin
 Salvager of Secrets
@@ -15105,6 +15127,7 @@ Serum-Core Chimera
 Servant of Volrath
 Servant of the Scale
 Servant of the Stinger
+Servo Schematic
 Seshiro the Anointed
 Set Adrift
 Set Phasers to . . .
@@ -15797,6 +15820,7 @@ Slumbering Cerberus
 Slumbering Keepguard
 Slumbering Trudge
 Slumbering Walker
+Sly Requisitioner
 Smash
 Smash to Dust
 Smashing Success	polarity: CreatePredefinedTokenEffect; polarity: Pipeline(ChosenTargets→graveyard)
@@ -16198,6 +16222,7 @@ Spire Golem
 Spire Mangler
 Spire Mechcycle
 Spire Owl
+Spire Patrol
 Spire Winder
 Spire of Industry
 Spirebluff Canal
@@ -16655,7 +16680,7 @@ Strength of Arms
 Strength of Cedars
 Strength of Solidarity
 Strength of Unity
-Strength of Will	timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
+Strength of Will	timing: GrantTriggeredAbilityEffect
 Strength of the Coalition
 Strength of the Harvest
 Strength of the Pack
@@ -16971,6 +16996,7 @@ Swat
 Swat Away
 Swathcutter Giant
 Sway of Illusion	polarity: ChooseColorThenEffect
+Sweatworks Brawler
 Sweet Oblivion
 Sweettooth Witch
 Swelter	polarity: ForEachEffect
@@ -17116,6 +17142,7 @@ Take Up Arms
 Take Up the Shield	timing: GrantKeywordEffect
 Take Vengeance
 Take for a Ride
+Take into Custody
 Take the Fall
 Take to the Streets
 Taken by Nightmares
@@ -17773,6 +17800,7 @@ Thistledown Duo
 Thistledown Liege
 Thistledown Players
 Thopter Architect
+Thopter Arrest
 Thopter Engineer
 Thopter Fabricator
 Thopter Foundry
@@ -18747,6 +18775,7 @@ Untaidake, the Cloud Keeper
 Untamed Hunger
 Untamed Kavu
 Untamed Wilds
+Untethered Express
 Untimely Malfunction
 Unwanted Remake
 Unwavering Initiate
@@ -19014,6 +19043,7 @@ Venser's Sliver
 Venser, Corpse Puppet
 Venus, Torn Between Worlds
 Verazol, the Split Current
+Verdant Automaton
 Verdant Catacombs
 Verdant Command
 Verdant Force
