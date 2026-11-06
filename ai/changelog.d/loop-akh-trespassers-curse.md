@@ -1,0 +1,1 @@
+- #4489 Draft synergy no longer counts a Curse's "creature enchanted player controls enters" trigger as a payoff for its own creatures entering (Trespasser's Curse)
