@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.readText
 
 /**
@@ -119,7 +120,7 @@ class FacadeBoundaryTest : FunSpec({
 
         SetSourceRoots.definitionFiles().forEach { path ->
             val rel = SetSourceRoots.relativize(path)
-            if (pipelineAllowlist.keys.any { rel.toString().endsWith(it) }) return@forEach
+            if (pipelineAllowlist.keys.any { rel.invariantSeparatorsPathString.endsWith(it) }) return@forEach
             stripCommentsAndImports(path.readText()).forEachIndexed { idx, line ->
                 for ((regex, hint) in pipelineSteps) {
                     if (regex.containsMatchIn(line)) {
