@@ -4,9 +4,12 @@ import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.mtg.sets.definitions.aer.cards.ConsulateCrackdown
+import com.wingedsheep.mtg.sets.definitions.lgn.cards.PlanarGuide
+import com.wingedsheep.mtg.sets.definitions.xln.cards.SettleTheWreckage
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -25,5 +28,13 @@ class ExileAllPipelineReadingAiTest : FunSpec({
     test("Consulate Crackdown reads fully") {
         val reading = AiReadingAudit.read(ConsulateCrackdown)
         withClue("$reading") { reading.readFully shouldBe true }
+    }
+
+    test("a pile the same effect returns is a blink, not a sweep") {
+        CardIntentAnalyzer.analyze(PlanarGuide).tags shouldNotContain IntentTag.SWEEPER
+    }
+
+    test("an exile-all of what target player controls doesn't sweep our own side") {
+        CardIntentAnalyzer.sweepsOwnSide(SettleTheWreckage) shouldBe false
     }
 })

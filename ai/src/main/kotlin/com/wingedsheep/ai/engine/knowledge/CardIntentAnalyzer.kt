@@ -1424,7 +1424,11 @@ object CardIntentAnalyzer {
             if (ownOnly && eachPlayer == null) continue
             if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
             groups[leaf.storeAs] = true
+            // "Exile all attacking creatures target player controls" (Settle the Wreckage) answers
+            // the player you point it at — one-sided, like a target-opponent gather.
             val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
+                filter.controllerPredicate == ControllerPredicate.ControlledByTargetPlayer ||
+                filter.controllerPredicate is ControllerPredicate.ControlledByReferencedPlayer ||
                 (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
                 player in OPPONENT_PLAYERS
             if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
@@ -1446,7 +1450,14 @@ object CardIntentAnalyzer {
             // "Exile all artifacts your opponents control until this leaves the battlefield"
             // (Consulate Crackdown), "exile each creature with odd mana value" (Extinction Event):
             // the exile-all, a wrath that leaves nothing to recur — or one exiled pick, spot removal.
-            val exiles = leaf is MoveCollectionEffect && (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+            // A pile the same effect brings back (Planar Guide's end-step return, Flickerform) is a
+            // blink, not removal.
+            val exiles = leaf is MoveCollectionEffect &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE &&
+                leaves.none { other ->
+                    other !== leaf && other is MoveCollectionEffect && other.from == leaf.from &&
+                        (other.destination as? CardDestination.ToZone)?.zone != Zone.EXILE
+                }
             val from = when {
                 exiles && (leaf as MoveCollectionEffect).from in groups -> leaf.from
                 leaf is MoveCollectionEffect && leaf.from in groups &&

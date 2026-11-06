@@ -17,8 +17,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * Draw a card.
  *
  * Ghostly Flicker's linked-exile blink: the chosen targets are exiled together (linked to this
- * spell), then the whole batch returns at once under each card's owner's control (CR 610.3c), as
- * new objects (CR 400.7). An illegal target is simply not exiled while the other is still
+ * spell), then the whole batch returns at once under each card's owner's control — the printed
+ * text, hence `underOwnersControl = true` — as new objects (CR 400.7). An illegal target is simply not exiled while the other is still
  * flickered; a token ceases to exist in exile and never returns. Zero targets is legal — the spell
  * then just draws a card.
  */
