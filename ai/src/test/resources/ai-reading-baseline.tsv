@@ -1540,7 +1540,7 @@ Bilbo's Deadly Slice
 Bilbo's Gambit
 Bilbo's Ring
 Bilbo, Luckwearer	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
-Bilbo, Retired Burglar	intent: TheRingTemptsYouEffect
+Bilbo, Retired Burglar
 Bilbo, Thief in the Night	intent: GrantStaticAbilityEffect
 Bile-Vial Boggart
 Bilious Skulldweller
@@ -2419,7 +2419,7 @@ Call a Surprise Witness
 Call of the Conclave
 Call of the Death-Dweller
 Call of the Herd
-Call of the Ring	intent: TheRingTemptsYouEffect
+Call of the Ring
 Call the Bloodline
 Call the Cavalry
 Call the Coppercoats	polarity: CreateTokenEffect
@@ -4933,7 +4933,7 @@ Dáin's Company
 Dáin, Lord of the Iron Hills
 Déjà Vu
 Dúnedain Blade
-Dúnedain Rangers	intent: TheRingTemptsYouEffect
+Dúnedain Rangers
 ED-E, Lonesome Eyebot
 EPF Point Squad
 Eager Cadet
@@ -5146,7 +5146,7 @@ Elite Vanguard
 Elixir
 Elixir of Vitality
 Ellywick Tumblestrum
-Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect; intent: TheRingTemptsYouEffect
+Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect
 Elrond, Master of Healing
 Elrond, Moon-Reader
 Elspeth Conquers Death	intent: ModifySpellCostsEffect
@@ -5356,7 +5356,7 @@ Enrage
 Enraged Ceratok
 Enraged Flamecaster
 Enraged Giant
-Enraged Huorn	intent: TheRingTemptsYouEffect
+Enraged Huorn
 Ensign Pavel Chekov	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
 Enslaved Dwarf
 Ent's Fury
@@ -5998,7 +5998,7 @@ Fiery Fall
 Fiery Finish
 Fiery Gambit
 Fiery Hellhound
-Fiery Inscription	intent: TheRingTemptsYouEffect
+Fiery Inscription
 Fiery Intervention
 Fiery Islet
 Fiery Temper
@@ -6467,7 +6467,7 @@ Frilled Sandwalla
 Frilled Sea Serpent
 Frilled Sparkshooter
 Frillscare Mentor
-Frodo Baggins	intent: TheRingTemptsYouEffect
+Frodo Baggins
 Frodo, Determined Hero
 Frodo, Sauron's Bane
 Frog Butler	intent: GrantKeywordEffect
@@ -7301,8 +7301,8 @@ Goliath Daydreamer
 Goliath Hatchery
 Goliath Spider
 Gollum the Abandoned
-Gollum's Bite	intent: TheRingTemptsYouEffect
-Gollum, Patient Plotter	intent: TheRingTemptsYouEffect
+Gollum's Bite
+Gollum, Patient Plotter
 Gollum, Riddle Master
 Gollum, Scheming Guide	intent: OpponentGuessesTopCardKindEffect
 Gollum, Silent Slinker
@@ -8645,7 +8645,7 @@ Ingenious Thief	intent: LookAtTargetHandEffect
 Ingenuity Engine
 Ingot Chewer
 Ingris Stingerquill
-Inherited Envelope	intent: TheRingTemptsYouEffect
+Inherited Envelope
 Initiate of Blood
 Initiate's Companion
 Initiates of the Ebon Hand
@@ -11032,7 +11032,7 @@ Mirror-Shield Hoplite
 Mirrorform
 Mirrorhall Mimic
 Mirrormade
-Mirrormere Guardian	intent: TheRingTemptsYouEffect
+Mirrormere Guardian
 Mirrormind Crown
 Mirrorshell Crab
 Mirrorwing Dragon
@@ -11545,7 +11545,7 @@ Navigator's Compass	intent: AddSubtypeEffect; intent: ChooseOptionEffect; polari
 Navigator's Ruin
 Naya Battlemage
 Naya Charm
-Nazgûl	intent: TheRingTemptsYouEffect
+Nazgûl
 Nebelgast Beguiler
 Nebelgast Herald
 Nebelgast Intruder
@@ -12071,7 +12071,7 @@ Ondu Inversion
 Ondu Knotmaster
 One Dozen Eyes
 One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
-One Ring to Rule Them All	intent: TheRingTemptsYouEffect
+One Ring to Rule Them All
 One With the Wind
 One with Nature	polarity: Aura>EmitLibrarySearchedEventEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect; polarity: Aura>SelectFromCollectionEffect; polarity: Aura>ShuffleLibraryEffect
 One with the Machine
@@ -13721,7 +13721,7 @@ Relentless Dead
 Relentless Drednok
 Relentless Pursuit
 Relentless Raptor
-Relentless Rohirrim	intent: TheRingTemptsYouEffect
+Relentless Rohirrim
 Relentless Skaabs
 Relentless X-ATM092
 Relic Amulet
@@ -14165,7 +14165,7 @@ Rogue's Gloves
 Rogue's Passage
 Rogues' Gallery
 Rohgahh of Kher Keep	intent: PayOrSufferEffect
-Rohirrim Lancer	intent: TheRingTemptsYouEffect
+Rohirrim Lancer
 Roil Cartographer
 Roil Elemental
 Roil Eruption
@@ -14617,8 +14617,8 @@ Satyr's Cunning
 Saurian Explorer
 Sauroform Hybrid
 Sauron's Ransom	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); polarity: TheRingTemptsYouEffect
-Sauron, Lord of the Rings	intent: TheRingTemptsYouEffect
-Sauron, the Dark Lord	intent: TheRingTemptsYouEffect
+Sauron, Lord of the Rings
+Sauron, the Dark Lord
 Sauron, the Lidless Eye
 Sauron, the Necromancer
 Savaen Elves
@@ -15356,7 +15356,7 @@ Short Bow
 Short Circuit
 Short Sword
 Shortcut Seeker
-Shortcut to Mushrooms	intent: TheRingTemptsYouEffect
+Shortcut to Mushrooms
 Show of Confidence	timing: GrantKeywordEffect
 Show of Valor
 Showdown of the Skalds
@@ -15831,7 +15831,7 @@ Smother
 Smothering Tithe	intent: PayOrSufferEffect
 Smuggler's Copter
 Smuggler's Surprise
-Sméagol, Helpful Guide	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|graveyard); intent: TheRingTemptsYouEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→battlefield|graveyard)
+Sméagol, Helpful Guide	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|graveyard); polarity: GatherUntilMatchEffect; polarity: Pipeline(?→battlefield|graveyard)
 Snakeskin Veil	timing: GrantKeywordEffect
 Snap
 Snapcaster Mage
@@ -16358,7 +16358,7 @@ Stalwart Aven
 Stalwart Shield-Bearers
 Stalwart Successor
 Stalwart Valkyrie
-Stalwarts of Osgiliath	intent: TheRingTemptsYouEffect
+Stalwarts of Osgiliath
 Stampede
 Stampede Driver
 Stampede Rider
@@ -18115,7 +18115,7 @@ Tonberry
 Tonic Peddler
 Tony Stark
 Too Evil to Stay Dead
-Took Reaper	intent: TheRingTemptsYouEffect
+Took Reaper
 Tooth Collector
 Tooth and Nail
 Tooth of Chiss-Goria
@@ -18793,7 +18793,7 @@ Urn of Godfire
 Uro, Titan of Nature's Wrath
 Ursapine
 Ursine Champion	timing: SetCreatureSubtypesEffect
-Uruk-hai Berserker	intent: TheRingTemptsYouEffect
+Uruk-hai Berserker
 Urza Assembles the Titans	intent: GrantLoyaltyActivationPermissionEffect
 Urza's Avenger
 Urza's Cave
