@@ -126,7 +126,7 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
+ *    ([needsNoIntent]: a counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
  *    shifting its own P/T with a loss on either side, its controller venturing into the dungeon, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
@@ -645,7 +645,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -823,11 +823,11 @@ object AiReadingAudit {
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
-     * projected stats) or belongs to the ability that later spends it, so it needs no intent tag. A
-     * keyword counter stays flagged: it grants a keyword the way [com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect]
-     * does, and the reader tags the evasion and protective ones. A keyword counter is recognised by
-     * its id naming a [Keyword]; that also keeps the few counters merely named after a keyword (fuse,
-     * training) flagged, which errs toward flagging.
+     * projected stats) or belongs to the ability that later spends it, so it needs no intent tag. That
+     * holds for a keyword counter on its own source too: unlike an until-end-of-turn
+     * [com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect] it lasts, so it has no window, and the
+     * simulation spends a protective one against removal on the stack. A keyword counter on another
+     * permanent stays flagged unless the reader tags it.
      */
     private fun fired(payoff: List<Effect>): List<Effect> = payoff.flatMap { leaf ->
         when (leaf) {
@@ -1008,18 +1008,20 @@ object AiReadingAudit {
         if (leaf is RemoveCountersFromAmongEffect &&
             leaf.filter.controllerPredicate == ControllerPredicate.ControlledByYou
         ) return true
-        val (counter, target) = when (leaf) {
-            is AddCountersEffect -> leaf.counterType to leaf.target
-            is AddDynamicCountersEffect -> leaf.counterType to leaf.target
+        val target = when (leaf) {
+            is AddCountersEffect -> leaf.target
+            is AddDynamicCountersEffect -> leaf.target
             // "Double the +1/+1 counters on this creature" (Dragonsguard Elite) grows its own source.
-            is DoubleCountersEffect -> (leaf.counterType ?: return leaf.target == EffectTarget.Self) to leaf.target
+            is DoubleCountersEffect -> leaf.target
             else -> return false
         }
         // A counter on a player (poison, rad, energy) is a clock or a resource, like life loss: no
         // permanent to answer, nothing to hold, and which player gets it is the polarity check's question.
         if (isPlayerTarget(target)) return true
-        if (target != EffectTarget.Self) return false
-        return Keyword.entries.none { it.name == counter.name }
+        // A keyword counter on its own source (a Dominus's indestructible counter, Mai's double strike,
+        // Acrobatic Cheerleader's flying) grants a keyword that lasts, so there is no window to hold it
+        // for and no target to aim: answering removal with it is the simulation's call, which it makes.
+        return target == EffectTarget.Self
     }
 
     /**

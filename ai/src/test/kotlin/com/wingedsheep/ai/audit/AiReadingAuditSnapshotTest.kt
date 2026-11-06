@@ -21,6 +21,8 @@ class AiReadingAuditSnapshotTest : FunSpec({
         "Pacifism" to emptyList(),
         "Icy Manipulator" to emptyList(),
         "Llanowar Elves" to emptyList(),
+        // A keyword counter on its own source lasts: no window, no target.
+        "Drivnod, Carnage Dominus" to emptyList(),
         "Smuggler's Copter" to emptyList(),
         // A +1/+1 counter on itself needs no intent tag (see AiReadingAudit.needsNoIntent).
         "Ajani's Pridemate" to emptyList(),
