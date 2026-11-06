@@ -241,6 +241,13 @@ class HoldPolicy(
         val intent = (if (cast != null) intents.forCast(cardName, cast) else intents.forName(cardName))
             ?: return TimingVerdict.Neutral
 
+        // A spell that, once resolved, loses us the game at a later step (Glorious End) is only a
+        // play for a player who can win before that step comes — a plan two turns deep that the
+        // simulation never sees: it scores the countered spell and not the loss. No window, ever.
+        if (cast != null && intents.definition(cardName)?.let(CardIntentAnalyzer::spellCostsItsControllerTheGame) == true) {
+            return TimingVerdict.NoWindow
+        }
+
         // A permanent whose entry has nothing to point at — or an Aura whose entry is gated on a
         // creature it is not being cast onto — does nothing in any window. Nor does a sweep over
         // what a creature blocked when it can block nothing more, or borrowed spell mana with no
@@ -305,7 +312,7 @@ class HoldPolicy(
             }
         }
 
-        val window = windowVerdictFor(state, playerId, intent, cast, leaf)
+        val window = windowVerdictFor(state, playerId, intent, cast, leaf, cardName)
         // A card that accomplishes nothing here is already floored below passing; there is no
         // target trade left to price on top of that.
         if (window is TimingVerdict.NoWindow) return window
@@ -584,6 +591,22 @@ class HoldPolicy(
         }
     }
 
+    /**
+     * Whether [cardName] only ends the turn (Time Stop, Discontinuity) and an opponent's creatures
+     * are attacking us right now, blockers in and no damage dealt yet: ending the turn takes them out
+     * of combat, a fog with nothing on the stack. The counterspell's empty-stack refusal stops short
+     * of this one window; what the fog is worth is the simulation's call.
+     */
+    private fun endsAnAttackOnUs(state: GameState, playerId: EntityId, cardName: String?): Boolean {
+        if (cardName == null) return false
+        if (state.isActiveTurnFor(playerId)) return false
+        if (state.step != Step.DECLARE_ATTACKERS && state.step != Step.DECLARE_BLOCKERS) return false
+        val definition = intents.definition(cardName) ?: return false
+        if (!CardIntentAnalyzer.spellOnlyEndsTheTurn(definition)) return false
+        return state.projectedState.getBattlefieldControlledBy(state.activePlayerId ?: return false)
+            .any { state.getEntity(it)?.has<AttackingComponent>() == true }
+    }
+
     /** Whether our hand holds an instant-speed card — something mana left untapped can still buy. */
     private fun holdsInstantSpeedCard(state: GameState, playerId: EntityId): Boolean =
         state.getZone(playerId, Zone.HAND).any { id ->
@@ -598,6 +621,7 @@ class HoldPolicy(
         intent: CardIntent,
         cast: CastSpell?,
         leaf: GameState? = null,
+        cardName: String? = null,
     ): TimingVerdict {
         // The one sorcery-speed exception: a draw spell in our last main phase, where the mana is
         // otherwise about to empty unused. See [idleDrawWindow].
@@ -610,7 +634,8 @@ class HoldPolicy(
 
         return when {
             // A counterspell with nothing to counter is not a play, it is a discard.
-            IntentTag.COUNTERSPELL in intent.tags && !stackHasSomething -> TimingVerdict.NoWindow
+            IntentTag.COUNTERSPELL in intent.tags && !stackHasSomething &&
+                !endsAnAttackOnUs(state, playerId, cardName) -> TimingVerdict.NoWindow
 
             // A pump wears off at cleanup, so it is worth casting only when something will use it
             // before then: a fight in combat, or a spell on the stack it can save the creature
