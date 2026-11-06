@@ -561,6 +561,7 @@ Angelic Page
 Angelic Protector
 Angelic Purge
 Angelic Quartermaster
+Angelic Renewal
 Angelic Shield
 Angelic Voices
 Angelic Wall
@@ -2548,6 +2549,7 @@ Carnivorous Canopy
 Carnivorous Cultivator
 Carnivorous Moss-Beast
 Carnivorous Plant
+Carrier Thrall
 Carrion Ants
 Carrion Crow
 Carrion Cruiser
@@ -9950,6 +9952,7 @@ Lieutenant Commander Data
 Lieutenant Kirtar
 Life Chisel
 Life Goes On
+Life Insurance
 Life Matrix	intent: AddCountersEffect; intent: GrantActivatedAbilityEffect; polarity: AddCountersEffect; polarity: GrantActivatedAbilityEffect
 Life from the Loam	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
 Life of Toshiro Umezawa
@@ -12280,6 +12283,7 @@ Overprotect
 Override
 Overrun
 Overseer of Vault 76
+Overseer of the Damned
 Oversold Cemetery
 Oversoul of Dusk
 Overwhelm
@@ -13896,6 +13900,7 @@ Retro-Mutation
 Retrofitted Transmogrant
 Return Triumphant
 Return Upon the Tide
+Return from Extinction
 Return from the Wilds
 Return of the Nightstalkers
 Return of the Wildspeaker
@@ -19157,6 +19162,7 @@ Vincent Valentine
 Vincent's Limit Break
 Vindicate
 Vindictive Flamestoker
+Vindictive Lich
 Vindictive Mob
 Vindictive Triumph
 Vindictive Vampire
