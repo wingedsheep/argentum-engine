@@ -55,8 +55,10 @@ Two label shapes need explaining:
 
 The `intent` check leaves out three shapes the reader is right to leave untagged. First, a counter an
 effect puts on its own source or on its own controller (a creature growing itself, a charge, oil or
-quest counter, `{E}` or experience for you), unless it is a keyword counter. Counters on another
-player (poison, rad) are not this shape and stay flagged. There is no target to choose and no window to
+quest counter, `{E}` or experience for you), keyword counters included: a flying or indestructible
+counter on itself lasts, so unlike an until-end-of-turn keyword grant it has no window, and the
+simulation spends a protective one against removal on the stack. A counter on any player (poison, rad)
+is exempt too, as a clock like life loss. There is no target to choose and no window to
 time, and tagging a self-grown flash creature `PUMP` would make `AmbushWindow` stop holding it.
 Second, equip, fortify and reconfigure: what the Equipment is for is read off its "equipped creature"
 statics, and which creature gets it is the polarity check. Third, a card moving itself ("return this card

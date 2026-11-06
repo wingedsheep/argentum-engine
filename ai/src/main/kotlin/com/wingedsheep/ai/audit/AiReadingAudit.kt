@@ -645,7 +645,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
