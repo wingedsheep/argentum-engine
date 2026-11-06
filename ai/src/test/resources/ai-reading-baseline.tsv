@@ -186,8 +186,10 @@ Aether Adept
 Aether Burst
 Aether Channeler
 Aether Charge
+Aether Chaser
 Aether Gust
 Aether Helix
+Aether Herder
 Aether Inspector
 Aether Meltdown
 Aether Revolt
@@ -210,9 +212,11 @@ Aethershield Artificer
 Aethersnipe
 Aethersquall Ancient
 Aetherstorm Roc
+Aetherstream Leopard
 Aethertide Whale
 Aethertorch Renegade
 Aethertow
+Aetherwind Basker
 Aettir and Priwen
 Affa Guard Hound
 Affectionate Indrik
@@ -266,6 +270,7 @@ Ahn-Crop Champion
 Ahn-Crop Crasher
 Ahn-Crop Invader
 Ahriman
+Aid from the Cowl
 Aid the Fallen
 Aim High
 Aim for the Head
@@ -2807,6 +2812,7 @@ Chandra's Outrage
 Chandra's Pyreling
 Chandra's Pyrohelix
 Chandra's Regulator
+Chandra's Revolution
 Chandra's Spitfire
 Chandra's Triumph
 Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
@@ -3713,7 +3719,7 @@ Cultist of the Absolute
 Cultivate
 Cultivator Colossus	intent: RepeatWhileEffect
 Cultivator's Caravan
-Culvert Ambusher	intent: MarkMustBlockThisTurnEffect; polarity: MarkMustBlockThisTurnEffect
+Culvert Ambusher
 Cunning Advisor
 Cunning Breezedancer
 Cunning Coyote
@@ -7518,11 +7524,14 @@ Green Sun's Zenith
 Green Ward
 Greenbelt Guardian
 Greenbelt Radical
+Greenbelt Rampager
 Greenhouse // Rickety Gazebo
 Greenhouse Propagator
 Greenseeker
 Greenweaver Druid
+Greenwheel Liberator
 Greenwood Sentinel
+Gremlin Infestation
 Gremlin Tamer
 Grenzo, Havoc Raiser	intent: ModalEffect; polarity: GoadEffect
 Greta, Sweettooth Scourge
@@ -8089,6 +8098,7 @@ Hexplate Golem
 Hidden Cataract
 Hidden Courtyard
 Hidden Grotto
+Hidden Herbalists
 Hidden Horror
 Hidden Lair
 Hidden Necropolis
@@ -8128,6 +8138,7 @@ Highland Lake
 Highly Illogical
 Highspire Artisan
 Highspire Bell-Ringer
+Highspire Infusion
 Highspire Mantis
 Hightide Hermit
 Highway Robber
@@ -8425,7 +8436,7 @@ Hushbringer
 Hushwood Verge
 Huskburster Swarm
 Hussar Patrol
-Hustle // Bustle	intent: MarkMustAttackEffect; intent: MarkMustBlockThisTurnEffect; polarity: MarkMustAttackEffect; polarity: MarkMustBlockThisTurnEffect
+Hustle // Bustle
 Hyalopterous Lemure
 Hydra Trainer
 Hydra's Growth
@@ -8641,6 +8652,7 @@ Indestructible Aura
 Index
 Indoctrination Attendant
 Indomitable Ancients
+Indomitable Creativity
 Indomitable Will
 Indrik Stomphowler
 Induce Paranoia
@@ -9302,6 +9314,7 @@ Karfell Kennel-Master
 Kargan Dragonrider
 Kargan Intimidator	polarity: SetCreatureSubtypesEffect
 Kargan Warleader
+Kari Zev's Expertise
 Kari Zev, Skyship Raider
 Karlach, Fury of Avernus
 Karlov Watchdog
@@ -10017,6 +10030,8 @@ Life Matrix	polarity: AddCountersEffect
 Life from the Loam	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
 Life of Toshiro Umezawa
 Lifeblood
+Lifecraft Awakening
+Lifecraft Cavalry
 Lifecraft Engine
 Lifecrafter's Bestiary
 Lifecrafter's Gift
@@ -10058,6 +10073,7 @@ Lightning Javelin
 Lightning Mare
 Lightning Mauler	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
 Lightning Rift
+Lightning Runner
 Lightning Spear
 Lightning Stormkin
 Lightning Strike
@@ -10754,6 +10770,7 @@ Matzalantli, the Great Door
 Mauhúr, Uruk-hai Captain
 Maul of the Skyclaves
 Maulfist Doorbuster
+Maulfist Revolutionary
 Maulfist Squad
 Mausoleum Guard
 Mausoleum Harpy
@@ -11289,6 +11306,7 @@ Monoskelion
 Mons's Goblin Raiders
 Monstrous Emergence
 Monstrous Growth
+Monstrous Onslaught
 Monstrous Rage
 Monstrous Step	polarity: ForceBlockEffect
 Monstrous Vortex
@@ -11589,6 +11607,7 @@ Narcissism
 Narcomoeba
 Narfi, Betrayer King
 Narnam Cobra
+Narnam Renegade
 Narrow Escape
 Narset of the Ancient Way
 Narset's Rebuke
@@ -11608,6 +11627,7 @@ Nath of the Gilt-Leaf
 Nath's Buffoon
 Nath's Elite
 Natural End
+Natural Obsolescence
 Natural Order
 Natural Reclamation	intent: CascadeEffect
 Natural Selection	intent: Pipeline(TopOfLibrary→library); polarity: Pipeline(TopOfLibrary→library)
@@ -12533,6 +12553,7 @@ Peculiar Lighthouse
 Pedal to the Metal
 Peek
 Peel from Reality
+Peema Aether-Seer
 Peema Outrider
 Peer Past the Veil
 Peer Pressure
@@ -12706,6 +12727,7 @@ Phyrexian Warhorse
 Phytohydra
 Pia Nalaar
 Pia Nalaar, Consul of Revival
+Pia's Revolution
 Pia, Aether Ascetic
 Pia, Determined Rebuilder
 Pianna, Nomad Captain
@@ -13323,6 +13345,7 @@ Quicksilver Fisher
 Quicksilver Fountain	intent: AddCountersEffect; intent: ForEach>RemoveAllCountersOfTypeEffect; polarity: AddCountersEffect
 Quicksilver, Brash Blur
 Quicksmith Genius
+Quicksmith Rebel
 Quicksmith Spy
 Quiet Contemplation
 Quiet Purity
@@ -13812,6 +13835,7 @@ Rekindling Phoenix
 Reknit
 Relearn
 Release the Dogs
+Release the Gremlins
 Release to the Wind
 Relentless Advance
 Relentless Assault	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>TapUntapEffect
@@ -14072,6 +14096,7 @@ Riders of the Mark
 Ridge Rannet
 Ridged Kusite
 Ridgeline Rager
+Ridgescale Tusker
 Ridgetop Raptor
 Riding Red Hare
 Riding the Dilu Horse
@@ -14159,6 +14184,7 @@ Risen Sanctuary
 Rishadan Airship
 Rishadan Dockhand
 Rishadan Port
+Rishkar's Expertise
 Rishkar, Peema Renegade
 Rising Populace
 Rising of the Day
@@ -14895,6 +14921,7 @@ Scrap
 Scrap Compactor
 Scrap Trawler
 Scrap Welder
+Scrapper Champion
 Scrappy Bruiser
 Scrapshooter
 Scrapskin Drake
@@ -15384,7 +15411,7 @@ Shepherd of the Flock
 Shepherd of the Lost
 Shepherding Spirits
 Sheriff of Safe Passage
-Shessra, Death's Whisper	intent: MarkMustBlockThisTurnEffect; polarity: MarkMustBlockThisTurnEffect
+Shessra, Death's Whisper
 Shield Bearer
 Shield Broker	polarity: mixed(AddCountersEffect+GainControlEffect)
 Shield Mare
@@ -15532,6 +15559,7 @@ Sidisi's Pet
 Sidisi, Brood Tyrant
 Sidisi, Regent of the Mire
 Siege Mastodon
+Siege Modification
 Siege Rhino
 Siege Smash
 Siege Striker
@@ -15591,6 +15619,7 @@ Silk, Web Weaver
 Silkbind Faerie
 Silken Strength	intent: TapUntapEffect
 Silklash Spider
+Silkweaver Elite
 Silt Crawler
 Silumgar, the Drifting Death
 Silundi Vision
@@ -18731,6 +18760,7 @@ Unblinking Observer
 Unbreakable Bond
 Unbreakable Formation	timing: ForEach>GrantKeywordEffect
 Unbreathing Horde
+Unbridled Growth
 Unburden
 Unburial Rites
 Unburied Earthcarver
