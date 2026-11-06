@@ -16,3 +16,8 @@ scripts/* text eol=lf
 
 # Compiled from :mtg-search by `just search-js`; review the Kotlin, not this.
 web-client/src/generated/** linguist-generated=true -diff
+
+# Compared byte-for-byte by tests (`SdkIndexTest`, golden snapshots, baselines): a CRLF checkout
+# (Windows `core.autocrlf=true`) makes them fail even though nothing changed.
+docs/sdk-index.md text eol=lf
+**/src/test/resources/** text eol=lf
