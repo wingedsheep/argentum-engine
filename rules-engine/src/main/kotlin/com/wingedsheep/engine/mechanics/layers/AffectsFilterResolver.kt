@@ -768,8 +768,9 @@ internal class AffectsFilterResolver(
         // Hand-only predicate; never true of a battlefield permanent.
         StatePredicate.DrawnThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
-        StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn ->
-            container.has<com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent>()
+        // A partner filter read against frozen snapshots needs the predicate evaluator's
+        // snapshot matcher; no static uses it, so projection matches nothing rather than guessing.
+        is StatePredicate.BlockPairedWithMatchingThisTurn -> false
         // Relative to a referenced entity a static's affected-set has no way to name; no static
         // uses it, so projection matches nothing rather than guessing.
         is StatePredicate.BlockPairedWithEntityThisTurn -> false

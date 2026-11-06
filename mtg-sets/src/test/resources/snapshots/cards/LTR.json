@@ -19708,7 +19708,15 @@
                             "IsCreature"
                         ],
                         "statePredicates": [
-                            "BlockedOrWasBlockedByLegendaryThisTurn"
+                            {
+                                "type": "BlockPairedWithMatchingThisTurn",
+                                "partner": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsLegendary"
+                                    ]
+                                }
+                            }
                         ]
                     }
                 },

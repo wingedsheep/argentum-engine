@@ -2482,10 +2482,23 @@ class PredicateEvaluator(
                     state.objectRef(entityId)?.generation == stamp.generation
             }
 
-            // "Blocked or was blocked by a legendary creature this turn" (You Cannot Pass! — LTR).
-            // Reads the marker stamped at block declaration; survives the legendary partner leaving.
-            StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn -> {
-                container.has<com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent>()
+            // "Blocked or was blocked by a legendary creature / a Zombie this turn" (You Cannot
+            // Pass! — LTR, Time to Reflect — AKH). Reads the partners' characteristics frozen at
+            // block declaration, so it survives the partner leaving or stopping to match.
+            is StatePredicate.BlockPairedWithMatchingThisTurn -> {
+                val partners = container.get<com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent>()
+                // "You" in the partner filter is the asking ability's controller; without a context
+                // the candidate's controller stands in (no current card asks it that way).
+                val asking = context ?: projected.getController(entityId)?.let { PredicateContext(controllerId = it) }
+                partners != null && asking != null && partners.partnerSnapshots.any { snapshot ->
+                    val id = snapshot.entityId
+                    val paired = when (predicate.direction) {
+                        BlockDirection.BLOCKED -> id in partners.blockedIds
+                        BlockDirection.BLOCKED_BY -> id in partners.blockedByIds
+                        BlockDirection.EITHER -> true
+                    }
+                    paired && matchesSnapshot(state, snapshot, predicate.partner, asking)
+                }
             }
 
             // "…that blocked or were blocked by it this turn" (Gaze of the Gorgon) / "…that were

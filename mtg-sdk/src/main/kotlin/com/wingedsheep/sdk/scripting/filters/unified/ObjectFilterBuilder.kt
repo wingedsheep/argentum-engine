@@ -1152,9 +1152,14 @@ interface ObjectFilterBuilder<out Self> {
     /** Must **not** be soulbond-paired — the "unpaired creature" of CR 702.95b. */
     fun unpaired() = withStatePredicate(StatePredicate.Not(StatePredicate.IsPaired))
 
-    /** Must have blocked, or been blocked by, a legendary creature this turn (You Cannot Pass!). */
-    fun blockedOrWasBlockedByLegendaryThisTurn() =
-        withStatePredicate(StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn)
+    /**
+     * Must have blocked, or been blocked by, a creature matching [partner] this turn — as that
+     * creature stood when the block was declared: "target creature that blocked or was blocked by a
+     * legendary creature this turn" (You Cannot Pass!, `Creature.legendary()`), "… by a Zombie this
+     * turn" (Time to Reflect, `Creature.withSubtype("Zombie")`).
+     */
+    fun blockedOrWasBlockedByThisTurn(partner: GameObjectFilter) =
+        withStatePredicate(StatePredicate.BlockPairedWithMatchingThisTurn(partner, BlockDirection.EITHER))
 
     /**
      * Must have blocked, or been blocked by, the creature [reference] names this turn — "all

@@ -6773,6 +6773,61 @@
     "colorIdentityOverride": []
 }
 
+// Time to Reflect
+{
+    "name": "Time to Reflect",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature that blocked or was blocked by a Zombie this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "BlockPairedWithMatchingThisTurn",
+                                "partner": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Zombie"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"Occasionally, there are those who refuse to appreciate all that the God-Pharaoh provides for us.\"\n—Temmet, vizier of Naktamun",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b60ec4f7-7cf1-4b97-906b-536ab89b12be.jpg?1783936533"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Violent Impact
 {
     "name": "Violent Impact",

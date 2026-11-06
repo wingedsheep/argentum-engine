@@ -1024,29 +1024,50 @@ sealed interface StatePredicate {
     }
 
     /**
-     * This creature blocked, or was blocked by, a legendary creature at some point during the
-     * current turn. Used as a target predicate:
+     * This creature was paired in a block, in the given [direction], with a creature that matched
+     * [partner] at the moment of the pairing, at some point during the current turn. Used as a
+     * target predicate:
      *
      *  - You Cannot Pass! (LTR): "Destroy target creature that blocked or was blocked by a
-     *    legendary creature this turn."
+     *    legendary creature this turn." (`partner = Creature.legendary()`)
+     *  - Time to Reflect (AKH): "Exile target creature that blocked or was blocked by a Zombie this
+     *    turn." (`partner = Creature.withSubtype("Zombie")`)
      *
-     * Backed by the `BlockedOrWasBlockedByLegendaryThisTurnComponent` marker on the creature
-     * entity. The marker is stamped at block-declaration time (so the legendary partner's
-     * status is captured at pairing time and the predicate keeps matching even if that
-     * legendary creature later leaves the battlefield or stops being legendary, per the card's
-     * ruling), and cleared at end-of-turn cleanup. Distinct from the combat-only
-     * [IsBlocking]/[IsBlocked] predicates, which only hold during the combat phase.
+     * Backed by the turn-scoped `CombatPartnersThisTurnComponent`, which freezes each partner's
+     * characteristics (types, subtypes, supertypes, colours, controller, token-ness) at block
+     * declaration, so the predicate keeps matching after that partner has left the battlefield —
+     * an embalmed Zombie token included — or stopped matching [partner] (You Cannot Pass!'s
+     * ruling), and is cleared at end-of-turn cleanup. The filter is read against that snapshot:
+     * card predicates and "you control" read as they stood then; state predicates the snapshot
+     * can't answer fail closed. Distinct from the combat-only [IsBlocking]/[IsBlocked] predicates,
+     * and from [BlockPairedWithEntityThisTurn], which names one specific partner.
      */
-    @SerialName("BlockedOrWasBlockedByLegendaryThisTurn")
+    @SerialName("BlockPairedWithMatchingThisTurn")
     @Serializable
-    data object BlockedOrWasBlockedByLegendaryThisTurn : History {
-        override val description: String = "that blocked or was blocked by a legendary creature this turn"
+    data class BlockPairedWithMatchingThisTurn(
+        val partner: GameObjectFilter,
+        val direction: BlockDirection = BlockDirection.EITHER
+    ) : History {
+        override val description: String
+            get() {
+                val noun = partner.description
+                val partnerText = (if (noun.firstOrNull()?.lowercaseChar() in VOWELS) "an " else "a ") + noun
+                return when (direction) {
+                    BlockDirection.EITHER -> "that blocked or was blocked by $partnerText this turn"
+                    BlockDirection.BLOCKED -> "that blocked $partnerText this turn"
+                    BlockDirection.BLOCKED_BY -> "that was blocked by $partnerText this turn"
+                }
+            }
+
+        private companion object {
+            val VOWELS = setOf('a', 'e', 'i', 'o', 'u')
+        }
     }
 
     /**
      * This creature was paired in a block with the creature [reference] names at some point during
      * the current turn, in the given [direction] — the relational sibling of
-     * [BlockedOrWasBlockedByLegendaryThisTurn]:
+     * [BlockPairedWithMatchingThisTurn]:
      *
      *  - [BlockDirection.EITHER] — "all creatures that blocked or were blocked by **it** this turn"
      *    (Gaze of the Gorgon).

@@ -8396,15 +8396,17 @@ work for abilities-on-stack (which carry no `CardComponent`).
   on a graveyard-zone `TargetFilter`. Both are false in battlefield-projection / untap /
   trigger-gating contexts (the component only lives on graveyard cards). Note that a card the
   *scenario builder* plants in a graveyard was never "put there" and so matches neither.
-- `BlockedOrWasBlockedByLegendaryThisTurn` (filter builder
-  `blockedOrWasBlockedByLegendaryThisTurn()`) — creature that, at some point during the current
-  turn, blocked or was blocked by a legendary creature. Backed by the per-creature
-  `BlockedOrWasBlockedByLegendaryThisTurnComponent` marker stamped in `BlockPhaseManager` at
-  block declaration: the legendary partner's status is captured *at pairing time*, so the
-  predicate keeps matching even after that legendary creature leaves the battlefield or loses
-  legendary-ness (per the card's ruling). Cleared at end-of-turn cleanup. Distinct from the
-  combat-only `IsBlocking`/`IsBlocked`, which only hold during the combat phase. Used by
-  You Cannot Pass! (LTR) on a `TargetCreature` filter.
+- `BlockPairedWithMatchingThisTurn(partner: GameObjectFilter, direction: BlockDirection = EITHER)`
+  (filter builder `blockedOrWasBlockedByThisTurn(partner: GameObjectFilter)` for `EITHER`) — creature
+  that, at some point during the current turn, was paired in a block with a creature matching
+  `partner`: "blocked or was blocked by a legendary creature this turn" (You Cannot Pass! — LTR,
+  `Creature.legendary()`), "… by a Zombie this turn" (Time to Reflect — AKH,
+  `Creature.withSubtype("Zombie")`). Each partner's characteristics (types, subtypes, supertypes,
+  colours, controller, token-ness) are frozen into `CombatPartnersThisTurnComponent.partnerSnapshots`
+  at block declaration and the filter is read against that snapshot (`matchesSnapshot`), so the
+  predicate keeps matching after the partner has left the battlefield — an embalmed Zombie token
+  included — or stopped matching. State predicates in `partner` that a snapshot can't answer fail
+  closed. Cleared at end-of-turn cleanup. Distinct from the combat-only `IsBlocking`/`IsBlocked`.
 - `BlockPairedWithEntityThisTurn(reference: EffectTarget.SingleEntity, direction: BlockDirection = EITHER)`
   (filter builders `blockedOrWasBlockedByThisTurn(reference)` for `EITHER`, `wasBlockedByThisTurn(reference)`
   for `BLOCKED_BY`) — the relational sibling: the creature was paired in a block with the entity

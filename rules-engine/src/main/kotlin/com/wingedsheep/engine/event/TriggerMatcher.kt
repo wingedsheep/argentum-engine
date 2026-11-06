@@ -3128,6 +3128,7 @@ class TriggerMatcher(
         // Relative to a referenced entity a trigger filter has no context to resolve; no trigger
         // uses it, so fail closed rather than matching every creature.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithEntityThisTurn -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithMatchingThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingEntity -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEntity -> false
         // Suspected (CR 701.60a) reads off the floating-effect list, which is available here, so a
@@ -3260,7 +3261,6 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisCombat,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedThisCombat,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedThisTurn,
-        com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceUp,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasMorphAbility,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasDisguiseAbility,

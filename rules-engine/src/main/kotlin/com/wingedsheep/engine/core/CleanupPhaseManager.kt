@@ -27,7 +27,6 @@ import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissi
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.state.components.battlefield.TokenReplacementOfferedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
-import com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.CanAttackDespiteDefenderThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.GoadedComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
@@ -1191,9 +1190,6 @@ class CleanupPhaseManager(
             if (container.has<ExertedThisTurnComponent>()) {
                 needsUpdate = true
             }
-            if (container.has<BlockedOrWasBlockedByLegendaryThisTurnComponent>()) {
-                needsUpdate = true
-            }
             if (container.has<com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent>()) {
                 needsUpdate = true
             }
@@ -1235,7 +1231,6 @@ class CleanupPhaseManager(
                         .without<DamageUnpreventableThisTurnComponent>()
                         .without<BlockedThisTurnComponent>()
                         .without<ExertedThisTurnComponent>()
-                        .without<BlockedOrWasBlockedByLegendaryThisTurnComponent>()
                         .without<com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent>()
                         .without<DamageDealtByPlayersThisTurnComponent>()
                         .without<DamagedBySourcesThisTurnComponent>()

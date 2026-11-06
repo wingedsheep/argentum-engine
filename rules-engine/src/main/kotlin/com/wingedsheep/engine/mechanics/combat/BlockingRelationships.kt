@@ -27,7 +27,12 @@ internal object BlockingRelationships {
                 if (entered) return@updateEntity blocking
                 val partners = c.get<CombatPartnersThisTurnComponent>() ?: CombatPartnersThisTurnComponent()
                 blocking.with(BlockedThisCombatComponent).with(BlockedThisTurnComponent)
-                    .with(partners.copy(blockedIds = partners.blockedIds + attackers))
+                    .with(
+                        partners.copy(
+                            blockedIds = partners.blockedIds + attackers,
+                            partnerSnapshots = partners.partnerSnapshots + partnerSnapshots(state, attackers)
+                        )
+                    )
             }
             val blockerRef = state.objectRef(blocker)
             for (attacker in attackers) {
@@ -41,18 +46,38 @@ internal object BlockingRelationships {
                             partners.copy(
                                 blockedByIds = partners.blockedByIds + blocker,
                                 controllerWhenBlockedBy = if (controller == null) partners.controllerWhenBlockedBy
-                                else partners.controllerWhenBlockedBy + (blocker to controller)
+                                else partners.controllerWhenBlockedBy + (blocker to controller),
+                                partnerSnapshots = partners.partnerSnapshots + partnerSnapshots(state, listOf(blocker))
                             )
                         )
                     if (blockerRef != null) updated = updated.with(BlockersThisCombatComponent(history + blockerRef))
-                    if (projected.isLegendary(blocker)) updated = updated.with(BlockedOrWasBlockedByLegendaryThisTurnComponent)
                     updated
-                }
-                if (!entered && projected.isLegendary(attacker)) result = result.updateEntity(blocker) {
-                    it.with(BlockedOrWasBlockedByLegendaryThisTurnComponent)
                 }
             }
         }
         return result
     }
+
+    /**
+     * Each partner's characteristics as they stand at the pairing — the frozen record
+     * `BlockPairedWithMatchingThisTurn` reads, so "blocked or was blocked by a Zombie" still
+     * answers after an embalmed Zombie token has ceased to exist.
+     */
+    private fun partnerSnapshots(state: GameState, partners: List<EntityId>) =
+        com.wingedsheep.engine.state.components.stack.captureEntitySnapshots(partners, state.projectedState, state)
+            .map { snapshot ->
+                // The capture projects card types and subtypes onto the type line; supertypes and
+                // keywords are projected here too, so a creature made legendary (or a Zombie) by a
+                // continuous effect counts as one, as it did on the battlefield.
+                val supertypes = snapshot.supertypes
+                    .mapNotNull { runCatching { com.wingedsheep.sdk.core.Supertype.valueOf(it) }.getOrNull() }
+                    .toSet()
+                val projectedEntry = state.projectedState.getProjectedValues(snapshot.entityId) != null
+                snapshot.copy(
+                    typeLine = if (projectedEntry) snapshot.typeLine?.copy(supertypes = supertypes) else snapshot.typeLine,
+                    keywords = state.projectedState.getKeywords(snapshot.entityId),
+                    wasToken = state.getEntity(snapshot.entityId)
+                        ?.has<com.wingedsheep.engine.state.components.identity.TokenComponent>() == true
+                )
+            }
 }
