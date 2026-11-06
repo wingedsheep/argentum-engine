@@ -47,11 +47,17 @@ class ChangeTargetExecutor(
         effect: ChangeTargetEffect,
         context: EffectContext
     ): EffectResult {
-        // 1. Get target spell/ability
-        val targetSpell = context.targets.firstOrNull()
-        if (targetSpell !is ChosenTarget.Spell) {
-            return EffectResult.error(state, "No valid spell/ability target for ChangeTarget")
+        // 1. The spell/ability being redirected: the effect's chosen target, or one named by
+        // reference (the triggering spell of a cast trigger). A named spell that already left the
+        // stack has nothing to redirect.
+        val spellEntityId = if (effect.spell == EffectTarget.ContextTarget(0)) {
+            (context.targets.firstOrNull() as? ChosenTarget.Spell)?.spellEntityId
+                ?: return EffectResult.error(state, "No valid spell/ability target for ChangeTarget")
+        } else {
+            context.resolveTarget(effect.spell, state)?.takeIf { it in state.stack }
+                ?: return EffectResult.success(state)
         }
+        val targetSpell = ChosenTarget.Spell(spellEntityId)
 
         val stackEntity = state.getEntity(targetSpell.spellEntityId)
             ?: return EffectResult.error(state, "Spell/ability not found on stack")

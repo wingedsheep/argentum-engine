@@ -781,7 +781,7 @@ Families:
 - `ChangeOwnershipEffect(card: EffectTarget, newOwner: EffectTarget)` — newOwner becomes the owner of card — "You own target card in the ante" (Darkpact), "that player owns this card and you own the other exiled card" (Bronze Tablet).
 - `ChangeSpeedEffect(target: EffectTarget, amount: DynamicAmount, minimum: Int)` — Changes the target player's **speed** by a signed amount (Aetherdrift, CR 702.179).
 - `ChangeSpellTargetEffect(targetMustBeSource: Boolean)` — Change the target of a spell that has exactly one target, and that target is a creature, to another creature.
-- `ChangeTargetEffect(newTargetMustBePlayer: Boolean, onlyIfCurrentTargetIsController: Boolean, newTarget: EffectTarget?)` — Change the target of target spell or ability with a single target.
+- `ChangeTargetEffect(newTargetMustBePlayer: Boolean, onlyIfCurrentTargetIsController: Boolean, newTarget: EffectTarget?, spell: EffectTarget)` — Change the target of target spell or ability with a single target.
 - `ChangeTriggeringObjectTargetsEffect(chooser: RetargetChooser, spell: EffectTarget)` — The player named by chooser may change the target or targets of spell.
 - `ChangeWordInTextEffect(categories: Set<TextWordCategory>, target: EffectTarget, duration: Duration)` — Replace all instances of a chosen word with a different word in the same category.
 - `ChooseActionEffect(choices: List<EffectChoice>, player: EffectTarget)` — Present a player with labeled options and execute the chosen effect.

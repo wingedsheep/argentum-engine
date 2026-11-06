@@ -958,6 +958,79 @@
     ]
 }
 
+// Captured by the Consulate
+{
+    "name": "Captured by the Consulate",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you don't control\nEnchanted creature can't attack.\nWhenever an opponent casts a spell, if it has a single target, change the target to enchanted creature if able.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captured by the Consulate:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChangeTarget",
+                    "newTarget": "EnchantedCreature",
+                    "spell": "TriggeringEntity"
+                },
+                "interveningIf": "TriggeringSpellHasSingleTarget",
+                "descriptionOverride": "Whenever an opponent casts a spell, if it has a single target, change the target to enchanted creature if able."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:opponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0c20018-4446-4c2b-bdc5-53fcf1fbc3bf.jpg?1783937235",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "When you attach Captured by the Consulate to an opponent's creature, you still control Captured by the Consulate. Its last ability triggers whenever your opponents cast a spell with a single target, not when an opponent of the creature's controller casts a spell with a single target."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "When a player casts an Aura spell, it targets the creature that it will enchant and may cause Captured by the Consulate's last ability to trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If a spell has multiple targets, it doesn't have a single target even if the same object is chosen for each of those targets."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the spell can't target the enchanted creature, its target remains unchanged."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If there is more than one Captured by the Consulate on the battlefield, the triggered ability of each one will change the target if able. The last one to resolve determines what that spell finally targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cathartic Reunion
 {
     "name": "Cathartic Reunion",

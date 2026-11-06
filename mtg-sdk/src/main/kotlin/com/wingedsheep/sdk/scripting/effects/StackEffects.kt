@@ -852,10 +852,20 @@ data class ChangeTargetEffect(
      * Specimen) say so with `withSingleTarget()` on the targeting filter.
      */
     val newTarget: EffectTarget? = null,
+    /**
+     * The spell or ability whose target changes. The default, [EffectTarget.ContextTarget] `(0)`, is
+     * "target spell or ability" — the effect's own first target. [EffectTarget.TriggeringEntity]
+     * redirects the spell a cast trigger fired on, which is never targeted: "Whenever an opponent
+     * casts a spell, if it has a single target, change the target to enchanted creature if able"
+     * (Captured by the Consulate — pair it with `interveningIf = Conditions.TriggeringSpellHasSingleTarget`).
+     * Mirrors [ChangeTriggeringObjectTargetsEffect.spell], the all-targets sibling.
+     */
+    val spell: EffectTarget = EffectTarget.ContextTarget(0),
 ) : Effect {
     override val description: String = buildString {
-        if (newTarget != null) append("Change a target of target spell or ability")
-        else append("Change the target of target spell or ability with a single target")
+        val spellText = if (spell == EffectTarget.ContextTarget(0)) "target spell or ability" else spell.description
+        if (newTarget != null) append("Change a target of $spellText")
+        else append("Change the target of $spellText with a single target")
         if (onlyIfCurrentTargetIsController) append(" if that target is you")
         if (newTarget != null) append(" to ${newTarget.description}")
         if (newTargetMustBePlayer) append(". The new target must be a player")

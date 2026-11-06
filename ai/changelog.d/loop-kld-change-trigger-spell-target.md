@@ -1,0 +1,1 @@
+- #4523 The AI reads a cast trigger that redirects the triggering spell (Captured by the Consulate) as a spell redirect without pinning it to the Aura's own target slot
