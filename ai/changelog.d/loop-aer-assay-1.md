@@ -1,0 +1,1 @@
+- #4507 Reads "can't be blocked by <filter>" (Audacious Infiltrator, Fen Hauler) as evasion instead of an unrecognised static, so it drafts and values those creatures as evasive threats

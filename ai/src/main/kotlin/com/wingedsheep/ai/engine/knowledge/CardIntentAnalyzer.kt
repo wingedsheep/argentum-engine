@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
@@ -2412,6 +2413,9 @@ object CardIntentAnalyzer {
         is CanBlockAdditionalForCreatureGroup ->
             if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
+        // "Can't be blocked by artifact creatures" (Audacious Infiltrator, Fen Hauler): partial
+        // evasion is still evasion — the creature gets through whatever the filter shuts out.
+        is CantBeBlockedBy -> setOf(IntentTag.EVASION_GRANT)
         is ModifyStats -> when {
             // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
             // of Invasion) is its drawback, never a pump or an answer.

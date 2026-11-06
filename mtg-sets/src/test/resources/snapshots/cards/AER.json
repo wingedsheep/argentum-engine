@@ -1,3 +1,56 @@
+// Aegis Automaton
+{
+    "name": "Aegis Automaton",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{4}{W}: Return another target creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Aegis Automaton:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"The streets of Ghirapur have become dangerous. It's good to have a dependable companion.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5f9fa2d-4bf4-4fcb-9b76-fd4a9ff5a58c.jpg?1783936731"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aerial Modification
 {
     "name": "Aerial Modification",
@@ -56,6 +109,126 @@
     ]
 }
 
+// Ajani's Comrade
+{
+    "name": "Ajani's Comrade",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Soldier",
+    "oracleText": "Trample\nAt the beginning of combat on your turn, if you control an Ajani planeswalker, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ajani's Comrade:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "planeswalker Ajani"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"I will go where the lion-man leads.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bebef1c-2f03-4e0a-b3ba-861546ebf8a6.jpg?1783936714"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Alley Evasion
+{
+    "name": "Alley Evasion",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature you control gets +1/+2 until end of turn.\n• Return target creature you control to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature you control gets +1/+2 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target creature you control to its owner's hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Sure, you know the law. But I know the streets.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc10173d-25ff-4734-b8f2-84f94fe52b17.jpg?1783936782"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Alley Strangler
 {
     "name": "Alley Strangler",
@@ -80,6 +253,153 @@
     ]
 }
 
+// Audacious Infiltrator
+{
+    "name": "Audacious Infiltrator",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Rogue",
+    "oracleText": "This creature can't be blocked by artifact creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"This little critter can turn all of you to scrap in under thirty seconds! Come on, who wants to be the first to go? Try and stop me!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36a348bb-cdc5-4e2a-933f-21f91faab891.jpg?1783936783"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Augmenting Automaton
+{
+    "name": "Augmenting Automaton",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{1}{B}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Augmenting Automaton:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Jason Rainville",
+        "flavorText": "When you have taught an automaton how to build others of its kind, it is a small step to make it build itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d017798-8278-4f9c-a691-912935c10c20.jpg?1783936731"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Barricade Breaker
+{
+    "name": "Barricade Breaker",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Juggernaut",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nThis creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"The Consulate sought to crush us. Let's give them a taste of their own medicine.\"\n—Venkat Dasai, renegade commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cc81a94-955d-4734-b056-9b9a86cae60b.jpg?1783936730",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If, during your declare attackers step, Barricade Breaker is tapped or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having it attack, you aren't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Bastion Enforcer
 {
     "name": "Bastion Enforcer",
@@ -97,6 +417,65 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bastion Inventor
+{
+    "name": "Bastion Inventor",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Vedalken Artificer",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nHexproof (This creature can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "IMPROVISE",
+        "HEXPROOF"
+    ],
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Tony Foti",
+        "flavorText": "\"This armor transcends the limitations of mere flesh and bone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/856f804d-0213-4b86-bc6a-6a0a1147c4f9.jpg?1783936775",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -235,6 +614,329 @@
     "colorIdentityOverride": []
 }
 
+// Consulate Dreadnought
+{
+    "name": "Consulate Dreadnought",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Crew 6 (Tap any number of creatures you control with total power 6 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 11
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 6
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "flavorText": "\"It's like they planted another Bastion right in the middle of the harbor.\"\n—Bes Tavani, Bomat merchant",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11eff338-1940-4684-94c7-ef90e56dea99.jpg?1783936730",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Vehicle is an artifact type, not a creature type. A Vehicle that's crewed won't normally have any creature type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Each Vehicle is printed with a power and toughness, but it's not a creature. If it becomes a creature (most likely through its crew ability), it will have that power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an effect causes a Vehicle to become an artifact creature with a specified power and toughness, that effect overwrites the Vehicle's printed power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a player announces that they are activating a crew ability, no player may take other actions until the ability has been paid for. Notably, players can't try to stop the ability by changing a creature's power or by removing or tapping a creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Any untapped creature you control can be tapped to pay a crew cost, even one that just came under your control."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may tap more creatures than necessary to activate a crew ability."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Creatures that crew a Vehicle aren't attached to it or related in any other way. Effects that affect the Vehicle, such as by destroying it or giving it a +1/+1 counter, don't affect the creatures that crewed it."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a Vehicle becomes a creature, it behaves exactly like any other artifact creature. It can't attack unless you've controlled it continuously since your turn began, it can block if it's untapped, it can be tapped to pay a Vehicle's crew cost, and so on."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may activate a crew ability of a Vehicle even if it's already an artifact creature. Doing so has no effect on the Vehicle. It doesn't change its power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For a Vehicle to be able to attack, it must be a creature as the declare attackers step begins, so the latest you can activate its crew ability to attack with it is during the beginning of combat step. For a Vehicle to be able to block, it must be a creature as the declare blockers step begins, so the latest you can activate its crew ability to block with it is during the declare attackers step. In either case, players may take actions after the crew ability resolves but before the Vehicle has been declared as an attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "When a Vehicle becomes a creature, that doesn't count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If a permanent becomes a copy of a Vehicle, the copy won't be a creature, even if the Vehicle it's copying has become an artifact creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Cruel Finality
+{
+    "name": "Cruel Finality",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -2/-2 until end of turn. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Bitter the bite of a demon's steel, and deep the abyss it opens.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c22e911-cf40-4ed8-b075-186f2b1393db.jpg?1783936765",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If the target creature becomes an illegal target, Cruel Finality doesn't resolve and none of its effects happen. You won't scry 1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dawnfeather Eagle
+{
+    "name": "Dawnfeather Eagle",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, creatures you control get +1/+1 and gain vigilance until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dawnfeather Eagle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"It came to rest upon the angel's arm, and then the weight of their gazes fell upon me.\"\n—Aeronaut's journal",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7113ddc-cb3c-46da-a6c7-2567bd0affa9.jpg?1783936780",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The set of creatures affected by Dawnfeather Eagle's triggered ability is determined as the ability resolves. Creatures you begin to control later in the turn and permanents you control that become creatures later in the turn won't get +1/+1 or gain vigilance."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Dawnfeather Eagle's triggered ability affects itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Defiant Salvager
+{
+    "name": "Defiant Salvager",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Aetherborn Artificer",
+    "oracleText": "Sacrifice an artifact or creature: Put a +1/+1 counter on this creature. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Defiant Salvager:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact|creature"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"I didn't survive that crash just so I could fall to the likes of you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0afbfb2c-3f1a-4ef9-9f61-6ca51af853d8.jpg?1783936764",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "You can sacrifice Defiant Salvager to activate its own ability. It won't receive a counter, but abilities that trigger on the sacrifice or watch for a creature dying will see it."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If you sacrifice an artifact creature to activate Defiant Salvager's ability, you put one +1/+1 counter on Defiant Salvager, not two."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Deft Dismissal
+{
+    "name": "Deft Dismissal",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Deft Dismissal deals 3 damage divided as you choose among one, two, or three target attacking or blocking creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 3
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsAttacking",
+                                    "IsBlocking"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"With spy thopters all around, how can the consuls be so blind to Tezzeret's manipulations?\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cb26d5b-ffeb-4dac-ad61-f85e5e7b1675.jpg?1783936780",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "You choose how many targets Deft Dismissal has and how the damage is divided as you cast the spell. Each target must receive at least 1 damage."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If some (but not all) of the targets become illegal, the original division of damage still applies, but no damage is dealt to illegal targets. If all targets become illegal, Deft Dismissal doesn't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Destructive Tampering
 {
     "name": "Destructive Tampering",
@@ -300,6 +1002,57 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Dispersal Technician
+{
+    "name": "Dispersal Technician",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Vedalken Artificer",
+    "oracleText": "When this creature enters, you may return target artifact to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dispersal Technician:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Scott Murphy",
+        "flavorText": "As renegade forces closed in on the Aether Spire, Consulate blockades failed one by one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d93a915-ffea-4f50-88ac-2b3253f7dfdf.jpg?1783936775"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -392,6 +1145,588 @@
     ]
 }
 
+// Embraal Gear-Smasher
+{
+    "name": "Embraal Gear-Smasher",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "{T}, Sacrifice an artifact: This creature deals 2 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Embraal Gear-Smasher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Joseph Meehan",
+        "flavorText": "\"A well-made wrench is a versatile, indispensable tool.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3ad5c175-581c-4fdd-b008-e7d10b0928c7.jpg?1783936756",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "In a Two-Headed Giant game, Embraal Gear-Smasher's ability causes 4 damage total to be dealt to the opposing team."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Enraged Giant
+{
+    "name": "Enraged Giant",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nTrample, haste",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "IMPROVISE",
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "When fighting spilled over into Giant's Walk, the aether weapons and swooping airships angered the normally placid creatures.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40dc3b59-baae-4bf0-b5ce-fa9a915af066.jpg?1783936755",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fen Hauler
+{
+    "name": "Fen Hauler",
+    "manaCost": "{6}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nThis creature can't be blocked by artifact creatures.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Success is found where others fear to look.\"\n—Ara, renegade smuggler",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5ef4616-e3c2-4448-83b1-f7d439705eaf.jpg?1783936764",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Filigree Crawler
+{
+    "name": "Filigree Crawler",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Insect",
+    "oracleText": "When this creature dies, create a 1/1 colorless Thopter artifact creature token with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Filigree Crawler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd03a2b9-bfd7-4e1d-b660-e9f945699b78.jpg?1783937238",
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "James Paick",
+        "flavorText": "\"The most harmonious designs are based on relationships found in nature.\"\n—Venand Kapur, the Gearherder",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d8e817c-079e-4e7c-a8ca-54634f30bf36.jpg?1783936729"
+    }
+}
+
+// Foundry Assembler
+{
+    "name": "Foundry Assembler",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Assembly-Worker",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"They never tire, they never complain, and they never ask questions. Build more.\"\n—Ivash, Consulate inventor",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83a2862-a2d7-4d87-a4b8-def9f441f5fa.jpg?1783936730",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    }
+}
+
+// Foundry Hornet
+{
+    "name": "Foundry Hornet",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Flying\nWhen this creature enters, if you control a creature with a +1/+1 counter on it, creatures your opponents control get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Foundry Hornet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "flavorText": "Its buzzing is easily mistaken for the hum of a thopter's wings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6dc7865-16ed-4d12-bdb4-d40fbdd48a23.jpg?1783936763",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The set of creatures affected by Foundry Hornet's triggered ability is determined as the ability resolves. Creatures opponents begin to control later in the turn and permanents opponents control that become creatures later in the turn won't get -1/-1. The effect continues until end of turn even if you stop controlling a creature with a +1/+1 counter on it."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you don't control a creature with a +1/+1 counter as Foundry Hornet enters the battlefield, its ability doesn't trigger, even if you can give a +1/+1 counter to a creature right away. If you control no creatures with a +1/+1 counter as the ability resolves, nothing happens."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an effect causes Foundry Hornet to enter the battlefield with a +1/+1 counter on it, it satisfies its own triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Fourth Bridge Prowler
+{
+    "name": "Fourth Bridge Prowler",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, you may have target creature get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fourth Bridge Prowler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "John Silva",
+        "flavorText": "Renegades run the gamut from lofty sages to petty thieves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73aaaa09-c985-42f8-b426-06fd3b8de66d.jpg?1783936763",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Fourth Bridge Prowler can be the target of its own ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Freejam Regent
+{
+    "name": "Freejam Regent",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Cat Dragon",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nFlying\n{1}{R}: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "IMPROVISE",
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Freejam Regent:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"The dragons perching in Freejam's towers symbolize the zone's fierce independence.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6b5147f-b422-47d3-98a0-dcc2d6f4e17a.jpg?1783936754",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Frontline Rebel
+{
+    "name": "Frontline Rebel",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Winona Nelson",
+        "flavorText": "\"Will you be strong and stand with me?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b742738a-2663-474d-b75a-28f1f67dc335.jpg?1783936754",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If, during your declare attackers step, Frontline Rebel is tapped or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having it attack, you aren't forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ghirapur Osprey
+{
+    "name": "Ghirapur Osprey",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Zezhou Chen",
+        "flavorText": "Many airship captains keep pets that share their love of the sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/2186f382-2d68-4191-b490-a072f49eaabf.jpg?1783936779"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gifted Aetherborn
 {
     "name": "Gifted Aetherborn",
@@ -412,6 +1747,166 @@
         "artist": "Ryan Yee",
         "flavorText": "A few aetherborn have discovered a way to sustain their own existences at the cost of an insatiable hunger for the life essence of other beings.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/b/abceb4fd-e3c5-400d-af7a-6dd17108a4b4.jpg?1783936763"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Herald of Anguish
+{
+    "name": "Herald of Anguish",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nFlying\nAt the beginning of your end step, each opponent discards a card.\n{1}{B}, Sacrifice an artifact: Target creature gets -2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "IMPROVISE",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herald of Anguish:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Herald of Anguish:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "MYTHIC",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31a69ebe-4229-4067-8414-381b123fe63c.jpg?1783936761",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Improvise doesn't change a spell's mana cost or mana value."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Improvise applies after the total cost is calculated."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Because improvise isn't an alternative cost, it can be used in conjunction with alternative costs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't pay for {W}, {U}, {B}, {R}, {G}, or {C} mana symbols in a spell's total cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Improvise can't be used to pay for anything other than the cost of casting the spell. For example, it can't be used during the resolution of an ability that says \"Counter target spell unless its controller pays {3}.\""
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact you control has a mana ability with {T} in the cost, activating that ability while casting a spell with improvise will result in the artifact being tapped when you pay the spell's costs. You won't be able to tap it again for improvise. Similarly, if you sacrifice an artifact to activate a mana ability while casting a spell with improvise, that artifact won't be on the battlefield when you pay the spell's costs, so you won't be able to tap it for improvise."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tapping an artifact won't cause its abilities to stop applying unless those abilities say so."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Equipment attached to a creature doesn't become tapped when that creature becomes tapped, and tapping that Equipment doesn't cause the creature to become tapped."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -531,6 +2026,459 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Implement of Combustion
+{
+    "name": "Implement of Combustion",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{R}, Sacrifice this artifact: It deals 1 damage to target player or planeswalker.\nWhen this artifact is put into a graveyard from the battlefield, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Implement of Combustion:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Implement of Combustion:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Enora Mercier",
+        "flavorText": "A dream of fire lies coiled inside, waiting for its glorious awakening.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15b1c8da-604a-42f0-8658-82580700dd31.jpg?1783936726",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "An Implement's last ability triggers no matter why it's put into a graveyard from the battlefield. You don't have to activate its first ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you activate an Implement's first ability, you'll draw a card from its second ability before the first ability resolves. If the first ability has a target, you need a legal target to activate that ability, and you choose that target before seeing what card you'll draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Implement of Examination
+{
+    "name": "Implement of Examination",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{U}, Sacrifice this artifact: Draw a card.\nWhen this artifact is put into a graveyard from the battlefield, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Implement of Examination:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Implement of Examination:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Darek Zabrocki",
+        "flavorText": "A tool to see the unseen.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a791aa71-00db-422d-a78a-53b121c24db5.jpg?1783936725",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "An Implement's last ability triggers no matter why it's put into a graveyard from the battlefield. You don't have to activate its first ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you activate an Implement's first ability, you'll draw a card from its second ability before the first ability resolves. If the first ability has a target, you need a legal target to activate that ability, and you choose that target before seeing what card you'll draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Implement of Ferocity
+{
+    "name": "Implement of Ferocity",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{G}, Sacrifice this artifact: Put a +1/+1 counter on target creature. Activate only as a sorcery.\nWhen this artifact is put into a graveyard from the battlefield, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Implement of Ferocity:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Implement of Ferocity:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Jason Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcdee084-0d1a-486a-8361-680d394a5e23.jpg?1783936726",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "An Implement's last ability triggers no matter why it's put into a graveyard from the battlefield. You don't have to activate its first ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you activate an Implement's first ability, you'll draw a card from its second ability before the first ability resolves. If the first ability has a target, you need a legal target to activate that ability, and you choose that target before seeing what card you'll draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Implement of Improvement
+{
+    "name": "Implement of Improvement",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{W}, Sacrifice this artifact: You gain 2 life.\nWhen this artifact is put into a graveyard from the battlefield, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Implement of Improvement:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Implement of Improvement:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Kieran Yanner",
+        "flavorText": "A mystery in metal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cb8eb0c-d7fa-4229-ae65-1890c77b2c7c.jpg?1783936725",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "An Implement's last ability triggers no matter why it's put into a graveyard from the battlefield. You don't have to activate its first ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you activate an Implement's first ability, you'll draw a card from its second ability before the first ability resolves. If the first ability has a target, you need a legal target to activate that ability, and you choose that target before seeing what card you'll draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Implement of Malice
+{
+    "name": "Implement of Malice",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{B}, Sacrifice this artifact: Target player discards a card. Activate only as a sorcery.\nWhen this artifact is put into a graveyard from the battlefield, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Implement of Malice:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Implement of Malice:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e45ca82-e387-4df0-890d-d53a7d0dadf7.jpg?1783936726",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "An Implement's last ability triggers no matter why it's put into a graveyard from the battlefield. You don't have to activate its first ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you activate an Implement's first ability, you'll draw a card from its second ability before the first ability resolves. If the first ability has a target, you need a legal target to activate that ability, and you choose that target before seeing what card you'll draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Inspiring Roar
+{
+    "name": "Inspiring Roar",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Chris Rahn",
+        "flavorText": "\"This is about more than aether or inventions. Tezzeret's schemes must be stopped!\"\n—Ajani Goldmane",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ef9708e-bfe4-4d24-8304-1618daa1c3ee.jpg?1783936715"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
