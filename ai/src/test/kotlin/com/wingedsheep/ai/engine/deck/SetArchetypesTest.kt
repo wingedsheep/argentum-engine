@@ -26,6 +26,28 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Amonkhet exposes its ten signpost colour-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("akh"))
+
+        synergies.setName shouldBe "Amonkhet"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Embalm Fliers",
+            "Cycling Control",
+            "-1/-1 Aggro",
+            "Exert Beatdown",
+            "Exert Go-Wide",
+            "Zombies",
+            "Spells",
+            "-1/-1 Counters",
+            "Attack Aggro",
+            "Cycling Ramp",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.name to it.creatureTypes } shouldContainExactly listOf(
+            "Zombies" to listOf("Zombie"),
+        )
+    }
+
     "Ixalan exposes its ten colour-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("xln"))
 

@@ -1249,6 +1249,33 @@ object SetArchetypes {
                     creatureTypes = listOf("Merfolk")),
             )
         ),
+        "AKH" to SetSynergies(
+            setCode = "AKH",
+            setName = "Amonkhet",
+            archetypes = listOf(
+                Archetype("Embalm Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Take to the air with fliers and turn every creature that dies into an embalmed token later, while Aven Wind Guide gives the tokens wings. A tempo deck that wins the race in the sky and refills its board from the graveyard."),
+                Archetype("Cycling Control", listOf(Color.BLUE, Color.BLACK),
+                    "Cycle and discard to smooth your draws and power up payoffs that grow or trigger on every card cycled. A patient control deck that trades removal for threats and wins with evasive fliers."),
+                Archetype("-1/-1 Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with cheap attackers and use -1/-1 counters and discard outlets to shrink or stop the opponent's blockers. A fast, aggressive deck that keeps the way clear for its damage."),
+                Archetype("Exert Beatdown", listOf(Color.RED, Color.GREEN),
+                    "Play the biggest creatures on the curve, give them trample and exert them for bigger hits. A stompy midrange deck that overpowers blockers and pushes damage through."),
+                Archetype("Exert Go-Wide", listOf(Color.GREEN, Color.WHITE),
+                    "Build a wide board, exert attackers for their bonuses and untap the team with Ahn-Crop Champion. A go-wide aggro deck that attacks every turn and still has blockers."),
+                Archetype("Zombies", listOf(Color.WHITE, Color.BLACK),
+                    "Fill the board with Zombies and embalmed tokens, draining the opponent each time another Zombie arrives. A grindy midrange deck whose creatures keep coming back.",
+                    creatureTypes = listOf("Zombie")),
+                Archetype("Spells", listOf(Color.BLUE, Color.RED),
+                    "Fill the graveyard with instants and sorceries, cast aftermath halves from it, and close with a huge Enigma Drake. A spell-heavy tempo deck that gets two uses out of many cards."),
+                Archetype("-1/-1 Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Put -1/-1 counters on your own creatures for value, then move them onto the opponent's side to grind down their board. A midrange attrition deck that turns every counter into removal."),
+                Archetype("Attack Aggro", listOf(Color.RED, Color.WHITE),
+                    "Curve out with Warriors and cheap attackers and pump the whole attacking team every combat. A fast aggro deck that ends the game before bigger decks stabilize."),
+                Archetype("Cycling Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp with mana creatures and Spring // Mind, cycle away what you don't need, and land huge creatures early. A value-ramp deck that outsizes the opponent once its mana is ahead."),
+            )
+        ),
         "HOU" to SetSynergies(
             setCode = "HOU",
             setName = "Hour of Devastation",

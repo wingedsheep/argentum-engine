@@ -2874,6 +2874,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  AKH: {
+    setCode: 'AKH',
+    setName: 'Amonkhet',
+    archetypes: [
+      {
+        name: 'Embalm Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Aven Wind Guide',
+        description: 'Take to the air with fliers and turn every creature that dies into an embalmed token later, while Aven Wind Guide gives the tokens wings. A tempo deck that wins the race in the sky and refills its board from the graveyard.',
+      },
+      {
+        name: 'Cycling Control',
+        colors: ['U', 'B'],
+        keyCard: 'Shadowstorm Vizier',
+        description: 'Cycle and discard to smooth your draws and power up payoffs that grow or trigger on every card cycled. A patient control deck that trades removal for threats and wins with evasive fliers.',
+      },
+      {
+        name: '-1/-1 Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Merciless Javelineer',
+        description: "Curve out with cheap attackers and use -1/-1 counters and discard outlets to shrink or stop the opponent's blockers. A fast, aggressive deck that keeps the way clear for its damage.",
+      },
+      {
+        name: 'Exert Beatdown',
+        colors: ['R', 'G'],
+        keyCard: 'Khenra Charioteer',
+        description: 'Play the biggest creatures on the curve, give them trample and exert them for bigger hits. A stompy midrange deck that overpowers blockers and pushes damage through.',
+      },
+      {
+        name: 'Exert Go-Wide',
+        colors: ['G', 'W'],
+        keyCard: 'Ahn-Crop Champion',
+        description: 'Build a wide board, exert attackers for their bonuses and untap the team with Ahn-Crop Champion. A go-wide aggro deck that attacks every turn and still has blockers.',
+      },
+      {
+        name: 'Zombies',
+        colors: ['W', 'B'],
+        keyCard: 'Wayward Servant',
+        description: 'Fill the board with Zombies and embalmed tokens, draining the opponent each time another Zombie arrives. A grindy midrange deck whose creatures keep coming back.',
+        creatureTypes: ['Zombie'],
+      },
+      {
+        name: 'Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Enigma Drake',
+        description: 'Fill the graveyard with instants and sorceries, cast aftermath halves from it, and close with a huge Enigma Drake. A spell-heavy tempo deck that gets two uses out of many cards.',
+      },
+      {
+        name: '-1/-1 Counters',
+        colors: ['B', 'G'],
+        keyCard: 'Decimator Beetle',
+        description: "Put -1/-1 counters on your own creatures for value, then move them onto the opponent's side to grind down their board. A midrange attrition deck that turns every counter into removal.",
+      },
+      {
+        name: 'Attack Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Honored Crop-Captain',
+        description: 'Curve out with Warriors and cheap attackers and pump the whole attacking team every combat. A fast aggro deck that ends the game before bigger decks stabilize.',
+      },
+      {
+        name: 'Cycling Ramp',
+        colors: ['G', 'U'],
+        keyCard: 'Weaver of Currents',
+        description: "Ramp with mana creatures and Spring // Mind, cycle away what you don't need, and land huge creatures early. A value-ramp deck that outsizes the opponent once its mana is ahead.",
+      },
+    ],
+  },
   HOU: {
     setCode: 'HOU',
     setName: 'Hour of Devastation',
