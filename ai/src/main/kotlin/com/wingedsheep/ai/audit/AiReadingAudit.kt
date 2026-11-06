@@ -404,7 +404,15 @@ object AiReadingAudit {
                             // fight is left; the floor asks it of the whole spell, not one leaf. Not
                             // an Adventure or prepare face: HoldPolicy reads no face's effects.
                             (script === card.script && card.cardFaces.isEmpty() &&
-                                ExpiringGrantWindow.readsSpellKeywordGrant(spell))
+                                ExpiringGrantWindow.readsSpellKeywordGrant(spell)) ||
+                            // An expiring protective keyword beside a payoff that outlives the turn
+                            // (Snakeskin Veil's counter, Moogles' Valor's tokens): the lasting part pays
+                            // for the card whenever it is cast, and simulation prices it in every window,
+                            // so it is no trick to hold — CardIntentAnalyzer withholds COMBAT_TRICK from
+                            // it on purpose. Faces too (Assure // Assemble): the argument needs no hold.
+                            // Stricter than the analyzer: a shield or player hexproof that ends at
+                            // cleanup is not lasting here (Blinding Fog stays flagged).
+                            protectionBesideLastingPayoff(spell, leaf)
                     }
                 }
                 modal(spell, sink)
@@ -1109,6 +1117,24 @@ object AiReadingAudit {
         is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
         else -> false
+    }
+
+    /**
+     * Whether [leaf] of [spell] is an until-end-of-turn protective keyword grant (one creature's, or
+     * the team's through a `ForEach` whose expiring leaves are all such grants) on a spell that also
+     * does something lasting — a leaf with an intent reading that does not end this turn.
+     */
+    private fun protectionBesideLastingPayoff(spell: Effect, leaf: Effect): Boolean {
+        fun protective(l: Effect) = l is GrantKeywordEffect && endsThisTurn(l) &&
+            IntentTag.PROTECTION in CardIntentAnalyzer.analyzeEffect(l).tags
+        val grant = if (leaf is ForEachEffect) {
+            EffectWalker.leaves(leaf.body).filter(::endsThisTurn).let { it.isNotEmpty() && it.all(::protective) }
+        } else {
+            protective(leaf)
+        }
+        if (!grant) return false
+        val all = EffectWalker.leaves(spell).flatMap { if (it is ForEachEffect) EffectWalker.leaves(it.body) else listOf(it) }
+        return all.any { !endsThisTurn(it) && CardIntentAnalyzer.analyzeEffect(it).tags.isNotEmpty() }
     }
 
     /** Whether [effect] carries a `duration` of [Duration.EndOfTurn]. Effects share no interface for it. */
