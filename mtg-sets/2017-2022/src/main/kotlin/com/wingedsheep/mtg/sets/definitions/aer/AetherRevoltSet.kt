@@ -4,6 +4,7 @@ import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * Aether Revolt (2017)
@@ -34,6 +35,19 @@ object AetherRevoltSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    /**
+     * Aether Revolt's token set (TAER) has no Servo: the set's Servo makers mint Kaladesh's
+     * Servo token (TKLD), so that printing stands in for the set's own art.
+     */
+    override val tokenArt: List<TokenPrinting> = listOf(
+        TokenPrinting(
+            name = "Servo",
+            imageUri = "https://cards.scryfall.io/normal/front/6/0/60842b1a-6ae7-4b3b-a23f-0d94a3d89884.jpg?1783937239",
+            power = 1,
+            toughness = 1,
+        ),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.aer.cards"
 }
