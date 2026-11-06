@@ -1070,6 +1070,7 @@ Aven Flock
 Aven Fogbringer
 Aven Gagglemaster
 Aven Heartstabber
+Aven Initiate
 Aven Interrupter	intent: ExileTargetSpellEffect
 Aven Liberator	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Aven Mindcensor
@@ -3222,6 +3223,7 @@ Commando Raid	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbility
 Commence the Endgame
 Commercial District
 Commissar Severina Raine
+Commit // Memory
 Common Crook
 Common Goal
 Communal Brewing
@@ -3674,6 +3676,7 @@ Cunning Survivor
 Cuombajj Witches
 Curate
 Curator of Destinies
+Curator of Mysteries
 Curator of Sun's Creation
 Curator's Ward
 Curie, Emergent Intelligence
@@ -4034,6 +4037,7 @@ Deceptive Frostkite
 Deceptive Landscape
 Decimate
 Decimator of the Provinces
+Decision Paralysis
 Decisive Denial
 Declare Dominance
 Decode Transmissions
@@ -4645,6 +4649,7 @@ Drainpipe Vermin
 Drake Familiar
 Drake Hatcher
 Drake Hatchling
+Drake Haven
 Drake-Skull Cameo
 Drakuseth, Maw of Flames
 Dramatic Accusation
@@ -7876,6 +7881,7 @@ Heirloom Blade
 Heirloom Epic
 Heirloom Mirror
 Heirs of Stromkirk
+Hekma Sentinels
 Helga, Skittish Seer
 Helica Glider
 Helicarrier Strike
@@ -8427,6 +8433,7 @@ Illusion Spinners
 Illusionary Mask
 Illusionist's Gambit	timing: ForEach>GrantStaticAbilityEffect
 Illusory Ambusher
+Illusory Wrappings
 Illustrious Historian
 Illvoi Galeblade
 Illvoi Infiltrator
@@ -9277,6 +9284,7 @@ Keeper of the Quiet Hour
 Keepers of the Faith
 Kefka, Court Mage
 Kefka, Dancing Mad	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→exile)
+Kefnet the Mindful
 Kefnet's Last Word
 Kefnet's Monument
 Kei Takahashi
@@ -9649,6 +9657,7 @@ L'Rell, Fierce Visionary
 La'An Noonien-Singh, Security
 Lab Rats
 Laboratory Maniac
+Labyrinth Guardian
 Labyrinth Raptor
 Labyrinth of Skophos	polarity: RemoveFromCombatEffect
 Lace with Moonglove	timing: GrantKeywordEffect
@@ -12030,6 +12039,7 @@ Ooze Spill
 Opaline Unicorn
 Open Communications
 Open Fire
+Open into Wonder
 Open the Armory
 Open the Gates
 Open the Graves
@@ -14016,6 +14026,7 @@ River Hoopoe
 River Kaijin
 River Kelpie
 River Merfolk
+River Serpent
 River Sneak
 River's Rebuke	polarity: Pipeline(BattlefieldMatching→hand)
 Riverchurn Monument
@@ -14342,6 +14353,7 @@ Sabretooth Tiger
 Sacellum Archers
 Sachi, Daughter of Seshiro
 Sacred Armory
+Sacred Excavation
 Sacred Fire
 Sacred Foundry
 Sacred Knight
@@ -14884,6 +14896,7 @@ Seedship Impact
 Seek the Horizon
 Seek the Wilds
 Seeker	polarity: Aura>CantBeBlockedExceptBy
+Seeker of Insight
 Seeker of Skybreak
 Seeker of Sunlight
 Seeker of the Way
@@ -17001,6 +17014,7 @@ Tablet of Epityr
 Taborax, Hope's Demise
 Tackle Artist
 Tactical Officer
+Tah-Crop Skirmisher
 Taiga
 Taigam's Scheming
 Taigam, Master Opportunist
@@ -18249,6 +18263,7 @@ Treva's Attendant
 Treva, the Renewer	intent: ChooseColorThenEffect
 Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Trial of Ambition
+Trial of Knowledge
 Trial of Zeal
 Triassic Egg
 Tribal Flames
