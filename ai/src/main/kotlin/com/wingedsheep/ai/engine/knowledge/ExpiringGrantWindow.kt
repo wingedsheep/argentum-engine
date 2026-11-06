@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.ai.engine.CombatMath
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -182,6 +183,7 @@ internal object ExpiringGrantWindow {
                 readGrants = refuseUnspendable,
                 readShrinks = readShrinks,
                 readBorrows = readBorrows,
+                xValue = activation.xValue,
             )
         ) {
             return true
@@ -282,6 +284,8 @@ internal object ExpiringGrantWindow {
         readBorrows: Boolean = false,
         /** A stat change counts only on a creature already in the fight — see [castBuysNothing]. */
         fightMustBeOn: Boolean = false,
+        /** The announced X, for a shrink counted by it ("-X/-X", Death Wind). */
+        xValue: Int? = null,
     ): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks, readBorrows) ?: return false
         // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf —
@@ -291,7 +295,13 @@ internal object ExpiringGrantWindow {
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
         if (shieldFacesTheStack(state, payoffs)) return false
 
+        // A stat loss over a group ("all creatures get -1/-1", Shrivel; "each creature gets -X/-X",
+        // Drag to the Bottom) is a sweeper: [affectedBy] reads the iteration entity as our own
+        // creatures, which would call a wipe of their board wasted whenever ours is empty. When to
+        // sweep is the removal's question, so the leaf keeps it.
+        if (payoffs.any { it.kind in SHRINK_KINDS && it.target == EffectTarget.IterationEntity }) return false
         val projected = state.projectedState
+        val shrinkLoss = shrinkLosses(state, playerId, payoffs, sourceId, targets, xValue, intents) ?: return false
         return payoffs.none { payoff ->
             if (payoff.kind == PayoffKind.SHIELD) {
                 return@none shieldCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets, sourceTaps)
@@ -330,7 +340,7 @@ internal object ExpiringGrantWindow {
                         ?.let { set ->
                             (projected.getBaseToughness(id) ?: projected.getToughness(id) ?: return@any true) - set
                         }
-                        ?: payoff.toughnessLoss
+                        ?: shrinkLoss[payoff.target] ?: payoff.toughnessLoss
                     killedBy(state, projected, id, toughnessLoss) ||
                         if (fightMustBeOn) {
                             inFightNow(state, id)
@@ -412,6 +422,8 @@ internal object ExpiringGrantWindow {
          * whenever it is cast.
          */
         fightMustBeOn: Boolean = false,
+        /** The announced X — see [nothingCanSpend]. */
+        xValue: Int? = null,
     ): Boolean = effects.isNotEmpty() && effects.all { effect ->
         nothingCanSpend(
             state, playerId, effect,
@@ -424,6 +436,7 @@ internal object ExpiringGrantWindow {
             readShrinks = readShrinks,
             readBorrows = readBorrows,
             fightMustBeOn = fightMustBeOn,
+            xValue = xValue,
         )
     }
 
@@ -821,6 +834,52 @@ internal object ExpiringGrantWindow {
     }
 
     /**
+     * The toughness every [PayoffKind.SHRINK] in [payoffs] takes from its target, summed per target —
+     * "-2/-2, and if kicked another -X/-X" lands both on one creature, and only together do they
+     * say whether it dies. A counted loss ([Payoff.toughnessModifier]: Defile's Swamps, Feeding
+     * Frenzy's Zombies, Bloodthirsty Ogre's devotion counters, an announced X) is resolved against
+     * [state] as the engine would resolve it, from [sourceId]'s seat with [targets] and [xValue].
+     *
+     * Null — leave the cast to the leaf — when a counted loss comes out at nothing: that is an amount
+     * this board cannot see yet (an X not announced, cards exiled as a cost, a count captured as
+     * the spell is cast), never a shrink the reader can call wasted. A count that cannot be
+     * resolved at all is null for the same reason.
+     *
+     * The count is read before the effect resolves. That is exact only because [expiringPayoffs]
+     * fails any effect with a leaf that is not a payoff: a rider that ran first (Nightmare's
+     * Thirst's life gain) could raise the count, and judging it early would undercount a kill.
+     */
+    private fun shrinkLosses(
+        state: GameState,
+        playerId: EntityId,
+        payoffs: List<Payoff>,
+        sourceId: EntityId?,
+        targets: List<ChosenTarget>,
+        xValue: Int?,
+        intents: IntentCatalog,
+    ): Map<EffectTarget?, Int>? {
+        val shrinks = payoffs.filter { it.kind == PayoffKind.SHRINK }
+        if (shrinks.isEmpty()) return emptyMap()
+        val context by lazy {
+            EffectContext(sourceId = sourceId, controllerId = playerId, targets = targets, xValue = xValue)
+        }
+        val losses = mutableMapOf<EffectTarget?, Int>()
+        for (shrink in shrinks) {
+            val loss = shrink.toughnessModifier?.let { modifier ->
+                val amounts = intents.predicates?.amounts ?: return null
+                val resolved = try {
+                    -amounts.evaluate(state, modifier, context)
+                } catch (_: RuntimeException) {
+                    return null
+                }
+                resolved.takeIf { it > 0 } ?: return null
+            } ?: shrink.toughnessLoss
+            losses.merge(shrink.target, loss, Int::plus)
+        }
+        return losses
+    }
+
+    /**
      * Whether a shrink that takes [toughnessLoss] toughness off [creature] kills it — the one way a
      * shrink buys something that outlives the turn. Marked damage counts, as the state-based action
      * will count it (CR 704.5g).
@@ -963,6 +1022,12 @@ internal object ExpiringGrantWindow {
         val keyword: String? = null,
         /** For a [PayoffKind.SHRINK]: the toughness it takes away. */
         val toughnessLoss: Int = 0,
+        /**
+         * For a [PayoffKind.SHRINK] whose loss is counted rather than printed — "-1/-1 for each Swamp
+         * you control" (Defile), "-X/-X where X is …": the toughness modifier itself, resolved
+         * against the board when the shrink is judged ([shrinkLosses]). Null for a fixed loss.
+         */
+        val toughnessModifier: DynamicAmount? = null,
         /** For a [PayoffKind.SET_BASE]: the base toughness it sets, or null when it sets power only. */
         val setToughness: Int? = null,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
@@ -1054,10 +1119,13 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
                 readShrinks && leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     statsSign(leaf.powerModifier, leaf.toughnessModifier) == AmountSign.LOSS -> {
-                    // The loss has to be a number to tell a shrink from removal; anything else is
-                    // left to the leaf, which is the fail-safe direction.
-                    val toughness = leaf.toughnessModifier as? DynamicAmount.Fixed ?: return null
-                    payoffs += Payoff(PayoffKind.SHRINK, leaf.target, toughnessLoss = -toughness.amount)
+                    // The loss has to be a number to tell a shrink from removal: a printed one is
+                    // read now, a counted one when the shrink is judged ([shrinkLosses]), against
+                    // the board it would resolve on.
+                    payoffs += when (val toughness = leaf.toughnessModifier) {
+                        is DynamicAmount.Fixed -> Payoff(PayoffKind.SHRINK, leaf.target, toughnessLoss = -toughness.amount)
+                        else -> Payoff(PayoffKind.SHRINK, leaf.target, toughnessModifier = toughness)
+                    }
                 }
                 readShrinks && leaf is SetBaseStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     !leaf.reevaluateContinuously && leaf.target != EffectTarget.Self -> {

@@ -272,6 +272,7 @@ class HoldPolicy(
                     state, playerId, resolves, cast.targets + cast.modeTargetsOrdered.flatten(), intents,
                     readKeywordGrants = refuseUnspendableGrants && IntentTag.COMBAT_TRICK !in intent.tags,
                     fightMustBeOn = intent.speed == Speed.INSTANT && state.stack.isEmpty(),
+                    xValue = cast.xValue,
                 )
             ) {
                 return TimingVerdict.NoWindow
@@ -282,7 +283,7 @@ class HoldPolicy(
             val resolves = intents.definition(cardName)?.let { castEffects(it, cast) }
             if (resolves != null && ExpiringGrantWindow.castBuysNothing(
                     state, playerId, resolves, cast.targets + cast.modeTargetsOrdered.flatten(), intents,
-                    readBorrows = true, readShrinks = refuseWastedPayoffs,
+                    readBorrows = true, readShrinks = refuseWastedPayoffs, xValue = cast.xValue,
                 )
             ) {
                 return TimingVerdict.NoWindow
