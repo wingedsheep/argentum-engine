@@ -1515,3 +1515,145 @@
         "GREEN"
     ]
 }
+
+// Vindictive Lich
+{
+    "name": "Vindictive Lich",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "When this creature dies, choose one or more. Each mode must target a different player.\n• Target opponent sacrifices a creature of their choice.\n• Target opponent discards two cards.\n• Target opponent loses 5 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vindictive Lich:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target opponent sacrifices a creature of their choice"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t1"
+                                            }
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "chooser": "TargetPlayer",
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 2 cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t1"
+                                            }
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target opponent discards two cards"
+                        },
+                        {
+                            "effect": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Target opponent loses 5 life"
+                        }
+                    ],
+                    "chooseCount": 3,
+                    "minChooseCount": 1,
+                    "eachModeTargetsDifferent": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Toma Feizo Gas",
+        "flavorText": "Heart, mind, soul—weapons all.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3227d983-e0c5-4dbd-aaff-fb9265199a82.jpg?1783935945",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "You can't choose more modes for Vindictive Lich's triggered ability than you have opponents, but you need to choose at least one target if you can."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "You don't have to choose a mode for each opponent. For example, you could make one opponent lose 5 life and spare each other opponent. They might not repay your kindness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
