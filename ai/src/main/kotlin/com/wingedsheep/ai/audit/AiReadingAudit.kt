@@ -403,9 +403,12 @@ object AiReadingAudit {
                             (script === card.script && card.cardFaces.isEmpty() &&
                                 ExpiringGrantWindow.readsSpellKeywordGrant(spell)) ||
                             // An expiring protective keyword beside a payoff that outlives the turn
-                            // (Snakeskin Veil's counter, Moogles' Valor's tokens): the lasting part makes
-                            // the cast worth its card in any window simulation prices, so it is no trick
-                            // to hold — CardIntentAnalyzer withholds COMBAT_TRICK from it on purpose.
+                            // (Snakeskin Veil's counter, Moogles' Valor's tokens): the lasting part pays
+                            // for the card whenever it is cast, and simulation prices it in every window,
+                            // so it is no trick to hold — CardIntentAnalyzer withholds COMBAT_TRICK from
+                            // it on purpose. Faces too (Assure // Assemble): the argument needs no hold.
+                            // Stricter than the analyzer: a shield or player hexproof that ends at
+                            // cleanup is not lasting here (Blinding Fog stays flagged).
                             protectionBesideLastingPayoff(spell, leaf)
                     }
                 }
