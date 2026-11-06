@@ -9,6 +9,7 @@ import com.wingedsheep.ai.engine.evaluation.StatRelevance
 import com.wingedsheep.ai.engine.knowledge.CardIntent
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.LossShields
 import com.wingedsheep.ai.engine.knowledge.Speed
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.CardDefinition
@@ -151,6 +152,7 @@ object AiCardRating {
                 val abilityValue = (inPlayIntent.staticPriorValue - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
                 if (abilityValue > 0.0) {
                     val label = when {
+                        card.script.replacementEffects.any(LossShields::reads) -> "Second life"
                         IntentTag.DAMAGE_AMPLIFIER in inPlayIntent.tags -> "Damage amplification"
                         IntentTag.REMOVAL in inPlayIntent.tags || IntentTag.EXILE_REMOVAL in inPlayIntent.tags -> "Repeatable removal"
                         IntentTag.GRAVEYARD_HATE in inPlayIntent.tags -> "Repeatable graveyard hate"

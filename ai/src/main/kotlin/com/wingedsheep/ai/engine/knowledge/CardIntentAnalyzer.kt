@@ -365,6 +365,11 @@ object CardIntentAnalyzer {
         if (scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) {
             tags += IntentTag.PROTECTION
         }
+        // "If you would lose the game, instead …" / "if your life total would be reduced to 0 or
+        // less, instead …" (Exquisite Archangel, Enduring Angel): a second life for us ([LossShields]).
+        if (scripts.any { script -> script.replacementEffects.any(LossShields::reads) }) {
+            tags += IntentTag.PROTECTION
+        }
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
@@ -2848,8 +2853,11 @@ object CardIntentAnalyzer {
                         IntentTag.DRAW in analyzeEffect(ability.effect, ability.targetRequirements).tags
                 }
             }
+            // A second life (Exquisite Archangel, Enduring Angel — [LossShields]): while it stands,
+            // the opponent's lethal turn only resets us, so it is worth repeatable removal's term.
+            val lossShield = scripts.any { script -> script.replacementEffects.any(LossShields::reads) }
             val ability = when {
-                repeatableRemoval -> 1.5
+                repeatableRemoval || lossShield -> 1.5
                 shieldsItself || repeatableDraw -> 1.0
                 repeatableHate -> 0.5
                 else -> 0.0

@@ -3688,6 +3688,54 @@ data class ReplaceDestructionWith(
 }
 
 /**
+ * "If you would lose the game, instead <effect>" — the loss doesn't happen and [replacementEffect]
+ * runs in its place (CR 614.1a). Exquisite Archangel: "If you would lose the game, instead exile
+ * this creature and your life total becomes equal to your starting life total."
+ *
+ * Replaces every way a matching player would lose (CR 104.3): 0 or less life, an attempted draw
+ * from an empty library, poison, commander damage, and "loses the game" effects. It never sees a
+ * concession (the player leaves the game, CR 104.3a) nor an opponent winning. A "can't lose the
+ * game" effect wins over it: there is no loss to replace. The rest uses no stack and runs before
+ * anything else — inside the same state-based-action pass, or at the end of the losing
+ * instruction; its source is this permanent and "you" is its controller. Simultaneous reasons to
+ * lose in one pass (0 life *and* ten poison) are one event, replaced once; a reason that still
+ * holds afterwards (the poison) makes the player lose at the next check unless another
+ * replacement applies. Where players lose as a team (Two-Headed Giant, CR 810.8a) it protects the
+ * whole team.
+ *
+ * Not [ReplaceLifeReductionToZero]: that one watches the life total and so never sees a poison or
+ * empty-library loss. Not [GrantCantLoseGame]: that one stops the loss outright, every time, and
+ * runs nothing.
+ *
+ * @param replacementEffect what happens instead
+ * @param appliesTo whose loss this replaces: `Player.You` (default; the whole team where players
+ *        lose as a team), `Player.EachOpponent`, or `Player.Each` / `Player.Any`. Other player
+ *        references never apply.
+ */
+@SerialName("ReplaceGameLossWith")
+@Serializable
+data class ReplaceGameLossWith(
+    val replacementEffect: Effect,
+    override val appliesTo: EventPattern.PlayerLostGameEvent = EventPattern.PlayerLostGameEvent(Player.You)
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("If ")
+        when (appliesTo.player) {
+            Player.You -> append("you")
+            Player.EachOpponent -> append("an opponent")
+            else -> append("a player")
+        }
+        append(" would lose the game, instead ")
+        append(replacementEffect.description.replaceFirstChar { it.lowercase() })
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newEffect = replacementEffect.applyTextReplacement(replacer)
+        return if (newEffect !== replacementEffect) copy(replacementEffect = newEffect) else this
+    }
+}
+
+/**
  * "If <permanent> would be destroyed, regenerate it" — static regeneration (CR 701.19b). Each time a
  * matching permanent would be destroyed, instead remove all damage marked on it, its controller taps
  * it, and it's removed from combat. Mossbridge Troll, Clergy of the Holy Nimbus.

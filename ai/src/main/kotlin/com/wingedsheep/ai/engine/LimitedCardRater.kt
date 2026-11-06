@@ -4,6 +4,7 @@ import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
+import com.wingedsheep.ai.engine.knowledge.LossShields
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
@@ -518,8 +519,14 @@ object LimitedCardRater {
             replacement.copyFilter.cardPredicates.any { it == CardPredicate.IsCreature } ->
             // A gate (raid) means it often enters as its printed self: half the value.
             ENTRY_COPY_VALUE * (if (replacement.condition != null) 0.5 else 1.0)
+        // A second life for its controller (Exquisite Archangel): about a removal spell's worth
+        // of game the opponent has to win twice.
+        LossShields.reads(replacement) -> LOSS_SHIELD_VALUE
         else -> DamageAmplifiers.pickValue(replacement)
     }
+
+    /** "If you would lose the game, instead …" — the opponent has to win the game twice. */
+    private const val LOSS_SHIELD_VALUE = 0.8
 
     /** A copy of the best creature in play, chosen as it enters — about a solid playable's worth. */
     private const val ENTRY_COPY_VALUE = 1.4

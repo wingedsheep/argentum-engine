@@ -15,6 +15,7 @@ object SbaOrder {
     const val EMPTY_LIBRARY_DRAW_LOSS = 120 // 704.5b (attempted draw from an empty library)
     const val COMMANDER_DAMAGE_LOSS = 150   // 704.6c (Commander format)
     const val POISON_LOSS = 200             // 704.5c
+    const val GAME_LOSS_SOURCE_CHOICE = 230 // a replaced game loss whose source also dies this pass (Exquisite Archangel ruling)
     const val DURATION_EXPIRY = 240         // 611.2b ("for as long as" durations end one-way)
     const val ATTACHED_COPY_EXPIRY = 245    // 611.2b ("becomes a copy for as long as attached")
     const val CONTROL_CHANGED_COMBAT = 250  // 506.4 (controller change removes from combat)

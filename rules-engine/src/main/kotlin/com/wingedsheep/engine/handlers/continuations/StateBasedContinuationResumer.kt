@@ -18,6 +18,7 @@ class StateBasedContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(LegendRuleContinuation::class, ::resumeLegendRule),
         resumer(CommanderZoneChoiceContinuation::class, ::resumeCommanderZoneChoice),
+        resumer(GameLossSourceChoiceContinuation::class, ::resumeGameLossSourceChoice),
         resumer(BattleProtectorChoiceContinuation::class, ::resumeBattleProtectorChoice),
         resumer(TransformAttachToPlayerContinuation::class, ::resumeTransformAttachToPlayer),
         resumer(TransformCopyContinuation::class, ::resumeTransformCopy),
@@ -168,5 +169,28 @@ class StateBasedContinuationResumer(
             c.with(CommanderZoneChoiceAskedComponent)
         }
         return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * Mark the replaced game loss's rider with its controller's choice, then carry on the
+     * state-based-action loop, whose first act is to run the rider: yes runs it with its source
+     * (which is exiled before the pass that would kill it); no runs it without, and the pass then
+     * puts the source into the graveyard.
+     */
+    private fun resumeGameLossSourceChoice(
+        state: GameState,
+        continuation: GameLossSourceChoiceContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for a replaced game loss's source")
+        }
+        val riders = state.pendingReplacementRiders.map { rider ->
+            if (rider.replacesGameLoss && rider.hostId == continuation.hostId && rider.subjectId == continuation.subjectId) {
+                rider.copy(sourceDeclined = !response.choice, sourceChoiceMade = true)
+            } else rider
+        }
+        return checkForMore(state.copy(pendingReplacementRiders = riders), emptyList())
     }
 }

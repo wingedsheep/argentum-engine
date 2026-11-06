@@ -108,7 +108,10 @@ class StateBasedActionChecker(
                 return riders.copy(events = allEvents + riders.events)
             }
 
-            actionsApplied = riders.events.isNotEmpty()
+            // A pass that only queued a replacement's rest (a replaced game loss whose rest changed
+            // nothing visible) still acted: the next pass must re-check what the rest left behind.
+            actionsApplied = riders.events.isNotEmpty() ||
+                (effectExecutor != null && result.state.pendingReplacementRiders.isNotEmpty())
             lastIterationEvents = riders.events
             currentState = riders.newState
             allEvents.addAll(riders.events)
@@ -171,7 +174,7 @@ class StateBasedActionChecker(
             finishAbandonedResolution: (GameState) -> ExecutionResult,
         ): StateBasedActionRegistry {
             val registry = StateBasedActionRegistry()
-            registry.registerModule(PlayerSbaModule(zones, finishAbandonedResolution))
+            registry.registerModule(PlayerSbaModule(zones, decisionHandler, finishAbandonedResolution))
             registry.registerModule(CreatureSbaModule(zones))
             registry.registerModule(PermanentSbaModule(zones, decisionHandler, cardRegistry))
             registry.registerModule(ZoneSbaModule())
