@@ -4894,7 +4894,7 @@ Dutiful Griffin
 Dutiful Replicator
 Dutiful Return
 Dutiful Servants
-Duty Beyond Death	timing: ForEach>GrantKeywordEffect
+Duty Beyond Death
 Dwalin, Weaponmaster	intent: ForEach>AddCountersEffect
 Dwarfhold Champion
 Dwarven Armorer
@@ -4978,7 +4978,7 @@ Earthrumbler	intent: AddCardTypeEffect; timing: AddCardTypeEffect
 Earthshaker
 Earthshaker Dreadmaw
 Earthshaker Khenra
-Earthshape	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
+Earthshape	timing: GrantEvasionKeywordEffect
 East Wind Avatar
 East-Mark Cavalier
 Easterling Vanguard
@@ -7352,7 +7352,7 @@ Gran-Gran
 Grand Abolisher
 Grand Ball Guest
 Grand Coliseum
-Grand Crescendo	timing: ForEach>GrantKeywordEffect
+Grand Crescendo
 Grand Entryway // Elegant Rotunda
 Grand Master of Flowers
 Grand Melee
@@ -7741,7 +7741,7 @@ Hanweir Battlements	intent: MeldEffect
 Hanweir Garrison
 Hanweir Watchkeep
 Hanweir, the Writhing Township
-Hapatra's Mark	timing: GrantKeywordEffect
+Hapatra's Mark
 Hapatra, Vizier of Poisons
 Hapatra, the Desert Fang
 Hapatra, the Desert Frost
@@ -8698,7 +8698,7 @@ Inspired Inventor
 Inspired Tethermage
 Inspired Ultimatum
 Inspiring Bard
-Inspiring Call	timing: ForEach>GrantKeywordEffect
+Inspiring Call
 Inspiring Captain
 Inspiring Cleric
 Inspiring Overseer
@@ -9819,7 +9819,7 @@ Lazav, Familiar Stranger
 Lazav, Wearer of Faces
 Lazav, the Multifarious
 Lazotep Behemoth
-Lazotep Plating	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
+Lazotep Plating	timing: GrantEvasionKeywordEffect
 Lazotep Reaver
 Lead Astray
 Lead Pipe
@@ -11224,7 +11224,7 @@ Monument to Endurance
 Monument to Perfection	intent: GrantKeywordEffect
 Monumental Henge
 Moodmark Painter
-Moogles' Valor	timing: ForEach>GrantKeywordEffect
+Moogles' Valor
 Moon Girl and Devil Dinosaur
 Moon Heron
 Moon Sprite
@@ -15303,7 +15303,7 @@ Shield of the Realm
 Shield-Wall Sentinel
 Shieldmage Elder
 Shieldmate's Blessing
-Shields Up!	timing: GrantKeywordEffect
+Shields Up!
 Shields of Velis Vel
 Shifting Ceratops
 Shifting Grift	intent: ModalEffect; polarity: ExchangeControlEffect
@@ -15718,7 +15718,7 @@ Skyserpent Seeker
 Skyship Buccaneer
 Skyship Stalker
 Skyshooter
-Skyshroud Blessing	timing: ForEach>GrantKeywordEffect
+Skyshroud Blessing
 Skyshroud Claim
 Skyshroud Elf
 Skyshroud Poacher
@@ -15856,7 +15856,7 @@ Smothering Tithe	intent: PayOrSufferEffect
 Smuggler's Copter
 Smuggler's Surprise
 Sméagol, Helpful Guide	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|graveyard); polarity: GatherUntilMatchEffect; polarity: Pipeline(?→battlefield|graveyard)
-Snakeskin Veil	timing: GrantKeywordEffect
+Snakeskin Veil
 Snap
 Snapcaster Mage
 Snapdax, Apex of the Hunt
