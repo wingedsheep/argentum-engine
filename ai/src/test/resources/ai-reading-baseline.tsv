@@ -2060,6 +2060,7 @@ Bountiful Landscape
 Bountiful Promenade
 Bounty Agent
 Bounty of Might
+Bounty of the Luxa
 Bovine Intervention
 Brackish Blunder
 Brackish Trudge
@@ -6862,9 +6863,11 @@ Gideon's Intervention
 Gideon's Lawkeeper
 Gideon's Memorial
 Gideon's Reproach
+Gideon's Resolve
 Gideon's Sacrifice	timing: RedirectNextDamageEffect
 Gideon's Triumph
 Gideon, Champion of Justice	intent: Pipeline(BattlefieldMatching→exile); polarity: AddDynamicCountersEffect
+Gideon, Martial Paragon
 Gideon, the Oathsworn	intent: AddCountersToCollectionEffect; intent: Pipeline(?→?); intent: Pipeline(BattlefieldMatching→exile)
 Gift of Compleation
 Gift of Estates
@@ -11565,6 +11568,7 @@ Neglected Heirloom
 Neglected Manor
 Neheb, Dreadhorde Champion
 Neheb, the Eternal
+Neheb, the Worthy
 Neighborhood Guardian
 Nekrataal
 Nekusar, the Mindrazer
@@ -17269,6 +17273,7 @@ Tellah, Great Sage
 Teller of Tales
 Telling Time
 Temmet, Naktamun's Will
+Temmet, Vizier of Naktamun
 Temperamental Oozewagg	intent: AdaptEffect
 Tempered Steel
 Tempered Veteran
@@ -19182,7 +19187,9 @@ Vivien, Monsters' Advocate
 Vivisection
 Vivisection Evangelist
 Vivisurgeon's Insight
+Vizier of Deferment
 Vizier of Many Faces
+Vizier of Remedies
 Vizier of Tumbling Sands
 Vizier of the Anointed
 Vizier of the Menagerie
