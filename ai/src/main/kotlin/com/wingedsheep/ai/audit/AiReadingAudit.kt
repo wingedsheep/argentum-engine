@@ -93,6 +93,7 @@ import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
+import com.wingedsheep.sdk.scripting.effects.VentureIntoTheDungeonEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -127,7 +128,7 @@ import java.util.Locale
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a non-keyword counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
- *    shifting its own P/T with a loss on either side, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
+ *    shifting its own P/T with a loss on either side, its controller venturing into the dungeon, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
  *    to hand chosen among its controller's own permanents).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
@@ -964,6 +965,10 @@ object AiReadingAudit {
         // counter is chosen at resolution, and the counters it adds are on the board the simulation prices.
         // A targeted one ("each kind of counter on target permanent") stays flagged.
         if (leaf is ProliferateEffect && leaf.target == null) return true
+        // Its controller venturing into the dungeon (Planar Ally's attack, Clattering Skeletons' ETB, Dungeon
+        // Map) has no target to aim and no window to hold it for: which dungeon and room is chosen at
+        // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.
+        if (leaf is VentureIntoTheDungeonEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
         // A permanent exploring itself (Jadelight Ranger) is read as card selection, and its +1/+1
