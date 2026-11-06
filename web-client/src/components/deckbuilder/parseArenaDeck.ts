@@ -415,7 +415,41 @@ export function designatedCommanders(
  * name it knows (case-insensitively), the name as written otherwise.
  */
 export function canonicalNameIn(catalog: readonly { readonly name: string }[]): (name: string) => string {
-  return (name) => catalog.find((c) => c.name.toLowerCase() === name.toLowerCase())?.name ?? name
+  const lookup = catalogLookup(catalog)
+  return (name) => lookup(name)?.name ?? name
+}
+
+/**
+ * The front face of a multi-face card name: the part before ` // `, trimmed. Deck sites write
+ * double-faced, flip and split cards as `Front // Back` (Archidekt's `Malakir Rebirth // Malakir
+ * Mire`), while the catalogue registers a modal double-faced / transform card under its front face
+ * alone. A name with no ` // ` comes back trimmed and otherwise unchanged.
+ */
+export function frontFaceName(name: string): string {
+  const i = name.indexOf(' // ')
+  return (i < 0 ? name : name.slice(0, i)).trim()
+}
+
+/**
+ * A case-insensitive name lookup over a card catalogue. The name as written wins — so a split card
+ * the catalogue registers under its full `A // B` name, or a card whose real name contains slashes,
+ * still resolves to itself — and only when that misses does a `Front // Back` name fall back to its
+ * [frontFaceName].
+ */
+export function catalogLookup<T extends { readonly name: string }>(
+  catalog: readonly T[],
+): (name: string) => T | undefined {
+  const byName = new Map<string, T>()
+  for (const c of catalog) {
+    const key = c.name.toLowerCase()
+    if (!byName.has(key)) byName.set(key, c)
+  }
+  return (name) => {
+    const exact = byName.get(name.trim().toLowerCase())
+    if (exact) return exact
+    const front = frontFaceName(name)
+    return front === name.trim() ? undefined : byName.get(front.toLowerCase())
+  }
 }
 
 export interface ResolvedEntry {
@@ -446,7 +480,8 @@ export interface ResolveResult {
 }
 
 /**
- * Match parsed entries against the catalogue by name (case-insensitive). The
+ * Match parsed entries against the catalogue by name (case-insensitive; a
+ * `Front // Back` name falls back to its front face, see [catalogLookup]). The
  * set code, if present, is used only to flag a soft mismatch — the name still
  * resolves so users aren't blocked by a stale set tag. Copy counts above the
  * four-of limit (basic lands exempted) are silently capped, with the original
@@ -456,8 +491,7 @@ export function resolveAgainstCatalog(
   entries: ParsedEntry[],
   catalog: CardSummary[]
 ): ResolveResult {
-  const byName = new Map<string, CardSummary>()
-  for (const c of catalog) byName.set(c.name.toLowerCase(), c)
+  const lookup = catalogLookup(catalog)
 
   const resolved: ResolvedEntry[] = []
   const deckCards: Record<string, number> = {}
@@ -468,7 +502,7 @@ export function resolveAgainstCatalog(
 
   for (const entry of entries) {
     totalCards += entry.count
-    const card = byName.get(entry.name.toLowerCase()) ?? null
+    const card = lookup(entry.name) ?? null
     if (!card) {
       resolved.push({ entry, match: null })
       // Aggregate unmatched copies under the as-typed name, capped at 4 since

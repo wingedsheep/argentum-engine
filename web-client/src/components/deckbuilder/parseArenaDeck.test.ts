@@ -3,9 +3,13 @@ import {
   canonicalNameIn,
   designatedCommanders,
   inferCommanders,
+  catalogLookup,
+  frontFaceName,
   parseArenaDeckList,
+  resolveAgainstCatalog,
   type ParseResult,
 } from './parseArenaDeck'
+import type { CardSummary } from './cardFilter'
 import type { CommanderCard } from './commanderPairing'
 
 const names = (list: readonly { name: string }[]) => list.map((e) => e.name)
@@ -279,5 +283,54 @@ describe('importing a Commander section', () => {
 
   it('designates nothing without a Commander section', () => {
     expect(designatedCommanders(parseArenaDeckList('4 Lightning Bolt').commander)).toEqual([])
+  })
+})
+
+describe('multi-face card names (`Front // Back`)', () => {
+  const card = (name: string): CardSummary => ({
+    name, manaCost: '', cmc: 0, colors: [], colorIdentity: [], cardTypes: [], supertypes: [], subtypes: [],
+    basicLand: false, rarity: 'RARE', setCode: null, collectorNumber: null,
+  })
+  // A modal double-faced card is registered under its front face alone; a split card under the full name.
+  const catalog = [card('Malakir Rebirth'), card('Fire // Ice'), card('Fire'), card('Forest')]
+
+  it('frontFaceName keeps the part before " // " and leaves other names alone', () => {
+    expect(frontFaceName('Malakir Rebirth // Malakir Mire')).toBe('Malakir Rebirth')
+    expect(frontFaceName('  Malakir Rebirth  //  Malakir Mire ')).toBe('Malakir Rebirth')
+    expect(frontFaceName('Lightning Bolt')).toBe('Lightning Bolt')
+    expect(frontFaceName('Fire/Ice')).toBe('Fire/Ice')
+  })
+
+  it('resolves an Archidekt `Front // Back` entry to the card registered under its front face', () => {
+    const parsed = parseArenaDeckList('1x Malakir Rebirth // Malakir Mire (znr) 107 [Land]')
+    expect(parsed.entries[0]!.name).toBe('Malakir Rebirth // Malakir Mire')
+    const resolved = resolveAgainstCatalog(parsed.entries, catalog)
+    expect(resolved.unmatched).toEqual([])
+    expect(resolved.deckCards).toEqual({ 'Malakir Rebirth': 1 })
+    expect(resolved.matchedCards).toBe(1)
+  })
+
+  it('prefers the exact name, so a split card registered under its full name resolves to itself', () => {
+    const resolved = resolveAgainstCatalog(parseArenaDeckList('2 Fire // Ice').entries, catalog)
+    expect(resolved.deckCards).toEqual({ 'Fire // Ice': 2 })
+  })
+
+  it('still reports a multi-face name whose front face is unknown as unmatched, under the name as typed', () => {
+    const resolved = resolveAgainstCatalog(parseArenaDeckList('1 Nope // Nada').entries, catalog)
+    expect(resolved.unmatchedCards).toEqual({ 'Nope // Nada': 1 })
+  })
+
+  it('merges a front-face entry and a `Front // Back` entry into one card row', () => {
+    const resolved = resolveAgainstCatalog(
+      parseArenaDeckList(['1 Malakir Rebirth', '1 Malakir Rebirth // Malakir Mire'].join('\n')).entries,
+      catalog,
+    )
+    expect(resolved.deckCards).toEqual({ 'Malakir Rebirth': 2 })
+  })
+
+  it('canonicalNameIn and catalogLookup apply the same fallback', () => {
+    expect(canonicalNameIn(catalog)('malakir rebirth // Malakir Mire')).toBe('Malakir Rebirth')
+    expect(catalogLookup(catalog)('Forest')?.name).toBe('Forest')
+    expect(catalogLookup(catalog)('Island')).toBeUndefined()
   })
 })

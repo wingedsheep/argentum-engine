@@ -60,6 +60,7 @@ import {
 } from './browser'
 import {
   canonicalNameIn,
+  catalogLookup,
   designatedCommanders,
   inferCommanders,
   parseArenaDeckList,
@@ -2113,10 +2114,9 @@ function buildImportPreview(
   commanderFormat: boolean,
 ): ImportPreviewModel | null {
   if (text.trim() === '') return null
-  const byName = new Map(catalog.map((c) => [c.name.toLowerCase(), c]))
   const { parsed, inferredFrom } = inferCommanders(parseArenaDeckList(text), {
     commanderFormat,
-    lookup: (name) => byName.get(name.toLowerCase()),
+    lookup: catalogLookup(catalog),
   })
   const resolved = resolveAgainstCatalog([...parsed.commander, ...parsed.entries], catalog)
   const commanders = designatedCommanders(parsed.commander, canonicalNameIn(catalog))
