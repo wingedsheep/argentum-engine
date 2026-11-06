@@ -134,6 +134,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.util.concurrent.ConcurrentHashMap
 
@@ -1058,6 +1059,10 @@ object TargetPolarityAnalyzer {
         val slot = slotOf(leaf.target, requirements) ?: return leaf
         if (isOwnSide(requirements[slot])) return leaf
         val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+        // "Put target spell or nonland permanent into its owner's library second from the top"
+        // (Commit): off the battlefield it is the tuck above, and off the stack the spell never
+        // resolves — a counterspell that hands the card back a draw later. Both are removal.
+        if (requirement is TargetSpellOrPermanent) return leaf.copy(fromZone = Zone.BATTLEFIELD)
         val zone = (requirement as? TargetObject)?.filter?.zone ?: return leaf
         return leaf.copy(fromZone = zone)
     }
@@ -1894,13 +1899,12 @@ object TargetPolarityAnalyzer {
         // is a Vampire, it gets +2/+2"); rival conditional halves disagree and combine to UNKNOWN.
         is ConditionalStaticAbility -> staticPolarity(static.ability)
         is CompositeStaticAbility -> static.abilities.mapNotNull(::staticPolarity).takeIf { it.isNotEmpty() }?.let(::combine)
-        // "Has base power and toughness 1/1" (Cursed Role) shrinks nearly anything it lands on; a
-        // larger base is a gift or a curse depending on the creature, so it stays unread.
-        is SetBasePowerToughnessStatic -> when {
-            static.filter.scope != Scope.AttachedTo -> null
-            (static.power ?: 0) <= 1 && (static.toughness ?: 0) <= 1 -> TargetPolarity.HARMFUL
-            else -> null
-        }
+        // "Has base power and toughness 1/1" (Cursed Role) shrinks nearly anything it lands on, and
+        // a toothless 0/2 (Illusory Wrappings) takes away all it does in combat but block — the
+        // line [baseStatsPolarity] draws for the one-shot effect. A larger base is a gift or a
+        // curse depending on the creature, so it stays unread.
+        is SetBasePowerToughnessStatic -> if (static.filter.scope != Scope.AttachedTo) null
+            else baseStatsPolarity(static.power?.let(DynamicAmount::Fixed), static.toughness?.let(DynamicAmount::Fixed))
         else -> null
     }
 

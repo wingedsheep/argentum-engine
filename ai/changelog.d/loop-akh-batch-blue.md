@@ -1,0 +1,1 @@
+- #4491 Reads tucking a spell or nonland permanent into its owner's library (Commit) as removal, and an Aura setting a toothless base 0/2 (Illusory Wrappings) as a curse — aimed at the opponent's side

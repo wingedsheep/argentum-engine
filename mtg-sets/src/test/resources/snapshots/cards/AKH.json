@@ -372,6 +372,66 @@
     ]
 }
 
+// Aven Initiate
+{
+    "name": "Aven Initiate",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Warrior",
+    "oracleText": "Flying\nEmbalm {6}{U} ({6}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Bird Warrior with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "EMBALM"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "embalm_{6}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {6}{U} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61203781-24ad-4bc9-9b69-97149f3043bc.jpg?1783936526"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Baleful Ammit
 {
     "name": "Baleful Ammit",
@@ -1974,6 +2034,137 @@
     ]
 }
 
+// Commit // Memory
+{
+    "name": "Commit // Memory",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Put target spell or nonland permanent into its owner's library second from the top.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nEach player shuffles their hand and graveyard into their library, then draws seven cards.",
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06c9e2e8-2b4c-4087-9141-6aa25a506626.jpg?1783936458",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If a spell is put into its owner's library, it's removed from the stack and thus will not resolve. The spell isn't countered; it just no longer exists. This works against a spell that can't be countered."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a copy of a spell or a token is put into its owner's library, it's moved there, then it will cease to exist as a state-based action."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If the target's owner's library contains no cards, the target spell or permanent will be put into that player's library as the only card."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Commit",
+            "manaCost": "{3}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Put target spell or nonland permanent into its owner's library second from the top.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "positionFromTop": 1
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetSpellOrPermanent",
+                        "id": "t0",
+                        "permanentFilter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent"
+                            ]
+                        },
+                        "descriptionOverride": "target spell or nonland permanent"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Memory",
+            "manaCost": "{4}{U}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nEach player shuffles their hand and graveyard into their library, then draws seven cards.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Hand",
+                                                "Graveyard"
+                                            ]
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Shuffled"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Companion of the Trials
 {
     "name": "Companion of the Trials",
@@ -2459,6 +2650,69 @@
     ]
 }
 
+// Curator of Mysteries
+{
+    "name": "Curator of Mysteries",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhenever you cycle or discard another card, scry 1.\nCycling {U} ({U}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curator of Mysteries:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "descriptionOverride": "Whenever you cycle or discard another card, scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Christine Choi",
+        "flavorText": "To consult a sphinx is a test in patience. Perhaps that's the point.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16caa0b6-dba9-4f93-bf8d-3b339474cbf1.jpg?1783936524",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cursed Minotaur
 {
     "name": "Cursed Minotaur",
@@ -2480,6 +2734,61 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Decision Paralysis
+{
+    "name": "Decision Paralysis",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "DOESNT_UNTAP",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilAfterAffectedControllersNextUntap"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Vincent Proce",
+        "flavorText": "\"Eyes see only what is possible. A trained mind can explore the impossible.\"\n—Kefnet, god of knowledge",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8eb8d39-9eb8-4592-ab74-54cdc2460e62.jpg?1783936523"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2984,6 +3293,81 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Drake Haven
+{
+    "name": "Drake Haven",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cycle or discard a card, you may pay {1}. If you do, create a 2/2 blue Drake creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drake Haven:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLUE"
+                        ],
+                        "creatureTypes": [
+                            "Drake"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65844e72-aa84-483f-b07e-9e34e798aaec.jpg?1783936412"
+                    }
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, you may pay {1}. If you do, create a 2/2 blue Drake creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "John Severin Brassell",
+        "flavorText": "\"If you want to truly test your survival skills, walk the Obelisk Path when the drakes are feeding.\"\n—Etha, initiate of Rhet crop",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/4318da9d-dadf-444b-a0d4-fd270b216f5b.jpg?1783936524",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "While resolving Drake Haven's triggered ability, you can't pay {1} multiple times to get multiple Drakes."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5368,6 +5752,67 @@
     ]
 }
 
+// Hekma Sentinels
+{
+    "name": "Hekma Sentinels",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever you cycle or discard a card, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hekma Sentinels:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, this creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "James Ryman",
+        "flavorText": "\"The God-Pharaoh created the Hekma to protect us from the horrors beyond and to surround us in his love.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9b7e690-e5f7-4d6e-b756-22aea959a612.jpg?1783936521",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hieroglyphic Illumination
 {
     "name": "Hieroglyphic Illumination",
@@ -5721,6 +6166,48 @@
     ]
 }
 
+// Illusory Wrappings
+{
+    "name": "Illusory Wrappings",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has base power and toughness 0/2.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 0,
+                "toughness": 2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"No amount of strength can help you overcome my trial. You must be ready to forgo your body and favor your mind.\"\n—Kefnet, god of knowledge",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a67aefde-2c91-4974-b89d-84333a2874eb.jpg?1783936521",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Illusory Wrappings overwrites all previous effects that set the creature's base power and toughness to specific values, including those that define a * such as that of Enigma Drake. Any power- or toughness-setting effects that start to apply to a creature after Illusory Wrappings becomes attached to it will overwrite this effect."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Any power- or toughness-modifying effects (those that give +N/+N, for example) and counters will apply to the creature's new base power and toughness, even if they started to apply before Illusory Wrappings became attached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // In Oketra's Name
 {
     "name": "In Oketra's Name",
@@ -5998,6 +6485,132 @@
     ]
 }
 
+// Kefnet the Mindful
+{
+    "name": "Kefnet the Mindful",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Flying, indestructible\nKefnet can't attack or block unless you have seven or more cards in hand.\n{3}{U}: Draw a card, then you may return a land you control to its owner's hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kefnet the Mindful:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may return a land you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbda3b24-f2a6-4bcf-9a0a-bab69ffa8069.jpg?1783936521",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Once Kefnet has attacked or blocked, it will remain in combat even if the number of cards in your hand becomes six or fewer."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "While resolving Kefnet's activated ability, you don't choose which land to return to its owner's hand (or whether you'll return one at all) until you see the card you draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kefnet's Monument
 {
     "name": "Kefnet's Monument",
@@ -6093,6 +6706,79 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Labyrinth Guardian
+{
+    "name": "Labyrinth Guardian",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Illusion Warrior",
+    "oracleText": "When this creature becomes the target of a spell, sacrifice it.\nEmbalm {3}{U} ({3}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Illusion Warrior with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "EMBALM"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Labyrinth Guardian:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "spellsOnly": true
+                },
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "embalm_{3}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {3}{U} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17921573-e3d1-45a7-b7e5-a27ae1fa3c2c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8002,6 +8688,80 @@
     }
 }
 
+// Open into Wonder
+{
+    "name": "Open into Wonder",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "X target creatures can't be blocked this turn. Until end of turn, those creatures gain \"Whenever this creature deals combat damage to a player, draw a card.\"",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "CANT_BE_BLOCKED",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantTriggeredAbility",
+                        "ability": {
+                            "id": "Open into Wonder:1",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "damageType": "DamageCombat",
+                                "recipient": {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                }
+                            },
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "descriptionOverride": "Whenever this creature deals combat damage to a player, draw a card."
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "flavorText": "The one thing the Gatewatch didn't expect to find on a plane ruled by Nicol Bolas was perfection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0df4db1e-f2a7-44e7-9b8d-fecf73d1e01c.jpg?1783936518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ornery Kudu
 {
     "name": "Ornery Kudu",
@@ -8760,6 +9520,59 @@
     }
 }
 
+// River Serpent
+{
+    "name": "River Serpent",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "This creature can't attack unless there are five or more cards in your graveyard.\nCycling {U} ({U}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Christopher Moeller",
+        "flavorText": "Though the Luxa River brings life to Naktamun, it's not without dangers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a89500ba-8256-4002-a9f2-62d529e9886b.jpg?1783936516",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Once River Serpent has attacked, it will remain in combat even if the number of cards in your graveyard becomes four or fewer."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ruthless Sniper
 {
     "name": "Ruthless Sniper",
@@ -8837,6 +9650,55 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sacred Excavation
+{
+    "name": "Sacred Excavation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to two target cards with cycling from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "HasCycling"
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Noah Bradley",
+        "flavorText": "The anointed work the mines without pause, their cartouches instilling them with tireless purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dc2ab27-0f68-480c-99c9-53243c1ab0ac.jpg?1783936516"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9077,6 +9939,92 @@
         "artist": "Bastien L. Deharme",
         "flavorText": "\"The best answers solve more than one riddle.\"\n—Kefnet, god of knowledge",
         "imageUri": "https://cards.scryfall.io/normal/front/3/4/34ffaefe-1b9e-418d-9760-b7d546f03542.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Seeker of Insight
+{
+    "name": "Seeker of Insight",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Draw a card, then discard a card. Activate only if you've cast a noncreature spell this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Seeker of Insight:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "filter": "noncreature",
+                            "atLeast": 1
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Magali Villeneuve",
+        "flavorText": "The Trial of Knowledge challenges and broadens the minds of initiates.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f0b7bfc-f126-4885-a663-6f8dcc52e663.jpg?1783936517"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -9875,6 +10823,66 @@
     ]
 }
 
+// Tah-Crop Skirmisher
+{
+    "name": "Tah-Crop Skirmisher",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "Embalm {3}{U} ({3}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Snake Warrior with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "EMBALM"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "embalm_{3}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {3}{U} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Initiates live and train with their crop, the unit that begins the trials together.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab0429ec-0809-4e68-9790-8c21bde201a2.jpg?1783936514"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tattered Mummy
 {
     "name": "Tattered Mummy",
@@ -10208,6 +11216,101 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Trial of Knowledge
+{
+    "name": "Trial of Knowledge",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw three cards, then discard a card.\nWhen a Cartouche you control enters, return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trial of Knowledge:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Trial of Knowledge:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cartouche ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89020c72-4cda-4634-8475-6d16a02236f1.jpg?1783936513",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Each Trial has an ability to return to your hand when a Cartouche enters the battlefield under your control. The Trial is returned to its owner's hand only if it's on the battlefield as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

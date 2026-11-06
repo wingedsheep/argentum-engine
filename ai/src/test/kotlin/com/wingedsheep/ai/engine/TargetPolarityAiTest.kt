@@ -38,6 +38,8 @@ import com.wingedsheep.mtg.sets.definitions.woe.cards.EmberethVeteran
 import com.wingedsheep.mtg.sets.definitions.fin.cards.RestorationMagic
 import com.wingedsheep.mtg.sets.definitions.mh3.cards.ProudPackRhino
 import com.wingedsheep.mtg.sets.definitions.m19.cards.Suncleanser
+import com.wingedsheep.mtg.sets.definitions.akh.cards.CommitMemory
+import com.wingedsheep.mtg.sets.definitions.akh.cards.IllusoryWrappings
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
@@ -68,7 +70,7 @@ class TargetPolarityAiTest : FunSpec({
         GiantGrowth, Unsummon, Pacifism, BlatantThievery, DaruHealer, GustcloakHarrier, Sandskin,
         GloriousAnthem, MischievousCatgeist, EmberethVeteran, StrandsOfUndeath, DiminisherWitch,
         PredefinedTokens.YoungHeroRole, PredefinedTokens.CursedRole,
-        ProudPackRhino, RestorationMagic, Overgrowth,
+        ProudPackRhino, RestorationMagic, Overgrowth, IllusoryWrappings,
     )
     val registry = CardRegistry().apply { register(cards) }
 
@@ -150,6 +152,15 @@ class TargetPolarityAiTest : FunSpec({
             // A granted mana ability is the same gift, put another way.
             TargetPolarityAnalyzer.forSpell(AbundantGrowth) shouldBe listOf(TargetPolarity.BENEFICIAL)
         }
+        test("an Aura setting a toothless base 0/2 is a curse") {
+            TargetPolarityAnalyzer.forSpell(IllusoryWrappings) shouldBe listOf(TargetPolarity.HARMFUL)
+        }
+        test("tucking a spell or nonland permanent into its owner's library is removal") {
+            // Commit: "Put target spell or nonland permanent into its owner's library second from the top."
+            val commit = CommitMemory.cardFaces.first().script
+            TargetPolarityAnalyzer.forRequirements(commit.spellEffect, commit.targetRequirements) shouldBe
+                listOf(TargetPolarity.HARMFUL)
+        }
         test("stealing, protecting and stripping Auras read off their statics") {
             TargetPolarityAnalyzer.forSpell(ControlMagic) shouldBe listOf(TargetPolarity.HARMFUL)
             TargetPolarityAnalyzer.forSpell(BlackWard) shouldBe listOf(TargetPolarity.BENEFICIAL)
@@ -218,6 +229,23 @@ class TargetPolarityAiTest : FunSpec({
 
         aimedAt(polarity = false) shouldBe theirs
         aimedAt(polarity = true) shouldBe ours
+    }
+
+    test("a base-0/2 Aura goes on their creature, not ours") {
+        val d = driver()
+        d.putCreatureOnBattlefield(d.player1, "Gustcloak Harrier")
+        val theirs = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        lands(d, d.player1, "Island" to 3)
+        val aura = d.putCardInHand(d.player1, "Illusory Wrappings")
+        val cast = d.legalActions(d.player1).single { (it.action as? CastSpell)?.cardId == aura }
+        val intents = IntentCatalog.of(registry)
+
+        TargetSelection.polarities(d.state, cast, intents) shouldBe listOf(TargetPolarity.HARMFUL)
+        val filled = TargetSelection.fillHeuristically(
+            d.state, cast, d.player1, fillPartialRequirements = true,
+            intents = intents, polarityFromEffect = true,
+        ) as CastSpell
+        (filled.targets.single() as ChosenTarget.Permanent).entityId shouldBe theirs
     }
 
     // Game 15 turn 12: Blossombind on our own Explosive Prodigy because they had no creatures.
