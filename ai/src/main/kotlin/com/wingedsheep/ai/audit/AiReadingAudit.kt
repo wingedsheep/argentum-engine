@@ -973,8 +973,8 @@ object AiReadingAudit {
         // A venture by another player stays flagged.
         if (leaf is VentureIntoTheDungeonEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // The Ring tempting its controller (Took Reaper's death, Call of the Ring's upkeep) has no target to aim
-        // and no window to hold it for: the Ring-bearer is chosen at resolution, and the Ring's abilities it
-        // unlocks are on the board the simulation prices. The Ring tempting another player stays flagged.
+        // and no window to hold it for: the Ring-bearer is chosen at resolution, and what the Ring then does is
+        // read where it acts (CombatMath's evasion), not by an intent tag. The Ring tempting another player stays flagged.
         if (leaf is TheRingTemptsYouEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
