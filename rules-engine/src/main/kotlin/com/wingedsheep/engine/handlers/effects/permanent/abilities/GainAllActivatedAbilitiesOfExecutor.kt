@@ -82,7 +82,8 @@ class GainAllActivatedAbilitiesOfExecutor(
                         id = AbilityId("gained_${donorId.value}_${ability.id.value}")
                     ),
                     duration = effect.duration,
-                    sourceId = context.sourceId
+                    sourceId = context.sourceId,
+                    controllerId = context.effectControllerId ?: context.controllerId
                 )
             }
         if (gained.isEmpty()) return EffectResult.success(state)
