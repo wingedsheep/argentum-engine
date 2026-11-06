@@ -1,0 +1,1 @@
+- #4512 Sees an opponent's set-base-P/T ability (Sorceress Queen, Singing Tree, Marsh Flitter) as a combat answer, and stops attacking into one that wins the block
