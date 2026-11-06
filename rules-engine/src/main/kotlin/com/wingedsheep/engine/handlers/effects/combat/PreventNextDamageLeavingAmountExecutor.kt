@@ -18,7 +18,7 @@ class PreventNextDamageLeavingAmountExecutor(
     override val effectType: KClass<PreventNextDamageLeavingAmountEffect> = PreventNextDamageLeavingAmountEffect::class
 
     override fun execute(state: GameState, effect: PreventNextDamageLeavingAmountEffect, context: EffectContext): EffectResult {
-        val targetId = context.resolveTarget(effect.target) ?: return EffectResult.success(state)
+        val targetId = context.resolveTarget(effect.target, state) ?: return EffectResult.success(state)
         val choices = eligibleLeavingAmountSources(
             state, effect, context.controllerId, context.sourceId, amountEvaluator.predicates, context
         )

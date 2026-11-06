@@ -60,11 +60,11 @@ class GatedEffectReadingAiTest : ScenarioTestBase() {
             }
         }
 
-        test("a punisher's branches are the opponent's call: only what both do is read") {
+        test("a punisher's branches are the opponent's call: a branch that leaves the slot alone defers to the other") {
             // Risk Factor: "target opponent may have it deal 4 damage to them; if they don't, you
-            // draw three cards" — which branch happens is the opponent's call, and only one of them
-            // touches the slot, so it stays unread.
-            TargetPolarityAnalyzer.forSpell(card("Risk Factor")) shouldBe listOf(TargetPolarity.UNKNOWN)
+            // draw three cards" — which branch happens is the opponent's call, but only one of them
+            // touches the slot and it hurts, so the targeted opponent reads harmful.
+            TargetPolarityAnalyzer.forSpell(card("Risk Factor")) shouldBe listOf(TargetPolarity.HARMFUL)
             // Clash of Elements: "its owner may put it on top of their library … if they didn't,
             // the bottom" — either branch tucks it (PunisherGateReadingAiTest).
             TargetPolarityAnalyzer.forSpell(card("Clash of Elements")) shouldBe listOf(TargetPolarity.HARMFUL)

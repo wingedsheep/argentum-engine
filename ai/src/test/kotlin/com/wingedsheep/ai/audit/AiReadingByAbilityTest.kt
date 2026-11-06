@@ -78,6 +78,12 @@ class AiReadingByAbilityTest : FunSpec({
         ability.findings.first { it.check == Check.TIMING && !it.read }.reason shouldBe "no timing for this until-end-of-turn effect"
     }
 
+    test("a combat-damage shield on each player needs no hold, like a single shield") {
+        // Commencement of Festivities: ForEachPlayer(each) { prevent combat damage to that player }.
+        val reading = AiReadingAudit.read(card("Commencement of Festivities"))
+        reading.abilities.flatMap { it.findings }.filter { it.check == Check.TIMING }.map { it.read }.toSet() shouldBe setOf(true)
+    }
+
     test("a can't-attack-or-block activation is read whole: the crack-back sees it, the restriction window times it") {
         val reading = AiReadingAudit.read(card("Alchemist's Vial"))
         val ability = reading.abilities.single { it.ability.kind == AbilityKind.ACTIVATED }
