@@ -492,6 +492,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Transform', inPlay: 'Legendary enchantments and artifacts flip into lands once you meet their condition, turning a slow card into a lasting engine.' },
     ],
   },
+  AKH: {
+    tagline: 'A combat-heavy format built on the trials of Amonkhet: exert for bigger attacks, cycle away dead cards, and bring the fallen back with embalm.',
+    setting: 'Amonkhet, a desert plane where initiates prove themselves in the God-Pharaoh\'s trials for the glory of the afterlife.',
+    gameplay: 'Games are decided in combat, and they move fast. Exert lets attackers hit harder at the cost of their next untap, and -1/-1 counters shrink blockers and kill small creatures outright. Cycling is everywhere, so hands rarely flood, and many cards reward cycling or discarding. Embalm returns creatures from the graveyard as white Zombie tokens, and aftermath split cards give a second spell from the graveyard, so trades keep paying you back.',
+    tips: [
+      'Cycle early and often: cycling smooths every draw and turns on the cards that care about it.',
+      'Plan your exerts — an exerted creature will not untap to block, so exert when the race is yours.',
+      'Count embalm creatures and aftermath halves as cards still to play; your graveyard is half your hand late in the game.',
+    ],
+    tryIf: 'aggressive creature decks, cycling and getting value from the graveyard',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['aggro', 'graveyard', 'counters'],
+    mechanics: [
+      { name: 'Exert', inPlay: 'Attackers get a bonus if you choose to skip their next untap, trading defence for a bigger swing.' },
+      { name: 'Cycling', inPlay: 'Pay a small cost to discard the card and draw another, so late-game lands and early-game bombs never sit dead.' },
+      { name: 'Embalm', inPlay: 'Pay from the graveyard to make a white Zombie token copy of the creature, giving every creature a second life.' },
+      { name: '-1/-1 counters', inPlay: 'Spells and creatures put -1/-1 counters on opponents\' creatures — or your own for a bigger payoff — so small creatures die and big ones shrink for good.' },
+      { name: 'Aftermath', inPlay: 'Split cards whose second half is cast only from the graveyard, giving two spells for one card.' },
+    ],
+  },
   HOU: {
     tagline: 'An aggressive, combat-first format where blocking is punished and dead creatures come back. Exert and afflict reward attacking, aftermath spells get a second half.',
     setting: 'Amonkhet as the Hours arrive and the God-Pharaoh Nicol Bolas returns to claim his plane.',
