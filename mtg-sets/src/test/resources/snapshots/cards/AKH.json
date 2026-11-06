@@ -4021,6 +4021,100 @@
     ]
 }
 
+// Embalmer's Tools
+{
+    "name": "Embalmer's Tools",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Activated abilities of creature cards in your graveyard cost {1} less to activate.\nTap an untapped Zombie you control: Target player mills a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Embalmer's Tools:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "permanent Zombie untapped ctrl:you"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Tap an untapped Zombie you control: Target player mills a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Graveyard"
+                            }
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    }
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "reach": "ACTIVATED_BY_YOU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Adrian Majkrzak",
+        "flavorText": "\"They might be dead, but these mummies are masters of their trade.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c044f47-7435-4cb4-b4ad-48bb146daa9f.jpg?1783936452"
+    },
+    "colorIdentityOverride": []
+}
+
 // Emberhorn Minotaur
 {
     "name": "Emberhorn Minotaur",
@@ -4669,6 +4763,186 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Gate to the Afterlife
+{
+    "name": "Gate to the Afterlife",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a nontoken creature you control dies, you gain 1 life. Then you may draw a card. If you do, discard a card.\n{2}, {T}, Sacrifice this artifact: Search your graveyard, hand, and/or library for a card named God-Pharaoh's Gift and put it onto the battlefield. If you search your library this way, shuffle. Activate only if there are six or more creature cards in your graveyard.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gate to the Afterlife:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control dies, you gain 1 life. Then you may draw a card. If you do, discard a card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gate to the Afterlife:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Hand",
+                                    "Library"
+                                ],
+                                "filter": "name:God-Pharaoh's Gift"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your graveyard and/or hand and/or library for a card named God-Pharaoh's Gift to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}, Sacrifice this artifact: Search your graveyard, hand, and/or library for a card named God-Pharaoh's Gift and put it onto the battlefield. If you search your library this way, shuffle. Activate only if there are six or more creature cards in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b544a59-86b9-447d-b54d-b94a262b6866.jpg?1783936453",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If Gate to the Afterlife is put into a graveyard at the same time a nontoken creature you control dies, its first ability triggers for that creature."
+            }
+        ]
+    }
 }
 
 // Gideon of the Trials
@@ -8050,6 +8324,92 @@
     ]
 }
 
+// Luxa River Shrine
+{
+    "name": "Luxa River Shrine",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: You gain 1 life. Put a brick counter on this artifact.\n{T}: You gain 2 life. Activate only if there are three or more brick counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Luxa River Shrine:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "BRICK",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "You gain 1 life. Put a brick counter on this artifact."
+            },
+            {
+                "id": "Luxa River Shrine:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "BRICK"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "You gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "artist": "Sung Choi",
+        "flavorText": "Without the God-Pharaoh, there would be no Luxa. Without the Luxa, there would be no life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f43dc6f-910c-42a1-b329-038e20dfb264.jpg?1783936451"
+    }
+}
+
 // Manglehorn
 {
     "name": "Manglehorn",
@@ -9412,6 +9772,133 @@
     ]
 }
 
+// Oracle's Vault
+{
+    "name": "Oracle's Vault",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Exile the top card of your library. Until end of turn, you may play that card. Put a brick counter on this artifact.\n{T}: Exile the top card of your library. Until end of turn, you may play that card without paying its mana cost. Activate only if there are three or more brick counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oracle's Vault:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "BRICK",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Exile the top card of your library. Until end of turn, you may play that card. Put a brick counter on this artifact."
+            },
+            {
+                "id": "Oracle's Vault:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "gathered0"
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "BRICK"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Exile the top card of your library. Until end of turn, you may play that card without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43fcc4a5-3ab0-4344-85af-d80aae293b75.jpg?1783936448"
+    }
+}
+
 // Ornery Kudu
 {
     "name": "Ornery Kudu",
@@ -9955,6 +10442,167 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Pyramid of the Pantheon
+{
+    "name": "Pyramid of the Pantheon",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Add one mana of any color. Put a brick counter on this artifact.\n{T}: Add three mana of any one color. Activate only if there are three or more brick counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pyramid of the Pantheon:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "AddManaOfChoice",
+                        {
+                            "type": "AddCounters",
+                            "counterType": "BRICK",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "Add one mana of any color. Put a brick counter on this artifact."
+            },
+            {
+                "id": "Pyramid of the Pantheon:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "BRICK"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "Add three mana of any one color."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "RARE",
+        "artist": "Florian de Gesincourt",
+        "flavorText": "Five gods, one purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cef335b2-8086-4b29-b8e3-47de6faa1334.jpg?1783936448"
+    }
+}
+
+// Quarry Hauler
+{
+    "name": "Quarry Hauler",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Camel",
+    "oracleText": "When this creature enters, for each kind of counter on target permanent, put another counter of that kind on it or remove one from it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quarry Hauler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.CounterKindsOn",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "body": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Put another {counter} counter on it",
+                                "effect": {
+                                    "type": "AddCountersOfChosenKind",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "kindFrom": "ITERATION"
+                                }
+                            },
+                            {
+                                "label": "Remove a {counter} counter from it",
+                                "effect": {
+                                    "type": "RemoveCountersOfIteratedKind",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, for each kind of counter on target permanent, put another counter of that kind on it or remove one from it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "David Gaillet",
+        "flavorText": "They labor beside the anointed, constructing the vast monuments of Naktamun.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b2877c5-7680-4c2d-8e46-1d4548f0b03a.jpg?1783936470"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10611,6 +11259,64 @@
     ]
 }
 
+// Sandwurm Convergence
+{
+    "name": "Sandwurm Convergence",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures with flying can't attack you or planeswalkers you control.\nAt the beginning of your end step, create a 5/5 green Wurm creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sandwurm Convergence:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wurm"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/6/366c01a7-6399-496b-a5a3-8be45475ce33.jpg?1783936409"
+                },
+                "descriptionOverride": "At the beginning of your end step, create a 5/5 green Wurm creature token."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackYou",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                },
+                "coversPlaneswalkers": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Cantankerous and territorial, sandwurms claim even the skies above their dunes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e47bd2c5-e3db-4fde-a695-9e67a7e937be.jpg?1783936471",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Once a creature has attacked you or a planeswalker you control, it will remain in combat even if it gains flying. Similarly, if a creature with flying enters the battlefield attacking, Sandwurm Convergence's first ability can't undo that attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scaled Behemoth
 {
     "name": "Scaled Behemoth",
@@ -10930,6 +11636,177 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Shed Weakness
+{
+    "name": "Shed Weakness",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. You may remove a -1/-1 counter from it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "RemoveCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Christine Choi",
+        "flavorText": "To prepare for the Trial of Strength, nagas shed their old skin—and with it their scars, their doubts, and their fears.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81803f44-6260-4df9-b566-2a2694d4deb0.jpg?1783936469"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Shefet Monitor
+{
+    "name": "Shefet Monitor",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Cycling {3}{G} ({3}{G}, Discard this card: Draw a card.)\nWhen you cycle this card, you may search your library for a basic land card or a Desert card, put it onto the battlefield, then shuffle. (Do this before you draw.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shefet Monitor:1",
+                "trigger": "CycleEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsBasicLand",
+                                                    {
+                                                        "type": "And",
+                                                        "predicates": [
+                                                            "IsLand",
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Desert"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land or land Desert card to put onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/2688ef62-875a-4735-9a63-6f3152d10d61.jpg?1783936469",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "When you cycle this card, first the cycling ability goes on the stack, then the triggered ability goes on the stack on top of it. The triggered ability will resolve before you draw a card from the cycling ability."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "The cycling ability and the triggered ability are separate. If the triggered ability doesn't resolve (because, for example, it has been countered, or all of its targets have become illegal), the cycling ability will still resolve, and you'll draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11654,6 +12531,68 @@
     ]
 }
 
+// Synchronized Strike
+{
+    "name": "Synchronized Strike",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Untap up to two target creatures. They each get +2/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    },
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "Khenra are almost always born as twins. Their instinctual connection lends itself well to their preferred fighting style.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcb09d11-5a6d-498f-9173-3539760b19fb.jpg?1783936466"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tah-Crop Elite
 {
     "name": "Tah-Crop Elite",
@@ -12292,6 +13231,60 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Trial of Strength
+{
+    "name": "Trial of Strength",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 4/2 green Beast creature token.\nWhen a Cartouche you control enters, return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trial of Strength:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ]
+                }
+            },
+            {
+                "id": "Trial of Strength:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cartouche ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "Instincts to guide. Strength to overcome.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acadb754-4a3b-4633-b784-252c0e1ab650.jpg?1783936465"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -12972,6 +13965,138 @@
     ]
 }
 
+// Watchers of the Dead
+{
+    "name": "Watchers of the Dead",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Cat",
+    "oracleText": "Exile this creature: Each opponent chooses two cards in their graveyard and exiles the rest.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Watchers of the Dead:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "storeRemainder": "remainder1",
+                                "prompt": "Choose two cards in your graveyard to keep. Exile the rest.",
+                                "selectedLabel": "Keep",
+                                "remainderLabel": "Exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "They are tasked with protecting the entrance to the embalming chambers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30efc831-3673-4bc1-8a25-150c0349253a.jpg?1783936447"
+    }
+}
+
+// Watchful Naga
+{
+    "name": "Watchful Naga",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Wizard",
+    "oracleText": "You may exert this creature as it attacks. When you do, draw a card. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Watchful Naga:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "The forked tongue of the naga is sensitive to drifting scent trails from the past, present, and sometimes even the future.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0ae361e-20e2-4388-bd82-ce041f427495.jpg?1783936466",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can't exert a creature unless an effect allows you to do so. Similar effects that \"tap and freeze\" a creature (such as that of Decision Paralysis) don't exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player's creature until end of turn and exert it, it will untap during that player's untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wayward Servant
 {
     "name": "Wayward Servant",
@@ -13071,6 +14196,74 @@
     ]
 }
 
+// Winds of Rebuke
+{
+    "name": "Winds of Rebuke",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target nonland permanent to its owner's hand. Each player mills two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"I have foreseen that you will not pass my trial.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2718457-1e3b-48bc-99fe-2300277ee1e0.jpg?1783936513"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Winged Shepherd
 {
     "name": "Winged Shepherd",
@@ -13099,5 +14292,61 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Zenith Seeker
+{
+    "name": "Zenith Seeker",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\nWhenever you cycle or discard a card, target creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zenith Seeker:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, target creature gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Kang",
+        "flavorText": "Only from the sky can one fully understand the horrors of the wastes and the wonder of the Hekma's protection.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47b711b5-aeec-47c4-a718-6bf43e561944.jpg?1783936512",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

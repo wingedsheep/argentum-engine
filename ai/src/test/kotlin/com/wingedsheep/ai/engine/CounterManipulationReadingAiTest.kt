@@ -79,6 +79,21 @@ class CounterManipulationReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("adding or removing one counter of each kind on a target reads both sides open") {
+            // Dramatist's Puppet, Quarry Hauler: the kinds are whatever the target carries, so the
+            // slot is FLEXIBLE like the moves above, and the per-kind steps need no intent of their own.
+            for (name in listOf("Dramatist's Puppet", "Quarry Hauler")) {
+                val card = cardRegistry.requireCard(name)
+                val etb = card.script.triggeredAbilities.single()
+                withClue(name) {
+                    TargetPolarityAnalyzer.forRequirements(etb.effect, etb.allTargetRequirements) shouldBe
+                        listOf(TargetPolarity.FLEXIBLE)
+                }
+                val reading = AiReadingAudit.read(card)
+                withClue("$name: $reading") { reading.readFully shouldBe true }
+            }
+        }
+
         test("a card that carries counters on rewards a deck that puts +1/+1 counters down") {
             for (name in listOf("The Ozolith", "Essence Channeler")) {
                 withClue(name) { SynergyAxes.of(cardRegistry.requireCard(name)).rewards shouldContain SynergyAxis.PLUS_COUNTERS }

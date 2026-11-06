@@ -64,6 +64,9 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersOfIteratedKindEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect
+import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
@@ -957,8 +960,12 @@ object AiReadingAudit {
         // Unlike a RemoveCountersEffect of a named kind on another target (read by its kind: a -1/-1
         // counter removed is a pump; any other kind stays flagged), these name no kind, so a target
         // does not make them taggable.
+        // So do the steps of a loop over the kinds already on a permanent — "for each kind of counter
+        // on target permanent, put another counter of that kind on it or remove one from it"
+        // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on.
         if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
-            leaf is RemoveAnyNumberOfCountersEffect
+            leaf is RemoveAnyNumberOfCountersEffect || leaf is RemoveCountersOfIteratedKindEffect ||
+            (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom == CounterKindSource.ITERATION)
         ) return true
         // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
         // counters off its controller's own permanents to pay for a payoff beside it (the doubled

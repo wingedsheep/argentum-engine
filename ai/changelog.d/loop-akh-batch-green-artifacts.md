@@ -1,0 +1,1 @@
+- #4493 Reads Synchronized Strike's untap-and-pump as a combat trick, and "for each kind of counter on target permanent, add or remove one" (Quarry Hauler, Dramatist's Puppet) as a two-sided target
