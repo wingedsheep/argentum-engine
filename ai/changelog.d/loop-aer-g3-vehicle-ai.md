@@ -1,0 +1,1 @@
+- #TBD The AI now values an uncrewed Vehicle as a share of the creature it becomes (more when its other creatures can crew it), on the board, as a spell on the stack and in the draft heuristic — Consulate Dreadnought no longer reads as a blank artifact.

@@ -4,6 +4,7 @@ import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
+import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.LossShields
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
@@ -311,7 +312,10 @@ object LimitedCardRater {
         return -(0.4 + 0.35 * card.cmc)
     }
 
-    private fun baseDetail(card: CardDefinition): String = when {
+    private fun baseDetail(card: CardDefinition): String = vehicleCrew(card)?.let { crew ->
+        val stats = card.creatureStats!!
+        "Vehicle, ${stats.basePower!! + stats.baseToughness!!} stats for ${card.cmc.coerceAtLeast(1)} mana, crew $crew"
+    } ?: when {
         card.typeLine.isCreature -> {
             val p = card.creatureStats?.basePower
             val t = card.creatureStats?.baseToughness
@@ -327,31 +331,53 @@ object LimitedCardRater {
     }
 
     /**
+     * Base rating of a body with [power]/[toughness] for [manaValue] mana: total stats per mana.
+     */
+    private fun statEfficiencyRating(power: Int, toughness: Int, manaValue: Int): Double {
+        val cmc = manaValue.coerceAtLeast(1)
+
+        // Stat efficiency: total stats vs CMC
+        val statTotal = power + toughness
+        val efficiency = statTotal.toDouble() / cmc
+
+        // Base: 2.0 for average, scale with efficiency
+        // A 2/2 for 2 (efficiency=2.0) is average
+        // A 3/3 for 3 (efficiency=2.0) is average
+        // A 4/4 for 3 (efficiency=2.67) is good
+        // A 2/1 for 1 (efficiency=3.0) is aggressive
+        return when {
+            efficiency >= 3.0 -> 3.0
+            efficiency >= 2.5 -> 2.7
+            efficiency >= 2.0 -> 2.3
+            efficiency >= 1.5 -> 2.0
+            else -> 1.5
+        }
+    }
+
+    /** The Crew N of a Vehicle with a printed body, or null for anything else. */
+    private fun vehicleCrew(card: CardDefinition): Int? {
+        if (card.typeLine.isCreature) return null
+        val stats = card.creatureStats ?: return null
+        if (stats.basePower == null || stats.baseToughness == null) return null
+        return VehicleBody.printedCrew(card)
+    }
+
+    /**
      * Base rating from creature efficiency or spell type.
      */
     private fun baseRating(card: CardDefinition): Double {
+        vehicleCrew(card)?.let { crew ->
+            // A Vehicle's body, rated as the creature it becomes, less what tapping the crew costs
+            // ([VehicleBody.DRAFT_CREW_PENALTY] a point) — never below a blank artifact's base.
+            val stats = card.creatureStats!!
+            return (statEfficiencyRating(stats.basePower!!, stats.baseToughness!!, card.cmc) -
+                VehicleBody.DRAFT_CREW_PENALTY * crew).coerceAtLeast(1.5)
+        }
         if (card.typeLine.isCreature) {
             val stats = card.creatureStats ?: return 1.5
             val power = stats.basePower ?: return 2.0 // dynamic stats are usually good
             val toughness = stats.baseToughness ?: return 2.0
-            val cmc = card.cmc.coerceAtLeast(1)
-
-            // Stat efficiency: total stats vs CMC
-            val statTotal = power + toughness
-            val efficiency = statTotal.toDouble() / cmc
-
-            // Base: 2.0 for average, scale with efficiency
-            // A 2/2 for 2 (efficiency=2.0) is average
-            // A 3/3 for 3 (efficiency=2.0) is average
-            // A 4/4 for 3 (efficiency=2.67) is good
-            // A 2/1 for 1 (efficiency=3.0) is aggressive
-            return when {
-                efficiency >= 3.0 -> 3.0
-                efficiency >= 2.5 -> 2.7
-                efficiency >= 2.0 -> 2.3
-                efficiency >= 1.5 -> 2.0
-                else -> 1.5
-            }
+            return statEfficiencyRating(power, toughness, card.cmc)
         }
 
         // A planeswalker is a repeatable engine that has to be attacked to be answered — in limited
