@@ -727,6 +727,10 @@ object CardIntentAnalyzer {
      * ("… unless its controller pays {1}", Crystal Shard), and the decider can always buy their way
      * out of the payoff. A branch that wins us the game never happens — no decider ends the game
      * against themselves — so the card does the other one.
+     *
+     * Every decided gate with an `otherwise` among the cards is decided by another player; a
+     * future one its controller decides would be a modal choice, read the same way here but
+     * priced at its best branch, not its weakest, by the rater.
      */
     private fun punisherBranchLeaves(gate: GatedEffect, requirements: List<TargetRequirement>): List<Effect>? {
         val otherwise = gate.otherwise ?: return null
@@ -1874,11 +1878,9 @@ object CardIntentAnalyzer {
 
         // Damage to a *player* is a clock, not an answer — a permanent that pings the opponent for
         // 1 each upkeep must not be priced as repeatable removal.
-        is DealDamageEffect -> when (effect.target) {
-            is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
-            EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource ->
-                setOf(IntentTag.DAMAGE_TO_PLAYERS)
-            EffectTarget.Self -> emptySet()
+        is DealDamageEffect -> when {
+            namesAPlayer(effect.target) -> setOf(IntentTag.DAMAGE_TO_PLAYERS)
+            effect.target == EffectTarget.Self -> emptySet()
             else -> removalTags(effect.target)
         }
         // "Each opponent loses life equal to …" (Throne of the God-Pharaoh), "target player loses 2
@@ -2440,6 +2442,20 @@ object CardIntentAnalyzer {
     /** Whether [target] is bound to a "target opponent" requirement. */
     private fun namesAnOpponentSlot(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
         slotOf(target, requirements) is TargetOpponent
+
+    /**
+     * Whether damage aimed at [target] lands on a player — a named one ("each opponent", "that
+     * player", "you") or a slot only a player fills ("target player", "target opponent"). Damage
+     * to a player is a clock, not an answer to a permanent; the rater prices it so too.
+     */
+    fun damagesAPlayer(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        namesAPlayer(target) || slotOf(target, requirements).let { it is TargetPlayer || it is TargetOpponent }
+
+    private fun namesAPlayer(target: EffectTarget): Boolean = when (target) {
+        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
+        else -> false
+    }
 
     /** The requirement [target] is bound to, or null when it names no declared slot. */
     private fun slotOf(target: EffectTarget, requirements: List<TargetRequirement>): TargetRequirement? = when (target) {

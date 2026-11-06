@@ -12,6 +12,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
@@ -109,6 +110,9 @@ class PunisherGateReadingAiTest : ScenarioTestBase() {
             val faceBurn = instant("Face Burn Rating Probe") {
                 spell { effect = Effects.DealDamage(4, target(Targets.Opponent)) }
             }
+            val eachOpponentBurn = instant("Each Opponent Burn Rating Probe") {
+                spell { effect = Effects.DealDamage(4, EffectTarget.PlayerRef(Player.EachOpponent)) }
+            }
             val creatureBurn = instant("Creature Burn Rating Probe") {
                 spell { effect = Effects.DealDamage(4, target(TargetFilter.Creature)) }
             }
@@ -118,6 +122,9 @@ class PunisherGateReadingAiTest : ScenarioTestBase() {
             }
             withClue("four to the face is no answer to a creature") {
                 rating(faceBurn) shouldBeLessThan rating(creatureBurn)
+            }
+            withClue("however the player is named: a slot or each opponent") {
+                rating(eachOpponentBurn) shouldBe rating(faceBurn)
             }
         }
 
