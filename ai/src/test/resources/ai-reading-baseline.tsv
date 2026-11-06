@@ -2491,7 +2491,7 @@ Captain America, Living Legend	intent: TapUntapEffect
 Captain America, Super-Soldier
 Captain America, Wings of Freedom
 Captain Benjamin Sisko
-Captain Howler, Sea Scourge	polarity: CreateDelayedTriggerEffect; polarity: ModifyStatsEffect
+Captain Howler, Sea Scourge	polarity: ModifyStatsEffect
 Captain James T. Kirk
 Captain Jean-Luc Picard
 Captain Jonathan Archer
@@ -4131,8 +4131,8 @@ Defy Gravity
 Dega Disciple
 Deification
 Deliberate
-Delif's Cone	polarity: CreateDelayedTriggerEffect
-Delif's Cube	intent: GrantKeywordEffect; polarity: CreateDelayedTriggerEffect
+Delif's Cone
+Delif's Cube	intent: GrantKeywordEffect
 Delighted Halfling
 Delina, Wild Mage	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
 Deliver Unto Evil	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
@@ -17139,7 +17139,7 @@ Tamiyo's Logbook
 Tamiyo's Safekeeping
 Tamiyo, Collector of Tales
 Tamiyo, Compleated Sage
-Tamiyo, Field Researcher	polarity: ForEachEffect
+Tamiyo, Field Researcher
 Tamiyo, Inquisitive Student
 Tamiyo, the Moon Sage	polarity: DrawCardsEffect
 Tanazir Quandrix
@@ -17560,7 +17560,7 @@ The Hunter Maze
 The Huntsman's Redemption
 The Immortal Sun
 The Infamous Cruelclaw
-The Inner Light	polarity: CreateDelayedTriggerEffect
+The Inner Light
 The Irencrag	intent: BecomeArtifactEffect
 The Jolly Balloon Man
 The Kami War
