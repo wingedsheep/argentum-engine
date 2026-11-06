@@ -87,6 +87,16 @@ class BlockPairedWithMatchingThisTurnTest : FunSpec({
         d.paired(attacker, bear, BlockDirection.EITHER) shouldBe true
     }
 
+    test("the partner's projected characteristics count: a creature made a Zombie is a Zombie partner") {
+        val d = driver(); val opp = d.getOpponent(d.activePlayer!!)
+        val attacker = d.attacker(opp)
+        val blocker = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        d.run(Effects.AddCreatureType("Zombie", EffectTarget.ContextTarget(0)), listOf(blocker))
+        d.block(blocker, attacker)
+
+        d.paired(attacker, zombie, BlockDirection.EITHER) shouldBe true
+    }
+
     test("\"you\" in the partner filter is the asking controller, as the controller stood at the pairing") {
         val d = driver(); val you = d.activePlayer!!; val opp = d.getOpponent(you)
         val attacker = d.attacker(opp)

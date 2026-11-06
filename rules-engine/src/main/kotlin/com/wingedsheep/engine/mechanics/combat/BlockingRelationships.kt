@@ -66,7 +66,16 @@ internal object BlockingRelationships {
     private fun partnerSnapshots(state: GameState, partners: List<EntityId>) =
         com.wingedsheep.engine.state.components.stack.captureEntitySnapshots(partners, state.projectedState, state)
             .map { snapshot ->
+                // The capture projects card types and subtypes onto the type line; supertypes and
+                // keywords are projected here too, so a creature made legendary (or a Zombie) by a
+                // continuous effect counts as one, as it did on the battlefield.
+                val supertypes = snapshot.supertypes
+                    .mapNotNull { runCatching { com.wingedsheep.sdk.core.Supertype.valueOf(it) }.getOrNull() }
+                    .toSet()
+                val projectedEntry = state.projectedState.getProjectedValues(snapshot.entityId) != null
                 snapshot.copy(
+                    typeLine = if (projectedEntry) snapshot.typeLine?.copy(supertypes = supertypes) else snapshot.typeLine,
+                    keywords = state.projectedState.getKeywords(snapshot.entityId),
                     wasToken = state.getEntity(snapshot.entityId)
                         ?.has<com.wingedsheep.engine.state.components.identity.TokenComponent>() == true
                 )
