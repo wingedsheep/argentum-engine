@@ -2383,7 +2383,7 @@ class CastSpellEnumerator(
                             // since its pool is the whole graveyard), presented the way it would be alone.
                             else -> {
                                 val env = SpellCostEnumeration(context, cardId)
-                                val (payable, costInfo) = optionalAdditionalCostPresentation(env, kickerAdditionalCost)
+                                val (payable, costInfo) = additionalCostPresentation(env, listOf(kickerAdditionalCost))
                                 canPayKickerAdditionalCost = payable
                                 kickerCostInfo = costInfo
                             }
@@ -3511,12 +3511,16 @@ internal fun priceKickedCast(
     )
 }
 
-/** Every leaf of a combined optional cost has its own selection channel and affordability gate. */
-internal fun optionalAdditionalCostPresentation(
+/**
+ * Whether [costs] can be paid, and the picker the cast offer publishes for them. Every leaf of a
+ * combined cost has its own selection channel and affordability gate: the first leaf's picker
+ * leads, the rest ride in `alsoRequired` (CR 601.2h pays them all).
+ */
+internal fun additionalCostPresentation(
     env: SpellCostEnumeration,
-    cost: AdditionalCost,
+    costs: List<AdditionalCost>,
 ): Pair<Boolean, AdditionalCostData?> {
-    val leaves = SpellCosts.flattenComposites(listOf(cost))
+    val leaves = SpellCosts.flattenComposites(costs)
     // Enumeration aggregates life and player-counter payments across the complete cost.
     var payable = SpellCosts.enumerateAll(env, leaves, SpellCostOffer())
     val selections = leaves.mapNotNull { leaf ->

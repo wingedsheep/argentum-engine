@@ -13610,6 +13610,102 @@
     "hasNoManaCost": true
 }
 
+// Start // Finish
+{
+    "name": "Start // Finish",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 white Warrior creature tokens with vigilance.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nAs an additional cost to cast this spell, sacrifice a creature.\nDestroy target creature.",
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c6f5433-57cc-4cb3-8621-2575fcbff392.jpg?1783936458",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Start",
+            "manaCost": "{2}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Create two 1/1 white Warrior creature tokens with vigilance.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Finish",
+            "manaCost": "{2}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nAs an additional cost to cast this spell, sacrifice a creature.\nDestroy target creature.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "additionalCosts": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Stinging Shot
 {
     "name": "Stinging Shot",
