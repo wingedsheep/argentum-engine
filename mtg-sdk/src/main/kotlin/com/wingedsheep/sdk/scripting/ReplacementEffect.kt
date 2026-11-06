@@ -3704,17 +3704,19 @@ data class ReplaceDestructionWith(
  * runs nothing.
  *
  * @param replacementEffect what happens instead
- * @param appliesTo whose loss this replaces (default "you")
+ * @param appliesTo whose loss this replaces: `Player.You` (default; the whole team where players
+ *        lose as a team), `Player.EachOpponent`, or `Player.Each` / `Player.Any`. Other player
+ *        references never apply.
  */
 @SerialName("ReplaceGameLossWith")
 @Serializable
 data class ReplaceGameLossWith(
     val replacementEffect: Effect,
-    override val appliesTo: EventPattern = EventPattern.PlayerLostGameEvent(Player.You)
+    override val appliesTo: EventPattern.PlayerLostGameEvent = EventPattern.PlayerLostGameEvent(Player.You)
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ")
-        when ((appliesTo as? EventPattern.PlayerLostGameEvent)?.player) {
+        when (appliesTo.player) {
             Player.You -> append("you")
             Player.EachOpponent -> append("an opponent")
             else -> append("a player")

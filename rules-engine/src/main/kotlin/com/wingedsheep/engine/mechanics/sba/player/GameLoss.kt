@@ -10,7 +10,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ReplaceGameLossWith
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -55,16 +54,16 @@ internal object GameLoss {
 
     /**
      * The first [ReplaceGameLossWith] in force whose "whose loss" pattern covers [playerId]. Two
-     * applicable replacements are the affected player's choice (CR 616.1); every printed one today
-     * is Exquisite Archangel, whose copies are interchangeable, so the earliest is taken.
+     * applicable replacements are the affected player's choice (CR 616.1). Every printed one today
+     * is Exquisite Archangel, so two copies under one controller are interchangeable and the
+     * earliest is taken; the one case where the pick matters — each head of a Two-Headed Giant
+     * team controlling one — still takes the earliest rather than asking.
      */
     private fun replacementFor(state: GameState, playerId: EntityId, team: Set<EntityId>): PendingReplacementRider? {
-        val projected = state.projectedState
         for (active in ActiveReplacements.all(state) { it is ReplaceGameLossWith }) {
+            // ActiveReplacements already drops a source that lost its abilities or is face down.
             val effect = active.effect as ReplaceGameLossWith
-            if (!active.granted && (projected.hasLostAllAbilities(active.sourceId) || projected.isFaceDown(active.sourceId))) continue
-            val player = (effect.appliesTo as? EventPattern.PlayerLostGameEvent)?.player ?: continue
-            val matches = when (player) {
+            val matches = when (effect.appliesTo.player) {
                 Player.Each, Player.Any -> true
                 Player.You -> active.controllerId in team
                 Player.EachOpponent -> state.isOpponentOf(playerId, active.controllerId)

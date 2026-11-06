@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.replacement
 
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CounterType
@@ -29,7 +32,8 @@ import io.kotest.matchers.shouldBe
  * "loses the game" effect); "can't lose" wins over it; one event is replaced once, so two copies
  * spend one at a time; a reason that still holds afterwards (poison) loses at the next check; an
  * opponent's replacement doesn't protect you; a source that lost its abilities doesn't apply; and
- * a source that dies in the same state-based-action pass only resets the life total.
+ * a source that dies in the same state-based-action pass asks its controller exile-or-graveyard
+ * (the Archangel's first ruling); in Two-Headed Giant a "you" replacement protects the team.
  */
 class GameLossReplacementTest : FunSpec({
 
@@ -128,10 +132,9 @@ class GameLossReplacementTest : FunSpec({
 
         d.state.gameOver.shouldBeFalse()
         d.getExileCardNames(d.player1) shouldContain "Lossward Archangel"
-        // A later spell — another SBA check — doesn't revive the spent attempt.
-        val bystander = d.putCreatureOnBattlefield(d.player2, "Lossward Platinum")
-        d.cast(d.player2, "Lossward Blank", listOf(bystander))
-        d.state.gameOver.shouldBeFalse()
+        // The replaced pass re-runs state-based actions, so a held-over attempt would already have
+        // lost here; the player is still in the game.
+        d.state.getEntity(d.player1)?.has<PlayerLostComponent>() shouldBe false
     }
 
     test("poison: the loss is replaced once, but ten counters still lose at the next check") {
@@ -162,6 +165,7 @@ class GameLossReplacementTest : FunSpec({
         d.cast(d.player1, "Lossward Lifeloss")
 
         d.state.gameOver.shouldBeFalse()
+        d.getLifeTotal(d.player1) shouldBe 20
         d.getExileCardNames(d.player1).count { it == "Lossward Archangel" } shouldBe 1
         (d.findPermanent(d.player1, "Lossward Archangel") != null).shouldBeTrue()
     }
@@ -195,14 +199,58 @@ class GameLossReplacementTest : FunSpec({
         d.state.winnerId shouldBe d.player2
     }
 
-    test("dealt lethal damage in the same pass: life resets and the Archangel stays in the graveyard") {
+    test("dealt lethal damage in the same pass, its controller chooses: exile") {
         val d = driver()
         val angel = d.putCreatureOnBattlefield(d.player1, "Lossward Archangel")
-        d.cast(d.player1, "Lossward Inferno", listOf(angel))
+        d.castSpell(d.player1, d.putCardInHand(d.player1, "Lossward Inferno"), listOf(angel))
+        d.bothPass()
+
+        val decision = d.pendingDecision as YesNoDecision
+        decision.playerId shouldBe d.player1
+        d.submitYesNo(d.player1, true)
+
+        d.state.gameOver.shouldBeFalse()
+        d.getLifeTotal(d.player1) shouldBe 20
+        d.getExileCardNames(d.player1) shouldContain "Lossward Archangel"
+        d.getGraveyardCardNames(d.player1) shouldNotContain "Lossward Archangel"
+    }
+
+    test("dealt lethal damage in the same pass, its controller chooses: graveyard") {
+        val d = driver()
+        val angel = d.putCreatureOnBattlefield(d.player1, "Lossward Archangel")
+        d.castSpell(d.player1, d.putCardInHand(d.player1, "Lossward Inferno"), listOf(angel))
+        d.bothPass()
+
+        (d.pendingDecision is YesNoDecision).shouldBeTrue()
+        d.submitYesNo(d.player1, false)
 
         d.state.gameOver.shouldBeFalse()
         d.getLifeTotal(d.player1) shouldBe 20
         d.getGraveyardCardNames(d.player1) shouldContain "Lossward Archangel"
         d.getExileCardNames(d.player1) shouldNotContain "Lossward Archangel"
+    }
+
+    test("a source that survives the pass isn't asked about") {
+        val d = driver()
+        d.putCreatureOnBattlefield(d.player1, "Lossward Archangel")
+        d.cast(d.player1, "Lossward Lifeloss")
+        d.pendingDecision shouldBe null
+    }
+
+    test("Two-Headed Giant: my Archangel replaces my teammate's loss, and the team keeps playing") {
+        val d = GameTestDriver().apply { registerCards(TestCards.all + listOf(archangel, drawAll)) }
+        val players = d.initMultiplayer(
+            decks = List(4) { Deck.of("Plains" to 40) },
+            format = Format.TwoHeadedGiant(),
+            teams = listOf(listOf(0, 1), listOf(2, 3)),
+        )
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val (me, teammate) = players[0] to players[1]
+        d.putCreatureOnBattlefield(me, "Lossward Archangel")
+        d.cast(teammate, "Lossward Draw")
+
+        d.state.gameOver.shouldBeFalse()
+        d.getExileCardNames(me) shouldContain "Lossward Archangel"
+        d.state.getEntity(teammate)?.has<PlayerLostComponent>() shouldBe false
     }
 })

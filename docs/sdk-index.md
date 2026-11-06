@@ -1637,7 +1637,7 @@ Families:
 - `ReplaceDamageWithMill(appliesTo: EventPattern, miller: Player, multiplier: Int)` — Prevent matched damage and mill multiplier times that many cards — miller does the milling.
 - `ReplaceDestructionWith(replacementEffect: Effect, appliesTo: EventPattern.DestroyEvent)` — "If <permanent> would be destroyed, instead <effect>" — the destruction doesn't happen and replacementEffect runs in its place (CR 614.1a).
 - `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
-- `ReplaceGameLossWith(replacementEffect: Effect, appliesTo: EventPattern)` — "If you would lose the game, instead <effect>" — the loss doesn't happen and replacementEffect runs in its place (CR 614.1a).
+- `ReplaceGameLossWith(replacementEffect: Effect, appliesTo: EventPattern.PlayerLostGameEvent)` — "If you would lose the game, instead <effect>" — the loss doesn't happen and replacementEffect runs in its place (CR 614.1a).
 - `ReplaceKeywordAction(replacementEffect: Effect, appliesTo: EventPattern, optional: Boolean, activeZones: Set<Zone>)` — Perform replacementEffect instead of a keyword action (CR 614.1a) — "If you would learn, you may instead return this card to the battlefield." The third member of the keyword-action family: ModifyK…
 - `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.

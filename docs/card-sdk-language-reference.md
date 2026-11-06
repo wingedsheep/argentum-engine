@@ -19844,8 +19844,11 @@ The priority groups are (CR 616.1a–f):
   loses at the next check unless another replacement applies, so two copies are spent one per loss. Where
   players lose as a team (2HG) a "you" replacement protects the whole team. All loss sites share one engine
   path (`GameLoss.lose`). Exquisite Archangel: `ReplaceGameLossWith(Effects.Exile(EffectTarget.Self,
-  fromZone = Zone.BATTLEFIELD) then Effects.SetLifeTotal(DynamicAmounts.startingLifeTotal()))` — the
-  `fromZone` gate keeps an Archangel that died in the same pass in the graveyard.
+  fromZone = Zone.BATTLEFIELD) then Effects.SetLifeTotal(DynamicAmounts.startingLifeTotal()))`. When the
+  source is also leaving the battlefield in the same SBA pass (dealt lethal damage alongside the loss), its
+  controller chooses (yes/no, `GameLossSourceChoiceCheck`): the rest moves it (exile), or it goes to the
+  graveyard and the rest runs without it (its "this creature" is a gone object, CR 400.7). `appliesTo.player`
+  is `Player.You` (team-wide in 2HG), `Player.EachOpponent`, or `Player.Each`/`Player.Any`.
 - `RegenerateInsteadOfDestruction(appliesTo = EventPattern.DestroyEvent(GameObjectFilter.Any.sourceItself()))` —
   *"If <permanent> would be destroyed, regenerate it"*: static regeneration (CR 701.19b). Each time a
   matching permanent would be destroyed, it regenerates instead (damage removed, tapped, removed from

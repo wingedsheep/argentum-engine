@@ -604,6 +604,24 @@ data class LegendRuleContinuation(
  *   is open. Captured so the resumer can issue the correct from-zone on the move and so the
  *   prompt remains traceable in logs even after the commander moves.
  */
+/**
+ * Resume after a player chose how a replaced game loss treats its source when that source is also
+ * leaving the battlefield through the same state-based-action pass (see
+ * [com.wingedsheep.engine.mechanics.sba.player.GameLossSourceChoiceCheck]).
+ *
+ * Yes → the replacement's rest runs with its source, moving it before the pass can (Exquisite
+ * Archangel is exiled). No → the source leaves through the state-based action instead (it goes to
+ * the graveyard), and the rest runs without it.
+ *
+ * @property hostId the source of the replacement awaiting the choice
+ * @property subjectId the player whose loss was replaced — together with [hostId] it names the rider
+ */
+@Serializable
+data class GameLossSourceChoiceContinuation(
+    val hostId: EntityId,
+    val subjectId: EntityId
+) : AnswerContinuation
+
 @Serializable
 data class CommanderZoneChoiceContinuation(
     val commanderId: EntityId,

@@ -18,9 +18,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * If you would lose the game, instead exile this creature and your life total becomes equal to
  * your starting life total.
  *
- * The exile only reaches this creature on the battlefield: dealt lethal damage in the same
- * state-based-action pass that loses you the game, it is already in the graveyard (one of the two
- * outcomes the rulings let you choose) and only the life total resets.
+ * Dealt lethal damage in the same state-based-action pass that would lose you the game, you choose
+ * whether it is exiled or goes to the graveyard (its first ruling) — the engine asks
+ * (GameLossSourceChoiceCheck); either way your life total resets.
  */
 val ExquisiteArchangel = card("Exquisite Archangel") {
     manaCost = "{5}{W}{W}"

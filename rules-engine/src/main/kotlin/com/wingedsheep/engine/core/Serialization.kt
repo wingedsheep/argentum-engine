@@ -532,6 +532,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChangeSpellTargetContinuation::class)
         subclass(LegendRuleContinuation::class)
         subclass(CommanderZoneChoiceContinuation::class)
+        subclass(GameLossSourceChoiceContinuation::class)
         subclass(BattleProtectorChoiceContinuation::class)
         subclass(TransformAttachToPlayerContinuation::class)
         subclass(TransformCopyContinuation::class)
