@@ -4958,7 +4958,7 @@
 // Furious Reprisal
 {
     "name": "Furious Reprisal",
-    "manaCost": "{1}{R}",
+    "manaCost": "{3}{R}",
     "typeLine": "Sorcery",
     "oracleText": "Furious Reprisal deals 2 damage to each of two targets.",
     "script": {

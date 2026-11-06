@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Furious Reprisal
- * {1}{R}
+ * {3}{R}
  * Sorcery
  * Furious Reprisal deals 2 damage to each of two targets.
  *
@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Canonical definition lives in KLD; KLR and J25 are reprints.
  */
 val FuriousReprisal = card("Furious Reprisal") {
-    manaCost = "{1}{R}"
+    manaCost = "{3}{R}"
     colorIdentity = "R"
     typeLine = "Sorcery"
     oracleText = "Furious Reprisal deals 2 damage to each of two targets."
