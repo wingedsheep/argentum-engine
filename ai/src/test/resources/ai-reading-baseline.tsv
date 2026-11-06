@@ -1472,6 +1472,7 @@ Benalish Trapper
 Bend or Break
 Bender's Waterskin
 Beneath the Sands
+Benefaction of Rhonas
 Benevolent Ancestor
 Benevolent Hydra
 Benevolent River Spirit
@@ -1576,6 +1577,7 @@ Bitter Reunion
 Bitter Revelation
 Bitter Triumph
 Bitter Work
+Bitterblade Warrior
 Bitterbloom Bearer
 Bitterblossom
 Bitterbow Sharpshooters
@@ -2548,6 +2550,7 @@ Cartographer's Survey
 Cartouche of Ambition
 Cartouche of Knowledge
 Cartouche of Solidarity
+Cartouche of Strength
 Cartouche of Zeal
 Carven Caryatid
 Cascade Bluffs
@@ -2734,6 +2737,7 @@ Champion Lancer
 Champion of Arashin
 Champion of Dusan
 Champion of Dusk
+Champion of Rhonas
 Champion of Wits
 Champion of the Clachan
 Champion of the Flame
@@ -3272,7 +3276,7 @@ Cone of Flame
 Confiscate
 Confounding Conundrum
 Confounding Riddle
-Confront the Past	polarity: RemoveCountersEffect
+Confront the Past
 Confusion in the Ranks	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Confusticate and Bebother
 Congregate
@@ -4089,6 +4093,7 @@ Defense Force Aggressor
 Defensive Maneuvers
 Defiant Elf
 Defiant Falcon
+Defiant Greatmaw
 Defiant Khenra
 Defiant Stand
 Defiant Strike
@@ -5517,6 +5522,7 @@ Exdeath, Void Warlock
 Execute
 Executioner's Capsule
 Exemplar of Light
+Exemplar of Strength
 Exhaustion
 Exhibition Magician
 Exhibition Tidecaller
@@ -7683,6 +7689,7 @@ Hanweir Battlements	intent: MeldEffect
 Hanweir Garrison
 Hanweir Watchkeep
 Hanweir, the Writhing Township
+Hapatra's Mark	timing: GrantKeywordEffect
 Hapatra, Vizier of Poisons
 Hapatra, the Desert Fang
 Hapatra, the Desert Frost
@@ -8115,9 +8122,11 @@ Honorbound Page
 Honored Crop-Captain
 Honored Dreyleader
 Honored Heirloom
+Honored Hydra
 Honored Knight-Captain
 Hooded Assassin
 Hooded Blightfang
+Hooded Brawler
 Hooded Hydra
 Hooded Kavu
 Hoofprints of the Stag
@@ -9943,6 +9952,7 @@ Liliana's Contract
 Liliana's Defeat
 Liliana's Devotee
 Liliana's Elite
+Liliana's Influence
 Liliana's Mastery
 Liliana's Scorn
 Liliana's Scrounger	intent: AddCountersToCollectionEffect; intent: SelectTargetEffect
@@ -9952,6 +9962,7 @@ Liliana's Standard Bearer
 Liliana's Steward
 Liliana's Triumph
 Liliana, Death Mage
+Liliana, Death Wielder
 Liliana, Death's Majesty
 Liliana, Dreadhorde General
 Liliana, Untouched by Death	intent: GrantStaticAbilityEffect
@@ -16776,6 +16787,7 @@ Super-Soldier Serum
 Superior Foes of Spider-Man
 Superior Spider-Man
 Supernatural Rescue
+Supernatural Stamina
 Suplex
 Supper for Spiders	intent: ForEach>BecomeArtifactEffect; intent: Pipeline(graveyard→battlefield)
 Supply Caravan
@@ -18223,6 +18235,7 @@ Trestle Troll
 Treva's Attendant
 Treva, the Renewer	intent: ChooseColorThenEffect
 Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
+Trial of Ambition
 Triassic Egg
 Tribal Flames
 Tribal Forcemage
@@ -19325,6 +19338,7 @@ Wand of Ith	intent: PayOrSufferEffect; intent: Pipeline(hand→?); polarity: Pay
 Wand of Vertebrae
 Wand of the Elements
 Wander Off
+Wander in Death
 Wanderbrine Preacher
 Wanderbrine Rootcutters
 Wanderbrine Trapper
