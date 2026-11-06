@@ -839,6 +839,7 @@ object CardIntentAnalyzer {
         addAll(digTags(root, turnAhead))
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
+        addAll(symmetricDiscardTags(root))
         addAll(discardPunisherTags(root, eachPlayer = null))
         addAll(regrowthTags(root, ownPile))
         addAll(wishTags(root))
@@ -1082,10 +1083,12 @@ object CardIntentAnalyzer {
      * inside an iteration over opponents ([eachPlayer]), where it is the player iterated. A target
      * player slot is aimed at an opponent too — unless the same effect also draws: "target player
      * draws three cards, then discards a card" is a loot its caster points at themselves. Our own
-     * hand is a cost or a loot, never an answer, and a symmetric "each player discards" is a wheel's
-     * price as often as an attack on a hand, so both stay unread.
+     * hand is a cost or a loot, never an answer, so it stays unread.
+     *
+     * A symmetric "each player discards" is read by [symmetricDiscardTags], which sets [symmetric]
+     * once it has ruled out a wheel.
      */
-    private fun handDisruptionTags(root: Effect, eachPlayer: Player?): Set<IntentTag> {
+    private fun handDisruptionTags(root: Effect, eachPlayer: Player?, symmetric: Boolean = false): Set<IntentTag> {
         val leaves = readingLeaves(root)
         val draws = leaves.any { it is DrawCardsEffect || it is DrawUpToEffect }
         val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
@@ -1097,7 +1100,7 @@ object CardIntentAnalyzer {
                 is CardSource.FromMultipleZones -> source.zones to source.player
                 else -> return@mapNotNullTo null
             }
-            leaf.storeAs.takeIf { Zone.HAND in zones && isAnotherPlayersHand(player, eachPlayer, draws) }
+            leaf.storeAs.takeIf { Zone.HAND in zones && isAnotherPlayersHand(player, eachPlayer, draws, symmetric) }
         }
         if (theirHand.isEmpty()) return emptySet()
         do {
@@ -1150,9 +1153,9 @@ object CardIntentAnalyzer {
     }
 
     /** Whether a gather from [player]'s hand reaches someone other than the ability's controller — see [handDisruptionTags]. */
-    private fun isAnotherPlayersHand(player: Player, eachPlayer: Player?, draws: Boolean): Boolean = when (player) {
+    private fun isAnotherPlayersHand(player: Player, eachPlayer: Player?, draws: Boolean, symmetric: Boolean): Boolean = when (player) {
         in OPPONENT_PLAYERS -> true
-        Player.You -> eachPlayer != null && !includesYou(eachPlayer)
+        Player.You -> eachPlayer != null && (!includesYou(eachPlayer) || symmetric)
         // "That player discards that many cards" off a combat-damage trigger (Dreamstealer,
         // Hypnotic Specter): the player the trigger names is the one hit, as [losesAnOpponent]
         // reads them. An any-player trigger (Necrogen Mists, Oppression) names its controller too,
@@ -1160,6 +1163,33 @@ object CardIntentAnalyzer {
         Player.TargetPlayer, Player.EachTargetedPlayer, Player.TriggeringPlayer, is Player.ContextPlayer, is Player.BoundVariable -> !draws
         else -> false
     }
+
+    /**
+     * "Each player discards a card" with no draw anywhere in the effect (Miasmic Mummy, Liliana of the
+     * Veil's +1, Enemy of Enlightenment) reads as [IntentTag.DISCARD]: `you` is every player in
+     * turn, opponents among them, and the card trades one of ours for one of theirs — the discard
+     * deck's parity attack. A draw anywhere beside it — in the same iteration or a later pass —
+     * makes it a wheel (Windfall, Wheel of Fortune) whose discard is the price of the refill, so it
+     * stays unread.
+     */
+    private fun symmetricDiscardTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val iterations = leaves.filterIsInstance<ForEachEffect>()
+        val symmetric = iterations.filter { (it.space as? IterationSpace.Players)?.players in SYMMETRIC_PLAYERS }
+        if (symmetric.isEmpty()) return emptySet()
+        val draws = (leaves + iterations.flatMap { readingLeaves(it.body) })
+            .any { it is DrawCardsEffect || it is DrawUpToEffect }
+        if (draws) return emptySet()
+        val discards = symmetric.any {
+            IntentTag.DISCARD in handDisruptionTags(it.body, (it.space as IterationSpace.Players).players, symmetric = true)
+        }
+        return if (discards) setOf(IntentTag.DISCARD) else emptySet()
+    }
+
+    /** The iteration spaces that visit every player, opponents included — "each player". */
+    private val SYMMETRIC_PLAYERS: Set<Player> = setOf(
+        Player.Each, Player.ActivePlayerFirst, Player.EachStartingWithYou, Player.EachStartingWithNextOpponent,
+    )
 
     private val HAND_DISRUPTION_DESTINATIONS = setOf(Zone.GRAVEYARD, Zone.EXILE, Zone.LIBRARY)
 

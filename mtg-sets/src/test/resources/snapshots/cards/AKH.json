@@ -1779,6 +1779,88 @@
     ]
 }
 
+// Cruel Reality
+{
+    "name": "Cruel Reality",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAt the beginning of enchanted player's upkeep, that player sacrifices a creature or planeswalker of their choice. If the player can't, they lose 5 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cruel Reality:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "creature|planeswalker",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "PermanentsSacrificedThisWay",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EnchantedPlayer"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of enchanted player's upkeep, that player sacrifices a creature or planeswalker of their choice. If the player can't, they lose 5 life."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "flavorText": "As Gideon watched the initiate murder his crop-mate, his admiration of the city of Naktamun gave way to horror.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06a91cf5-4eab-4d9b-90bd-fb933bb00540.jpg?1783936510",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "The enchanted player chooses a permanent to sacrifice from among the creatures and planeswalkers that player controls. You don't choose which type of permanent the player has to sacrifice."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "The enchanted player can't choose to lose 5 life if they have a creature or planeswalker that can be sacrificed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cryptic Serpent
 {
     "name": "Cryptic Serpent",
@@ -2257,6 +2339,71 @@
     ]
 }
 
+// Dread Wanderer
+{
+    "name": "Dread Wanderer",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie Jackal",
+    "oracleText": "This creature enters tapped.\n{2}{B}: Return this card from your graveyard to the battlefield. Activate only as a sorcery and only if you have one or fewer cards in hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dread Wanderer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                ],
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{B}: Return this card from your graveyard to the battlefield. Activate only as a sorcery and only if you have one or fewer cards in hand."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Josh Hass",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/343fc82d-7d10-4489-8f7e-9995322114e2.jpg?1783936506"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dune Beetle
 {
     "name": "Dune Beetle",
@@ -2600,6 +2747,93 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Faith of the Devoted
+{
+    "name": "Faith of the Devoted",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cycle or discard a card, you may pay {1}. If you do, each opponent loses 2 life and you gain 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faith of the Devoted:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, you may pay {1}. If you do, each opponent loses 2 life and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "flavorText": "\"The more I see of this place, the less I want to.\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c26e0e0-d157-4d63-bebe-b02d208c5572.jpg?1783936506",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "While resolving the triggered ability of Faith of the Devoted, you can't pay {1} multiple times to multiply the effect."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "In a Two-Headed Giant game, the triggered ability of Faith of the Devoted causes the opposing team to lose 4 life and you gain 2 life."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3415,6 +3649,57 @@
     ]
 }
 
+// Grim Strider
+{
+    "name": "Grim Strider",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "This creature gets -1/-1 for each card in your hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "multiplier": -1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Christine Choi",
+        "flavorText": "\"As a child I saw something walking in the distance, far beyond the Hekma—shadow-dark, and taller than the gods. Even now, it passes through my dreams.\"\n—Pytamun, initiate of Nef crop",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97ae6769-2b2b-48e3-9503-e9744984743a.jpg?1783936506"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hapatra, Vizier of Poisons
 {
     "name": "Hapatra, Vizier of Poisons",
@@ -3894,6 +4179,73 @@
     ]
 }
 
+// Horror of the Broken Lands
+{
+    "name": "Horror of the Broken Lands",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Whenever you cycle or discard another card, this creature gets +2/+1 until end of turn.\nCycling {B} ({B}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Horror of the Broken Lands:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle or discard another card, this creature gets +2/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Daarken",
+        "flavorText": "It feeds on dry bones in the sand and desperate pleas in the wind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35828576-124a-45d6-ad4c-af2926314953.jpg?1783936504",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hyena Pack
 {
     "name": "Hyena Pack",
@@ -4286,6 +4638,90 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Lay Bare the Heart
+{
+    "name": "Lay Bare the Heart",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonlegendary, nonland card from it. That player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": {
+                        "cardPredicates": [
+                            "IsNonland",
+                            "IsNonlegendary"
+                        ]
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonlegendary, nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"True intentions lie not in the head but in the heart.\"\n—Bontu, god of ambition",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4b76ff8-b26c-4567-9339-bb6a37713f4b.jpg?1783936505"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4834,6 +5270,87 @@
     ]
 }
 
+// Miasmic Mummy
+{
+    "name": "Miasmic Mummy",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Jackal",
+    "oracleText": "When this creature enters, each player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Miasmic Mummy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, each player discards a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "E. M. Gist",
+        "flavorText": "Its breath doesn't assault the senses. It pollutes the mind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47ef9e66-678c-4e8d-9ca7-3f2b72b9468c.jpg?1783936502",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "When Miasmic Mummy's triggered ability resolves, first the player whose turn it is chooses a card to discard, then each other player in turn order chooses a card to discard, then all of those cards are discarded simultaneously. No one sees what the other players are discarding before deciding which card to discard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Minotaur Sureshot
 {
     "name": "Minotaur Sureshot",
@@ -4985,6 +5502,171 @@
         "flavorText": "The lands of the God-Pharaoh are suffused with his breath.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce9a8551-8788-47ea-b774-477f0f3ff22a.jpg?1783936472"
     }
+}
+
+// Nest of Scarabs
+{
+    "name": "Nest of Scarabs",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you put one or more -1/-1 counters on a creature, create that many 1/1 black Insect creature tokens.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nest of Scarabs:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "filter": "creature",
+                    "placedBy": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_COUNTERS_PLACED_AMOUNT"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"They are small, but they always want more. Learn from them.\"\n—Bontu, god of ambition",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97aa6b45-055a-411e-b2db-b373a4d3826d.jpg?1783936503",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If an effect has you put more -1/-1 counters on a creature than it has toughness, you'll put all of those counters on it and create that many Insects, even if that makes its toughness a negative number."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a creature with wither or infect deals damage to a creature, the controller of the creature with wither or infect puts that many -1/-1 counters on the second creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Never // Return
+{
+    "name": "Never // Return",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature or planeswalker.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nExile target card from a graveyard. Create a 2/2 black Zombie creature token.",
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4b32135-7061-4278-a01a-4fcbaadc9706.jpg?1783936458",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Once you've started to cast a spell with aftermath from your graveyard, the card is immediately moved to the stack. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Never",
+            "manaCost": "{1}{B}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Destroy target creature or planeswalker.",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Return",
+            "manaCost": "{3}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nExile target card from a graveyard. Create a 2/2 black Zombie creature token.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5bd6905-79be-4d2c-a343-f6e6a181b3e6.jpg?1783936411"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // New Perspectives
@@ -5475,6 +6157,58 @@
     ]
 }
 
+// Painful Lesson
+{
+    "name": "Painful Lesson",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws two cards and loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Adrian Majkrzak",
+        "flavorText": "\"You wish to remember this lesson? I will write it down for you.\"\n—Senifet, vizier of Bontu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/becbd481-311d-4f85-aacd-df1f7d7ef587.jpg?1783936501"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Painted Bluffs
 {
     "name": "Painted Bluffs",
@@ -5569,6 +6303,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Pitiless Vizier
+{
+    "name": "Pitiless Vizier",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Minotaur Cleric",
+    "oracleText": "Whenever you cycle or discard a card, this creature gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it. If its toughness is 0 or less, it still dies.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pitiless Vizier:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, this creature gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22eb0615-d1b2-4128-bad5-bcff83672f6b.jpg?1783936501",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6079,6 +6866,86 @@
     }
 }
 
+// Ruthless Sniper
+{
+    "name": "Ruthless Sniper",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Archer",
+    "oracleText": "Whenever you cycle or discard a card, you may pay {1}. If you do, put a -1/-1 counter on target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruthless Sniper:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, you may pay {1}. If you do, put a -1/-1 counter on target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "\"You may feel a slight sting.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d916306a-5cb3-4a38-9038-a433525c5b7b.jpg?1783936499",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "While resolving Ruthless Sniper's triggered ability, you can't pay {1} multiple times to put more counters on creatures."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Samut, Voice of Dissent
 {
     "name": "Samut, Voice of Dissent",
@@ -6179,6 +7046,56 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Scarab Feast
+{
+    "name": "Scarab Feast",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile up to three target cards from a single graveyard.\nCycling {B} ({B}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Exile"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "sameOwner": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Tony Foti",
+        "flavorText": "\"The face of mediocrity is wrapped in anointed linen. Aspire to a better end.\"\n—Epnokep, vizier of Bontu",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/7540895c-cbbc-46ac-ba96-882628358865.jpg?1783936499"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6563,6 +7480,87 @@
     ]
 }
 
+// Soulstinger
+{
+    "name": "Soulstinger",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Scorpion Demon",
+    "oracleText": "When this creature enters, put two -1/-1 counters on target creature you control.\nWhen this creature dies, you may put a -1/-1 counter on target creature for each -1/-1 counter on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soulstinger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, put two -1/-1 counters on target creature you control."
+            },
+            {
+                "id": "Soulstinger:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "amount": {
+                            "type": "LastKnownSourceCounters",
+                            "counterType": "MINUS_ONE_MINUS_ONE"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "descriptionOverride": "When this creature dies, you may put a -1/-1 counter on target creature for each -1/-1 counter on this creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "When this creature dies, you may put a -1/-1 counter on target creature for each -1/-1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Mike Burns",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0504be31-eaab-4b3e-8cfb-274e46d3d67a.jpg?1783936499"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sparring Mummy
 {
     "name": "Sparring Mummy",
@@ -6608,6 +7606,54 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Splendid Agony
+{
+    "name": "Splendid Agony",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Distribute two -1/-1 counters among one or two target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "DistributeCountersAmongTargets",
+            "totalCounters": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "counterType": "MINUS_ONE_MINUS_ONE"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Clint Cearley",
+        "flavorText": "\"Wherever you are in the city, you can feel the presence of the God-Pharaoh. Take comfort in that.\"\n—Ukhat, vizier of initiation",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58d38abd-116d-4015-91e4-3fc267ad099d.jpg?1783936498",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You choose how the counters will be distributed as you cast Splendid Agony. Each target creature must be assigned at least one counter."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If one of two target creatures becomes an illegal target in response to Splendid Agony, the -1/-1 counter that would have been put on that creature is lost. It can’t be put on the legal target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

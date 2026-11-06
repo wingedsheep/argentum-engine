@@ -1,0 +1,213 @@
+{
+  "Angel of Sanctions": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Angler Drake": [
+    "removal",
+    "creature-removal"
+  ],
+  "Archfiend of Ifnir": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blazing Volley": [
+    "removal",
+    "creature-removal"
+  ],
+  "By Force": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Cartouche of Ambition": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cartouche of Strength": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cast Out": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Commit // Memory": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Compulsory Rest": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cruel Reality": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Cut // Ribbons": [
+    "removal",
+    "creature-removal"
+  ],
+  "Decimator Beetle": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deem Worthy": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dissenter's Deliverance": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Dusk // Dawn": [
+    "removal",
+    "creature-removal"
+  ],
+  "Edifice of Authority": [
+    "removal",
+    "creature-removal"
+  ],
+  "Electrify": [
+    "removal",
+    "creature-removal"
+  ],
+  "Festering Mummy": [
+    "removal",
+    "creature-removal"
+  ],
+  "Final Reward": [
+    "removal",
+    "creature-removal"
+  ],
+  "Floodwaters": [
+    "removal",
+    "creature-removal"
+  ],
+  "Forsake the Worldly": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Galestrike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Glorybringer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grasping Dunes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Heart-Piercer Manticore": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Heaven // Earth": [
+    "removal",
+    "creature-removal"
+  ],
+  "Illusory Wrappings": [
+    "removal",
+    "creature-removal"
+  ],
+  "Impeccable Timing": [
+    "removal",
+    "creature-removal"
+  ],
+  "Insult // Injury": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lay Claim": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Magma Spray": [
+    "removal",
+    "creature-removal"
+  ],
+  "Manglehorn": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Merciless Javelineer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Never // Return": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Prepare // Fight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rags // Riches": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ruthless Sniper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Splendid Agony": [
+    "removal",
+    "creature-removal"
+  ],
+  "Start // Finish": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stinging Shot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sweltering Suns": [
+    "removal",
+    "creature-removal"
+  ],
+  "Time to Reflect": [
+    "removal",
+    "creature-removal"
+  ],
+  "Trial of Ambition": [
+    "removal",
+    "creature-removal"
+  ],
+  "Trial of Zeal": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Violent Impact": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Warfire Javelineer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Winds of Rebuke": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ]
+}
