@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * End the turn.
  * At the beginning of your next end step, you lose the game.
  *
- * [Effects.EndTheTurn] is carried out once the spell has finished resolving (CR 724.1), so the
+ * [Effects.EndTheTurn] is carried out once the spell has finished resolving (CR 723.1), so the
  * delayed trigger scheduled in the same resolution survives it, and Glorious End is exiled with
  * the stack. The trigger is pinned to your own end step (`fireOnPlayer = You`) with
  * [DelayedTriggerTiming.NEXT_END_STEP]: cast on your turn, that turn's end step is skipped by the

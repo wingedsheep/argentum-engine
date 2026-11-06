@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.akh.cards.HeartPiercerManticore
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -34,8 +36,11 @@ class HeartPiercerManticoreScenarioTest : FunSpec({
     }
 
     /** Cast the Manticore with [fodderName] already in play and resolve it; its enters trigger then resolves. */
-    fun castManticore(driver: GameTestDriver, me: EntityId, fodderName: String): EntityId {
+    fun castManticore(driver: GameTestDriver, me: EntityId, fodderName: String, plusOneCounters: Int = 0): EntityId {
         val fodder = driver.putCreatureOnBattlefield(me, fodderName)
+        if (plusOneCounters > 0) {
+            driver.addComponent(fodder, CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to plusOneCounters)))
+        }
         val manticore = driver.putCardInHand(me, "Heart-Piercer Manticore")
         driver.giveMana(me, Color.RED, 2)
         driver.giveColorlessMana(me, 2)
@@ -62,6 +67,21 @@ class HeartPiercerManticoreScenarioTest : FunSpec({
 
         driver.getGraveyard(me).contains(fodder) shouldBe true
         withClue("Grizzly Bears has power 2") { driver.getLifeTotal(opp) shouldBe 18 }
+    }
+
+    test("the damage uses the sacrificed creature's power on the battlefield, not its printed power") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opp = driver.getOpponent(me)
+
+        val fodder = castManticore(driver, me, "Grizzly Bears", plusOneCounters = 3)
+
+        driver.submitYesNo(me, true)
+        driver.submitTargetSelection(me, listOf(fodder))
+        driver.submitTargetSelection(me, listOf(opp))
+        driver.bothPass()
+
+        withClue("a 2/2 with three +1/+1 counters was a 5/5 when sacrificed") { driver.getLifeTotal(opp) shouldBe 15 }
     }
 
     test("the damage can be aimed at a creature") {

@@ -551,6 +551,11 @@ object CardIntentAnalyzer {
                 // Only when the untap is the ability's whole payoff: beside another step on the same
                 // land (Wakeroot Elemental's "untap target land you control. It becomes a 5/5
                 // Elemental"), the untap sets that step up, and reading it as ramp would hide it.
+                // "End the turn" beside another payoff — Hurkyl's Final Meditation's mass bounce,
+                // Ultima's wrath — is how that payoff is delivered, not what the card is for: read the
+                // card by the payoff, so it keeps its own window. Alone, or beside only the delayed
+                // trigger it schedules (Glorious End), it is the card — see [tagsOf].
+                EndTheTurnEffect -> if (payoff.any { it != EndTheTurnEffect && it !is CreateDelayedTriggerEffect }) emptyList() else listOf(leaf)
                 is TapUntapEffect -> if (payoff.size == 1 && untapsATargetLand(leaf, requirements)) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
                 // "Untap up to two target creatures and up to two target lands" (Nissa, Genesis Mage):
                 // the pipeline gathers every chosen target and untaps the lot. With a land slot among
@@ -1697,10 +1702,11 @@ object CardIntentAnalyzer {
             if (effect.targetSource == CounterTargetSource.TargetingSource) setOf(IntentTag.PROTECTION)
             else setOf(IntentTag.COUNTERSPELL)
         is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
-        // "End the turn" (Time Stop, Discontinuity, Glorious End) exiles every spell and ability on
-        // the stack — a counter-everything that can't be stopped — and takes the attackers out of
-        // combat with it. What it answers is what is already on the stack, so like Counterbore's
-        // kin it is dead on an empty one: ending our own main phase for nothing is no play.
+        // "End the turn" as a card's whole payoff (Time Stop, Discontinuity, Glorious End) exiles
+        // every spell and ability on the stack — a counter-everything that can't be stopped — and
+        // takes the attackers out of combat with it. What it answers is already on the stack or in
+        // the fight, so ending our own main phase for nothing is no play ([HoldPolicy]). Beside
+        // another payoff it is a rider and never reaches here ([readingLeaves]).
         EndTheTurnEffect -> setOf(IntentTag.COUNTERSPELL)
         is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
         // "Copy target spell", "copy target activated or triggered ability", "when you next cast an
@@ -1962,6 +1968,10 @@ object CardIntentAnalyzer {
      */
     internal fun spellCostsItsControllerTheGame(card: CardDefinition): Boolean =
         card.script.spellEffect?.let(::losesItsControllerTheGame) ?: false
+
+    /** Whether [card]'s spell is "end the turn" and nothing more — Time Stop, Discontinuity. */
+    internal fun spellOnlyEndsTheTurn(card: CardDefinition): Boolean =
+        card.script.spellEffect == EndTheTurnEffect
 
     private fun losesItsControllerTheGame(effect: Effect): Boolean = when (effect) {
         is CompositeEffect -> effect.effects.any(::losesItsControllerTheGame)

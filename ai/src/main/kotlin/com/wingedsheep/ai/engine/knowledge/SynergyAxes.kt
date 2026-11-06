@@ -294,10 +294,10 @@ object SynergyAxes {
     // ── Feeds ──────────────────────────────────────────────────────────────────
 
     private fun feedsOf(script: CardScript, creatureSource: Boolean): Set<SynergyAxis> = buildSet {
-        script.spellEffect?.let { addAll(effectFeeds(it, creatureSource)) }
-        script.triggeredAbilities.forEach { addAll(effectFeeds(it.effect, creatureSource)) }
+        script.spellEffect?.let { addAll(effectFeeds(it, creatureSource, script.targetRequirements)) }
+        script.triggeredAbilities.forEach { addAll(effectFeeds(it.effect, creatureSource, it.allTargetRequirements)) }
         for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
-            addAll(effectFeeds(ability.effect, creatureSource))
+            addAll(effectFeeds(ability.effect, creatureSource, ability.targetRequirements))
             if (sacrifices(ability.cost, creatureSource)) add(SynergyAxis.DEATH)
             // "{T}, Discard a card: …" bins our cards as a discard effect does (Murmuring Volume).
             if (discards(ability.cost)) add(SynergyAxis.GRAVEYARD)
@@ -305,12 +305,16 @@ object SynergyAxes {
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
     }
 
-    private fun effectFeeds(effect: Effect, creatureSource: Boolean): Set<SynergyAxis> = buildSet {
+    private fun effectFeeds(
+        effect: Effect,
+        creatureSource: Boolean,
+        requirements: List<TargetRequirement> = emptyList(),
+    ): Set<SynergyAxis> = buildSet {
         for (leaf in EffectWalker.leaves(effect)) {
             // "Put a +1/+1 counter on each other creature you control" is a ForEach whose body is
             // the feeding leaf; the walk stops at ForEach bodies, so open them here.
             if (leaf is ForEachEffect) {
-                addAll(effectFeeds(leaf.body, creatureSource))
+                addAll(effectFeeds(leaf.body, creatureSource, requirements))
                 continue
             }
             // A global trigger produces the same resources when its event happens, including
@@ -323,14 +327,15 @@ object SynergyAxes {
             // beginning of the next end step" (Hazoret's Favor, Junkyo Bell, Through the Breach) is a
             // creature of ours dying, whatever the scheduling ability got for it.
             if (leaf is CreateDelayedTriggerEffect) {
-                addAll(effectFeeds(leaf.effect, creatureSource))
+                addAll(effectFeeds(leaf.effect, creatureSource, requirements))
                 continue
             }
-            // We sacrifice a permanent of our own — the only kind we can sacrifice — chosen as a
-            // target, or the source itself when it is a creature: a death, the sac outlet's feed.
-            // "Its controller sacrifices it" can be an opponent's edict, and stays unread here.
+            // We sacrifice a creature of our own — the only kind we can sacrifice — chosen as a
+            // creature target, or the source itself when it is a creature: a death, the sac outlet's
+            // feed. A land or artifact sacrificed is no death; "its controller sacrifices it" can be
+            // an opponent's edict, and stays unread here.
             if (leaf is SacrificeTargetEffect && !leaf.sacrificedByItsController &&
-                (leaf.target != EffectTarget.Self || creatureSource)
+                sacrificesACreature(leaf.target, requirements, creatureSource)
             ) add(SynergyAxis.DEATH)
             addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
@@ -338,6 +343,22 @@ object SynergyAxes {
             if (IntentTag.TOKEN_MAKER in tags) add(SynergyAxis.TOKENS)
         }
     }
+
+    private fun sacrificesACreature(
+        target: EffectTarget,
+        requirements: List<TargetRequirement>,
+        creatureSource: Boolean,
+    ): Boolean = when (target) {
+        EffectTarget.Self -> creatureSource
+        is EffectTarget.ContextTarget -> isCreatureSlot(requirements.getOrNull(target.index))
+        // A DSL handle (`val creature = target(...)`); a count-N requirement's handles are `id[i]`.
+        is EffectTarget.BoundVariable -> target.name.substringBefore('[')
+            .let { id -> isCreatureSlot(requirements.firstOrNull { it.id == id }) }
+        else -> false
+    }
+
+    private fun isCreatureSlot(requirement: TargetRequirement?): Boolean =
+        (requirement as? TargetObject)?.let { CardPredicate.IsCreature in it.filter.baseFilter.cardPredicates } ?: false
 
     private fun leafFeeds(leaf: Any): Set<SynergyAxis> = when (leaf) {
         // A creature token is a body that enters and a body to sacrifice.
