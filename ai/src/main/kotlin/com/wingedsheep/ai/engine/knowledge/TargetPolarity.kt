@@ -108,6 +108,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnSpellToOwnersHandEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
@@ -1225,6 +1226,10 @@ object TargetPolarityAnalyzer {
         is CounterEffect ->
             if (leaf.targetSource == CounterTargetSource.Chosen) TargetPolarity.HARMFUL else null
         is ExileTargetSpellEffect -> TargetPolarity.HARMFUL
+        // "Return target spell to its owner's hand" (Failure, Reprieve, Hullbreaker Horror): the
+        // spell is undone and its mana spent for nothing — a tempo counter, only worth aiming at
+        // an opposing spell.
+        is ReturnSpellToOwnersHandEffect -> TargetPolarity.HARMFUL
         // A redirect takes the spell or ability away from what its controller aimed it at. Pulled
         // onto this creature (Spellskite, Hydroelectric Specimen) or off ourselves (Reflecting
         // Mirror), it is only ever worth doing to an opposing object. An unrestricted "change the
