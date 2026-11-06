@@ -1,2 +1,2 @@
-- #TBD Reads a linked-exile pile stocked off its own library top and handed back to hand (Bomat Courier) as card draw, so the attack exile and the sacrifice are valued as banked cards
-- #TBD Aims a punisher the targeted opponent decides (Combustible Gearhulk, Risk Factor) at an opponent, reading the target as harmful instead of unknown
+- #4531 Reads a linked-exile pile stocked off its own library top and handed back to hand (Bomat Courier) as card draw, so the attack exile and the sacrifice are valued as banked cards
+- #4531 Aims a punisher the targeted opponent decides (Combustible Gearhulk, Risk Factor) at an opponent, reading the target as harmful instead of unknown
