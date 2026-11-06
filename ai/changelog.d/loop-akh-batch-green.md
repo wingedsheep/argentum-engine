@@ -1,0 +1,1 @@
+- #4488 Reads a counter removed from a target by its kind (taking a -1/-1 counter off a creature is a lasting pump, aimed at our own), and no longer counts -1/-1 counters it must put on its own creature (Defiant Greatmaw, Exemplar of Strength) as removal

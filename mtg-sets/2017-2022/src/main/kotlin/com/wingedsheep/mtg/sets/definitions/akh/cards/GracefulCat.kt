@@ -27,6 +27,7 @@ val GracefulCat = card("Graceful Cat") {
     }
 
     metadata {
+        inBooster = false
         rarity = Rarity.COMMON
         collectorNumber = "273"
         artist = "John Stanko"

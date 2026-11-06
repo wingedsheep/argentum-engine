@@ -111,6 +111,8 @@ import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandE
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
@@ -1323,6 +1325,11 @@ object TargetPolarityAnalyzer {
             is DoubleCountersEffect -> leaf.target to (leaf.counterType?.let(::counterPolarity) ?: TargetPolarity.FLEXIBLE)
             is MoveAllLastKnownCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is RemoveAnyNumberOfCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw,
+            // Hapatra's Mark): taking a counter away does to its holder the opposite of putting it on,
+            // so a -1/-1 or stun counter removed is a gift and a +1/+1 or loyalty counter a blow.
+            is RemoveCountersEffect -> leaf.target to (counterPolarity(leaf.counterType)?.let(::opposite) ?: return emptyList())
+            is RemoveAllCountersOfTypeEffect -> leaf.target to (counterPolarity(leaf.counterType)?.let(::opposite) ?: return emptyList())
             // Equip, fortify, reconfigure: "attach this permanent to target creature" does to that
             // creature whatever this Equipment does to the creature it equips — the same reading an
             // Aura's enchant target gets. When that can't be read (no source card, see
@@ -1477,6 +1484,13 @@ object TargetPolarityAnalyzer {
             // +N/-N and friends: depends on the board.
             AmountSign.ZERO, AmountSign.UNKNOWN -> null
         }
+    }
+
+    /** The side a counter's removal favours: the other one than its placement's. */
+    private fun opposite(polarity: TargetPolarity): TargetPolarity? = when (polarity) {
+        TargetPolarity.BENEFICIAL -> TargetPolarity.HARMFUL
+        TargetPolarity.HARMFUL -> TargetPolarity.BENEFICIAL
+        else -> null
     }
 
     /**

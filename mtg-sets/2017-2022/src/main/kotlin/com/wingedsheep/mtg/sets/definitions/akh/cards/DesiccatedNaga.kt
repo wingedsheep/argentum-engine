@@ -40,6 +40,7 @@ val DesiccatedNaga = card("Desiccated Naga") {
     }
 
     metadata {
+        inBooster = false
         rarity = Rarity.UNCOMMON
         collectorNumber = "276"
         artist = "Svetlin Velinov"

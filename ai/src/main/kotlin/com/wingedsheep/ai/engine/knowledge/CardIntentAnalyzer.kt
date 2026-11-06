@@ -505,6 +505,13 @@ object CardIntentAnalyzer {
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
                 is DealDamageEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
                     else listOf(leaf)
+                // "Put two -1/-1 counters on target creature you control" (Defiant Greatmaw, Exemplar
+                // of Strength): a drawback paid on our own board, like damage to our own creature —
+                // no answer to anything. Aimed anywhere else it is the removal [tagsOf] reads.
+                is AddCountersEffect -> if (harmsOwnTarget(leaf.counterType, leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
+                is AddDynamicCountersEffect -> if (harmsOwnTarget(leaf.counterType, leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
                 // Pulling our own attacker out of combat (Reconnaissance) saves it — no answer to
                 // anything; [tagsOf] reads the move off any other creature as one.
                 is RemoveFromCombatEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
@@ -1328,6 +1335,11 @@ object CardIntentAnalyzer {
         }
     }
 
+    /** A harmful counter (see [TargetPolarityAnalyzer.counterPolarity]) put on a target only our side can fill. */
+    internal fun harmsOwnTarget(type: CounterType, target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        TargetPolarityAnalyzer.counterPolarity(type) == TargetPolarity.HARMFUL &&
+            TargetPolarityAnalyzer.targetsOwnSide(target, requirements)
+
     /** The target of the leaf shapes [removalTags] reads a group off. */
     private fun groupTargetOf(effect: Effect): EffectTarget? = when (effect) {
         is MoveToZoneEffect -> effect.target
@@ -1643,6 +1655,11 @@ object CardIntentAnalyzer {
 
         is AddCountersEffect -> counterTags(effect.counterType, effect.target)
         is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)
+        // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw),
+        // "remove all -1/-1 counters from it" (Hapatra's Mark): the stats the counter took come
+        // back, a lasting pump. Removing a +1/+1 or a keyword counter names no purpose a tag holds.
+        is RemoveCountersEffect -> removedCounterTags(effect.counterType, effect.target)
+        is RemoveAllCountersOfTypeEffect -> removedCounterTags(effect.counterType, effect.target)
         // Divided among the targets (each a permanent), and doubling what one holds: the counter
         // decides it, as for a plain placement.
         is DistributeCountersAmongTargetsEffect -> counterTags(effect.counterType, EffectTarget.ContextTarget(0))
@@ -2037,6 +2054,13 @@ object CardIntentAnalyzer {
         // removal: marking it is the targeting half of that removal.
         if (type in MARKED_FOR_REMOVAL_COUNTERS) return setOf(IntentTag.REMOVAL)
         return keywordTags(type.name)
+    }
+
+    /** Taking a P/T-lowering counter off another permanent gives its stats back: a pump. */
+    private fun removedCounterTags(type: CounterType, target: EffectTarget): Set<IntentTag> {
+        if (!hitsAnotherPermanent(target)) return emptySet()
+        val (power, toughness) = type.ptDelta ?: return emptySet()
+        return if (power <= 0 && toughness <= 0 && (power < 0 || toughness < 0)) setOf(IntentTag.PUMP) else emptySet()
     }
 
     /**

@@ -28,6 +28,7 @@ val TatteredMummy = card("Tattered Mummy") {
     }
 
     metadata {
+        inBooster = false
         rarity = Rarity.COMMON
         collectorNumber = "278"
         artist = "Slawomir Maniak"
