@@ -43,6 +43,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect
@@ -837,6 +838,15 @@ class GatedEffectExecutor(
             // Without this the gate fails open and offers an impossible "yes": Pippin's Bravery with
             // no Food still lets you choose "Sacrifice a Food" and wrongly take the +4/+4 branch.
             is SacrificeEffect -> cost.any || sacrificeFodder(state, playerId, cost, context).size >= cost.count
+            // "You may sacrifice this [permanent]. If you do, …" — payable only while the source is still on
+            // its controller's battlefield and can be sacrificed at all (the same test SacrificeSelfExecutor
+            // applies). Without this the gate fails open once the source has left: Angelic Renewal's second
+            // trigger, when two creatures die at once, was still offered the "yes" and returned a second
+            // creature though nothing was sacrificed.
+            is SacrificeSelfEffect -> context.sourceId?.let { sourceId ->
+                sourceId in state.getZone(ZoneKey(context.controllerId, Zone.BATTLEFIELD)) &&
+                    com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canBeSacrificed(state, sourceId)
+            } ?: false
             else -> true
         }
 
