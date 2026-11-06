@@ -1350,6 +1350,14 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /** "scries" — `TRIGGER_SCRY_COUNT` is the number of cards looked at. */
     fun scries(): TriggerSpec = spec(ScriedEvent(player))
 
+    /**
+     * "a spell or ability [this player] controls counters a spell" — Baral, Chief of Compliance:
+     * `Triggers.you.countersASpell()`. Fires only when a spell is actually countered: not for a
+     * spell that can't be countered, nor one a replacement exiles instead (Guile); countering an
+     * ability doesn't count. The countered spell is the triggering entity.
+     */
+    fun countersASpell(): TriggerSpec = spec(CounterSpellEvent(counterer = player))
+
     /** "proliferates" (CR 701.34) — fires even when nothing was chosen. */
     fun proliferates(): TriggerSpec = spec(ProliferatedEvent(player))
 

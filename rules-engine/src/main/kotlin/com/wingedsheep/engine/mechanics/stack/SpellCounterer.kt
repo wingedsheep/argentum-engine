@@ -151,7 +151,7 @@ class SpellCounterer(
         return ExecutionResult.success(
             newState,
             listOf(
-                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown"),
+                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown", countererId),
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
@@ -297,7 +297,7 @@ class SpellCounterer(
         return ExecutionResult.success(
             newState,
             listOf(
-                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown"),
+                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown", countererId),
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
@@ -384,7 +384,7 @@ class SpellCounterer(
         return ExecutionResult.success(
             newState,
             listOf(
-                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown"),
+                SpellCounteredEvent(spellId, cardComponent?.name ?: "Unknown", controllerId),
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",

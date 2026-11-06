@@ -1015,8 +1015,13 @@ class TriggerMatcher(
             }
             // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
             is EventPattern.ExtraTurnEvent -> false
-            // CounterSpellEvent is only used as a replacement effect filter (Guile), not a trigger
-            is EventPattern.CounterSpellEvent -> false
+            // "Whenever a spell or ability [counterer] controls counters a spell" (Baral). A spell
+            // that can't be countered, or one Guile exiles instead, emits no SpellCounteredEvent.
+            is EventPattern.CounterSpellEvent -> {
+                event is com.wingedsheep.engine.core.SpellCounteredEvent &&
+                    event.countererId != null &&
+                    matchesPlayer(state, trigger.counterer, event.countererId, controllerId, sourceId)
+            }
             // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
             is EventPattern.CardsPutIntoGraveyardFromLibraryEvent -> false
             // Batching trigger handled separately by detectAnyToGraveyardBatchTriggers

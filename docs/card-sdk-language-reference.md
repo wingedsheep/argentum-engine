@@ -8535,7 +8535,7 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife(batch?, exactly?, firstTimeEachTurn?)`, `paysLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
-`exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `facesADilemma()`, `proliferates()`,
+`exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `countersASpell()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `facesADilemma()`, `proliferates()`,
 `discovers()`, `collectsEvidence()`, `forages()`, `foretells()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
 `venturesIntoTheDungeon()`, `completesADungeon()`, `takesTheInitiative()`, `becomesTheMonarch()`,
@@ -10113,6 +10113,17 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   | "Clash with an opponent. If you win, …" (the card clashes) | `Patterns.Mechanic.clash(ifYouWin, otherwise?)` — reads the `clashWon` pipeline collection |
   | "Whenever you clash **and win**, …" (whole ability) | `Triggers.you.clashes(true)` — nothing goes on the stack on a loss |
   | "Whenever you clash, X. **If you won**, Y." (part of the effect) | `Triggers.you.clashes()` + `Effects.If(Conditions.YouWonTheClash, …)` |
+
+### Countering a spell
+
+- `Triggers.you.countersASpell()` — "Whenever a spell or ability you control counters a spell"
+  (Baral, Chief of Compliance). `EventPattern.CounterSpellEvent(counterer)` matched against
+  `SpellCounteredEvent.countererId`, the controller of the spell or ability that did the countering
+  (ward, "counter unless pays", "counter all spells" and the to-hand / to-library / to-exile counters
+  all carry it). It fires only when a spell is actually countered: a spell that can't be countered,
+  or one Guile's replacement exiles instead, isn't countered; countering an *ability* doesn't count.
+  The countered spell is the triggering entity (`EffectTarget.TriggeringEntity`), its card already in
+  its new zone.
 
 ### Scry / Surveil
 
@@ -19446,7 +19457,8 @@ The priority groups are (CR 616.1a–f):
   flashback destination rider). `then` runs as a replacement rider with the exiled card in the
   pipeline collection `ExileCounteredSpellInstead.EXILED_CARD` (Guile:
   `Effects.May(Effects.CastFromCollectionWithoutPayingCost(EXILED_CARD))`). A spell copy ceases to exist
-  in exile (CR 707.10a) and gets no `then`. `EventPattern.CounterSpellEvent` is replacement-only.
+  in exile (CR 707.10a) and gets no `then`. The same `EventPattern.CounterSpellEvent` is also the
+  trigger `Triggers.<player>.countersASpell()` (see "Countering a spell" under triggers).
 - `ReplacementEffect.PreventDamageByRemovingCounter(counterType = PlusOnePlusOne, removalAmount = CounterRemovalAmount.One, requiresCounter = false, appliesTo = DamageEvent(recipient = Self))`
   — "If this creature would be dealt damage, prevent that damage and remove a +1/+1 counter from it"
   (Unbreathing Horde). The printed twin of the shield counter's prevention half (CR 122.1c), wired at

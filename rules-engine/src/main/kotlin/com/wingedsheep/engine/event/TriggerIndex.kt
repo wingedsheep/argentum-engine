@@ -83,6 +83,7 @@ enum class TriggerCategory {
     DESIGNATION_TAKEN,
     CLASHED,
     SCRIED,
+    SPELL_COUNTERED,
     SURVEILED,
     DILEMMA_FACED,
     PROLIFERATED,
@@ -324,6 +325,9 @@ class TriggerIndex(
                 is SdkGameEvent.DesignationTakenEvent -> DESIGNATION_TAKEN_LIST
                 is SdkGameEvent.ClashedEvent -> CLASHED_LIST
                 is SdkGameEvent.ScriedEvent -> SCRIED_LIST
+                // "Whenever a spell or ability you control counters a spell" (Baral); the same
+                // pattern is Guile's replacement filter, which reads it off appliesTo instead.
+                is SdkGameEvent.CounterSpellEvent -> SPELL_COUNTERED_LIST
                 is SdkGameEvent.SurveiledEvent -> SURVEILED_LIST
                 is SdkGameEvent.DilemmaFacedEvent -> DILEMMA_FACED_LIST
                 is SdkGameEvent.ProliferatedEvent -> PROLIFERATED_LIST
@@ -382,7 +386,6 @@ class TriggerIndex(
                 is SdkGameEvent.DamageEvent,
                 is SdkGameEvent.DrawCardsEvent,
                 is SdkGameEvent.ExtraTurnEvent,
-                is SdkGameEvent.CounterSpellEvent,
                 is SdkGameEvent.LearnEvent,
                 is SdkGameEvent.ScryEvent,
                 is SdkGameEvent.SurveilEvent -> emptyList()
@@ -440,6 +443,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.MonarchChangedEvent -> DESIGNATION_TAKEN_LIST
             is com.wingedsheep.engine.core.ClashedEvent -> CLASHED_LIST
             is com.wingedsheep.engine.core.ScriedEvent -> SCRIED_LIST
+            is com.wingedsheep.engine.core.SpellCounteredEvent -> SPELL_COUNTERED_LIST
             is com.wingedsheep.engine.core.SurveiledEvent -> SURVEILED_LIST
             is com.wingedsheep.engine.core.DilemmaFacedEvent -> DILEMMA_FACED_LIST
             is com.wingedsheep.engine.core.ProliferatedEvent -> PROLIFERATED_LIST
@@ -558,7 +562,6 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ReflexiveAbilityTriggeredEvent,
             is com.wingedsheep.engine.core.ResolvedEvent,
             is com.wingedsheep.engine.core.SpeedChangedEvent,
-            is com.wingedsheep.engine.core.SpellCounteredEvent,
             is com.wingedsheep.engine.core.SpellFizzledEvent,
             is com.wingedsheep.engine.core.StatsModifiedEvent,
             is com.wingedsheep.engine.core.TargetReselectedEvent,
@@ -607,6 +610,7 @@ class TriggerIndex(
         private val DESIGNATION_TAKEN_LIST = listOf(TriggerCategory.DESIGNATION_TAKEN)
         private val CLASHED_LIST = listOf(TriggerCategory.CLASHED)
         private val SCRIED_LIST = listOf(TriggerCategory.SCRIED)
+        private val SPELL_COUNTERED_LIST = listOf(TriggerCategory.SPELL_COUNTERED)
         private val SURVEILED_LIST = listOf(TriggerCategory.SURVEILED)
         private val DILEMMA_FACED_LIST = listOf(TriggerCategory.DILEMMA_FACED)
         private val PROLIFERATED_LIST = listOf(TriggerCategory.PROLIFERATED)

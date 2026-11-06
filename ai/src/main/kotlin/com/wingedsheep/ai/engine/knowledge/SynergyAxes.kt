@@ -251,6 +251,10 @@ object SynergyAxes {
         is EventPattern.SpellCastEvent ->
             if (pattern.player == Player.You && rewardsSpells(pattern.spellFilter)) setOf(SynergyAxis.SPELLS)
             else emptySet()
+        // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
+        // counterspells — instants, which is what feeds the spells axis.
+        is EventPattern.CounterSpellEvent ->
+            if (pattern.counterer == Player.You) setOf(SynergyAxis.SPELLS) else emptySet()
         else -> emptySet()
     }
 
