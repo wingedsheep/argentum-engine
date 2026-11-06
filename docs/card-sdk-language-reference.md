@@ -4257,7 +4257,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   **from exile** (CR 406.7, "it doesn't change zones") is left where it is, with no move and no
   event. `SuccessCriterion.Auto` cannot infer success from this destination (there is no single zone
   to snapshot), so an `IfYouDo` over it must state its criterion explicitly.
-- `ChangeTargetEffect(spell, newTarget)` — change a spell's target. `Effects.ChangeTarget(to = EffectTarget.Self)` names the new target instead of offering a choice — see the `ChangeTargetEffect` entry below.
+- `ChangeTargetEffect(spell, newTarget)` — change a spell's target. `Effects.ChangeTarget(to = EffectTarget.Self)` names the new target instead of offering a choice; `spell = EffectTarget.TriggeringEntity` redirects a cast trigger's spell — see the `ChangeTargetEffect` entry below.
 - `ChangeSpellTargetEffect(spell, filter)` — same, filtered.
 - `ReselectTargetRandomlyEffect(spell)` — re-choose targets at random.
 - `Effects.ChangeTriggeringObjectTargets(chooser = RetargetChooser.Controller, spell = EffectTarget.TriggeringEntity)` — the player named by `chooser` may change the target or targets of `spell`, defaulting to the triggering spell/ability (`context.triggeringEntityId`); the player-chosen, multi-target counterpart of `ReselectTargetRandomly`. Pass a `ContextTarget`/`BoundVariable` for "you may choose new targets for target instant or sorcery spell" (**Wild Ricochet**, `Composite(ChangeTriggeringObjectTargets(spell = spell), CopyTargetSpell(spell))` — retarget first so the copy inherits the new targets, and `CopyTargetSpell` carries the copy's own "you may choose new targets" prompt). This is the *all*-targets retarget; `ChangeTarget` swaps one target (and, without `to`, no-ops on a spell with more than one), so a card whose text says "targets" wants this even when it names its spell as a target. `RetargetChooser.Controller` = the effect's controller; `RetargetChooser.OwnerOfStored(name)` = the owner of the single card in pipeline collection `name` (≠1 card → no chooser → no-op). Reselection is offered slot-by-slot among the original object's legal targets (legality judged from *its* controller, current target kept as a "keep" option, no target chosen twice). **Psychic Battle** composes from atoms: `Composite(GatherCards(TopOfLibrary(1, Player.Each), revealed=true, storeAs="revealed"), FilterCollection("revealed", collectionFilter = GreatestManaValue, storeMatching="w"), ChangeTriggeringObjectTargets(RetargetChooser.OwnerOfStored("w")))` — a tie keeps several greatest cards so `OwnerOfStored` finds no unique owner and the targets stay put.
@@ -11957,6 +11957,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   that slot's own requirement, and not already chosen for another slot of the same "target" word
   (CR 115.3) — is a candidate, and the controller picks which one changes when there are several.
   Only the chosen-new-target form (`to = null`) no-ops on a spell with more than one target.
+  A fourth knob, `spell: EffectTarget` (default `ContextTarget(0)`, "target spell or ability"),
+  names the spell or ability being redirected when it isn't the effect's own target:
+  `spell = EffectTarget.TriggeringEntity` redirects the spell a cast trigger fired on —
+  "Whenever an opponent casts a spell, if it has a single target, change the target to enchanted
+  creature if able" (**Captured by the Consulate**: `Effects.ChangeTarget(to =
+  EffectTarget.EnchantedCreature, spell = EffectTarget.TriggeringEntity)` under
+  `interveningIf = Conditions.TriggeringSpellHasSingleTarget`). A named spell that has already left
+  the stack leaves nothing to redirect, so the effect does nothing.
 - `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope, protectedFilter = null, optional = false, fromSource = null, duration = EndOfTurn)` —
   **`protectedFilter`** protects a *class* of permanents rather than a fixed list of entities: Blood
   of the Martyr's "if damage would be dealt to any creature" (`GameObjectFilter.Creature`), Ascent of

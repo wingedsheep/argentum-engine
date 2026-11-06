@@ -1287,7 +1287,8 @@ object TargetPolarityAnalyzer {
         // Mirror), it is only ever worth doing to an opposing object. An unrestricted "change the
         // target" (Bolt Bend, Misdirection) can also re-aim one of ours whose target went bad, so
         // its slot stays open to both sides; where it points is the decision's question.
-        is ChangeTargetEffect ->
+        // A redirect of a spell named by reference (the triggering spell) aims at nothing chosen.
+        is ChangeTargetEffect -> if (leaf.spell != EffectTarget.ContextTarget(0)) null else
             if (leaf.newTarget != null || leaf.onlyIfCurrentTargetIsController) TargetPolarity.HARMFUL
             else TargetPolarity.FLEXIBLE
         else -> null

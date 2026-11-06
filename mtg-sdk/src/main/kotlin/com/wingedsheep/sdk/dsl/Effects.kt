@@ -5951,7 +5951,8 @@ object Effects {
         newTargetMustBePlayer: Boolean = false,
         onlyIfCurrentTargetIsController: Boolean = false,
         to: EffectTarget? = null,
-    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController, to)
+        spell: EffectTarget = EffectTarget.ContextTarget(0),
+    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController, to, spell)
 
     /**
      * Reselect the target of the triggering spell or ability at random.
