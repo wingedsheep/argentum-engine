@@ -107,7 +107,7 @@ Acolyte of Affliction
 Acquired Mutation
 Acquisition Octopus	intent: UnattachEquipmentEffect
 Acquisitions Expert
-Acrobatic Cheerleader	intent: AddCountersEffect
+Acrobatic Cheerleader
 Acrobatic Leap
 Acrobatic Maneuver
 Act of Heroism
@@ -675,7 +675,7 @@ Arachnoid Adaptation
 Aradara Express
 Aradesh, the Founder
 Aragorn and Arwen, Wed
-Aragorn, Company Leader	intent: AddCountersEffect
+Aragorn, Company Leader
 Aragorn, Hornburg Hero
 Aragorn, King of Gondor	intent: TakeDesignationEffect
 Aragorn, the Uniter
@@ -889,7 +889,7 @@ Asari Captain
 Ascendant Dustspeaker
 Ascendant Evincar
 Ascendant Packleader
-Ascendant Spirit	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: SetCreatureSubtypesEffect
+Ascendant Spirit	combat: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
 Ascending Aven
 Ascent of the Worthy
 Asceticism
@@ -2498,7 +2498,7 @@ Captain Jonathan Archer
 Captain Kathryn Janeway
 Captain Lannery Storm
 Captain Mar-Vell, Space-Born
-Captain Marvel, Earth's Protector	intent: AddCountersEffect
+Captain Marvel, Earth's Protector
 Captain Michael Burnham
 Captain Pike, Fullness of Time
 Captain Sisay
@@ -4756,7 +4756,7 @@ Dripping Dead
 Dripping-Tongue Zubera
 Driven // Despair
 Driver of the Dead
-Drivnod, Carnage Dominus	intent: AddCountersEffect
+Drivnod, Carnage Dominus
 Drix Fatemaker
 Drizzt Do'Urden
 Drogskol Cavalry
@@ -5518,7 +5518,7 @@ Eviscerator's Insight
 Evolution Charm
 Evolution Sage
 Evolution Witness	intent: AdaptEffect
-Evolved Sleeper	combat: SetBaseStatsEffect; intent: AddCountersEffect; intent: SetCreatureSubtypesEffect
+Evolved Sleeper	combat: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
 Evolved Spinoderm
 Evolving Adaptive
 Evolving Door
@@ -8770,7 +8770,7 @@ Invasion of Zendikar
 Invasion of the Giants	intent: ModifySpellCostsEffect
 Invasive Maneuvers
 Inventive Iteration
-Inventive Wingsmith	intent: AddCountersEffect
+Inventive Wingsmith
 Inventor's Apprentice
 Inventor's Axe
 Inventors' Fair
@@ -10386,7 +10386,7 @@ Maha, Its Feathers Night
 Mahadi, Emporium Master
 Mahamoti Djinn
 Mai and Zuko
-Mai, Jaded Edge	intent: AddCountersEffect
+Mai, Jaded Edge
 Mai, Scornful Striker
 Maja, Bretagard Protector
 Majestic Auricorn
@@ -11153,7 +11153,7 @@ Moment of Valor
 Moment's Peace
 Momentary Blink
 Momentum Breaker
-Momentum Rumbler	intent: AddCountersEffect
+Momentum Rumbler
 Momo, Friendly Flier
 Momo, Playful Pet
 Mona Lisa, Science Geek
@@ -11162,7 +11162,7 @@ Monastery Mentor
 Monastery Messenger
 Monastery Swiftspear
 Mondo Gecko	intent: ChooseColorThenEffect
-Mondrak, Glory Dominus	intent: AddCountersEffect
+Mondrak, Glory Dominus
 Mongoose Lizard
 Monica Rambeau
 Monk Class
@@ -13197,7 +13197,7 @@ Quicksilver Dragon	intent: ChangeSpellTargetEffect; polarity: ChangeSpellTargetE
 Quicksilver Elemental	intent: GainAllActivatedAbilitiesOfEffect; polarity: GainAllActivatedAbilitiesOfEffect; timing: GainAllActivatedAbilitiesOfEffect
 Quicksilver Fisher
 Quicksilver Fountain	intent: AddCountersEffect; intent: ForEach>RemoveAllCountersOfTypeEffect; polarity: AddCountersEffect
-Quicksilver, Brash Blur	intent: AddCountersEffect
+Quicksilver, Brash Blur
 Quiet Contemplation
 Quiet Purity
 Quill-Blade Laureate
@@ -13712,7 +13712,7 @@ Reliquary Tower
 Relive the Past
 Relm's Sketching	polarity: CreateTokenCopyOfTargetEffect
 Reluctant Dounguard
-Reluctant Role Model	intent: AddCountersEffect
+Reluctant Role Model
 Rem Karolus, Stalwart Slayer
 Remand
 Reminisce	intent: Pipeline(graveyard→library); polarity: Pipeline(graveyard→library)
@@ -14026,7 +14026,7 @@ Risk Factor	intent: GatedEffect; polarity: GatedEffect
 Risky Move	intent: FlipCoinEffect; intent: GainControlByActivePlayerEffect; polarity: FlipCoinEffect
 Risky Research
 Risky Shortcut
-Risona, Asari Commander	intent: AddCountersEffect
+Risona, Asari Commander
 Rite of Belzenlok
 Rite of Flame
 Rite of Harmony
@@ -15875,7 +15875,7 @@ Solitary Camel
 Solitary Cell
 Solitary Sanctuary
 Soliton
-Solphim, Mayhem Dominus	intent: AddCountersEffect
+Solphim, Mayhem Dominus
 Solstice Revelations
 Solstice Zealot
 Soltari Crusader
@@ -16844,7 +16844,7 @@ Super Speed
 Super Strength
 Super Suit
 Super Villain Lockup
-Super-Adaptoid	intent: AddCountersEffect; polarity: AddCountersEffect
+Super-Adaptoid	polarity: AddCountersEffect
 Super-Skrull
 Super-Soldier Serum
 Superior Foes of Spider-Man
@@ -17254,7 +17254,7 @@ Teferi, Timeless Voyager	intent: ForEach>PhaseOutEffect; polarity: ForEachEffect
 Teferi, Who Slows the Sunset	intent: CreatePermanentEmblemEffect; polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→?); polarity: TapUntapCollectionEffect
 Tegwyll, Duke of Splendor
 Tek
-Tekuthal, Inquiry Dominus	intent: AddCountersEffect
+Tekuthal, Inquiry Dominus
 Tel-Jilad Archers
 Tel-Jilad Chosen
 Tel-Jilad Exile
@@ -20307,7 +20307,7 @@ Zombie Outlander
 Zombify
 Zoo Escapees
 Zookeeper Mechan
-Zopandrel, Hunger Dominus	intent: AddCountersEffect
+Zopandrel, Hunger Dominus
 Zoraline, Cosmos Caller
 Zoyowa Lava-Tongue
 Zoyowa's Justice	polarity: ForEachEffect
