@@ -551,6 +551,7 @@ object CardIntentAnalyzer {
         // the battlefield under your control" (Boneyard Parley): graveyard cards brought back onto
         // our side, a reanimation whoever owned them — read as the single-card return it adds up to.
         val reanimates = reanimatesChosenGraveyardTargets(effect, requirements)
+        val stored by lazy { storedAmounts(effect) }
         return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) +
             (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) +
             // Hour of Eternity's exile-and-copy pipeline: the single-card exile to use, below.
@@ -664,6 +665,33 @@ object CardIntentAnalyzer {
                     if (source?.isMill == true && slot is TargetPlayer && slot.restriction != null) {
                         listOf(leaf.copy(source = source.copy(player = Player.You)))
                     } else listOf(leaf)
+                }
+                // "Destroy another target creature. If a creature is destroyed this way, …" (Noxious
+                // Gearhulk) moves the gathered chosen target itself, to track what left: read as the
+                // single-target destroy or exile it amounts to, with its own-side checks above.
+                is MoveCollectionEffect -> {
+                    val slot = TargetPolarityAnalyzer.permanentSlots(requirements).singleOrNull()
+                    val zone = (leaf.destination as? CardDestination.ToZone)?.zone
+                    if (slot != null && zone != null && TargetPolarityAnalyzer.removesChosenTargets(leaf, effect)) {
+                        readingLeaves(
+                            MoveToZoneEffect(
+                                target = EffectTarget.ContextTarget(slot),
+                                destination = zone,
+                                byDestruction = leaf.moveType == MoveType.Destroy,
+                                fromZone = Zone.BATTLEFIELD,
+                            ),
+                            requirements,
+                        )
+                    } else listOf(leaf)
+                }
+                // "You may pay any amount of {E}. The creature gets -1/-1 until end of turn for each
+                // {E} paid this way" (Die Young): the stats read through the number the pipeline
+                // stored, so the negated count is the shrink it is — see [storedAmounts].
+                is ModifyStatsEffect -> {
+                    val power = resolveStored(leaf.powerModifier, stored)
+                    val toughness = resolveStored(leaf.toughnessModifier, stored)
+                    if (power === leaf.powerModifier && toughness === leaf.toughnessModifier) listOf(leaf)
+                    else listOf(leaf.copy(powerModifier = power, toughnessModifier = toughness))
                 }
                 else -> listOf(leaf)
             }
@@ -1896,6 +1924,10 @@ object CardIntentAnalyzer {
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
         // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
         is MustBeBlockedEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+        // "This creature can attack this turn as though it didn't have defender" (Hightide Hermit,
+        // Roving Keep): the one-turn form of the static [CanAttackDespiteDefender] — a wall turned
+        // attacker for the fight, to be activated before attacks.
+        is CanAttackDespiteDefenderThisTurnEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
         // "Attach target Equipment you control to target creature you control", "attach any number
         // of Equipment you control to it": a free equip, see [IntentTag.EQUIPMENT_RELOCATION].
         // An Equipment attaching only itself (Pre-War Formalwear) moves no other Equipment.
@@ -2473,9 +2505,13 @@ object CardIntentAnalyzer {
             // of Invasion) is its drawback, never a pump or an answer.
             static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> emptySet()
             // An Aura's "enchanted creature gets -2/-2" (Dead Weight) answers what it enchants; a
-            // power-only cut (Sea Legs' "otherwise, -2/-0") shrinks it without answering it.
-            static.filter.scope == Scope.AttachedTo && static.powerBonus <= 0 && static.toughnessBonus <= 0 ->
-                if (static.toughnessBonus < 0) setOf(IntentTag.REMOVAL) else emptySet()
+            // power-only cut (Aether Meltdown's -4/-0) blunts it in every fight without answering
+            // it — the lasting form of the one-shot "-2/-0" [leafTagsOf] reads the same way.
+            static.filter.scope == Scope.AttachedTo && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> when {
+                static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)
+                static.powerBonus < 0 -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+                else -> emptySet()
+            }
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
             static.powerBonus > 0 || static.toughnessBonus > 0 -> setOf(IntentTag.ANTHEM)
             static.powerBonus < 0 || static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)

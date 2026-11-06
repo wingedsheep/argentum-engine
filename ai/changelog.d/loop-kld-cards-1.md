@@ -1,0 +1,1 @@
+- #TBD The AI reads a stat change through a number its pipeline stored ("-1/-1 for each {E} paid", Die Young) as the shrink it is, a pipeline's tracked destroy of its own chosen target (Noxious Gearhulk) as removal on that slot, a one-turn defender lift and an Aura's power-only cut as combat enhancements
