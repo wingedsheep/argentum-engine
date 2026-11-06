@@ -99,7 +99,7 @@ Accursed Duneyard
 Accursed Horde
 Accursed Marauder
 Accursed Spirit
-Acererak the Archlich	intent: ForEach>PayOrSufferEffect; intent: VentureIntoTheDungeonEffect
+Acererak the Archlich	intent: ForEach>PayOrSufferEffect
 Acid Rain
 Aclazotz, Deepest Betrayal	intent: ReturnSelfFromZoneTransformedEffect
 Acolyte of Aclazotz
@@ -1300,7 +1300,7 @@ Barrin, Tolarian Archmage
 Barrow Naughty
 Barrow Witches
 Barrow-Blade
-Barrowin of Clan Undurr	intent: VentureIntoTheDungeonEffect
+Barrowin of Clan Undurr
 Bartel Runeaxe
 Barter in Blood
 Bartered Cow
@@ -3001,7 +3001,7 @@ Clash of Elements
 Clash of Titans
 Clash of the Eikons	polarity: AddCountersEffect; polarity: RemoveCountersEffect
 Class-F Shuttlecraft
-Clattering Skeletons	intent: VentureIntoTheDungeonEffect
+Clattering Skeletons
 Clavileño, First of the Blessed
 Clawing Torment
 Claws Out
@@ -3069,7 +3069,7 @@ Clockwork Hydra
 Clockwork Percussionist
 Clockwork Servant
 Clockwork Vorrac
-Cloister Gargoyle	intent: VentureIntoTheDungeonEffect
+Cloister Gargoyle
 Cloistered Telepath
 Clone
 Close Encounter
@@ -4142,7 +4142,7 @@ Delta Bloodflies
 Deluge
 Deluge Virtuoso
 Delver of Secrets	intent: Pipeline(TopOfLibrary→?)
-Delver's Torch	intent: VentureIntoTheDungeonEffect
+Delver's Torch
 Demand Answers
 Demanding Dragon	intent: PayOrSufferEffect
 Dematerialize
@@ -4411,7 +4411,7 @@ Dispelling Exhale
 Dispersal Shield
 Disperse
 Dispersing Orb
-Displacer Beast	intent: VentureIntoTheDungeonEffect
+Displacer Beast
 Displacer Kitten
 Display of Power	polarity: CopyEachTargetSpellEffect
 Disposal Mummy
@@ -4842,9 +4842,9 @@ Dune Mover
 Duneblast
 Dunes of the Dead
 Dungeon Crawler
-Dungeon Descent	intent: VentureIntoTheDungeonEffect
+Dungeon Descent
 Dungeon Geists
-Dungeon Map	intent: VentureIntoTheDungeonEffect
+Dungeon Map
 Dunland Crebain
 Duplicant
 Durable Coilbug
@@ -4984,7 +4984,7 @@ Ebonblade Reaper
 Ebondeath, Dracolich
 Ebony Horse	polarity: PreventDamageEffect; timing: PreventDamageEffect
 Ebony Treefolk
-Eccentric Apprentice	intent: VentureIntoTheDungeonEffect; polarity: SetCreatureSubtypesEffect
+Eccentric Apprentice	polarity: SetCreatureSubtypesEffect
 Eccentric Farmer
 Echo Inspector
 Echo Tracer
@@ -5132,7 +5132,7 @@ Elite Spellbinder	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAt
 Elite Vanguard
 Elixir
 Elixir of Vitality
-Ellywick Tumblestrum	intent: VentureIntoTheDungeonEffect
+Ellywick Tumblestrum
 Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect; intent: TheRingTemptsYouEffect
 Elrond, Master of Healing
 Elrond, Moon-Reader
@@ -5986,7 +5986,7 @@ Fiery Inscription	intent: TheRingTemptsYouEffect
 Fiery Intervention
 Fiery Islet
 Fiery Temper
-Fifty Feet of Rope	intent: VentureIntoTheDungeonEffect
+Fifty Feet of Rope
 Fight On!
 Fight Rigging	intent: Pipeline(TopOfLibrary→exile|library)
 Fight as One
@@ -6022,7 +6022,7 @@ Finale of Promise	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; 
 Finale of Revelation
 Finch Formation
 Find // Finality
-Find the Path	intent: VentureIntoTheDungeonEffect
+Find the Path
 Finishing Blow
 Finneas, Ace Archer
 Firdoch Core
@@ -8713,7 +8713,7 @@ Into the Story
 Into the Void
 Intrepid Adversary
 Intrepid Hero
-Intrepid Outlander	intent: VentureIntoTheDungeonEffect
+Intrepid Outlander
 Intrepid Paleontologist
 Intrepid Provisioner
 Intrepid Rabbit
@@ -11433,7 +11433,7 @@ Naban, Dean of Iteration
 Nacatl Outlander
 Nacatl Savage
 Nacre Talisman
-Nadaar, Selfless Paladin	intent: VentureIntoTheDungeonEffect
+Nadaar, Selfless Paladin
 Nadier's Nightblade
 Nadir Kraken
 Nadu, Winged Wisdom
@@ -12688,7 +12688,7 @@ Plaguecrafter
 Plagued Rusalka
 Plan for All Outcomes
 Plan the Heist
-Planar Ally	intent: VentureIntoTheDungeonEffect
+Planar Ally
 Planar Atlas
 Planar Cleansing
 Planar Disruption
@@ -12840,7 +12840,7 @@ Pre-War Formalwear
 Preacher
 Preacher of the Schism
 Precinct Captain
-Precipitous Drop	intent: VentureIntoTheDungeonEffect
+Precipitous Drop
 Precise Redaction
 Precision Bolt
 Precognition Field	intent: Pipeline(TopOfLibrary→exile)
@@ -13412,7 +13412,7 @@ Ranger en-Vec
 Ranger of Eos
 Ranger's Firebrand
 Ranger's Guile
-Ranger's Hawk	intent: VentureIntoTheDungeonEffect
+Ranger's Hawk
 Ranger's Longbow
 Rangers of Ithilien
 Rangers' Aetherhive
@@ -14892,7 +14892,7 @@ Second Breakfast
 Second Harvest
 Second Sunrise	intent: Pipeline(graveyard→battlefield)
 Second Thoughts
-Secret Door	intent: VentureIntoTheDungeonEffect
+Secret Door
 Secret Identity	polarity: SetCreatureSubtypesEffect
 Secret Invasion
 Secret Plans
@@ -15325,7 +15325,7 @@ Shorikai, Genesis Engine
 Short Bow
 Short Circuit
 Short Sword
-Shortcut Seeker	intent: VentureIntoTheDungeonEffect
+Shortcut Seeker
 Shortcut to Mushrooms	intent: TheRingTemptsYouEffect
 Show of Confidence	timing: GrantKeywordEffect
 Show of Valor
@@ -18346,7 +18346,7 @@ Triton Wavebreaker
 Triton Waverider
 Triumph of Gerrard
 Triumph of the Hordes
-Triumphant Adventurer	intent: VentureIntoTheDungeonEffect
+Triumphant Adventurer
 Triumphant Chomp
 Triumphant Surge
 Trokin High Guard
@@ -18897,7 +18897,7 @@ Vantress Transmuter
 Vaporkin
 Vaporous Djinn
 Variable Chaser
-Varis, Silverymoon Ranger	intent: VentureIntoTheDungeonEffect
+Varis, Silverymoon Ranger
 Varragoth, Bloodsky Sire	polarity: ForEachEffect
 Vash, Freelance Archaeologist
 Vassal Soul
@@ -19019,7 +19019,7 @@ Veteran Beastrider
 Veteran Bodyguard
 Veteran Cathar
 Veteran Cavalier
-Veteran Dungeoneer	intent: VentureIntoTheDungeonEffect
+Veteran Dungeoneer
 Veteran Guardmouse
 Veteran Ice Climber
 Veteran Survivor
@@ -19430,7 +19430,7 @@ Wandering Musicians
 Wandering Ones
 Wandering Stream
 Wandering Tombshell
-Wandering Troubadour	intent: VentureIntoTheDungeonEffect
+Wandering Troubadour
 Wanderlight Spirit
 Wanderlust	polarity: Aura>DealDamageEffect
 Wandermare
@@ -20194,8 +20194,8 @@ Youthful Scholar
 Youthful Valkyrie
 Yuan Shao's Infantry
 Yuan Shao, the Indecisive
-Yuan-Ti Fang-Blade	intent: VentureIntoTheDungeonEffect
-Yuan-Ti Malison	intent: VentureIntoTheDungeonEffect
+Yuan-Ti Fang-Blade
+Yuan-Ti Malison
 Yue, the Moon Spirit
 Yuna, Hope of Spira
 Yuriko, Blade of the Mighty
@@ -20211,7 +20211,7 @@ Zagoth Triome
 Zagras, Thief of Heartbeats
 Zahid, Djinn of the Lamp
 Zahur, Glory's Past
-Zalto, Fire Giant Duke	intent: VentureIntoTheDungeonEffect
+Zalto, Fire Giant Duke
 Zanam Djinn
 Zanarkand, Ancient Metropolis
 Zap
@@ -20302,7 +20302,7 @@ Zombie Cutthroat
 Zombie Goliath
 Zombie Infestation
 Zombie Master
-Zombie Ogre	intent: VentureIntoTheDungeonEffect
+Zombie Ogre
 Zombie Outlander
 Zombify
 Zoo Escapees
