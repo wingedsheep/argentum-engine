@@ -8,12 +8,14 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.state.components.stack.AbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
@@ -144,7 +146,12 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
         val definition = registry?.getCard(cardName) ?: return emptyList()
         val room = container.get<RoomComponent>()
             ?: return listOf(
-                if (entrySpent) CardIntentAnalyzer.analyzeInPlay(definition)
+                if (entrySpent && definition.sagaChapters.isNotEmpty()) {
+                    CardIntentAnalyzer.analyzeSagaInPlay(
+                        definition,
+                        container.get<CountersComponent>()?.getCount(CounterType.LORE) ?: 0,
+                    )
+                } else if (entrySpent) CardIntentAnalyzer.analyzeInPlay(definition)
                 else CardIntentAnalyzer.analyzeSelf(definition),
             )
         return definition.cardFaces

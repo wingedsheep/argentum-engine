@@ -144,6 +144,7 @@ object CardIntentAnalyzer {
     private val faceCache = ConcurrentHashMap<FaceKey, CardIntent>()
 
     private data class FaceKey(val cardName: String, val faceName: String)
+    private val sagaInPlayCache = ConcurrentHashMap<Pair<String, Int>, CardIntent>()
 
     /** The [CardIntent] for [card] — its own script and every face's — computing it on first sight. */
     fun analyze(card: CardDefinition): CardIntent =
@@ -176,17 +177,36 @@ object CardIntentAnalyzer {
      * [analyzeSelf] (empty); use [analyzeFace] per unlocked door.
      */
     fun analyzeInPlay(card: CardDefinition): CardIntent = inPlayCache.getOrPut(card.name) {
+        inPlayOf(card, spentChapters = 1)
+    }
+
+    /**
+     * [analyzeInPlay] for a Saga carrying [loreCounters] lore counters: every chapter numbered at
+     * or below that count has already triggered (CR 714.2b), so the Saga is worth only the chapters
+     * still ahead of it. A Saga about to sacrifice itself after its last chapter reads as nothing
+     * more than the permanent it is; one whose removal chapter is still to come reads as removal.
+     */
+    fun analyzeSagaInPlay(card: CardDefinition, loreCounters: Int): CardIntent {
+        if (card.sagaChapters.isEmpty()) return analyzeInPlay(card)
+        val spent = loreCounters.coerceAtLeast(0)
+        return sagaInPlayCache.getOrPut(card.name to spent) { inPlayOf(card, spentChapters = spent) }
+    }
+
+    private fun inPlayOf(card: CardDefinition, spentChapters: Int): CardIntent {
         val entries = card.script.triggeredAbilities.filter(::isOwnEntry)
         // An ability activated only from another zone — "{1}{W}, Discard this card: …" from the
         // hand (Gideon's Memorial), a graveyard return — is no longer the permanent's to use.
         val offBoard = card.script.activatedAbilities.filter { it.activateFromZone != Zone.BATTLEFIELD }
-        if (entries.isEmpty() && offBoard.isEmpty()) return@getOrPut analyzeSelf(card)
-        compute(
+        // A Saga's chapter I triggers as it enters, like an ETB; the later ones are still to come.
+        val spent = card.script.sagaChapters.filter { it.chapter <= spentChapters }
+        if (entries.isEmpty() && offBoard.isEmpty() && spent.isEmpty()) return analyzeSelf(card)
+        return compute(
             card,
             listOf(
                 card.script.copy(
                     triggeredAbilities = card.script.triggeredAbilities - entries.toSet(),
                     activatedAbilities = card.script.activatedAbilities - offBoard.toSet(),
+                    sagaChapters = card.script.sagaChapters - spent.toSet(),
                 ),
             ),
         )
@@ -391,7 +411,13 @@ object CardIntentAnalyzer {
             cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) {
                 val cashed = effectTags(it.effect, it.targetRequirements, ownPile)
                 if (isRummage(it)) asRummage(cashed) else cashed
-            },
+            } +
+                // A Saga chapter still to come is a one-shot payoff waiting on the board too — paid
+                // out by the next lore counter rather than an activation. [analyzeSagaInPlay] has
+                // already dropped the chapters that have triggered.
+                scripts.flatMap { it.sagaChapters }.flatMapTo(HashSet()) {
+                    effectTags(it.effect, EffectWalker.chapterTargets(it), ownPile)
+                },
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent, scripts))
     }
@@ -434,6 +460,12 @@ object CardIntentAnalyzer {
             for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
                 val slot = ability.effect to ability.targetRequirements
                 if (sick && tapsOrUntapsItself(ability.cost)) deferred += slot else immediate += slot
+            }
+            // Chapter I triggers as the Saga enters; every later chapter waits for a later turn's
+            // lore counter (CR 714.3b).
+            for (chapter in script.sagaChapters) {
+                val slot = chapter.effect to EffectWalker.chapterTargets(chapter)
+                if (chapter.chapter > 1) deferred += slot else immediate += slot
             }
         }
         // A mana ability is [IntentTag.RAMP] — and a summoning-sick dork's taps for nothing yet.

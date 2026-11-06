@@ -60,7 +60,7 @@ data class AiReadingView(
 
 @Serializable
 data class AiAbilityView(
-    /** `SPELL`, `ACTIVATED`, `TRIGGERED`, `STATE_TRIGGER` or `STATIC`. */
+    /** `SPELL`, `ACTIVATED`, `TRIGGERED`, `CHAPTER`, `STATE_TRIGGER` or `STATIC`. */
     val kind: String,
     /** "Spell", "Activated ability 2". */
     val title: String,

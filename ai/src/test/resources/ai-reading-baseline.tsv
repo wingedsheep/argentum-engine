@@ -819,7 +819,7 @@ Armguard Familiar	intent: UnattachEquipmentEffect
 Armillary Sphere
 Armor Sliver
 Armor Thrull
-Armor Wars
+Armor Wars	intent: ModifySpellCostsEffect
 Armorcraft Judge
 Armored Armadillo
 Armored Cancrix
@@ -2065,7 +2065,7 @@ Brackish Blunder
 Brackish Trudge
 Brad Boimler, Eager Ensign	intent: GrantCounterPlacementModifierEffect
 Braided Net
-Braids's Frightful Return
+Braids's Frightful Return	intent: PayOrSufferEffect
 Braids, Arisen Nightmare
 Braids, Cabal Minion
 Braidwood Cup
@@ -5135,7 +5135,7 @@ Ellywick Tumblestrum	intent: VentureIntoTheDungeonEffect
 Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect; intent: TheRingTemptsYouEffect
 Elrond, Master of Healing
 Elrond, Moon-Reader
-Elspeth Conquers Death
+Elspeth Conquers Death	intent: ModifySpellCostsEffect
 Elspeth Resplendent
 Elspeth's Devotee
 Elspeth's Nightmare
@@ -5712,7 +5712,7 @@ Falkenrath Torturer
 Fall of Cair Andros
 Fall of Gil-galad
 Fall of the Gavel
-Fall of the Impostor
+Fall of the Impostor	intent: Pipeline(ControlledPermanents→exile)
 Fall of the Thran
 Fallaji Archaeologist
 Fallaji Chaindancer
@@ -6090,7 +6090,7 @@ Firespitter Whelp
 Firestorm Phoenix
 Firewake Sliver
 Firion, Wild Rose Warrior
-Firja's Retribution
+Firja's Retribution	intent: GrantActivatedAbilityToGroupEffect
 Firja, Judge of Valor
 Firmament Sage
 First Contact
@@ -6552,7 +6552,7 @@ Gabriel Lorca, Mirror Menace
 Gaddock Teeg
 Gadget Technician
 Gadrak, the Crown-Scourge
-Gadwick's First Duel
+Gadwick's First Duel	intent: CreateAuraTokenEffect
 Gadwick, the Wizened
 Gaea's Anthem
 Gaea's Avenger
@@ -8260,7 +8260,7 @@ Huatli's Raptor
 Huatli's Snubhorn
 Huatli's Spurring
 Huatli, Dinosaur Knight
-Huatli, Poet of Unity
+Huatli, Poet of Unity	intent: GrantStaticAbilityEffect
 Huatli, Radiant Champion
 Huatli, Warrior Poet
 Huatli, the Sun's Heart
@@ -8764,7 +8764,7 @@ Invasion of Ulgrotha
 Invasion of Vryn
 Invasion of Xerex
 Invasion of Zendikar
-Invasion of the Giants
+Invasion of the Giants	intent: ModifySpellCostsEffect
 Invasive Maneuvers
 Inventive Iteration
 Inventive Wingsmith	intent: AddCountersEffect
@@ -9034,7 +9034,7 @@ Jibbirik Omnivore
 Jidoor, Aristocratic Capital
 Jihad
 Jill, Shiva's Dominant
-Jin-Gitaxias
+Jin-Gitaxias	intent: RepeatWhileEffect
 Jin-Gitaxias, Core Augur
 Jin-Gitaxias, Progress Tyrant
 Jinnie Fay, Jetmir's Second
@@ -9396,7 +9396,7 @@ Kinetic Augur
 King Crab
 King Darien XLVIII
 King Harald's Revenge
-King Narfi's Betrayal
+King Narfi's Betrayal	intent: ForEach>Pipeline(graveyard→?); intent: GrantMayPlayFromExileEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile|graveyard)
 King Suleiman
 King T'Challa
 King of the Oathbreakers	intent: PhaseOutEffect
@@ -10658,7 +10658,7 @@ Maw of the Mire
 Mawcor
 Maximize Altitude
 Maximize Velocity
-Maximum Carnage
+Maximum Carnage	intent: ForEach>GoadEffect
 Maximum Overdrive	timing: GrantKeywordEffect
 Mayhem Devil
 Mayhem Patrol
@@ -10691,7 +10691,7 @@ Medic's Kitesail
 Meditate
 Meditation Pools
 Meditation Puzzle
-Medomai's Prophecy
+Medomai's Prophecy	intent: ChooseOptionEffect; intent: Pipeline(TopOfLibrary→?)
 Meek Attack
 Meekstone
 Meeting of Minds
@@ -12037,7 +12037,7 @@ Ondu Inversion
 Ondu Knotmaster
 One Dozen Eyes
 One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
-One Ring to Rule Them All
+One Ring to Rule Them All	intent: TheRingTemptsYouEffect
 One With the Wind
 One with Nature	polarity: Aura>EmitLibrarySearchedEventEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect; polarity: Aura>SelectFromCollectionEffect; polarity: Aura>ShuffleLibraryEffect
 One with the Machine
@@ -12569,7 +12569,7 @@ Phyrexian Purge
 Phyrexian Rager
 Phyrexian Reaper
 Phyrexian Reclamation
-Phyrexian Scriptures
+Phyrexian Scriptures	intent: ExileOpponentsGraveyardsEffect
 Phyrexian Slayer
 Phyrexian Tower
 Phyrexian Tyranny
@@ -14073,7 +14073,7 @@ Riveteers Overlook
 Riveteers Requisitioner
 Rix Maadi Reveler
 Road Rage
-Roads Go Ever, Ever On
+Roads Go Ever, Ever On	intent: Pipeline(FromLinkedExile→hand)
 Roadside Assistance
 Roadside Blowout
 Roadside Reliquary
@@ -14778,7 +14778,7 @@ Scrivener
 Scroll Rack
 Scroll Thief
 Scroll of Avacyn
-Scroll of Isildur
+Scroll of Isildur	polarity: DrawCardsEffect
 Scrollshift
 Scrounge for Eternity
 Scrounger of Souls
@@ -15220,7 +15220,7 @@ Sheltering Boughs
 Sheltering Landscape
 Sheltering Light
 Sheltering Word
-Sheoldred
+Sheoldred	intent: Pipeline(graveyard→battlefield)
 Sheoldred's Edict
 Sheoldred's Headcleaver
 Sheoldred's Restoration
@@ -15890,7 +15890,7 @@ Somnomancer
 Sonar Strike
 Song of Creation	intent: Pipeline(hand→graveyard)
 Song of Eärendil
-Song of Freyalise
+Song of Freyalise	intent: GrantActivatedAbilityToGroupEffect
 Song of Stupefaction
 Song of Totentanz
 Song-Mad Treachery
@@ -16726,15 +16726,15 @@ Summit Sentinel
 Summon the School
 Summon: Anima
 Summon: Bahamut
-Summon: Brynhildr
+Summon: Brynhildr	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Summon: Choco/Mog
 Summon: Esper Ramuh
-Summon: Esper Valigarmanda
+Summon: Esper Valigarmanda	intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→exile)
 Summon: Fat Chocobo
 Summon: Fenrir
 Summon: G.F. Cerberus
 Summon: G.F. Ifrit
-Summon: Good King Mog XII
+Summon: Good King Mog XII	intent: CreateTokenCopyOfChosenPermanentEffect
 Summon: Ixion
 Summon: Knights of Round
 Summon: Kujata
@@ -16744,8 +16744,8 @@ Summon: Primal Garuda
 Summon: Primal Odin
 Summon: Shiva
 Summon: Titan
-Summon: Valefor
-Summon: Yojimbo
+Summon: Valefor	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: Pipeline(?→hand)
+Summon: Yojimbo	intent: GrantStaticAbilityEffect
 Summoned Dromedary
 Summoner's Bane
 Summoner's Grimoire
@@ -17464,7 +17464,7 @@ The Aetherspark
 The Akroan War
 The Ancient One
 The Antiquities War
-The Apprentice's Folly
+The Apprentice's Folly	intent: Pipeline(BattlefieldMatching→graveyard)
 The Arkenstone
 The Astonishing Ant-Man
 The Autonomous Furnace
@@ -17473,10 +17473,10 @@ The Balrog, Durin's Bane
 The Balrog, Flame of Udûn
 The Bath Song
 The Battle of Bywater
-The Bears of Littjara
+The Bears of Littjara	polarity: ForEachEffect
 The Belligerent
 The Biblioplex
-The Binding of the Titans
+The Binding of the Titans	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
 The Birth of Meletis
 The Black Arrow
 The Black Breath
@@ -17500,7 +17500,7 @@ The City on the Edge of Forever
 The Clone Saga
 The Cloning of Shredder
 The Coming of Galactus
-The Creation of Avacyn
+The Creation of Avacyn	intent: ForEach>TurnFaceUpEffect; intent: Pipeline(FromLinkedExile→?)
 The Cruelty of Gix
 The Crystal's Chosen
 The Darkness Crystal	polarity: MoveToZoneEffect
@@ -17537,7 +17537,7 @@ The Fire Crystal
 The Fire Nation Drill	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
 The First Eruption
 The First Iroan Games
-The Flame of Keld
+The Flame of Keld	intent: GrantDamageBonusEffect; intent: Pipeline(hand→graveyard)
 The Gaffer
 The Gitrog Monster
 The Gitrog, Ravenous Ride
@@ -17549,13 +17549,13 @@ The Grey Havens
 The Haunt of Hightower
 The Hive
 The Holodeck
-The Horus Heresy
+The Horus Heresy	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: Pipeline(?→graveyard)
 The Hunger Tide Rises
 The Hunter Maze
 The Huntsman's Redemption
 The Immortal Sun
 The Infamous Cruelclaw
-The Inner Light
+The Inner Light	polarity: CreateDelayedTriggerEffect
 The Irencrag	intent: BecomeArtifactEffect
 The Jolly Balloon Man
 The Kami War
@@ -17570,7 +17570,7 @@ The Last Ronin's Technique
 The Legend of Kuruk
 The Legend of Kyoshi
 The Legend of Roku
-The Legend of Yangchen
+The Legend of Yangchen	intent: Pipeline(BattlefieldMatching→exile)
 The Lion-Turtle
 The Locust God
 The Lonely Mountain
@@ -17611,15 +17611,15 @@ The Odd Acorn Gang
 The One Ring	intent: GrantPlayerProtectionEffect
 The Ooze
 The Ozolith
-The Phasing of Zhalfir
+The Phasing of Zhalfir	intent: PhaseOutEffect; polarity: PhaseOutEffect
 The Pride of Hull Clade
 The Prima Vista
-The Princess Takes Flight
+The Princess Takes Flight	intent: Pipeline(FromLinkedExile→battlefield)
 The Prydwen, Steel Flagship
 The Queen of Dale
 The Rack
 The Raven Man
-The Raven's Warning
+The Raven's Warning	intent: Pipeline(sideboard→library)
 The Reality Chip	intent: UnattachEquipmentEffect
 The Reaver Cleaver
 The Regalia
@@ -17652,7 +17652,7 @@ The Super Hero Civil War
 The Surgical Bay
 The Swarmweaver
 The Tabernacle at Pendrell Vale
-The Tale of Tamiyo
+The Tale of Tamiyo	intent: RepeatWhileEffect
 The Tarrasque
 The Temporal Anchor	intent: Pipeline(BottomOfLibrary→exile)
 The Ten Rings
@@ -17661,7 +17661,7 @@ The Thing, Ben Grimm
 The Three Seasons
 The Torment of Gollum
 The Traveler
-The Trickster-God's Heist
+The Trickster-God's Heist	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 The Triumph of Anax
 The Unagi of Kyoshi Island
 The Unbeatable Squirrel Girl
@@ -17680,7 +17680,7 @@ The Water Crystal
 The Weatherseed Treaty
 The Wind Crystal
 The Wise Mothman
-The Witch's Vanity
+The Witch's Vanity	intent: CreateAuraTokenEffect
 The Wondrous Wasp
 The World Spell
 The World Tree
@@ -18731,7 +18731,7 @@ Upriser Renegade
 Upwelling
 Ur-Drago
 Ur-Golem's Eye
-Urabrask
+Urabrask	intent: GrantStaticAbilityEffect
 Urabrask's Anointer
 Urabrask's Forge
 Urabrask, Heretic Praetor	intent: ReplaceNextDrawWithEffect
@@ -18759,7 +18759,7 @@ Uro, Titan of Nature's Wrath
 Ursapine
 Ursine Champion	timing: SetCreatureSubtypesEffect
 Uruk-hai Berserker	intent: TheRingTemptsYouEffect
-Urza Assembles the Titans
+Urza Assembles the Titans	intent: GrantLoyaltyActivationPermissionEffect
 Urza's Avenger
 Urza's Cave
 Urza's Chalice
@@ -18773,7 +18773,7 @@ Urza's Power Plant
 Urza's Rage
 Urza's Rebuff
 Urza's Ruinous Blast	intent: Pipeline(BattlefieldMatching→exile)
-Urza's Saga
+Urza's Saga	intent: GrantActivatedAbilityEffect
 Urza's Sylex
 Urza's Tome
 Urza's Tower
@@ -18903,13 +18903,13 @@ Vastwood Gorger
 Vastwood Surge
 Vat Emergence
 Vat of Rebirth
-Vault 101: Birthday Party
-Vault 112: Sadistic Simulation
+Vault 101: Birthday Party	intent: AttachToChosenHostEffect; intent: Pipeline(FromMultipleZones→battlefield)
+Vault 112: Sadistic Simulation	intent: PayCountersEffect; intent: Pipeline(TopOfLibrary→exile); intent: PlayFromCollectionWithoutPayingCostEffect
 Vault 11: Voter's Dilemma
 Vault 12: The Necropolis
-Vault 13: Dweller's Journey
+Vault 13: Dweller's Journey	intent: Pipeline(FromLinkedExile→battlefield)
 Vault 21: House Gambit
-Vault 75: Middle School
+Vault 75: Middle School	intent: Pipeline(BattlefieldMatching→exile)
 Vault 87: Forced Evolution
 Vault Plunderer
 Vault Robber
@@ -19282,7 +19282,7 @@ Voracious Typhon
 Voracious Vampire
 Voracious Varmint
 Voracious Vermin
-Vorinclex
+Vorinclex	intent: GrantActivatedAbilityToGroupEffect
 Vorinclex, Monstrous Raider
 Vorosh, the Hunter
 Vorpal Sword	timing: GrantTriggeredAbilityEffect
@@ -19349,7 +19349,7 @@ Waker of Waves
 Waker of the Wilds
 Wakeroot Elemental
 Waking Nightmare
-Waking the Trolls
+Waking the Trolls	polarity: CreateTokenEffect
 Walk the Plank
 Walk with the Ancestors
 Walk-In Closet // Forgotten Cellar	intent: GrantReplacementEffectEffect; intent: GrantStaticAbilityEffect
@@ -20028,7 +20028,7 @@ Workshop Warchief
 World Breaker
 World Map
 World Shaper
-World War Hulk
+World War Hulk	intent: GrantFreeCastThisTurnEffect
 World-Weary
 Worldly Counsel
 Worldly Tutor
@@ -20157,7 +20157,7 @@ Yosei, the Morning Star	polarity: SkipStepOrPhaseEffect
 Yoshimaru, Beloved Companion
 Yoshimaru, Ever Faithful
 Yoshimaru, Scrappy Stray
-Yotia Declares War
+Yotia Declares War	polarity: BecomeCreatureEffect
 Yotian Dissident
 Yotian Frontliner
 Yotian Medic
