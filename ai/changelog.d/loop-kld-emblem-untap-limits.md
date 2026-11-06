@@ -1,1 +1,1 @@
-- #TBD The AI reads an untap cap that binds only its opponents (Dovin Baan's emblem) as a tapper's lock
+- #4525 The AI reads an untap cap that binds only its opponents (Dovin Baan's emblem) as a tapper's lock
