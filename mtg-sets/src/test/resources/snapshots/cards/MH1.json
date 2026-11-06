@@ -3722,6 +3722,87 @@
     ]
 }
 
+// Return from Extinction
+{
+    "name": "Return from Extinction",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Return target creature card from your graveyard to your hand.\n• Return two target creature cards that share a creature type from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target creature card from your graveyard to your hand"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "sameCreatureType": true
+                        }
+                    ],
+                    "description": "Return two target creature cards that share a creature type from your graveyard to your hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "The First Sliver calls. The dead answer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6db664e-f0c4-4e60-add7-89b9f210cbc7.jpg?1783933123",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If you choose the second mode, the cards must share at least one creature type, such as Sliver or Warrior. Card types such as artifact, and supertypes such as legendary or snow, aren't creature types."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If you choose the second mode and one of the two cards leaves your graveyard, you'll still return the other card to your hand as long as it has a creature type that the other card had as it left your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Scour All Possibilities
 {
     "name": "Scour All Possibilities",
