@@ -15,8 +15,8 @@ import io.kotest.matchers.shouldNotBe
  * The tap-and-lock half of [AiProfile.refuseWastedPayoffs]'s restriction window: Deadlock Trap's
  * "{T}, Pay {E}: Tap target creature or planeswalker. Its activated abilities can't be activated
  * this turn." On a creature with no activated ability the lock buys nothing, so the tap is all
- * there is — worth it before their attack or before our blocks are declared, wasted after our own
- * combat. On a creature with an activated ability the lock is worth spending in any window.
+ * there is — worth it on their turn (it stays tapped through our next one) or on ours before
+ * blockers are declared, wasted after our own combat. On a creature with an activated ability the lock is worth spending in any window.
  */
 class TapAndLockWindowTest : ScenarioTestBase() {
 
@@ -51,6 +51,11 @@ class TapAndLockWindowTest : ScenarioTestBase() {
 
         test("on their turn before attacks, tapping their attacker is the window") {
             position(activePlayer = 2, step = Step.PRECOMBAT_MAIN, theirs = "Grizzly Bears")
+                .trapVerdict("Grizzly Bears") shouldNotBe TimingVerdict.NoWindow
+        }
+
+        test("at their end step, tapping their untapped creature keeps it from blocking on our turn") {
+            position(activePlayer = 2, step = Step.END, theirs = "Grizzly Bears")
                 .trapVerdict("Grizzly Bears") shouldNotBe TimingVerdict.NoWindow
         }
 

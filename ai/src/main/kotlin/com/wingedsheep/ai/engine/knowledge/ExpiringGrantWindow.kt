@@ -2,6 +2,8 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.ai.engine.CombatMath
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
@@ -489,9 +491,9 @@ internal object ExpiringGrantWindow {
      *  - **Tapped and locked** — "tap target creature or planeswalker; its activated abilities can't
      *    be activated this turn" (Deadlock Trap, Koma's serpent sacrifice): the lock buys something
      *    whenever the permanent has an activated ability to lose, so it is the leaf's call then.
-     *    Without one, all that is left is the tap, which is a can't-attack and a can't-block at once:
-     *    worth spending on their turn before their attack or on ours before blocks, like a tapper
-     *    held for their beginning of combat, and nowhere else.
+     *    Without one, all that is left is the tap: on their turn, an untapped permanent tapped now
+     *    stays tapped through our next turn (it can neither attack now nor block us then), so any
+     *    step of their turn is a window; on ours, only before blocks.
      *
      * Outside that window the restriction is worth nothing, and the question is what else the
      * ability buys:
@@ -527,8 +529,13 @@ internal object ExpiringGrantWindow {
                 if (controller == playerId) return false
                 // A lock on a permanent with an activated ability to lose (a planeswalker's loyalty
                 // abilities too) buys something in any window: the leaf's call.
-                if (kind == Restriction.TAPPED_AND_LOCKED && hasActivatedAbility(state, permanent, intents) != false) return false
+                if (kind == Restriction.TAPPED_AND_LOCKED && hasActivatedAbility(state, playerId, permanent, intents) != false) return false
                 if (!projected.isCreature(permanent)) return false
+                // Tapped on its controller's turn, it doesn't untap until their next untap step: it
+                // can't block on our coming turn, whichever step of theirs this is.
+                if (kind == Restriction.TAPPED_AND_LOCKED && !ourTurn && state.isActiveTurnFor(controller) &&
+                    state.getEntity(permanent)?.has<TappedComponent>() == false
+                ) return false
                 val cantAttack = kind != Restriction.CANT_BLOCK &&
                     state.isActiveTurnFor(controller) && state.step in UNTIL_ATTACKERS_DECLARED &&
                     permanent in CombatMath.getCreaturesThatCanAttack(state, projected, controller)
@@ -547,13 +554,24 @@ internal object ExpiringGrantWindow {
     private enum class Restriction { CANT_ATTACK, CANT_BLOCK, TAPPED_AND_LOCKED }
 
     /**
-     * Whether [permanent] has a printed activated ability a lock would take away, or null when its
-     * definition can't be read — which counts as having one, keeping the leaf in charge.
+     * Whether [permanent] currently has an activated ability a lock would take away — printed,
+     * keyword or granted ([StatePredicate.HasActivatedAbilities]) — or null when the catalog can't
+     * evaluate it, which counts as having one, keeping the leaf in charge.
      */
-    private fun hasActivatedAbility(state: GameState, permanent: EntityId, intents: IntentCatalog): Boolean? {
-        val name = state.getEntity(permanent)?.get<CardComponent>()?.name ?: return null
-        val definition = intents.definition(name) ?: return null
-        return definition.script.activatedAbilities.isNotEmpty()
+    private fun hasActivatedAbility(
+        state: GameState,
+        playerId: EntityId,
+        permanent: EntityId,
+        intents: IntentCatalog,
+    ): Boolean? {
+        val predicates = intents.predicates ?: return null
+        return predicates.matches(
+            state,
+            state.projectedState,
+            permanent,
+            GameObjectFilter.Any.withStatePredicate(StatePredicate.HasActivatedAbilities()),
+            PredicateContext(controllerId = playerId),
+        )
     }
 
     /**

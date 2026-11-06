@@ -1519,7 +1519,8 @@ object TargetPolarityAnalyzer {
             // counter of that kind" (Animation Module, Clockspinning): the one-kind form of the line
             // above — its controller picks the kind on resolution, so a +1/+1 or loyalty counter for
             // our side and a -1/-1, poison or time counter for theirs. "A kind it doesn't have, from
-            // among …" (Dathon) reads by the listed kinds when they agree. The iterated kind belongs
+            // among …" (Crystalline Giant) reads by the listed kinds when they agree; listed kinds
+            // that pull opposite ways (or that have no side) leave it open, so FLEXIBLE. The iterated kind belongs
             // to its loop ([readsPerCounterKind]).
             is AddCountersOfChosenKindEffect -> leaf.target to when (leaf.kindFrom) {
                 CounterKindSource.RECIPIENT -> TargetPolarity.FLEXIBLE
