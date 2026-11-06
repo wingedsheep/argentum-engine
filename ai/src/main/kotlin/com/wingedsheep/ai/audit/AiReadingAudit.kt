@@ -81,6 +81,7 @@ import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -1241,7 +1242,10 @@ object AiReadingAudit {
         val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
         return sources.isNotEmpty() && sources.all { source ->
             source is CardSource.BattlefieldMatching &&
-                (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou)
+                (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou ||
+                    // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
+                    // Tetravites back: the source's own creations are its drawback, whoever controls them.
+                    StatePredicate.CreatedBySource in source.filter.statePredicates)
         }
     }
 
