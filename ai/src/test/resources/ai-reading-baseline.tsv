@@ -4659,7 +4659,7 @@ Dramatic Accusation
 Dramatic Finale
 Dramatic Rescue
 Dramatic Reversal
-Dramatist's Puppet	intent: ForEach>AddCountersOfChosenKindEffect; intent: ForEach>RemoveCountersOfIteratedKindEffect; polarity: ForEachEffect
+Dramatist's Puppet
 Drana and Linvala
 Drana's Emissary
 Drana's Silencer
@@ -5197,6 +5197,7 @@ Elvish Warrior
 Emancipation Angel
 Embalmed Ascendant
 Embalmed Brawler
+Embalmer's Tools
 Ember Hauler
 Ember Island Production	polarity: CreateTokenCopyOfTargetEffect
 Ember Shot
@@ -5739,7 +5740,7 @@ Fanatical Fever
 Fanatical Firebrand
 Fanatical Offering
 Fanatical Strength
-Fancy Footwork	timing: ForEach>ModifyStatsEffect
+Fancy Footwork
 Fandaniel, Telophoroi Ascian	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard); intent: StoreNumberEffect
 Fang Guardian
 Fang of Shigeki
@@ -6654,6 +6655,7 @@ Gate Colossus
 Gate Hound
 Gate to Phyrexia
 Gate to the Aether	intent: MoveToZoneEffect; intent: Pipeline(TopOfLibrary→?)
+Gate to the Afterlife
 Gatebreaker Ram
 Gatekeeper Gargoyle
 Gatekeeper of Malakir
@@ -9038,7 +9040,7 @@ Jodah, the Unifier
 Johan	intent: AttacksWithoutTappingGroupEffect; intent: CantAttackEffect
 Johann's Stopgap
 Johann, Apprentice Sorcerer
-Join Forces	timing: ForEach>ModifyStatsEffect
+Join Forces
 Join Shields	timing: ForEach>GrantKeywordEffect
 Join the Dance
 Join the Dead
@@ -10267,6 +10269,7 @@ Lush Oasis
 Lush Portico
 Lutri, the Spellchaser
 Lux Cannon
+Luxa River Shrine
 Luxior, Giada's Gift
 Luxknight Breacher
 Luxurious Libation
@@ -12067,6 +12070,7 @@ Opulent Palace
 Oracle of Mul Daya
 Oracle of Tragedy	polarity: Pipeline(ChosenTargets→library)
 Oracle's Restoration
+Oracle's Vault	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Orah, Skyclave Hierophant
 Oran-Rief Invoker
 Oran-Rief Ooze
@@ -13093,6 +13097,7 @@ Pygmy Pyrosaur
 Pygmy Razorback
 Pym Particles
 Pym Technologies
+Pyramid of the Pantheon
 Pyramids	polarity: RemoveDamageShieldEffect
 Pyre Charger
 Pyre Hound
@@ -13147,6 +13152,7 @@ Quark, Humble Proprietor
 Quarrel
 Quarrel's End
 Quarry Beetle
+Quarry Hauler
 Quartzwood Crasher
 Quarum Trench Gnomes	intent: GrantStaticAbilityEffect; polarity: GrantStaticAbilityEffect
 Quasiduplicate
@@ -14502,6 +14508,7 @@ Sandstorm
 Sandstorm Salvager
 Sandstorm Verge
 Sandworm
+Sandwurm Convergence
 Sangrite Surge
 Sanguinary Mage
 Sanguine Bond
@@ -15184,8 +15191,10 @@ Shatterwing Pegasus
 Shauku's Minion
 Shaun, Father of Synths
 She-Hulk, Jade Defender
+Shed Weakness
 Shefet Archfiend
 Shefet Dunes
+Shefet Monitor
 Shelkin Brownie	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Shell Shield
 Shell of the Last Kappa	intent: ExileTargetSpellEffect
@@ -16988,6 +16997,7 @@ Synapse Sliver
 Synchronized Charge
 Synchronized Eviction
 Synchronized Spellcraft
+Synchronized Strike
 Synchronous Sliver
 Syncopate
 Syndicate Guildmage
@@ -18277,6 +18287,7 @@ Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pi
 Trial of Ambition
 Trial of Knowledge
 Trial of Solidarity
+Trial of Strength
 Trial of Zeal
 Triassic Egg
 Tribal Flames
@@ -19510,8 +19521,10 @@ Watcher in the Mist
 Watcher of the Roost
 Watcher of the Spheres
 Watcher of the Wayside
+Watchers of the Dead
 Watchful Blisterzoa
 Watchful Giant
+Watchful Naga
 Watchful Radstag	intent: EmitKeywordCounterEventEffect
 Watchwing Scarecrow
 Watchwolf
@@ -19818,6 +19831,7 @@ Windrider Patrol
 Windrider Wizard
 Winds of Change
 Winds of Rath
+Winds of Rebuke
 Windstorm
 Windstorm Drake
 Windswept Heath
@@ -20200,6 +20214,7 @@ Zendikar Incarnate
 Zendikar's Roil
 Zenith Chronicler
 Zenith Flare
+Zenith Seeker
 Zenos yae Galvus	intent: ChooseOpponentForSourceEffect; polarity: CreateDelayedTriggerEffect
 Zephid
 Zephid's Embrace
