@@ -1048,8 +1048,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     // =========================================================================
 
     /**
-     * When a spell or ability controlled by [counterer] would counter a spell. Replacement-only —
-     * used by [com.wingedsheep.sdk.scripting.ExileCounteredSpellInstead] (Guile).
+     * A spell or ability controlled by [counterer] counters a spell. As a trigger it is "whenever a
+     * spell or ability you control counters a spell" (Baral, Chief of Compliance —
+     * `Triggers.you.countersASpell()`); as a replacement filter it is the "would counter" of
+     * [com.wingedsheep.sdk.scripting.ExileCounteredSpellInstead] (Guile).
      */
     @SerialName("CounterSpellEvent")
     @Serializable
@@ -1057,8 +1059,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val counterer: Player = Player.You
     ) : EventPattern {
         override val description: String = when (counterer) {
-            Player.You -> "a spell or ability you control would counter a spell"
-            else -> "a spell or ability ${counterer.description} controls would counter a spell"
+            Player.You -> "a spell or ability you control counters a spell"
+            else -> "a spell or ability ${counterer.description} controls counters a spell"
         }
     }
 

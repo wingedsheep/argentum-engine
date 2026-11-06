@@ -265,7 +265,7 @@ class ForEachExecutor(
                 .map { ForEachItem.OfEntity(it) }
 
         is IterationSpace.Group ->
-            resolveGroup(state, space, context).map { ForEachItem.OfEntity(it) }
+            BattlefieldFilterUtils.resolveGroup(state, space.filter, context, predicateEvaluator).map { ForEachItem.OfEntity(it) }
 
         is IterationSpace.ColorsOf -> {
             val sourceId = TargetResolutionUtils.resolveEntity(space.source, context, state)
@@ -279,7 +279,7 @@ class ForEachExecutor(
         }
 
         is IterationSpace.CounterKindsAmong ->
-            resolveGroup(state, IterationSpace.Group(space.filter), context)
+            BattlefieldFilterUtils.resolveGroup(state, space.filter, context, predicateEvaluator)
                 .flatMap { id ->
                     state.getEntity(id)?.get<CountersComponent>()?.counters
                         ?.filterValues { it > 0 }?.keys.orEmpty()
@@ -377,49 +377,6 @@ class ForEachExecutor(
             // distinction is load-bearing for optional-target abilities whose "its controller"
             // rider must do nothing when no target was chosen.
             else -> listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
-        }
-    }
-
-    /**
-     * Resolve a group filter to the battlefield entities it matches, honoring a
-     * chosen-subtype key and the filter's excludeSelf flag.
-     */
-    private fun resolveGroup(
-        state: GameState,
-        space: IterationSpace.Group,
-        context: EffectContext
-    ): List<EntityId> {
-        val filter = space.filter
-
-        // If the filter references a chosen subtype, resolve it from context
-        val chosenSubtype = filter.chosenSubtypeKey?.let { key ->
-            context.pipeline.chosenValues[key]
-        }
-        // If a chosen subtype key is specified but no value was chosen, return empty
-        if (filter.chosenSubtypeKey != null && chosenSubtype == null) {
-            return emptyList()
-        }
-
-        val excludeSelfId = if (filter.excludeSelf) context.sourceId else null
-        // excludeTarget removes the spell/ability's first chosen target — used for "each other X
-        // with the same controller" relative to a targeted permanent (Fear, Fire, Foes!).
-        val excludeTargetId = if (filter.excludeTarget) {
-            when (val first = context.targets.firstOrNull()) {
-                is ChosenTarget.Permanent -> first.entityId
-                is ChosenTarget.Card -> first.cardId
-                else -> null
-            }
-        } else null
-        val matched = BattlefieldFilterUtils.findMatchingOnBattlefield(state, filter.baseFilter, context, excludeSelfId, predicateEvaluator = predicateEvaluator)
-            .filter { excludeTargetId == null || it != excludeTargetId }
-            .filter { !filter.excludeTriggeringEntity || it != context.triggeringEntityId }
-
-        // Additionally filter by chosen subtype if specified
-        return if (chosenSubtype != null) {
-            val projected = state.projectedState
-            matched.filter { projected.hasSubtype(it, chosenSubtype) }
-        } else {
-            matched
         }
     }
 

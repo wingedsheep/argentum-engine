@@ -130,7 +130,8 @@ class BecomeArtifactExecutor(
                         entityId = targetId,
                         ability = ability,
                         duration = effect.duration,
-                        sourceId = context.sourceId
+                        sourceId = context.sourceId,
+                        controllerId = context.effectControllerId ?: context.controllerId
                     )
             )
         }

@@ -1,3 +1,69 @@
+// Angelic Renewal
+{
+    "name": "Angelic Renewal",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature is put into your graveyard from the battlefield, you may sacrifice this enchantment. If you do, return that card to the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Renewal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": "SacrificeSelf"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature is put into your graveyard from the battlefield, you may sacrifice this enchantment. If you do, return that card to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Rebecca Guay",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dddde7d-8565-45a7-a1db-f2dea2a6a3ba.jpg?1783946750",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Angelic Renewal's ability triggers if a creature you own dies under another player's control."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If multiple creatures are put into your graveyard at once, Angelic Renewal triggers multiple times, but it can only be sacrificed once and only brings back one creature."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If Angelic Renewal leaves the battlefield before its triggered ability resolves, you won't be able to sacrifice it and the creature can't be returned to the battlefield."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If an animated permanent that's not normally a creature is put into your graveyard from the battlefield, Angelic Renewal can return that card to the battlefield."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If a token creature is put into your graveyard from the battlefield, you can sacrifice Angelic Renewal, but nothing will be returned to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Benalish Knight
 {
     "name": "Benalish Knight",

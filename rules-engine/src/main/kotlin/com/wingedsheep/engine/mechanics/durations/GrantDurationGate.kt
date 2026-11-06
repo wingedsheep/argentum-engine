@@ -108,6 +108,26 @@ object GrantDurationGate {
     }
 
     /**
+     * The controller-keyed gate a grant record carries its own "you" for:
+     * [Duration.WhileYouControlSource] holds while [sourceId] is on the battlefield and its
+     * *projected* controller is [controllerId] — so a Threaten-style steal of the source ends it,
+     * matching the floating-effect gate in `StateProjector`. A grant with no recorded controller
+     * fails closed rather than lasting forever. Returns `true` for every other duration.
+     */
+    fun controllerGateHolds(
+        state: GameState,
+        duration: Duration,
+        sourceId: EntityId?,
+        controllerId: EntityId?
+    ): Boolean = when (duration) {
+        is Duration.WhileYouControlSource ->
+            sourceId != null && controllerId != null &&
+                state.getBattlefield().contains(sourceId) &&
+                state.projectedState.getController(sourceId) == controllerId
+        else -> true
+    }
+
+    /**
      * True when [duration] is an affected-object-keyed "for as long as …" duration whose
      * condition no longer holds for [entityId]. False for every other duration.
      */

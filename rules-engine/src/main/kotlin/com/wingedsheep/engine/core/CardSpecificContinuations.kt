@@ -265,26 +265,28 @@ data class ChooseSpellCastThisTurnContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the controller picks how many counters of one kind to move from a
- * [sourceId] permanent onto a [destinationId] permanent. The executor for
- * `MoveChosenCountersToTargetEffect` issues one decision per counter kind on the source;
- * on resume, the chosen amount is removed from the source and added to the destination, and
- * the walk carries on in `MoveChosenCountersFlow` (budget and floor decremented). After the last kind, if [drawCardOnMove] is set and at
- * least one counter was moved overall, the controller draws a card. (Goldberry — ability B.)
+ * Resume a [com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect] walk after the
+ * controller picks how many counters of one kind leave one source.
  *
- * @property sourceId The permanent counters are moved from
+ * The effect issues one decision per (source, kind) step — one source for Goldberry, every member
+ * of a group for Aetherborn Marauder. On resume the chosen amount comes off the source and joins
+ * [pendingPlacements]; the walk carries on in `MoveChosenCountersFlow` (budget and floor
+ * decremented), and after the last step each held kind is put on the destination at once. If
+ * [drawCardOnMove] is set and at least one counter moved, the controller then draws a card.
+ *
+ * @property sourceId The permanent the active decision takes counters from
  * @property destinationId The permanent counters are moved onto
  * @property controllerId The player making the choices (and who draws)
  * @property currentCounterType The counter kind the active decision is for
  * @property currentMaxAmount Cap shown to the player (0..currentMaxAmount)
- * @property remainingCounterTypes Pending (counterType, maxAmount) prompts
- * @property sourceName Display name of the source for follow-up prompts
+ * @property remainingSteps Pending (source, kind) steps after the active one
  * @property destinationName Display name of the destination for follow-up prompts
  * @property drawCardOnMove Whether to draw a card at the end if any counter was moved
  * @property anyMovedSoFar Whether any counter has been moved across prior prompts
- * @property currentMinAmount Floor for the active decision (the share later kinds can't cover)
- * @property remainingBudget Counters still movable in total after the active kind, or null for no cap
- * @property remainingFloor Counters that must still be moved in total, including the active kind
+ * @property currentMinAmount Floor for the active decision (the share later steps can't cover)
+ * @property remainingBudget Counters still movable in total after the active step, or null for no cap
+ * @property remainingFloor Counters that must still be moved in total, including the active step
+ * @property pendingPlacements Counters taken off sources and not yet put on the destination, per kind
  */
 @Serializable
 data class MoveChosenCountersToTargetContinuation(
@@ -293,14 +295,14 @@ data class MoveChosenCountersToTargetContinuation(
     val controllerId: EntityId,
     val currentCounterType: CounterType,
     val currentMaxAmount: Int,
-    val remainingCounterTypes: List<Pair<CounterType, Int>>,
-    val sourceName: String,
+    val remainingSteps: List<Pair<EntityId, CounterType>>,
     val destinationName: String,
     val drawCardOnMove: Boolean,
     val anyMovedSoFar: Boolean = false,
     val currentMinAmount: Int = 0,
     val remainingBudget: Int? = null,
     val remainingFloor: Int = 0,
+    val pendingPlacements: List<Pair<CounterType, Int>> = emptyList(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 
@@ -604,6 +606,24 @@ data class LegendRuleContinuation(
  *   is open. Captured so the resumer can issue the correct from-zone on the move and so the
  *   prompt remains traceable in logs even after the commander moves.
  */
+/**
+ * Resume after a player chose how a replaced game loss treats its source when that source is also
+ * leaving the battlefield through the same state-based-action pass (see
+ * [com.wingedsheep.engine.mechanics.sba.player.GameLossSourceChoiceCheck]).
+ *
+ * Yes → the replacement's rest runs with its source, moving it before the pass can (Exquisite
+ * Archangel is exiled). No → the source leaves through the state-based action instead (it goes to
+ * the graveyard), and the rest runs without it.
+ *
+ * @property hostId the source of the replacement awaiting the choice
+ * @property subjectId the player whose loss was replaced — together with [hostId] it names the rider
+ */
+@Serializable
+data class GameLossSourceChoiceContinuation(
+    val hostId: EntityId,
+    val subjectId: EntityId
+) : AnswerContinuation
+
 @Serializable
 data class CommanderZoneChoiceContinuation(
     val commanderId: EntityId,

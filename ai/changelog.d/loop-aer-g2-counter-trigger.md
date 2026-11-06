@@ -1,0 +1,1 @@
+- #4524 The AI reads "whenever a spell or ability you control counters a spell" (Baral, Chief of Compliance) as a spells payoff when drafting and building around its counterspells

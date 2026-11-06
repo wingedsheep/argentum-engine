@@ -781,7 +781,7 @@ Families:
 - `ChangeOwnershipEffect(card: EffectTarget, newOwner: EffectTarget)` — newOwner becomes the owner of card — "You own target card in the ante" (Darkpact), "that player owns this card and you own the other exiled card" (Bronze Tablet).
 - `ChangeSpeedEffect(target: EffectTarget, amount: DynamicAmount, minimum: Int)` — Changes the target player's **speed** by a signed amount (Aetherdrift, CR 702.179).
 - `ChangeSpellTargetEffect(targetMustBeSource: Boolean)` — Change the target of a spell that has exactly one target, and that target is a creature, to another creature.
-- `ChangeTargetEffect(newTargetMustBePlayer: Boolean, onlyIfCurrentTargetIsController: Boolean, newTarget: EffectTarget?)` — Change the target of target spell or ability with a single target.
+- `ChangeTargetEffect(newTargetMustBePlayer: Boolean, onlyIfCurrentTargetIsController: Boolean, newTarget: EffectTarget?, spell: EffectTarget)` — Change the target of target spell or ability with a single target.
 - `ChangeTriggeringObjectTargetsEffect(chooser: RetargetChooser, spell: EffectTarget)` — The player named by chooser may change the target or targets of spell.
 - `ChangeWordInTextEffect(categories: Set<TextWordCategory>, target: EffectTarget, duration: Duration)` — Replace all instances of a chosen word with a different word in the same category.
 - `ChooseActionEffect(choices: List<EffectChoice>, player: EffectTarget)` — Present a player with labeled options and execute the chosen effect.
@@ -989,7 +989,7 @@ Families:
 - `ModifyStatsEffect(powerModifier: DynamicAmount, toughnessModifier: DynamicAmount, target: EffectTarget, duration: Duration)` — Modify power/toughness effect.
 - `MoveAllCountersEffect(source: EffectTarget, destination: EffectTarget)` — Move every counter, of every kind, from a source permanent onto a destination permanent.
 - `MoveAllLastKnownCountersEffect(target: EffectTarget)` — Put all counters that were on the triggering source onto a target.
-- `MoveChosenCountersToTargetEffect(source: EffectTarget, destination: EffectTarget, drawCardOnMove: Boolean, maxTotal: Int?, minTotal: Int)` — Move a player-chosen set (one or more) of counters from a source permanent onto a destination permanent, then optionally draw a card if any counters were moved.
+- `MoveChosenCountersToTargetEffect(source: EffectTarget, destination: EffectTarget, drawCardOnMove: Boolean, maxTotal: Int?, minTotal: Int, counterType: CounterType?)` — Move a player-chosen set (one or more) of counters from a source permanent onto a destination permanent, then optionally draw a card if any counters were moved.
 - `MoveCollectionEffect(from: String, destination: CardDestination, order: CardOrder, revealed: Boolean, revealToSelf: Boolean, moveType: MoveType, linkToSource: Boolean, unlinkFromSource: Boolean, faceDown: FaceDownMode?, lookableInExile: Boolean, noRegenerate: Boolean, storeMovedAs: String?, underOwnersControl: Boolean, addCounterType: CounterType?, markEnteredViaSourceAbility: Boolean, filter: GameObjectFilter?, attachTo: EffectTarget?, auraHostFilter: GameObjectFilter?, attackDefender: EnteringAttackDefender, entersWith: EntersWithCharacteristics?)`
 - `MoveCountersEachKindMissingEffect(source: EffectTarget, destination: EffectTarget)` — Move one counter of each kind present on a source permanent that is *not* already on the destination permanent, from the source onto the destination.
 - `MoveCountersEffect(counterType: CounterType, amount: DynamicAmount, source: EffectTarget, destination: EffectTarget)` — Move a dynamic number of counters of a single kind from a source permanent onto a destination permanent.
@@ -1217,7 +1217,7 @@ Families:
 - `EventPattern.ConnivedEvent(filter: GameObjectFilter?)` — Whenever a permanent matching filter connives (CR 701.50).
 - `EventPattern.ControlChangeEvent(direction: ControlChangeDirection, requireOpponent: Boolean)` — When control of a permanent changes, in a given direction relative to the ability's controller (CR 800.4 / 720).
 - `EventPattern.CounterPlacementEvent(counterType: CounterType?, recipient: Recipient)` — When counters would be placed on a permanent.
-- `EventPattern.CounterSpellEvent(counterer: Player)` — When a spell or ability controlled by counterer would counter a spell.
+- `EventPattern.CounterSpellEvent(counterer: Player)` — A spell or ability controlled by counterer counters a spell.
 - `EventPattern.CountersPlacedEvent(counterType: CounterType?, filter: GameObjectFilter, firstTimeEachTurn: Boolean, placedBy: Player?, batch: Boolean, includePlayers: Boolean, recipient: Player?, perCounter: Boolean, nth: Int?)` — When one or more counters of a specific type are placed on a permanent.
 - `EventPattern.CountersRemovedEvent(counterType: CounterType?, filter: GameObjectFilter, lastRemoved: Boolean, byDamagePrevention: Boolean, removedBy: Player?)` — When one or more counters of a specific type are **removed** from a permanent — the mirror of CountersPlacedEvent.
 - `EventPattern.CreatureDealtDamageBySourceDiesEvent(sourceFilter: GameObjectFilter?, dyingFilter: GameObjectFilter?)` — Whenever a creature dealt damage this turn by a matching source dies.
@@ -1637,6 +1637,7 @@ Families:
 - `ReplaceDamageWithMill(appliesTo: EventPattern, miller: Player, multiplier: Int)` — Prevent matched damage and mill multiplier times that many cards — miller does the milling.
 - `ReplaceDestructionWith(replacementEffect: Effect, appliesTo: EventPattern.DestroyEvent)` — "If <permanent> would be destroyed, instead <effect>" — the destruction doesn't happen and replacementEffect runs in its place (CR 614.1a).
 - `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
+- `ReplaceGameLossWith(replacementEffect: Effect, appliesTo: EventPattern.PlayerLostGameEvent)` — "If you would lose the game, instead <effect>" — the loss doesn't happen and replacementEffect runs in its place (CR 614.1a).
 - `ReplaceKeywordAction(replacementEffect: Effect, appliesTo: EventPattern, optional: Boolean, activeZones: Set<Zone>)` — Perform replacementEffect instead of a keyword action (CR 614.1a) — "If you would learn, you may instead return this card to the battlefield." The third member of the keyword-action family: ModifyK…
 - `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.
@@ -2049,7 +2050,7 @@ Families:
 - `TransformPermanent(setCardTypes: Set<String>, setSubtypes: Set<String>, setColors: Set<Color>?, setName: String?, clearSubtypes: Boolean, filter: GroupFilter, setCreatureSubtypes: Set<String>)` — Transforms the enchanted permanent into a completely different card type identity.
 - `UntapDuringOtherUntapSteps(duringStepsOf: Player)` — Untap all permanents you control during each other player's untap step — Seedborn Muse — or, with duringStepsOf = Player.EachOpponent, during each *opponent's* untap step (Teferi, Who Slows the Sun…
 - `UntapFilteredDuringOtherUntapSteps(filter: GameObjectFilter)` — Untap permanents matching a filter you control during each other player's untap step.
-- `UntapLimitPerStep(filter: GameObjectFilter, max: Int)` — Caps how many permanents matching filter a player may untap during their own untap step (CR 502.3 — "effects can keep one or more of a player's permanents from untapping").
+- `UntapLimitPerStep(filter: GameObjectFilter, max: Int, players: Player)` — Caps how many permanents matching filter a player may untap during their own untap step (CR 502.3 — "effects can keep one or more of a player's permanents from untapping").
 - `UntapSelfDuringOtherUntapSteps` — Untap only the source permanent itself during each other player's untap step.
 - `WinCoinFlips(firstFlipEachTurn: Boolean)` — The controller wins the coin flips they make — their flips "come up heads and you win those flips" (CR 705.3, an effect that dictates the result of a flip).
 - `ZoneScopedStaticAbility(ability: StaticAbility, activeZones: Set<Zone>)` — A static ability that functions from a zone other than the battlefield — "As long as this card is in your graveyard, …" (CR 113.6b: an ability that states which zones it functions in functions only…

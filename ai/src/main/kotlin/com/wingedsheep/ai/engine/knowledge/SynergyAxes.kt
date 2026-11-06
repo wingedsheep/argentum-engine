@@ -11,11 +11,15 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
@@ -167,12 +171,17 @@ object SynergyAxes {
         val rewards = buildSet {
             scripts.flatMap { it.triggeredAbilities }.forEach { ability ->
                 addAll(rewardsOf(ability.trigger, ability.binding))
+                // Revolt — "if a permanent you controlled left the battlefield this turn" (Call for
+                // Unity, Countless Gears Renegade): it pays off what the death axis feeds — a sac
+                // outlet, a Servo or Clue to cash in, a creature traded in combat.
+                if (ability.interveningIf == PermanentLeftBattlefieldThisTurn(Player.You)) add(SynergyAxis.DEATH)
             }
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
             // Carrying counters from one permanent to another — The Ozolith banking a leaving
             // creature's counters and moving them on, Essence Channeler's "put its counters on target
-            // creature you control" — cashes in the +1/+1 counters the deck puts down: with none
+            // creature you control", Aetherborn Marauder gathering them from your other permanents —
+            // cashes in the +1/+1 counters the deck puts down: with none
             // placed, the move carries nothing.
             if (scripts.any { script ->
                     (script.triggeredAbilities.map { it.effect } + script.activatedAbilities.map { it.effect })
@@ -251,6 +260,10 @@ object SynergyAxes {
         is EventPattern.SpellCastEvent ->
             if (pattern.player == Player.You && rewardsSpells(pattern.spellFilter)) setOf(SynergyAxis.SPELLS)
             else emptySet()
+        // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
+        // counterspells — instants, which is what feeds the spells axis.
+        is EventPattern.CounterSpellEvent ->
+            if (pattern.counterer == Player.You) setOf(SynergyAxis.SPELLS) else emptySet()
         else -> emptySet()
     }
 
@@ -394,7 +407,8 @@ object SynergyAxes {
     }
 
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
-        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect
+        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect || it is MoveCountersEffect ||
+            it is MoveChosenCountersToTargetEffect || it is MoveCountersEachKindMissingEffect
     }
 
     /**

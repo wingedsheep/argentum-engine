@@ -1,0 +1,1 @@
+- #4521 The AI reads "draws a card for each card exiled from their hand this way" (Lost Legacy, The Stone Brain) as the stripped player's refund: the card reads as hand disruption, not card draw.

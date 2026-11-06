@@ -4,7 +4,6 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEndReason
 import com.wingedsheep.engine.core.GameEvent
-import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
 import com.wingedsheep.engine.state.GameState
@@ -41,14 +40,13 @@ class CommanderDamageLossCheck(
         for (playerId in state.turnOrder) {
             val container = state.getEntity(playerId) ?: continue
             if (container.has<PlayerLostComponent>()) continue
-            if (playerCantLoseGame(state, playerId, predicateEvaluator = predicateEvaluator)) continue
 
             val perCommanderTallies = byDefender[playerId] ?: continue
             if (perCommanderTallies.any { it >= threshold }) {
-                newState = newState.updateEntity(playerId) { c ->
-                    c.with(PlayerLostComponent(LossReason.COMMANDER_DAMAGE))
-                }
-                events.add(PlayerLostEvent(playerId, GameEndReason.COMMANDER_DAMAGE))
+                val (lost, lossEvents) = GameLoss.lose(
+                    newState, playerId, LossReason.COMMANDER_DAMAGE, GameEndReason.COMMANDER_DAMAGE, predicateEvaluator)
+                newState = lost
+                events.addAll(lossEvents)
             }
         }
 

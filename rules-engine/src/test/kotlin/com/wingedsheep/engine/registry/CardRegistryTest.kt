@@ -127,4 +127,14 @@ class CardRegistryTest : FunSpec({
         CardRegistry(parent = live).apply { register(bear("Darksteel Relic", 1)) }
             .cardNamesIn(CardNamePool.ARTIFACT) shouldBe emptySet()
     }
+
+    test("the nonartifact-nonland pool drops artifacts, lands and artifact lands, across both layers") {
+        val live = CardRegistry().apply {
+            register(listOf(forest(), land("Darksteel Relic", "Artifact"), land("Seat of the Synod", "Artifact Land"), bear("Grizzly Bears", 2)))
+        }
+        val overlay = CardRegistry(parent = live).apply { register(bear("Hill Giant", 4)) }
+
+        live.cardNamesIn(CardNamePool.NONARTIFACT_NONLAND) shouldContainExactly listOf("Grizzly Bears")
+        overlay.cardNamesIn(CardNamePool.NONARTIFACT_NONLAND) shouldContainExactlyInAnyOrder listOf("Grizzly Bears", "Hill Giant")
+    }
 })

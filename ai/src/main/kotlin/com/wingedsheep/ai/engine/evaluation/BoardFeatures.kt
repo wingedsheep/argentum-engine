@@ -7,6 +7,7 @@ import com.wingedsheep.ai.engine.knowledge.CardIntent
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
+import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.lifePoolsOf
 import com.wingedsheep.ai.engine.sidesFor
 import com.wingedsheep.engine.state.ComponentContainer
@@ -585,8 +586,47 @@ object BoardPresence : BoardFeature {
 
         // General non-creature permanents. Without card knowledge this is a flat 0.5 regardless of
         // text — a signet, an Oblivion Ring and a Bitterblossom scoring the same number is the
-        // blindness Phase 6 exists to remove.
+        // blindness Phase 6 exists to remove. An uncrewed Vehicle is worth a share of the creature
+        // it becomes ([VehicleBody]) plus what its abilities add over an unreadable permanent — the
+        // same body-plus-ability sum a creature gets.
+        val controller = projected.getController(entityId)
+        val vehicle = if (controller == null || card.baseStats == null) null else vehicleBodyValue(
+            projected, entityId, card, intents, controller,
+            crew = VehicleBody.crewInForce(projected.getKeywords(entityId), intents.definition(card.name)?.let(VehicleBody::printedCrew)),
+            keywords = projected.getKeywords(entityId),
+        )
+        if (vehicle != null) return maxOf(0.5, vehicle + abilityOverBaseline(prior))
         return maxOf(0.5, prior)
+    }
+
+    /** What a prior adds over an unreadable permanent's — the ability half of a body-plus-ability sum. */
+    private fun abilityOverBaseline(prior: Double): Double =
+        (prior - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
+
+    /**
+     * What an uncrewed Vehicle's printed body is worth to [controller] — [VehicleBody.share] of
+     * [creatureBodyValue], the share set by how much of crew [crew] the controller's other
+     * creatures could tap — or null when it is not a Vehicle (no crew, or no printed P/T) or the
+     * catalog is off. The crew power is an upper bound: every creature the controller has, tapped
+     * or not, and each Vehicle counts the whole pool as if it were the only one to crew.
+     */
+    private fun vehicleBodyValue(
+        projected: ProjectedState,
+        vehicleId: EntityId?,
+        card: CardComponent,
+        intents: IntentCatalog,
+        controller: EntityId,
+        crew: Int?,
+        keywords: Set<String>,
+    ): Double? {
+        if (crew == null || !intents.isEnabled) return null
+        val power = card.baseStats?.basePower ?: return null
+        val toughness = card.baseStats?.baseToughness ?: return null
+        val crewPower = projected.getBattlefieldControlledBy(controller).sumOf {
+            if (it != vehicleId && projected.isCreature(it)) (projected.getPower(it) ?: 0).coerceAtLeast(0) else 0
+        }
+        return VehicleBody.share(crew, crewPower) *
+            creatureBodyValue(power, toughness, keywords, diminishingReturns = true).coerceAtLeast(0.0)
     }
 
     /**
@@ -698,6 +738,12 @@ object BoardPresence : BoardFeature {
         // is what attaches it.
         if (card.isPlaneswalker) return maxOf(4.0, prior)
         if (card.isAura) return maxOf(1.5, prior)
+        val vehicle = vehicleBodyValue(
+            projected, null, card, intents, casterId,
+            crew = intents.definition(card.name)?.let(VehicleBody::printedCrew),
+            keywords = card.baseKeywords.mapTo(mutableSetOf()) { it.name },
+        )
+        if (vehicle != null) return maxOf(0.5, vehicle + abilityOverBaseline(prior))
         return maxOf(0.5, prior)
     }
 

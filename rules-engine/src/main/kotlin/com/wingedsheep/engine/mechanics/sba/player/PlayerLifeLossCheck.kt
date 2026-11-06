@@ -3,7 +3,6 @@ package com.wingedsheep.engine.mechanics.sba.player
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEndReason
-import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
@@ -36,7 +35,6 @@ class PlayerLifeLossCheck(
         for (playerId in state.turnOrder) {
             val container = state.getEntity(playerId) ?: continue
             if (container.has<PlayerLostComponent>()) continue
-            if (playerCantLoseGame(state, playerId, predicateEvaluator = predicateEvaluator)) continue
             // Narrow "don't lose for 0 or less life" (Marina Vendrell's Grimoire) — 704.5a only.
             if (playerCantLoseGameFromLife(state, playerId, predicateEvaluator = predicateEvaluator)) continue
 
@@ -45,10 +43,10 @@ class PlayerLifeLossCheck(
             // same pass — the principled single team-loss check is Phase 3.
             if (container.get<LifeTotalComponent>() == null) continue
             if (state.lifeTotal(playerId) <= 0) {
-                newState = newState.updateEntity(playerId) { c ->
-                    c.with(PlayerLostComponent(LossReason.LIFE_ZERO))
-                }
-                events.add(PlayerLostEvent(playerId, GameEndReason.LIFE_ZERO))
+                val (lost, lossEvents) = GameLoss.lose(
+                    newState, playerId, LossReason.LIFE_ZERO, GameEndReason.LIFE_ZERO, predicateEvaluator)
+                newState = lost
+                events.addAll(lossEvents)
             }
         }
 

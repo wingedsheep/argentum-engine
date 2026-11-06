@@ -72,6 +72,9 @@ import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
@@ -832,7 +835,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, untargeted proliferate, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, proliferate (targeted or not), damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -973,11 +976,12 @@ object AiReadingAudit {
                     blight.any { stage -> stage === it }
             }
         }
-        // Untargeted proliferate has no target to aim and no consistent window to hold it for (+1/+1
-        // counters want precombat, poison or loyalty don't care): which permanents and players get another
-        // counter is chosen at resolution, and the counters it adds are on the board the simulation prices.
-        // A targeted one ("each kind of counter on target permanent") stays flagged.
-        if (leaf is ProliferateEffect && leaf.target == null) return true
+        // Proliferate has no consistent window to hold it for (+1/+1 counters want precombat, poison or
+        // loyalty don't care): which permanents and players get another counter is chosen at resolution,
+        // and the counters it adds are on the board the simulation prices. A targeted one ("each kind of
+        // counter on target permanent or player", Skyship Plunderer) aims its one holder by polarity —
+        // TargetPolarityAnalyzer reads it either way, and the simulation weighs each candidate's counters.
+        if (leaf is ProliferateEffect) return true
         // Its controller venturing into the dungeon (Planar Ally's attack, Clattering Skeletons' ETB, Dungeon
         // Map) has no target to aim and no window to hold it for: which dungeon and room is chosen at
         // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.
@@ -1013,7 +1017,14 @@ object AiReadingAudit {
         // So do the steps of a loop over the kinds already on a permanent — "for each kind of counter
         // on target permanent, put another counter of that kind on it or remove one from it"
         // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on.
+        // The counted and chosen moves read the same way even when they do name a kind, because a
+        // move of +1/+1 counters is a gain where they land and a loss where they leave, and which side
+        // wins is the board's call: Tester of the Tangential's "move X +1/+1 counters", Goldberry's
+        // per-kind prompts, Aetherborn Marauder gathering +1/+1 counters from your other permanents
+        // (each prompt answered by simulating the board).
         if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
+            leaf is MoveCountersEffect || leaf is MoveChosenCountersToTargetEffect ||
+            leaf is MoveCountersEachKindMissingEffect ||
             leaf is RemoveAnyNumberOfCountersEffect || leaf is RemoveCountersOfIteratedKindEffect ||
             (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom == CounterKindSource.ITERATION)
         ) return true

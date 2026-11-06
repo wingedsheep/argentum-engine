@@ -1,0 +1,1 @@
+- #4522 The AI reads "if you would lose the game, instead …" and "if your life total would be reduced to 0 or less, instead …" (Exquisite Archangel, Enduring Angel) as a second life: protection intent, a higher board value while it stands, and a draft-heuristic term; asked whether a dying Archangel is exiled or goes to the graveyard, it takes the printed exile.

@@ -96,6 +96,15 @@ class SpellRedirectReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a cast trigger that redirects the triggering spell reads as a redirect, its Aura slot as harmful") {
+            // Captured by the Consulate's redirect names the triggering spell, not a chosen target, so
+            // it claims no target slot: the one slot is the Aura's host, read harmful from "can't attack".
+            val captured = cardRegistry.requireCard("Captured by the Consulate")
+            tags("Captured by the Consulate") shouldContain IntentTag.SPELL_REDIRECT
+            AiReadingAudit.read(captured).readFully shouldBe true
+            TargetPolarityAnalyzer.forSpell(captured) shouldBe listOf(TargetPolarity.HARMFUL)
+        }
+
         test("Bolt Bend sends their Lightning Bolt into their creature, not into ours") {
             val (game, picked) = redirectChoice("Lightning Bolt", target = "Hill Giant", mana = "Mountain")
             picked shouldContainExactly listOf(game.findPermanent("Grizzly Bears")!!)

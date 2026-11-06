@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
@@ -46,6 +47,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.UntapLimitPerStep
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
@@ -258,8 +260,9 @@ object CardIntentAnalyzer {
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
+        val refunds = handRefundDraws(effect)
         for (leaf in readingLeaves(effect, requirements)) {
-            tags += tagsOf(leaf)
+            tags += refundedTagsOf(leaf, refunds)
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
@@ -338,8 +341,9 @@ object CardIntentAnalyzer {
         // hand, it gains none. Its draw reads as the card selection it is.
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
             .flatMap { readingLeaves(it.effect, it.targetRequirements) }
+        val refunds = roots.flatMapTo(HashSet(), ::handRefundDraws)
         for (effect in leaves) {
-            tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else tagsOf(effect)
+            tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
             drawsOf(effect)?.let { cardsDrawn = maxOf(cardsDrawn ?: 0, it) }
             if (isExpiringPump(effect)) {
@@ -364,6 +368,11 @@ object CardIntentAnalyzer {
         if (scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) {
             tags += IntentTag.PROTECTION
         }
+        // "If you would lose the game, instead …" / "if your life total would be reduced to 0 or
+        // less, instead …" (Exquisite Archangel, Enduring Angel): a second life for us ([LossShields]).
+        if (scripts.any { script -> script.replacementEffects.any(LossShields::reads) }) {
+            tags += IntentTag.PROTECTION
+        }
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
@@ -375,6 +384,10 @@ object CardIntentAnalyzer {
         if (scripts.any { it.isAura && it.staticAbilities.any { static -> static is ModifyStats && (static.powerBonus > 0 || static.toughnessBonus > 0) } }) {
             tags += IntentTag.PUMP
         }
+        // "Enchanted permanent doesn't untap during its controller's untap step" (Ice Over, Dehydration):
+        // the standing form of the one-shot lock [GrantKeywordEffect] reads — the tapper's payoff on
+        // what the Aura enchants. On an Equipment (Vulshok Gauntlets) or the creature itself it is a price.
+        if (scripts.any { it.isAura && it.staticAbilities.any(::locksEnchantedTapped) }) tags += IntentTag.TAPPER
 
         // A combat trick is an instant pump that *expires*. A "+1/+1 counter at instant speed" is
         // a permanent investment you can make whenever you like, and holding it for combat is not
@@ -544,6 +557,7 @@ object CardIntentAnalyzer {
         // the battlefield under your control" (Boneyard Parley): graveyard cards brought back onto
         // our side, a reanimation whoever owned them — read as the single-card return it adds up to.
         val reanimates = reanimatesChosenGraveyardTargets(effect, requirements)
+        val stored by lazy { storedAmounts(effect) }
         return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) +
             (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) +
             // Hour of Eternity's exile-and-copy pipeline: the single-card exile to use, below.
@@ -657,6 +671,33 @@ object CardIntentAnalyzer {
                     if (source?.isMill == true && slot is TargetPlayer && slot.restriction != null) {
                         listOf(leaf.copy(source = source.copy(player = Player.You)))
                     } else listOf(leaf)
+                }
+                // "Destroy another target creature. If a creature is destroyed this way, …" (Noxious
+                // Gearhulk) moves the gathered chosen target itself, to track what left: read as the
+                // single-target destroy or exile it amounts to, with its own-side checks above.
+                is MoveCollectionEffect -> {
+                    val slot = TargetPolarityAnalyzer.permanentSlots(requirements).singleOrNull()
+                    val zone = (leaf.destination as? CardDestination.ToZone)?.zone
+                    if (slot != null && zone != null && TargetPolarityAnalyzer.removesChosenTargets(leaf, effect)) {
+                        readingLeaves(
+                            MoveToZoneEffect(
+                                target = EffectTarget.ContextTarget(slot),
+                                destination = zone,
+                                byDestruction = leaf.moveType == MoveType.Destroy,
+                                fromZone = Zone.BATTLEFIELD,
+                            ),
+                            requirements,
+                        )
+                    } else listOf(leaf)
+                }
+                // "You may pay any amount of {E}. The creature gets -1/-1 until end of turn for each
+                // {E} paid this way" (Die Young): the stats read through the number the pipeline
+                // stored, so the negated count is the shrink it is — see [storedAmounts].
+                is ModifyStatsEffect -> {
+                    val power = resolveStored(leaf.powerModifier, stored)
+                    val toughness = resolveStored(leaf.toughnessModifier, stored)
+                    if (power === leaf.powerModifier && toughness === leaf.toughnessModifier) listOf(leaf)
+                    else listOf(leaf.copy(powerModifier = power, toughnessModifier = toughness))
                 }
                 else -> listOf(leaf)
             }
@@ -855,7 +896,42 @@ object CardIntentAnalyzer {
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
     ): Set<IntentTag> =
-        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
+        handRefundDraws(root).let { refunds ->
+            readingLeaves(root, requirements).flatMapTo(HashSet()) { refundedTagsOf(it, refunds) }
+        } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
+
+    /** [tagsOf], except that a draw in [refunds] (see [handRefundDraws]) is not the card's own card draw. */
+    private fun refundedTagsOf(leaf: Effect, refunds: Collection<DrawCardsEffect>): Set<IntentTag> =
+        if (leaf is DrawCardsEffect && leaf in refunds) tagsOf(leaf) - IntentTag.DRAW else tagsOf(leaf)
+
+    /**
+     * "That player shuffles, then draws a card for each card exiled from their hand this way" (Lost
+     * Legacy, The Stone Brain): a draw for a player other than the controller, sized by the cards a
+     * pipeline in [root] took out of a hand, gives back what the answer stripped. It is the
+     * answer's price — neither card draw for us nor a loot that makes the hand gather our own.
+     * "Discard any number of cards, then draw that many" draws for the controller and stays a draw.
+     */
+    internal fun handRefundDraws(root: Effect): List<DrawCardsEffect> {
+        val leaves = readingLeaves(root)
+        val fromHand = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val zones = when (val source = (leaf as? GatherCardsEffect)?.source) {
+                is CardSource.FromZone -> listOf(source.zone)
+                is CardSource.FromMultipleZones -> source.zones
+                else -> return@mapNotNullTo null
+            }
+            leaf.storeAs.takeIf { Zone.HAND in zones }
+        }
+        if (fromHand.isEmpty()) return emptyList()
+        do {
+            val before = fromHand.size
+            for (leaf in leaves) fromHand += derivedCollections(leaf, fromHand)
+        } while (fromHand.size != before)
+        val sizes = fromHand.mapTo(HashSet()) { "${it}_count" }
+        return leaves.filterIsInstance<DrawCardsEffect>().filter { draw ->
+            draw.target != EffectTarget.Controller &&
+                (draw.count as? DynamicAmount.VariableReference)?.variableName in sizes
+        }
+    }
 
     /**
      * "Exile target creature you control" into a pile linked to this permanent (Endless Sands, Safe
@@ -1203,7 +1279,10 @@ object CardIntentAnalyzer {
      */
     private fun handDisruptionTags(root: Effect, eachPlayer: Player?, symmetric: Boolean = false): Set<IntentTag> {
         val leaves = readingLeaves(root)
-        val draws = leaves.any { it is DrawCardsEffect || it is DrawUpToEffect }
+        // A refund ("draws a card for each card exiled from their hand this way") is the answer's
+        // price, not the loot that would make a target player's hand our own.
+        val refunds = handRefundDraws(root)
+        val draws = leaves.any { (it is DrawCardsEffect && it !in refunds) || it is DrawUpToEffect }
         val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
             // "Search target player's graveyard, hand, and library for all cards with that name"
             // (Cranial Extraction, Dispossess, Necromentia): a several-zone search that reaches the
@@ -1350,7 +1429,11 @@ object CardIntentAnalyzer {
             if (StatePredicate.CreatedBySource in filter.statePredicates) continue
             if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
             groups[leaf.storeAs] = true
+            // "Exile all attacking creatures target player controls" (Settle the Wreckage) answers
+            // the player you point it at — one-sided, like a target-opponent gather.
             val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
+                filter.controllerPredicate == ControllerPredicate.ControlledByTargetPlayer ||
+                filter.controllerPredicate is ControllerPredicate.ControlledByReferencedPlayer ||
                 (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
                 player in OPPONENT_PLAYERS
             if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
@@ -1369,7 +1452,19 @@ object CardIntentAnalyzer {
         } while (groups != before)
         var reading = DestroyAllReading.NONE
         for (leaf in leaves) {
+            // "Exile all artifacts your opponents control until this leaves the battlefield"
+            // (Consulate Crackdown), "exile each creature with odd mana value" (Extinction Event):
+            // the exile-all, a wrath that leaves nothing to recur — or one exiled pick, spot removal.
+            // A pile the same effect brings back (Planar Guide's end-step return, Flickerform) is a
+            // blink, not removal.
+            val exiles = leaf is MoveCollectionEffect &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE &&
+                leaves.none { other ->
+                    other !== leaf && other is MoveCollectionEffect && other.from == leaf.from &&
+                        (other.destination as? CardDestination.ToZone)?.zone != Zone.EXILE
+                }
             val from = when {
+                exiles && (leaf as MoveCollectionEffect).from in groups -> leaf.from
                 leaf is MoveCollectionEffect && leaf.from in groups &&
                     (leaf.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD &&
                     (leaf.moveType == MoveType.Destroy || leaf.moveType == MoveType.Sacrifice) -> leaf.from
@@ -1378,14 +1473,6 @@ object CardIntentAnalyzer {
                 // in [tagsOf] — tempo removal, a wrath when it is still a whole group.
                 leaf is MoveCollectionEffect && leaf.from in groups && leaf.faceDown == null &&
                     (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND -> leaf.from
-                // "Exile each creature with mana value of the chosen quality" (Extinction Event),
-                // "exile all multicolored permanents" (Ravnica at War), "exile … until this leaves"
-                // (Temporary Lockdown): the exile-all, a wrath the way destroy-all is — unless the
-                // same pipeline puts the group straight back onto the battlefield (a mass flicker).
-                leaf is MoveCollectionEffect && leaf.from in groups &&
-                    (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE &&
-                    leaves.none { it is MoveCollectionEffect && it.from in groups &&
-                        (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD } -> leaf.from
                 // "Each opponent blights 1", "target opponent blights 2" (High Perfect Morcant,
                 // Champion of the Weird): a -1/-1 counter on a creature they pick — the edict's
                 // shrinking cousin, the same answer [counterTags] reads in a targeted -1/-1 counter.
@@ -1394,10 +1481,11 @@ object CardIntentAnalyzer {
                     leaf.counterType.ptDelta != null -> leaf.collectionName
                 else -> continue
             }
+            val exile = if (exiles) setOf(IntentTag.EXILE_REMOVAL) else emptySet()
             reading = if (groups[from] == true) {
-                DestroyAllReading(setOf(IntentTag.REMOVAL, IntentTag.SWEEPER), reading.hitsOwnSide || from in ours)
+                DestroyAllReading(reading.tags + setOf(IntentTag.REMOVAL, IntentTag.SWEEPER) + exile, reading.hitsOwnSide || from in ours)
             } else {
-                DestroyAllReading(setOf(IntentTag.REMOVAL) + reading.tags, reading.hitsOwnSide)
+                DestroyAllReading(setOf(IntentTag.REMOVAL) + reading.tags + exile, reading.hitsOwnSide)
             }
         }
         return reading
@@ -1863,6 +1951,10 @@ object CardIntentAnalyzer {
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
         // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
         is MustBeBlockedEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+        // "This creature can attack this turn as though it didn't have defender" (Hightide Hermit,
+        // Roving Keep): the one-turn form of the static [CanAttackDespiteDefender] — a wall turned
+        // attacker for the fight, to be activated before attacks.
+        is CanAttackDespiteDefenderThisTurnEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
         // "Attach target Equipment you control to target creature you control", "attach any number
         // of Equipment you control to it": a free equip, see [IntentTag.EQUIPMENT_RELOCATION].
         // An Equipment attaching only itself (Pre-War Formalwear) moves no other Equipment.
@@ -1972,8 +2064,18 @@ object CardIntentAnalyzer {
         is GrantFlashbackEffect -> setOf(IntentTag.RECURSION)
 
         // "Target land gains '{T}: Add {C}{C}'" (Emrakul, the Exigent Doom): a mana ability handed
-        // to a permanent is a mana source, as a mana rock is.
-        is GrantActivatedAbilityEffect -> if (effect.ability.isManaAbility) setOf(IntentTag.RAMP) else emptySet()
+        // to a permanent is a mana source, as a mana rock is. Any other helpful ability granted for
+        // more than a turn is the holder's own ability from then on, read as if printed:
+        // Quicksmith Spy's artifact gaining "{T}: Draw a card" for as long as you control the Spy
+        // is a card-advantage engine. A turn-long grant still waits on its activation, so the
+        // HoldPolicy card-flow windows must not cash it.
+        is GrantActivatedAbilityEffect -> when {
+            effect.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            effect.duration != Duration.EndOfTurn &&
+                TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
+                analyzeEffect(effect.ability.effect, effect.ability.targetRequirements).tags
+            else -> emptySet()
+        }
 
         // "You get an emblem with 'Creatures you control get +2/+2'" (Ajani Resolute) is an anthem
         // nothing can remove; its keywords and statics read as the same grants printed on a lord.
@@ -2415,6 +2517,10 @@ object CardIntentAnalyzer {
     // Static abilities
     // ═════════════════════════════════════════════════════════════════════════
 
+    /** An Aura's "enchanted permanent doesn't untap" — see [analyze]. */
+    private fun locksEnchantedTapped(static: StaticAbility): Boolean =
+        static is GrantKeyword && static.keyword in LOCKED_TAPPED_FLAGS && static.filter.scope == Scope.AttachedTo
+
     /** The tags one static ability reads as, for [com.wingedsheep.ai.engine.LimitedCardRater]. */
     internal fun staticTags(static: StaticAbility): Set<IntentTag> = tagsOf(static)
 
@@ -2427,6 +2533,11 @@ object CardIntentAnalyzer {
         is CanBlockAdditionalForCreatureGroup ->
             if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
+        // "Your opponents can't untap more than two permanents during their untap steps" (Dovin
+        // Baan's emblem): keeps the opponents' permanents tapped — the tapper's payoff, as a
+        // "doesn't untap" lock reads. A symmetric cap (Damping Field, Winter Orb) binds its
+        // controller too, so it reads as no plan of its own.
+        is UntapLimitPerStep -> if (static.players in OPPONENT_PLAYERS) setOf(IntentTag.TAPPER) else emptySet()
         // "Can't be blocked by artifact creatures" (Audacious Infiltrator, Fen Hauler): partial
         // evasion is still evasion — the creature gets through whatever the filter shuts out.
         is CantBeBlockedBy -> setOf(IntentTag.EVASION_GRANT)
@@ -2435,9 +2546,13 @@ object CardIntentAnalyzer {
             // of Invasion) is its drawback, never a pump or an answer.
             static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> emptySet()
             // An Aura's "enchanted creature gets -2/-2" (Dead Weight) answers what it enchants; a
-            // power-only cut (Sea Legs' "otherwise, -2/-0") shrinks it without answering it.
-            static.filter.scope == Scope.AttachedTo && static.powerBonus <= 0 && static.toughnessBonus <= 0 ->
-                if (static.toughnessBonus < 0) setOf(IntentTag.REMOVAL) else emptySet()
+            // power-only cut (Aether Meltdown's -4/-0) blunts it in every fight without answering
+            // it — the lasting form of the one-shot "-2/-0" [leafTagsOf] reads the same way.
+            static.filter.scope == Scope.AttachedTo && static.powerBonus <= 0 && static.toughnessBonus <= 0 -> when {
+                static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)
+                static.powerBonus < 0 -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+                else -> emptySet()
+            }
             static.filter.scope != Scope.Battlefield -> setOf(IntentTag.PUMP)
             static.powerBonus > 0 || static.toughnessBonus > 0 -> setOf(IntentTag.ANTHEM)
             static.powerBonus < 0 || static.toughnessBonus < 0 -> setOf(IntentTag.REMOVAL)
@@ -2466,6 +2581,9 @@ object CardIntentAnalyzer {
         // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
         is CantAttackUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature can't block artifact creatures" (Hinterland Drake), "can block only
+        // creatures with flying" (Cloud Sprite): a narrower "can't block" on its own body.
+        is CanOnlyBlockCreaturesWith -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature attacks or blocks each combat if able" (Relentless Raptor, Juggernaut) binds
         // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
         is MustAttack -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
@@ -2821,8 +2939,11 @@ object CardIntentAnalyzer {
                         IntentTag.DRAW in analyzeEffect(ability.effect, ability.targetRequirements).tags
                 }
             }
+            // A second life (Exquisite Archangel, Enduring Angel — [LossShields]): while it stands,
+            // the opponent's lethal turn only resets us, so it is worth repeatable removal's term.
+            val lossShield = scripts.any { script -> script.replacementEffects.any(LossShields::reads) }
             val ability = when {
-                repeatableRemoval -> 1.5
+                repeatableRemoval || lossShield -> 1.5
                 shieldsItself || repeatableDraw -> 1.0
                 repeatableHate -> 0.5
                 else -> 0.0

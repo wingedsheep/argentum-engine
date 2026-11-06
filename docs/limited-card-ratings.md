@@ -66,8 +66,9 @@ uses it only when it has at least 50 games behind it.
 
 For a card no table rates, a structural estimate from its `CardDefinition`:
 
-- **Base** — creatures by stat efficiency (power + toughness per mana), planeswalkers at 3.0, other
-  spells by type (instant 2.2, sorcery 2.0, …).
+- **Base** — creatures by stat efficiency (power + toughness per mana), Vehicles the same on their
+  printed body less 0.15 per point of crew (never below a blank artifact's 1.5), planeswalkers at
+  3.0, other spells by type (instant 2.2, sorcery 2.0, …).
 - **Keywords** — evasion and combat keywords add value.
 - **Effects** — `EffectWalker` walks the script and sums what each effect is worth: removal (exile
   above destroy above bounce), damage by amount, card draw, scry and surveil, tokens, pumps, control

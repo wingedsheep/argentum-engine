@@ -7,6 +7,7 @@ import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.engine.support.ScenarioTestBase
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 
@@ -63,6 +64,18 @@ class OpponentCardLossReadingAiTest : ScenarioTestBase() {
             withClue("the heuristic prices the discard reading above a bare rare sorcery's base") {
                 // Renamed so the AKH pick table's own rating doesn't stand in for the heuristic.
                 LimitedCardRater.rate(dispossess.copy(name = "Dispossess (unrated copy)")) shouldBeGreaterThan 2.5
+            }
+        }
+
+        test("a draw refunding the cards a named search took from the hand is not card draw") {
+            // "That player shuffles, then draws a card for each card exiled from their hand this way."
+            for (name in listOf("Lost Legacy", "The Stone Brain")) {
+                val tags = CardIntentAnalyzer.analyze(card(name)).tags
+                withClue("$name strips the target's hand") { tags shouldContain IntentTag.DISCARD }
+                withClue("$name's draw goes to the player it stripped") { tags shouldNotContain IntentTag.DRAW }
+            }
+            withClue("Lost Legacy is aimed at an opponent") {
+                TargetPolarityAnalyzer.forSpell(card("Lost Legacy")) shouldBe listOf(TargetPolarity.HARMFUL)
             }
         }
     }

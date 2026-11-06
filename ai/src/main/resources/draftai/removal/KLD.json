@@ -1,0 +1,189 @@
+{
+  "Aether Meltdown": [
+    "removal",
+    "creature-removal"
+  ],
+  "Aethertorch Renegade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Appetite for the Unnatural": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Ballista Charger": [
+    "removal",
+    "creature-removal"
+  ],
+  "Captured by the Consulate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cataclysmic Gearhulk": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra's Pyrohelix": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra, Torch of Defiance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Confiscation Coup": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Creeping Mold": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Deadlock Trap": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Demolish": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Demon of Dark Schemes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Die Young": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dovin Baan": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dynavolt Tower": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Eliminate the Competition": [
+    "removal",
+    "creature-removal"
+  ],
+  "Essence Extraction": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fateful Showdown": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fireforger's Puzzleknot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fragmentize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Fumigate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Furious Reprisal": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Harnessed Lightning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hijack": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Hunt the Weak": [
+    "removal",
+    "creature-removal"
+  ],
+  "Impeccable Timing": [
+    "removal",
+    "creature-removal"
+  ],
+  "Incendiary Sabotage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Janjeet Sentry": [
+    "removal",
+    "creature-removal"
+  ],
+  "Malfunction": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Nature's Way": [
+    "removal",
+    "creature-removal"
+  ],
+  "Noxious Gearhulk": [
+    "removal",
+    "creature-removal"
+  ],
+  "Revoke Privileges": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ruinous Gremlin": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Select for Inspection": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shrewd Negotiation": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Skysovereign, Consul Flagship": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Skywhaler's Shot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Take Down": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tidy Conclusion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Underhanded Designs": [
+    "removal",
+    "creature-removal"
+  ],
+  "Unlicensed Disintegration": [
+    "removal",
+    "creature-removal"
+  ],
+  "Welding Sparks": [
+    "removal",
+    "creature-removal"
+  ]
+}

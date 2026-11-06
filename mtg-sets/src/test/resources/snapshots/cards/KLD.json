@@ -119,6 +119,182 @@
     ]
 }
 
+// Aether Meltdown
+{
+    "name": "Aether Meltdown",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nEnchant creature or Vehicle\nWhen this Aura enters, you get {E}{E} (two energy counters).\nEnchanted creature gets -4/-0.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aether Meltdown:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -4,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|Vehicle"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91f99614-45e2-4688-8403-f3a6b9162b08.jpg?1783937224",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the target creature or Vehicle becomes an illegal target while Aether Meltdown is on the stack, Aether Meltdown won't resolve. It won't enter the battlefield and you won't get {E}{E}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aether Theorist
+{
+    "name": "Aether Theorist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Vedalken Rogue",
+    "oracleText": "When this creature enters, you get {E}{E}{E} (three energy counters).\n{T}, Pay {E}: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aether Theorist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aether Theorist:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "descriptionOverride": "{T}, Pay {E}: Scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/882b5580-ee23-4d65-a2b3-82475d6faf8e.jpg?1783937224"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aetherborn Marauder
+{
+    "name": "Aetherborn Marauder",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Aetherborn Rogue",
+    "oracleText": "Flying, lifelink\nWhen this creature enters, move any number of +1/+1 counters from other permanents you control onto this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aetherborn Marauder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveChosenCountersToTarget",
+                    "source": {
+                        "type": "GroupRef",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "excludeSelf": true
+                        }
+                    },
+                    "destination": "Self",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"I don't know what that is or who it belongs to, but it's shiny and I want it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fce02ef8-1731-43a9-9bd0-9ec592e3883f.jpg?1783937211"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Aetherflux Reservoir
 {
     "name": "Aetherflux Reservoir",
@@ -196,6 +372,194 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Aethersquall Ancient
+{
+    "name": "Aethersquall Ancient",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Leviathan",
+    "oracleText": "Flying\nAt the beginning of your upkeep, you get {E}{E}{E} (three energy counters).\nPay eight {E}: Return all other creatures to their owners' hands. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aethersquall Ancient:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aethersquall Ancient:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 8
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "returnAllToHand_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "returnAllToHand_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Pay eight {E}: Return all other creatures to their owners' hands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55127a25-dc64-4f26-ae50-ed7247c22ae6.jpg?1783937223"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aetherstorm Roc
+{
+    "name": "Aetherstorm Roc",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhenever this creature or another creature you control enters, you get {E} (an energy counter).\nWhenever this creature attacks, you may pay {E}{E}. If you do, put a +1/+1 counter on it and tap up to one target creature defending player controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aetherstorm Roc:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Aetherstorm Roc:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79fb7541-7a27-40a5-aabd-fce26df03485.jpg?1783937237",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Aetherstorm Roc's second triggered ability resolves before blockers are chosen. A creature tapped this way won't be able to block."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You don't have to target a creature with Aetherstorm Roc's last ability. If you do choose a target, and that target becomes illegal, the ability doesn't resolve and you won't be able to pay {E}{E} to put a counter on Aetherstorm Roc."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "A creature entering the battlefield at the same time as Aetherstorm Roc causes its first triggered ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Ambitious Aetherborn
@@ -515,6 +879,80 @@
         "artist": "Lake Hurwitz",
         "flavorText": "Citizens are free to do as they wish, within the confines of the Consulate's laws.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/2/324b2f55-1e09-490e-8f7e-bfde85a91ac4.jpg?1782711627"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aviary Mechanic
+{
+    "name": "Aviary Mechanic",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "When this creature enters, you may return another permanent you control to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aviary Mechanic:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "permanent",
+                                    "player": "You",
+                                    "excludeSelf": true
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Return another permanent you control to its owner's hand",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may return another permanent you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Mark Zug",
+        "flavorText": "Pilots take crippled skyships to the Aviaries, trusting Ghirapur's most talented mechanics to get them back into the air.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b97b0767-4308-4e5d-bc12-6cf8d8724797.jpg?1783937237"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -958,6 +1396,79 @@
     ]
 }
 
+// Captured by the Consulate
+{
+    "name": "Captured by the Consulate",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you don't control\nEnchanted creature can't attack.\nWhenever an opponent casts a spell, if it has a single target, change the target to enchanted creature if able.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captured by the Consulate:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChangeTarget",
+                    "newTarget": "EnchantedCreature",
+                    "spell": "TriggeringEntity"
+                },
+                "interveningIf": "TriggeringSpellHasSingleTarget",
+                "descriptionOverride": "Whenever an opponent casts a spell, if it has a single target, change the target to enchanted creature if able."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:opponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0c20018-4446-4c2b-bdc5-53fcf1fbc3bf.jpg?1783937235",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "When you attach Captured by the Consulate to an opponent's creature, you still control Captured by the Consulate. Its last ability triggers whenever your opponents cast a spell with a single target, not when an opponent of the creature's controller casts a spell with a single target."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "When a player casts an Aura spell, it targets the creature that it will enchant and may cause Captured by the Consulate's last ability to trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If a spell has multiple targets, it doesn't have a single target even if the same object is chosen for each of those targets."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the spell can't target the enchanted creature, its target remains unchanged."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If there is more than one Captured by the Consulate on the battlefield, the triggered ability of each one will change the target if able. The last one to resolve determines what that spell finally targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cathartic Reunion
 {
     "name": "Cathartic Reunion",
@@ -990,6 +1501,41 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ceremonious Rejection
+{
+    "name": "Ceremonious Rejection",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target colorless spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "The judges at the Fair are held in such high esteem that a nod of recognition can inspire an inventor for a lifetime—and a wave of dismissal can end a career.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08c5ed8e-4804-4042-8a1d-ad24c6846816.jpg?1783937222"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1305,6 +1851,71 @@
     ]
 }
 
+// Cogworker's Puzzleknot
+{
+    "name": "Cogworker's Puzzleknot",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, create a 1/1 colorless Servo artifact creature token.\n{1}{W}, Sacrifice this artifact: Create a 1/1 colorless Servo artifact creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cogworker's Puzzleknot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cogworker's Puzzleknot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00d594df-c51b-4936-9af1-536dab1792ae.jpg?1783937162"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Concealed Courtyard
 {
     "name": "Concealed Courtyard",
@@ -1376,6 +1987,88 @@
     ]
 }
 
+// Consul's Shieldguard
+{
+    "name": "Consul's Shieldguard",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dwarf Soldier",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}. If you do, another target attacking creature gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consul's Shieldguard:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Consul's Shieldguard:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52b66d65-1981-4abf-b27f-e9a1b2800110.jpg?1783937234",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a spell or ability with one or more targets states that you \"may pay\" some amount of {E}, and each permanent that it targets has become an illegal target, the spell or ability won't resolve. You can't pay any {E} even if you want to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Consulate Skygate
 {
     "name": "Consulate Skygate",
@@ -1396,6 +2089,71 @@
         "flavorText": "All skyships entering or leaving the fairgrounds must pass through the security checkpoint.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a7922c3-1baa-41ed-bd06-b5a97cddb90e.jpg?1783937162"
     }
+}
+
+// Consulate Surveillance
+{
+    "name": "Consulate Surveillance",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you get {E}{E}{E}{E} (four energy counters).\nPay {E}{E}: Prevent all damage that would be dealt to you this turn by a source of your choice.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consulate Surveillance:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 4,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Consulate Surveillance:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "sourceFilter": "PreventFromChosen"
+                },
+                "descriptionOverride": "Pay {E}{E}: Prevent all damage that would be dealt to you this turn by a source of your choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72c92238-7765-48ee-a799-9e8b68ec118d.jpg?1783937234",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the chosen source would deal damage to you and one or more other players or permanents, only the damage that would be dealt to you is prevented."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Consulate Surveillance's second ability doesn't target anything. You choose a source of damage as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Contraband Kingpin
@@ -1625,6 +2383,83 @@
     ]
 }
 
+// Die Young
+{
+    "name": "Die Young",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature. You get {E}{E} (two energy counters), then you may pay any amount of {E}. The creature gets -1/-1 until end of turn for each {E} paid this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                },
+                {
+                    "type": "PayCounters",
+                    "counterType": "ENERGY",
+                    "storeAmountAs": "paid"
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "paid"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "paid"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Ryan Yee",
+        "flavorText": "\"When the time comes, let go. Nothing lasts forever.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daf7bb52-013f-4d8d-b4ea-53d1fa4bb694.jpg?1783937210",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the target creature becomes an illegal target, Die Young doesn't resolve and none of its effects happen. You won't get {E}{E} or be able to pay any {E}."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You choose the target creature as you cast Die Young. You don't choose how much {E} to pay until Die Young is resolving. No player may take actions between the time you choose how much {E} to pay and the time the creature gets -1/-1 for each {E} paid this way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Disappearing Act
 {
     "name": "Disappearing Act",
@@ -1661,6 +2496,154 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a4a6d56-9bed-444c-aae8-383c315779a0.jpg?1783937222"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Dovin Baan
+{
+    "name": "Dovin Baan",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Legendary Planeswalker — Dovin",
+    "oracleText": "+1: Until your next turn, up to one target creature gets -3/-0 and its activated abilities can't be activated.\n−1: You gain 2 life and draw a card.\n−7: You get an emblem with \"Your opponents can't untap more than two permanents during their untap steps.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dovin Baan:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, up to one target creature gets -3/-0 and its activated abilities can't be activated."
+            },
+            {
+                "id": "Dovin Baan:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You gain 2 life and draw a card."
+            },
+            {
+                "id": "Dovin Baan:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedStaticAbilities": [
+                        {
+                            "type": "UntapLimitPerStep",
+                            "filter": "permanent",
+                            "max": 2,
+                            "players": "EachOpponent"
+                        }
+                    ],
+                    "emblemDescription": "Your opponents can't untap more than two permanents during their untap steps."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Your opponents can't untap more than two permanents during their untap steps.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2344e710-4570-41b6-af84-a3e7d784003a.jpg?1783937169",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Dovin Baan's first ability can target any creature, not just one with an activated ability. It can also be activated targeting no creature at all."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Activated abilities contain a colon. They're generally written “[Cost]: [Effect].” Some keywords are activated abilities and will have colons in their reminder text."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "An opponent affected by Dovin Baan's emblem chooses which two of their permanents to untap, not you."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -1735,6 +2718,143 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dukhara Scavenger
+{
+    "name": "Dukhara Scavenger",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Crocodile",
+    "oracleText": "When this creature enters, you may put target artifact or creature card from your graveyard on top of your library.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dukhara Scavenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Library",
+                        "placement": "Top"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "The teeth marks add character.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81591264-1342-418d-b5c6-9d700b729c51.jpg?1783937210"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Eddytrail Hawk
+{
+    "name": "Eddytrail Hawk",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}. If you do, another target attacking creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eddytrail Hawk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Eddytrail Hawk:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81dcaec6-4cb9-46d8-aed1-46f33c67dff2.jpg?1783937235",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If a spell or ability with one or more targets states that you \"may pay\" some amount of {E}, and each permanent that it targets has become an illegal target, the spell or ability won't resolve. You can't pay any {E} even if you want to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1998,6 +3118,112 @@
     ]
 }
 
+// Era of Innovation
+{
+    "name": "Era of Innovation",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an artifact or Artificer you control enters, you may pay {1}. If you do, you get {E}{E} (two energy counters).\nPay six {E}, Sacrifice this enchantment: Draw three cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Era of Innovation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsPermanent",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Artificer"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "ENERGY",
+                        "count": 2,
+                        "target": "Controller"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Era of Innovation:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Pay six {E}, Sacrifice this enchantment: Draw three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dae3b1f-6a31-4a8a-9e44-063f8f670134.jpg?1783937223",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You can pay {1} only once each time Era of Innovation's first ability resolves. You can't pay more to get more than {E}{E}."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If a creature that is both an artifact and an Artificer enters the battlefield under your control, Era of Innovation's triggered ability triggers only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Essence Extraction
 {
     "name": "Essence Extraction",
@@ -2047,6 +3273,59 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Experimental Aviator
+{
+    "name": "Experimental Aviator",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Flying\nWhen this creature enters, create two 1/1 colorless Thopter artifact creature tokens with flying.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Experimental Aviator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"The little thopters seemed lonely up here, so I thought I'd join them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/962dc573-612d-434b-82fb-af9c3e3c9aca.jpg?1783937221"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2169,6 +3448,79 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fairgrounds Warden
+{
+    "name": "Fairgrounds Warden",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dwarf Soldier",
+    "oracleText": "When this creature enters, exile target creature an opponent controls until this creature leaves the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fairgrounds Warden:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Fairgrounds Warden:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"You're coming with me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49b6c8f3-76b7-4954-8608-023304cdec3e.jpg?1783937234"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2695,6 +4047,50 @@
     ]
 }
 
+// Gearshift Ace
+{
+    "name": "Gearshift Ace",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Pilot",
+    "oracleText": "First strike\nWhenever this creature crews a Vehicle, that Vehicle gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gearshift Ace:1",
+                "trigger": "CrewsEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "Some display their trophies at the Hall of Mechanists. Others display their talent in the streets of Ghirapur.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e8c6a9d-6169-40f8-8b3e-53ebf75be663.jpg?1783937232",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Gearshift Ace's triggered ability triggers when it becomes tapped to activate a crew ability. Even if Gearshift Ace leaves the battlefield before its triggered ability resolves, that Vehicle still gains first strike until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ghirapur Guide
 {
     "name": "Ghirapur Guide",
@@ -3107,6 +4503,95 @@
     ]
 }
 
+// Harsh Scrutiny
+{
+    "name": "Harsh Scrutiny",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a creature card from it. That player discards that card. Scry 1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a creature card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "\"If you've done nothing wrong, you have nothing to fear.\"\n—Enforcer-Chief Ranaj",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe68b484-cc8d-4a0b-94c2-1fec9090dfcd.jpg?1783937205",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You scry 1 even if that player has no creature card to discard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Herald of the Fair
 {
     "name": "Herald of the Fair",
@@ -3189,6 +4674,64 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hightide Hermit
+{
+    "name": "Hightide Hermit",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Crab",
+    "oracleText": "Defender\nWhen this creature enters, you get {E}{E}{E}{E} (four energy counters).\nPay {E}{E}: This creature can attack this turn as though it didn't have defender.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hightide Hermit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 4,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hightide Hermit:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": "CanAttackDespiteDefenderThisTurn",
+                "descriptionOverride": "Pay {E}{E}: This creature can attack this turn as though it didn't have defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Jason Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69c871fa-d333-4c73-9d5c-f5cfec5954da.jpg?1783937220"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3639,6 +5182,109 @@
     }
 }
 
+// Janjeet Sentry
+{
+    "name": "Janjeet Sentry",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Vedalken Soldier",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\n{T}, Pay {E}{E}: You may tap or untap target artifact or creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Janjeet Sentry:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Janjeet Sentry:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap that permanent"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that permanent"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    },
+                    "descriptionOverride": "You may tap or untap that permanent"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|artifact"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}{E}: You may tap or untap target artifact or creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Janjeet Observatory is open to the public, but access to the adjoining laboratories is restricted.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/826b9080-2b6d-4f4e-93a6-cf977d40654f.jpg?1783937218"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kambal, Consul of Allocation
 {
     "name": "Kambal, Consul of Allocation",
@@ -3711,6 +5357,80 @@
         "WHITE",
         "BLACK"
     ]
+}
+
+// Key to the City
+{
+    "name": "Key to the City",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Discard a card: Up to one target creature can't be blocked this turn.\nWhenever this artifact becomes untapped, you may pay {2}. If you do, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Key to the City:2",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Key to the City:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Sean Murray",
+        "flavorText": "It would be unfortunate if the key fell into the wrong hands.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66154969-5c69-40ce-8bc9-c9bc5e280d4c.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Kujar Seedsculptor
@@ -3873,6 +5593,51 @@
     ]
 }
 
+// Live Fast
+{
+    "name": "Live Fast",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw two cards, lose 2 life, and get {E}{E} (two energy counters).",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Ryan Yee",
+        "flavorText": "\"When you have the chance, take it. Laugh, sing, dance. Don't allow the night to end.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad0bb8da-ad05-43d9-aba3-d917744168fe.jpg?1783937205"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Long-Finned Skywhale
 {
     "name": "Long-Finned Skywhale",
@@ -3908,6 +5673,203 @@
         "artist": "Cliff Childs",
         "flavorText": "The aethersphere is home to the most wondrous beings on all of Kaladesh, although the dangers of traversing it mean that not much is known of them.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/7/772e9472-c710-474e-b8e9-54662330a592.jpg?1783937217"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Lost Legacy
+{
+    "name": "Lost Legacy",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a nonartifact, nonland card name. Search target player's graveyard, hand, and library for any number of cards with that name and exile them. That player shuffles, then draws a card for each card exiled from their hand this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CARD_NAME",
+                    "storeAs": "cardName0",
+                    "cardNamePool": "NONARTIFACT_NONLAND"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "cardName0"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose any number of cards with that name to exile",
+                    "selectedLabel": "Exile"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "selected2",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Hand"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5d0e447-d98e-43d5-9b53-166221c34be2.jpg?1783937205"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Make Obsolete
+{
+    "name": "Make Obsolete",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures your opponents control get -1/-1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "Yesterday's marvels are today's antiques.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0a96feb-accc-4c30-8ecd-7d9272ebd45b.jpg?1783937205"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Malfunction
+{
+    "name": "Malfunction",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nWhen this Aura enters, tap enchanted permanent.\nEnchanted permanent doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malfunction:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedPermanent"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Izzy",
+        "flavorText": "\"They don't make them like they used to.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c41f907f-4512-4c5d-827b-fef04613d641.jpg?1783937217"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -3989,6 +5951,80 @@
     ]
 }
 
+// Master Trinketeer
+{
+    "name": "Master Trinketeer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "Servos and Thopters you control get +1/+1.\n{3}{W}: Create a 1/1 colorless Servo artifact creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Master Trinketeer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Servo",
+                                    "Thopter"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Let us never forget the joy that lies at the heart of invention.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdb6beb3-1669-4e7b-9c76-65424673eb36.jpg?1783937230",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "A creature that is both a Servo and a Thopter gets +1/+1, not +2/+2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Maulfist Squad
 {
     "name": "Maulfist Squad",
@@ -4015,6 +6051,235 @@
         "artist": "Matt Stewart",
         "flavorText": "\"Nice invention there. Looks real fragile.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e4cd13a-66b6-4c65-a5a0-82f93145d16a.jpg?1783937204"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Metalspinner's Puzzleknot
+{
+    "name": "Metalspinner's Puzzleknot",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, you draw a card and you lose 1 life.\n{2}{B}, Sacrifice this artifact: You draw a card and you lose 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Metalspinner's Puzzleknot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Metalspinner's Puzzleknot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b1639c3-f22d-4246-9252-219a4b2b2999.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Minister of Inquiries
+{
+    "name": "Minister of Inquiries",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Vedalken Advisor",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\n{T}, Pay {E}: Target player mills three cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Minister of Inquiries:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Minister of Inquiries:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}: Target player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"This research violates Consulate law.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e6c31d1-6e2a-41b3-aa4f-d30a7cd997d2.jpg?1783937216"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Morbid Curiosity
+{
+    "name": "Morbid Curiosity",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact or creature.\nDraw cards equal to the mana value of the sacrificed permanent.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "ManaValue"
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Every creation carries a piece of its creators. Their knowledge, their dreams, their soul. That is the best part.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f26722e-e7fc-4a90-9a5b-cefda096e5fe.jpg?1783937203",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "To determine how many cards to draw, use the mana value of the permanent immediately before you sacrificed it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -4058,6 +6323,58 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Night Market Lookout
+{
+    "name": "Night Market Lookout",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Whenever this creature becomes tapped, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Night Market Lookout:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Nils Hamm",
+        "flavorText": "The Consulate rarely cracks the coded announcement of a night market's location before dawn, and enforcers are taken care of if they wander too close.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4edb03b7-e5a2-4ba1-b0ec-bfbfeaa94efd.jpg?1783937203"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4148,6 +6465,108 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Noxious Gearhulk
+{
+    "name": "Noxious Gearhulk",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Menace\nWhen this creature enters, you may destroy another target creature. If a creature is destroyed this way, you gain life equal to its toughness.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Noxious Gearhulk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StoreNumber",
+                                "name": "number0",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "Toughness"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy",
+                                "storeMovedAs": "moved2"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "moved2",
+                                "ifNotEmpty": {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "VariableReference",
+                                        "variableName": "number0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "When this creature enters, you may destroy another target creature. If a creature is destroyed this way, you gain life equal to its toughness."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may destroy another target creature. If a creature is destroyed this way, you gain life equal to its toughness."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f86e5fe-8723-4494-b4cc-b7ac3a047bd1.jpg?1783937202",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the target creature has indestructible, it isn't destroyed this way and you won't gain life. If it is destroyed but put into a zone other than a graveyard, you'll gain life."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Use the toughness of the creature as it last existed on the battlefield to determine how much life to gain."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4554,6 +6973,125 @@
     }
 }
 
+// Pia Nalaar
+{
+    "name": "Pia Nalaar",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "When Pia Nalaar enters, create a 1/1 colorless Thopter artifact creature token with flying.\n{1}{R}: Target artifact creature gets +1/+0 until end of turn.\n{1}, Sacrifice an artifact: Target creature can't block this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pia Nalaar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pia Nalaar:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Pia Nalaar:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a2b2954-0734-4219-b6df-c6cc3dcd8d5a.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Prakhata Club Security
 {
     "name": "Prakhata Club Security",
@@ -4643,6 +7181,93 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Quicksmith Genius
+{
+    "name": "Quicksmith Genius",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Whenever an artifact you control enters, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quicksmith Genius:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "Quicksmiths are eager to jump from one project to the next, relying on flashes of inspiration rather than careful research.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9f1dc85-3cda-45d6-8d65-3cb93854bb16.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4850,6 +7475,56 @@
     }
 }
 
+// Restoration Gearsmith
+{
+    "name": "Restoration Gearsmith",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, return target artifact or creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Restoration Gearsmith:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "UNCOMMON",
+        "artist": "John Severin Brassell",
+        "flavorText": "All she touches turns to well-oiled, delicately calibrated, perfectly balanced gold.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/228ea9c6-5732-4a2a-ac25-a768ea7d433b.jpg?1783937166"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
 // Revoke Privileges
 {
     "name": "Revoke Privileges",
@@ -4892,6 +7567,42 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Revolutionary Rebuff
+{
+    "name": "Revolutionary Rebuff",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target nonartifact spell unless its controller pays {2}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{2}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonartifact",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Zack Stella",
+        "flavorText": "By the time a Consulate sanction becomes official, the renegade quicksmiths have already found a way to circumvent it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ea63dad-6afe-464e-ab19-fabd9709c6f9.jpg?1783937215"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5197,6 +7908,40 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Servo Exhibition
+{
+    "name": "Servo Exhibition",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 1/1 colorless Servo artifact creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [],
+            "creatureTypes": [
+                "Servo"
+            ],
+            "artifactToken": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "\"The judges really put them through their paces, but they prevailed. I think they even impressed Head Judge Tezzeret.\"\n—Ritika, artificer",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9aba0c60-78e2-4e1c-a6ad-6f1c001ad7ee.jpg?1783937228"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Sky Skiff
@@ -5795,6 +8540,46 @@
     ]
 }
 
+// Spireside Infiltrator
+{
+    "name": "Spireside Infiltrator",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Whenever this creature becomes tapped, it deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spireside Infiltrator:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"The Consulate promised that we would all have access to aether. I'm just keeping them honest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9551190-9764-47a6-b414-8411beec89d2.jpg?1783937188"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Subtle Strike
 {
     "name": "Subtle Strike",
@@ -5863,6 +8648,71 @@
         "artist": "David Palumbo",
         "flavorText": "Renegades do some of their best work right under the Consulate's nose.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/1/61a8cb98-7ee7-4f90-bfba-0a406a5e6d6b.jpg?1783937200"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Syndicate Trafficker
+{
+    "name": "Syndicate Trafficker",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Aetherborn Rogue",
+    "oracleText": "{1}, Sacrifice an artifact: Put a +1/+1 counter on this creature. It gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Syndicate Trafficker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, Sacrifice an artifact: Put a +1/+1 counter on this creature. It gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Tony Foti",
+        "flavorText": "\"The price isn't negotiable, but I'm sure you'll agree it's fair.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d89427f0-08d5-49a1-9684-ebe8769430f6.jpg?1783937200"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -5996,6 +8846,289 @@
     ]
 }
 
+// Tezzeret's Ambition
+{
+    "name": "Tezzeret's Ambition",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards. If you control no artifacts, discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact",
+                            "negate": true
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"To achieve what none have achieved before, one must dare what none have dared before.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c3700b0-d6b5-4967-add8-3adc2bc8ca86.jpg?1783937214"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Thriving Ibex
+{
+    "name": "Thriving Ibex",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Goat",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thriving Ibex:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Thriving Ibex:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "Textiles at the Inventors' Fair feature threads from every corner of Kaladesh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8edc7c57-9298-4fad-a0c2-4b75b944e2ce.jpg?1783937228",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thriving Rats
+{
+    "name": "Thriving Rats",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thriving Rats:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Thriving Rats:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Tom Babbey",
+        "flavorText": "In Ghirapur, even the lowliest residents live in lavish surroundings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52ba911b-6a52-4430-8f61-63bdae25c16a.jpg?1783937199",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Thriving Turtle
+{
+    "name": "Thriving Turtle",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Turtle",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thriving Turtle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Thriving Turtle:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Jeff Simpson",
+        "flavorText": "Aether shapes everything on Kaladesh, from the sky to the sea.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61a112a3-ae4e-4aba-86ac-74a8960a6326.jpg?1783937214",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tidy Conclusion
 {
     "name": "Tidy Conclusion",
@@ -6043,6 +9176,97 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Toolcraft Exemplar
+{
+    "name": "Toolcraft Exemplar",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "At the beginning of combat on your turn, if you control an artifact, this creature gets +2/+1 until end of turn. If you control three or more artifacts, it also gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Toolcraft Exemplar:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "artifact"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"If you wish to produce the finest work, you must start with the finest tools.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daae3dae-3297-4750-9bca-c8aadaf815ea.jpg?1783937228",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If you control no artifacts as your combat phase begins, Toolcraft Exemplar's triggered ability doesn't trigger at all. If you control no artifacts as the triggered ability resolves, it has no effect."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Whether or not you control three or more artifacts is checked only as the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6169,6 +9393,57 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Trusty Companion
+{
+    "name": "Trusty Companion",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Hyena",
+    "oracleText": "Vigilance\nThis creature can't attack alone.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "It shows affection an automaton never could.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a79eefb-50a4-41c4-93cf-378fa546f539.jpg?1783937226",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Trusty Companion can be declared as an attacker only if another creature is declared as an attacker at the same time. Once it's attacking, removing the other creature won't cause Trusty Companion to stop attacking."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you control more than one creature that can't attack alone, they can attack together, even if no other creatures attack."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "In a Two-Headed Giant game, Trusty Companion can attack along with a creature controlled by your teammate, even if no other creatures you control attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6612,6 +9887,82 @@
         "flavorText": "\"Our creations are more than mere things. They have life in them, little bits of ourselves.\"\n—Saheeli Rai",
         "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff1a1246-d5a0-43dc-825a-062a3bb4def9.jpg"
     }
+}
+
+// Wild Wanderer
+{
+    "name": "Wild Wanderer",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "When this creature enters, you may search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wild Wanderer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"We all began in nature, and nature is where we belong.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d20e020-30e1-4deb-8dfc-4c5fe056193d.jpg?1783937172"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Wily Bandar

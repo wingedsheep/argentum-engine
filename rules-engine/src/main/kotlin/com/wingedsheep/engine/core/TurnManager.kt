@@ -1010,18 +1010,17 @@ class TurnManager(
                 for (member in newState.sharedTurnTeam(activePlayer)) {
                     val loseComponent = newState.getEntity(member)?.get<LoseAtEndStepComponent>() ?: continue
                     if (loseComponent.turnsUntilLoss <= 0) {
-                        // "You can't lose the game" (Platinum Angel — CR 104.3, and team-wide in
-                        // 2HG per CR 810.8a) stops this loss like every other: the delayed
-                        // trigger resolves and does nothing, so the marker is still consumed.
-                        if (com.wingedsheep.engine.mechanics.sba.player.playerCantLoseGame(newState, member, predicateEvaluator = zones.predicateEvaluator)) {
-                            newState = newState.updateEntity(member) { it.without<LoseAtEndStepComponent>() }
-                            continue
-                        }
-                        newState = newState.updateEntity(member) { container ->
-                            container.without<LoseAtEndStepComponent>()
-                                .with(PlayerLostComponent(LossReason.CARD_EFFECT))
-                        }
-                        events.add(PlayerLostEvent(member, GameEndReason.CARD_EFFECT, loseComponent.message))
+                        // The marker is consumed whatever happens. "You can't lose the game"
+                        // (Platinum Angel — CR 104.3, team-wide in 2HG per CR 810.8a) stops the loss
+                        // and "if you would lose the game, instead …" (Exquisite Archangel) replaces
+                        // it, exactly as for every other loss: GameLoss is the shared path, and a
+                        // replaced loss's rest is drained by the state-based-action check below.
+                        newState = newState.updateEntity(member) { it.without<LoseAtEndStepComponent>() }
+                        val (afterLoss, lossEvents) = com.wingedsheep.engine.mechanics.sba.player.GameLoss.lose(
+                            newState, member, LossReason.CARD_EFFECT, GameEndReason.CARD_EFFECT,
+                            zones.predicateEvaluator, loseComponent.message)
+                        newState = afterLoss
+                        events.addAll(lossEvents)
                         val sbaResult = sbaChecker.checkAndApply(newState)
                         if (sbaResult.outcome !is Outcome.Done) {
                             return sbaResult.copy(events = events + sbaResult.events)

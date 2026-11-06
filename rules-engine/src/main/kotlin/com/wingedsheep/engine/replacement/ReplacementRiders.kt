@@ -31,6 +31,14 @@ import kotlinx.serialization.Serializable
  * @property replacesLifeReduction this rider is a [com.wingedsheep.sdk.scripting.ReplaceLifeReductionToZero]
  *   application whose [subjectId] is the player whose life total was protected; while it is pending,
  *   further reductions of that total are part of the same replaced event
+ * @property replacesGameLoss this rider is a [com.wingedsheep.sdk.scripting.ReplaceGameLossWith]
+ *   application whose [subjectId] is the player who would have lost; while it is pending, further
+ *   reasons that player (or, where players lose as a team, a teammate) would lose in the same
+ *   state-based-action pass are part of the same replaced event
+ * @property sourceDeclined the rest runs without its source: the source is about to leave the
+ *   battlefield through a simultaneous state-based action and its controller chose that over the
+ *   rest moving it ([com.wingedsheep.engine.mechanics.sba.player.GameLossSourceChoiceCheck]), so
+ *   "this creature" in the rest names an object that is gone (CR 400.7) and does nothing
  * @property effect the rest of the replacement as a card effect; `null` exactly when the rest is
  *   engine-side ([chooseEnteringAttackTarget])
  * @property chooseEnteringAttackTarget the rest is CR 508.4's choice of what [subjectId], a creature
@@ -46,6 +54,9 @@ data class PendingReplacementRider(
     val amount: Int = 0,
     val countersRemoved: Int = 0,
     val replacesLifeReduction: Boolean = false,
+    val replacesGameLoss: Boolean = false,
+    val sourceDeclined: Boolean = false,
+    val sourceChoiceMade: Boolean = false,
     val replacementChain: Set<ReplacementEffectIdentity>? = null,
     val chooseEnteringAttackTarget: Boolean = false,
 ) {
@@ -110,6 +121,7 @@ object ReplacementRiders {
         return EffectContext(
             sourceId = rider.hostId,
             controllerId = rider.controllerId,
+            sourceReferenceLost = rider.sourceDeclined,
             triggeringEntityId = rider.subjectId.takeUnless { subjectIsPlayer },
             triggeringPlayerId = rider.subjectId.takeIf { subjectIsPlayer },
             triggerContext = TriggerContext(
