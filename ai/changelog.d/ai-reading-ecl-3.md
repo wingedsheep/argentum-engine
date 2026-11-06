@@ -1,0 +1,1 @@
+- #4497 Draft and deck ratings now count "exile into a pile this card lets you cast from" (Theater of Horrors, Rona, Maralen) as card draw or a free spell, and the AI aims "loses all creature types" at opponents' creatures
