@@ -846,7 +846,7 @@ Armus, Skin of Evil
 Army of Allah
 Army of the Damned
 Arna Kennerüd, Skycaptain
-Arni Brokenbrow	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Arni Brokenbrow	timing: SetBaseStatsEffect
 Arni Metalbrow
 Arni Slays the Troll
 Arni, Humble Scribe
@@ -892,7 +892,7 @@ Asari Captain
 Ascendant Dustspeaker
 Ascendant Evincar
 Ascendant Packleader
-Ascendant Spirit	combat: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
+Ascendant Spirit	intent: SetCreatureSubtypesEffect
 Ascending Aven
 Ascent of the Worthy
 Asceticism
@@ -2090,7 +2090,7 @@ Bramble Familiar
 Bramble Wurm
 Brambleback Brute
 Bramblecrush
-Bramblefort Fink	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Bramblefort Fink	timing: SetBaseStatsEffect
 Brambleguard Captain
 Brambleguard Veteran
 Bramblesnap
@@ -2222,7 +2222,7 @@ Broken Wings
 Brokers Ascendancy
 Brokers Charm
 Brokers Hideout
-Brokers Initiate	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Brokers Initiate	timing: SetBaseStatsEffect
 Brokers Veteran
 Brokkos, Apex of Forever
 Brontotherium	intent: ProvokeEffect; polarity: ProvokeEffect
@@ -2933,7 +2933,7 @@ Chrome Replicator
 Chrome Steed
 Chromeshell Crab	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Chromium
-Chromium, the Mutable	combat: SetBaseStatsEffect; timing: RemoveAllAbilitiesEffect; timing: SetBaseStatsEffect; timing: SetCreatureSubtypesEffect
+Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetBaseStatsEffect; timing: SetCreatureSubtypesEffect
 Chronicle of Victory
 Chronosavant
 Chthonian Nightmare
@@ -5533,7 +5533,7 @@ Eviscerator's Insight
 Evolution Charm
 Evolution Sage
 Evolution Witness
-Evolved Sleeper	combat: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
+Evolved Sleeper	intent: SetCreatureSubtypesEffect
 Evolved Spinoderm
 Evolving Adaptive
 Evolving Door
@@ -6203,7 +6203,7 @@ Fleshformer
 Fleshless Gladiator
 Fleshtaker
 Fleshwrither
-Flexible Waterbender	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Flexible Waterbender	timing: SetBaseStatsEffect
 Flick a Coin
 Flicker of Fate
 Flickerform	intent: Pipeline(AttachedTo|BattlefieldMatching→battlefield|exile); polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
@@ -6816,7 +6816,7 @@ Ghor-Clan Wrecker
 Ghost Ship
 Ghost Tactician
 Ghost Town
-Ghost Vacuum	combat: ForEach>SetBaseStatsEffect
+Ghost Vacuum
 Ghost Warden
 Ghost of Illyria
 Ghost, Spectral Saboteur
@@ -8893,7 +8893,7 @@ Ishgard, the Holy See
 Isildur's Fateful Strike
 Island Fish Jasconius
 Island Sanctuary
-Island of Wak-Wak	combat: SetBaseStatsEffect
+Island of Wak-Wak
 Isochron Scepter	intent: Pipeline(hand→exile)
 Isolate
 Isolated Chapel
@@ -9350,7 +9350,7 @@ Kellan Joins Up	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
 Kellan's Lightblades
 Kellan, Daring Traveler
 Kellan, Inquisitive Prodigy
-Kellan, Planar Trailblazer	combat: SetBaseStatsEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
+Kellan, Planar Trailblazer	intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
 Kellan, the Fae-Blooded
 Kellan, the Kid
 Kellogg, Dangerous Mind
@@ -10593,7 +10593,7 @@ Marrow Bats
 Marrow-Gnawer
 Marsh Boa
 Marsh Flats
-Marsh Flitter	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Marsh Flitter	timing: SetBaseStatsEffect
 Marsh Gas
 Marsh Goblins
 Marsh Lurker
@@ -11794,7 +11794,7 @@ Nobody
 Noctis, Prince of Lucis
 Nocturnal Hunger
 Nocturnal Raid
-Nog, Ambitious Cadet	combat: SetBaseStatsEffect; intent: GrantStaticAbilityEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
+Nog, Ambitious Cadet	intent: GrantStaticAbilityEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
 Noggle Robber
 Noggle the Mind
 Nogi, Draco-Zealot
@@ -13086,7 +13086,7 @@ Psychotrope Thallid
 Pterafractyl
 Pteramander
 Pterodon Knight
-PuPu UFO	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+PuPu UFO	timing: SetBaseStatsEffect
 Public Enemy	polarity: Aura>DrawCardsEffect; polarity: Aura>MustAttack
 Public Thoroughfare
 Puca's Eye
@@ -14024,7 +14024,7 @@ Riptide Director
 Riptide Entrancer
 Riptide Gearhulk
 Riptide Laboratory
-Riptide Mangler	combat: SetBaseStatsEffect; polarity: SetBaseStatsEffect
+Riptide Mangler	polarity: SetBaseStatsEffect
 Riptide Replicator
 Riptide Shapeshifter
 Riptide Survivor
@@ -14262,7 +14262,7 @@ Rowan's Battleguard
 Rowan's Grim Search
 Rowan's Stalwarts
 Rowan, Fearless Sparkmage
-Rowan, Scholar of Sparks	combat: SetBaseStatsEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
+Rowan, Scholar of Sparks	polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→exile)
 Rowan, Scion of War	intent: ModifySpellCostsEffect
 Rowdy Crew
 Rowdy Research
@@ -15035,7 +15035,7 @@ Sensei Golden-Tail	intent: AddCountersEffect; intent: AddCreatureTypeEffect; int
 Sensei's Divining Top
 Senseless Rage
 Sensory Deprivation
-Sentinel	combat: SetBaseStatsEffect; polarity: SetBaseStatsEffect
+Sentinel	polarity: SetBaseStatsEffect
 Sentinel Sarah Lyons
 Sentinel Sliver
 Sentinel Spider
@@ -15119,7 +15119,7 @@ Settle the Score
 Settle the Wreckage	polarity: Pipeline(BattlefieldMatching|library→battlefield|exile)
 Seven Dwarves
 Seven of Nine
-Seven of Nine, Unassimilated	combat: SetBaseStatsEffect
+Seven of Nine, Unassimilated
 Seven-Tail Mentor
 Sever the Bloodline	intent: Pipeline(BattlefieldMatching|ChosenTargets→exile); intent: StoreCardNameEffect; polarity: Pipeline(BattlefieldMatching|ChosenTargets→exile); polarity: StoreCardNameEffect
 Severance Priest
@@ -15533,7 +15533,7 @@ Sindbad
 Sinew Dancer
 Sinew Sliver
 Singing Bell Strike
-Singing Tree	combat: SetBaseStatsEffect
+Singing Tree
 Single Combat	intent: ForEach>Pipeline(ControlledPermanents→?); intent: Pipeline(?→graveyard)
 Singularity Rupture
 Sinister Concoction
@@ -15947,7 +15947,7 @@ Sorcerer Class
 Sorcerer of the Fang
 Sorcerer's Broom
 Sorcerer's Wand
-Sorceress Queen	combat: SetBaseStatsEffect
+Sorceress Queen
 Sorceress's Schemes
 Sorcerous Sight
 Sorcerous Spyglass
@@ -16896,7 +16896,7 @@ Supreme Will
 Sure Strike
 Sure-Footed Infiltrator
 Sureshot Sower
-Surge Engine	combat: RemoveKeywordEffect; combat: SetBaseStatsEffect; intent: ChangeColorEffect
+Surge Engine	combat: RemoveKeywordEffect; intent: ChangeColorEffect
 Surge Mare
 Surge of Salvation	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
 Surge of Thoughtweft
@@ -17380,7 +17380,7 @@ Tendrils of Agony
 Tenement Crasher
 Tentative Connection
 Tenth District Guard
-Tenth District Hero	combat: SetBaseStatsEffect; intent: AddCardTypeEffect; intent: BecomeArtifactEffect
+Tenth District Hero	intent: AddCardTypeEffect; intent: BecomeArtifactEffect
 Tenth District Legionnaire
 Tenth District Veteran
 Tenuous Truce	polarity: Aura>DrawCardsEffect; polarity: Aura>SacrificeTargetEffect
@@ -18463,7 +18463,7 @@ Turtle Blimp
 Turtle Lair
 Turtle Power!
 Turtle Van
-Turtle-Duck	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
+Turtle-Duck	timing: SetBaseStatsEffect
 Turtles Forever
 Turtles in Time
 Turtleshell Changeling	combat: SwitchPowerToughnessEffect; intent: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
