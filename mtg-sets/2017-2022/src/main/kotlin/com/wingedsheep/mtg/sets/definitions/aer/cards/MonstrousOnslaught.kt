@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Monstrous Onslaught — Aether Revolt #116 (canonical printing)
- * {3}{G}{G} · Instant
+ * {3}{G}{G} · Sorcery
  *
  * Monstrous Onslaught deals X damage divided as you choose among any number of target creatures,
  * where X is the greatest power among creatures you control as you cast this spell.
@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 val MonstrousOnslaught = card("Monstrous Onslaught") {
     manaCost = "{3}{G}{G}"
     colorIdentity = "G"
-    typeLine = "Instant"
+    typeLine = "Sorcery"
     oracleText = "Monstrous Onslaught deals X damage divided as you choose among any number of target " +
         "creatures, where X is the greatest power among creatures you control as you cast this spell."
 

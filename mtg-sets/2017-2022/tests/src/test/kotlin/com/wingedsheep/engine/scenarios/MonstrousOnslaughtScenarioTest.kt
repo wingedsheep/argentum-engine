@@ -75,6 +75,22 @@ class MonstrousOnslaughtScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("a target that becomes illegal loses its share — the rest is not reassigned") {
+                val game = board()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val courser = game.findPermanent("Centaur Courser")!!
+
+                game.cast(listOf(bears, courser), mapOf(bears to 1, courser to 2)).error shouldBe null
+                game.passPriority().error shouldBe null
+                game.castSpell(2, "Lightning Bolt", bears).error shouldBe null
+                game.resolveStack()
+
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                withClue("Centaur Courser (3/3) takes only its announced 2, not Grizzly Bears' 1 as well") {
+                    game.isInGraveyard(2, "Centaur Courser") shouldBe false
+                }
+            }
+
             test("X is frozen as the spell is cast — killing the biggest creature in response doesn't shrink it") {
                 val game = board()
                 val giant = game.findPermanent("Hill Giant")!!

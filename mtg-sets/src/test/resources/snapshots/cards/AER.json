@@ -6356,7 +6356,7 @@
 {
     "name": "Monstrous Onslaught",
     "manaCost": "{3}{G}{G}",
-    "typeLine": "Instant",
+    "typeLine": "Sorcery",
     "oracleText": "Monstrous Onslaught deals X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control as you cast this spell.",
     "script": {
         "spellEffect": {
