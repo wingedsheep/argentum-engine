@@ -67,6 +67,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
@@ -1386,7 +1387,7 @@ object CardIntentAnalyzer {
 
     /**
      * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
-     * sacrifice — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
+     * sacrifice, to exile, or to hand — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
      * spelling of the same card does in [tagsOf]. `Effects.DestroyAll` lowers to this shape.
      *
      * The gathered collection is followed through the steps that split or narrow it, as [digTags]
@@ -1422,6 +1423,10 @@ object CardIntentAnalyzer {
             }
             val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
             if (ownOnly && eachPlayer == null) continue
+            // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
+            // Tetravites back: the source's own creations, wherever they now sit, are its upkeep or
+            // its drawback — never an answer to anyone's board.
+            if (StatePredicate.CreatedBySource in filter.statePredicates) continue
             if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
             groups[leaf.storeAs] = true
             // "Exile all attacking creatures target player controls" (Settle the Wreckage) answers
