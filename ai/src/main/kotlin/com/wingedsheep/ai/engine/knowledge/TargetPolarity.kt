@@ -55,6 +55,8 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect
+import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
@@ -1513,6 +1515,18 @@ object TargetPolarityAnalyzer {
             // whatever it holds — a +1/+1, loyalty or energy for our side, a -1/-1, poison or time
             // counter for theirs. Which kinds are there only the board shows, as doubling every kind.
             is ProliferateEffect -> (leaf.target ?: return emptyList()) to TargetPolarity.FLEXIBLE
+            // "Choose a counter on target permanent or player. Give that permanent or player another
+            // counter of that kind" (Animation Module, Clockspinning): the one-kind form of the line
+            // above — its controller picks the kind on resolution, so a +1/+1 or loyalty counter for
+            // our side and a -1/-1, poison or time counter for theirs. "A kind it doesn't have, from
+            // among …" (Dathon) reads by the listed kinds when they agree. The iterated kind belongs
+            // to its loop ([readsPerCounterKind]).
+            is AddCountersOfChosenKindEffect -> leaf.target to when (leaf.kindFrom) {
+                CounterKindSource.RECIPIENT -> TargetPolarity.FLEXIBLE
+                CounterKindSource.LISTED_ABSENT ->
+                    leaf.kinds.map(::counterPolarity).distinct().singleOrNull() ?: TargetPolarity.FLEXIBLE
+                CounterKindSource.ITERATION -> return emptyList()
+            }
             is MoveAllLastKnownCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is RemoveAnyNumberOfCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw,

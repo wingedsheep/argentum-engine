@@ -1,0 +1,1 @@
+- #TBD Holds a tap-and-lock activation (Deadlock Trap) for a window where the tap stops an attack or block unless the target has abilities to lock, and reads chosen-kind counters (Animation Module) either way, a Vehicle animating itself on entering, and a graveyard card put on top of the library as recursion
