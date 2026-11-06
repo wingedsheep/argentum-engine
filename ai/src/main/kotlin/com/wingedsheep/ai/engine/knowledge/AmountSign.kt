@@ -1,5 +1,8 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.PayCountersEffect
+import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -159,4 +162,51 @@ internal fun statsSign(power: DynamicAmount, toughness: DynamicAmount): AmountSi
         (p == AmountSign.LOSS || p == AmountSign.ZERO) && (t == AmountSign.LOSS || t == AmountSign.ZERO) -> AmountSign.LOSS
         else -> AmountSign.UNKNOWN
     }
+}
+
+/**
+ * The numbers [effect]'s pipeline stores for a later step to read back, by variable name: a
+ * [StoreNumberEffect]'s own amount, and for "you may pay any amount of {E}" ([PayCountersEffect],
+ * Die Young, Galvanic Discharge) the payer's counters of that kind — what was paid lies between
+ * zero and that count, so it carries the same sign. [AmountSign.of] alone reads a
+ * [DynamicAmount.VariableReference] as [AmountSign.UNKNOWN]; [resolveStored] lets it see through.
+ */
+internal fun storedAmounts(effect: Effect): Map<String, DynamicAmount> = buildMap {
+    for (leaf in EffectWalker.leaves(effect)) when (leaf) {
+        is StoreNumberEffect -> put(leaf.name, leaf.amount)
+        is PayCountersEffect -> put(leaf.storeAmountAs, DynamicAmount.PlayerCounterCount(leaf.counterType, leaf.player))
+        else -> Unit
+    }
+}
+
+/**
+ * [amount] with every pipeline variable [stored] knows replaced by the amount it holds, through
+ * the arithmetic around it: "-1/-1 for each {E} paid this way" is `-paid`, and it is a loss only
+ * once `paid` is seen to be a count. Returns [amount] itself when nothing resolves.
+ */
+internal fun resolveStored(amount: DynamicAmount, stored: Map<String, DynamicAmount>): DynamicAmount {
+    if (stored.isEmpty()) return amount
+    fun r(a: DynamicAmount) = resolveStored(a, stored)
+    return when (amount) {
+        is DynamicAmount.VariableReference -> stored[amount.variableName] ?: amount
+        is DynamicAmount.Multiply -> r(amount.amount).let { if (it === amount.amount) amount else amount.copy(amount = it) }
+        is DynamicAmount.IfPositive -> r(amount.amount).let { if (it === amount.amount) amount else amount.copy(amount = it) }
+        is DynamicAmount.Add -> pair(amount.left, amount.right, ::r) { l, rt -> amount.copy(left = l, right = rt) } ?: amount
+        is DynamicAmount.Subtract -> pair(amount.left, amount.right, ::r) { l, rt -> amount.copy(left = l, right = rt) } ?: amount
+        is DynamicAmount.Max -> pair(amount.left, amount.right, ::r) { l, rt -> amount.copy(left = l, right = rt) } ?: amount
+        is DynamicAmount.Min -> pair(amount.left, amount.right, ::r) { l, rt -> amount.copy(left = l, right = rt) } ?: amount
+        is DynamicAmount.Divide -> pair(amount.numerator, amount.denominator, ::r) { n, d -> amount.copy(numerator = n, denominator = d) } ?: amount
+        else -> amount
+    }
+}
+
+private inline fun pair(
+    a: DynamicAmount,
+    b: DynamicAmount,
+    resolve: (DynamicAmount) -> DynamicAmount,
+    rebuild: (DynamicAmount, DynamicAmount) -> DynamicAmount,
+): DynamicAmount? {
+    val ra = resolve(a)
+    val rb = resolve(b)
+    return if (ra === a && rb === b) null else rebuild(ra, rb)
 }

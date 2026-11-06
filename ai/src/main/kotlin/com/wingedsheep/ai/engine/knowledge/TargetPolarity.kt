@@ -102,7 +102,6 @@ import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
@@ -433,7 +432,7 @@ object TargetPolarityAnalyzer {
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
-        val stored = EffectWalker.leaves(effect).filterIsInstance<StoreNumberEffect>().associate { it.name to it.amount }
+        val stored = storedAmounts(effect)
         val blinks = EffectWalker.blinkMoves(effect) + EffectWalker.delayedBlinks(targetLeaves(effect))
         for (move in blinks.filterIsInstance<MoveToZoneEffect>()) slotOf(move.target, requirements)?.let { slot ->
             // An unrestricted blink can remove their token or recover a stolen permanent.
@@ -650,6 +649,13 @@ object TargetPolarityAnalyzer {
             if (leaf is TapUntapCollectionEffect && leaf.collectionName in allChosenTargets(effect)) {
                 val polarity = if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
                 for (slot in objectSlots(requirements)) perSlot[slot] += polarity
+            }
+            // "You may destroy another target creature. If a creature is destroyed this way, you gain
+            // life equal to its toughness" (Noxious Gearhulk) gathers its chosen targets and moves
+            // them to a graveyard or exile itself, to track what left: the single-target destroy or
+            // exile it is, on every permanent slot. A blink that brings them back is not this.
+            if (leaf is MoveCollectionEffect && removesChosenTargets(leaf, effect)) {
+                for (slot in permanentSlots(requirements)) perSlot[slot] += TargetPolarity.HARMFUL
             }
             // "N damage divided as you choose among …" across several requirements (the single-slot
             // case is [implicitTargetPolarity]'s): damage to every target of the requirement it is
@@ -1147,12 +1153,15 @@ object TargetPolarityAnalyzer {
      * [leaf] with a "+X/+X" whose X is a number the pipeline stored earlier read as that number's
      * own amount: "the chosen creatures get +X/+X, where X is the difference between their powers"
      * (Spry and Mighty) stores X once and pumps by it, and a bare variable reads as either sign.
+     * Through arithmetic too: "-1/-1 for each {E} paid this way" (Die Young) is the negated count
+     * of energy paid — see [storedAmounts].
      */
     private fun withStoredNumbers(leaf: Effect, stored: Map<String, DynamicAmount>): Effect {
         if (leaf !is ModifyStatsEffect || stored.isEmpty()) return leaf
-        fun resolve(amount: DynamicAmount) =
-            (amount as? DynamicAmount.VariableReference)?.let { stored[it.variableName] } ?: amount
-        return leaf.copy(powerModifier = resolve(leaf.powerModifier), toughnessModifier = resolve(leaf.toughnessModifier))
+        return leaf.copy(
+            powerModifier = resolveStored(leaf.powerModifier, stored),
+            toughnessModifier = resolveStored(leaf.toughnessModifier, stored),
+        )
     }
 
     /**
@@ -1249,20 +1258,50 @@ object TargetPolarityAnalyzer {
     }
 
     /**
+     * Whether [move] puts [effect]'s own chosen targets into a graveyard or exile for good — no
+     * owner recast ([ownerRecastsChosenTargets]) and no later step, now or in a delayed trigger,
+     * returning what it moved to the battlefield (a pipeline blink).
+     */
+    internal fun removesChosenTargets(move: MoveCollectionEffect, effect: Effect): Boolean {
+        if (move.from !in allChosenTargets(effect)) return false
+        val zone = (move.destination as? CardDestination.ToZone)?.zone
+        if (zone != Zone.GRAVEYARD && zone != Zone.EXILE) return false
+        if (zone == Zone.EXILE && ownerRecastsChosenTargets(effect)) return false
+        // The return may read the moved cards back by the original collection's name, and sit in a
+        // delayed trigger or an "if any were moved" branch (Phelia, Exuberant Shepherd's end-step return).
+        fun deep(e: Effect): List<Effect> = EffectWalker.payoffLeaves(e).flatMap { leaf ->
+            if (leaf is CreateDelayedTriggerEffect) listOf(leaf) + deep(leaf.effect) else listOf(leaf)
+        }
+        val leaves = deep(effect)
+        val moved = listOfNotNull(move.from, move.storeMovedAs).toHashSet()
+        do {
+            val before = moved.size
+            for (leaf in leaves) moved += CardIntentAnalyzer.derivedCollections(leaf, moved)
+        } while (moved.size != before)
+        return leaves.none {
+            it is MoveCollectionEffect && it.from in moved &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+        }
+    }
+
+    /** The slots of [requirements] that choose a permanent: no player, and no card in another zone. */
+    internal fun permanentSlots(requirements: List<TargetRequirement>): List<Int> = requirements.indices.filter { slot ->
+        val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+        when (requirement) {
+            is TargetPlayer, is TargetOpponent -> false
+            is TargetObject -> requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+            else -> true
+        }
+    }
+
+    /**
      * The slots an [ownerRecastsChosenTargets] pipeline acts on: every permanent slot, read
      * [TargetPolarity.FLEXIBLE] as a bounce is ([classify]'s move to hand). A slot whose card sits in
      * another zone (a graveyard card exiled beside it) is not bounced, and a player slot is no card.
      */
     private fun ownerRecastSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
         if (!ownerRecastsChosenTargets(effect)) return emptyList()
-        return requirements.indices.filter { slot ->
-            val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
-            when (requirement) {
-                is TargetPlayer, is TargetOpponent -> false
-                is TargetObject -> requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
-                else -> true
-            }
-        }
+        return permanentSlots(requirements)
     }
 
     /**
