@@ -5652,6 +5652,148 @@
     }
 }
 
+// Watchful Automaton
+{
+    "name": "Watchful Automaton",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{2}{U}: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Watchful Automaton:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Before we can destroy our enemies, we must find them. We must peer into every wretched hovel and every teeming market.\"\n—Baral, Chief of Compliance",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/138b5fde-417d-4860-aca9-eae7f78b5768.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Welder Automaton
+{
+    "name": "Welder Automaton",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{3}{R}: This creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Welder Automaton:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Most of the constructs the renegades used against the Consulate weren't originally intended for combat. But some didn't require much modification.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88b5bae4-be97-4c10-b222-e1e317a8ffbc.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Weldfast Engineer
+{
+    "name": "Weldfast Engineer",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "At the beginning of combat on your turn, target artifact creature you control gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Weldfast Engineer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "\"Let's err on the side of glorious mayhem.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51464df6-557f-47e5-838e-2a30145511f0.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Whir of Invention
 {
     "name": "Whir of Invention",
@@ -5731,6 +5873,32 @@
                 "text": "Improvise doesn't change a spell's mana cost or mana value."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wind-Kin Raiders
+{
+    "name": "Wind-Kin Raiders",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nFlying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "IMPROVISE",
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Shreya Shetty",
+        "flavorText": "Small aeronaut societies like the Wind-Kin had little to lose by siding with the renegades, and much to gain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbfaa040-61fd-4705-a7ee-c67b49f740e3.jpg"
     },
     "colorIdentityOverride": [
         "BLUE"
