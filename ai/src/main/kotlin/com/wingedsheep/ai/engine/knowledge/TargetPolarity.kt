@@ -1281,6 +1281,11 @@ object TargetPolarityAnalyzer {
         }
         val leaves = deep(effect)
         val moved = listOfNotNull(move.from, move.storeMovedAs).toHashSet()
+        // An exile linked to the source comes back as its linked-exile pile (Illusionist's Stratagem).
+        if (move.linkToSource) {
+            leaves.filterIsInstance<GatherCardsEffect>()
+                .filter { it.source is CardSource.FromLinkedExile }.mapTo(moved) { it.storeAs }
+        }
         do {
             val before = moved.size
             for (leaf in leaves) moved += CardIntentAnalyzer.derivedCollections(leaf, moved)
