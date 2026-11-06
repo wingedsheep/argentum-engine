@@ -99,6 +99,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -497,8 +498,13 @@ object TargetPolarityAnalyzer {
         // (Lost Legacy): the refund is the price of the hand stripped, not a gift that would aim
         // the spell at us. [lossSlots] reads the slot.
         val refunds = CardIntentAnalyzer.handRefundDraws(effect)
+        // "Target creature blocks this turn if able. You may have it gain reach until end of turn"
+        // (Academic Dispute): the reach lets the forced blocker meet our flier — part of dragging it
+        // into the block, not a gift to it.
+        val forcedBlockers = targetLeaves(effect).filterIsInstance<MarkMustBlockThisTurnEffect>().mapTo(HashSet()) { it.target }
         for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
+            if (leaf is GrantKeywordEffect && leaf.keyword == Keyword.REACH.name && leaf.target in forcedBlockers) continue
             if (leaf is DrawCardsEffect && leaf in refunds) continue
             if (theftGifts.any { it === leaf }) {
                 // Stolen Uniform attaches the Equipment it took to a creature of ours: the Equipment
@@ -1461,6 +1467,10 @@ object TargetPolarityAnalyzer {
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
             is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher):
+            // takes the block choice away from its controller, dragging the creature into a block
+            // it would not have made — the opponent's creature, like "can't block" above.
+            is MarkMustBlockThisTurnEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBeRegeneratedEffect -> leaf.target to TargetPolarity.HARMFUL
             // "Target creature loses all abilities" strips its holder — the static LoseAllAbilities
             // an Aura grants reads the same. A drawback-only creature gains from it, but that is a
@@ -1874,6 +1884,7 @@ object TargetPolarityAnalyzer {
             // life unless they sacrifice a nonland permanent or discard a card" (Torment of Scarabs):
             // the host is the player, named by the leaves that act on them.
             readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
+            readings += hostControllerHarms(effect)
         }
         // A replacement effect on an Aura (Sandskin's "prevent all combat damage dealt to and by
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
@@ -2077,6 +2088,28 @@ object TargetPolarityAnalyzer {
                     EffectWalker.payoffLeaves(leaf.suffer).all { enchantedPlayerLeafPolarity(it) == TargetPolarity.HARMFUL }
             }
             else -> null
+        }
+    }
+
+    /**
+     * "This Aura deals 2 damage to enchanted artifact's controller" (Gremlin Infestation): a
+     * pipeline gathers the host, then damages or drains the player controlling it. That player is
+     * whoever the Aura is cast onto the side of, so each such leaf is a harm to the host's slot.
+     */
+    private fun hostControllerHarms(effect: Effect): List<TargetPolarity> {
+        val leaves = EffectWalker.leaves(effect)
+        val hostKeys = leaves.filterIsInstance<GatherCardsEffect>()
+            .filter { gather -> (gather.source as? CardSource.Entity)?.entity?.let { it in HOST_TARGETS } == true }
+            .mapTo(HashSet()) { it.storeAs }
+        if (hostKeys.isEmpty()) return emptyList()
+        fun hostController(target: EffectTarget) =
+            target is EffectTarget.ControllerOfPipelineTarget && target.collectionName in hostKeys
+        return leaves.mapNotNull { leaf ->
+            when (leaf) {
+                is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                else -> null
+            }
         }
     }
 

@@ -64,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
+import com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersOfIteratedKindEffect
@@ -667,7 +668,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself or pays its own, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -912,6 +913,11 @@ object AiReadingAudit {
         // resolution: no target, nothing to time, and what is lost is the board the simulation sees.
         // An edict aimed at another player is a ForceSacrificeEffect and reads as removal.
         if (leaf is SacrificeEffect) return true
+        // Its controller paying their own counters on resolution — Greenbelt Rampager's "pay {E}{E}.
+        // If you can't, return it to its owner's hand" — is the price of keeping the body, with no
+        // target and nothing to time; the energy spent is on the board the simulation prices.
+        // Making another player pay stays flagged.
+        if (leaf is PayExactCountersEffect && leaf.player == Player.You) return true
         // "Forage" happened: the marker a forage's payment emits for "whenever you forage" triggers.
         // Bookkeeping, never a payoff of its own; the "if you do" rider beside it is read on its own leaf.
         if (leaf == ForagedEffect) return true
@@ -1131,7 +1137,7 @@ object AiReadingAudit {
 
     /** The targets [CardIntentAnalyzer] reads as a player rather than a permanent (its `hitsAnotherPermanent`). */
     private fun isPlayerTarget(target: EffectTarget): Boolean = when (target) {
-        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        is EffectTarget.PlayerRef, is EffectTarget.ControllerOfPipelineTarget, EffectTarget.Controller, EffectTarget.TargetController,
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
         else -> false
     }
