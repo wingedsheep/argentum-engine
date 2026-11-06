@@ -968,6 +968,7 @@ object AiReadingAudit {
         // Its controller venturing into the dungeon (Planar Ally's attack, Clattering Skeletons' ETB, Dungeon
         // Map) has no target to aim and no window to hold it for: which dungeon and room is chosen at
         // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.
+        // A venture by another player stays flagged.
         if (leaf is VentureIntoTheDungeonEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
