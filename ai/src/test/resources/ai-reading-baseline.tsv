@@ -3574,6 +3574,7 @@ Cruel Deceiver	intent: GrantTriggeredAbilityEffect; intent: Pipeline(TopOfLibrar
 Cruel Edict
 Cruel Fate	intent: Pipeline(TopOfLibrary→graveyard|library)
 Cruel Grimnarch
+Cruel Reality
 Cruel Revival
 Cruel Sadist
 Cruel Somnophage
@@ -4667,6 +4668,7 @@ Dread Rider
 Dread Shade
 Dread Slaver	intent: AddColorEffect; intent: AddCreatureTypeEffect; intent: MoveToZoneEffect
 Dread Summons
+Dread Wanderer
 Dread of Night
 Dreadbore
 Dreaded Bat-Cloud
@@ -5288,7 +5290,7 @@ Enduring Curiosity
 Enduring Innocence
 Enduring Tenacity
 Enduring Vitality
-Enemy of Enlightenment	intent: ForEach>Pipeline(hand→graveyard)
+Enemy of Enlightenment
 Energize
 Energizer
 Energy Flux
@@ -5660,6 +5662,7 @@ Failed Fording
 Failed Inspection
 Fairgrounds Trumpeter
 Faith Unbroken
+Faith of the Devoted
 Faith's Fetters
 Faithbound Judge	intent: LoseGameEffect
 Faithful Mending
@@ -7439,6 +7442,7 @@ Grim Reaper, Lethal Legionnaire
 Grim Reminder
 Grim Repriser
 Grim Servant
+Grim Strider
 Grim Tutor
 Grim Wanderer
 Grimclaw Bats
@@ -8157,6 +8161,7 @@ Horrid Shadowspinner
 Horrid Vigor
 Horrific Assault
 Horror of Horrors
+Horror of the Broken Lands
 Horses of the Bruinen
 Horseshoe Crab
 Horta
@@ -9727,6 +9732,7 @@ Law-Rune Enforcer
 Lawbringer
 Lawless Broker
 Lawmage's Binding
+Lay Bare the Heart
 Lay Claim
 Lay Down Arms
 Lay Waste
@@ -9929,7 +9935,7 @@ Likeness Looter
 Lilah, Undefeated Slickshot	intent: MarkSpellExileOnResolveEffect
 Liliana Vess	intent: Pipeline(graveyard→battlefield)
 Liliana of the Dark Realms	intent: CreatePermanentEmblemEffect; polarity: mixed(ModifyStatsEffect)
-Liliana of the Veil	intent: ForEach>Pipeline(hand→graveyard)
+Liliana of the Veil
 Liliana the Faultless
 Liliana the Repentant
 Liliana's Caress
@@ -10777,6 +10783,7 @@ Metropolis Angel
 Metropolis Reformer
 Metropolis Sprite
 Miasma Demon
+Miasmic Mummy
 Mica, Reader of Ruins
 Michelangelo's Technique
 Michelangelo, Game Master
@@ -11529,6 +11536,7 @@ Nessian Courser
 Nessian Hornbeetle
 Nessian Wanderer
 Nest Robber
+Nest of Scarabs
 Nested Ghoul
 Nested Shambler
 Nesting Bot
@@ -11557,6 +11565,7 @@ Neurok Spy
 Neutralize
 Neutralize the Guards
 Neva, Stalked by Nightmares
+Never // Return
 Never Happened
 Neverwinter Dryad
 Nevinyrral's Disk
@@ -12220,6 +12229,7 @@ Pain // Suffering
 Pain 101
 Pain Kami
 Pain for All	polarity: Aura>DealDamageEffect
+Painful Lesson
 Painful Quandary
 Painted Bluffs
 Painter's Studio // Defaced Gallery
@@ -12598,6 +12608,7 @@ Pitiless Gorgon
 Pitiless Horde
 Pitiless Plunderer
 Pitiless Pontiff
+Pitiless Vizier
 Pixie Guide
 Pixie Illusionist	intent: ChooseOptionEffect; intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Pixie Queen
@@ -14285,6 +14296,7 @@ Ruthless Negotiation
 Ruthless Predation
 Ruthless Radrat
 Ruthless Ripper
+Ruthless Sniper
 Ruthless Technomancer
 Ruthless Winnower
 Rydia's Return
@@ -14317,7 +14329,7 @@ Sacred Peaks
 Sacred Prey
 Sacred Wolf
 Sacrifice
-Sadistic Augermage	intent: ForEach>Pipeline(hand→library)
+Sadistic Augermage
 Sadistic Hypnotist
 Sadistic Shell Game	intent: ForEach>Pipeline(BattlefieldMatching→?); intent: Pipeline(?→graveyard)
 Sadistic Skymarcher
@@ -14572,6 +14584,7 @@ Scampering Scorcher
 Scampering Surveyor
 Scapeshift
 Scar
+Scarab Feast
 Scarblade Scout
 Scarblade's Malice
 Scarecrone
@@ -15898,6 +15911,7 @@ Soulmender
 Soulreaper of Mogis
 Souls of the Lost
 Soulscour
+Soulstinger
 Soulstone Sanctuary
 Soulsurge Elemental
 Sound the Trumpets
@@ -16124,6 +16138,7 @@ Splash Portal
 Splashy Spellcaster	intent: CreateAuraTokenEffect
 Splatter Goblin
 Splatter Technique
+Splendid Agony
 Splendid Reclamation
 Splendor Mare
 Splinter's Technique
