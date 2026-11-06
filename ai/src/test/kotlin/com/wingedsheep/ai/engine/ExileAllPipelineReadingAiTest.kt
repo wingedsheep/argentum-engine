@@ -71,9 +71,9 @@ class ExileAllPipelineReadingAiTest : ScenarioTestBase() {
         }
 
         // "Exile those tokens when Mysterio leaves the battlefield": the source taking back its own
-        // creations is its drawback, not an answer.
-        test("exiling the source's own creations is no sweeper") {
-            for (card in listOf("Mysterio, Master of Illusion", "Dance of Many", "Tetravus")) {
+        // creations is its drawback, not an answer; Planar Guide exiles every creature only to return it.
+        test("exiling the source's own creations, or a mass flicker, is no sweeper") {
+            for (card in listOf("Mysterio, Master of Illusion", "Dance of Many", "Tetravus", "Planar Guide")) {
                 withClue(card) {
                     CardIntentAnalyzer.analyze(cardRegistry.requireCard(card)).tags shouldNotContain IntentTag.SWEEPER
                 }
