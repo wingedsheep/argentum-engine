@@ -516,6 +516,10 @@ class HoldPolicy(
      * a death-return grant ([ExpiringGrantWindow.returnsFromDeathThisTurn]) or indestructible
      * until end of turn ([ExpiringGrantWindow.shieldsFromDestructionThisTurn], Renegade's Getaway).
      */
+    /** The permanents [cast] targets — the ones its protection can land on. */
+    private fun castPermanentTargets(cast: CastSpell?): Set<EntityId> =
+        cast?.targets.orEmpty().mapNotNull { (it as? ChosenTarget.Permanent)?.entityId }.toSet()
+
     private fun castProtectsUntilCleanup(state: GameState, cast: CastSpell?): Boolean {
         if (cast == null) return false
         val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
@@ -680,7 +684,7 @@ class HoldPolicy(
             // Indestructible until end of turn is the same protection (Renegade's Getaway, whose
             // Servo is the rider the cantrip's draw is here).
             refuseUnspendableGrants && IntentTag.PROTECTION in intent.tags && castProtectsUntilCleanup(state, cast) -> when {
-                stackHasSomething -> responseWindowFor(state, playerId, intent)
+                stackHasSomething -> responseWindowFor(state, playerId, intent, castTargets = castPermanentTargets(cast))
                 cast!!.targets.any { (it as? ChosenTarget.Permanent)?.entityId?.let { id -> ExpiringGrantWindow.inFightNow(state, id) } == true } ->
                     TimingVerdict.Neutral
                 Patience.releasedOutright(state, state.projectedState, playerId) -> TimingVerdict.Neutral
@@ -845,7 +849,12 @@ class HoldPolicy(
      * load-bearing that [IntentCatalog.forStackObject] reads *abilities* too, since a trigger on the
      * stack is the commonest stack object there is.
      */
-    private fun responseWindowFor(state: GameState, playerId: EntityId, pump: CardIntent): TimingVerdict {
+    private fun responseWindowFor(
+        state: GameState,
+        playerId: EntityId,
+        pump: CardIntent,
+        castTargets: Set<EntityId> = emptySet(),
+    ): TimingVerdict {
         val projected = state.projectedState
         var unreadable = false
         // A trick that also protects (hexproof, indestructible, regeneration, a dies-and-returns
@@ -877,9 +886,10 @@ class HoldPolicy(
             val reach = threat.removalReach
             val protects = IntentTag.PROTECTION in pump.tags && threat.tags.any { it in REMOVAL_TAGS }
             if (reach == null) {
-                // Any permanent of ours, not only a creature: indestructible (Renegade's Getaway)
-                // answers a Shatter on an artifact too.
-                if (protects && victims.isNotEmpty()) protectable = true
+                // A creature of ours — or, when the cast names its permanent, that permanent whatever
+                // its type: indestructible on an artifact (Renegade's Getaway) answers a Shatter on
+                // it, while a creature-only trick still has nothing to save there.
+                if (protects && victims.any { projected.isCreature(it) || it in castTargets }) protectable = true
                 continue
             }
             if (victims.any { savedByPump(state, projected, it, reach, pump) }) {

@@ -37,7 +37,7 @@ val SalvageScuttler = card("Salvage Scuttler") {
             val returned = chooseExactly(
                 1,
                 from = candidates,
-                prompt = "Return a permanent you control to its owner's hand",
+                prompt = "Return an artifact you control to its owner's hand",
                 useTargetingUI = true
             )
             toHand(returned)

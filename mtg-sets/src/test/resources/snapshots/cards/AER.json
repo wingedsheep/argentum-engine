@@ -4549,7 +4549,7 @@
                                 }
                             },
                             "storeSelected": "selected1",
-                            "prompt": "Return a permanent you control to its owner's hand",
+                            "prompt": "Return an artifact you control to its owner's hand",
                             "useTargetingUI": true
                         },
                         {

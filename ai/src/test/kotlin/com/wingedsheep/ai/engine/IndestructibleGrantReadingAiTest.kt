@@ -65,5 +65,39 @@ class IndestructibleGrantReadingAiTest : ScenarioTestBase() {
                     TimingVerdict.NoWindow
             }
         }
+
+        test("Shatter on our noncreature artifact is a window for Getaway on it, but not for a creature-only trick") {
+            val game = scenario().withPlayers()
+                .withActivePlayer(2)
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Renegade Map")
+                .withCardInHand(1, "Renegade's Getaway")
+                .withCardInHand(1, "Feign Death")
+                .withLandsOnBattlefield(1, "Swamp", 3)
+                .withCardInHand(2, "Shatter")
+                .withLandsOnBattlefield(2, "Mountain", 2)
+                .withCardInLibrary(1, "Swamp")
+                .withCardInLibrary(2, "Mountain")
+                .build().advanceToPriority(2, Step.PRECOMBAT_MAIN)
+            val map = game.findPermanent("Renegade Map")!!
+            val bears = game.findPermanent("Grizzly Bears")!!
+            game.castSpell(2, "Shatter", map).error shouldBe null
+            val policy = HoldPolicy(intents, refuseUnspendableGrants = true)
+            withClue("indestructible on the Map answers the Shatter aimed at it") {
+                val cast = CastSpell(
+                    game.player1Id, game.findCardsInHand(1, "Renegade's Getaway").first(),
+                    listOf(ChosenTarget.Permanent(map)),
+                )
+                policy.verdictFor(game.state, game.player1Id, "Renegade's Getaway", cast = cast) shouldNotBe
+                    TimingVerdict.NoWindow
+            }
+            withClue("a creature-only death-return grant has nothing to save from a Shatter on the Map") {
+                val cast = CastSpell(
+                    game.player1Id, game.findCardsInHand(1, "Feign Death").first(),
+                    listOf(ChosenTarget.Permanent(bears)),
+                )
+                policy.verdictFor(game.state, game.player1Id, "Feign Death", cast = cast) shouldBe TimingVerdict.NoWindow
+            }
+        }
     }
 }
