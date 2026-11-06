@@ -1070,12 +1070,17 @@ data class SpellCopiedEvent(
 
 /**
  * A spell was countered.
+ *
+ * [countererId] is the controller of the spell or ability that countered it — the "you" of
+ * "whenever a spell or ability you control counters a spell" (Baral, Chief of Compliance). Null
+ * when a game rule rather than a spell or ability did the countering.
  */
 @Serializable
 @SerialName("SpellCounteredEvent")
 data class SpellCounteredEvent(
     val spellEntityId: EntityId,
-    val cardName: String
+    val cardName: String,
+    val countererId: EntityId? = null
 ) : GameEvent
 
 /**

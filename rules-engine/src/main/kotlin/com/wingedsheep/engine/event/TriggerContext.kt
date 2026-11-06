@@ -489,6 +489,11 @@ data class TriggerContext(
                     // outcome, so "if you won" is this flag verbatim (CR 701.30d).
                     clashWon = event.won
                 )
+                // The countered spell is the triggering object; the counterer is the triggering player.
+                is com.wingedsheep.engine.core.SpellCounteredEvent -> TriggerContext(
+                    triggeringPlayerId = event.countererId,
+                    triggeringEntityId = event.spellEntityId
+                )
                 is com.wingedsheep.engine.core.ScriedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId,
                     scryCount = event.count,

@@ -1217,7 +1217,7 @@ Families:
 - `EventPattern.ConnivedEvent(filter: GameObjectFilter?)` — Whenever a permanent matching filter connives (CR 701.50).
 - `EventPattern.ControlChangeEvent(direction: ControlChangeDirection, requireOpponent: Boolean)` — When control of a permanent changes, in a given direction relative to the ability's controller (CR 800.4 / 720).
 - `EventPattern.CounterPlacementEvent(counterType: CounterType?, recipient: Recipient)` — When counters would be placed on a permanent.
-- `EventPattern.CounterSpellEvent(counterer: Player)` — When a spell or ability controlled by counterer would counter a spell.
+- `EventPattern.CounterSpellEvent(counterer: Player)` — A spell or ability controlled by counterer counters a spell.
 - `EventPattern.CountersPlacedEvent(counterType: CounterType?, filter: GameObjectFilter, firstTimeEachTurn: Boolean, placedBy: Player?, batch: Boolean, includePlayers: Boolean, recipient: Player?, perCounter: Boolean, nth: Int?)` — When one or more counters of a specific type are placed on a permanent.
 - `EventPattern.CountersRemovedEvent(counterType: CounterType?, filter: GameObjectFilter, lastRemoved: Boolean, byDamagePrevention: Boolean, removedBy: Player?)` — When one or more counters of a specific type are **removed** from a permanent — the mirror of CountersPlacedEvent.
 - `EventPattern.CreatureDealtDamageBySourceDiesEvent(sourceFilter: GameObjectFilter?, dyingFilter: GameObjectFilter?)` — Whenever a creature dealt damage this turn by a matching source dies.
