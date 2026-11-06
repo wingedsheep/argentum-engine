@@ -440,7 +440,7 @@ Ambush Viper
 Ambush Wolf
 Ammit Eternal
 Amnesia
-Amoeboid Changeling	intent: GrantKeywordEffect; intent: LoseAllCreatureTypesEffect; polarity: LoseAllCreatureTypesEffect; timing: LoseAllCreatureTypesEffect
+Amoeboid Changeling	intent: LoseAllCreatureTypesEffect; timing: LoseAllCreatureTypesEffect
 Amok Time
 Amonkhet Raceway
 Amped Raptor
@@ -3153,7 +3153,7 @@ Cold Case Cracker
 Cold-Blooded Crew
 Cold-Water Snapper
 Coldsteel Heart
-Colfenor's Plans	intent: Pipeline(TopOfLibrary→exile)
+Colfenor's Plans
 Colfenor's Urn	intent: Pipeline(FromLinkedExile→battlefield)
 Coliseum Behemoth
 Collapsing Borders
@@ -3224,7 +3224,7 @@ Commander Sofia Daguerre
 Commander's Authority
 Commander's Sphere
 Commanding Presence
-Commando Raid	intent: GrantTriggeredAbilityEffect; timing: GrantTriggeredAbilityEffect
+Commando Raid	timing: GrantTriggeredAbilityEffect
 Commence the Endgame
 Commercial District
 Commissar Severina Raine
@@ -8930,7 +8930,7 @@ Jackal, Genius Geneticist
 Jackdaw Savior
 Jacked Rabbit
 Jackhammer
-Jacob Hauken, Inspector	intent: Pipeline(TopOfLibrary→exile)
+Jacob Hauken, Inspector
 Jacques le Vert
 Jadar, Ghoulcaller of Nephalia
 Jaddi Offshoot
@@ -10289,7 +10289,7 @@ Lwaxana Troi, Charming Guest	intent: GrantStaticAbilityEffect
 Lynx
 Lyra Dawnbringer
 Lyra, Archangel of Dawn
-Lyra, Tolarian Archangel	intent: GrantTriggeredAbilityEffect
+Lyra, Tolarian Archangel
 Lys Alana Dignitary
 Lys Alana Huntmaster
 Lys Alana Informant
@@ -10493,7 +10493,7 @@ Many Partings
 Map the Frontier
 Maraleaf Pixie
 Maraleaf Rider	combat: ForceBlockEffect; intent: ForceBlockEffect; polarity: ForceBlockEffect
-Maralen, Fae Ascendant	intent: Pipeline(TopOfLibrary→exile)
+Maralen, Fae Ascendant
 Marang River Regent	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
 Marauder's Axe
 Marauding Blight-Priest
@@ -11460,7 +11460,7 @@ Naiad of Hidden Coves
 Najal, the Storm Runner
 Najeela, the Blade-Blossom	timing: ForEach>GrantKeywordEffect
 Namazu Trader
-Nameless Inversion	polarity: LoseAllCreatureTypesEffect; polarity: ModifyStatsEffect
+Nameless Inversion	polarity: ModifyStatsEffect
 Nameless One
 Nameless Race
 Namor the Sub-Mariner
@@ -11711,7 +11711,7 @@ Nimble Larcenist
 Nimble Mongoose
 Nimble Obstructionist
 Nimble Thopterist
-Nimble Trapfinder	intent: ForEach>GrantTriggeredAbilityEffect
+Nimble Trapfinder
 Nimble-Blade Khenra
 Nimbus Wings
 Nimbus of the Isles
@@ -11967,7 +11967,7 @@ Okiba Salvage
 Okina, Temple to the Grandfathers
 Oko's Accomplices
 Oko's Hospitality
-Oko, Lorwyn Liege	intent: GrantKeywordEffect
+Oko, Lorwyn Liege
 Oko, Thief of Crowns	intent: ExchangeControlEffect; polarity: BecomeArtifactEffect; polarity: ExchangeControlEffect
 Oko, the Ringleader
 Oko, the Trickster
@@ -14154,7 +14154,7 @@ Romantic Rendezvous
 Romulan Bird-of-Prey
 Romulus
 Rona's Vortex
-Rona, Disciple of Gix	intent: Pipeline(TopOfLibrary→exile)
+Rona, Disciple of Gix
 Rona, Herald of Invasion
 Rona, Sheoldred's Faithful
 Ronin Houndmaster
@@ -16981,7 +16981,7 @@ Sworn Companions
 Sworn Guardian
 Sygg's Command
 Sygg, River Guide	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
-Sygg, Wanderwine Wisdom	intent: GrantTriggeredAbilityEffect
+Sygg, Wanderwine Wisdom
 Sylvan Anthem
 Sylvan Awakening
 Sylvan Basilisk
@@ -17691,7 +17691,7 @@ The World Spell
 The World Tree
 The Wrath of Khan
 The Wretched
-Theater of Horrors	intent: Pipeline(TopOfLibrary→exile)
+Theater of Horrors
 Theft of Dreams	polarity: DrawCardsEffect
 Thelon's Chant
 Thelon's Curse	intent: GatedEffect; intent: Pipeline(ControlledPermanents→?)
