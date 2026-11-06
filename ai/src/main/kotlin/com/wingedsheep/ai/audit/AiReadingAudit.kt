@@ -381,6 +381,9 @@ object AiReadingAudit {
                             // A death-return grant (Verdant Rebirth, Feign Death): HoldPolicy holds
                             // it for the removal it answers or the fight its target is in.
                             (ExpiringGrantWindow.returnsFromDeathThisTurn(leaf) && IntentTag.PROTECTION in intent.tags) ||
+                            // Indestructible until end of turn (Renegade's Getaway): the same hold,
+                            // whatever permanent rider (a Servo) rides beside it.
+                            (ExpiringGrantWindow.shieldsFromDestructionThisTurn(leaf) && IntentTag.PROTECTION in intent.tags) ||
                             // An instant-speed cast ban on an opponent: HoldPolicy rewards casting it
                             // before their main phase, where it covers their whole turn. Not a face
                             // (Revel in Silence): CastBanWindow reads the card's own spell only.

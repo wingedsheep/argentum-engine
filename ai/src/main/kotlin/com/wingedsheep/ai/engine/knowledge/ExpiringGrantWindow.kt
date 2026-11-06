@@ -1217,6 +1217,19 @@ internal object ExpiringGrantWindow {
         effect is GrantTriggeredAbilityEffect && effect.duration == Duration.EndOfTurn &&
             CardIntentAnalyzer.returnsItselfWhenItLeaves(effect.ability)
 
+    /**
+     * Whether [effect] grants indestructible until end of turn — "target permanent gains
+     * indestructible until end of turn" (Renegade's Getaway): like [returnsFromDeathThisTurn], a
+     * protection spent only if the permanent would be destroyed before cleanup, to removal on the
+     * stack or in a fight. Cast on an empty stack outside a fight it is thrown away, and a
+     * permanent rider beside it (Renegade's Getaway's Servo) would otherwise pay for casting it
+     * there; held for the window it answers, the same cast buys the rider too. Public for
+     * [HoldPolicy], which holds such a spell for that window, and for the AI card-reading audit.
+     */
+    fun shieldsFromDestructionThisTurn(effect: Effect): Boolean =
+        effect is GrantKeywordEffect && effect.duration == Duration.EndOfTurn &&
+            effect.keyword == Keyword.INDESTRUCTIBLE.name
+
     private fun isShield(effect: Effect): Boolean =
         effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&
             effect.direction == PreventionDirection.ToTarget && effect.recipientGroup == null
