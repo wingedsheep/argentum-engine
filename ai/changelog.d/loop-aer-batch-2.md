@@ -1,0 +1,1 @@
+- #TBD Reads "target creature blocks this turn if able" (Peema Aether-Seer) as a combat enhancement aimed at an opponent's creature, a punisher whose opponent picks damage or our payoff (Pia's Revolution, Risk Factor) as both aimed at that opponent, and an Aura that damages its host's controller (Gremlin Infestation) as a curse for an opponent's permanent

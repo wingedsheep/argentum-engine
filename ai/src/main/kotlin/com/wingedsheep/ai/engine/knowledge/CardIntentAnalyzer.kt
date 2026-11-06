@@ -2050,6 +2050,10 @@ object CardIntentAnalyzer {
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
         // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
         is MustBeBlockedEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+        // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher): the
+        // other half of a lure — the attacker drags an opposing creature into a block it would not
+        // choose, onto a deathtoucher or a bigger attacker. Read for our attack, like the lure.
+        is MarkMustBlockThisTurnEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
         // "This creature can attack this turn as though it didn't have defender" (Hightide Hermit,
         // Roving Keep): the one-turn form of the static [CanAttackDespiteDefender] — a wall turned
         // attacker for the fight, to be activated before attacks.
@@ -2452,7 +2456,7 @@ object CardIntentAnalyzer {
         namesAPlayer(target) || slotOf(target, requirements).let { it is TargetPlayer || it is TargetOpponent }
 
     private fun namesAPlayer(target: EffectTarget): Boolean = when (target) {
-        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        is EffectTarget.PlayerRef, is EffectTarget.ControllerOfPipelineTarget, EffectTarget.Controller, EffectTarget.TargetController,
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
         else -> false
     }
@@ -2489,7 +2493,8 @@ object CardIntentAnalyzer {
      * ([EffectTarget.IterationEntity]) is.
      */
     private fun hitsAnotherPermanent(target: EffectTarget): Boolean = when (target) {
-        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        // "… deals 2 damage to enchanted artifact's controller" (Gremlin Infestation): a player.
+        is EffectTarget.PlayerRef, is EffectTarget.ControllerOfPipelineTarget, EffectTarget.Controller, EffectTarget.TargetController,
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource,
         EffectTarget.Self -> false
         else -> true
