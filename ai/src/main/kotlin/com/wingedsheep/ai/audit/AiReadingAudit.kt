@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -1013,6 +1014,10 @@ object AiReadingAudit {
             is AddDynamicCountersEffect -> leaf.target
             // "Double the +1/+1 counters on this creature" (Dragonsguard Elite) grows its own source.
             is DoubleCountersEffect -> leaf.target
+            // Adapt (Sharktocrab, Pteramander, Incubation Druid) is a +1/+1 counter on its own source
+            // when it has none: the same self-growth as a plain counter on Self, with no target to aim;
+            // when to activate it, mid-combat too, is the simulation's call.
+            is AdaptEffect -> leaf.target
             else -> return false
         }
         // A counter on a player (poison, rad, energy) is a clock or a resource, like life loss: no
