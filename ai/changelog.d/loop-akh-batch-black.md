@@ -1,0 +1,1 @@
+- #4487 Reads a symmetric "each player discards" with no draw beside it (Miasmic Mummy, Liliana of the Veil) as hand disruption, and rates Amonkhet cards from a first-party draft table instead of the effect heuristic.

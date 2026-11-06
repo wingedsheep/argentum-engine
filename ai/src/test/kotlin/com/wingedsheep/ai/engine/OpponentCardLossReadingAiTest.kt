@@ -61,7 +61,8 @@ class OpponentCardLossReadingAiTest : ScenarioTestBase() {
                 CardIntentAnalyzer.analyze(card("Cranial Extraction")).tags shouldContain IntentTag.DISCARD
             }
             withClue("the heuristic prices the discard reading above a bare rare sorcery's base") {
-                LimitedCardRater.rate(dispossess) shouldBeGreaterThan 2.5
+                // Renamed so the AKH pick table's own rating doesn't stand in for the heuristic.
+                LimitedCardRater.rate(dispossess.copy(name = "Dispossess (unrated copy)")) shouldBeGreaterThan 2.5
             }
         }
     }
