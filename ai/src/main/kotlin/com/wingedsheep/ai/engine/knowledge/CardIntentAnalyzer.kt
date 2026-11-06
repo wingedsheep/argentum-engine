@@ -257,8 +257,9 @@ object CardIntentAnalyzer {
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
+        val refunds = handRefundDraws(effect)
         for (leaf in readingLeaves(effect, requirements)) {
-            tags += tagsOf(leaf)
+            tags += refundedTagsOf(leaf, refunds)
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
@@ -337,8 +338,9 @@ object CardIntentAnalyzer {
         // hand, it gains none. Its draw reads as the card selection it is.
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
             .flatMap { readingLeaves(it.effect, it.targetRequirements) }
+        val refunds = roots.flatMapTo(HashSet(), ::handRefundDraws)
         for (effect in leaves) {
-            tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else tagsOf(effect)
+            tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
             drawsOf(effect)?.let { cardsDrawn = maxOf(cardsDrawn ?: 0, it) }
             if (isExpiringPump(effect)) {
@@ -854,7 +856,42 @@ object CardIntentAnalyzer {
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
     ): Set<IntentTag> =
-        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
+        handRefundDraws(root).let { refunds ->
+            readingLeaves(root, requirements).flatMapTo(HashSet()) { refundedTagsOf(it, refunds) }
+        } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
+
+    /** [tagsOf], except that a draw in [refunds] (see [handRefundDraws]) is not the card's own card draw. */
+    private fun refundedTagsOf(leaf: Effect, refunds: Collection<DrawCardsEffect>): Set<IntentTag> =
+        if (leaf is DrawCardsEffect && leaf in refunds) tagsOf(leaf) - IntentTag.DRAW else tagsOf(leaf)
+
+    /**
+     * "That player shuffles, then draws a card for each card exiled from their hand this way" (Lost
+     * Legacy, The Stone Brain): a draw for a player other than the controller, sized by the cards a
+     * pipeline in [root] took out of a hand, gives back what the answer stripped. It is the
+     * answer's price — neither card draw for us nor a loot that makes the hand gather our own.
+     * "Discard any number of cards, then draw that many" draws for the controller and stays a draw.
+     */
+    internal fun handRefundDraws(root: Effect): List<DrawCardsEffect> {
+        val leaves = readingLeaves(root)
+        val fromHand = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val zones = when (val source = (leaf as? GatherCardsEffect)?.source) {
+                is CardSource.FromZone -> listOf(source.zone)
+                is CardSource.FromMultipleZones -> source.zones
+                else -> return@mapNotNullTo null
+            }
+            leaf.storeAs.takeIf { Zone.HAND in zones }
+        }
+        if (fromHand.isEmpty()) return emptyList()
+        do {
+            val before = fromHand.size
+            for (leaf in leaves) fromHand += derivedCollections(leaf, fromHand)
+        } while (fromHand.size != before)
+        val sizes = fromHand.mapTo(HashSet()) { "${it}_count" }
+        return leaves.filterIsInstance<DrawCardsEffect>().filter { draw ->
+            draw.target != EffectTarget.Controller &&
+                (draw.count as? DynamicAmount.VariableReference)?.variableName in sizes
+        }
+    }
 
     /**
      * "Exile target creature you control" into a pile linked to this permanent (Endless Sands, Safe
@@ -1202,7 +1239,10 @@ object CardIntentAnalyzer {
      */
     private fun handDisruptionTags(root: Effect, eachPlayer: Player?, symmetric: Boolean = false): Set<IntentTag> {
         val leaves = readingLeaves(root)
-        val draws = leaves.any { it is DrawCardsEffect || it is DrawUpToEffect }
+        // A refund ("draws a card for each card exiled from their hand this way") is the answer's
+        // price, not the loot that would make a target player's hand our own.
+        val refunds = handRefundDraws(root)
+        val draws = leaves.any { (it is DrawCardsEffect && it !in refunds) || it is DrawUpToEffect }
         val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
             // "Search target player's graveyard, hand, and library for all cards with that name"
             // (Cranial Extraction, Dispossess, Necromentia): a several-zone search that reaches the
