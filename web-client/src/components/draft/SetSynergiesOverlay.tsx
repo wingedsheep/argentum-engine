@@ -2882,7 +2882,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Embalm Fliers',
         colors: ['W', 'U'],
         keyCard: 'Aven Wind Guide',
-        description: 'Take to the air with fliers and turn every creature that dies into an embalmed token later, while Aven Wind Guide gives the tokens wings. A tempo deck that wins the race in the sky and refills its board from the graveyard.',
+        description: 'Take to the air with fliers embalm your fallen creatures back as tokens later, while Aven Wind Guide gives the tokens wings. A tempo deck that wins the race in the sky and refills its board from the graveyard.',
       },
       {
         name: 'Cycling Control',

@@ -1254,7 +1254,7 @@ object SetArchetypes {
             setName = "Amonkhet",
             archetypes = listOf(
                 Archetype("Embalm Fliers", listOf(Color.WHITE, Color.BLUE),
-                    "Take to the air with fliers and turn every creature that dies into an embalmed token later, while Aven Wind Guide gives the tokens wings. A tempo deck that wins the race in the sky and refills its board from the graveyard."),
+                    "Take to the air with fliers embalm your fallen creatures back as tokens later, while Aven Wind Guide gives the tokens wings. A tempo deck that wins the race in the sky and refills its board from the graveyard."),
                 Archetype("Cycling Control", listOf(Color.BLUE, Color.BLACK),
                     "Cycle and discard to smooth your draws and power up payoffs that grow or trigger on every card cycled. A patient control deck that trades removal for threats and wins with evasive fliers."),
                 Archetype("-1/-1 Aggro", listOf(Color.BLACK, Color.RED),
