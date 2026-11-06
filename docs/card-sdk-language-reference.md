@@ -333,7 +333,9 @@ carries the other side for the hover preview's flip toggle.
   Fuse, Aftermath, and the classic Invasion split cards (Pain // Suffering, Stand // Deliver, Wax // Wane). Each half is
   cast independently via `CastSpell.faceIndex`; only the chosen half goes on the stack (CR 709.3; fuse below is the exception). A non-permanent half
   carries its effect in a `face("Name") { spell { … } }` block (with its own `target(...)` requirements); a permanent
-  half (Room) carries triggered/activated/static abilities instead.
+  half (Room) carries triggered/activated/static abilities instead. A half's own `additionalCost(...)` (Finish's "sacrifice a creature",
+  **Start // Finish**) is owed only when that half is cast (CR 709.3): it gates the half's offer — from hand or, for an
+  aftermath half, from the graveyard — and rides on it as the cost picker; a fused cast owes both halves' costs.
   - **Fuse (CR 702.102)** is `keywords(Keyword.FUSE)` on the split card itself (card level, as
     Scryfall lists it; not on the faces). The hand action menu offers
     each half and **Cast … (fused)**. `CastSpell.castFused = true` casts both halves as one spell;

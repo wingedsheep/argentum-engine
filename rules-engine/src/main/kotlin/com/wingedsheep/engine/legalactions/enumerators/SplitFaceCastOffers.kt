@@ -5,6 +5,7 @@ import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.surfacedRequirements
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
+import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
@@ -22,8 +23,12 @@ import com.wingedsheep.sdk.model.EntityId
  * without it the cast surfaces with no valid targets even though the validation layer
  * (`CastSpellHandler`) reads from the face script and expects them.
  *
- * Modal effects, alternative costs, blight, behold, kicker, and convoke on a split half are not yet
- * wired up — cards that need them can extend this later.
+ * The half's own printed additional costs (Finish's "sacrifice a creature") gate the offer and ride
+ * on it as its picker — only the chosen half is evaluated (CR 709.3), so the other half's costs
+ * never apply. A fused cast carries both halves' costs on its combined script.
+ *
+ * Modal effects, alternative costs, kicker, and convoke on a split half are not yet wired up —
+ * cards that need them can extend this later.
  */
 internal object SplitFaceCastOffers {
 
@@ -45,6 +50,12 @@ internal object SplitFaceCastOffers {
 
         // Per-face timing: the chosen half's own type line governs sorcery-speed restriction.
         if (!face.typeLine.isInstant && !context.canPlaySorcerySpeed) return
+
+        // The half's own additional costs: an unpayable one makes the half uncastable.
+        val faceCosts = face.script.additionalCosts
+        val (costsPayable, costInfo) = if (faceCosts.isEmpty()) true to null
+            else additionalCostPresentation(SpellCostEnumeration(context, cardId), faceCosts)
+        if (!costsPayable) return
 
         val cachedSources = context.availableManaSources
         val free = useWithoutPayingManaCost || state.getEntity(cardId)?.has<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>() == true
@@ -88,6 +99,7 @@ internal object SplitFaceCastOffers {
                     hasXCost = hasXCost,
                     maxAffordableX = maxAffordableX,
                     sourceZone = sourceZone,
+                    additionalCostInfo = costInfo,
                 )
             )
             return
@@ -115,6 +127,7 @@ internal object SplitFaceCastOffers {
                     hasXCost = hasXCost,
                     maxAffordableX = maxAffordableX,
                     sourceZone = sourceZone,
+                    additionalCostInfo = costInfo,
                 )
             )
             return
@@ -137,6 +150,7 @@ internal object SplitFaceCastOffers {
                 hasXCost = hasXCost,
                 maxAffordableX = maxAffordableX,
                 sourceZone = sourceZone,
+                additionalCostInfo = costInfo,
             )
         )
     }

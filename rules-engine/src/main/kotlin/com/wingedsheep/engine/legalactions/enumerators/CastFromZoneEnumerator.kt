@@ -3234,7 +3234,7 @@ class CastFromZoneEnumerator(
                             }
                             else -> {
                                 val env = SpellCostEnumeration(context, cardId)
-                                val (payable, costInfo) = optionalAdditionalCostPresentation(env, repeatedCost)
+                                val (payable, costInfo) = additionalCostPresentation(env, listOf(repeatedCost))
                                 canPayKickerAdditionalCost = payable
                                 kickerCostInfo = costInfo
                             }
