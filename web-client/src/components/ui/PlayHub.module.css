@@ -105,8 +105,20 @@
   gap: 8px;
 }
 
-@container catalog (min-width: 820px) {
+/* Four across from a laptop up. Two across doubles the catalogue's height, and on a 720px-tall
+   laptop that pushed the last group below the fold. */
+@container catalog (min-width: 720px) {
   .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Four across in a laptop-width catalogue: a smaller icon and tighter padding so the label keeps
+   room beside it (~190px tiles). */
+@container catalog (min-width: 720px) and (max-width: 819.98px) {
+  .tile { gap: 10px; padding: 10px; min-height: 68px; }
+  .icon { width: 32px; height: 32px; border-radius: 9px; }
+  .icon svg { width: 18px; height: 18px; }
+  .tileLabel { font-size: 17px; }
+  .tileCaption { font-size: 12.5px; }
 }
 
 .tile {
@@ -731,7 +743,53 @@
 @media (min-width: 901px) and (min-height: 600px) {
   .hub { flex: 1 1 auto; min-height: 0; height: 100%; }
   .catalog { max-height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
-  .side { position: static; max-height: 100%; }
+  .side { position: static; max-height: 100%; overscroll-behavior: contain; }
+  /* When the panel is taller than the column, its options scroll and the Play button stays put at
+     the bottom of the column — never below the fold or under the footer. */
+  .panelFooter {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: #0e1018;
+  }
+  /* Options scrolling under the pinned footer fade out rather than being sliced mid-line, so the
+     column reads as "more above", not as cut off. */
+  .panelFooter::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 28px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(14, 16, 24, 0), #0e1018);
+  }
+}
+
+/* When a short window makes the catalogue scroll, its bottom edge fades out instead of slicing a
+   row of tiles in half. Driven by the catalogue's own scroll: the fade is full while there is more
+   below and gone at the end. Where the content fits, the scroll timeline is inactive and nothing is
+   masked; browsers without scroll timelines just scroll. */
+@property --catalog-fade {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes catalogFade {
+  from { --catalog-fade: 40px; }
+  to { --catalog-fade: 0px; }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (min-width: 901px) and (min-height: 600px) {
+    .catalog {
+      mask-image: linear-gradient(to bottom, #000 calc(100% - var(--catalog-fade)), transparent);
+      animation: catalogFade linear both;
+      animation-timeline: scroll(self);
+      animation-range: calc(100% - 60px) 100%;
+    }
+  }
 }
 
 /* ── Narrow screens: one column, the panel becomes a bottom sheet ──────── */
@@ -826,6 +884,31 @@
   .playButton { min-height: 50px; }
 }
 
+/* A short laptop (~720px): the stage list repeats what the panel's description already says, so it
+   gives its two lines back to the options above the pinned Play button. */
+@media (min-width: 901px) and (max-height: 780px) {
+  .stages { display: none; }
+  .panelDescription { font-size: 13px; }
+}
+
+/* A short laptop: a denser catalogue rhythm, so all three groups fit above the footer without the
+   catalogue having to scroll. */
+@media (min-width: 901px) and (max-height: 800px) {
+  .catalog { padding: 14px 16px 16px; gap: 12px; }
+  .catalogHeading { font-size: 22px; }
+  .group { gap: 6px; }
+  .tile { min-height: 0; padding: 9px 12px; gap: 10px; }
+  .icon { width: 32px; height: 32px; border-radius: 9px; }
+  .icon svg { width: 18px; height: 18px; }
+  .tileLabel { font-size: 17px; }
+}
+
+/* A narrow laptop: the launch panel gives up 40px so the two-across tiles keep their captions on
+   one line. */
+@media (min-width: 901px) and (max-width: 1199.98px) {
+  .hub { grid-template-columns: minmax(0, 1fr) minmax(300px, 340px); gap: 16px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel, .sheetBackdrop { animation: none; }
   .tile, .playButton { transition: none; }
@@ -842,14 +925,3 @@
   .playButton { min-height: 44px; }
 }
 
-/* Large screens (see Home.module.css): the hub takes its content's height so the page column can
-   centre it; everything fits, so nothing needs to scroll on its own.
-   Only the catalogue sizes the hub, though. The side column's height changes with every mode — a
-   Draft panel is half again as tall as Random's — and if it counted, each tile click would re-centre
-   the hub and move the catalogue under the pointer. `contain: size` takes the column out of the
-   row's sizing; it hangs from the catalogue's top edge into the space below. */
-@media (min-width: 1500px) and (min-height: 940px) {
-  .hub { flex: 0 0 auto; height: auto; }
-  .catalog { max-height: none; }
-  .side { max-height: none; contain: size; overflow: visible; }
-}
