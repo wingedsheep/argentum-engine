@@ -3154,6 +3154,7 @@ Coffin Purge
 Cogwork Archivist
 Cogwork Assembler	polarity: CreateTokenCopyOfTargetEffect
 Cogwork Wrestler
+Cogworker's Puzzleknot
 Coiled Tinviper
 Coiling Oracle
 Coiling Rebirth
@@ -4850,6 +4851,7 @@ Dueling Rapier
 Duelist of Deep Faith
 Duelist of the Mind
 Dukhara Peafowl
+Dukhara Scavenger
 Dundoolin Weaver
 Dune Beetle
 Dune Diviner
@@ -5594,6 +5596,7 @@ Expel the Unworthy
 Expendable Lackey
 Expendable Troops
 Experimental Augury
+Experimental Aviator
 Experimental Confectioner
 Experimental Frenzy
 Experimental Overload
@@ -5705,6 +5708,7 @@ Failed Fording
 Failed Inspection
 Failure // Comply
 Fairgrounds Trumpeter
+Fairgrounds Warden
 Faith Unbroken
 Faith of the Devoted
 Faith's Fetters
@@ -9381,6 +9385,7 @@ Kethis, the Hidden Hand	intent: GrantMayPlayFromExileEffect; intent: Pipeline(gr
 Ketramose, the New Dawn
 Ketria Crystal
 Ketria Triome
+Key to the City
 Key to the Side-Door
 Keys to the House	intent: LockDoorEffect; intent: UnlockDoorEffect; polarity: LockDoorEffect; polarity: UnlockDoorEffect
 Khaaaaaaaaaaaannn!
@@ -10432,6 +10437,7 @@ Majestic Metamorphosis	polarity: BecomeCreatureEffect; timing: BecomeCreatureEff
 Majestic Myriarch
 Make Disappear
 Make It So
+Make Obsolete
 Make Your Mark
 Make Your Move
 Make Your Own Luck
@@ -10848,6 +10854,7 @@ Metallic Mimic
 Metallic Rebuke
 Metallic Sliver
 Metallurgeon
+Metalspinner's Puzzleknot
 Metamorphic Alteration	polarity: Aura>(nothing on the host)
 Metamorphic Blast	polarity: BecomeCreatureEffect
 Metamorphose
@@ -11700,6 +11707,7 @@ Nicol Bolas, the Ravager	intent: Pipeline(TopOfLibrary→exile)
 Night Clubber
 Night Dealings
 Night Market
+Night Market Lookout
 Night Nurse, Healer of Heroes
 Night Soil
 Night of Souls' Betrayal
@@ -12629,6 +12637,7 @@ Phyrexian Vivisector
 Phyrexian Walker
 Phyrexian Warhorse
 Phytohydra
+Pia Nalaar
 Pia Nalaar, Consul of Revival
 Pia, Aether Ascetic
 Pia, Determined Rebuilder
@@ -13246,6 +13255,7 @@ Quicksilver Elemental	intent: GainAllActivatedAbilitiesOfEffect; polarity: GainA
 Quicksilver Fisher
 Quicksilver Fountain	intent: AddCountersEffect; intent: ForEach>RemoveAllCountersOfTypeEffect; polarity: AddCountersEffect
 Quicksilver, Brash Blur
+Quicksmith Genius
 Quiet Contemplation
 Quiet Purity
 Quill-Blade Laureate
@@ -13876,6 +13886,7 @@ Restless Vents
 Restless Vinestalk
 Restock
 Restoration Angel
+Restoration Gearsmith
 Restoration Magic
 Restoration Seminar
 Restorative Technique
@@ -15132,6 +15143,7 @@ Serum-Core Chimera
 Servant of Volrath
 Servant of the Scale
 Servant of the Stinger
+Servo Exhibition
 Servo Schematic
 Seshiro the Anointed
 Set Adrift
@@ -16231,6 +16243,7 @@ Spire Patrol
 Spire Winder
 Spire of Industry
 Spirebluff Canal
+Spireside Infiltrator
 Spirit Bonds
 Spirit Link	polarity: Aura>GainLifeEffect
 Spirit Mascot
@@ -17496,6 +17509,7 @@ Teysa Karlov
 Teysa, Opulent Oligarch
 Teysa, Orzhov Scion
 Tezzeret the Seeker
+Tezzeret's Ambition
 Tezzeret's Gambit
 Tezzeret's Gatebreaker	combat: CantBeBlockedGroupEffect; timing: CantBeBlockedGroupEffect
 Tezzeret's Strider
@@ -19853,6 +19867,7 @@ Wild Ride
 Wild Roads
 Wild Shape
 Wild Unraveling
+Wild Wanderer
 Wild Wasteland
 Wild-Field Scarecrow
 Wildborn Preserver
