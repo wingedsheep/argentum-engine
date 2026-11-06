@@ -29,7 +29,7 @@ class CastTargetFromGraveyardReadingAiTest : ScenarioTestBase() {
 
     init {
         test("a cast or a granted cast of a target graveyard card reads its slot as a gift") {
-            for (name in listOf("Torrential Gearhulk", "Heiko Yamazaki, the General", "Tinybones, the Pickpocket")) {
+            for (name in listOf("Torrential Gearhulk", "Heiko Yamazaki, the General", "Tinybones, the Pickpocket", "Ogre Battlecaster")) {
                 val trigger = cardRegistry.getCard(name)!!.script.triggeredAbilities.single()
                 withClue(name) {
                     intents.effectTargetPolarities(trigger.effect, trigger.allTargetRequirements) shouldBe

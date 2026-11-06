@@ -351,7 +351,8 @@ object TargetPolarityAnalyzer {
      * battlefield under your control" (Rise from the Grave), or Boneyard Parley's chosen targets,
      * however its piles split them. Such a card is ours once the effect resolves, whoever owns it,
      * so a [TargetPolarity.BENEFICIAL] reading of the slot ("good for the card's owner") must not
-     * keep it on its owner's side: an opponent's best creature card is the best one to name.
+     * keep it on its owner's side: an opponent's best creature card is the best one to name. A card
+     * we cast out of an opponent's graveyard ([castGraveyardSlots], Tinybones) is taken the same way.
      *
      * A move that leaves the card under its owner's control (a return to its owner's hand, a
      * reanimation without "under your control"), or one only out of our own graveyard, takes
@@ -394,6 +395,8 @@ object TargetPolarityAnalyzer {
      * the stack — so the best card is the one to name, whoever's graveyard holds it. A grant to the
      * card's owner (airbend's [GrantMayPlayFromExileEffect.ownerControls]) is not ours, and a gather
      * that mixes in a battlefield slot names no graveyard card alone, so both read nothing here.
+     * Like [CardIntentAnalyzer.reanimatesChosenGraveyardTargets], a cast of only a selected or
+     * filtered part of the chosen cards still reads every graveyard slot: each is a card we may cast.
      */
     internal fun castGraveyardSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
         val slots = objectSlots(requirements)
