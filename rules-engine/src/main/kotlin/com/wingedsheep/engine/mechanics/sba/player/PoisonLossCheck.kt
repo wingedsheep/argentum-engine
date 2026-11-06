@@ -3,7 +3,6 @@ package com.wingedsheep.engine.mechanics.sba.player
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEndReason
-import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
 import com.wingedsheep.engine.state.GameState
@@ -32,14 +31,13 @@ class PoisonLossCheck(
         for (playerId in state.turnOrder) {
             val container = state.getEntity(playerId) ?: continue
             if (container.has<PlayerLostComponent>()) continue
-            if (playerCantLoseGame(state, playerId, predicateEvaluator = predicateEvaluator)) continue
 
             // CR 810.10a — an individual player's poison count uses the team's pooled total.
             if (state.teamPoison(playerId) >= threshold) {
-                newState = newState.updateEntity(playerId) { c ->
-                    c.with(PlayerLostComponent(LossReason.POISON_COUNTERS))
-                }
-                events.add(PlayerLostEvent(playerId, GameEndReason.POISON_COUNTERS))
+                val (lost, lossEvents) = GameLoss.lose(
+                    newState, playerId, LossReason.POISON_COUNTERS, GameEndReason.POISON_COUNTERS, predicateEvaluator)
+                newState = lost
+                events.addAll(lossEvents)
             }
         }
 

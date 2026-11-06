@@ -19834,6 +19834,18 @@ The priority groups are (CR 616.1a–f):
   Harmonious Emergence: `ReplaceDestructionWith(SacrificeSelfEffect then Effects.GrantKeyword(Keyword.INDESTRUCTIBLE,
   EffectTarget.TriggeringEntity), EventPattern.DestroyEvent(GameObjectFilter.Land.attachedToBySource()))`.
   Umbra armor (`Keyword.UMBRA_ARMOR`) is the keyworded sibling with a rules-fixed replacement.
+- `ReplaceGameLossWith(replacementEffect, appliesTo = EventPattern.PlayerLostGameEvent(Player.You))` —
+  *"If you would lose the game, instead <effect>"* (CR 614.1a). Replaces every way a matching player would
+  lose (CR 104.3): 0 or less life, an attempted draw from an empty library, poison, commander damage, and
+  `Effects.LoseGame`. Never a concession or an opponent winning. `GrantCantLoseGame` wins over it (no loss
+  to replace). The rest runs as a replacement rider — no stack, before the next state-based-action pass or
+  instruction — with this permanent as `EffectTarget.Self` and its controller as "you". Simultaneous
+  reasons in one SBA pass are one event, replaced once; a reason that still holds (ten poison counters)
+  loses at the next check unless another replacement applies, so two copies are spent one per loss. Where
+  players lose as a team (2HG) a "you" replacement protects the whole team. All loss sites share one engine
+  path (`GameLoss.lose`). Exquisite Archangel: `ReplaceGameLossWith(Effects.Exile(EffectTarget.Self,
+  fromZone = Zone.BATTLEFIELD) then Effects.SetLifeTotal(DynamicAmounts.startingLifeTotal()))` — the
+  `fromZone` gate keeps an Archangel that died in the same pass in the graveyard.
 - `RegenerateInsteadOfDestruction(appliesTo = EventPattern.DestroyEvent(GameObjectFilter.Any.sourceItself()))` —
   *"If <permanent> would be destroyed, regenerate it"*: static regeneration (CR 701.19b). Each time a
   matching permanent would be destroyed, it regenerates instead (damage removed, tapped, removed from

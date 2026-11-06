@@ -1591,6 +1591,8 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.ModifyLifeLoss,
             is com.wingedsheep.sdk.scripting.LifeLossFloor,
             is com.wingedsheep.sdk.scripting.ReplaceLifeReductionToZero,
+            // Game loss (Exquisite Archangel) — consulted by GameLoss wherever a player would lose.
+            is com.wingedsheep.sdk.scripting.ReplaceGameLossWith,
             is com.wingedsheep.sdk.scripting.GainLifeInsteadOfLosingLife,
             // Life payment (Ashiok, Wicked Manipulator) — consulted from the battlefield by
             // LifePaymentService every time its controller would pay life.

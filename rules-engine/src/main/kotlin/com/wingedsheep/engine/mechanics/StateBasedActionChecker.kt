@@ -108,7 +108,9 @@ class StateBasedActionChecker(
                 return riders.copy(events = allEvents + riders.events)
             }
 
-            actionsApplied = riders.events.isNotEmpty()
+            // A pass that only queued a replacement's rest (a replaced game loss whose rest changed
+            // nothing visible) still acted: the next pass must re-check what the rest left behind.
+            actionsApplied = riders.events.isNotEmpty() || result.state.pendingReplacementRiders.isNotEmpty()
             lastIterationEvents = riders.events
             currentState = riders.newState
             allEvents.addAll(riders.events)

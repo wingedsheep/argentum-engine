@@ -1264,6 +1264,56 @@
     ]
 }
 
+// Exquisite Archangel
+{
+    "name": "Exquisite Archangel",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nIf you would lose the game, instead exile this creature and your life total becomes equal to your starting life total.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceGameLossWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile",
+                            "fromZone": "Battlefield"
+                        },
+                        {
+                            "type": "SetLifeTotal",
+                            "amount": {
+                                "type": "StartingLifeTotal",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "MYTHIC",
+        "artist": "Brad Rigney",
+        "flavorText": "A living invention born of a grand design.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d04018c9-510c-4610-9daa-677434628805.jpg?1783936779"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fen Hauler
 {
     "name": "Fen Hauler",
