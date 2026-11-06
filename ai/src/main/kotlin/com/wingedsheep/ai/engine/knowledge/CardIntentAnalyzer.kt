@@ -588,12 +588,15 @@ object CardIntentAnalyzer {
                     // Eirdu, Coordinated Assault's "+1/+0 and gain first strike") runs its pump once
                     // per target, each seeing it as `ContextTarget(0)`: every target gets the same
                     // stats and keywords, so it reads as the pump it is — an expiring one a combat
-                    // trick, like the single-target form.
+                    // trick, like the single-target form. "Untap up to two target creatures. They
+                    // each get +2/+2" (Synchronized Strike) readies each pumped creature to block or
+                    // attack again: a rider on the same trick, not a second payoff.
                     leaf.space == IterationSpace.Targets &&
                         EffectWalker.payoffLeaves(leaf.body).let { body ->
                             body.any { it is ModifyStatsEffect } && body.all {
                                 (it is ModifyStatsEffect && it.target == EffectTarget.ContextTarget(0)) ||
-                                    (it is GrantKeywordEffect && it.target == EffectTarget.ContextTarget(0))
+                                    (it is GrantKeywordEffect && it.target == EffectTarget.ContextTarget(0)) ||
+                                    (it is TapUntapEffect && !it.tap && it.target == EffectTarget.ContextTarget(0))
                             }
                         } -> readingLeaves(leaf.body, requirements)
                     else -> listOf(leaf)

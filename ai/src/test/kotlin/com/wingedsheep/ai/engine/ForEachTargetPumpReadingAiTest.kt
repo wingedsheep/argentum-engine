@@ -20,7 +20,8 @@ import io.kotest.matchers.shouldBe
  * "One or two target creatures each get +2/+1 until end of turn" (Appeal to Eirdu) runs its pump once
  * per target, so the stat change sits inside a `ForEach` over the targets. Read through that wrapper it
  * is the combat trick a single-target pump is: it buys something only in a fight, so cast at the
- * opponent's end step it is a card thrown away.
+ * opponent's end step it is a card thrown away. An untap of each target beside the pump (Synchronized
+ * Strike) is a rider on the same trick.
  */
 class ForEachTargetPumpReadingAiTest : ScenarioTestBase() {
 
@@ -41,7 +42,7 @@ class ForEachTargetPumpReadingAiTest : ScenarioTestBase() {
 
     init {
         test("a pump run once per target reads as a combat trick") {
-            for (card in listOf("Appeal to Eirdu", "Coordinated Assault")) {
+            for (card in listOf("Appeal to Eirdu", "Coordinated Assault", "Synchronized Strike")) {
                 withClue("$card: each target's +N/+N ends at cleanup, so it is a trick to hold") {
                     CardIntentAnalyzer.analyze(cardRegistry.requireCard(card)).tags shouldContain IntentTag.COMBAT_TRICK
                 }
@@ -62,6 +63,26 @@ class ForEachTargetPumpReadingAiTest : ScenarioTestBase() {
                     .also { it.advanceToPriority(1, Step.END) }
             }) { shouldNotCast("Appeal to Eirdu") }
             withClue("a per-target until-end-of-turn pump at their end step pumps nothing: chose ${result.move} — ${result.failure}") {
+                result.passed shouldBe true
+            }
+        }
+
+        test("Synchronized Strike is not cast at the opponent's end step") {
+            // Its untap rides on the pump: read through both, it is a trick to hold, not a spell to
+            // dump into mana that would otherwise empty.
+            val result = decide(PuzzleCategory.PRIORITY_TIMING, { s ->
+                s.withPlayers()
+                    .withActivePlayer(2)
+                    .withLandsOnBattlefield(1, "Forest", 3)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withCardInHand(1, "Synchronized Strike")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .apply { repeat(4) { withCardInLibrary(1, "Forest"); withCardInLibrary(2, "Swamp") } }
+                    .build()
+                    .also { it.advanceToPriority(1, Step.END) }
+            }) { shouldNotCast("Synchronized Strike") }
+            withClue("an untap-and-pump at their end step pumps nothing: chose ${result.move} — ${result.failure}") {
                 result.passed shouldBe true
             }
         }

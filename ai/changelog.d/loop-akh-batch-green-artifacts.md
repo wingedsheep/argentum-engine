@@ -1,0 +1,1 @@
+- #TBD Holds Synchronized Strike's untap-and-pump as a combat trick instead of casting it into an empty end step, and reads "for each kind of counter on target permanent, add or remove one" (Quarry Hauler, Dramatist's Puppet) as a two-sided target

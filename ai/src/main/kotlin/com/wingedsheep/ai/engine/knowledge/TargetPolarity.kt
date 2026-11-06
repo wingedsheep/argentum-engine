@@ -509,6 +509,14 @@ object TargetPolarityAnalyzer {
             // of Equipment you control to target creature you control" (Beatrix, Loyal General) —
             // visits untargeted objects as `IterationEntity`, which names no slot either; the body's
             // other references (the creature) keep theirs.
+            // "For each kind of counter on target permanent, put another counter of that kind on it
+            // or remove one from it" (Dramatist's Puppet, Quarry Hauler): which kinds are there is
+            // only known on resolution, and each is ours to grow or strip — more +1/+1 or loyalty on
+            // our own, a -1/-1 or stun taken off it, the reverse on theirs. Either side, as bounce is.
+            if (space is IterationSpace.CounterKindsOn && readsPerCounterKind((leaf as ForEachEffect).body)) {
+                slotOf(space.entity, requirements)?.let { perSlot[it] += TargetPolarity.FLEXIBLE }
+                continue
+            }
             if (space is IterationSpace.Collection) {
                 val chosenTargets = space.collection in chosenTargetCollections(effect)
                 for (inner in EffectWalker.payoffLeaves(leaf.body)) {
@@ -802,6 +810,21 @@ object TargetPolarityAnalyzer {
 
     /** Whether [this] names a chosen target rather than a fixed player or object. */
     private fun EffectTarget.isSlot(): Boolean = this is EffectTarget.BoundVariable || this is EffectTarget.ContextTarget
+
+    /**
+     * A body over [IterationSpace.CounterKindsOn] that only adds or removes one counter of the
+     * iterated kind — or lets its controller choose between the two. Shared with
+     * [CardIntentAnalyzer], which reads it as the counter manipulation it is.
+     */
+    internal fun readsPerCounterKind(body: Effect): Boolean {
+        // [targetLeaves] opens a choice its controller makes onto every branch.
+        val leaves = targetLeaves(body)
+        return leaves.isNotEmpty() && leaves.all {
+            (it is com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect &&
+                it.kindFrom == com.wingedsheep.sdk.scripting.effects.CounterKindSource.ITERATION) ||
+                it is com.wingedsheep.sdk.scripting.effects.RemoveCountersOfIteratedKindEffect
+        }
+    }
 
     private fun slotOf(target: EffectTarget, requirements: List<TargetRequirement>): Int? = when (target) {
         // A count-N requirement's handles are `id[0]`, `id[1]`, … (the DSL's destructured
