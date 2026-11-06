@@ -211,6 +211,7 @@ Aethersnipe
 Aethersquall Ancient
 Aetherstorm Roc
 Aethertide Whale
+Aethertorch Renegade
 Aethertow
 Aettir and Priwen
 Affa Guard Hound
@@ -760,6 +761,7 @@ Archfiend of the Dross
 Archfiend's Vessel
 Archghoul of Thraben
 Archipelagore
+Architect of the Untamed
 Archive Arbiter
 Archive Dragon
 Archivist
@@ -1011,6 +1013,7 @@ Attentive Sunscribe
 Attercop
 Attrition
 Attuma, Atlantean Warlord
+Attune with Aether
 Attuned Hunter
 Atzocan Archer
 Atzocan Seer
@@ -1960,6 +1963,7 @@ Bolt Hound
 Boltwave
 Boltwing Marauder
 Bomat Bazaar Barge
+Bomat Courier
 Bombadil's Song
 Bombard
 Bombur, Gentle Dreamer
@@ -2225,6 +2229,7 @@ Bristlebud Farmer
 Bristlepack Sentry
 Bristling Backwoods
 Bristling Boar
+Bristling Hydra
 Bristly Bill, Spine Sower
 Brittle Effigy
 Broadcast Rambler
@@ -2297,6 +2302,7 @@ Builder's Bane
 Builder's Blessing
 Builder's Talent
 Built to Last
+Built to Smash
 Bulette
 Bulk Up
 Bull Cerodon
@@ -2814,6 +2820,7 @@ Chandra, Flameshaper
 Chandra, Heart of Fire	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary|hand→exile|graveyard)
 Chandra, Hope's Beacon
 Chandra, Novice Pyromancer
+Chandra, Pyrogenius
 Chandra, Spark Hunter
 Chandra, Torch of Defiance
 Change of Fortune
@@ -3230,6 +3237,7 @@ Combat Research
 Combat Thresher
 Combat Tutorial
 Combine Guildmage	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
+Combustible Gearhulk	intent: GatedEffect
 Combustion Man	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Combustion Technique
 Come Back Wrong	intent: Pipeline(ChosenTargets→battlefield|graveyard); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield|graveyard)
@@ -3254,6 +3262,7 @@ Commander's Sphere
 Commanding Presence
 Commando Raid	timing: GrantTriggeredAbilityEffect
 Commence the Endgame
+Commencement of Festivities
 Commercial District
 Commissar Severina Raine
 Commit // Memory
@@ -3322,7 +3331,7 @@ Congregation Gryff
 Congregation at Dawn
 Conifer Strider
 Conjurer's Closet
-Connecting the Dots	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(TopOfLibrary→exile)
+Connecting the Dots
 Connive // Concoct
 Conqueror's Galleon
 Conquest Mission
@@ -4894,6 +4903,7 @@ Dungeon Map
 Dunland Crebain
 Duplicant
 Durable Coilbug
+Durable Handicraft
 Duress
 Durkwood Baloth
 Durkwood Boars
@@ -5847,6 +5857,7 @@ Fateful Absence
 Fateful Discovery
 Fateful End
 Fateful Handoff	polarity: DrawCardsEffect; polarity: GiveControlToTargetPlayerEffect
+Fateful Showdown
 Fatehold Annex
 Fatehold Charm
 Fatehold Chronologist
@@ -6579,6 +6590,7 @@ Fungusaur
 Furious Assault
 Furious Bellow
 Furious Forebear
+Furious Reprisal
 Furious Rise
 Furnace Gremlin
 Furnace Hellkite
@@ -7817,6 +7829,7 @@ Harmonized Crescendo
 Harmonized Trio
 Harmony of Nature
 Harness Infinity
+Harnessed Lightning
 Harnessed Snubhorn
 Harnesser of Storms	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Harold and Bob, First Numens	intent: PutOntoBattlefieldAsAuraEffect
@@ -9831,6 +9844,7 @@ Latch Seeker
 Late to Dinner
 Lathiel, the Bounteous Dawn
 Lathliss, Dragon Queen
+Lathnu Hellion
 Lathnu Sailback
 Lathril, Blade of the Elves
 Lattice-Blade Mantis
@@ -9979,6 +9993,7 @@ Lhurgoyf
 Liar's Pendulum	polarity: ChooseOptionEffect; polarity: DrawCardsEffect; polarity: PlayerGuessesConditionEffect; polarity: RevealHandEffect
 Liberate
 Liberated Dwarf
+Liberating Combustion
 Liberator, Urza's Battlethopter
 Liberty Prime, Recharged
 Library Larcenist
@@ -10208,6 +10223,7 @@ Long-Term Plans
 Longhorn Sharpshooter
 Longshot Squad
 Longstalk Brawl
+Longtusk Cub
 Lookout's Dispersal
 Looming Altisaur
 Looming Hoverguard
@@ -10404,6 +10420,7 @@ Madame Hydra
 Madame Masque
 Madame Null, Power Broker
 Madame Web, Clairvoyant
+Madcap Experiment
 Maddening Cacophony
 Maelstrom Artisan
 Maelstrom Colossus
@@ -10736,6 +10753,7 @@ Matterbending Mage
 Matzalantli, the Great Door
 Mauhúr, Uruk-hai Captain
 Maul of the Skyclaves
+Maulfist Doorbuster
 Maulfist Squad
 Mausoleum Guard
 Mausoleum Harpy
@@ -11603,6 +11621,7 @@ Nature's Lore
 Nature's Rhythm
 Nature's Ruin
 Nature's Spiral
+Nature's Way
 Nature's Will
 Nausea
 Navigator's Compass	intent: AddSubtypeEffect; intent: ChooseOptionEffect; polarity: AddSubtypeEffect; timing: AddSubtypeEffect
@@ -12404,7 +12423,7 @@ Paladin of the Bloodstained
 Paladin's Arms
 Paladin's Shield
 Palani's Hatcher
-Palantír of Orthanc	intent: GatedEffect; polarity: GatedEffect
+Palantír of Orthanc	intent: GatedEffect
 Pale Bears
 Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
@@ -13843,6 +13862,7 @@ Renegade Freighter
 Renegade Map
 Renegade Rallier
 Renegade Reaper
+Renegade Tactics
 Renegade Troops
 Renegade Wheelsmith
 Renegade's Getaway
@@ -14099,6 +14119,7 @@ Riot Ringleader
 Rip Apart
 Rip, Spawn Hunter
 Rip-Clan Crasher
+Riparian Tiger
 Ripchain Razorkin
 Ripclaw Wrangler
 Ripjaw Raptor
@@ -14141,7 +14162,7 @@ Rishadan Port
 Rishkar, Peema Renegade
 Rising Populace
 Rising of the Day
-Risk Factor	intent: GatedEffect; polarity: GatedEffect
+Risk Factor	intent: GatedEffect
 Risky Move	intent: FlipCoinEffect; intent: GainControlByActivePlayerEffect; polarity: FlipCoinEffect
 Risky Research
 Risky Shortcut
@@ -14533,6 +14554,7 @@ Sage of Days
 Sage of Epityr
 Sage of Lat-Nam
 Sage of Mysteries
+Sage of Shaila's Claim
 Sage of the Falls
 Sage of the Fang
 Sage of the Inward Eye
@@ -15194,6 +15216,7 @@ Serum Visionary
 Serum Visions
 Serum-Core Chimera
 Servant of Volrath
+Servant of the Conduit
 Servant of the Scale
 Servant of the Stinger
 Servo Exhibition
@@ -16188,6 +16211,7 @@ Spectral Steel
 Spectrum Sentinel
 Speed, Young Avenger	intent: GrantCantBeBlockedExceptByEffect
 Speedball, New Warrior
+Speedway Fanatic
 Spell Blast
 Spell Pierce
 Spell Queller	intent: ExileTargetSpellEffect
@@ -16357,6 +16381,7 @@ Spoils of Adventure
 Spoils of Victory
 Spoils of the Hunt
 Spoils of the Vault
+Spontaneous Artist
 Spontaneous Combustion
 Spontaneous Flight
 Spontaneous Mutation
@@ -16509,6 +16534,7 @@ Starscape Cleric
 Starseer Mentor
 Starstorm
 Start // Finish
+Start Your Engines
 Start from Scratch
 Starting Column
 Starting Town
@@ -17402,7 +17428,7 @@ Teleportation Circle
 Telethopter
 Telim'Tor
 Telim'Tor's Darts
-Tell Me What You See	intent: GatedEffect; polarity: GatedEffect
+Tell Me What You See	intent: GatedEffect
 Tellah, Great Sage
 Teller of Tales
 Telling Time
@@ -17524,6 +17550,7 @@ Territorial Allosaurus
 Territorial Baloth
 Territorial Boar
 Territorial Bruntar	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(?→exile)
+Territorial Gorger
 Territorial Hammerskull
 Territorial Maro
 Territorial Roc
@@ -17995,11 +18022,13 @@ Thrilling Discovery
 Thriss, Nantuko Primus
 Thriving Bluff
 Thriving Grove
+Thriving Grubs
 Thriving Heath
 Thriving Ibex
 Thriving Isle
 Thriving Moor
 Thriving Rats
+Thriving Rhino
 Thriving Skyclaw
 Thriving Turtle
 Throat Slitter
@@ -20163,6 +20192,7 @@ Woodland Guidance
 Woodland Mystic
 Woodland Stream
 Woodland Weavemaster
+Woodweaver's Puzzleknot
 Woodwork Prodigy
 Woodwraith Corrupter	polarity: BecomeCreatureEffect
 Woodwraith Strangler
