@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import java.util.Collections
 import java.util.IdentityHashMap
@@ -38,7 +39,7 @@ import java.util.IdentityHashMap
 internal enum class CombatReach {
     /**
      * Changes how a fight resolves once blocks are in: power and toughness either way — until end
-     * of turn or as +1/+1 / -1/-1 counters — a granted keyword (first strike, deathtouch, indestructible, trample, lifelink…), damage to a creature,
+     * of turn, as +1/+1 / -1/-1 counters or as a new base P/T — a granted keyword (first strike, deathtouch, indestructible, trample, lifelink…), damage to a creature,
      * removal, regeneration or damage prevention, taking a creature out of combat.
      */
     FIGHT,
@@ -91,6 +92,11 @@ internal enum class CombatReach {
                 is ForEachEffect -> EffectWalker.leaves(leaf.body).forEach { visit(it, reach) }
                 is ModifyStatsEffect, is GrantKeywordEffect, is DividedDamageEffect, is FightEffect,
                 is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect, is RemoveFromCombatEffect -> reach += FIGHT
+                // "Target creature has base power and toughness 0/2 until end of turn" (Sorceress Queen),
+                // "target attacking creature has base power 0" (Singing Tree), "this creature has base
+                // power and toughness 3/3" (Marsh Flitter): a new base P/T reshapes a fight either way,
+                // as a pump or a shrink does — which side it helps is the simulation's to find.
+                is SetBaseStatsEffect -> reach += FIGHT
                 // "Tap two artifacts: put two +1/+1 counters on this creature" grows a blocker the
                 // same as a pump does, and keeps it grown; a -1/-1 counter shrinks one.
                 is AddCountersEffect -> if (changesStats(leaf.counterType)) reach += FIGHT
