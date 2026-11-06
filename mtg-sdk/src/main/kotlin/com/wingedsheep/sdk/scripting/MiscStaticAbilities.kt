@@ -1983,6 +1983,11 @@ data object UntapSelfDuringOtherUntapSteps : StaticAbility {
  * Used by Damping Field — "Players can't untap more than one artifact during their untap steps"
  * (`filter = GameObjectFilter.Artifact`, `max = 1`).
  *
+ * [players] narrows whose untap steps are capped, resolved relative to the source's controller
+ * (default [Player.Each], the global cap). Dovin Baan's emblem — "Your opponents can't untap more
+ * than two permanents during their untap steps" — is `players = Player.EachOpponent`, `max = 2`
+ * over `GameObjectFilter.Permanent`; the engine reads caps on emblems as well as permanents.
+ *
  * `max = 0` is the global "[filter] don't untap during their controllers' untap steps" (Meekstone:
  * creatures with power 3 or greater). With nothing to choose, the engine drops the matching
  * permanents from the untap without a prompt. Unlike a layer-6 `DOESNT_UNTAP` grant, the filter is
@@ -1992,11 +1997,15 @@ data object UntapSelfDuringOtherUntapSteps : StaticAbility {
 @Serializable
 data class UntapLimitPerStep(
     val filter: GameObjectFilter,
-    val max: Int
+    val max: Int,
+    val players: Player = Player.Each
 ) : StaticAbility {
-    override val description: String =
-        if (max == 0) "${filter.description} don't untap during their controllers' untap steps"
-        else "Players can't untap more than $max ${filter.description} during their untap steps"
+    override val description: String = when {
+        max == 0 -> "${filter.description} don't untap during their controllers' untap steps"
+        players == Player.Each -> "Players can't untap more than $max ${filter.description} during their untap steps"
+        else -> "${players.description.replaceFirstChar { it.uppercase() }} can't untap more than $max " +
+            "${filter.description} during their untap steps"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)

@@ -11602,8 +11602,12 @@ staticAbility {
   turn-based draw, before anyone gets priority, one card per instance, controllers in APNAP order. A
   skipped draw step (first-turn skip, `SkipStepOrPhase`, a skip marker) has no draw to follow. Read through
   `standingStatics`, so it works printed on a permanent, granted, or on an emblem.
-- `UntapLimitPerStep(filter, max)` — global untap-count cap, "Players can't untap more than `max` `filter`
-  permanents during their untap steps" (Damping Field: artifacts, one). `max = 0` is "`filter` don't
+- `UntapLimitPerStep(filter, max, players = Player.Each)` — untap-count cap, "Players can't untap more than `max` `filter`
+  permanents during their untap steps" (Damping Field: artifacts, one). `players` narrows whose untap steps
+  it caps, resolved relative to the source's controller: Dovin Baan's emblem ("Your opponents can't untap
+  more than two permanents during their untap steps") is `UntapLimitPerStep(GameObjectFilter.Permanent, 2,
+  players = Player.EachOpponent)` in `CreatePermanentEmblem(ownedStaticAbilities = …)`. Caps are read through
+  `standingStatics`, so they work printed, granted, or held on an emblem. `max = 0` is "`filter` don't
   untap during their controllers' untap steps" (Meekstone: `Creature.powerAtLeast(3)`): the matching
   permanents drop out of the untap with no prompt, and because the filter is read at the untap step over
   the final projected state it sees layer-7 P/T changes a layer-6 `DOESNT_UNTAP` group grant can't. Compose with a static
