@@ -526,6 +526,7 @@ Angel of Light
 Angel of Mercy
 Angel of Renewal
 Angel of Retribution
+Angel of Sanctions
 Angel of Serenity	intent: Pipeline(ChosenTargets→exile); intent: Pipeline(FromLinkedExile→hand); polarity: Pipeline(ChosenTargets→exile)
 Angel of Suffering
 Angel of Vitality
@@ -602,6 +603,7 @@ Anointed Chorister
 Anointed Deacon
 Anointed Peacekeeper
 Anointed Procession
+Anointer Priest
 Anointer of Champions
 Anointer of Valor
 Another Chance
@@ -4256,6 +4258,7 @@ Devilish Valet
 Devilthorn Fox
 Devious Cover-Up	polarity: CounterEffect; polarity: MoveToZoneEffect; polarity: Pipeline(?→?)
 Devkarin Dissident
+Devoted Crop-Mate
 Devoted Druid
 Devoted Duelist
 Devoted Grafkeeper
@@ -6847,6 +6850,7 @@ Gideon the Oathless
 Gideon's Battle Cry
 Gideon's Company	intent: AddCountersEffect
 Gideon's Defeat
+Gideon's Intervention
 Gideon's Lawkeeper
 Gideon's Memorial
 Gideon's Reproach
@@ -7020,6 +7024,7 @@ Glorious Protector
 Glorious Sunrise
 Glory Bearers
 Glory Seeker
+Glory-Bound Initiate
 Glorybringer
 Gloryheath Lynx
 Glowcap Lantern
@@ -7588,6 +7593,7 @@ Gurmag Nightwatch
 Gurmag Rakshasa
 Gurmag Swiftwing
 Guru Pathik
+Gust Walker
 Gust of Wind
 Gustcloak Harrier	intent: RemoveFromCombatEffect
 Gustcloak Runner	intent: RemoveFromCombatEffect
@@ -11936,6 +11942,8 @@ Ojer Taq, Deepest Foundation	intent: ReturnSelfFromZoneTransformedEffect
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
+Oketra the True
+Oketra's Attendant
 Oketra's Avenger
 Oketra's Last Mercy
 Oketra's Monument
@@ -12978,6 +12986,7 @@ Protean Hulk
 Protean Raider
 Protean Thaumaturge
 Protect the Negotiators
+Protection of the Hekma
 Protective Bubble
 Protective Parents	intent: CreateAuraTokenEffect
 Protective Response
@@ -13864,6 +13873,7 @@ Rewrite History
 Rewrite Regrets
 Rex, Cyber-Hound
 Reya Dawnbringer
+Rhet-Crop Spearmaster
 Rhet-Tomb Mystic
 Rhino's Rampage
 Rhino, Barreling Brute
@@ -14353,6 +14363,7 @@ Sabretooth Tiger
 Sacellum Archers
 Sachi, Daughter of Seshiro
 Sacred Armory
+Sacred Cat
 Sacred Excavation
 Sacred Fire
 Sacred Foundry
@@ -17014,6 +17025,7 @@ Tablet of Epityr
 Taborax, Hope's Demise
 Tackle Artist
 Tactical Officer
+Tah-Crop Elite
 Tah-Crop Skirmisher
 Taiga
 Taigam's Scheming
@@ -18264,6 +18276,7 @@ Treva, the Renewer	intent: ChooseColorThenEffect
 Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Trial of Ambition
 Trial of Knowledge
+Trial of Solidarity
 Trial of Zeal
 Triassic Egg
 Tribal Flames
@@ -18332,6 +18345,7 @@ True Believer
 True Love's Kiss
 True Polymorph
 Truefire Captain
+Trueheart Duelist
 Trueheart Twins
 Trufflesnout
 Trumpet Blast
@@ -18674,6 +18688,7 @@ Untamed Kavu
 Untamed Wilds
 Untimely Malfunction
 Unwanted Remake
+Unwavering Initiate
 Unwelcome Sprite
 Unwilling Ingredient
 Unwilling Vessel
