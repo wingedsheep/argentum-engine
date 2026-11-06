@@ -7047,7 +7047,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `targets(TargetFilter(Permanent.targetPlayerControls(player)), count = 5, optional = true)`.
 - `.controlledByEnchantedPlayer()` — controlled by the player the filtering ability's **source Aura
   is attached to** (CR 303 enchant player): "Creatures enchanted player controls enter tapped"
-  (Radiant Restraints). A named recipe over `.targetPlayerControls(PlayerRef(Player.EnchantedPlayer))`,
+  (Radiant Restraints), or as a zone-change trigger's filter — "whenever a creature enchanted player
+  controls enters" (Trespasser's Curse: `Triggers.a(Creature.controlledByEnchantedPlayer()).enters()`;
+  the trigger matcher resolves the player off the trigger's source and compares it with the entrant's
+  controller). A named recipe over `.targetPlayerControls(PlayerRef(Player.EnchantedPlayer))`,
   and the controller-axis sibling of `attackingEnchantedPlayer()` below — every other controller
   scope here resolves against the *ability's* controller, which for a Curse is the wrong player.
   Fails closed when the source isn't an Aura attached to a player. Any read site that evaluates a

@@ -1767,6 +1767,18 @@ class TriggerMatcher(
                         is ControllerPredicate.ControlledByOpponent -> effectiveController != controllerId
                         is ControllerPredicate.OwnedByYou -> event.ownerId == controllerId
                         is ControllerPredicate.OwnedByOpponent -> event.ownerId != controllerId
+                        // "a creature enters under enchanted player's control" (Trespasser's Curse):
+                        // the referenced player is resolved off the trigger's source (a Curse's
+                        // enchanted player), then compared with the same effective controller.
+                        is ControllerPredicate.ControlledByReferencedPlayer ->
+                            predicateEvaluator.playerMatchesControlLeaf(
+                                state, projected, effectiveController, leaf,
+                                com.wingedsheep.engine.handlers.PredicateContext(
+                                    controllerId = controllerId,
+                                    sourceId = sourceId,
+                                    triggeringEntityId = event.entityId,
+                                ),
+                            )
                         else -> null // leaf kinds this LKI site can't evaluate don't constrain
                     }
                 }
