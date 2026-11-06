@@ -428,7 +428,7 @@ object LimitedCardRater {
      * at only a sliver of what an opponent plays — for how narrow it is ([narrowDiscount]).
      */
     private fun slotValue(slot: EffectWalker.Slot, card: CardDefinition): Double =
-        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect, slot.targets, slot.turnAhead)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
+        (EffectWalker.fold(slot.effect, LimitedScoreFold(slot.targets, card)) + pipelineScore(slot.effect, slot.targets, slot.turnAhead, card)) * slot.origin.discount * narrowDiscount(slot) * activationDiscount(slot)
 
     // Four-mana activations are already slow; above that, retain only the share likely to be used.
     private fun activationDiscount(slot: EffectWalker.Slot): Double =
@@ -548,15 +548,19 @@ object LimitedCardRater {
      * onto our battlefield, however it splits them first (Boneyard Parley's piles), like the
      * recursion they are.
      */
-    private fun pipelineScore(root: Effect, targets: List<TargetRequirement>, turnAhead: Boolean = false): Double {
+    private fun pipelineScore(root: Effect, targets: List<TargetRequirement>, turnAhead: Boolean = false, card: CardDefinition? = null): Double {
         val reanimation = if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(root, targets)) {
             TAG_VALUE.getValue(IntentTag.RECURSION)
         } else 0.0
-        val tags = CardIntentAnalyzer.pipelineTags(root, turnAhead)
+        // An exile into a pile the card may cast from (Maralen, Rona) is the dig it splits into two abilities.
+        val pileCast = card?.let { CardIntentAnalyzer.pileCastTags(listOf(it.script) + it.cardFaces.map { face -> face.script }) }.orEmpty()
+        val tags = CardIntentAnalyzer.pipelineTags(root, turnAhead, pileCast = pileCast)
         if (tags.isEmpty()) return reanimation
         var score = reanimation
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        // A spell cast for free off the pile this turn only (Maralen): no card banked, the cast itself.
+        else if (IntentTag.FREE_SPELL in tags) score += TAG_VALUE.getValue(IntentTag.FREE_SPELL)
         if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
         // Cards taken out of another player's hand by a gather → move pipeline (Null Summoner's
         // "choose a nonland card from it; exile that card", Cranial Extraction's named search):

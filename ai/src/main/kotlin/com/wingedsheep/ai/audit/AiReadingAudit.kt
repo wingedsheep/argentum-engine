@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
@@ -317,6 +318,8 @@ object AiReadingAudit {
         val intent = CardIntentAnalyzer.analyze(card)
         // A pile only ever filled with our own permanents comes back to us (Endless Sands).
         val ownPile = CardIntentAnalyzer.stashesOwnPermanents(listOf(card.script) + card.cardFaces.map { it.script })
+        // A pile it may cast from (Maralen, Theater of Horrors) makes the exile into it a draw.
+        val pileCast = CardIntentAnalyzer.pileCastTags(listOf(card.script, script) + card.cardFaces.map { it.script })
         val out = mutableListOf<AbilityReading>()
 
         // ── The spell ───────────────────────────────────────────────────────
@@ -355,7 +358,7 @@ object AiReadingAudit {
                 }
             }
             if (spell != null) {
-                intent(spell, sink, script.targetRequirements, ownPile)
+                intent(spell, sink, script.targetRequirements, ownPile, pileCast = pileCast)
                 if (face.instantSpeed) {
                     // HoldPolicy holds a COMBAT_TRICK spell whole, so every expiring leaf on it (the
                     // keyword beside the pump, too) waits for the same fight or response. Not a
@@ -414,7 +417,7 @@ object AiReadingAudit {
             abilityPolarity(ability.effect, ability.targetRequirements, lookup, sink) {
                 TargetPolarityAnalyzer.forAbility(card, ability, lookup)
             }
-            intent(ability.effect, sink, ability.targetRequirements, ownPile)
+            intent(ability.effect, sink, ability.targetRequirements, ownPile, pileCast = pileCast)
             combat(ability, sink)
             if (ability.timing == TimingRule.InstantSpeed) {
                 // A pure can't-attack / can't-block activation is judged whole by the restriction
@@ -446,7 +449,7 @@ object AiReadingAudit {
             ) {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
-                intent(trigger.effect, sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger))
+                intent(trigger.effect, sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast)
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
@@ -455,7 +458,7 @@ object AiReadingAudit {
         // ── State triggers ──────────────────────────────────────────────────
         script.stateTriggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
-            intent(trigger.effect, sink, emptyList(), ownPile)
+            intent(trigger.effect, sink, emptyList(), ownPile, pileCast = pileCast)
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.STATE_TRIGGER, i + 1, faceName, describe { trigger.description }), sink.findings)
         }
@@ -540,7 +543,14 @@ object AiReadingAudit {
      * Intent per ability, not per leaf: a pipeline's plumbing ("shuffle", "select from the gathered
      * cards") earns no tag of its own and needs none when a sibling leaf reads the ability.
      */
-    private fun intent(root: Effect, sink: Sink, reqs: List<TargetRequirement>, ownPile: Boolean = false, turnAhead: Boolean = false) {
+    private fun intent(
+        root: Effect,
+        sink: Sink,
+        reqs: List<TargetRequirement>,
+        ownPile: Boolean = false,
+        turnAhead: Boolean = false,
+        pileCast: Set<IntentTag> = emptySet(),
+    ) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
         val noIntent = { leaf: Effect ->
@@ -560,7 +570,7 @@ object AiReadingAudit {
                 // follows, like a sacrifice of our own choosing — no answer to anything.
                 (leaf is MoveToZoneEffect && CardIntentAnalyzer.removesOurOwnPermanent(leaf, reqs))
         }
-        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile).tags
+        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
         if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {
@@ -824,6 +834,10 @@ object AiReadingAudit {
         // what the Equipment is *for* is the card's reading of its "equipped creature" statics
         // (CardIntentAnalyzer tags those), and which creature gets it is the polarity check.
         if (leaf is AttachEquipmentEffect) return true
+        // "Target creature gains all creature types" (Oko, Lorwyn Liege's +2, Amoeboid Changeling) —
+        // Changeling granted: its payoff is whatever typal effects then see the creature, which the
+        // simulation prices on the board; which creature gets it is the polarity check's (a gift).
+        if (leaf is GrantKeywordEffect && leaf.keyword == Keyword.CHANGELING.name) return true
         // "Each opponent may search their library for a basic land card …" (Old-Growth Dryads): an
         // opponents-only iteration whose body is only their gain is the card's drawback, with
         // nothing to aim or hold; the rater prices it as one.

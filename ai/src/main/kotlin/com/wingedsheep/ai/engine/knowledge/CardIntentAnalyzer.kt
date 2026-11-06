@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
@@ -231,8 +232,9 @@ object CardIntentAnalyzer {
         requirements: List<TargetRequirement> = emptyList(),
         turnAhead: Boolean = false,
         ownPile: Boolean = false,
+        pileCast: Set<IntentTag> = emptySet(),
     ): CardIntent {
-        val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile).toMutableSet()
+        val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
         for (leaf in readingLeaves(effect, requirements)) {
             tags += tagsOf(leaf)
@@ -307,7 +309,8 @@ object CardIntentAnalyzer {
         }
 
         val ownPile = stashesOwnPermanents(scripts)
-        for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root }, ownPile = ownPile)
+        val pileCast = pileCastTags(scripts)
+        for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root }, ownPile = ownPile, pileCast = pileCast)
         if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
         // "Discard a card: draw a card" (Murmuring Volume) trades a card for a card: it filters the
         // hand, it gains none. Its draw reads as the card selection it is.
@@ -389,7 +392,7 @@ object CardIntentAnalyzer {
             grantsInstantSpeedLoyalty = leaves.any { it is GrantLoyaltyActivationPermissionEffect && it.instantSpeed },
             counterTax = counterTaxOf(leaves),
             cashableTags = activated.filterNot { it.isManaAbility }.flatMapTo(HashSet()) {
-                val cashed = effectTags(it.effect, it.targetRequirements, ownPile)
+                val cashed = effectTags(it.effect, it.targetRequirements, ownPile, pileCast)
                 if (isRummage(it)) asRummage(cashed) else cashed
             },
         )
@@ -441,8 +444,9 @@ object CardIntentAnalyzer {
         val sickRamp = sick && manaAbilities.isNotEmpty() && manaAbilities.all { tapsOrUntapsItself(it.cost) }
         if (deferred.isEmpty() && !sickRamp) return tags
         val ownPile = stashesOwnPermanents(scripts)
+        val pileCast = pileCastTags(scripts)
         fun tagsOfRoots(roots: List<Pair<Effect, List<TargetRequirement>>>) =
-            roots.flatMapTo(HashSet()) { (effect, requirements) -> effectTags(effect, requirements, ownPile) }
+            roots.flatMapTo(HashSet()) { (effect, requirements) -> effectTags(effect, requirements, ownPile, pileCast) }
         val later = tagsOfRoots(deferred) + if (sickRamp) setOf(IntentTag.RAMP) else emptySet()
         val onlyLater = later - tagsOfRoots(immediate) -
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
@@ -465,6 +469,11 @@ object CardIntentAnalyzer {
             else -> false
         }
     }
+
+    /** A trigger its holder fires by dealing combat damage itself ("whenever this creature deals combat damage to a player"). */
+    private fun dealsCombatDamage(trigger: TriggeredAbility): Boolean =
+        trigger.binding == TriggerBinding.SELF &&
+            (trigger.trigger as? EventPattern.DealsDamageEvent)?.damageType == com.wingedsheep.sdk.scripting.events.DamageType.Combat
 
     private fun tapsOrUntapsItself(cost: AbilityCost): Boolean = when (cost) {
         AbilityCost.Tap, AbilityCost.Untap -> true
@@ -809,8 +818,9 @@ object CardIntentAnalyzer {
         root: Effect,
         requirements: List<TargetRequirement> = emptyList(),
         ownPile: Boolean = false,
+        pileCast: Set<IntentTag> = emptySet(),
     ): Set<IntentTag> =
-        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root, ownPile = ownPile)
+        readingLeaves(root, requirements).flatMapTo(HashSet()) { tagsOf(it) } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
 
     /**
      * "Exile target creature you control" into a pile linked to this permanent (Endless Sands, Safe
@@ -856,8 +866,14 @@ object CardIntentAnalyzer {
      * Internal so [com.wingedsheep.ai.engine.LimitedCardRater] can price the same reading: its leaf
      * fold sees a gather and a move, each worth nothing alone.
      */
-    internal fun pipelineTags(root: Effect, turnAhead: Boolean = false, ownPile: Boolean = false): Set<IntentTag> = buildSet {
+    internal fun pipelineTags(
+        root: Effect,
+        turnAhead: Boolean = false,
+        ownPile: Boolean = false,
+        pileCast: Set<IntentTag> = emptySet(),
+    ): Set<IntentTag> = buildSet {
         addAll(digTags(root, turnAhead))
+        addAll(pileFillTags(root, pileCast))
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(symmetricDiscardTags(root))
@@ -876,6 +892,47 @@ object CardIntentAnalyzer {
         EffectWalker.payoffLeaves(root).filterIsInstance<ReflexiveTriggerEffect>().forEach {
             addAll(pipelineTags(it.reflexiveEffect))
         }
+    }
+
+    /**
+     * What a static "you may cast spells from among cards exiled with this permanent"
+     * ([GrantMayCastFromLinkedExile]) makes of the cards [scripts] put in that pile — the reading
+     * [pileFillTags] hands an exile into the pile. Empty when no face carries the grant.
+     *
+     * A pile it can cast from on any later turn is [IntentTag.DRAW]: the cards wait in exile instead
+     * of in hand, as a lasting impulse grant's do ([isLastingImpulse]). One it can only cast from on
+     * the turn the cards arrive ([GrantMayCastFromLinkedExile.exiledThisTurnOnly]) is not — cards
+     * that must be spent before cleanup are not banked. Cast without paying the mana cost, either
+     * one is [IntentTag.FREE_SPELL].
+     */
+    fun pileCastTags(scripts: List<CardScript>): Set<IntentTag> = buildSet {
+        // "During your turn, if an opponent lost life this turn, you may … cast spells from among
+        // cards exiled with this" (Theater of Horrors): a condition on the grant is still the grant.
+        val grants = scripts.flatMap { it.staticAbilities }
+            .map { (it as? ConditionalStaticAbility)?.ability ?: it }
+            .filterIsInstance<GrantMayCastFromLinkedExile>()
+        for (grant in grants) {
+            if (!grant.exiledThisTurnOnly) add(IntentTag.DRAW)
+            if (grant.withoutPayingManaCost) add(IntentTag.FREE_SPELL)
+        }
+    }
+
+    /**
+     * "Exile the top two cards of target opponent's library" into a pile this permanent can cast
+     * from (Maralen, Fae Ascendant; Theater of Horrors; Rona, Disciple of Gix; Jacob Hauken): a
+     * gather off any player's library top, moved to exile linked to the source. The move alone is
+     * plumbing; with the card's own cast-from-the-pile grant it is what [pileCast] says the pile is
+     * worth ([pileCastTags]) — the impulse draw split across two abilities.
+     */
+    private fun pileFillTags(root: Effect, pileCast: Set<IntentTag>): Set<IntentTag> {
+        if (pileCast.isEmpty()) return emptySet()
+        val leaves = readingLeaves(root)
+        val fromAnyTop = collectionsFromTop(leaves) { true }
+        val fillsThePile = leaves.any {
+            it is MoveCollectionEffect && it.linkToSource && it.from in fromAnyTop &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+        }
+        return if (fillsThePile) pileCast else emptySet()
     }
 
     /**
@@ -1895,9 +1952,14 @@ object CardIntentAnalyzer {
             val ability = effect.ability
             val granted = analyzeEffect(ability.effect, ability.allTargetRequirements).tags
             if (IntentTag.GAME_WIN in granted) add(IntentTag.GAME_WIN)
-            if (effect.duration == Duration.Permanent &&
-                TargetPolarityAnalyzer.grantedTriggerPolarity(ability) == TargetPolarity.BENEFICIAL
-            ) addAll(granted)
+            val helpful = TargetPolarityAnalyzer.grantedTriggerPolarity(ability) == TargetPolarity.BENEFICIAL
+            if (effect.duration == Duration.Permanent && helpful) addAll(granted)
+            // "Target creature gains 'whenever this creature deals combat damage to a player, draw
+            // a card' until end of turn" (Sygg, Wanderwine Wisdom; Commando Raid): a payoff for
+            // this turn's attack connecting — a combat enhancement, like a keyword that pays off on
+            // a hit. The granted effect itself waits on combat damage, so it is not read as a draw
+            // the HoldPolicy card-flow windows could cash.
+            else if (helpful && dealsCombatDamage(ability)) add(IntentTag.COMBAT_ENHANCEMENT)
         }
 
         // "That player loses the game" aimed away from its controller, or "you win the game": the
