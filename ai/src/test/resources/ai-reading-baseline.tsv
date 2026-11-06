@@ -249,6 +249,7 @@ Agonizing Syphon
 Agrus Kos, Eternal Soldier
 Agrus Kos, Spirit of Justice
 Agrus Kos, Wojek Veteran
+Ahn-Crop Crasher
 Ahn-Crop Invader
 Ahriman
 Aid the Fallen
@@ -1364,6 +1365,7 @@ Battlefield Medic
 Battlefield Percher
 Battlefield Promotion	timing: GrantKeywordEffect
 Battlefield Raptor
+Battlefield Scavenger
 Battlefly Swarm
 Battleground Geist
 Battlegrowth
@@ -2343,6 +2345,7 @@ Butterbur, Bree Innkeeper
 Buy Your Silence
 Buzz Bots
 Buzzard-Wasp Colony
+By Force
 By Invitation Only	intent: ChooseNumberThenEffect
 Bygone Colossus
 Byrke, Long Ear of the Law
@@ -4367,7 +4370,7 @@ Disciple of the Vault
 Disciples of Gix
 Disciplined Duelist
 Discombobulate
-Discontinuity	intent: EndTheTurnEffect
+Discontinuity
 Discordant Piper
 Discover the Impossible
 Discovery // Dispersal
@@ -5198,6 +5201,7 @@ Embereth Shieldbreaker
 Embereth Skyblazer
 Embereth Veteran	intent: CreateAuraTokenEffect
 Emberheart Challenger	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Emberhorn Minotaur
 Embermage Goblin
 Embermouth Sentinel
 Embersmith
@@ -7005,11 +7009,13 @@ Glorifier of Dusk
 Glorifier of Suffering
 Glorious Anthem
 Glorious Decay
+Glorious End
 Glorious Gale
 Glorious Protector
 Glorious Sunrise
 Glory Bearers
 Glory Seeker
+Glorybringer
 Gloryheath Lynx
 Glowcap Lantern
 Glowering Rogon
@@ -7793,6 +7799,8 @@ Hazel's Brewmaster
 Hazel's Nocturne
 Hazerider Drake
 Hazezon Tamar
+Hazoret the Fervent
+Hazoret's Favor
 Hazoret's Monument
 Hazoret's Undying Fury
 Hazoret, Godseeker
@@ -7820,6 +7828,7 @@ Heart Sliver
 Heart Warden
 Heart of Ramos
 Heart-Piercer Bow
+Heart-Piercer Manticore
 Heartbeat of Spring
 Heartfire
 Heartfire Hero
@@ -9974,6 +9983,7 @@ Lilysplash Mentor
 Lim-Dûl's Vault	intent: RepeatWhileEffect
 Limestone Golem
 Liminal Hold
+Limits of Solidarity
 Lindblum, Industrial Regency
 Linden, the Steadfast Queen
 Linebreaker Baloth
@@ -11522,6 +11532,7 @@ Needletooth Pack
 Needletooth Raptor
 Needleverge Pathway
 Neelix, Moral Support
+Nef-Crop Entangler
 Nefashu
 Negate
 Neglected Heirloom
@@ -17784,6 +17795,7 @@ Three Tree Scribe
 Three Visits
 Threefold Thunderhulk
 Threnody Singer
+Thresher Lizard
 Thrill of Possibility
 Thrill of the Hunt
 Thrill-Kill Disciple
@@ -17909,7 +17921,7 @@ Timberwatch Elf
 Time Ebb
 Time Elemental
 Time Sieve
-Time Stop	intent: EndTheTurnEffect
+Time Stop
 Time Vault
 Time Walk
 Time Warp	polarity: TakeExtraTurnEffect
@@ -18237,6 +18249,7 @@ Treva's Attendant
 Treva, the Renewer	intent: ChooseColorThenEffect
 Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Trial of Ambition
+Trial of Zeal
 Triassic Egg
 Tribal Flames
 Tribal Forcemage
@@ -18304,6 +18317,7 @@ True Believer
 True Love's Kiss
 True Polymorph
 Truefire Captain
+Trueheart Twins
 Trufflesnout
 Trumpet Blast
 Trumpeting Carnosaur
@@ -19403,6 +19417,7 @@ Warden of the Woods
 Wardens of the Cycle
 Wardscale Crocodile
 Warehouse Tabby
+Warfire Javelineer
 Warg Rider
 Warg Tactics
 Wargling
