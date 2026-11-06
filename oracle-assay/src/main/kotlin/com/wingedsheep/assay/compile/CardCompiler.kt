@@ -216,11 +216,14 @@ object CardCompiler {
                 "a characteristic-defining line defines a power or toughness this card does not print",
             )
         }
-        val loyalty = face.loyalty?.toIntOrNull()
+        // A printed loyalty of X (Nissa, Steward of Elements) is `loyaltyIsX` over a base of 0 —
+        // the value X has on every entry but the cast one (CR 107.3m), exactly as `CardBuilder` builds it.
+        val loyaltyIsX = face.loyalty == "X"
+        val loyalty = if (loyaltyIsX) 0 else face.loyalty?.toIntOrNull()
         val defense = face.defense?.toIntOrNull()
 
         if (typeLine == null || manaCost == null) return null
-        return Header(typeLine, manaCost, power, toughness, loyalty, defense)
+        return Header(typeLine, manaCost, power, toughness, loyalty, loyaltyIsX, defense)
     }
 
     /**
@@ -308,6 +311,7 @@ object CardCompiler {
         setCode = card.setCode,
         metadata = ScryfallMetadata(imageUri = face.imageUri),
         startingLoyalty = header.loyalty,
+        loyaltyIsX = header.loyaltyIsX,
         startingDefense = header.defense,
         // Derivation 2 (`CardBuilder.build`): a blank mana cost means "can't be cast normally"
         // (CR 202.1b/118.6) — but never for a land, which is played rather than cast (CR 305).
@@ -342,6 +346,7 @@ object CardCompiler {
         val power: CharacteristicValue?,
         val toughness: CharacteristicValue?,
         val loyalty: Int?,
+        val loyaltyIsX: Boolean,
         val defense: Int?,
     )
 }

@@ -5093,6 +5093,202 @@
     ]
 }
 
+// Nissa, Steward of Elements
+{
+    "name": "Nissa, Steward of Elements",
+    "manaCost": "{X}{G}{U}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "+2: Scry 2.\n0: Look at the top card of your library. If it's a land card or a creature card with mana value less than or equal to the number of loyalty counters on Nissa, you may put that card onto the battlefield.\n−6: Untap up to two target lands you control. They become 5/5 Elemental creatures with flying and haste until end of turn. They're still lands.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Steward of Elements:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Steward of Elements:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsLand",
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "ManaValueAtMostDynamic",
+                                                        "amount": {
+                                                            "type": "EntityProperty",
+                                                            "entity": "Self",
+                                                            "numericProperty": {
+                                                                "type": "CounterCount",
+                                                                "counterType": "LOYALTY"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Steward of Elements:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "keywords": [
+                                    "FLYING",
+                                    "HASTE"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "MYTHIC",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c79036a1-2239-4d4f-8b58-6cf9ac4863fc.jpg?1783936459",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If X is 0, Nissa enters the battlefield with no loyalty and is put into her owner's graveyard before you can activate her abilities."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "While resolving Nissa's second ability, if you can't or don't put the card onto the battlefield, it remains on top of your library."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Once Nissa's second ability begins to resolve, no player may take actions until it's done. Notably, players can't try to change Nissa's loyalty once you look at the card or choose to put it onto the battlefield."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If Nissa leaves the battlefield while her second ability is on the stack, use her last known loyalty to determine whether you may put the top card of your library onto the battlefield. If Nissa left the battlefield because she took enough damage to reduce her loyalty to 0, then her last known loyalty is 0."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Nissa's last ability sets the base power and toughness of the lands to 5/5. Any +1/+1 or -1/-1 counters that were on those lands will apply to those values."
+            }
+        ]
+    },
+    "startingLoyalty": 0,
+    "loyaltyIsX": true,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Oashra Cultivator
 {
     "name": "Oashra Cultivator",

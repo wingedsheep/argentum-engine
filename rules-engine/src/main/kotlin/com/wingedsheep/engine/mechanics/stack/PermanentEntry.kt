@@ -816,7 +816,10 @@ internal class PermanentEntry(
                 // symbol the caster paid with life.
                 cardDef.startingLoyalty != null -> {
                     val lifePips = if (Keyword.COMPLEATED in cardDef.keywords) spellComponent.phyrexianLifePips else 0
-                    val printed = copyStartingLoyalty ?: cardDef.startingLoyalty!!
+                    // Printed loyalty X (Nissa, Steward of Elements) is the X chosen for the
+                    // spell it resolved from (CR 107.3m); a spell copy carries the same X.
+                    val printed = copyStartingLoyalty
+                        ?: if (cardDef.loyaltyIsX) spellComponent.xValue ?: 0 else cardDef.startingLoyalty!!
                     CounterType.LOYALTY to (printed - 2 * lifePips).coerceAtLeast(0)
                 }
                 cardDef.startingDefense != null ->

@@ -249,6 +249,13 @@ class CardBuilder(private val name: String) {
     var startingLoyalty: Int? = null
 
     /**
+     * Printed loyalty X (Nissa, Steward of Elements): the planeswalker enters with loyalty counters
+     * equal to the X paid for it, and 0 when it enters without being cast. Leave [startingLoyalty]
+     * unset; it builds as 0. See [CardDefinition.loyaltyIsX].
+     */
+    var loyaltyIsX: Boolean = false
+
+    /**
      * Printed defense (for battles) — the number in the card's lower right corner (CR 310.4a).
      * The battle enters with that many defense counters (CR 310.4b).
      */
@@ -1067,7 +1074,13 @@ class CardBuilder(private val name: String) {
             keywordAbilities = finalKeywordAbilities,
             script = script,
             equipCost = equipCost,
-            startingLoyalty = startingLoyalty,
+            startingLoyalty = if (loyaltyIsX) {
+                require(startingLoyalty == null || startingLoyalty == 0) {
+                    "'$name' has loyalty X; leave startingLoyalty unset"
+                }
+                0
+            } else startingLoyalty,
+            loyaltyIsX = loyaltyIsX,
             startingDefense = startingDefense,
             metadata = metadata,
             colorIdentityOverride = parsedColorIdentity,

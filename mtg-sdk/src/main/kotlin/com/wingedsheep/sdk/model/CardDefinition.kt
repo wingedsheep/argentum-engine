@@ -221,6 +221,15 @@ data class CardDefinition(
     val metadata: ScryfallMetadata = ScryfallMetadata(),  // Scryfall metadata for web client
     val startingLoyalty: Int? = null,  // For planeswalkers
     /**
+     * True for a planeswalker whose printed loyalty is X (Nissa, Steward of Elements). Its intrinsic
+     * "enters with loyalty counters equal to its printed loyalty" replacement (CR 306.5b) reads X as
+     * the value chosen for the spell it resolved from (CR 107.3m), so a cast with X=3 enters with
+     * three counters. On any other entry — reanimation, a blink, a token copy — X is 0, which is why
+     * [startingLoyalty] holds 0 alongside this flag and every non-cast entry path needs no change.
+     * Printed as "X" wherever the printed loyalty is shown.
+     */
+    val loyaltyIsX: Boolean = false,
+    /**
      * The number printed in a battle's lower right corner (CR 310.4a). A battle has the intrinsic
      * ability "this permanent enters with this many defense counters on it" (CR 310.4b), so on the
      * battlefield its defense is its defense-counter count (CR 310.4c) rather than this field. The

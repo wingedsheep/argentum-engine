@@ -113,6 +113,11 @@ multi-paragraph entry down the same way when you touch it.
   engine's intrinsic enters-with replacement (CR 306.5b) on *every* battlefield entry — resolving from
   the stack, reanimation, an "exile until this leaves" return, any other put-onto-the-battlefield
   effect, and token copies (loyalty is a copiable value, CR 707.2). Card definitions never place them.
+- `loyaltyIsX: Boolean` (DSL `loyaltyIsX = true`, leave `startingLoyalty` unset) — printed loyalty **X**
+  (Nissa, Steward of Elements, `manaCost = "{X}{G}{U}"`). Cast, it enters with loyalty counters equal to
+  the X chosen for the spell (CR 107.3m; a spell copy keeps the X); on every other entry — reanimation,
+  blink, token copy — X is 0, so `startingLoyalty` builds as 0 and the walker dies to state-based
+  actions unless something adds loyalty. Shown as "X" wherever printed loyalty is displayed.
 - `startingDefense: Int?` — printed defense for **battles** (`typeLine = "Battle — Siege"`), the number
   in the card's lower right corner (CR 310.4a). Placed as defense counters by the same intrinsic
   enters-with replacement as `startingLoyalty` (CR 310.4b), on every battlefield entry. A battle's
