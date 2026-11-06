@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -262,8 +263,17 @@ object SynergyAxes {
     private fun rewardsSpells(filter: GameObjectFilter): Boolean =
         predicates(filter).any { it in SPELL_PREDICATES }
 
-    private fun opponents(filter: GameObjectFilter): Boolean =
-        filter.controllerPredicate == ControllerPredicate.ControlledByOpponent
+    /**
+     * The filter watches someone else's permanents: an opponent's, or — on a Curse — the enchanted
+     * player's ("whenever a creature enchanted player controls enters", Trespasser's Curse), which
+     * the AI aims at an opponent, so the deck's own creatures entering feed nothing.
+     */
+    private fun opponents(filter: GameObjectFilter): Boolean = when (val pred = filter.controllerPredicate) {
+        ControllerPredicate.ControlledByOpponent -> true
+        is ControllerPredicate.ControlledByReferencedPlayer ->
+            (pred.target as? EffectTarget.PlayerRef)?.player == Player.EnchantedPlayer
+        else -> false
+    }
 
     /** False only when the filter names a card type that excludes creatures (a land, an artifact). */
     /** Whether a permanent matching [filter] could be a creature — no noncreature type rules it out. */

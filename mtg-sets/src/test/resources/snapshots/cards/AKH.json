@@ -9144,6 +9144,71 @@
     ]
 }
 
+// Trespasser's Curse
+{
+    "name": "Trespasser's Curse",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nWhenever a creature enchanted player controls enters, that player loses 1 life and you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trespasser's Curse:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        }
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "David Palumbo",
+        "flavorText": "Even in the relative safety of the city, there are places best left undisturbed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6ef4c59-ab84-4d84-b795-015b21ae3fe0.jpg?1783936496"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Trial of Ambition
 {
     "name": "Trial of Ambition",
