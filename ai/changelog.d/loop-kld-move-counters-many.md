@@ -1,0 +1,1 @@
+- #TBD Reads counted and chosen counter moves (Aetherborn Marauder, Goldberry, Tester of the Tangential): both slots stay open for the simulation, the move needs no intent tag, and the card cashes in the +1/+1 counters axis — including moves inside a per-permanent loop.

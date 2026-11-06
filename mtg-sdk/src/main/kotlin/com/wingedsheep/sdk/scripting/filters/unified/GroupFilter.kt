@@ -143,6 +143,21 @@ data class GroupFilter(
         }
     }
 
+    /**
+     * The group read one member at a time, as a per-member loop prints it: "each other permanent you
+     * control with a +1/+1 counter", the controller after the noun and the noun singular. Scopes
+     * that already name one object read as [description].
+     */
+    val eachDescription: String
+        get() = when (scope) {
+            is Scope.Battlefield -> buildString {
+                append("each ")
+                if (excludeSelf || excludeTarget || excludeTriggeringEntity) append("other ")
+                append(baseFilter.singularPermanentDescription)
+            }
+            else -> description
+        }
+
     // =============================================================================
     // Pre-built Creature Groups
     // =============================================================================

@@ -20,7 +20,8 @@ import kotlin.reflect.KClass
  * permanent you control onto a second target permanent." (Nesting Grounds.)
  *
  * Starts the prompt-per-kind walk in [MoveChosenCountersFlow], bounded by the effect's
- * `maxTotal` / `minTotal`. When the walk finishes without a prompt (every step forced) and
+ * `maxTotal` / `minTotal`, over every kind on the source — or only the effect's `counterType`
+ * (Aetherborn Marauder). When the walk finishes without a prompt (every step forced) and
  * [MoveChosenCountersToTargetEffect.drawCardOnMove] is set, the draw runs here through [recursion];
  * otherwise the continuation resumer draws after the last answer.
  */
@@ -42,12 +43,18 @@ class MoveChosenCountersToTargetExecutor(
         val destinationId = context.resolveTarget(effect.destination, state)
             ?: return EffectResult.success(state, emptyList())
         if (sourceId == destinationId) return EffectResult.success(state, emptyList())
+        // Counters move between permanents: a source or destination that has left the battlefield
+        // (an enters trigger whose creature died in response) moves nothing.
+        val battlefield = state.getBattlefield()
+        if (sourceId !in battlefield || destinationId !in battlefield) return EffectResult.success(state, emptyList())
         val maxTotal = effect.maxTotal
         if (maxTotal != null && maxTotal <= 0) return EffectResult.success(state, emptyList())
 
         val counters = state.getEntity(sourceId)?.get<CountersComponent>()
             ?: return EffectResult.success(state, emptyList())
-        val present = counters.counters.entries.filter { it.value > 0 }.map { it.key }
+        val present = counters.counters.entries
+            .filter { it.value > 0 && (effect.counterType == null || it.key == effect.counterType) }
+            .map { it.key }
         if (present.isEmpty()) return EffectResult.success(state, emptyList())
 
         val move = MoveChosenCountersFlow.Move(
@@ -62,7 +69,7 @@ class MoveChosenCountersToTargetExecutor(
         // than the floor simply gives up everything it has.
         val floor = effect.minTotal
             .coerceAtMost(maxTotal ?: Int.MAX_VALUE)
-            .coerceAtMost(counters.counters.values.sum())
+            .coerceAtMost(present.sumOf { counters.getCount(it) })
 
         return when (
             val outcome = MoveChosenCountersFlow.advance(

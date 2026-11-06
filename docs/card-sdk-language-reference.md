@@ -2764,7 +2764,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   player chooses how many of each kind to move from `source` onto `destination` (one `ChooseNumberDecision` per
   kind). When `drawCardOnMove` is true, the controller draws a card if any counter was moved ("if you do, draw").
   The underlying `MoveChosenCountersToTargetEffect` also carries `maxTotal` / `minTotal` (total across kinds),
-  walked with the same budget-and-floor arithmetic as `RemoveAnyNumberOfCounters`.
+  walked with the same budget-and-floor arithmetic as `RemoveAnyNumberOfCounters`. Its `counterType` axis
+  (facade parameter `counterType`) narrows the walk to one kind, leaving the rest untouched. Inside
+  `ForEachInGroup` with `EffectTarget.IterationEntity` as `source` it gathers from many permanents, one prompt
+  each — Aetherborn Marauder's "move any number of +1/+1 counters from other permanents you control onto this
+  creature" is `ForEachInGroup(GroupFilter(Permanent.youControl().withCounter(PLUS_ONE_PLUS_ONE)).other(),
+  MoveChosenCountersToTarget(IterationEntity, Self, counterType = PLUS_ONE_PLUS_ONE))`. Nothing moves when the
+  source or destination is no longer on the battlefield.
 - `MoveCounterOfAnyKind(source, destination, count = 1)` — "**move a counter** from X onto Y": the player picks
   which *kind* moves, not *whether* one does (`minTotal = maxTotal = count`). A source with one kind moves it
   without a prompt; with several, each prompt's minimum is the share of the floor later kinds can't cover, so

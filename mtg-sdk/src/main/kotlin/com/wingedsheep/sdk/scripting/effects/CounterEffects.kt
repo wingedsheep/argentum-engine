@@ -547,11 +547,17 @@ data class MoveCountersEachKindMissingEffect(
  * Grounds) is `minTotal = maxTotal = 1` — the player picks which *kind* moves, not whether one
  * does. The floor is clamped to what the source actually carries.
  *
+ * [counterType] narrows the walk to one kind: "move any number of +1/+1 counters from other
+ * permanents you control onto this creature" (Aetherborn Marauder) is this effect with
+ * `counterType = PLUS_ONE_PLUS_ONE` inside a `ForEachInGroup` whose body names the visited
+ * permanent as [source] — one prompt per permanent, kinds other than [counterType] untouched.
+ *
  * @property source The permanent counters are moved *from*
  * @property destination The permanent counters are moved *onto*
  * @property drawCardOnMove When true, the controller draws a card if any counter was moved
  * @property maxTotal Most counters moved in total across all kinds, or null for no cap
  * @property minTotal Fewest counters that must be moved in total (0 = the move is optional)
+ * @property counterType The only kind that may move, or null for every kind on the source
  */
 @SerialName("MoveChosenCountersToTarget")
 @Serializable
@@ -560,7 +566,8 @@ data class MoveChosenCountersToTargetEffect(
     val destination: EffectTarget,
     val drawCardOnMove: Boolean = false,
     val maxTotal: Int? = null,
-    val minTotal: Int = 0
+    val minTotal: Int = 0,
+    val counterType: CounterType? = null
 ) : Effect {
     init {
         require(minTotal >= 0) { "minTotal must be non-negative" }
@@ -572,6 +579,7 @@ data class MoveChosenCountersToTargetEffect(
             minTotal == 1 && maxTotal == 1 -> "a counter"
             minTotal > 0 && minTotal == maxTotal -> "$minTotal counters"
             maxTotal != null -> "up to $maxTotal counters"
+            counterType != null -> "any number of ${counterType.printed} counters"
             else -> "one or more counters"
         }
         append("Move $what from ${source.description} onto ${destination.description}")

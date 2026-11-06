@@ -2765,14 +2765,19 @@ object Effects {
      * Move a player-chosen set (one or more) of counters from [source] onto [destination]
      * (one prompt per counter kind on the source). When [drawCardOnMove] is true, the
      * controller draws a card if any counter was moved. Used by Goldberry, River-Daughter's
-     * second ability.
+     * second ability. [counterType] restricts the move to that one kind ("move any number of
+     * +1/+1 counters from …"): wrap it in [ForEachInGroup] with [EffectTarget.IterationEntity] as
+     * [source] to gather from several permanents (Aetherborn Marauder).
      */
     fun MoveChosenCountersToTarget(
         source: EffectTarget,
         destination: EffectTarget,
-        drawCardOnMove: Boolean = false
+        drawCardOnMove: Boolean = false,
+        counterType: CounterType? = null
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(source, destination, drawCardOnMove)
+        com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(
+            source, destination, drawCardOnMove, counterType = counterType
+        )
 
     /**
      * "Move a counter from [source] onto [destination]" — the player picks *which kind* moves, but
