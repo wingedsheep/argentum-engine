@@ -5,7 +5,6 @@ import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
@@ -54,7 +53,14 @@ class VehicleBodyReadingAiTest : ScenarioTestBase() {
         test("the draft heuristic rates the body less its crew, not as a blank artifact") {
             val explained = LimitedCardRater.explain(card("Consulate Dreadnought"))
             explained.heuristic.first { it.part == "Base" }.value shouldBeGreaterThan 1.5
-            explained.heuristic.map { it.part } shouldContain "Base"
+        }
+
+        test("a Vehicle spell on the stack is priced by its body too") {
+            val game = scenario().withPlayers().withCardInHand(1, "Consulate Dreadnought").build()
+            val id = game.findCardsInHand(1, "Consulate Dreadnought").single()
+            val component = game.state.getEntity(id)!!.get<CardComponent>()!!
+            val value = BoardPresence.spellValue(game.state.projectedState, component, game.player1Id, intents)!!
+            value shouldBeGreaterThan 0.5
         }
     }
 }

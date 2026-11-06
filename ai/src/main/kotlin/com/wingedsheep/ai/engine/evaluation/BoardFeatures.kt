@@ -606,7 +606,9 @@ object BoardPresence : BoardFeature {
     /**
      * What an uncrewed Vehicle's printed body is worth to [controller] — [VehicleBody.share] of
      * [creatureBodyValue], the share set by how much of crew [crew] the controller's other
-     * creatures could tap — or null when it is not a Vehicle (no crew, or no printed P/T).
+     * creatures could tap — or null when it is not a Vehicle (no crew, or no printed P/T) or the
+     * catalog is off. The crew power is an upper bound: every creature the controller has, tapped
+     * or not, and each Vehicle counts the whole pool as if it were the only one to crew.
      */
     private fun vehicleBodyValue(
         projected: ProjectedState,
