@@ -152,6 +152,7 @@ Adventurous Impulse
 Adversary by Algorithm
 Advocate of the Beast
 Aegar, the Freezing Flame
+Aegis Automaton
 Aegis Sculptor
 Aegis Turtle
 Aegis of the Heavens
@@ -282,6 +283,7 @@ Ajani Goldmane
 Ajani Resolute
 Ajani Unrelenting
 Ajani's Anguish
+Ajani's Comrade
 Ajani's Influence
 Ajani's Last Stand
 Ajani's Mantra
@@ -380,6 +382,7 @@ All-Fates Stalker
 All-Out Assault
 All-Seeing Arbiter
 Alley Assailant
+Alley Evasion
 Alley Strangler
 Allied Assault
 Allies at Last
@@ -998,11 +1001,13 @@ Attuma, Atlantean Warlord
 Attuned Hunter
 Atzocan Archer
 Atzocan Seer
+Audacious Infiltrator
 Audacious Thief
 Audacity
 Audience with Trostani
 Auger Spree	polarity: ModifyStatsEffect
 Augmenter Pugilist
+Augmenting Automaton
 Augur of Autumn
 Augur of Bolas
 Augury Owl
@@ -1291,6 +1296,7 @@ Barren Moor
 Barrensteppe Siege
 Barrenton Cragtreads
 Barret Wallace
+Barricade Breaker
 Barrier Breach
 Barrier of Bones
 Barrin's Spite	intent: Pipeline(ChosenTargets→graveyard|hand); polarity: Pipeline(ChosenTargets→graveyard|hand)
@@ -1331,6 +1337,7 @@ Basri's Solidarity
 Basri, Devoted Paladin
 Basri, Tomorrow's Champion
 Bastion Enforcer
+Bastion Inventor
 Bastion Mastodon
 Bastion of Remembrance
 Bat Colony
@@ -2776,12 +2783,12 @@ Chandra's Pyrohelix
 Chandra's Regulator
 Chandra's Spitfire
 Chandra's Triumph
-Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
 Chandra, Awakened Inferno
 Chandra, Chill of Compliance
 Chandra, Dressed to Kill	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Chandra, Fire Artisan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
 Chandra, Flame's Fury
 Chandra, Flameshaper
 Chandra, Heart of Fire	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary|hand→exile|graveyard)
@@ -3281,7 +3288,7 @@ Conductor of Cacophony
 Conduit Goblin
 Conduit Pylons
 Conduit of Storms
-Conduit of Worlds	intent: Pipeline(ChosenTargets→?); polarity: CantCastSpellsEffect; polarity: Pipeline(ChosenTargets→?)
+Conduit of Worlds	intent: Pipeline(ChosenTargets→?)
 Cone of Flame
 Confiscate
 Confounding Conundrum
@@ -3315,6 +3322,7 @@ Constable Odo
 Constricting Tendrils
 Constrictor Sage
 Construct a Cosmic Cube	intent: HijackNextTurnEffect
+Consulate Dreadnought
 Consulate Skygate
 Consult the Necrosages
 Consult the Star Charts
@@ -3587,6 +3595,7 @@ Cruel Celebrant
 Cruel Deceiver	intent: GrantTriggeredAbilityEffect; intent: Pipeline(TopOfLibrary→?); timing: GrantTriggeredAbilityEffect
 Cruel Edict
 Cruel Fate	intent: Pipeline(TopOfLibrary→graveyard|library)
+Cruel Finality
 Cruel Grimnarch
 Cruel Reality
 Cruel Revival
@@ -3917,6 +3926,7 @@ Dawn's Light Archer
 Dawn's Truce
 Dawn-Blessed Pennant
 Dawnbringer Cleric
+Dawnfeather Eagle
 Dawnfluke
 Dawnhand Dissident
 Dawnhand Eulogist
@@ -4109,6 +4119,7 @@ Defiant Elf
 Defiant Falcon
 Defiant Greatmaw
 Defiant Khenra
+Defiant Salvager
 Defiant Stand
 Defiant Strike
 Defiant Survivor	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
@@ -4124,6 +4135,7 @@ Defiling Tears	polarity: ChangeColorEffect; polarity: GrantActivatedAbilityEffec
 Deflecting Palm
 Deflecting Swat	intent: ChangeTriggeringObjectTargetsEffect; polarity: ChangeTriggeringObjectTargetsEffect
 Defossilize
+Deft Dismissal
 Deft Duelist
 Deftblade Elite	intent: ProvokeEffect; polarity: ProvokeEffect; timing: PreventDamageEffect
 Defy Death
@@ -4409,6 +4421,7 @@ Dispel
 Dispeller's Capsule
 Dispelling Exhale
 Dispersal Shield
+Dispersal Technician
 Disperse
 Dispersing Orb
 Displacer Beast
@@ -4697,7 +4710,7 @@ Dreaded Bat-Cloud
 Dreadfeast Demon
 Dreadful Apathy
 Dreadful as the Storm
-Dreadhorde Arcanist	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Dreadhorde Arcanist
 Dreadhorde Butcher
 Dreadhorde Invasion
 Dreadhorde Twins
@@ -5030,7 +5043,7 @@ Eerie Ultimatum
 Efficient Construction
 Efflorescence	timing: GrantKeywordEffect
 Effortless Master
-Efreet Flamepainter	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Efreet Flamepainter
 Efreet Weaponmaster
 Ego Drain
 Ego Erasure	timing: ForEach>ModifyStatsEffect
@@ -5224,6 +5237,7 @@ Emberstrike Duo
 Embodiment of Agonies
 Embodiment of Spring
 Embraal Bruiser
+Embraal Gear-Smasher
 Embrace Oblivion
 Embrace the Paradox
 Emerald Dragonfly
@@ -5250,7 +5264,7 @@ Emeritus of Conflict
 Emeritus of Ideation
 Emeritus of Truce
 Emeritus of Woe
-Emet-Selch of the Third Seat	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?); polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Emet-Selch of the Third Seat	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
 Emet-Selch, Unsundered
 Emiel the Blessed
 Emil, Vastlands Roamer
@@ -5274,7 +5288,7 @@ Emrakul's Messenger
 Emrakul, the Exigent Doom
 Emrakul, the Promised End	intent: HijackNextTurnEffect; intent: TakeExtraTurnEffect; polarity: HijackNextTurnEffect; polarity: TakeExtraTurnEffect
 Emrakul, the World Anew	intent: Pipeline(BattlefieldMatching→graveyard)
-Emry, Lurker of the Loch	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Emry, Lurker of the Loch	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Enatu Golem
 Encampment Keeper
 Enchanted Being
@@ -5341,6 +5355,7 @@ Enormous Energy Blade
 Enrage
 Enraged Ceratok
 Enraged Flamecaster
+Enraged Giant
 Enraged Huorn	intent: TheRingTemptsYouEffect
 Ensign Pavel Chekov	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
 Enslaved Dwarf
@@ -5897,6 +5912,7 @@ Femeref Archers
 Femeref Healer
 Femeref Knight
 Femeref Scouts
+Fen Hauler
 Fencing Ace
 Feral Abomination
 Feral Deathgorger
@@ -5997,6 +6013,7 @@ Fighting Drake
 Figure of Fable
 Filigree Angel
 Filigree Attendant
+Filigree Crawler
 Filigree Familiar
 Filigree Sages
 Fill with Fright
@@ -6385,6 +6402,8 @@ Foulmire Knight
 Found Footage
 Foundation Breaker
 Founding the Third Path
+Foundry Assembler
+Foundry Hornet
 Foundry Inspector
 Foundry Screecher
 Foundry Street Denizen
@@ -6392,6 +6411,7 @@ Fountain of Renewal
 Fountain of Youth
 Fountainport
 Fountainport Bell
+Fourth Bridge Prowler
 Fowl Strike
 Foxfire Oak
 Fractal Anomaly
@@ -6415,6 +6435,7 @@ Frazzle
 Free Borg Revolutionaries
 Free from Flesh	polarity: AddCountersEffect
 Freed from the Real	intent: TapUntapEffect; polarity: Aura>TapUntapEffect
+Freejam Regent
 Freelance Muscle
 Freestrider Commando
 Freestrider Lookout
@@ -6464,6 +6485,7 @@ Frontier Mastodon
 Frontier Seeker
 Frontier Siege
 Frontline Devastator
+Frontline Rebel
 Frontline Rush
 Frontline Strategist
 Frontline War-Rager
@@ -6781,6 +6803,7 @@ Ghen, Arcanum Weaver
 Ghirapur Aether Grid
 Ghirapur Guide	intent: GrantStaticAbilityEffect; polarity: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Ghirapur Orrery
+Ghirapur Osprey
 Ghired, Mirror of the Wilds
 Ghitu Amplifier
 Ghitu Chronicler
@@ -7891,7 +7914,7 @@ Heedless One
 Hei Bai, Forest Guardian
 Hei Bai, Spirit of Balance
 Heightened Reflexes
-Heiko Yamazaki, the General	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Heiko Yamazaki, the General	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Heir of the Ancient Fang
 Heir of the Wilds
 Heirloom Auntie
@@ -7944,6 +7967,7 @@ Henge of Ramos
 Hengegate Pathway
 Henrika Domnathi
 Herald of Anafenza
+Herald of Anguish
 Herald of Dromoka
 Herald of Eternal Dawn
 Herald of Faith
@@ -8493,6 +8517,11 @@ Imperious Inkmage
 Imperious Oligarch
 Imperious Perfect
 Impervious Greatwurm
+Implement of Combustion
+Implement of Examination
+Implement of Ferocity
+Implement of Improvement
+Implement of Malice
 Implements of Sacrifice
 Implode
 Impolite Entrance
@@ -8673,6 +8702,7 @@ Inspiring Captain
 Inspiring Cleric
 Inspiring Overseer
 Inspiring Paladin
+Inspiring Roar
 Inspiring Unicorn
 Inspiring Vantage
 Inspiring Veteran
@@ -9068,7 +9098,7 @@ Joo Dee, One of Many
 Jor Kadeen, First Goldwarden
 Joraga Invocation
 Joraga Visionary
-Jorn, God of Winter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Jorn, God of Winter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Jorubai Murk Lurker
 Joshua, Phoenix's Dominant
 Josu Vess, Lich Knight
@@ -10655,7 +10685,7 @@ Mausoleum Harpy
 Mausoleum Secrets
 Mausoleum Turnkey
 Mausoleum Wanderer
-Mavinda, Students' Advocate	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithCostIncreaseEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: GrantPlayWithCostIncreaseEffect; polarity: Pipeline(ChosenTargets→?)
+Mavinda, Students' Advocate	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithCostIncreaseEffect; intent: Pipeline(ChosenTargets→?)
 Mavren Fein, Dusk Apostle
 Maw of the Mire
 Mawcor
@@ -11774,7 +11804,7 @@ Nomadic Elf
 Nomads' Assembly
 Noose Constrictor
 Nori, Teller of Tales
-Norika Yamazaki, the Poet	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Norika Yamazaki, the Poet	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Norin, Swift Survivalist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
 Norman Osborn
 Norn's Decree
@@ -11934,7 +11964,7 @@ Offspring's Revenge	polarity: CreateTokenCopyOfTargetEffect; polarity: MoveToZon
 Oggyar Battle-Seer
 Ognis, the Dragon's Lash
 Ogre Arsonist
-Ogre Battlecaster	polarity: Pipeline(ChosenTargets→?); polarity: ReflexiveTriggerEffect
+Ogre Battlecaster
 Ogre Battledriver
 Ogre Berserker
 Ogre Chitterlord
@@ -18001,7 +18031,7 @@ Tinker's Tote
 Tinybones Joins Up
 Tinybones, Bauble Burglar
 Tinybones, Pocket Nuisance
-Tinybones, the Pickpocket	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Tinybones, the Pickpocket	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Tireless Hauler
 Tireless Missionaries
 Tireless Provisioner
@@ -18130,7 +18160,7 @@ Torpor Dust
 Torpor Orb
 Torrent Sculptor
 Torrent of Fire
-Torrential Gearhulk	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Torrential Gearhulk
 Torsten Von Ursus
 Tortoise Formation
 Tortured Existence
@@ -18808,7 +18838,7 @@ V.A.T.S.	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenT
 Vaan, Street Thief
 Vadmir, New Blood
 Vadrik, Astral Archmage
-Vadrok, Apex of Thunder	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: Pipeline(ChosenTargets→?)
+Vadrok, Apex of Thunder
 Vaevictis Asmadi
 Vaevictis Asmadi, the Dire	intent: CaptureControllersEffect; intent: ForEachCapturedControllerEffect; intent: Pipeline(ChosenTargets→graveyard); polarity: CaptureControllersEffect; polarity: ForEachCapturedControllerEffect; polarity: Pipeline(ChosenTargets→graveyard)
 Vagrant Plowbeasts
@@ -19210,7 +19240,7 @@ Vodalian Serpent
 Vodalian Soldiers
 Vodalian War Machine	intent: CanAttackDespiteDefenderThisTurnEffect
 Vodalian Zombie
-Vohar, Vodalian Desecrator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Vohar, Vodalian Desecrator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Voice of Duty
 Voice of Grace
 Voice of Law
@@ -20317,7 +20347,7 @@ Zuko's Exile
 Zuko, Conflicted
 Zuko, Exiled Prince	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Zuko, Firebending Master
-Zul Ashur, Lich Lord	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?); polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(ChosenTargets→?)
+Zul Ashur, Lich Lord	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Zulaport Cutthroat
 Zulaport Duelist
 Zuo Ci, the Mocking Sage
