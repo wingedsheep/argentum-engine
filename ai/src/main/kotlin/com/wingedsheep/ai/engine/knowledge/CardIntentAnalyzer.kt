@@ -984,6 +984,7 @@ object CardIntentAnalyzer {
     ): Set<IntentTag> = buildSet {
         addAll(digTags(root, turnAhead))
         addAll(pileFillTags(root, pileCast))
+        addAll(pileReleaseTags(root, pileCast))
         addAll(destroyAllTags(root))
         addAll(handDisruptionTags(root, eachPlayer = null))
         addAll(symmetricDiscardTags(root))
@@ -1025,7 +1026,67 @@ object CardIntentAnalyzer {
             if (!grant.exiledThisTurnOnly) add(IntentTag.DRAW)
             if (grant.withoutPayingManaCost) add(IntentTag.FREE_SPELL)
         }
+        if (banksOwnLibraryForHand(scripts)) add(IntentTag.DRAW)
     }
+
+    /**
+     * Whether [scripts] stock their linked-exile pile only off **their controller's own library
+     * top** and have an ability that puts the pile into a hand — "whenever this attacks, exile the
+     * top card of your library face down … sacrifice this: put all cards exiled with this into their
+     * owners' hands" (Bomat Courier). The cards are ours, so "their owners' hands" is our hand: the
+     * pile is a draw banked in exile, which the fill ([pileFillTags]) and the release
+     * ([pileReleaseTags]) both read as [IntentTag.DRAW].
+     *
+     * Conservative like [stashesOwnPermanents]: any other way of filling the pile — a single-card or
+     * spell exile, exile-until-leaves, a zone-change redirect, a top-of-library exile that can reach
+     * another player's library — may hand an opponent their own card back, and answers false.
+     */
+    private fun banksOwnLibraryForHand(scripts: List<CardScript>): Boolean {
+        var filled = false
+        var released = false
+        for (script in scripts) {
+            if (script.replacementEffects.any {
+                    (it is RedirectZoneChange && it.linkToSource) || (it is RedirectZoneChangeWith && it.linkToSource)
+                }
+            ) return false
+            for (slot in EffectWalker.slots(script)) {
+                val leaves = EffectWalker.leaves(slot.effect)
+                val ownTop = collectionsFromTop(leaves) { it == Player.You }
+                for (leaf in leaves) when {
+                    leaf is MoveCollectionEffect && leaf.linkToSource -> if (leaf.from in ownTop) filled = true else return false
+                    leaf is MoveToZoneEffect && leaf.linkToSource -> return false
+                    leaf is ExileUntilLeavesEffect -> return false
+                    leaf is ExileTargetSpellEffect && leaf.linkToSource -> return false
+                }
+                if (releasesPileToHand(leaves)) released = true
+            }
+        }
+        return filled && released
+    }
+
+    /** Whether [leaves] gather the source's linked-exile pile and move those cards to a hand. */
+    private fun releasesPileToHand(leaves: List<Effect>): Boolean {
+        val pile = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
+        }
+        if (pile.isEmpty()) return false
+        do {
+            val before = pile.size
+            for (leaf in leaves) pile += derivedCollections(leaf, pile)
+        } while (pile.size != before)
+        return leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in pile &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND
+        }
+    }
+
+    /**
+     * The release half of [banksOwnLibraryForHand]: an ability putting the pile into a hand when
+     * [pileCast] says the pile is a banked draw. A pile the card may cast from ([pileCastTags]'s
+     * grant) is ours to cast too, so handing it over is the same draw.
+     */
+    private fun pileReleaseTags(root: Effect, pileCast: Set<IntentTag>): Set<IntentTag> =
+        if (IntentTag.DRAW in pileCast && releasesPileToHand(readingLeaves(root))) setOf(IntentTag.DRAW) else emptySet()
 
     /**
      * "Exile the top two cards of target opponent's library" into a pile this permanent can cast

@@ -529,9 +529,18 @@ object TargetPolarityAnalyzer {
                 val otherwise = leaf.otherwise ?: continue
                 val taken = forRequirements(leaf.then, requirements, definitions, source)
                 val declined = forRequirements(otherwise, requirements, definitions, source)
+                // A gate the targeted player decides themselves — the punisher: "target opponent may
+                // have you draw three cards. If the player doesn't, … deals damage to that player"
+                // (Combustible Gearhulk, Risk Factor, Palantír of Orthanc) — has one branch about
+                // that player and one about us. The branch that says nothing of the slot is the
+                // price they let us have, so the slot reads as the branch that does.
+                val decider = leaf.decisionMaker?.let { slotOf(it, requirements) }
                 for (slot in requirements.indices) {
                     val reading = taken[slot]
                     if (reading != TargetPolarity.UNKNOWN && reading == declined[slot]) perSlot[slot] += reading
+                    else if (slot == decider && (reading == TargetPolarity.UNKNOWN) != (declined[slot] == TargetPolarity.UNKNOWN)) {
+                        perSlot[slot] += if (reading == TargetPolarity.UNKNOWN) declined[slot] else reading
+                    }
                 }
                 continue
             }

@@ -562,6 +562,125 @@
     ]
 }
 
+// Aethertorch Renegade
+{
+    "name": "Aethertorch Renegade",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, you get {E}{E}{E}{E} (four energy counters).\n{T}, Pay {E}{E}: This creature deals 1 damage to target creature.\n{T}, Pay eight {E}: This creature deals 6 damage to target player or planeswalker.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aethertorch Renegade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 4,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aethertorch Renegade:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}{E}: This creature deals 1 damage to target creature."
+            },
+            {
+                "id": "Aethertorch Renegade:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 8
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay eight {E}: This creature deals 6 damage to target player or planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5c443e1-fd13-4627-85a9-8e9a340a2786.jpg?1783937198"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ambitious Aetherborn
 {
     "name": "Ambitious Aetherborn",
@@ -796,6 +915,74 @@
     ]
 }
 
+// Architect of the Untamed
+{
+    "name": "Architect of the Untamed",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Artificer Druid",
+    "oracleText": "Landfall — Whenever a land you control enters, you get {E} (an energy counter).\nPay eight {E}: Create a 6/6 colorless Beast artifact creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Architect of the Untamed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Architect of the Untamed:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 8
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 6,
+                    "toughness": 6,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Pay eight {E}: Create a 6/6 colorless Beast artifact creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "flavorText": "Next to her designs, life seems like a pale imitation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bc540f5-96a1-44d8-910d-914b9e61b2a5.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Armorcraft Judge
 {
     "name": "Armorcraft Judge",
@@ -831,6 +1018,77 @@
         "artist": "David Palumbo",
         "flavorText": "Were she not a judge, she'd win the division herself.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/6/76b54854-c21f-47d3-99b2-72829fc66071.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Attune with Aether
+{
+    "name": "Attune with Aether",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You get {E}{E} (two energy counters).",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Wesley Burt",
+        "flavorText": "\"I've never seen a world where aether weaves through every aspect of nature.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32b0707d-241e-4ced-9251-b16af4fef2cb.jpg?1783937182",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If an effect says you get one or more {E}, you get that many energy counters. To pay one or more {E}, you lose that many energy counters. You can't pay more energy counters than you have."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1224,6 +1482,117 @@
     }
 }
 
+// Bomat Courier
+{
+    "name": "Bomat Courier",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Haste\nWhenever this creature attacks, exile the top card of your library face down. (You can't look at it.)\n{R}, Discard your hand, Sacrifice this creature: Put all cards exiled with this creature into their owners' hands.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bomat Courier:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile the top card of your library face down."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bomat Courier:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostDiscardHand",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{R}, Discard your hand, Sacrifice this creature: Put all cards exiled with this creature into their owners' hands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/425bff89-ad15-4d22-bce9-a4a07dbafd87.jpg?1783937162",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Each Bomat Courier you control has its own cache of cards. Bomat Courier's last ability only puts those cards into your hand, not those of any other Bomat Courier."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If Bomat Courier leaves the battlefield before you activate its last ability, any cards exiled by its triggered ability remain exiled face down for the rest of the game. If you somehow return the same Bomat Courier card to the battlefield, it will be a different object with no connection to those face-down cards."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You can pay the cost of “discard your hand” even if your hand contains zero cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Botanical Sanctum
 {
     "name": "Botanical Sanctum",
@@ -1320,6 +1689,77 @@
     ]
 }
 
+// Bristling Hydra
+{
+    "name": "Bristling Hydra",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "When this creature enters, you get {E}{E}{E} (three energy counters).\nPay {E}{E}{E}: Put a +1/+1 counter on this creature. It gains hexproof until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bristling Hydra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bristling Hydra:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Pay {E}{E}{E}: Put a +1/+1 counter on this creature. It gains hexproof until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bf38096-05bc-4734-b33c-eb1e8f2986de.jpg?1783937182"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Built to Last
 {
     "name": "Built to Last",
@@ -1393,6 +1833,82 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Built to Smash
+{
+    "name": "Built to Smash",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target attacking creature gets +3/+3 until end of turn. If it's an artifact creature, it gains trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "artifact creature"
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Free from Consulate regulations, renegade-built automatons push performance to the limit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f054978-446c-4565-b51e-8f1f0e0f01e2.jpg?1783937197",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "An artifact creature gains trample in addition to getting +3/+3, not instead of it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1575,6 +2091,161 @@
             }
         ]
     },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chandra, Pyrogenius
+{
+    "name": "Chandra, Pyrogenius",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+2: Chandra deals 2 damage to each opponent.\n−3: Chandra deals 4 damage to target creature.\n−10: Chandra deals 6 damage to target player or planeswalker and each creature that player or that planeswalker's controller controls.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Pyrogenius:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Chandra, Pyrogenius:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Chandra, Pyrogenius:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 6
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": {
+                                        "anyOf": [
+                                            {
+                                                "cardPredicates": [
+                                                    "IsCreature"
+                                                ],
+                                                "controllerPredicate": {
+                                                    "type": "ControlledByReferencedPlayer",
+                                                    "target": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t1"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "cardPredicates": [
+                                                    "IsCreature"
+                                                ],
+                                                "controllerPredicate": {
+                                                    "type": "ControlledByReferencedPlayer",
+                                                    "target": "TargetController"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "excludeTarget": true
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "MYTHIC",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ab8435b-5fe8-4074-8809-46aa6e5504c8.jpg?1783937136",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The last ability of Chandra, Pyrogenius doesn't target the creatures. A creature with hexproof the target player (or controller of the target planeswalker) controls will be dealt damage this way."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "In a Two-Headed Giant game, Chandra's first ability causes 4 damage total to be dealt to the opposing team."
+            }
+        ],
+        "inBooster": false
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -1913,6 +2584,146 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Combustible Gearhulk
+{
+    "name": "Combustible Gearhulk",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "First strike\nWhen this creature enters, target opponent may have you draw three cards. If the player doesn't, you mill three cards, then this creature deals damage to that player equal to the total mana value of those cards.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Combustible Gearhulk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "ManaValueSumOfCollection",
+                                    "collectionName": "milled"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "decisionMaker": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "descriptionOverride": "Have Combustible Gearhulk's controller draw three cards?"
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent may have you draw three cards. If the player doesn't, you mill three cards, then this creature deals damage to that player equal to the total mana value of those cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0f43147-4552-48fd-be0a-0629b9a0ad69.jpg?1783937195",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "While Combustible Gearhulk's triggered ability is resolving, no player may take any actions other than those specified by the Gearhulk. Once the opponent makes a choice, players can't cast spells or activate abilities until after the cards are drawn or put into the graveyard and damage has been dealt (if applicable)."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you have fewer than three cards in your library, the opponent may choose to have you draw three cards. If so, you'll lose the game as state-based actions are performed."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If any of the cards put into your graveyard have {X} in their mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Commencement of Festivities
+{
+    "name": "Commencement of Festivities",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt to players this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "Each"
+            },
+            "body": {
+                "type": "PreventDamageShield",
+                "target": {
+                    "type": "PlayerRef",
+                    "player": "You"
+                },
+                "scope": "CombatOnly"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Zack Stella",
+        "flavorText": "Never before have there been so many brilliant minds and wondrous inventions in one place. Denizens from every corner of Kaladesh will flock to the once-in-a-lifetime Inventors' Fair.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1724602-2ae1-40a4-aeb0-51a483a6948c.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2774,6 +3585,86 @@
     ]
 }
 
+// Durable Handicraft
+{
+    "name": "Durable Handicraft",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control enters, you may pay {1}. If you do, put a +1/+1 counter on that creature.\n{5}{G}, Sacrifice this enchantment: Put a +1/+1 counter on each creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Durable Handicraft:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control enters, you may pay {1}. If you do, put a +1/+1 counter on that creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Durable Handicraft:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28d5e2ff-dc8a-4ed5-989a-4b4b79591b3f.jpg?1783937179"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Eddytrail Hawk
 {
     "name": "Eddytrail Hawk",
@@ -3524,6 +4415,83 @@
     ]
 }
 
+// Fateful Showdown
+{
+    "name": "Fateful Showdown",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Fateful Showdown deals damage to any target equal to the number of cards in your hand. Discard all the cards in your hand, then draw that many cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "gathered1_count"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "Tonight at the Grand Exhibition, witness Head Judge Tezzeret face off against the infamous renegade Pia Nalaar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a19d5bdd-7f45-4ff1-bd1a-ac4e87572bcb.jpg?1783937194",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The number of cards in your hand is counted only as Fateful Showdown resolves. Fateful Showdown is on the stack at this time, so it's not counted."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If Fateful Showdown's target becomes an illegal target, you won't discard your hand or draw any cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Filigree Familiar
 {
     "name": "Filigree Familiar",
@@ -3984,6 +4952,53 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Furious Reprisal
+{
+    "name": "Furious Reprisal",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Furious Reprisal deals 2 damage to each of two targets.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Now that's the Chandra I've been waiting to see.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3eeeecd-1d62-49f3-82b0-60f1f5e57d97.jpg?1783937194",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You can't target the same permanent or player twice to have one recipient be dealt 4 damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4500,6 +5515,71 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Harnessed Lightning
+{
+    "name": "Harnessed Lightning",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature. You get {E}{E}{E} (three energy counters), then you may pay any amount of {E}. Harnessed Lightning deals that much damage to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                },
+                {
+                    "type": "PayCounters",
+                    "counterType": "ENERGY",
+                    "storeAmountAs": "paid"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "paid"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9be9b5c-eed4-4a5d-962f-3482da5a6f1d.jpg?1783937194",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the target creature becomes an illegal target, Harnessed Lightning doesn't resolve and none of its effects happen. You won't get {E}{E}{E} or be able to pay any {E}."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You choose the target creature as you cast Harnessed Lightning. You don't choose how much {E} to pay until Harnessed Lightning is resolving. No player may take actions between the time you choose how much {E} to pay and the time the creature takes damage equal to the {E} paid this way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5543,6 +6623,70 @@
     ]
 }
 
+// Lathnu Hellion
+{
+    "name": "Lathnu Hellion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "Haste\nWhen this creature enters, you get {E}{E} (two energy counters).\nAt the beginning of your end step, sacrifice this creature unless you pay {E}{E}.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lathnu Hellion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Lathnu Hellion:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomPayPlayerCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14050179-84af-46f6-89be-338f8e7131cc.jpg?1783937192"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lawless Broker
 {
     "name": "Lawless Broker",
@@ -5590,6 +6734,202 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Liberating Combustion
+{
+    "name": "Liberating Combustion",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Liberating Combustion deals 6 damage to target creature. You may search your library and/or graveyard for a card named Chandra, Pyrogenius, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Chandra, Pyrogenius"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Chandra, Pyrogenius to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Chandra, Pyrogenius"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Chandra, Pyrogenius to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Chandra, Pyrogenius"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Chandra, Pyrogenius to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "267",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9d2156e-2d54-440e-b0fd-7bef702afbfc.jpg?1783937138",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the target creature becomes an illegal target for Liberating Combustion, the spell won't resolve and none of its effects will happen. You won't search for Chandra, Pyrogenius."
+            }
+        ],
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5676,6 +7016,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Longtusk Cub
+{
+    "name": "Longtusk Cub",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Whenever this creature deals combat damage to a player, you get {E}{E} (two energy counters).\nPay {E}{E}: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Longtusk Cub:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Longtusk Cub:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Pay {E}{E}: Put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4de778a-4419-49a5-9dcf-5d0095c873fa.jpg?1783937176"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5788,6 +7193,97 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Madcap Experiment
+{
+    "name": "Madcap Experiment",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield and the rest on the bottom of your library in a random order. Madcap Experiment deals damage to you equal to the number of cards revealed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherUntilMatch",
+                    "filter": "artifact",
+                    "storeMatch": "matched0",
+                    "storeRevealed": "revealed0"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed0",
+                    "fromZone": "Library",
+                    "toZone": "Battlefield"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matched0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "revealed0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "matched0"
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "revealed0"
+                        ]
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05768b87-d2df-42fc-bf63-e471d31b32e3.jpg?1783937192",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The number of cards revealed this way includes the artifact card you put onto the battlefield."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Once Madcap Experiment begins resolving, no player may take any actions other than those specified by Madcap Experiment until it's done resolving."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Any abilities that trigger as the artifact enters the battlefield aren't put onto the stack until Madcap Experiment is done resolving."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you don't reveal an artifact card, you'll randomize your library and be dealt damage equal to the number of cards in your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6022,6 +7518,86 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Maulfist Doorbuster
+{
+    "name": "Maulfist Doorbuster",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}. If you do, target creature can't block this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Maulfist Doorbuster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Maulfist Doorbuster:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53681384-b72d-42a6-b134-aa420115ea12.jpg?1783937191",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The target creature can't block any creatures this turn. The effect isn't restricted to just whether the creature can block Maulfist Doorbuster."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6320,6 +7896,90 @@
         "artist": "Christopher Burdett",
         "flavorText": "Some say tales of the Narnam greenhouse are told to scare the children, but every tale grows from a seed of truth.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/88bf1a67-61f7-4f03-b677-a874b64c989e.jpg?1783937152"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nature's Way
+{
+    "name": "Nature's Way",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control gains vigilance and trample until end of turn. It deals damage equal to its power to target creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "Many elves incorporate the beauty of nature into their inventions. Very few capture its savagery.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec122287-fe33-4ac3-803c-f5173cae50a7.jpg?1783937175"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -7475,6 +9135,53 @@
     }
 }
 
+// Renegade Tactics
+{
+    "name": "Renegade Tactics",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature can't block this turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"Nothing against you. It's just that waiting for Consulate clearance was never really my thing.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c06a39c-68bb-4e65-9a6d-9d9bc745201f.jpg?1783937189"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Restoration Gearsmith
 {
     "name": "Restoration Gearsmith",
@@ -7606,6 +9313,76 @@
     ]
 }
 
+// Riparian Tiger
+{
+    "name": "Riparian Tiger",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Trample\nWhen this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, it gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riparian Tiger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Riparian Tiger:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccf7e050-9631-431c-bcae-f74d91d537b0.jpg?1783937175"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ruinous Gremlin
 {
     "name": "Ruinous Gremlin",
@@ -7726,6 +9503,44 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sage of Shaila's Claim
+{
+    "name": "Sage of Shaila's Claim",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "When this creature enters, you get {E}{E}{E} (three energy counters).",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage of Shaila's Claim:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Howard Lyon",
+        "flavorText": "Even now, Shaila's descendants proudly occupy the greenway that she refused to relinquish to the Consulate.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/0987d29a-2043-4341-89d5-5e34bb6507e2.jpg?1783937173"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7908,6 +9723,66 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Servant of the Conduit
+{
+    "name": "Servant of the Conduit",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\n{T}, Pay {E}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Servant of the Conduit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Servant of the Conduit:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Creation without connection to nature is just manufacture.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9ce9cf30-4baa-4f28-84e8-b9b1168a40e0.jpg?1783937173"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Servo Exhibition
@@ -8469,6 +10344,50 @@
     ]
 }
 
+// Speedway Fanatic
+{
+    "name": "Speedway Fanatic",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Pilot",
+    "oracleText": "Haste\nWhenever this creature crews a Vehicle, that Vehicle gains haste until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Speedway Fanatic:1",
+                "trigger": "CrewsEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "If her vehicle even has a brake, she couldn't tell you which pedal it is.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/436ce901-6ac6-4f8c-8ff0-18103f2642b8.jpg?1783937188",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Speedway Fanatic's triggered ability triggers when it becomes tapped to activate a crew ability. Even if Speedway Fanatic leaves the battlefield before its triggered ability resolves, that Vehicle still gains haste until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Spirebluff Canal
 {
     "name": "Spirebluff Canal",
@@ -8574,6 +10493,144 @@
         "artist": "Deruchenko Alexander",
         "flavorText": "\"The Consulate promised that we would all have access to aether. I'm just keeping them honest.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9551190-9764-47a6-b414-8411beec89d2.jpg?1783937188"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Spontaneous Artist
+{
+    "name": "Spontaneous Artist",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, you get {E} (an energy counter).\nPay {E}: Target creature gains haste until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spontaneous Artist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Spontaneous Artist:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Pay {E}: Target creature gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8bbeb22-5e50-4b90-b756-9d420f9cfe7f.jpg?1783937188"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Start Your Engines
+{
+    "name": "Start Your Engines",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Vehicles you control become artifact creatures until end of turn. Creatures you control get +2/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Vehicle ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCardType",
+                        "cardType": "Creature",
+                        "target": "IterationEntity",
+                        "duration": "EndOfTurn"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "Inventors from around the world have come to the Fair hoping their creations will fly, drive, or sail their way to a top prize.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbae1eb8-697d-43e1-b03e-f4246a9f225e.jpg?1783937187",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Vehicles you control become artifact creatures and then also get +2/+0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The set of Vehicles and creatures affected by Start Your Engines is determined as the spell resolves. Creatures you begin to control later in the turn won't get +2/+0, and Vehicles you begin to control later in the turn won't automatically become creatures and won't get +2/+0."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -8826,6 +10883,62 @@
     ]
 }
 
+// Territorial Gorger
+{
+    "name": "Territorial Gorger",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Gremlin",
+    "oracleText": "Trample\nWhenever you get one or more {E} (energy counters), this creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Territorial Gorger:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "ENERGY",
+                    "recipient": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "Inventors have been known to capture gremlins with the intent to release them in a rival's workshop. More often than not, that plan backfires.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3525ad1-3c17-4959-ab61-ae0e784c526a.jpg?1783937186",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If you get multiple {E} at once, Territorial Gorger only gets +2/+2 once, not +2/+2 per {E}. If you get multiple {E} at different times, it triggers once each time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Terror of the Fairgrounds
 {
     "name": "Terror of the Fairgrounds",
@@ -8922,6 +11035,74 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Thriving Grubs
+{
+    "name": "Thriving Grubs",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Gremlin",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thriving Grubs:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Thriving Grubs:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Steve Prescott",
+        "flavorText": "Some passengers ride without tickets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbc3184a-eeda-4f22-92de-257c20cff6e2.jpg?1783937186",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9058,6 +11239,74 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Thriving Rhino
+{
+    "name": "Thriving Rhino",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Rhino",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thriving Rhino:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Thriving Rhino:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Matt Stewart",
+        "flavorText": "As unpredictable as aether, and just as hard to contain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5acf10ec-f2dd-4569-909b-ac52a9ed6adf.jpg?1783937171",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10085,6 +12334,87 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Woodweaver's Puzzleknot
+{
+    "name": "Woodweaver's Puzzleknot",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, you gain 3 life and get {E}{E}{E} (three energy counters).\n{2}{G}, Sacrifice this artifact: You gain 3 life and get {E}{E}{E}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Woodweaver's Puzzleknot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 3,
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Woodweaver's Puzzleknot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 3,
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/899d7420-f16d-4910-adf7-6deff47ecf1e.jpg?1783937145"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

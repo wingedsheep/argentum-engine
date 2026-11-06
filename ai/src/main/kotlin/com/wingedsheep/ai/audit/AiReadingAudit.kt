@@ -381,6 +381,11 @@ object AiReadingAudit {
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect ||
+                            // The same shield on each player in turn (Commencement of Festivities'
+                            // "prevent all combat damage that would be dealt to players this turn"):
+                            // a ForEach over players whose body is only that shield.
+                            (leaf is ForEachEffect && leaf.space is IterationSpace.Players &&
+                                EffectWalker.leaves(leaf.body).let { body -> body.isNotEmpty() && body.all { it is PreventDamageEffect } }) ||
                             // A death-return grant (Verdant Rebirth, Feign Death): HoldPolicy holds
                             // it for the removal it answers or the fight its target is in.
                             (ExpiringGrantWindow.returnsFromDeathThisTurn(leaf) && IntentTag.PROTECTION in intent.tags) ||

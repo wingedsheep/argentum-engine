@@ -225,7 +225,7 @@ class PreventDamageExecutor(
             val targetId = if (silenceChosenSource) {
                 controllerId
             } else {
-                context.resolveTarget(effect.target)
+                context.resolveTarget(effect.target, state)
                     ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect with ChosenSource")
             }
             val amount = effect.amount?.let { amountEvaluator.evaluate(state, it, context) }
@@ -258,7 +258,7 @@ class PreventDamageExecutor(
         context: EffectContext
     ): EffectResult {
         if (effect.direction == PreventionDirection.FromTarget && effect.onPrevented != null) {
-            val targetId = context.resolveTarget(effect.target)
+            val targetId = context.resolveTarget(effect.target, state)
                 ?: return EffectResult.success(state)
             state.getEntity(targetId) ?: return EffectResult.success(state)
             val newState = state.installPreventAndReactShield(
@@ -313,7 +313,7 @@ class PreventDamageExecutor(
             // spent by the first damage from any matching source.
             sourceFilter != null && effect.nextInstanceOnly &&
             effect.direction == PreventionDirection.ToTarget -> {
-                val targetId = context.resolveTarget(effect.target)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
                 modification = SerializableModification.PreventNextDamageFromMatching(sourceFilter)
@@ -368,7 +368,7 @@ class PreventDamageExecutor(
             effect.scope == PreventionScope.CombatOnly &&
             effect.direction == PreventionDirection.ToTarget &&
             effect.amount == null -> {
-                val targetId = context.resolveTarget(effect.target)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
@@ -377,7 +377,7 @@ class PreventDamageExecutor(
 
             // Bidirectional combat damage prevention (to and by target)
             effect.direction == PreventionDirection.Both -> {
-                val targetId = context.resolveTarget(effect.target)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
@@ -387,7 +387,7 @@ class PreventDamageExecutor(
             // Prevent all damage FROM target (silencing)
             effect.direction == PreventionDirection.FromTarget &&
             effect.amount == null -> {
-                val targetId = context.resolveTarget(effect.target)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
@@ -398,7 +398,7 @@ class PreventDamageExecutor(
             // controller life for what it prevents (Candles' Glow), optionally combat-only
             // (Decorated Griffin).
             effect.amount != null -> {
-                val targetId = context.resolveTarget(effect.target)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 val effectAmount = effect.amount!!
                 val amount = amountEvaluator.evaluate(state, effectAmount, context)
@@ -414,7 +414,7 @@ class PreventDamageExecutor(
             // Prevent all damage TO target.
             effect.direction == PreventionDirection.ToTarget &&
             effect.scope == PreventionScope.AllDamage -> {
-                val targetId = context.resolveTarget(effect.target)
+                val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)

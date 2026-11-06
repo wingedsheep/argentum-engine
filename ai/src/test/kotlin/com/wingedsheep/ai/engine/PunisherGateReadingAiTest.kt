@@ -41,6 +41,18 @@ class PunisherGateReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a punisher the targeted opponent decides aims at that opponent") {
+            // Combustible Gearhulk: "target opponent may have you draw three cards. If the player
+            // doesn't, you mill three cards, then this deals damage to that player …". The draw
+            // branch says nothing of the slot; the other hits it, so the slot is harmful.
+            val trigger = card("Combustible Gearhulk").script.triggeredAbilities.single()
+            val reqs = listOfNotNull(trigger.targetRequirement) + trigger.additionalTargetRequirements
+            TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs) shouldBe listOf(TargetPolarity.HARMFUL)
+            withClue("Risk Factor: four damage to the target, or three cards for us") {
+                TargetPolarityAnalyzer.forSpell(card("Risk Factor")) shouldBe listOf(TargetPolarity.HARMFUL)
+            }
+        }
+
         test("Clash of Elements is not cast at our own creature when theirs can't be targeted") {
             val game = scenario()
                 .withPlayers()
