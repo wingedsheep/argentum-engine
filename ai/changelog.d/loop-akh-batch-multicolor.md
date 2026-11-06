@@ -1,0 +1,1 @@
+- #PR Reads "return target spell to its owner's hand" (Failure, Reprieve, Hullbreaker Horror) as a counterspell aimed at an opposing spell

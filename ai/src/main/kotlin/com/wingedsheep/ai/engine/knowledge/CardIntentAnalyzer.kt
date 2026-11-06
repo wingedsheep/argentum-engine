@@ -1711,6 +1711,9 @@ object CardIntentAnalyzer {
             if (effect.targetSource == CounterTargetSource.TargetingSource) setOf(IntentTag.PROTECTION)
             else setOf(IntentTag.COUNTERSPELL)
         is CounterAllOnStackEffect -> setOf(IntentTag.COUNTERSPELL)
+        // "Return target spell to its owner's hand" (Failure, Reprieve) answers a spell on the stack
+        // the way a counter does — its caster gets the card back, not the tempo or the mana.
+        ReturnSpellToOwnersHandEffect -> setOf(IntentTag.COUNTERSPELL)
         // "End the turn" as a card's whole payoff (Time Stop, Discontinuity, Glorious End) exiles
         // every spell and ability on the stack — a counter-everything that can't be stopped — and
         // takes the attackers out of combat with it. What it answers is already on the stack or in

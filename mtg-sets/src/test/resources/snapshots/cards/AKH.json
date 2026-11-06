@@ -1,3 +1,85 @@
+// Ahn-Crop Champion
+{
+    "name": "Ahn-Crop Champion",
+    "manaCost": "{2}{G}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, untap all other creatures you control. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ahn-Crop Champion:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"The Second Sun nears its destination! Let it light the way to ours!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2ddda94a-4b2d-47b0-8d2c-3ad70a0d5584.jpg?1783936464",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "All attackers are chosen at once. You can’t attack with Ahn-Crop Champion, untap a tapped creature, and then attack with that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Untapping an attacking creature doesn’t remove it from combat."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you attack with two Ahn-Crop Champions and exert both, each will untap the other."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Ahn-Crop Crasher
 {
     "name": "Ahn-Crop Crasher",
@@ -619,6 +701,85 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/1/61203781-24ad-4bc9-9b69-97149f3043bc.jpg?1783936526"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aven Wind Guide
+{
+    "name": "Aven Wind Guide",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Creature — Bird Warrior",
+    "oracleText": "Flying, vigilance\nCreature tokens you control have flying and vigilance.\nEmbalm {4}{W}{U} ({4}{W}{U}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Bird Warrior with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "EMBALM"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "embalm_{4}{W}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {4}{W}{U} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/414bc716-2b1b-4731-bd0c-f4a5caf26e40.jpg?1783936465"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -2928,6 +3089,192 @@
     ]
 }
 
+// Cut // Ribbons
+{
+    "name": "Cut // Ribbons",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Cut deals 4 damage to target creature.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nEach opponent loses X life.",
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6f61e2b-e93b-4dda-95cf-9d0ff198c0a6.jpg?1783936453",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "In a Two-Headed Giant game, Ribbons causes the opposing team to lose two times X life."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you cast the first half of a split card with aftermath during your turn, you'll have priority immediately after it resolves. You can cast the half with aftermath from your graveyard before any player can take any other action if it's legal for you to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Cut",
+            "manaCost": "{1}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Cut deals 4 damage to target creature.",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Ribbons",
+            "manaCost": "{X}{B}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nEach opponent loses X life.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "LoseLife",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Decimator Beetle
+{
+    "name": "Decimator Beetle",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "When this creature enters, put a -1/-1 counter on target creature you control.\nWhenever this creature attacks, remove a -1/-1 counter from target creature you control and put a -1/-1 counter on up to one target creature defending player controls.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Decimator Beetle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, put a -1/-1 counter on target creature you control."
+            },
+            {
+                "id": "Decimator Beetle:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveCounters",
+                            "counterType": "MINUS_ONE_MINUS_ONE",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "MINUS_ONE_MINUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t1"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByDefendingPlayer"
+                            }
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "descriptionOverride": "Whenever this creature attacks, remove a -1/-1 counter from target creature you control and put a -1/-1 counter on up to one target creature defending player controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Adrian Majkrzak",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b75e834-fa46-4833-ae9f-1bc2809ece2f.jpg?1783936464"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Decision Paralysis
 {
     "name": "Decision Paralysis",
@@ -3254,6 +3601,122 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Destined // Lead
+{
+    "name": "Destined // Lead",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+0 and gains indestructible until end of turn.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nAll creatures able to block target creature this turn do so.",
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cf5c549-1e2a-4c47-baf7-e608661b3088.jpg?1783936456",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Lead doesn't give any creatures the ability to block the target creature. It just forces those creatures that are already able to block the creature to do so."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "As blockers are declared, any creature that's tapped or affected by a spell or ability that says it can't block doesn't block. If there's a cost associated with having the creature block, no player is forced to pay that cost, so it doesn't block if that cost isn't paid."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Destined",
+            "manaCost": "{1}{B}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +1/+0 and gains indestructible until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Lead",
+            "manaCost": "{3}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nAll creatures able to block target creature this turn do so.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Devoted Crop-Mate
@@ -4304,6 +4767,119 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Failure // Comply
+{
+    "name": "Failure // Comply",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Return target spell to its owner's hand.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nChoose a card name. Until your next turn, your opponents can't cast spells with the chosen name.",
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9623c8c-01b4-4e8f-a5b9-eeea408ec027.jpg?1783936454",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If a spell is returned to its owner's hand, it's removed from the stack and thus will not resolve. The spell isn't countered; it just no longer exists. This works against a spell that can't be countered."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a copy of a spell is returned to its owner's hand, it's moved there, then it will cease to exist as a state-based action."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You choose a card name as Comply resolves, not as you cast it. Opponents can't cast spells with that name after you've chosen it."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You may choose the name of a land card. Cards with that name can still be played since lands are never cast."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you choose the name of a split card, you choose one name, not both. For example, you could name Failure or Comply, but not Failure // Comply. Opponents are still allowed to cast the half you didn't choose."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Failure",
+            "manaCost": "{1}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Return target spell to its owner's hand.",
+            "script": {
+                "spellEffect": "ReturnSpellToOwnersHand",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Comply",
+            "manaCost": "{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nChoose a card name. Until your next turn, your opponents can't cast spells with the chosen name.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "cardName0",
+                            "prompt": "Choose a card name"
+                        },
+                        {
+                            "type": "CantCastSpells",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            },
+                            "duration": "UntilYourNextTurn",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "NameEqualsChosen",
+                                        "variableName": "cardName0"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Faith of the Devoted
@@ -6508,6 +7084,97 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Heaven // Earth
+{
+    "name": "Heaven // Earth",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Heaven deals X damage to each creature with flying.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nEarth deals X damage to each creature without flying.",
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe1a4032-efbb-4f72-9181-994b2b35f598.jpg?1783936452",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You don't have to choose the same value for X while casting Earth as you did while casting Heaven."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Heaven",
+            "manaCost": "{X}{G}",
+            "typeLine": "Instant",
+            "oracleText": "Heaven deals X damage to each creature with flying.",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Earth",
+            "manaCost": "{X}{R}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nEarth deals X damage to each creature without flying.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Hekma Sentinels
@@ -8758,6 +9425,80 @@
     ]
 }
 
+// Mouth // Feed
+{
+    "name": "Mouth // Feed",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 3/3 green Hippo creature token.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nDraw a card for each creature you control with power 3 or greater.",
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a47070a0-fd05-4ed9-a175-847a864478da.jpg?1783936458",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Mouth",
+            "manaCost": "{2}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create a 3/3 green Hippo creature token.",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Hippo"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/a/1aea5e0b-dc4e-4055-9e13-1dfbc25a2f00.jpg?1783936411"
+                }
+            }
+        },
+        {
+            "name": "Feed",
+            "manaCost": "{3}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nDraw a card for each creature you control with power 3 or greater.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature pow>=3"
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Naga Oracle
 {
     "name": "Naga Oracle",
@@ -9698,6 +10439,106 @@
     }
 }
 
+// Onward // Victory
+{
+    "name": "Onward // Victory",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/+0 until end of turn, where X is its power.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nTarget creature gains double strike until end of turn.",
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/517b32e4-4b34-431f-8f3b-98a6cffc245a.jpg?1783936455",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "The value of X is determined only as Onward resolves. It won't change later in the turn if other effects modify the creature's power."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you cast the first half of a split card with aftermath during your turn, you'll have priority immediately after it resolves. You can cast the half with aftermath from your graveyard before any player can take any other action if it's legal for you to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Onward",
+            "manaCost": "{2}{R}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +X/+0 until end of turn, where X is its power.",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Victory",
+            "manaCost": "{2}{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nTarget creature gains double strike until end of turn.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Open into Wonder
 {
     "name": "Open into Wonder",
@@ -10252,6 +11093,141 @@
     ]
 }
 
+// Prepare // Fight
+{
+    "name": "Prepare // Fight",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Untap target creature. It gets +2/+2 and gains lifelink until end of turn.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nTarget creature you control fights target creature an opponent controls.",
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f59ea6f6-2dff-4e58-9166-57cac03f1d0a.jpg?1783936453",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Untapping an attacking creature doesn't remove it from combat."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If either or both targets are illegal when Fight tries to resolve, no creature will deal or be dealt damage."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Prepare",
+            "manaCost": "{1}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Untap target creature. It gets +2/+2 and gains lifelink until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Fight",
+            "manaCost": "{3}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nTarget creature you control fights target creature an opponent controls.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t2"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Protection of the Hekma
 {
     "name": "Protection of the Hekma",
@@ -10604,6 +11580,257 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Rags // Riches
+{
+    "name": "Rags // Riches",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -2/-2 until end of turn.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nEach opponent chooses a creature they control. You gain control of those creatures.",
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11d84618-aca9-47dc-ae73-36a2c29f584c.jpg?1783936453",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Rags affects only creatures on the battlefield at the time it resolves. It won't affect creatures that enter the battlefield or noncreature permanents that become creatures later in the turn."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Riches's effect doesn't target. Creatures with hexproof may be lured away this way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Riches's effect lasts indefinitely. It doesn't wear off during the cleanup step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Once Riches begins to resolve, no player may take other actions until it's done. Notably, opponents can't try to remove a creature after choosing it but before you gain control of it."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "In a multiplayer game, each opponent in turn order chooses a creature they control, if they control any creatures. After each opponent has done so, you gain control of each chosen creature simultaneously."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you cast the first half of a split card with aftermath during your turn, you'll have priority immediately after it resolves. You can cast the half with aftermath from your graveyard before any player can take any other action if it's legal for you to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Rags",
+            "manaCost": "{2}{B}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "All creatures get -2/-2 until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Riches",
+            "manaCost": "{5}{U}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nEach opponent chooses a creature they control. You gain control of those creatures.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "creature",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a creature you control for your opponent to gain control of",
+                                        "selectedLabel": "Give",
+                                        "useTargetingUI": true
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected3"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "collected3"
+                            },
+                            "body": {
+                                "type": "GainControl",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Reduce // Rubble
+{
+    "name": "Reduce // Rubble",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {3}.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nUp to three target lands don't untap during their controller's next untap step.",
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2f3035c-ca27-40f3-ad73-c4e54bb2bcd7.jpg?1783936457",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Once you've started to cast a spell with aftermath from your graveyard, the card is immediately moved to the stack. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you cast the first half of a split card with aftermath during your turn, you'll have priority immediately after it resolves. You can cast the half with aftermath from your graveyard before any player can take any other action if it's legal for you to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Reduce",
+            "manaCost": "{2}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Counter target spell unless its controller pays {3}.",
+            "script": {
+                "spellEffect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Rubble",
+            "manaCost": "{2}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nUp to three target lands don't untap during their controller's next untap step.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "DOESNT_UNTAP",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilAfterAffectedControllersNextUntap"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Regal Caracal
@@ -11639,6 +12866,72 @@
     ]
 }
 
+// Shadowstorm Vizier
+{
+    "name": "Shadowstorm Vizier",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Flying\nWhenever you cycle or discard a card, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadowstorm Vizier:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cycle or discard a card, this creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "flavorText": "She can coil a breeze like a string around her finger—or twist it into a noose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea72b393-e47c-46de-a458-624ef0227486.jpg?1783936460",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you discard a card doesn't give you permission to discard cards. You'll need another effect that instructs or allows you to discard them."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Shed Weakness
 {
     "name": "Shed Weakness",
@@ -12205,6 +13498,116 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Spring // Mind
+{
+    "name": "Spring // Mind",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\n//\nAftermath (Cast this spell only from your graveyard. Then exile it.)\nDraw two cards.",
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/6431d464-1f2b-42c4-ad38-67b7d0984080.jpg?1783936454",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Once you've started to cast a spell with aftermath from your graveyard, the card is immediately moved to the stack. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can't cast the half with aftermath."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If another effect allows you to cast a split card with aftermath from a graveyard, you may cast either half. If you cast the half that has aftermath, you'll exile the card if it would leave the stack."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "A spell with aftermath cast from a graveyard will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you cast the first half of a split card with aftermath during your turn, you'll have priority immediately after it resolves. You can cast the half with aftermath from your graveyard before any player can take any other action if it's legal for you to do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Spring",
+            "manaCost": "{2}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Mind",
+            "manaCost": "{4}{U}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Aftermath (Cast this spell only from your graveyard. Then exile it.)\nDraw two cards.",
+            "keywords": [
+                "AFTERMATH"
+            ],
+            "script": {
+                "spellEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Stinging Shot
