@@ -763,6 +763,84 @@
     "colorIdentityOverride": []
 }
 
+// Overseer of the Damned
+{
+    "name": "Overseer of the Damned",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhen this creature enters, you may destroy target creature.\nWhenever a nontoken creature an opponent controls dies, create a tapped 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Overseer of the Damned:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Overseer of the Damned:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/3/0397aa00-6d82-47d9-bc30-072b722c8b71.jpg?1783938797",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "rk post",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1a73408-27b3-45d8-9153-ca964d99fe80.jpg?1783938868"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Reef Worm
 {
     "name": "Reef Worm",
