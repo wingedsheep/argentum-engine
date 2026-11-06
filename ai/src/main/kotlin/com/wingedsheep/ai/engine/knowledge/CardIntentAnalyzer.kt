@@ -65,6 +65,7 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
@@ -1307,7 +1308,7 @@ object CardIntentAnalyzer {
 
     /**
      * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
-     * sacrifice — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
+     * sacrifice, to exile, or to hand — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
      * spelling of the same card does in [tagsOf]. `Effects.DestroyAll` lowers to this shape.
      *
      * The gathered collection is followed through the steps that split or narrow it, as [digTags]
@@ -1343,6 +1344,10 @@ object CardIntentAnalyzer {
             }
             val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
             if (ownOnly && eachPlayer == null) continue
+            // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
+            // Tetravites back: the source's own creations, wherever they now sit, are its upkeep or
+            // its drawback — never an answer to anyone's board.
+            if (StatePredicate.CreatedBySource in filter.statePredicates) continue
             if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
             groups[leaf.storeAs] = true
             val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
@@ -1373,6 +1378,14 @@ object CardIntentAnalyzer {
                 // in [tagsOf] — tempo removal, a wrath when it is still a whole group.
                 leaf is MoveCollectionEffect && leaf.from in groups && leaf.faceDown == null &&
                     (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND -> leaf.from
+                // "Exile each creature with mana value of the chosen quality" (Extinction Event),
+                // "exile all multicolored permanents" (Ravnica at War), "exile … until this leaves"
+                // (Temporary Lockdown): the exile-all, a wrath the way destroy-all is — unless the
+                // same pipeline puts the group straight back onto the battlefield (a mass flicker).
+                leaf is MoveCollectionEffect && leaf.from in groups &&
+                    (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE &&
+                    leaves.none { it is MoveCollectionEffect && it.from in groups &&
+                        (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD } -> leaf.from
                 // "Each opponent blights 1", "target opponent blights 2" (High Perfect Morcant,
                 // Champion of the Weird): a -1/-1 counter on a creature they pick — the edict's
                 // shrinking cousin, the same answer [counterTags] reads in a targeted -1/-1 counter.
