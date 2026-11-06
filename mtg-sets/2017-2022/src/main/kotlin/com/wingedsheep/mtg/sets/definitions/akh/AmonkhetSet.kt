@@ -17,7 +17,6 @@ object AmonkhetSet : MtgSet {
     override val displayName = "Amonkhet"
     override val releaseDate = "2017-04-28"
     override val block = "Amonkhet"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
