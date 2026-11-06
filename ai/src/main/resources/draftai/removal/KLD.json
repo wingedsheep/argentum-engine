@@ -115,6 +115,10 @@
     "removal",
     "creature-removal"
   ],
+  "Impeccable Timing": [
+    "removal",
+    "creature-removal"
+  ],
   "Incendiary Sabotage": [
     "removal",
     "creature-removal"
@@ -140,8 +144,9 @@
     "removal",
     "creature-removal"
   ],
-  "Saheeli Rai": [
-    "removal"
+  "Ruinous Gremlin": [
+    "removal",
+    "artifact-removal"
   ],
   "Select for Inspection": [
     "removal",
@@ -162,6 +167,10 @@
     "creature-removal"
   ],
   "Take Down": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tidy Conclusion": [
     "removal",
     "creature-removal"
   ],

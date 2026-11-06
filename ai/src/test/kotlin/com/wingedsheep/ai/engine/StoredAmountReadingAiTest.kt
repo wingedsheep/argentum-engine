@@ -19,6 +19,8 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -56,6 +58,14 @@ class StoredAmountReadingAiTest : ScenarioTestBase() {
             unread("Noxious Gearhulk").shouldBeEmpty()
         }
 
+        test("an exile its delayed trigger returns is a blink, not removal (Phelia, Exuberant Shepherd)") {
+            val trigger = card("Phelia, Exuberant Shepherd").script.triggeredAbilities.single()
+            TargetPolarityAnalyzer.forRequirements(trigger.effect, listOfNotNull(trigger.targetRequirement)) shouldNotBe
+                listOf(TargetPolarity.HARMFUL)
+            CardIntentAnalyzer.analyzeEffect(trigger.effect, listOfNotNull(trigger.targetRequirement)).tags shouldNotContain
+                IntentTag.EXILE_REMOVAL
+        }
+
         test("a one-turn defender lift and a power-only Aura cut are combat enhancements") {
             val lift = card("Hightide Hermit").script.activatedAbilities.single()
             CardIntentAnalyzer.analyzeEffect(lift.effect).tags shouldContain IntentTag.COMBAT_ENHANCEMENT
@@ -69,8 +79,8 @@ class StoredAmountReadingAiTest : ScenarioTestBase() {
                 .withActivePlayer(1)
                 .withLandsOnBattlefield(1, "Swamp", 6)
                 .withCardInHand(1, "Noxious Gearhulk")
-                .withCardOnBattlefield(1, "Hill Giant")
-                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Craw Wurm")
+                .withCardOnBattlefield(2, "Savannah Lions")
                 .build()
                 .advanceToPriority(1, Step.PRECOMBAT_MAIN)
             game.castSpell(1, "Noxious Gearhulk").error shouldBe null
@@ -81,7 +91,7 @@ class StoredAmountReadingAiTest : ScenarioTestBase() {
             response.shouldBeInstanceOf<TargetsResponse>()
             val picked = response.selectedTargets.values.flatten()
             withClue("Gearhulk's trigger picked $picked") {
-                picked shouldBe listOf(game.findPermanent("Grizzly Bears")!!)
+                picked shouldBe listOf(game.findPermanent("Savannah Lions")!!)
             }
         }
 

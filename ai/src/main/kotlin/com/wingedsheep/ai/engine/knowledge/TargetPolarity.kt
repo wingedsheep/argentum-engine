@@ -1259,16 +1259,21 @@ object TargetPolarityAnalyzer {
 
     /**
      * Whether [move] puts [effect]'s own chosen targets into a graveyard or exile for good — no
-     * owner recast ([ownerRecastsChosenTargets]) and no later step returning what it moved to the
-     * battlefield (a pipeline blink).
+     * owner recast ([ownerRecastsChosenTargets]) and no later step, now or in a delayed trigger,
+     * returning what it moved to the battlefield (a pipeline blink).
      */
     internal fun removesChosenTargets(move: MoveCollectionEffect, effect: Effect): Boolean {
         if (move.from !in allChosenTargets(effect)) return false
         val zone = (move.destination as? CardDestination.ToZone)?.zone
         if (zone != Zone.GRAVEYARD && zone != Zone.EXILE) return false
         if (zone == Zone.EXILE && ownerRecastsChosenTargets(effect)) return false
-        val leaves = EffectWalker.leaves(effect)
-        val moved = listOfNotNull(move.storeMovedAs).toHashSet()
+        // The return may read the moved cards back by the original collection's name, and sit in a
+        // delayed trigger or an "if any were moved" branch (Phelia, Exuberant Shepherd's end-step return).
+        fun deep(e: Effect): List<Effect> = EffectWalker.payoffLeaves(e).flatMap { leaf ->
+            if (leaf is CreateDelayedTriggerEffect) listOf(leaf) + deep(leaf.effect) else listOf(leaf)
+        }
+        val leaves = deep(effect)
+        val moved = listOfNotNull(move.from, move.storeMovedAs).toHashSet()
         do {
             val before = moved.size
             for (leaf in leaves) moved += CardIntentAnalyzer.derivedCollections(leaf, moved)
