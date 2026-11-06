@@ -1,0 +1,1 @@
+- #4486 Reads an animate effect on another permanent (Nissa, Steward of Elements' −6, Serpentine Ambush) as a combat enhancement and no longer holds such an instant past its own attack.

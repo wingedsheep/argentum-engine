@@ -43,8 +43,11 @@ class TargetedUntapReadingTest : ScenarioTestBase() {
 
         test("an untap that sets up another step on the land is not read as ramp") {
             // Wakeroot Elemental: "Untap target land you control. It becomes a 5/5 Elemental creature
-            // with haste." Reading the untap as ramp would hide the animation from the audit.
-            unread("Wakeroot Elemental").mapNotNull { it.effectType } shouldContain "BecomeCreatureEffect"
+            // with haste." The untap readies the land to attack, so the ability is the animation —
+            // a combat enhancement — and never ramp.
+            val tags = CardIntentAnalyzer.analyze(cardRegistry.requireCard("Wakeroot Elemental")).tags
+            tags shouldNotContain IntentTag.RAMP
+            tags shouldContain IntentTag.COMBAT_ENHANCEMENT
         }
 
         test("untapping any creature is not ramp") {

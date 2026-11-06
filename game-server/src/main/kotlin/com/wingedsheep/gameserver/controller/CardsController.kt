@@ -208,7 +208,7 @@ class CardsController(
             // classes is "Fixed(value=2)", which no numeric search could read.
             power = creatureStats?.power?.description,
             toughness = creatureStats?.toughness?.description,
-            loyalty = startingLoyalty?.toString(),
+            loyalty = if (loyaltyIsX) "X" else startingLoyalty?.toString(),
             imageUri = latest?.imageUri ?: metadata.imageUri,
             keywords = keywords.map { it.name }.sorted(),
             legalFormats = legalFormats.map { it.name }.sorted(),

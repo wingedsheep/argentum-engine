@@ -1580,6 +1580,14 @@ object CardIntentAnalyzer {
             else -> setOf(IntentTag.COMBAT_ENHANCEMENT)
         }
 
+        // "Untap up to two target lands you control. They become 5/5 Elemental creatures with flying
+        // and haste until end of turn" (Nissa, Steward of Elements), "target land becomes a 3/3
+        // creature" (Nissa of Shadowed Boughs, Sylvan Awakening's each-land body): another permanent
+        // turned into a creature for the turn's fight — a combat enhancement, like a base P/T it
+        // takes from something bigger. The source animating itself (a manland) is just a body.
+        is BecomeCreatureEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        is AnimateLandEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+
         // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
         // the battlefield, shut off — the Pacifism reading without the static.
         is RemoveAllAbilitiesEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.NEUTRALIZE) else emptySet()
