@@ -249,6 +249,7 @@ Agonizing Syphon
 Agrus Kos, Eternal Soldier
 Agrus Kos, Spirit of Justice
 Agrus Kos, Wojek Veteran
+Ahn-Crop Champion
 Ahn-Crop Crasher
 Ahn-Crop Invader
 Ahriman
@@ -1086,6 +1087,7 @@ Aven Tactician	intent: AddCountersToCollectionEffect; intent: Pipeline(Controlle
 Aven Trailblazer
 Aven Trooper
 Aven Warhawk
+Aven Wind Guide
 Aven Wind Mage
 Aven of Enduring Hope
 Avenger of Zendikar
@@ -1528,7 +1530,7 @@ Bigfin Bouncer
 Bighorner Rancher
 Bilbo Baggins, Burglar
 Bilbo's Deadly Slice
-Bilbo's Gambit	polarity: CantCastSpellsEffect; polarity: ChooseOpponentForSourceEffect; polarity: CreatePredefinedTokenEffect; polarity: GiftGivenEffect; polarity: ReturnSpellToOwnersHandEffect
+Bilbo's Gambit
 Bilbo's Ring
 Bilbo, Luckwearer	intent: ExchangeControlEffect; polarity: ExchangeControlEffect
 Bilbo, Retired Burglar	intent: TheRingTemptsYouEffect
@@ -3717,6 +3719,7 @@ Cursed Wombat	intent: AdaptEffect
 Custodian of the Trove
 Custody Battle	polarity: Aura>GrantTriggeredAbility
 Customs Depot
+Cut // Ribbons
 Cut Down
 Cut In
 Cut Propulsion
@@ -4038,6 +4041,7 @@ Deception
 Deceptive Frostkite
 Deceptive Landscape
 Decimate
+Decimator Beetle
 Decimator of the Provinces
 Decision Paralysis
 Decisive Denial
@@ -4237,6 +4241,7 @@ Desperate Research
 Desperate Ritual
 Despise
 Despoil
+Destined // Lead
 Destined Confrontation
 Destiny Spinner	polarity: BecomeCreatureEffect
 Destroy Evil
@@ -5679,6 +5684,7 @@ Faerie Vandal
 Failed Conversion
 Failed Fording
 Failed Inspection
+Failure // Comply
 Fairgrounds Trumpeter
 Faith Unbroken
 Faith of the Devoted
@@ -7864,6 +7870,7 @@ Heartwood Treefolk
 Heat Shimmer	polarity: CreateTokenCopyOfTargetEffect
 Heated Argument
 Heated Debate
+Heaven // Earth
 Heaven's Gate	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect; timing: ForEach>ChangeColorEffect
 Heavy Fog
 Heavy Infantry
@@ -8267,7 +8274,7 @@ Hulking Metamorph
 Hulking Ogre
 Hulking Raptor
 Hulkling, Burgeoning Bruiser
-Hullbreaker Horror	polarity: ReturnSpellToOwnersHandEffect
+Hullbreaker Horror
 Hullcarver
 Hulldrifter
 Hum of the Radix
@@ -11284,6 +11291,7 @@ Mouse Trapper
 Mouser Attack!
 Mouser Foundry
 Mouser Mark III
+Mouth // Feed
 Mouth of the Storm
 Mowu, Loyal Companion
 Mox Amber
@@ -12040,6 +12048,7 @@ Oneirophage
 Oni Possession
 Oni-Cult Anvil
 Onulet
+Onward // Victory
 Onyx Goblet
 Onyx Talisman
 Oona's Gatewarden
@@ -12846,6 +12855,7 @@ Preemptive Strike
 Preening Champion
 Prehistoric Pet
 Preordain
+Prepare // Fight
 Preposterous Proportions
 Prescient Chimera
 Presence of Gond
@@ -13280,6 +13290,7 @@ Raging Swordtooth
 Ragnar
 Ragnarok, Divine Deliverance
 Ragost, Deft Gastronaut
+Rags // Riches
 Raid Bombardment
 Raiders' Karve
 Raiders' Spoils
@@ -13616,6 +13627,7 @@ Redrock Sentinel
 Redshift, Rocketeer Chief
 Redtooth Genealogist	intent: CreateAuraTokenEffect
 Redtooth Vanguard
+Reduce // Rubble
 Reduce to Ashes
 Reduce to Memory
 Redwood Treefolk
@@ -13738,7 +13750,7 @@ Replicating Ring
 Replication Specialist
 Replicator
 Repository Skaab
-Reprieve	polarity: DrawCardsEffect; polarity: ReturnSpellToOwnersHandEffect
+Reprieve
 Reptil, Dinomorpher
 Reptilian Recruiter
 Reptilian Reflection
@@ -15117,6 +15129,7 @@ Shadowmage Infiltrator
 Shadows' Verdict
 Shadowspear	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
 Shadowstorm
+Shadowstorm Vizier
 Shadowy Backstreet
 Shadrix Silverquill
 Shady Informant
@@ -16057,7 +16070,7 @@ Spellgorger Weird
 Spellgyre
 Spellkeeper Weird
 Spellrune Painter
-Spellscorn Coven	intent: ReturnSpellToOwnersHandEffect; polarity: ReturnSpellToOwnersHandEffect
+Spellscorn Coven
 Spellskite
 Spellstutter Sprite
 Spellweaver Eternal
@@ -16229,6 +16242,7 @@ Spotted Griffin
 Spotter Thopter	intent: EmitScriedEventEffect
 Spreading Plague
 Spreading Rot
+Spring // Mind
 Spring Cleaning
 Spring Splasher
 Spring of Eternal Peace
