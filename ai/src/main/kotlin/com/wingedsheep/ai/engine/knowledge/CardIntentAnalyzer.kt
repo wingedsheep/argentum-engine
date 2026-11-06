@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.UntapLimitPerStep
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
@@ -2459,6 +2460,11 @@ object CardIntentAnalyzer {
         is CanBlockAdditionalForCreatureGroup ->
             if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
+        // "Your opponents can't untap more than two permanents during their untap steps" (Dovin
+        // Baan's emblem): keeps the opponents' permanents tapped — the tapper's payoff, as a
+        // "doesn't untap" lock reads. A symmetric cap (Damping Field, Winter Orb) binds its
+        // controller too, so it reads as no plan of its own.
+        is UntapLimitPerStep -> if (static.players in OPPONENT_PLAYERS) setOf(IntentTag.TAPPER) else emptySet()
         // "Can't be blocked by artifact creatures" (Audacious Infiltrator, Fen Hauler): partial
         // evasion is still evasion — the creature gets through whatever the filter shuts out.
         is CantBeBlockedBy -> setOf(IntentTag.EVASION_GRANT)

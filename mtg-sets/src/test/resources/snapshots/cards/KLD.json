@@ -1803,6 +1803,154 @@
     ]
 }
 
+// Dovin Baan
+{
+    "name": "Dovin Baan",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Legendary Planeswalker — Dovin",
+    "oracleText": "+1: Until your next turn, up to one target creature gets -3/-0 and its activated abilities can't be activated.\n−1: You gain 2 life and draw a card.\n−7: You get an emblem with \"Your opponents can't untap more than two permanents during their untap steps.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dovin Baan:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, up to one target creature gets -3/-0 and its activated abilities can't be activated."
+            },
+            {
+                "id": "Dovin Baan:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You gain 2 life and draw a card."
+            },
+            {
+                "id": "Dovin Baan:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedStaticAbilities": [
+                        {
+                            "type": "UntapLimitPerStep",
+                            "filter": "permanent",
+                            "max": 2,
+                            "players": "EachOpponent"
+                        }
+                    ],
+                    "emblemDescription": "Your opponents can't untap more than two permanents during their untap steps."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Your opponents can't untap more than two permanents during their untap steps.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2344e710-4570-41b6-af84-a3e7d784003a.jpg?1783937169",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Dovin Baan's first ability can target any creature, not just one with an activated ability. It can also be activated targeting no creature at all."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Activated abilities contain a colon. They're generally written “[Cost]: [Effect].” Some keywords are activated abilities and will have colons in their reminder text."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "An opponent affected by Dovin Baan's emblem chooses which two of their permanents to untap, not you."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Dramatic Reversal
 {
     "name": "Dramatic Reversal",

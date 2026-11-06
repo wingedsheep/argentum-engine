@@ -750,8 +750,13 @@ object LimitedCardRater {
                 // A shrink the intent reader calls removal kills like damage to toughness: -N/-N is
                 // N damage, and a dynamic -X/-X (Death Wind, Defile) the unknown-X damage default.
                 // Summing it as stats priced Grasp of Darkness below a vanilla instant.
-                if (IntentTag.REMOVAL in CardIntentAnalyzer.leafTags(effect)) damageScore(t?.let { -it } ?: 3)
-                else ((p ?: dynamicStat(effect.powerModifier)) + (t ?: dynamicStat(effect.toughnessModifier))) * 0.15
+                val tags = CardIntentAnalyzer.leafTags(effect)
+                val sum = (p ?: dynamicStat(effect.powerModifier)) + (t ?: dynamicStat(effect.toughnessModifier))
+                if (IntentTag.REMOVAL in tags) damageScore(t?.let { -it } ?: 3)
+                // A cut the intent reader aims at an opposing creature (Dovin Baan's +1, Ominous
+                // Sphinx's -2/-0) blunts it in the fight: worth what the same pump would be, not less.
+                else if (sum < 0 && IntentTag.COMBAT_ENHANCEMENT in tags) -sum * 0.15
+                else sum * 0.15
             }
 
             // Life gain — low value in limited

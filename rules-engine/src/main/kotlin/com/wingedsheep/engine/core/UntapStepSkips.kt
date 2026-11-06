@@ -62,22 +62,36 @@ internal fun <T : StaticAbility> standingStatics(
     predicates: PredicateEvaluator,
     type: KClass<T>,
     applies: (ability: T, source: EntityId, controller: EntityId) -> Boolean,
-): List<T> {
+): List<T> = standingStaticResults(state, registry, predicates, type) { ability, source, controller ->
+    ability.takeIf { applies(it, source, controller) }
+}
+
+/**
+ * [standingStatics], but each accepted static is first read against its own source and controller
+ * by [read] (null rejects it) — for restrictions whose effect depends on who controls the source,
+ * such as an "your opponents can't untap more than …" cap held on an emblem.
+ */
+internal fun <T : StaticAbility, R : Any> standingStaticResults(
+    state: GameState,
+    registry: CardRegistry,
+    predicates: PredicateEvaluator,
+    type: KClass<T>,
+    read: (ability: T, source: EntityId, controller: EntityId) -> R?,
+): List<R> {
     val projected = state.projectedState
-    val found = mutableListOf<T>()
-    fun collect(ability: StaticAbility, source: EntityId, controller: EntityId, into: MutableList<T>) {
+    val found = mutableListOf<R>()
+    fun collect(ability: StaticAbility, source: EntityId, controller: EntityId, into: MutableList<R>) {
         when {
             // Reject unrelated statics before evaluating their potentially expensive conditions.
             ability is ConditionalStaticAbility -> {
-                val inner = mutableListOf<T>()
+                val inner = mutableListOf<R>()
                 collect(ability.ability, source, controller, inner)
                 if (inner.isNotEmpty() && predicates.conditions.evaluate(state, ability.condition,
                         EffectContext(sourceId = source, controllerId = controller))) into.addAll(inner)
             }
             ability is CompositeStaticAbility -> ability.abilities.forEach { collect(it, source, controller, into) }
             type.isInstance(ability) -> {
-                val typed = type.cast(ability)
-                if (applies(typed, source, controller)) into.add(typed)
+                read(type.cast(ability), source, controller)?.let(into::add)
             }
         }
     }
