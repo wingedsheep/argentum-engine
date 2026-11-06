@@ -48,6 +48,7 @@ val CompanionOfTheTrials = card("Companion of the Trials") {
     }
 
     metadata {
+        inBooster = false
         rarity = Rarity.UNCOMMON
         collectorNumber = "271"
         artist = "Aaron Miller"

@@ -55,6 +55,10 @@ class DefiantGreatmawScenarioTest : ScenarioTestBase() {
             withClue("the counters landing on the Greatmaw trigger its second ability") {
                 (game.getPendingDecision() is ChooseTargetsDecision) shouldBe true
             }
+            withClue("\"another target creature\" excludes the Greatmaw itself") {
+                val decision = game.getPendingDecision() as ChooseTargetsDecision
+                decision.legalTargets.values.flatten().contains(greatmaw) shouldBe false
+            }
             game.selectTargets(listOf(bears)).error shouldBe null
             game.resolveStack()
 

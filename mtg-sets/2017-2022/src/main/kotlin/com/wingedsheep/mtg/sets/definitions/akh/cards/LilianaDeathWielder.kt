@@ -60,6 +60,7 @@ val LilianaDeathWielder = card("Liliana, Death Wielder") {
     }
 
     metadata {
+        inBooster = false
         rarity = Rarity.MYTHIC
         collectorNumber = "275"
         artist = "Clint Cearley"

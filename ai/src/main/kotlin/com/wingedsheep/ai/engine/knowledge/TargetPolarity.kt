@@ -1486,12 +1486,6 @@ object TargetPolarityAnalyzer {
         }
     }
 
-    /**
-     * A counter kind's polarity for the permanent it lands on. Stat counters read by their sign,
-     * a shield or keyword counter is a gift, and a stun or finality counter is a curse. Every
-     * other kind — charge, time, loyalty, the bespoke ones — means whatever its card makes of it,
-     * and stays unread.
-     */
     /** The side a counter's removal favours: the other one than its placement's. */
     private fun opposite(polarity: TargetPolarity): TargetPolarity? = when (polarity) {
         TargetPolarity.BENEFICIAL -> TargetPolarity.HARMFUL
@@ -1499,6 +1493,12 @@ object TargetPolarityAnalyzer {
         else -> null
     }
 
+    /**
+     * A counter kind's polarity for the permanent it lands on. Stat counters read by their sign,
+     * a shield or keyword counter is a gift, and a stun or finality counter is a curse. Every
+     * other kind — charge, time, loyalty, the bespoke ones — means whatever its card makes of it,
+     * and stays unread.
+     */
     fun counterPolarity(type: CounterType): TargetPolarity? {
         type.ptDelta?.let { (power, toughness) ->
             return when {

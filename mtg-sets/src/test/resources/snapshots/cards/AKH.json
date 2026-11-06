@@ -1822,7 +1822,8 @@
         "rarity": "UNCOMMON",
         "artist": "Aaron Miller",
         "flavorText": "\"The fiercest loyalties are earned in battle.\"\n—Gideon Jura",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/3/637ac220-058f-4212-ba8b-a389bb0528bd.jpg?1783936437"
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/637ac220-058f-4212-ba8b-a389bb0528bd.jpg?1783936437",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2534,7 +2535,8 @@
         "rarity": "UNCOMMON",
         "artist": "Svetlin Velinov",
         "flavorText": "\"The nature of this plane makes it almost too easy for me to command the dead.\"\n—Liliana Vess",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21f31e96-bb66-4b28-b14a-426d1d5839a6.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21f31e96-bb66-4b28-b14a-426d1d5839a6.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -4047,7 +4049,8 @@
         "collectorNumber": "273",
         "artist": "John Stanko",
         "flavorText": "Though they are held in high regard as symbols of the god Oketra, cats often lack her sense of solidarity.",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b42ba8bf-9fc1-4d57-9c80-42491d18d929.jpg?1783936438"
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b42ba8bf-9fc1-4d57-9c80-42491d18d929.jpg?1783936438",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5806,7 +5809,8 @@
         "collectorNumber": "275",
         "rarity": "MYTHIC",
         "artist": "Clint Cearley",
-        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac79d8f6-7c36-4eb9-8bda-3b813c634399.jpg?1783936437"
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac79d8f6-7c36-4eb9-8bda-3b813c634399.jpg?1783936437",
+        "inBooster": false
     },
     "startingLoyalty": 5,
     "colorIdentityOverride": [
@@ -9016,7 +9020,8 @@
         "collectorNumber": "278",
         "artist": "Slawomir Maniak",
         "flavorText": "The dead who wander beyond the safety of the city crave only to spread their curse.",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f9a5267-eb90-43bc-bf92-fcfb06821bae.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f9a5267-eb90-43bc-bf92-fcfb06821bae.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "BLACK"
