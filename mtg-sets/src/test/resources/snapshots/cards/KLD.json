@@ -235,6 +235,66 @@
     ]
 }
 
+// Aetherborn Marauder
+{
+    "name": "Aetherborn Marauder",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Aetherborn Rogue",
+    "oracleText": "Flying, lifelink\nWhen this creature enters, move any number of +1/+1 counters from other permanents you control onto this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aetherborn Marauder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveChosenCountersToTarget",
+                    "source": {
+                        "type": "GroupRef",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "excludeSelf": true
+                        }
+                    },
+                    "destination": "Self",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"I don't know what that is or who it belongs to, but it's shiny and I want it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fce02ef8-1731-43a9-9bd0-9ec592e3883f.jpg?1783937211"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Aetherflux Reservoir
 {
     "name": "Aetherflux Reservoir",

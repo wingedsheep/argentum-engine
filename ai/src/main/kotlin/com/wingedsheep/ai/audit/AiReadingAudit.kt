@@ -72,6 +72,9 @@ import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
@@ -1014,7 +1017,14 @@ object AiReadingAudit {
         // So do the steps of a loop over the kinds already on a permanent — "for each kind of counter
         // on target permanent, put another counter of that kind on it or remove one from it"
         // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on.
+        // The counted and chosen moves read the same way even when they do name a kind, because a
+        // move of +1/+1 counters is a gain where they land and a loss where they leave, and which side
+        // wins is the board's call: Tester of the Tangential's "move X +1/+1 counters", Goldberry's
+        // per-kind prompts, Aetherborn Marauder gathering +1/+1 counters from your other permanents
+        // (each prompt answered by simulating the board).
         if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
+            leaf is MoveCountersEffect || leaf is MoveChosenCountersToTargetEffect ||
+            leaf is MoveCountersEachKindMissingEffect ||
             leaf is RemoveAnyNumberOfCountersEffect || leaf is RemoveCountersOfIteratedKindEffect ||
             (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom == CounterKindSource.ITERATION)
         ) return true

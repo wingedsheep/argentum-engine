@@ -108,6 +108,9 @@ import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
@@ -1391,8 +1394,15 @@ object TargetPolarityAnalyzer {
         // known on the board. +1/+1, loyalty or keyword counters are a gift where they land and a
         // loss where they leave; -1/-1, stun or time counters the reverse. Neither side is fixed,
         // so both stay open and the simulation weighs the counters each candidate holds.
-        if (leaf is MoveAllCountersEffect) {
-            return listOf(leaf.source to TargetPolarity.FLEXIBLE, leaf.destination to TargetPolarity.FLEXIBLE)
+        val move = when (leaf) {
+            is MoveAllCountersEffect -> leaf.source to leaf.destination
+            is MoveCountersEffect -> leaf.source to leaf.destination
+            is MoveChosenCountersToTargetEffect -> leaf.source to leaf.destination
+            is MoveCountersEachKindMissingEffect -> leaf.source to leaf.destination
+            else -> null
+        }
+        if (move != null) {
+            return listOf(move.first to TargetPolarity.FLEXIBLE, move.second to TargetPolarity.FLEXIBLE)
         }
         // "Copy target spell" / "copy target spell or ability" (Twincast, Return the Favor,
         // Lithoform Engine): the copy is ours

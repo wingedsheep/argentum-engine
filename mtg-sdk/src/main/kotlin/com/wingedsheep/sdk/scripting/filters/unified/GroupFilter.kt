@@ -133,15 +133,29 @@ data class GroupFilter(
         is Scope.SoulbondPair -> "this creature and the creature it's paired with"
         is Scope.ChosenCreature -> "the chosen creature"
         is Scope.Specific -> "the chosen permanent"
+        // "all other permanents you control with a +1/+1 counter": the controller after the noun
+        // and the noun plural, as Oracle prints a group.
         is Scope.Battlefield -> buildString {
             append("all ")
             if (excludeSelf || excludeTarget || excludeTriggeringEntity) append("other ")
-            append(baseFilter.description)
-            if (!baseFilter.description.endsWith("s")) {
-                append("s")  // Pluralize simple types
-            }
+            append(baseFilter.pluralPermanentDescription)
         }
     }
+
+    /**
+     * The group read one member at a time, as a per-member loop prints it: "each other permanent you
+     * control with a +1/+1 counter", the controller after the noun and the noun singular. Scopes
+     * that already name one object read as [description].
+     */
+    val eachDescription: String
+        get() = when (scope) {
+            is Scope.Battlefield -> buildString {
+                append("each ")
+                if (excludeSelf || excludeTarget || excludeTriggeringEntity) append("other ")
+                append(baseFilter.singularPermanentDescription)
+            }
+            else -> description
+        }
 
     // =============================================================================
     // Pre-built Creature Groups

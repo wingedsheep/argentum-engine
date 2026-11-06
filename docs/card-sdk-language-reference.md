@@ -2760,11 +2760,18 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `MoveCountersEachKindMissing(source, destination)` — Goldberry, River-Daughter (ability A) — for each counter
   kind on `source` that `destination` does not already have, move one of that kind from `source` onto
   `destination`. Deterministic, no player choice; kinds the destination already has are left untouched.
-- `MoveChosenCountersToTarget(source, destination, drawCardOnMove?)` — Goldberry, River-Daughter (ability B) —
+- `MoveChosenCountersToTarget(source, destination, drawCardOnMove?, counterType?)` — Goldberry, River-Daughter (ability B) —
   player chooses how many of each kind to move from `source` onto `destination` (one `ChooseNumberDecision` per
   kind). When `drawCardOnMove` is true, the controller draws a card if any counter was moved ("if you do, draw").
   The underlying `MoveChosenCountersToTargetEffect` also carries `maxTotal` / `minTotal` (total across kinds),
-  walked with the same budget-and-floor arithmetic as `RemoveAnyNumberOfCounters`.
+  walked with the same budget-and-floor arithmetic as `RemoveAnyNumberOfCounters`. Its `counterType` axis
+  (facade parameter `counterType`) narrows the walk to one kind, leaving the rest untouched. A
+  `EffectTarget.GroupRef` `source` gathers from every member of the group as one move: one prompt per member and
+  kind, and each kind put on the destination in one placement once every answer is in, so Hardened Scales adds
+  one counter, not one per member. Aetherborn Marauder's "move any number of +1/+1 counters from other permanents
+  you control onto this creature" is `MoveChosenCountersToTarget(source = GroupRef(GroupFilter(Permanent
+  .youControl().withCounter(PLUS_ONE_PLUS_ONE)).other()), destination = Self, counterType = PLUS_ONE_PLUS_ONE)`.
+  Nothing moves when the destination is no longer on the battlefield.
 - `MoveCounterOfAnyKind(source, destination, count = 1)` — "**move a counter** from X onto Y": the player picks
   which *kind* moves, not *whether* one does (`minTotal = maxTotal = count`). A source with one kind moves it
   without a prompt; with several, each prompt's minimum is the share of the floor later kinds can't cover, so

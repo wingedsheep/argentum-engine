@@ -17,6 +17,9 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
@@ -177,7 +180,8 @@ object SynergyAxes {
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
             // Carrying counters from one permanent to another — The Ozolith banking a leaving
             // creature's counters and moving them on, Essence Channeler's "put its counters on target
-            // creature you control" — cashes in the +1/+1 counters the deck puts down: with none
+            // creature you control", Aetherborn Marauder gathering them from your other permanents —
+            // cashes in the +1/+1 counters the deck puts down: with none
             // placed, the move carries nothing.
             if (scripts.any { script ->
                     (script.triggeredAbilities.map { it.effect } + script.activatedAbilities.map { it.effect })
@@ -403,7 +407,8 @@ object SynergyAxes {
     }
 
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
-        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect
+        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect || it is MoveCountersEffect ||
+            it is MoveChosenCountersToTargetEffect || it is MoveCountersEachKindMissingEffect
     }
 
     /**
