@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
@@ -382,6 +383,10 @@ object CardIntentAnalyzer {
         if (scripts.any { it.isAura && it.staticAbilities.any { static -> static is ModifyStats && (static.powerBonus > 0 || static.toughnessBonus > 0) } }) {
             tags += IntentTag.PUMP
         }
+        // "Enchanted permanent doesn't untap during its controller's untap step" (Ice Over, Dehydration):
+        // the standing form of the one-shot lock [GrantKeywordEffect] reads — the tapper's payoff on
+        // what the Aura enchants. On an Equipment (Vulshok Gauntlets) or the creature itself it is a price.
+        if (scripts.any { it.isAura && it.staticAbilities.any(::locksEnchantedTapped) }) tags += IntentTag.TAPPER
 
         // A combat trick is an instant pump that *expires*. A "+1/+1 counter at instant speed" is
         // a permanent investment you can make whenever you like, and holding it for combat is not
@@ -1419,7 +1424,11 @@ object CardIntentAnalyzer {
             if (ownOnly && eachPlayer == null) continue
             if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
             groups[leaf.storeAs] = true
+            // "Exile all attacking creatures target player controls" (Settle the Wreckage) answers
+            // the player you point it at — one-sided, like a target-opponent gather.
             val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
+                filter.controllerPredicate == ControllerPredicate.ControlledByTargetPlayer ||
+                filter.controllerPredicate is ControllerPredicate.ControlledByReferencedPlayer ||
                 (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
                 player in OPPONENT_PLAYERS
             if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
@@ -1438,7 +1447,19 @@ object CardIntentAnalyzer {
         } while (groups != before)
         var reading = DestroyAllReading.NONE
         for (leaf in leaves) {
+            // "Exile all artifacts your opponents control until this leaves the battlefield"
+            // (Consulate Crackdown), "exile each creature with odd mana value" (Extinction Event):
+            // the exile-all, a wrath that leaves nothing to recur — or one exiled pick, spot removal.
+            // A pile the same effect brings back (Planar Guide's end-step return, Flickerform) is a
+            // blink, not removal.
+            val exiles = leaf is MoveCollectionEffect &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE &&
+                leaves.none { other ->
+                    other !== leaf && other is MoveCollectionEffect && other.from == leaf.from &&
+                        (other.destination as? CardDestination.ToZone)?.zone != Zone.EXILE
+                }
             val from = when {
+                exiles && (leaf as MoveCollectionEffect).from in groups -> leaf.from
                 leaf is MoveCollectionEffect && leaf.from in groups &&
                     (leaf.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD &&
                     (leaf.moveType == MoveType.Destroy || leaf.moveType == MoveType.Sacrifice) -> leaf.from
@@ -1455,10 +1476,11 @@ object CardIntentAnalyzer {
                     leaf.counterType.ptDelta != null -> leaf.collectionName
                 else -> continue
             }
+            val exile = if (exiles) setOf(IntentTag.EXILE_REMOVAL) else emptySet()
             reading = if (groups[from] == true) {
-                DestroyAllReading(setOf(IntentTag.REMOVAL, IntentTag.SWEEPER), reading.hitsOwnSide || from in ours)
+                DestroyAllReading(reading.tags + setOf(IntentTag.REMOVAL, IntentTag.SWEEPER) + exile, reading.hitsOwnSide || from in ours)
             } else {
-                DestroyAllReading(setOf(IntentTag.REMOVAL) + reading.tags, reading.hitsOwnSide)
+                DestroyAllReading(setOf(IntentTag.REMOVAL) + reading.tags + exile, reading.hitsOwnSide)
             }
         }
         return reading
@@ -2480,6 +2502,10 @@ object CardIntentAnalyzer {
     // Static abilities
     // ═════════════════════════════════════════════════════════════════════════
 
+    /** An Aura's "enchanted permanent doesn't untap" — see [analyze]. */
+    private fun locksEnchantedTapped(static: StaticAbility): Boolean =
+        static is GrantKeyword && static.keyword in LOCKED_TAPPED_FLAGS && static.filter.scope == Scope.AttachedTo
+
     /** The tags one static ability reads as, for [com.wingedsheep.ai.engine.LimitedCardRater]. */
     internal fun staticTags(static: StaticAbility): Set<IntentTag> = tagsOf(static)
 
@@ -2540,6 +2566,9 @@ object CardIntentAnalyzer {
         // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
         is CantAttackUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature can't block artifact creatures" (Hinterland Drake), "can block only
+        // creatures with flying" (Cloud Sprite): a narrower "can't block" on its own body.
+        is CanOnlyBlockCreaturesWith -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature attacks or blocks each combat if able" (Relentless Raptor, Juggernaut) binds
         // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
         is MustAttack -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()

@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -167,6 +168,10 @@ object SynergyAxes {
         val rewards = buildSet {
             scripts.flatMap { it.triggeredAbilities }.forEach { ability ->
                 addAll(rewardsOf(ability.trigger, ability.binding))
+                // Revolt — "if a permanent you controlled left the battlefield this turn" (Call for
+                // Unity, Countless Gears Renegade): it pays off what the death axis feeds — a sac
+                // outlet, a Servo or Clue to cash in, a creature traded in combat.
+                if (ability.interveningIf == PermanentLeftBattlefieldThisTurn(Player.You)) add(SynergyAxis.DEATH)
             }
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)

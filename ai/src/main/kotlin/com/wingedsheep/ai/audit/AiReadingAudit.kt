@@ -832,7 +832,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, untargeted proliferate, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, proliferate (targeted or not), damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -973,11 +973,12 @@ object AiReadingAudit {
                     blight.any { stage -> stage === it }
             }
         }
-        // Untargeted proliferate has no target to aim and no consistent window to hold it for (+1/+1
-        // counters want precombat, poison or loyalty don't care): which permanents and players get another
-        // counter is chosen at resolution, and the counters it adds are on the board the simulation prices.
-        // A targeted one ("each kind of counter on target permanent") stays flagged.
-        if (leaf is ProliferateEffect && leaf.target == null) return true
+        // Proliferate has no consistent window to hold it for (+1/+1 counters want precombat, poison or
+        // loyalty don't care): which permanents and players get another counter is chosen at resolution,
+        // and the counters it adds are on the board the simulation prices. A targeted one ("each kind of
+        // counter on target permanent or player", Skyship Plunderer) aims its one holder by polarity —
+        // TargetPolarityAnalyzer reads it either way, and the simulation weighs each candidate's counters.
+        if (leaf is ProliferateEffect) return true
         // Its controller venturing into the dungeon (Planar Ally's attack, Clattering Skeletons' ETB, Dungeon
         // Map) has no target to aim and no window to hold it for: which dungeon and room is chosen at
         // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.

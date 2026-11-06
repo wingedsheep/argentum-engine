@@ -109,6 +109,383 @@
     ]
 }
 
+// Aeronaut Admiral
+{
+    "name": "Aeronaut Admiral",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Pilot",
+    "oracleText": "Flying\nVehicles you control have flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "Vehicle ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "E. M. Gist",
+        "flavorText": "The Consulate recruits its best pilots from the League of Aeronauts. Many go on to command entire fleets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff15c06c-160d-4960-92d5-6f8e7b33f051.jpg?1783936785"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aether Inspector
+{
+    "name": "Aether Inspector",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "Vigilance\nWhen this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, create a 1/1 colorless Servo artifact creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aether Inspector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Aether Inspector:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Servo"
+                        ],
+                        "artifactToken": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5dcbe97-d582-464e-98e7-dd06d8652606.jpg?1783936785",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities state that you \"may pay\" a certain amount of {E}. You can't pay that amount multiple times to multiply the effect. You simply choose whether or not to pay that amount of {E} as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aether Swooper
+{
+    "name": "Aether Swooper",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Vedalken Artificer",
+    "oracleText": "Flying\nWhen this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}{E}. If you do, create a 1/1 colorless Servo artifact creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aether Swooper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Aether Swooper:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Servo"
+                        ],
+                        "artifactToken": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c34dbe3-3a66-40b3-a5c2-c2d6acb47773.jpg?1783936776",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities state that you \"may pay\" a certain amount of {E}. You can't pay that amount multiple times to multiply the effect. You simply choose whether or not to pay that amount of {E} as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Aethergeode Miner
+{
+    "name": "Aethergeode Miner",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Scout",
+    "oracleText": "Whenever this creature attacks, you get {E}{E} (two energy counters).\nPay {E}{E}: Exile this creature, then return it to the battlefield under its owner's control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aethergeode Miner:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aethergeode Miner:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Pay {E}{E}: Exile this creature, then return it to the battlefield under its owner's control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "Gremlins in the wild feed on nodules of pure aether, which are also prized by miners.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80bb3abd-ebaf-4dc2-97eb-ed4a2b005177.jpg?1783936787",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "After Aethergeode Miner returns to the battlefield, it will be a new object with no connection to the creature that was exiled. It won't be in combat or have any additional abilities it may have had when it was exiled. Any +1/+1 counters on it or Auras attached to it are removed, and any Equipment will no longer be attached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aethertide Whale
+{
+    "name": "Aethertide Whale",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Whale",
+    "oracleText": "Flying\nWhen this creature enters, you get six {E} (energy counters).\nPay {E}{E}{E}{E}: Return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aethertide Whale:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 6,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aethertide Whale:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "descriptionOverride": "Pay {E}{E}{E}{E}: Return this creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "\"To survive up here, I've learned when to use my harpoon and when to just enjoy the view.\"\n—Kadhu, skywhaler",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38722c25-13a7-47af-a4cd-90722f289499.jpg?1783936774"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Airdrop Aeronauts
+{
+    "name": "Airdrop Aeronauts",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Dwarf Scout",
+    "oracleText": "Flying\nRevolt — When this creature enters, if a permanent left the battlefield under your control this turn, you gain 5 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Airdrop Aeronauts:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, you gain 5 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"Supplies inbound. Keep that pressure on.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49827a57-cf10-4a44-a1fd-ac611da39dc9.jpg?1783936783",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "All cards in the Aether Revolt set with triggered revolt abilities use an intervening \"if\" clause. A permanent you controlled must have left the battlefield earlier in the turn in order for these abilities to trigger; otherwise they do nothing."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. Tokens that leave the battlefield will satisfy a revolt ability; paying {E} won't."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ajani's Comrade
 {
     "name": "Ajani's Comrade",
@@ -331,6 +708,125 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Baral's Expertise
+{
+    "name": "Baral's Expertise",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to three target artifacts and/or creatures to their owners' hands.\nYou may cast a spell with mana value 4 or less from your hand without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "nonland"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "mv<=4",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected2"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "flavorText": "\"Get out of my way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d273f5b7-b3a3-485a-acc8-34e10a504646.jpg?1783936775",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "The mana value of a split card is determined by the combined mana cost of its two halves. If an expertise spell allows you to cast a split card, you may cast either half or, if that split card has fuse, both halves."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The card that you cast may be an artifact or creature that was returned to your hand by this spell."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the Expertise spell you cast has any targets, and those targets become illegal before the spell resolves, the spell doesn't resolve and none of its effects happen. You won't get to cast a free spell."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Effects that allow you to \"cast\" a card don't allow you to play a land card."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as emerge costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Cathartic Reunion, you must pay those to cast the card."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "While you're casting your free spell, the Expertise spell is still on the stack. It will be put into its owner's graveyard after the free spell is cast. The free spell can't target the Expertise card in your graveyard. It can target the Expertise spell on the stack, but the Expertise spell will become an illegal target before the free spell resolves."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Any triggered abilities that trigger while performing the Expertise spell's first effect won't be put onto the stack until after you're done casting your free spell. They're put onto the stack at the same time as any abilities that triggered while casting that spell regardless of the order in which those abilities triggered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -574,6 +1070,90 @@
     ]
 }
 
+// Call for Unity
+{
+    "name": "Call for Unity",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Revolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, put a unity counter on this enchantment.\nCreatures you control get +1/+1 for each unity counter on this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Call for Unity:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "UNITY",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, put a unity counter on this enchantment."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "UNITY"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "UNITY"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "John Severin Brassell",
+        "flavorText": "The \"leaking spire\" stands for liberation from Consulate control.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeca4557-98aa-433b-a3ee-050e4a3e6d88.jpg?1783936781",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities check only whether a permanent you controlled left the battlefield this turn or not. They don't apply multiple times if more than one permanent you controlled left the battlefield. They don't check whether the permanent that left the battlefield is still in the zone it moved to."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. They're equally satisfied by an artifact you sacrificed to pay a cost, a creature you controlled that was destroyed by Murder, or an enchantment you returned to your hand with Leave in the Dust."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tokens that leave the battlefield will satisfy a revolt ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Energy counters aren't permanents. Paying {E} won't satisfy a revolt ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "All cards in the Aether Revolt set with triggered revolt abilities use an intervening \"if\" clause. A permanent you controlled must have left the battlefield earlier in the turn in order for these abilities to trigger; otherwise they do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Caught in the Brights
 {
     "name": "Caught in the Brights",
@@ -709,6 +1289,118 @@
     "colorIdentityOverride": []
 }
 
+// Consulate Crackdown
+{
+    "name": "Consulate Crackdown",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile all artifacts your opponents control until this enchantment leaves the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consulate Crackdown:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "artifact ctrl:opponent",
+                                    "excludeSelf": true
+                                },
+                                "storeAs": "linked_exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "linked_exile",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Consulate Crackdown:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"The workshops are silent. Our creations have been seized. They have killed what made us alive.\"\n—Pia Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02fb7a26-fbf0-4b91-847b-cfc46e01a342.jpg?1783936782",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Consulate Crackdown leaves the battlefield before its triggered ability resolves, no artifacts will be exiled."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Auras attached to the exiled artifacts will be put into their owners' graveyards. Any counters on the exiled artifacts will cease to exist."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The exiled cards return to the battlefield immediately after Consulate Crackdown leaves the battlefield. Nothing happens between the two events, including state-based actions. If Consulate Crackdown exiles multiple artifacts, those cards all return to the battlefield at the same time."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "In a multiplayer game, if Consulate Crackdown's owner leaves the game, the exiled cards will return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Consulate Dreadnought
 {
     "name": "Consulate Dreadnought",
@@ -787,6 +1479,128 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Consulate Turret
+{
+    "name": "Consulate Turret",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: You get {E} (an energy counter).\n{T}, Pay {E}{E}{E}: This artifact deals 2 damage to target player or planeswalker.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Consulate Turret:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                },
+                "descriptionOverride": "{T}: You get {E}."
+            },
+            {
+                "id": "Consulate Turret:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}{E}{E}: This artifact deals 2 damage to target player or planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Our watchtowers are well positioned. Why don't we arm them?\"\n—Enforcer-Chief Ranaj",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0c55b5b-58fd-4340-b089-8e271633e8dd.jpg?1783936730"
+    },
+    "colorIdentityOverride": []
+}
+
+// Countless Gears Renegade
+{
+    "name": "Countless Gears Renegade",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, create a 1/1 colorless Servo artifact creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Countless Gears Renegade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, create a 1/1 colorless Servo artifact creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"Go forth and cause trouble, my little one!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2d6f334-0040-42b1-9c72-362e4dcaa65e.jpg?1783936781",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "All cards in the Aether Revolt set with triggered revolt abilities use an intervening \"if\" clause. A permanent you controlled must have left the battlefield earlier in the turn in order for these abilities to trigger; otherwise they do nothing."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. Tokens that leave the battlefield will satisfy a revolt ability; paying {E} won't."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Cruel Finality
@@ -915,6 +1729,145 @@
             {
                 "date": "2017-02-09",
                 "text": "Dawnfeather Eagle's triggered ability affects itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Deadeye Harpooner
+{
+    "name": "Deadeye Harpooner",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, destroy target tapped creature an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadeye Harpooner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature tapped ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, destroy target tapped creature an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"It seems there's even better hunting down here.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a018decf-25e1-45fc-be7d-2523dcfb7a4c.jpg?1783936780",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "All cards in the Aether Revolt set with triggered revolt abilities use an intervening \"if\" clause. A permanent you controlled must have left the battlefield earlier in the turn in order for these abilities to trigger; otherwise they do nothing."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tokens that leave the battlefield will satisfy a revolt ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Energy counters aren't permanents. Paying {E} won't satisfy a revolt ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Decommission
+{
+    "name": "Decommission",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment.\nRevolt — If a permanent left the battlefield under your control this turn, you gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "PermanentLeftBattlefieldThisTurn"
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Josh Hass",
+        "flavorText": "\"A key weakness in the design is its vulnerability to repeated, forceful blows.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cca66e9-be21-4fc7-8951-cd99e9b213dc.jpg?1783936780",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Decommission destroys a permanent you control, it will enable its own revolt ability and you'll gain 3 life."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the target artifact or enchantment becomes an illegal target, Decommission doesn't resolve and none of its effects happen. You won't gain life."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. Tokens that leave the battlefield will satisfy a revolt ability."
             }
         ]
     },
@@ -1097,6 +2050,63 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Disallow
+{
+    "name": "Disallow",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell, activated ability, or triggered ability. (Mana abilities can't be targeted.)",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "target": "CounterTarget.SpellOrAbility"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "anyOf": [
+                            {},
+                            {
+                                "cardPredicates": [
+                                    "IsActivatedOrTriggeredAbility"
+                                ]
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "flavorText": "\"How easily your flames are quenched.\"\n—Baral, Chief of Compliance",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25f05814-a5a5-460f-9d29-0ab03efecf4c.jpg?1783936774",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If you counter a delayed triggered ability that triggers at the beginning of the \"next\" occurrence of a specified step or phase, that ability won't trigger again the following time that phase or step occurs."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "An activated mana ability is one that could add mana as it resolves, doesn't have a target, and isn't a loyalty ability. A triggered mana ability is one that could add mana and triggers on an activated mana ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Abilities that create replacement effects, such as a permanent entering the battlefield tapped or with counters on it, can't be targeted. Abilities that apply \"as [this creature] enters the battlefield\" are also replacement effects and can't be targeted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1403,6 +2413,82 @@
         "artist": "Brad Rigney",
         "flavorText": "A living invention born of a grand design.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/0/d04018c9-510c-4610-9daa-677434628805.jpg?1783936779"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Felidar Guardian
+{
+    "name": "Felidar Guardian",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat Beast",
+    "oracleText": "When this creature enters, you may exile another target permanent you control, then return that card to the battlefield under its owner's control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Felidar Guardian:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "The loyalty of a felidar is hard won but worth the effort.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44bdbed8-5d21-4bf5-8a32-9623b1139c85.jpg?1783936780",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If a creature token is exiled this way, it will cease to exist and will not return to the battlefield."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "After the permanent returns to the battlefield, it will be a new object with no connection to the permanent that was exiled. It won't have any additional abilities it may have had when it was exiled. Any +1/+1 counters on it or Auras attached to it are removed, and any Equipment will no longer be attached."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2108,6 +3194,132 @@
     ]
 }
 
+// Hidden Stockpile
+{
+    "name": "Hidden Stockpile",
+    "manaCost": "{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Revolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, create a 1/1 colorless Servo artifact creature token.\n{1}, Sacrifice a creature: Scry 1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hidden Stockpile:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, create a 1/1 colorless Servo artifact creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hidden Stockpile:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "descriptionOverride": "{1}, Sacrifice a creature: Scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d2176a5-66f8-4a21-bbe2-969c82ca36bd.jpg?1783936737",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If a permanent you controlled didn't leave the battlefield before your end step begins, Hidden Stockpile's first ability doesn't trigger at all. The permanent may have left before Hidden Stockpile entered the battlefield, however."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Revolt abilities check only whether a permanent you controlled left the battlefield this turn or not. They don't apply multiple times if more than one permanent you controlled left the battlefield. They don't check whether the permanent that left the battlefield is still in the zone it moved to."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. They're equally satisfied by an artifact you sacrificed to pay a cost, a creature you controlled that was destroyed by Cast Down, or an enchantment you returned to your hand with Cyclonic Rift."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Tokens that leave the battlefield will satisfy a revolt ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Hinterland Drake
+{
+    "name": "Hinterland Drake",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nThis creature can't block artifact creatures.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsNonartifact"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"As a kid, I dreamed of flying on those wild drakes. They inspired me to build wings of my own.\"\n—Nadja Cloudtoucher, aerowright",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/418448d0-3e8d-4581-b598-696165775d23.jpg?1783936774"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hungry Flames
 {
     "name": "Hungry Flames",
@@ -2171,6 +3383,142 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ice Over
+{
+    "name": "Ice Over",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nEnchanted permanent doesn't untap during its controller's untap step.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"Slow the Consulate with whatever you've got!\"\n—Jasi Ganin, master siphoner",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c01d2835-060c-4ac3-b586-84811878a64d.jpg?1783936773",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Ice Over may target and may enchant an untapped creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Illusionist's Stratagem
+{
+    "name": "Illusionist's Stratagem",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile up to two target creatures you control, then return those cards to the battlefield under their owner's control.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ],
+                    "descriptionOverride": "Exile up to two target creatures you control, then return those cards to the battlefield under their owner's control"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"When everything hangs on a single moment, be sure you choose the right moment.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7eede83-6f1b-4054-b01c-0da17b197bad.jpg?1783936772",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Each card that returns to the battlefield will be a new object with no connection to the creature that was exiled. It won't be in combat or have any additional abilities it may have had when it was exiled. Any +1/+1 counters on it or Auras attached to it are removed, and any Equipment will no longer be attached."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If a creature token is exiled this way, it will cease to exist and will not return to the battlefield."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you choose two target creatures and one is an illegal target as Illusionist's Stratagem resolves, you'll exile the other, return it, and draw a card."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If each target creature is an illegal target as Illusionist's Stratagem resolves, the spell doesn't resolve. You won't draw a card."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "You may cast Illusionist's Stratagem without any targets if you wish to just draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3597,6 +4945,36 @@
     "colorIdentityOverride": []
 }
 
+// Night Market Guard
+{
+    "name": "Night Market Guard",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature can block an additional creature each combat.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Steve Argyle",
+        "flavorText": "\"One head watches for Consulate enforcers. The other watches for renegade thieves.\"\n—Crime Lord Gonti",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8ae03e5c-9655-425c-90ef-b70a0e66868d.jpg?1783936724"
+    },
+    "colorIdentityOverride": []
+}
+
 // Oath of Ajani
 {
     "name": "Oath of Ajani",
@@ -4322,6 +5700,73 @@
     "colorIdentityOverride": []
 }
 
+// Renegade Rallier
+{
+    "name": "Renegade Rallier",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, return target permanent card with mana value 2 or less from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Renegade Rallier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent mv<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — When this creature enters, if a permanent left the battlefield under your control this turn, return target permanent card with mana value 2 or less from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"This fight belongs to us all.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90bad312-80e3-45b0-9556-60ce06808a47.jpg?1783936735",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "All cards in the Aether Revolt set with triggered revolt abilities use an intervening \"if\" clause. A permanent you controlled must have left the battlefield earlier in the turn in order for these abilities to trigger; otherwise they do nothing."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "You can target any permanent card in your graveyard with mana value 2 or less, not just one that was put there from the battlefield this turn."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. Tokens that leave the battlefield will satisfy a revolt ability; paying {E} won't."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Renegade Wheelsmith
 {
     "name": "Renegade Wheelsmith",
@@ -4509,6 +5954,96 @@
     ]
 }
 
+// Restoration Specialist
+{
+    "name": "Restoration Specialist",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Artificer",
+    "oracleText": "{W}, Sacrifice this creature: Return up to one target artifact card and up to one target enchantment card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Restoration Specialist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "enchantment own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{W}, Sacrifice this creature: Return up to one target artifact card and up to one target enchantment card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "Dwarves' tools are priceless heirlooms handed down through generations.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63682db3-1a56-4d8e-a9b7-04465a577518.jpg?1783936777",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "You can activate Restoration Specialist's ability choosing no targets at all if you wish."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Reverse Engineer
 {
     "name": "Reverse Engineer",
@@ -4653,6 +6188,58 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Rogue Refiner
+{
+    "name": "Rogue Refiner",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, draw a card and you get {E}{E} (two energy counters).",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rogue Refiner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"It's natural, it's all around us, and it's there for the taking. Just try and tell me what I'm doing is wrong.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/618652b4-7ce9-4994-9d16-68d2cc8644ef.jpg?1783936736"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -4949,6 +6536,216 @@
     "colorIdentityOverride": []
 }
 
+// Shielded Aether Thief
+{
+    "name": "Shielded Aether Thief",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Vedalken Rogue",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhenever this creature blocks, you get {E} (an energy counter).\n{T}, Pay {E}{E}{E}: Draw a card.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shielded Aether Thief:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shielded Aether Thief:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{T}, Pay {E}{E}{E}: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Lake Hurwitz",
+        "flavorText": "Conflict breeds opportunity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e34be31b-eeb4-40e5-acf7-6cd0ba6d4bcf.jpg?1783936768",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If Shielded Aether Thief somehow blocks more than one creature at once, you get only one {E}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Shipwreck Moray
+{
+    "name": "Shipwreck Moray",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Fish",
+    "oracleText": "When this creature enters, you get {E}{E}{E}{E} (four energy counters).\nPay {E}: This creature gets +2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shipwreck Moray:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 4,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shipwreck Moray:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Pay {E}: This creature gets +2/-2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Mike Bierek",
+        "flavorText": "Shipwrecks do wonders for the local fauna, providing both shelter and aether.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/284c6de3-4e09-40d9-afdb-89ff08e1844b.jpg?1783936770",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If an effect says you get one or more {E}, you get that many energy counters. To pay one or more {E}, you lose that many energy counters. You can't pay more energy counters than you have. Any effects that interact with counters a player gets, has, or loses can interact with energy counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Skyship Plunderer
+{
+    "name": "Skyship Plunderer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, for each kind of counter on target permanent or player, give that permanent or player another counter of that kind.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyship Plunderer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Proliferate",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPermanentOrPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, for each kind of counter on target permanent or player, give that permanent or player another counter of that kind."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Escapes should always be daring.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fedbc91-67e4-40d6-b307-7e6197f47c6e.jpg?1783936769",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Skyship Plunderer's triggered ability can target any permanent or player, regardless of which player was dealt combat damage."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Skyship Plunderer's triggered ability gives only one counter of each kind. It doesn't double the number of each kind of counter. For example, if a creature has two +1/+1 counters and a charge counter on it, it gets one +1/+1 counter and one charge counter."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "To give a counter is to put a counter on a permanent or to have a player get a counter. Effects that interact with a player getting counters or counters being placed on permanents interact with Skyship Plunderer's triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sly Requisitioner
 {
     "name": "Sly Requisitioner",
@@ -5032,6 +6829,73 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Solemn Recruit
+{
+    "name": "Solemn Recruit",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "Double strike\nRevolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Solemn Recruit:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": "PermanentLeftBattlefieldThisTurn",
+                "descriptionOverride": "Revolt — At the beginning of your end step, if a permanent left the battlefield under your control this turn, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"I can no longer sit in my workshop and ignore the events outside. My hammers strike for the people of Ghirapur.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5990c2f1-94d7-4d2e-b1ad-6406c25b91aa.jpg?1788982109",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities check only whether a permanent you controlled left the battlefield this turn or not. They don't apply multiple times if more than one permanent you controlled left the battlefield. They don't check whether the permanent that left the battlefield is still in the zone it moved to."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Revolt abilities don't care why the permanent left the battlefield, who caused it to move, or where it moved to. They're equally satisfied by an artifact you sacrificed to pay a cost, a creature you controlled that was destroyed by Murder, or an enchantment you returned to your hand with Leave in the Dust."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Tokens that leave the battlefield will satisfy a revolt ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Energy counters aren't permanents. Paying {E} won't satisfy a revolt ability."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "All cards in the Aether Revolt set with triggered revolt abilities use an intervening \"if\" clause. A permanent you controlled must have left the battlefield earlier in the turn in order for these abilities to trigger; otherwise they do nothing. In other words, there's no way to have the ability trigger if no permanent you controlled has left the battlefield that turn, even if you intend to have one do so in response to the triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5170,6 +7034,108 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/3/8331724d-6fab-454a-b06c-b06e499fa552.jpg?1783936719"
     },
     "colorIdentityOverride": []
+}
+
+// Sram's Expertise
+{
+    "name": "Sram's Expertise",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create three 1/1 colorless Servo artifact creature tokens.\nYou may cast a spell with mana value 3 or less from your hand without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "nonland"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "mv<=3",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected2"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"It's important to always have the right tool for the job. This one is for picking my teeth.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c6d47b0-4c19-4c19-9e21-54cd87a5e34d.jpg?1783936776",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "The mana value of a split card is determined by the combined mana cost of its two halves. If an expertise spell allows you to cast a split card, you may cast either half or, if that split card has fuse, both halves."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Effects that allow you to \"cast\" a card don't allow you to play a land card."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "While you're casting your free spell, the Expertise spell is still on the stack. It will be put into its owner's graveyard after the free spell is cast. The free spell can't target the Expertise card in your graveyard. It can target the Expertise spell on the stack, but the Expertise spell will become an illegal target before the free spell resolves."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Any triggered abilities that trigger while performing the Expertise spell's first effect won't be put onto the stack until after you're done casting your free spell. They're put onto the stack at the same time as any abilities that triggered while casting that spell regardless of the order in which those abilities triggered."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as emerge costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Cathartic Reunion, you must pay those to cast the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Sram, Senior Edificer
