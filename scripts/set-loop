@@ -172,7 +172,7 @@ worktree: the set worktree, or an older per-branch 'loop-$CODE-*' worktree that 
    per card). Gate, commit, review, push, open a PR titled '[agent-loop: $MODEL] <capability> for <set name>' whose body
    names the gap, the cards it unlocks, the gate run, and that nothing was play-tested. Record the unit in the ledger.
 7. No PR open, sweep \`[x]\` or \`[!]\`, no buildable gap left -> card batch. \`git fetch\`, new 'loop-$CODE-' branch in the set worktree, from origin/main. Take up
-   to 30 unimplemented cards from '## Ready', grouped by colour or theme. Give each card its own implementer
+   to 15 unimplemented cards from '## Ready', grouped by colour or theme. Give each card its own implementer
    subagent (pair two cards only when one is a near-copy of the other), one after another, waiting for each to
    return: a subagent that implements card after card re-reads every earlier card's context on each call, so a
    fresh agent per card is cheaper than a shared one. Each follows the add-card skill through Step 6 and Step 9,
