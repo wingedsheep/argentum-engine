@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
+import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -1401,6 +1402,11 @@ object TargetPolarityAnalyzer {
             // granted ability is controlled by the creature's controller, so it reads exactly like
             // the same trigger granted by an Aura.
             is GrantTriggeredAbilityEffect -> leaf.target to grantedTriggerPolarity(leaf.ability)
+            // "Target creature loses all creature types" (Nameless Inversion, Amoeboid Changeling): its
+            // lords, its typal payoffs and the spells that name its type stop seeing it. What a
+            // creature gains by losing its types is dodging a typal sweeper — rare enough that the
+            // loss is the curse it reads as.
+            is LoseAllCreatureTypesEffect -> leaf.target to TargetPolarity.HARMFUL
                 .takeIf { it != TargetPolarity.UNKNOWN }
             // "If a triggered ability of that creature triggers, it triggers an additional time"
             // (Lwaxana Troi, Charming Guest): a doubler only ever repeats its holder's controller's
