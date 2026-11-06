@@ -357,6 +357,108 @@
     ]
 }
 
+// Benefaction of Rhonas
+{
+    "name": "Benefaction of Rhonas",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top five cards of your library. You may put a creature card and/or an enchantment card from among them into your hand. Put the rest into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may put a creature card into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Leave",
+                    "showAllCards": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "remainder1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "enchantment",
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "You may put an enchantment card into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put into graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Tommy Arnold",
+        "flavorText": "It falls to the gods to help all become worthy of the afterlife.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc98fcdd-8482-4462-ab71-935cea48e409.jpg?1783936479",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "While resolving Benefaction of Rhonas, you could put no cards, a creature card, an enchantment card, or a creature card and an enchantment card into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Binding Mummy
 {
     "name": "Binding Mummy",
@@ -406,6 +508,81 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bitterblade Warrior
+{
+    "name": "Bitterblade Warrior",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Jackal Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, it gets +1/+0 and gains deathtouch until end of turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bitterblade Warrior:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"The vizier of poisons teaches an unconventional kind of strength.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd54edbb-c35d-4f7f-b5ce-d39b0f766ab8.jpg?1783936479",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1003,6 +1180,79 @@
     ]
 }
 
+// Cartouche of Strength
+{
+    "name": "Cartouche of Strength",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura Cartouche",
+    "oracleText": "Enchant creature you control\nWhen this Aura enters, you may have enchanted creature fight target creature an opponent controls. (Each deals damage equal to its power to the other.)\nEnchanted creature gets +1/+1 and has trample.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cartouche of Strength:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Fight",
+                        "target1": "EnchantedCreature",
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6bb237c-4e39-4879-90b4-2f507a90d3d7.jpg?1783936478",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If the triggered ability's target is illegal when it tries to resolve, or if the enchanted creature has left the battlefield, no creature will deal or be dealt damage."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If Cartouche of Strength leaves the battlefield before its triggered ability resolves, the creature it last enchanted will fight the target creature if it's still on the battlefield at that time. However, it won't have +1/+1 from Cartouche of Strength anymore."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cartouche of Zeal
 {
     "name": "Cartouche of Zeal",
@@ -1246,6 +1496,103 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Champion of Rhonas
+{
+    "name": "Champion of Rhonas",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Jackal Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, you may put a creature card from your hand onto the battlefield. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Champion of Rhonas:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "Put a creature card from your hand onto the battlefield?"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "The only way to finish the Trial of Strength is with a basilisk scale in hand.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b185b24d-ae33-48ca-966a-511627fdac6d.jpg?1783936478",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "All attackers are chosen at once. You can’t attack with Champion of Rhonas, put a creature card onto the battlefield, and then attack with that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If the creature put onto the battlefield has any abilities that trigger when creatures attack or when you exert creatures, those abilities won’t trigger."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2005,6 +2352,92 @@
     ]
 }
 
+// Defiant Greatmaw
+{
+    "name": "Defiant Greatmaw",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Hippo",
+    "oracleText": "When this creature enters, put two -1/-1 counters on target creature you control.\nWhenever you put one or more -1/-1 counters on this creature, remove a -1/-1 counter from another target creature you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiant Greatmaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Defiant Greatmaw:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "placedBy": "You"
+                },
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b74cb0ba-c691-4823-aa94-399b1aaeaf0b.jpg?1783936477",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If you put enough -1/-1 counters on Defiant Greatmaw so that its toughness is 0 or less, its last ability triggers."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a creature with wither or infect deals damage to a creature, the controller of the creature with wither or infect puts that many -1/-1 counters on the second creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Desert Cerodon
 {
     "name": "Desert Cerodon",
@@ -2747,6 +3180,88 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Exemplar of Strength
+{
+    "name": "Exemplar of Strength",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, put three -1/-1 counters on target creature you control.\nWhenever this creature attacks, remove a -1/-1 counter from it. If you do, you gain 1 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Exemplar of Strength:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 3,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Exemplar of Strength:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "RemoveCounters",
+                            "counterType": "MINUS_ONE_MINUS_ONE",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        "successCriterion": "SuccessCriterion.CountersRemoved"
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Sara Winters",
+        "flavorText": "\"No one is born worthy.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d30501c5-f6d9-47b3-b12b-8bd1c5ea6a9b.jpg?1783936476",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If Exemplar of Strength leaves the battlefield in response to its second triggered ability, you won't be able to remove a counter from it, and you won't gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3700,6 +4215,56 @@
     ]
 }
 
+// Hapatra's Mark
+{
+    "name": "Hapatra's Mark",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gains hexproof until end of turn. Remove all -1/-1 counters from it. (A creature with hexproof can't be the target of spells or abilities your opponents control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "RemoveAllCountersOfType",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Lindsey Look",
+        "flavorText": "\"If you fear poisons, it is because you are ignorant of them.\"\n—Hapatra, vizier of poisons",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/199d6a8d-008d-4495-9cbc-b8d680fab13c.jpg?1783936475"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hapatra, Vizier of Poisons
 {
     "name": "Hapatra, Vizier of Poisons",
@@ -4176,6 +4741,133 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Honored Hydra
+{
+    "name": "Honored Hydra",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Snake Hydra",
+    "oracleText": "Trample\nEmbalm {3}{G} ({3}{G}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Snake Hydra with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE",
+        "EMBALM"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "embalm_{3}{G}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {3}{G} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "flavorText": "Even gods have pets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21c33902-a06a-4321-bdf4-cea5494fda63.jpg?1783936473"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Hooded Brawler
+{
+    "name": "Hooded Brawler",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, it gets +2/+2 until end of turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hooded Brawler:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Daarken",
+        "flavorText": "Nagas wielding twin daggers excel at the fighting technique known as the Bite of Rhonas.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b4dab03-abf1-4c8f-983e-77dffcfb1578.jpg?1783936472",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can’t exert a creature unless an effect allows you to do so. Similar effects that “tap and freeze” a creature (such as that of Decision Paralysis) don’t exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert’s effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player’s creature until end of turn and exert it, it will untap during that player’s untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can’t do so later in combat, and creatures put onto the battlefield attacking can’t be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4760,6 +5452,191 @@
     ]
 }
 
+// Liliana's Influence
+{
+    "name": "Liliana's Influence",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a -1/-1 counter on each creature you don't control. You may search your library and/or graveyard for a card named Liliana, Death Wielder, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": "name:Liliana, Death Wielder"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Liliana, Death Wielder to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Liliana, Death Wielder"
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Liliana, Death Wielder to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": "name:Liliana, Death Wielder"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Liliana, Death Wielder to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "277",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28cdf48e-e0d4-45ca-b48d-74ada54ba62e.jpg?1783936436",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Liliana's Mastery
 {
     "name": "Liliana's Mastery",
@@ -4811,6 +5688,127 @@
         "flavorText": "\"There are so many of them. It seems they've just been waiting for someone to serve.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c57b3b8-71f1-479c-b7f7-508fee2b5b0f.jpg?1783936503"
     },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Liliana, Death Wielder
+{
+    "name": "Liliana, Death Wielder",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+2: Put a -1/-1 counter on up to one target creature.\n−3: Destroy target creature with a -1/-1 counter on it.\n−10: Return all creature cards from your graveyard to the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liliana, Death Wielder:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put a -1/-1 counter on up to one target creature."
+            },
+            {
+                "id": "Liliana, Death Wielder:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "MINUS_ONE_MINUS_ONE"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy target creature with a -1/-1 counter on it."
+            },
+            {
+                "id": "Liliana, Death Wielder:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return all creature cards from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "rarity": "MYTHIC",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac79d8f6-7c36-4eb9-8bda-3b813c634399.jpg?1783936437"
+    },
+    "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLACK"
     ]
@@ -7815,6 +8813,77 @@
     }
 }
 
+// Supernatural Stamina
+{
+    "name": "Supernatural Stamina",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +2/+0 and gains \"When this creature dies, return it to the battlefield tapped under its owner's control.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Supernatural Stamina:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
+                        },
+                        "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"All are not equal—neither in life nor after death. Bontu's favorites will stand highest in eternity.\"\n—Senifet, vizier of Bontu",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cac5753-54e7-45a8-b486-4860533ce93c.jpg?1783936498"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Supply Caravan
 {
     "name": "Supply Caravan",
@@ -8067,6 +9136,60 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Trial of Ambition
+{
+    "name": "Trial of Ambition",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, target opponent sacrifices a creature of their choice.\nWhen a Cartouche you control enters, return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trial of Ambition:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Trial of Ambition:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cartouche ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db1e79b7-931d-49bf-8c2c-d42c55a93c74.jpg?1783936496"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8334,6 +9457,55 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wander in Death
+{
+    "name": "Wander in Death",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to two target creature cards from your graveyard to your hand.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Seb McKinnon",
+        "flavorText": "Forever restless. Forever growing in number.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/aea7ad5c-d9b9-4b12-90dd-c02399d73b26.jpg?1783936496"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

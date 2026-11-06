@@ -545,6 +545,9 @@ object AiReadingAudit {
                 // Damage confined to our creatures is a drawback, not offensive removal.
                 // Polarity still reads the harm; simulation prices the damaged board.
                 (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)) ||
+                // So are harmful counters confined to our creatures (Defiant Greatmaw's two -1/-1).
+                (leaf is AddCountersEffect && CardIntentAnalyzer.harmsOwnTarget(leaf.counterType, leaf.target, reqs)) ||
+                (leaf is AddDynamicCountersEffect && CardIntentAnalyzer.harmsOwnTarget(leaf.counterType, leaf.target, reqs)) ||
                 untapsOwnTarget(leaf, reqs) ||
                 // A card exiled from our own graveyard is the price or fuel of what follows
                 // (Patchwork Crawler, Trove Warden), not an answer.
@@ -951,8 +954,9 @@ object AiReadingAudit {
         // counters' kinds on the board (+1/+1 and loyalty help their holder, -1/-1 and stun hurt it),
         // which no fixed tag can say. The polarity check reads the slot FLEXIBLE so the simulation
         // weighs each candidate's counters, and whether to do it is the simulation's call too.
-        // Unlike a RemoveCountersEffect of a named kind on another target (still flagged: its kind
-        // fixes a side and a purpose), these name no kind, so a target does not make them taggable.
+        // Unlike a RemoveCountersEffect of a named kind on another target (read by its kind: a -1/-1
+        // counter removed is a pump; any other kind stays flagged), these name no kind, so a target
+        // does not make them taggable.
         if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
             leaf is RemoveAnyNumberOfCountersEffect
         ) return true
