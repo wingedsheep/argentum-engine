@@ -381,7 +381,7 @@ Alley Assailant
 Alley Strangler
 Allied Assault
 Allies at Last
-Alloy Animist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Alloy Animist	polarity: BecomeCreatureEffect
 Alloy Golem
 Alloy Myr
 Allure of the Unknown
@@ -1047,7 +1047,7 @@ Avacyn's Pilgrim
 Avacyn, Angel of Hope
 Avacyn, Angel of Horror
 Avacynian Priest
-Avalanche Caller	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Avalanche Caller	polarity: BecomeCreatureEffect
 Avalanche Tusker	intent: ForceBlockEffect; polarity: ForceBlockEffect
 Avarax
 Avatar Aang
@@ -1429,7 +1429,7 @@ Befriending the Moths
 Befuddle
 Behemoth Sledge
 Behemoth of Vault 0	polarity: ReflexiveTriggerEffect
-Behind the Mask	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Behind the Mask	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Behold the Multiverse
 Behold the Sinister Six!
 Behold the Unspeakable
@@ -2979,7 +2979,7 @@ Claim the Precious
 Clammy Prowler
 Clamor Shaman
 Clamorous Ironclad
-Clan Guildmage	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Clan Guildmage	polarity: BecomeCreatureEffect
 Clandestine Meddler	intent: SuspectEffect; polarity: SuspectEffect
 Clarion Cathars
 Clarion Conqueror
@@ -4223,7 +4223,7 @@ Desperate Ritual
 Despise
 Despoil
 Destined Confrontation
-Destiny Spinner	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Destiny Spinner	polarity: BecomeCreatureEffect
 Destroy Evil
 Destructive Digger
 Destructive Tampering
@@ -5141,7 +5141,7 @@ Elvish Aberration
 Elvish Archdruid
 Elvish Archers
 Elvish Archivist
-Elvish Branchbender	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Elvish Branchbender	polarity: BecomeCreatureEffect
 Elvish Champion
 Elvish Clancaller
 Elvish Doomsayer
@@ -6369,7 +6369,7 @@ Fractal Anomaly
 Fractal Mascot
 Fractal Summoning
 Fractal Tender
-Fractalize	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Fractalize	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Fracture
 Fractured Loyalty	intent: GiveControlToTargetPlayerEffect; polarity: Aura>GiveControlToTargetPlayerEffect
 Fractured Sanity
@@ -7839,7 +7839,7 @@ Hecteyes
 Hedge Maze
 Hedge Shredder	intent: Pipeline(?→battlefield)
 Hedge Troll
-Hedge Whisperer	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Hedge Whisperer	polarity: BecomeCreatureEffect
 Hedgewitch's Mask
 Hedron Archive
 Hedron Crab
@@ -9014,7 +9014,7 @@ Jolene, Plundering Pugilist
 Jolly Gerbils
 Jolrael's Centaur
 Jolrael, Mwonvuli Recluse	timing: ForEach>SetBaseStatsEffect
-Jolrael, Voice of Zhalfir	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Jolrael, Voice of Zhalfir	polarity: BecomeCreatureEffect
 Jolted Awake
 Joo Dee, One of Many
 Jor Kadeen, First Goldwarden
@@ -9120,7 +9120,7 @@ Kalonian Hydra
 Kalonian Tusker
 Kamahl's Druidic Vow
 Kamahl's Summons
-Kamahl, Fist of Krosa	intent: AnimateLandEffect; polarity: AnimateLandEffect; timing: AnimateLandEffect
+Kamahl, Fist of Krosa	polarity: AnimateLandEffect; timing: AnimateLandEffect
 Kamahl, Pit Fighter
 Kambal, Consul of Allocation
 Kambal, Profiteering Mayor
@@ -9176,7 +9176,7 @@ Karn, Gilded Guardian
 Karn, Legacy Reforged
 Karn, Living Legacy	intent: CreatePermanentEmblemEffect
 Karn, Scion of Urza	intent: Pipeline(exile→hand)
-Karn, the Great Creator	intent: BecomeCreatureEffect; intent: Pipeline(FromMultipleZones→hand); polarity: BecomeCreatureEffect
+Karn, the Great Creator	intent: Pipeline(FromMultipleZones→hand); polarity: BecomeCreatureEffect
 Karok Wrangler
 Karona's Zealot	polarity: RedirectNextDamageEffect
 Karona, False God	intent: GainControlByActivePlayerEffect
@@ -9876,7 +9876,7 @@ Lifecreed Duo
 Lifeforce
 Lifelace	intent: ChangeColorEffect; polarity: ChangeColorEffect
 Lifesmith
-Lifespark Spellbomb	intent: AnimateLandEffect; polarity: AnimateLandEffect; timing: AnimateLandEffect
+Lifespark Spellbomb	polarity: AnimateLandEffect; timing: AnimateLandEffect
 Lifespring Druid
 Lifetap
 Lifted by Clouds
@@ -9990,7 +9990,7 @@ Lively Dirge
 Living Airship
 Living Armor
 Living Artifact	polarity: Aura>AddDynamicCountersEffect; polarity: Aura>GainLifeEffect; polarity: Aura>RemoveCountersEffect
-Living Brain, Mechanical Marvel	intent: BecomeCreatureEffect
+Living Brain, Mechanical Marvel
 Living Conundrum
 Living Death
 Living History
@@ -10014,7 +10014,7 @@ Llanowar Elves
 Llanowar Envoy
 Llanowar Greenwidow
 Llanowar Knight
-Llanowar Loamspeaker	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Llanowar Loamspeaker	polarity: BecomeCreatureEffect
 Llanowar Scout
 Llanowar Stalker
 Llanowar Tribe
@@ -11669,7 +11669,7 @@ Ninja's Kunai
 Ninth Bridge Patrol
 Nirkana Assassin
 Nishoba Brawler
-Nissa of Shadowed Boughs	intent: AddCountersToCollectionEffect; intent: BecomeCreatureEffect; intent: Pipeline(FromMultipleZones→battlefield)
+Nissa of Shadowed Boughs	intent: AddCountersToCollectionEffect; intent: Pipeline(FromMultipleZones→battlefield)
 Nissa's Defeat
 Nissa's Encouragement
 Nissa's Triumph
@@ -11677,6 +11677,7 @@ Nissa's Zendikon
 Nissa, Ascended Animist
 Nissa, Genesis Mage
 Nissa, Resurgent Animist
+Nissa, Steward of Elements
 Nissa, Who Shakes the World
 Nita, Forum Conciliator
 Niv-Mizzet Reborn
@@ -12828,7 +12829,7 @@ Priest of Yawgmoth
 Priest of the Blood Rite
 Priest of the Haunted Edge
 Priest of the Wakening Sun
-Primal Adversary	intent: ForEach>BecomeCreatureEffect
+Primal Adversary
 Primal Amulet
 Primal Boost
 Primal Clay
@@ -13631,7 +13632,7 @@ Relic Sloth
 Relic Vial
 Relic of Legends
 Relic of Sauron
-Relic's Roar	intent: AddSubtypeEffect; intent: BecomeCreatureEffect; polarity: AddSubtypeEffect; polarity: BecomeCreatureEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
+Relic's Roar	polarity: AddSubtypeEffect; polarity: BecomeCreatureEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
 Reliquary Monk
 Reliquary Tower
 Relive the Past
@@ -14472,7 +14473,7 @@ Sarek, Federation Ambassador
 Sarinth Greatwurm
 Sarinth Steelseeker
 Sarkhan Unbroken
-Sarkhan the Masterless	intent: ForEach>BecomeCreatureEffect
+Sarkhan the Masterless
 Sarkhan's Catharsis
 Sarkhan's Dragonfire
 Sarkhan's Rage
@@ -14965,7 +14966,7 @@ Serpent of Yawning Depths
 Serpent of the Pass
 Serpent's Pass
 Serpent-Blade Assailant
-Serpentine Ambush	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Serpentine Ambush	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Serpentine Basilisk
 Serpentine Curve
 Serpentine Kavu
@@ -15474,7 +15475,7 @@ Skemfar Elderhall
 Skemfar Shadowsage
 Skewer Slinger
 Skewer the Critics
-Skilled Animator	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Skilled Animator	polarity: BecomeCreatureEffect
 Skilled Battlecarver
 Skinrender
 Skinthinner
@@ -15759,7 +15760,7 @@ Soaring Stoneglider
 Soaring Thought-Thief
 Social Climber
 Social Snub
-Soilshaper	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Soilshaper	polarity: BecomeCreatureEffect
 Sokenzan Bruiser
 Sokenzan Smelter
 Sokenzan, Crucible of Defiance	timing: ForEach>GrantKeywordEffect
@@ -16293,7 +16294,7 @@ Starting Column
 Starting Town
 Startle
 Startled Relic Sloth
-Startling Development	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Startling Development	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Starving Revenant
 Starwinder
 Stasis
@@ -16892,7 +16893,7 @@ Sygg's Command
 Sygg, River Guide	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Sygg, Wanderwine Wisdom	intent: GrantTriggeredAbilityEffect
 Sylvan Anthem
-Sylvan Awakening	intent: ForEach>BecomeCreatureEffect
+Sylvan Awakening
 Sylvan Basilisk
 Sylvan Bounty
 Sylvan Brushstrider
@@ -16934,7 +16935,7 @@ Syndicate Messenger
 Synod Sanctum
 Synth Eradicator
 Synth Infiltrator
-Synthesizer Labship	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Synthesizer Labship	polarity: BecomeCreatureEffect
 Syphon Essence
 Syphon Fuel
 Syphon Mind
@@ -17103,7 +17104,7 @@ Tattered Mummy
 Tattered Ratter
 Tattermunge Duo
 Tatyova, Benthic Druid
-Tatyova, Steward of Tides	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Tatyova, Steward of Tides	polarity: BecomeCreatureEffect
 Taunt	intent: TauntEffect; polarity: TauntEffect
 Taunt from the Rampart
 Taunting Arbormage
@@ -17338,14 +17339,14 @@ Teyo, the Shieldmage
 Teysa Karlov
 Teysa, Opulent Oligarch
 Teysa, Orzhov Scion
-Tezzeret the Seeker	intent: ForEach>BecomeCreatureEffect
+Tezzeret the Seeker
 Tezzeret's Gambit
 Tezzeret's Gatebreaker	combat: CantBeBlockedGroupEffect; timing: CantBeBlockedGroupEffect
 Tezzeret's Strider
 Tezzeret, Artifice Master
-Tezzeret, Betrayer of Flesh	intent: AddCardTypeEffect; intent: BecomeCreatureEffect; polarity: AddCardTypeEffect; polarity: BecomeCreatureEffect
+Tezzeret, Betrayer of Flesh	polarity: AddCardTypeEffect; polarity: BecomeCreatureEffect
 Tezzeret, Cruel Captain
-Tezzeret, Cruel Machinist	intent: BecomeCreatureEffect; intent: Pipeline(hand→battlefield); polarity: BecomeCreatureEffect
+Tezzeret, Cruel Machinist	intent: Pipeline(hand→battlefield); polarity: BecomeCreatureEffect
 Tezzeret, Master of the Bridge
 Thalakos Seer
 Thalakos Sentry
@@ -17391,7 +17392,7 @@ The Birth of Meletis
 The Black Arrow
 The Black Breath
 The Black Gate	intent: GrantStaticAbilityEffect; intent: SelectTargetEffect; polarity: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
-The Blackstaff of Waterdeep	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+The Blackstaff of Waterdeep	polarity: BecomeCreatureEffect
 The Bloodsky Massacre
 The Book of Exalted Deeds	intent: AddCountersEffect; intent: GrantStaticAbilityEffect; polarity: AddCountersEffect; polarity: GrantStaticAbilityEffect
 The Book of Vile Darkness
@@ -17495,7 +17496,7 @@ The Master, Transcendent	polarity: AddCountersEffect
 The Masters of Evil
 The Measure of a Man
 The Meathook Massacre
-The Mechanist, Aerial Artisan	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+The Mechanist, Aerial Artisan	polarity: BecomeCreatureEffect
 The Mending of Dominaria
 The Mightstone and Weakstone
 The Mighty Thor, Jane Foster
@@ -17600,7 +17601,7 @@ Theater of Horrors	intent: Pipeline(TopOfLibrary→exile)
 Theft of Dreams	polarity: DrawCardsEffect
 Thelon's Chant
 Thelon's Curse	intent: GatedEffect; intent: Pipeline(ControlledPermanents→?)
-Thelonite Druid	intent: ForEach>BecomeCreatureEffect
+Thelonite Druid
 Thelonite Hermit
 Thelonite Monk	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Theoretical Necromancer
@@ -18047,7 +18048,7 @@ Touch of Brilliance
 Touch of Darkness	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect; timing: ForEach>ChangeColorEffect
 Touch of Invisibility
 Touch the Spirit Realm
-Tough Cookie	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Tough Cookie	polarity: BecomeCreatureEffect
 Tourach's Chant
 Tourach's Gate	polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
 Tournament Grounds
@@ -18475,7 +18476,7 @@ Uncontrollable Anger
 Uncontrolled Infestation
 Unconventional Tactics
 Uncover the Moon-Letters
-Unctus's Retrofitter	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Unctus's Retrofitter	polarity: BecomeCreatureEffect
 Unctus, Grand Metatect	intent: AddCardTypeEffect; intent: AddColorEffect; polarity: AddCardTypeEffect; polarity: AddColorEffect
 Undead Augur
 Undead Butler
@@ -19152,7 +19153,7 @@ Volcanic Upheaval
 Volcanic Villain
 Volcano Imp
 Voldaren Ambusher
-Voldaren Bloodcaster	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Voldaren Bloodcaster	polarity: BecomeCreatureEffect
 Voldaren Duelist
 Voldaren Epicure
 Voldaren Estate
@@ -19247,7 +19248,7 @@ Wakedancer
 Wakening Sun's Avatar
 Waker of Waves
 Waker of the Wilds
-Wakeroot Elemental	intent: BecomeCreatureEffect
+Wakeroot Elemental
 Waking Nightmare
 Waking the Trolls
 Walk the Plank
@@ -19886,7 +19887,7 @@ Wonder Man, Hollywood Hero
 Wood Elemental
 Wood Elves
 Woodborn Behemoth
-Woodcaller Automaton	intent: BecomeCreatureEffect
+Woodcaller Automaton
 Woodcloaker
 Wooded Foothills
 Wooded Ridgeline
@@ -19903,7 +19904,7 @@ Woodland Mystic
 Woodland Stream
 Woodland Weavemaster
 Woodwork Prodigy
-Woodwraith Corrupter	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Woodwraith Corrupter	polarity: BecomeCreatureEffect
 Woodwraith Strangler
 Woolly Loxodon
 Woolly Thoctar
@@ -19956,7 +19957,7 @@ Wren's Run Packmaster	intent: EmitChampionedEventEffect
 Wren's Run Vanquisher
 Wrench
 Wrench Mind
-Wrenn and Realmbreaker	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Wrenn and Realmbreaker	polarity: BecomeCreatureEffect
 Wrenn and Seven
 Wrenn's Resolve
 Wretched Anurid
@@ -19990,7 +19991,7 @@ Xander's Lounge
 Xantid Swarm
 Xathrid Necromancer
 Xenagos, God of Revels
-Xenic Poltergeist	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Xenic Poltergeist	polarity: BecomeCreatureEffect
 Xenobotanist
 Xerex Strobe-Knight
 Xiahou Dun, the One-Eyed
@@ -20209,7 +20210,7 @@ Zulaport Cutthroat
 Zulaport Duelist
 Zuo Ci, the Mocking Sage
 Zur the Enchanter
-Zur, Eternal Schemer	intent: BecomeCreatureEffect; polarity: BecomeCreatureEffect
+Zur, Eternal Schemer	polarity: BecomeCreatureEffect
 Zuran Enchanter
 Zuran Orb
 Zuran Spellcaster
