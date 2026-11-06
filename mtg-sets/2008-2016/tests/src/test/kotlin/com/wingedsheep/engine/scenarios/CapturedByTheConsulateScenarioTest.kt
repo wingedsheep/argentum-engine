@@ -115,6 +115,7 @@ class CapturedByTheConsulateScenarioTest : FunSpec({
         driver.bothPass()
         driver.getLifeTotal(b.opponent) shouldBe 17
     }
+
     test("a spell countered before the trigger resolves is simply gone — the trigger does nothing") {
         val b = setup()
         val driver = b.driver
