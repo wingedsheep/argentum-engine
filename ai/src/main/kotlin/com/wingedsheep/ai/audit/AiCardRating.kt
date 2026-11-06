@@ -10,6 +10,7 @@ import com.wingedsheep.ai.engine.knowledge.CardIntent
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.LossShields
+import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.Speed
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.CardDefinition
@@ -187,7 +188,23 @@ object AiCardRating {
             else -> CardIntent.UNKNOWN.staticPriorValue
         }
         val prior = best?.value ?: CardIntent.UNKNOWN.staticPriorValue
-        val parts = if (prior >= floor) {
+        // An uncrewed Vehicle: [VehicleBody.CREWABLE_SHARE] of the creature it becomes, the reading
+        // with crew on board (with none it is [VehicleBody.UNCREWABLE_SHARE]).
+        val crew = VehicleBody.printedCrew(card)
+        val vehicleP = card.creatureStats?.basePower
+        val vehicleT = card.creatureStats?.baseToughness
+        val vehicle = if (crew == null || vehicleP == null || vehicleT == null) null else
+            VehicleBody.CREWABLE_SHARE * BoardPresence.creatureBodyValue(
+                vehicleP, vehicleT, card.keywords.mapTo(HashSet()) { it.name }, diminishingReturns = true,
+            )
+        val parts = if (vehicle != null) {
+            val ability = (prior - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
+            listOfNotNull(
+                Part("Vehicle body ($vehicleP/$vehicleT, crew $crew)", vehicle,
+                    "${VehicleBody.CREWABLE_SHARE} × its creature body when its crew is on board, ${VehicleBody.UNCREWABLE_SHARE} × when nothing can crew it"),
+                best?.takeIf { ability > 0.0 }?.let { Part(it.claim.replaceFirstChar { c -> c.uppercase() }, ability) },
+            )
+        } else if (prior >= floor) {
             listOf(Part(best?.claim?.replaceFirstChar { it.uppercase() } ?: "Unreadable permanent", prior))
         } else {
             listOf(Part(if (type.isAura) "Attached Aura floor" else "Planeswalker floor", floor))
@@ -197,6 +214,7 @@ object AiCardRating {
                 "In play it scales with loyalty: about ${BoardPresence.LOYALTY_VALUE} per counter."
             inPlay.anthemBonus > 0 ->
                 "Plus ${"%.2f".format(0.25 * inPlay.anthemBonus)} for each creature it pumps."
+            vehicle != null -> "Crewed, it is priced as the creature it is."
             best == null -> "The AI recognises nothing this permanent does, so it gets the generic price."
             else -> null
         }
