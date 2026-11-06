@@ -201,6 +201,7 @@ Aether Theorist
 Aether Tradewinds
 Aether Tunnel
 Aetherblade Agent
+Aetherborn Marauder
 Aetherflux Reservoir
 Aethergeode Miner
 Aetherize
@@ -3228,7 +3229,7 @@ Combat Professor
 Combat Research
 Combat Thresher
 Combat Tutorial
-Combine Guildmage	intent: GrantReplacementEffectEffect; intent: MoveCountersEffect; polarity: MoveCountersEffect; timing: GrantReplacementEffectEffect
+Combine Guildmage	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
 Combustion Man	intent: ChooseActionEffect; polarity: ChooseActionEffect
 Combustion Technique
 Come Back Wrong	intent: Pipeline(ChosenTargets→battlefield|graveyard); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield|graveyard)
@@ -3463,7 +3464,7 @@ Cosmos Elixir
 Cosmotronic Wave
 Cost of Brilliance
 Costly Plunder
-Costume Closet	intent: MoveCountersEffect; polarity: MoveCountersEffect
+Costume Closet
 Council of Advisors
 Council of Echoes
 Council's Deliberation
@@ -4337,7 +4338,7 @@ Diabolic Intent
 Diabolic Machine
 Diabolic Tutor
 Diabolic Vision
-Diamond City	intent: MoveCountersEffect; polarity: MoveCountersEffect
+Diamond City
 Diamond Knight
 Diamond Mare
 Diamond Pick-Axe
@@ -5635,7 +5636,7 @@ Exploration
 Exploration Broodship
 Exploratory Mission
 Explore
-Explorer's Cache	intent: MoveCountersEffect; polarity: MoveCountersEffect
+Explorer's Cache
 Explorer's Scope
 Explosive Apparatus
 Explosive Derailment
@@ -7290,7 +7291,7 @@ Gold Pan
 Gold Rush
 Gold-Forged Sentinel
 Gold-Forged Thopteryx
-Goldberry, River-Daughter	intent: MoveChosenCountersToTargetEffect; intent: MoveCountersEachKindMissingEffect; polarity: MoveChosenCountersToTargetEffect; polarity: MoveCountersEachKindMissingEffect
+Goldberry, River-Daughter
 Golden Argosy	intent: Pipeline(CreaturesThatCrewedOrSaddledSource→battlefield|exile)
 Golden Bear
 Golden Demise
@@ -11685,7 +11686,7 @@ Nest of Scarabs
 Nested Ghoul
 Nested Shambler
 Nesting Bot
-Nesting Grounds	intent: MoveChosenCountersToTargetEffect; polarity: MoveChosenCountersToTargetEffect
+Nesting Grounds
 Nesting Wurm
 Netcaster Spider
 Nether Horror
@@ -17546,7 +17547,7 @@ Test of Loyalty
 Test of Priorities
 Test of Talents
 Testament Bearer
-Tester of the Tangential	intent: MoveCountersEffect; intent: SelectTargetEffect
+Tester of the Tangential	intent: SelectTargetEffect
 Tether Technician
 Tethermage's Advantage
 Tetravus	intent: ConvertCountersToTokensEffect
@@ -19748,7 +19749,7 @@ We Say Thee Nay!
 Weakness
 Weakstone
 Weakstone's Subjugation
-Weapon Rack	intent: MoveCountersEffect; polarity: MoveCountersEffect
+Weapon Rack
 Weaponcraft Enthusiast
 Weaponize the Monsters
 Weapons Manufacturing
