@@ -1,0 +1,1 @@
+- #4492 Reads a standing damage-prevention shield over you and your permanents (Protection of the Hekma, Gideon's Intervention) as protection, and an opponents-only standing cast ban (Gideon's Intervention, Dragonlord Dromoka, Grand Abolisher) as a cast ban, pricing those permanents above an unreadable one
