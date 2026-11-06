@@ -296,6 +296,7 @@ object SynergyAxes {
     private fun feedsOf(script: CardScript, creatureSource: Boolean): Set<SynergyAxis> = buildSet {
         script.spellEffect?.let { addAll(effectFeeds(it, creatureSource, script.targetRequirements)) }
         script.triggeredAbilities.forEach { addAll(effectFeeds(it.effect, creatureSource, it.allTargetRequirements)) }
+        script.sagaChapters.forEach { addAll(effectFeeds(it.effect, creatureSource, EffectWalker.chapterTargets(it))) }
         for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
             addAll(effectFeeds(ability.effect, creatureSource, ability.targetRequirements))
             if (sacrifices(ability.cost, creatureSource)) add(SynergyAxis.DEATH)

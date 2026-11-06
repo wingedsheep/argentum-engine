@@ -171,6 +171,7 @@ object AiReadingAudit {
         SPELL("Spell"),
         ACTIVATED("Activated ability"),
         TRIGGERED("Triggered ability"),
+        CHAPTER("Chapter"),
         STATE_TRIGGER("State trigger"),
         STATIC("Static ability"),
     }
@@ -455,6 +456,18 @@ object AiReadingAudit {
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
         }
 
+        // ── Saga chapters: triggered abilities (CR 714.2b), numbered by chapter ──
+        script.sagaChapters.sortedBy { it.chapter }.forEach { chapter ->
+            val sink = Sink()
+            val reqs = EffectWalker.chapterTargets(chapter)
+            abilityPolarity(chapter.effect, reqs, lookup, sink) {
+                TargetPolarityAnalyzer.forRequirements(chapter.effect, reqs, lookup, source = card)
+            }
+            intent(chapter.effect, sink, reqs, ownPile = ownPile, turnAhead = true)
+            modal(chapter.effect, sink)
+            out += AbilityReading(AbilityRef(AbilityKind.CHAPTER, chapter.chapter, faceName, describe { chapter.effect.description }), sink.findings)
+        }
+
         // ── State triggers ──────────────────────────────────────────────────
         script.stateTriggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
@@ -476,7 +489,7 @@ object AiReadingAudit {
     }
 
     private val DISPLAY_ORDER = listOf(
-        AbilityKind.SPELL, AbilityKind.TRIGGERED, AbilityKind.STATE_TRIGGER, AbilityKind.ACTIVATED, AbilityKind.STATIC,
+        AbilityKind.SPELL, AbilityKind.CHAPTER, AbilityKind.TRIGGERED, AbilityKind.STATE_TRIGGER, AbilityKind.ACTIVATED, AbilityKind.STATIC,
     )
 
     /** Polarity of an ability's slots, descending into a modal body's modes the way the AI does. */

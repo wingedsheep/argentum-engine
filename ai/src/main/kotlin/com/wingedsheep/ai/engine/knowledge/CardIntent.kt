@@ -209,8 +209,9 @@ data class CardIntent(
      */
     val counterTax: Int? = null,
     /**
-     * What this card's non-mana activated abilities do — the payoffs a permanent still holds while
-     * it sits on the battlefield (a Spellbomb's draw, a Bauble's land search). Unlike an ETB, which
+     * What this card's non-mana activated abilities and Saga chapters do — the payoffs a permanent
+     * still holds while it sits on the battlefield (a Spellbomb's draw, a Bauble's land search, a
+     * Saga's chapters still to come). Unlike an ETB, which
      * has paid out by then, these are value the board still carries even when they can be used only
      * once; `CardIntentAnalyzer.priorLadder` prices them.
      */

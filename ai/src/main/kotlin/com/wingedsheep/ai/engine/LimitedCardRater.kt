@@ -263,6 +263,7 @@ object LimitedCardRater {
         val slots = EffectWalker.slots(script).iterator()
         script.spellEffect?.let { slot("Spell", slots.next()) }
         script.triggeredAbilities.indices.forEach { i -> slot("Triggered ability ${i + 1}", slots.next()) }
+        script.sagaChapters.sortedBy { it.chapter }.forEach { slot("Chapter ${it.chapter}", slots.next()) }
         script.activatedAbilities.forEachIndexed { i, a ->
             if (!a.isManaAbility) slot("Activated ability ${i + 1}", slots.next())
         }

@@ -1,0 +1,1 @@
+- #4498 Reads Saga chapter abilities: a Saga is valued by the chapters it has left (removal, cards, tokens to come) instead of as an unreadable permanent, so the AI keeps, answers and counters Sagas by what they will still do

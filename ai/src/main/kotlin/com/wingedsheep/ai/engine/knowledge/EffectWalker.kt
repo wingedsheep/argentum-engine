@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.SagaChapterAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -225,7 +226,12 @@ object EffectWalker {
 
     /**
      * Every effect slot on [script] that the walk knows how to read: the spell effect, each
-     * triggered ability, and each non-mana activated ability.
+     * triggered ability, each Saga chapter, and each non-mana activated ability.
+     *
+     * A chapter ability is a triggered ability (CR 714.2b), so it is a [Origin.TRIGGERED] slot. It
+     * triggers as the Saga enters or as its controller's precombat main phase begins (CR 714.3),
+     * with a main phase still ahead, so it is [Slot.turnAhead] — the reading the engine's own
+     * chapter trigger (a precombat-main step trigger) gets from [firesWithItsTurnAhead].
      *
      * Two omissions, both to keep the rater's numbers exactly what they were:
      * `stateTriggeredAbilities` (the rater never read them — [CardIntentAnalyzer] adds them on top
@@ -237,10 +243,17 @@ object EffectWalker {
         script.triggeredAbilities.forEach {
             add(Slot(it.effect, Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements, turnAhead = firesWithItsTurnAhead(it)))
         }
+        script.sagaChapters.sortedBy { it.chapter }.forEach {
+            add(Slot(it.effect, Origin.TRIGGERED, chapterTargets(it), turnAhead = true))
+        }
         script.activatedAbilities
             .filterNot { it.isManaAbility }
             .forEach { add(Slot(it.effect, Origin.ACTIVATED, it.targetRequirements, activationManaValue(it.cost))) }
     }
+
+    /** The target requirements a Saga chapter declares, in slot order. */
+    fun chapterTargets(chapter: SagaChapterAbility): List<TargetRequirement> =
+        listOfNotNull(chapter.targetRequirement) + chapter.additionalTargetRequirements
 
     private fun activationManaValue(cost: com.wingedsheep.sdk.scripting.AbilityCost): Int = when (cost) {
         is com.wingedsheep.sdk.scripting.AbilityCost.Atom ->
