@@ -39,6 +39,7 @@ val ZenithSeeker = card("Zenith Seeker") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "77"
         artist = "Jason Kang"
+        flavorText = "Only from the sky can one fully understand the horrors of the wastes and the wonder of the Hekma's protection."
         imageUri = "https://cards.scryfall.io/normal/front/4/7/47b711b5-aeec-47c4-a718-6bf43e561944.jpg?1783936512"
         ruling("2017-04-18", "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity.")
     }

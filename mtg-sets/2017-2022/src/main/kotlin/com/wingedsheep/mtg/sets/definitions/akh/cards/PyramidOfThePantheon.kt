@@ -40,6 +40,7 @@ val PyramidOfThePantheon = card("Pyramid of the Pantheon") {
         rarity = Rarity.RARE
         collectorNumber = "235"
         artist = "Florian de Gesincourt"
+        flavorText = "Five gods, one purpose."
         imageUri = "https://cards.scryfall.io/normal/front/c/e/cef335b2-8086-4b29-b8e3-47de6faa1334.jpg?1783936448"
     }
 }

@@ -8405,6 +8405,7 @@
     "metadata": {
         "collectorNumber": "232",
         "artist": "Sung Choi",
+        "flavorText": "Without the God-Pharaoh, there would be no Luxa. Without the Luxa, there would be no life.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f43dc6f-910c-42a1-b329-038e20dfb264.jpg?1783936451"
     }
 }
@@ -10524,6 +10525,7 @@
         "collectorNumber": "235",
         "rarity": "RARE",
         "artist": "Florian de Gesincourt",
+        "flavorText": "Five gods, one purpose.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/e/cef335b2-8086-4b29-b8e3-47de6faa1334.jpg?1783936448"
     }
 }
@@ -11260,7 +11262,7 @@
 // Sandwurm Convergence
 {
     "name": "Sandwurm Convergence",
-    "manaCost": "{6}{G}",
+    "manaCost": "{6}{G}{G}",
     "typeLine": "Enchantment",
     "oracleText": "Creatures with flying can't attack you or planeswalkers you control.\nAt the beginning of your end step, create a 5/5 green Wurm creature token.",
     "script": {
@@ -14335,6 +14337,7 @@
         "collectorNumber": "77",
         "rarity": "UNCOMMON",
         "artist": "Jason Kang",
+        "flavorText": "Only from the sky can one fully understand the horrors of the wastes and the wonder of the Hekma's protection.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/7/47b711b5-aeec-47c4-a718-6bf43e561944.jpg?1783936512",
         "rulings": [
             {

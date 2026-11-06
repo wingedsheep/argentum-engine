@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
  * Sandwurm Convergence
- * {6}{G}
+ * {6}{G}{G}
  * Enchantment
  * Creatures with flying can't attack you or planeswalkers you control.
  * At the beginning of your end step, create a 5/5 green Wurm creature token.
@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * gains flying stays in combat (per the 2017-04-18 ruling).
  */
 val SandwurmConvergence = card("Sandwurm Convergence") {
-    manaCost = "{6}{G}"
+    manaCost = "{6}{G}{G}"
     colorIdentity = "G"
     typeLine = "Enchantment"
     oracleText = "Creatures with flying can't attack you or planeswalkers you control.\n" +

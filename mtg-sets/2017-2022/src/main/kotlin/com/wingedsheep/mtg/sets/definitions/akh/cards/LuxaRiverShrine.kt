@@ -35,6 +35,7 @@ val LuxaRiverShrine = card("Luxa River Shrine") {
         rarity = Rarity.COMMON
         collectorNumber = "232"
         artist = "Sung Choi"
+        flavorText = "Without the God-Pharaoh, there would be no Luxa. Without the Luxa, there would be no life."
         imageUri = "https://cards.scryfall.io/normal/front/9/f/9f43dc6f-910c-42a1-b329-038e20dfb264.jpg?1783936451"
     }
 }
