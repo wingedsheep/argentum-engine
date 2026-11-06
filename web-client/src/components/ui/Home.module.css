@@ -383,8 +383,10 @@
   .navItem { padding: 0 12px; }
 }
 
-/* A large screen has height to spare once the hub fits: centre the content between the top bar
-   and the footer instead of leaving it all at the top. */
-@media (min-width: 1500px) and (min-height: 940px) {
-  .main { justify-content: center; padding-bottom: 6vh; }
+/* A tall screen has height to spare: ease the content down from the top bar by a share of what is
+   left over, rather than centring it. Centring on the content's own height either moved the
+   catalogue under the pointer as the launch panel changed size, or (measuring the catalogue alone)
+   let a tall panel hang past the footer. This depends only on the viewport, so it never moves. */
+@media (min-width: 901px) and (min-height: 600px) {
+  .main { padding-top: clamp(4px, calc((100dvh - 1000px) / 4), 96px); }
 }

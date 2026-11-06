@@ -731,7 +731,16 @@
 @media (min-width: 901px) and (min-height: 600px) {
   .hub { flex: 1 1 auto; min-height: 0; height: 100%; }
   .catalog { max-height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
-  .side { position: static; max-height: 100%; }
+  .side { position: static; max-height: 100%; overscroll-behavior: contain; }
+  /* When the panel is taller than the column, its options scroll and the Play button stays put at
+     the bottom of the column — never below the fold or under the footer. */
+  .panelFooter {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: #0e1018;
+    box-shadow: 0 -10px 18px -8px rgba(0, 0, 0, 0.55);
+  }
 }
 
 /* ── Narrow screens: one column, the panel becomes a bottom sheet ──────── */
@@ -842,14 +851,3 @@
   .playButton { min-height: 44px; }
 }
 
-/* Large screens (see Home.module.css): the hub takes its content's height so the page column can
-   centre it; everything fits, so nothing needs to scroll on its own.
-   Only the catalogue sizes the hub, though. The side column's height changes with every mode — a
-   Draft panel is half again as tall as Random's — and if it counted, each tile click would re-centre
-   the hub and move the catalogue under the pointer. `contain: size` takes the column out of the
-   row's sizing; it hangs from the catalogue's top edge into the space below. */
-@media (min-width: 1500px) and (min-height: 940px) {
-  .hub { flex: 0 0 auto; height: auto; }
-  .catalog { max-height: none; }
-  .side { max-height: none; contain: size; overflow: visible; }
-}
