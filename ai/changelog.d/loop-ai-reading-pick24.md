@@ -1,0 +1,1 @@
+- #4501 Holds a counted -X/-X (Defile, Feeding Frenzy, Death Wind) that would kill nothing on a creature with no fight left this turn, instead of throwing it away for a side payoff
