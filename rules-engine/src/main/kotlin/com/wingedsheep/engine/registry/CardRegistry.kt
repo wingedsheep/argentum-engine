@@ -158,6 +158,7 @@ class CardRegistry(private val parent: CardRegistry? = null) {
         com.wingedsheep.sdk.scripting.CardNamePool.NONLAND -> namesWhere { !it.isLand }
         com.wingedsheep.sdk.scripting.CardNamePool.NONBASIC_LAND -> namesWhere { it.isLand && !it.typeLine.isBasicLand }
         com.wingedsheep.sdk.scripting.CardNamePool.ARTIFACT -> namesWhere { it.isArtifact }
+        com.wingedsheep.sdk.scripting.CardNamePool.NONARTIFACT_NONLAND -> namesWhere { !it.isArtifact && !it.isLand }
     }
 
     /**

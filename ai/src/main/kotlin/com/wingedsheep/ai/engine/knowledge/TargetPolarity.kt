@@ -490,8 +490,13 @@ object TargetPolarityAnalyzer {
         val biteSources = mutableSetOf<Int>()
         // What the effect does to "its controller" — the controller of the first target.
         val controllerReadings = mutableListOf<TargetPolarity>()
+        // "That player shuffles, then draws a card for each card exiled from their hand this way"
+        // (Lost Legacy): the refund is the price of the hand stripped, not a gift that would aim
+        // the spell at us. [lossSlots] reads the slot.
+        val refunds = CardIntentAnalyzer.handRefundDraws(effect)
         for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
+            if (leaf is DrawCardsEffect && leaf in refunds) continue
             if (theftGifts.any { it === leaf }) {
                 // Stolen Uniform attaches the Equipment it took to a creature of ours: the Equipment
                 // slot reads as the theft, the creature slot still as the gift it is.

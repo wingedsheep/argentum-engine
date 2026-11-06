@@ -4232,6 +4232,118 @@
     ]
 }
 
+// Lost Legacy
+{
+    "name": "Lost Legacy",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a nonartifact, nonland card name. Search target player's graveyard, hand, and library for any number of cards with that name and exile them. That player shuffles, then draws a card for each card exiled from their hand this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CARD_NAME",
+                    "storeAs": "cardName0",
+                    "cardNamePool": "NONARTIFACT_NONLAND"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "cardName0"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose any number of cards with that name to exile",
+                    "selectedLabel": "Exile"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "selected2",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Hand"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5d0e447-d98e-43d5-9b53-166221c34be2.jpg?1783937205"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Make Obsolete
 {
     "name": "Make Obsolete",
