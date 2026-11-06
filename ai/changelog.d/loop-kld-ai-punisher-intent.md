@@ -1,0 +1,1 @@
+- #4532 The AI now reads an opponent-decided punisher (Combustible Gearhulk, Risk Factor, Palantír of Orthanc) as card draw and damage to players instead of nothing — so it cashes Risk Factor in the opponent's end step — and rates it by its weaker branch; damage to a player ("target player", "target opponent", "each opponent") no longer reads or rates as removal.

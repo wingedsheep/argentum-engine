@@ -566,8 +566,16 @@ object CardIntentAnalyzer {
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
                 is CreateDelayedTriggerEffect -> EffectWalker.firedLeaves(leaf, payoff).flatMap { readingLeaves(it) }
-                is DealDamageEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
-                    else listOf(leaf)
+                // Damage to a slot only a player fills ("target player", "target opponent": Lava
+                // Spike, Risk Factor) is a clock on that player, not an answer to a permanent.
+                is DealDamageEffect -> when {
+                    TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements) -> emptyList()
+                    slotOf(leaf.target, requirements) is TargetOpponent ->
+                        listOf(leaf.copy(target = EffectTarget.PlayerRef(Player.TargetOpponent)))
+                    slotOf(leaf.target, requirements) is TargetPlayer ->
+                        listOf(leaf.copy(target = EffectTarget.PlayerRef(Player.TargetPlayer)))
+                    else -> listOf(leaf)
+                }
                 // "Put two -1/-1 counters on target creature you control" (Defiant Greatmaw, Exemplar
                 // of Strength): a drawback paid on our own board, like damage to our own creature —
                 // no answer to anything. Aimed anywhere else it is the removal [tagsOf] reads.
@@ -699,8 +707,40 @@ object CardIntentAnalyzer {
                     if (power === leaf.powerModifier && toughness === leaf.toughnessModifier) listOf(leaf)
                     else listOf(leaf.copy(powerModifier = power, toughnessModifier = toughness))
                 }
+                is GatedEffect -> punisherBranchLeaves(leaf, requirements) ?: listOf(leaf)
                 else -> listOf(leaf)
             }
+        }
+    }
+
+    /**
+     * The branches of a punisher — a gate another player decides between two payoffs of ours:
+     * "target opponent may have you draw three cards. If the player doesn't, you mill three cards,
+     * then this creature deals damage to that player …" (Combustible Gearhulk), Risk Factor's four
+     * damage or three cards, Clash of Elements' top or bottom of the library. The card does one
+     * branch, the decider's pick, so it is for whatever either branch does — as a modal spell is for
+     * any of its modes; how much that is worth (the decider takes the branch worse for us) is the
+     * value readers' question. Read against [requirements], so damage to the targeted opponent is
+     * the clock it is, not removal.
+     *
+     * Null — the gate stays an unread leaf — when either branch does nothing for us: that is a tax
+     * ("… unless its controller pays {1}", Crystal Shard), and the decider can always buy their way
+     * out of the payoff. A branch that wins us the game never happens — no decider ends the game
+     * against themselves — so the card does the other one.
+     *
+     * Every decided gate with an `otherwise` among the cards is decided by another player; a
+     * future one its controller decides would be a modal choice, read the same way here but
+     * priced at its best branch, not its weakest, by the rater.
+     */
+    private fun punisherBranchLeaves(gate: GatedEffect, requirements: List<TargetRequirement>): List<Effect>? {
+        val otherwise = gate.otherwise ?: return null
+        if (gate.decisionMaker == null) return null
+        val branches = listOf(gate.then, otherwise).map { readingLeaves(it, requirements) }
+            .filterNot { leaves -> leaves.any { IntentTag.GAME_WIN in tagsOf(it) } }
+        return when {
+            branches.size < 2 -> branches.flatten()
+            branches.all { leaves -> leaves.any { tagsOf(it).isNotEmpty() } } -> branches.flatten()
+            else -> null
         }
     }
 
@@ -1838,11 +1878,9 @@ object CardIntentAnalyzer {
 
         // Damage to a *player* is a clock, not an answer — a permanent that pings the opponent for
         // 1 each upkeep must not be priced as repeatable removal.
-        is DealDamageEffect -> when (effect.target) {
-            is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
-            EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource ->
-                setOf(IntentTag.DAMAGE_TO_PLAYERS)
-            EffectTarget.Self -> emptySet()
+        is DealDamageEffect -> when {
+            namesAPlayer(effect.target) -> setOf(IntentTag.DAMAGE_TO_PLAYERS)
+            effect.target == EffectTarget.Self -> emptySet()
             else -> removalTags(effect.target)
         }
         // "Each opponent loses life equal to …" (Throne of the God-Pharaoh), "target player loses 2
@@ -2179,10 +2217,9 @@ object CardIntentAnalyzer {
             setOf(IntentTag.GAME_WIN)
         } else emptySet()
 
-        // A gate another player decides (Clash of Elements: "its owner may put it on top of their
-        // library … if they didn't, they put it on the bottom") is their call, so the card does
-        // only what both branches do: here, tuck the permanent. Branches that share nothing (Risk
-        // Factor's damage to them or cards for us) leave it unread.
+        // A gate another player decides whose branches [readingLeaves] did not open as a punisher
+        // ([punisherBranchLeaves]): a tax the decider can pay off, so the card does only what both
+        // branches do — which, with one branch empty, is nothing.
         is GatedEffect -> {
             val otherwise = effect.otherwise
             if (effect.decisionMaker == null || otherwise == null) emptySet()
@@ -2403,13 +2440,28 @@ object CardIntentAnalyzer {
     }
 
     /** Whether [target] is bound to a "target opponent" requirement. */
-    private fun namesAnOpponentSlot(target: EffectTarget, requirements: List<TargetRequirement>): Boolean {
-        val requirement = when (target) {
-            is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name.substringBefore('[') }
-            is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
-            else -> null
-        }
-        return requirement is TargetOpponent
+    private fun namesAnOpponentSlot(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        slotOf(target, requirements) is TargetOpponent
+
+    /**
+     * Whether damage aimed at [target] lands on a player — a named one ("each opponent", "that
+     * player", "you") or a slot only a player fills ("target player", "target opponent"). Damage
+     * to a player is a clock, not an answer to a permanent; the rater prices it so too.
+     */
+    fun damagesAPlayer(target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        namesAPlayer(target) || slotOf(target, requirements).let { it is TargetPlayer || it is TargetOpponent }
+
+    private fun namesAPlayer(target: EffectTarget): Boolean = when (target) {
+        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
+        else -> false
+    }
+
+    /** The requirement [target] is bound to, or null when it names no declared slot. */
+    private fun slotOf(target: EffectTarget, requirements: List<TargetRequirement>): TargetRequirement? = when (target) {
+        is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name.substringBefore('[') }
+        is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
+        else -> null
     }
 
     /**

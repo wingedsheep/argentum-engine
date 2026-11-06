@@ -627,9 +627,23 @@ object LimitedCardRater {
                 // A toughness cost is not removal. Keep a modest penalty: survivors can pay it,
                 // but it makes the cantrip less broadly usable than a free draw.
                 -0.2
+            } else if (effect is DealDamageEffect && CardIntentAnalyzer.damagesAPlayer(effect.target, targets)) {
+                // "Deals 4 damage to target opponent" (Risk Factor), "3 damage to each opponent":
+                // life off a player, a clock like "target player loses 4 life", not an answer to a
+                // creature — the same line the intent reader draws.
+                LIFE_LOSS_SCORE
+            } else if (effect is GatedEffect && effect.decisionMaker != null && effect.otherwise != null) {
+                // A punisher — another player picks the branch (Risk Factor's four damage or three
+                // cards, Combustible Gearhulk's cards or a milled-damage hit): they take the one
+                // worse for us, so the card is worth its weaker branch. A tax ("unless that player
+                // pays {1}") has an empty branch and is worth nothing here, as before. Every decided
+                // gate with an `otherwise` among the cards is another player's (punisherBranchLeaves).
+                minOf(EffectWalker.fold(effect.then, this), EffectWalker.fold(effect.otherwise!!, this))
+                    .coerceAtLeast(0.0)
             } else {
                 scoreEffect(effect, targets, source)
             }
+
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
         override fun composite(parts: List<Double>): Double = parts.sum().coerceAtMost(COMPOSITE_CAP)
@@ -787,7 +801,7 @@ object LimitedCardRater {
 
             // Life gain — low value in limited
             is GainLifeEffect -> 0.1
-            is LoseLifeEffect -> 0.2
+            is LoseLifeEffect -> LIFE_LOSS_SCORE
 
             // Counter manipulation
             is AddCountersEffect -> 0.4
@@ -825,6 +839,7 @@ object LimitedCardRater {
 
     private const val DYNAMIC_STAT_GUESS = 2
     private const val DESTROY_SCORE = 1.5
+    private const val LIFE_LOSS_SCORE = 0.2
     private const val COMPOSITE_CAP = 2.5
     private const val MODAL_FLEXIBILITY = 0.2
     private const val PUMP_PER_STAT = 0.15
