@@ -523,7 +523,8 @@ object TargetSelection {
 
     /**
      * The target slots of [action], in [targetInfosFor] order, whose graveyard card comes under our
-     * control whoever owns it — Rise from the Grave, Boneyard Parley. Read for a plain cast and a
+     * control whoever owns it — Rise from the Grave, Boneyard Parley, or a cast out of an opponent's
+     * graveyard (Tinybones). Read for a plain cast and a
      * printed activated ability; empty for anything else (a modal, face-down, split, fused or
      * transformed cast), which keeps the owner-sided reading.
      */
