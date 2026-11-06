@@ -312,11 +312,11 @@ object CardIntentAnalyzer {
         var expiringPump = false
         var pumpToughness = 0
         var expiringGroupPump = false
-        // Hand selection reads gated interiors too — see [handSelectionLeaves] for why only here.
+        // Hand selection reads gated interiors too — see [gateInteriorLeaves] for why only here.
         val handLeaves = scripts.flatMap { script ->
             EffectWalker.slots(script).map { it.effect } +
                 script.stateTriggeredAbilities.map { it.effect }
-        }.flatMap { handSelectionLeaves(it) }
+        }.flatMap { gateInteriorLeaves(it) }
         var gathersLibraryTop = false
         var movesToHand = false
         val wishFilters = mutableListOf<GameObjectFilter>()
@@ -834,15 +834,16 @@ object CardIntentAnalyzer {
      * Extrapolate the Impossible is the shape that needs it: "you may reveal two cards from outside
      * the game; an opponent chooses one; put it into your hand" lowers to `May(IfYouDo(reveal, then
      * = put into hand))`, and [EffectWalker] treats the `IfYouDo` as a leaf, so the card read as
-     * doing nothing at all. Used only for [CardIntent.selectsIntoHand] / [CardIntent.wishFilters] and [wishTags]:
-     * widening the shared walk would move every tag and the rater's numbers with it, which is a
-     * separate change.
+     * doing nothing at all. Used for [CardIntent.selectsIntoHand] / [CardIntent.wishFilters] and [wishTags],
+     * and by [TargetPolarityAnalyzer.castGraveyardSlots] ("you may cast target card … If you do", Ogre
+     * Battlecaster): widening the shared walk would move every tag and the rater's numbers with it,
+     * which is a separate change.
      */
-    private fun handSelectionLeaves(effect: Effect): List<Effect> =
+    internal fun gateInteriorLeaves(effect: Effect): List<Effect> =
         EffectWalker.leaves(effect).flatMap { leaf ->
             if (leaf !is GatedEffect) return@flatMap listOf(leaf)
             listOfNotNull((leaf.gate as? Gate.DoAction)?.action, leaf.then, leaf.otherwise)
-                .flatMap { handSelectionLeaves(it) }
+                .flatMap { gateInteriorLeaves(it) }
         }
 
     /** Every tag [root] reads as: its leaves' own, plus what the pipeline among them adds up to ([pipelineTags]). */
@@ -1068,10 +1069,10 @@ object CardIntentAnalyzer {
      * of them; put that card into your hand" (Extrapolate the Impossible): a gather from our own
      * sideboard ([wishFilterOf]) whose cards, or the ones picked from among them, end in our hand is
      * a search for the card we need — [IntentTag.TUTOR], from outside the game instead of the library.
-     * Read over [handSelectionLeaves]: Extrapolate's reveal is the action of an "if you do".
+     * Read over [gateInteriorLeaves]: Extrapolate's reveal is the action of an "if you do".
      */
     private fun wishTags(root: Effect): Set<IntentTag> {
-        val leaves = handSelectionLeaves(root)
+        val leaves = gateInteriorLeaves(root)
         val wished = leaves.mapNotNullTo(HashSet()) { leaf ->
             (leaf as? GatherCardsEffect)?.takeIf { wishFilterOf(it) != null }?.storeAs
         }

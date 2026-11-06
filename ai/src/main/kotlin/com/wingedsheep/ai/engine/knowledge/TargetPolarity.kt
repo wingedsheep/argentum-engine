@@ -127,6 +127,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -361,6 +362,9 @@ object TargetPolarityAnalyzer {
         if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(effect, requirements)) {
             return requirements.indices.filterTo(HashSet()) { !ownGraveyardOnly(objectFilter(requirements[it])) }
         }
+        // A card we cast out of a graveyard is ours on the stack and on the battlefield (Tinybones).
+        castGraveyardSlots(effect, requirements).filterNot { ownGraveyardOnly(objectFilter(requirements[it])) }
+            .takeIf { it.isNotEmpty() }?.let { return it.toSet() }
         return EffectWalker.leaves(effect).mapNotNullTo(HashSet()) { leaf ->
             val move = leaf as? MoveToZoneEffect ?: return@mapNotNullTo null
             if (move.destination != Zone.BATTLEFIELD || move.faceDown != null) return@mapNotNullTo null
@@ -379,6 +383,35 @@ object TargetPolarityAnalyzer {
 
     private fun objectFilter(requirement: TargetRequirement) =
         (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+
+    /**
+     * The graveyard slots of [requirements] whose card [effect] lets us cast or play — "you may cast
+     * target Zombie creature card from your graveyard this turn" (Zul Ashur), "you may cast target
+     * instant card from your graveyard without paying its mana cost" (Torrential Gearhulk), "… from
+     * that player's graveyard" (Tinybones): a pipeline that gathers its chosen targets and casts them
+     * on resolution ([CastFromCollectionWithoutPayingCostEffect], paid or free) or grants the cast
+     * ([GrantMayPlayFromExileEffect]). The card named is the one we get to cast — recursion through
+     * the stack — so the best card is the one to name, whoever's graveyard holds it. A grant to the
+     * card's owner (airbend's [GrantMayPlayFromExileEffect.ownerControls]) is not ours, and a gather
+     * that mixes in a battlefield slot names no graveyard card alone, so both read nothing here.
+     */
+    internal fun castGraveyardSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        val slots = objectSlots(requirements)
+        if (slots.isEmpty() || slots.any { objectFilter(requirements[it])?.zone != Zone.GRAVEYARD }) return emptyList()
+        // The cast is often the action of its own "if you do" (Ogre Battlecaster), which the plain walk stops at.
+        val leaves = CardIntentAnalyzer.gateInteriorLeaves(effect)
+        val chosen = allChosenTargets(effect).toMutableSet()
+        if (chosen.isEmpty()) return emptyList()
+        do {
+            val before = chosen.size
+            for (leaf in leaves) chosen += CardIntentAnalyzer.derivedCollections(leaf, chosen)
+        } while (chosen.size != before)
+        val casts = leaves.any { leaf ->
+            (leaf is CastFromCollectionWithoutPayingCostEffect && leaf.from in chosen) ||
+                (leaf is GrantMayPlayFromExileEffect && !leaf.ownerControls && leaf.from in chosen)
+        }
+        return if (casts) slots else emptyList()
+    }
 
     /**
      * Polarity of each of [requirements], read off [effect]. Not memoized — see the callers.
@@ -645,6 +678,8 @@ object TargetPolarityAnalyzer {
         // graveyard; for each, create a token that's a copy of it" (Hour of Eternity): the single-card
         // exile-and-copy above (The Scarab God), as a pipeline. The best card is the one to name.
         if (CardIntentAnalyzer.exilesChosenGraveyardTargetsToUse(effect, requirements)) recursions += requirements.indices
+        // Graveyard cards a pipeline lets us cast (Zul Ashur, Torrential Gearhulk): recursion by way of the stack.
+        recursions += castGraveyardSlots(effect, requirements)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
