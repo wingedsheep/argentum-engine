@@ -175,7 +175,7 @@ Aerie Bowmasters
 Aerie Mystics
 Aerith Gainsborough	intent: AddCountersToCollectionEffect; intent: Pipeline(BattlefieldMatching→?)
 Aerith Rescue Mission
-Aeromunculus	intent: AdaptEffect
+Aeromunculus
 Aeronaut Cavalry
 Aeronaut Tinkerer
 Aeronaut's Wings
@@ -1327,7 +1327,7 @@ Basilica Shepherd
 Basilica Skullbomb
 Basilica Stalker
 Basilisk Collar
-Basking Broodscale	intent: AdaptEffect
+Basking Broodscale
 Basking Capybara
 Basri Ket
 Basri's Acolyte
@@ -1491,7 +1491,7 @@ Benevolent Ancestor
 Benevolent Hydra
 Benevolent River Spirit
 Benthic Behemoth
-Benthic Biomancer	intent: AdaptEffect
+Benthic Biomancer
 Benthic Criminologists
 Benthic Djinn
 Benthic Giant
@@ -3725,7 +3725,7 @@ Cursed Recording
 Cursed Ronin
 Cursed Totem
 Cursed Windbreaker	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
-Cursed Wombat	intent: AdaptEffect
+Cursed Wombat
 Custodian of the Trove
 Custody Battle	polarity: Aura>GrantTriggeredAbility
 Customs Depot
@@ -4738,7 +4738,7 @@ Dream's Grip
 Dreamborn Muse
 Dreamcaller Siren
 Dreamdew Entrancer
-Dreamdrinker Vampire	intent: AdaptEffect
+Dreamdrinker Vampire
 Dreamroot Cascade
 Dreams of Laguna
 Dreams of Steel and Oil
@@ -5273,7 +5273,7 @@ Emissary of Soulfire	intent: AddCountersEffect; polarity: AddCountersEffect
 Emissary of Sunrise
 Emmara, Soul of the Accord
 Emmessi Tome
-Emperor of Bones	intent: AdaptEffect
+Emperor of Bones
 Emperor's Vanguard
 Empress Galina
 Emptiness
@@ -5496,7 +5496,7 @@ Ethereal Haze
 Ethereal Usher
 Ethereal Whiskergill
 Etherium Astrolabe
-Etherium Pteramander	intent: AdaptEffect
+Etherium Pteramander
 Etherium Sculptor
 Ethersworn Adjudicator
 Ethersworn Sphinx	intent: CascadeEffect
@@ -5532,7 +5532,7 @@ Eviscerator
 Eviscerator's Insight
 Evolution Charm
 Evolution Sage
-Evolution Witness	intent: AdaptEffect
+Evolution Witness
 Evolved Sleeper	combat: SetBaseStatsEffect; intent: SetCreatureSubtypesEffect
 Evolved Spinoderm
 Evolving Adaptive
@@ -5573,7 +5573,7 @@ Exotic Orchard
 Exotic Pets
 Expand the Sphere
 Expanded Anatomy
-Expanding Ooze	intent: AdaptEffect
+Expanding Ooze
 Expansion // Explosion
 Expedite	timing: GrantKeywordEffect
 Expedited Inheritance
@@ -5964,7 +5964,7 @@ Festival of Embers
 Festival of Trokin
 Festival of the Guildpact
 Festive Funeral
-Fetid Gargantua	intent: AdaptEffect
+Fetid Gargantua
 Fetid Heath
 Fetid Horror
 Fetid Imp
@@ -7550,7 +7550,7 @@ Growing Rites of Itlimoc
 Growth Curve
 Growth Cycle
 Growth Spiral
-Growth-Chamber Guardian	intent: AdaptEffect
+Growth-Chamber Guardian
 Grozoth	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Grub's Command
 Grub, Storied Matriarch
@@ -8370,7 +8370,7 @@ Huskburster Swarm
 Hussar Patrol
 Hustle // Bustle	intent: MarkMustAttackEffect; intent: MarkMustBlockThisTurnEffect; polarity: MarkMustAttackEffect; polarity: MarkMustBlockThisTurnEffect
 Hyalopterous Lemure
-Hydra Trainer	intent: AdaptEffect
+Hydra Trainer
 Hydra's Growth
 Hydraulic Helper
 Hydro-Channeler
@@ -8570,7 +8570,7 @@ Increasing Devotion
 Incremental Growth
 Incriminate	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
 Incubation // Incongruity
-Incubation Druid	intent: AdaptEffect
+Incubation Druid
 Incubation Sac
 Incurable Ogre
 Indatha Crystal
@@ -13084,7 +13084,7 @@ Psychogenic Probe
 Psychosis Crawler
 Psychotrope Thallid
 Pterafractyl
-Pteramander	intent: AdaptEffect
+Pteramander
 Pterodon Knight
 PuPu UFO	combat: SetBaseStatsEffect; timing: SetBaseStatsEffect
 Public Enemy	polarity: Aura>DrawCardsEffect; polarity: Aura>MustAttack
@@ -14615,7 +14615,7 @@ Satyr Rambler
 Satyr Wayfinder
 Satyr's Cunning
 Saurian Explorer
-Sauroform Hybrid	intent: AdaptEffect
+Sauroform Hybrid
 Sauron's Ransom	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); polarity: TheRingTemptsYouEffect
 Sauron, Lord of the Rings	intent: TheRingTemptsYouEffect
 Sauron, the Dark Lord	intent: TheRingTemptsYouEffect
@@ -14831,7 +14831,7 @@ Scurry of Gremlins
 Scurry of Squirrels
 Scute Mob
 Scute Swarm
-Scuttlegator	intent: AdaptEffect
+Scuttlegator
 Scuttlemutt	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Scuttling Butler
 Scuttling Death
@@ -15214,7 +15214,7 @@ Shared Triumph
 Shark Shredder, Killer Clone
 Shark Typhoon
 Sharkey, Tyrant of the Shire
-Sharktocrab	intent: AdaptEffect
+Sharktocrab
 Sharlayan, Nation of Scholars
 Sharp-Eyed Rookie
 Sharpened Pitchfork
@@ -15576,7 +15576,7 @@ Skaab Wrangler
 Skalla Wolf
 Skarrgan Hellkite
 Skateboard
-Skatewing Spy	intent: AdaptEffect
+Skatewing Spy
 Skeletal Changeling
 Skeletal Crocodile
 Skeletal Kathari
@@ -15608,7 +15608,7 @@ Skirsdag Cultist
 Skirsdag High Priest
 Skirsdag Supplicant
 Skithiryx, the Blight Dragon
-Skitter Eel	intent: AdaptEffect
+Skitter Eel
 Skitterbeam Battalion
 Skittering Heartstopper
 Skittering Horror
@@ -17304,7 +17304,7 @@ Teller of Tales
 Telling Time
 Temmet, Naktamun's Will
 Temmet, Vizier of Naktamun
-Temperamental Oozewagg	intent: AdaptEffect
+Temperamental Oozewagg
 Tempered Steel
 Tempered Veteran
 Tempered in Solitude	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -18384,7 +18384,7 @@ Troll Ascetic
 Troll Negotiations
 Troll of Khazad-dûm
 Troll-Horn Cameo
-Trollbred Guardian	intent: AdaptEffect
+Trollbred Guardian
 Trollhide
 Trolls of Tel-Jilad
 Troop of Ponies
@@ -20258,7 +20258,7 @@ Zealous Inquisitor	polarity: RedirectNextDamageEffect; timing: RedirectNextDamag
 Zealous Lorecaster
 Zealous Strike
 Zefram Cochrane, Warp Pioneer
-Zegana, Utopian Speaker	intent: AdaptEffect
+Zegana, Utopian Speaker
 Zell Dincht
 Zelyon Sword
 Zendikar Farguide
