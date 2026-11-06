@@ -92,6 +92,7 @@ import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.effects.TheRingTemptsYouEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.effects.VentureIntoTheDungeonEffect
@@ -129,7 +130,7 @@ import java.util.Locale
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
  *    ([needsNoIntent]: a counter on the source itself or one it removes from itself, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
- *    shifting its own P/T with a loss on either side, its controller venturing into the dungeon, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
+ *    shifting its own P/T with a loss on either side, its controller venturing into the dungeon or being tempted by the Ring, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
  *    to hand chosen among its controller's own permanents).
  *  - [Check.COMBAT] — [CombatReach] over each leaf of a non-mana activated ability that changes
@@ -971,6 +972,10 @@ object AiReadingAudit {
         // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.
         // A venture by another player stays flagged.
         if (leaf is VentureIntoTheDungeonEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
+        // The Ring tempting its controller (Took Reaper's death, Call of the Ring's upkeep) has no target to aim
+        // and no window to hold it for: the Ring-bearer is chosen at resolution, and the Ring's abilities it
+        // unlocks are on the board the simulation prices. The Ring tempting another player stays flagged.
+        if (leaf is TheRingTemptsYouEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
         if (leaf is ScryEffect || leaf is SurveilEffect) return true
         // A permanent exploring itself (Jadelight Ranger) is read as card selection, and its +1/+1
