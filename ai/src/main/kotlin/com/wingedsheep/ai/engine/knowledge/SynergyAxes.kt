@@ -26,7 +26,9 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
@@ -292,10 +294,10 @@ object SynergyAxes {
     // ── Feeds ──────────────────────────────────────────────────────────────────
 
     private fun feedsOf(script: CardScript, creatureSource: Boolean): Set<SynergyAxis> = buildSet {
-        script.spellEffect?.let { addAll(effectFeeds(it)) }
-        script.triggeredAbilities.forEach { addAll(effectFeeds(it.effect)) }
+        script.spellEffect?.let { addAll(effectFeeds(it, creatureSource)) }
+        script.triggeredAbilities.forEach { addAll(effectFeeds(it.effect, creatureSource)) }
         for (ability in script.activatedAbilities.filterNot { it.isManaAbility }) {
-            addAll(effectFeeds(ability.effect))
+            addAll(effectFeeds(ability.effect, creatureSource))
             if (sacrifices(ability.cost, creatureSource)) add(SynergyAxis.DEATH)
             // "{T}, Discard a card: …" bins our cards as a discard effect does (Murmuring Volume).
             if (discards(ability.cost)) add(SynergyAxis.GRAVEYARD)
@@ -303,20 +305,33 @@ object SynergyAxes {
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
     }
 
-    private fun effectFeeds(effect: Effect): Set<SynergyAxis> = buildSet {
+    private fun effectFeeds(effect: Effect, creatureSource: Boolean): Set<SynergyAxis> = buildSet {
         for (leaf in EffectWalker.leaves(effect)) {
             // "Put a +1/+1 counter on each other creature you control" is a ForEach whose body is
             // the feeding leaf; the walk stops at ForEach bodies, so open them here.
             if (leaf is ForEachEffect) {
-                addAll(effectFeeds(leaf.body))
+                addAll(effectFeeds(leaf.body, creatureSource))
                 continue
             }
             // A global trigger produces the same resources when its event happens, including
             // discards from a combat-damage loot. The event is a condition, not a new resource.
             if (leaf is CreateGlobalTriggeredAbilityEffect) {
-                addAll(effectFeeds(leaf.ability.effect))
+                addAll(effectFeeds(leaf.ability.effect, creatureSource))
                 continue
             }
+            // A delayed trigger produces what its body does when it fires — and "sacrifice it at the
+            // beginning of the next end step" (Hazoret's Favor, Junkyo Bell, Through the Breach) is a
+            // creature of ours dying, whatever the scheduling ability got for it.
+            if (leaf is CreateDelayedTriggerEffect) {
+                addAll(effectFeeds(leaf.effect, creatureSource))
+                continue
+            }
+            // We sacrifice a permanent of our own — the only kind we can sacrifice — chosen as a
+            // target, or the source itself when it is a creature: a death, the sac outlet's feed.
+            // "Its controller sacrifices it" can be an opponent's edict, and stays unread here.
+            if (leaf is SacrificeTargetEffect && !leaf.sacrificedByItsController &&
+                (leaf.target != EffectTarget.Self || creatureSource)
+            ) add(SynergyAxis.DEATH)
             addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
             if (IntentTag.LIFEGAIN in tags) add(SynergyAxis.LIFEGAIN)

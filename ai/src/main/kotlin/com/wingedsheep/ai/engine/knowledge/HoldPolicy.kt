@@ -241,6 +241,13 @@ class HoldPolicy(
         val intent = (if (cast != null) intents.forCast(cardName, cast) else intents.forName(cardName))
             ?: return TimingVerdict.Neutral
 
+        // A spell that, once resolved, loses us the game at a later step (Glorious End) is only a
+        // play for a player who can win before that step comes — a plan two turns deep that the
+        // simulation never sees: it scores the countered spell and not the loss. No window, ever.
+        if (cast != null && intents.definition(cardName)?.let(CardIntentAnalyzer::spellCostsItsControllerTheGame) == true) {
+            return TimingVerdict.NoWindow
+        }
+
         // A permanent whose entry has nothing to point at — or an Aura whose entry is gated on a
         // creature it is not being cast onto — does nothing in any window. Nor does a sweep over
         // what a creature blocked when it can block nothing more, or borrowed spell mana with no

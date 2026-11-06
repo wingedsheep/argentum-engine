@@ -1,3 +1,70 @@
+// Ahn-Crop Crasher
+{
+    "name": "Ahn-Crop Crasher",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nYou may exert this creature as it attacks. When you do, target creature can't block this turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ahn-Crop Crasher:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"Hesitation breeds dissension. To be worthy of the next life, you must never look back.\"\n—Anep, vizier of Hazoret",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd5db68c-24d5-44ce-9809-e446f26fac5d.jpg?1783936494",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If a creature has a targeted triggered ability that triggers when you exert it, you can exert it even if there isn't a legal target for that triggered ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Angler Drake
 {
     "name": "Angler Drake",
@@ -354,6 +421,108 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Battlefield Scavenger
+{
+    "name": "Battlefield Scavenger",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Jackal Rogue",
+    "oracleText": "You may exert this creature as it attacks. (It won't untap during your next untap step.)\nWhenever you exert a creature, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battlefield Scavenger:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "filter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0eb1a40-8239-4544-96a1-a4acaf7e2054.jpg?1783936494",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have abilities that trigger whenever you exert any creature. These abilities trigger when you exert that creature or any other creature you control."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -975,6 +1144,50 @@
         "flavorText": "\"The worthy shall strive for greatness. Supremacy in life leads to supremacy in the afterlife.\"\n—Monument inscription",
         "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9b00377-9acc-47c4-ae2f-b396d7050a15.jpg?1783936454"
     }
+}
+
+// By Force
+{
+    "name": "By Force",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy X target artifacts.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Dissent? Your gods can't even begin to comprehend the dissent that's about to happen here!\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66cdfdb2-b47f-446d-9850-8581bd1d806c.jpg?1783936492"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Canyon Slough
@@ -3151,6 +3364,81 @@
     ]
 }
 
+// Emberhorn Minotaur
+{
+    "name": "Emberhorn Minotaur",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "You may exert this creature as it attacks. When you do, it gets +1/+1 and gains menace until end of turn. (An exerted creature won't untap during your next untap step. A creature with menace can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emberhorn Minotaur:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Viktor Titov",
+        "flavorText": "\"My stride will break only against the twin points of Hazoret's spear.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81e7aeca-eaba-4d9a-b061-0d9a63b03b3a.jpg?1783936490",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can't exert a creature unless an effect allows you to do so. Similar effects that \"tap and freeze\" a creature (such as that of Decision Paralysis) don't exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player's creature until end of turn and exert it, it will untap during that player's untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Enigma Drake
 {
     "name": "Enigma Drake",
@@ -3940,6 +4228,148 @@
     ]
 }
 
+// Glorious End
+{
+    "name": "Glorious End",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "End the turn. (Exile all spells and abilities from the stack, including this card. The player whose turn it is discards down to their maximum hand size. Damage wears off, and \"this turn\" and \"until end of turn\" effects end.)\nAt the beginning of your next end step, you lose the game.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "EndTheTurn",
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": "LoseGame",
+                    "timing": "NextEndStep",
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2922b976-7beb-4c68-b39e-1b66d5c6f65e.jpg?1783936489",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Ending the turn this way means the following things happen in order: 1) All spells and abilities on the stack are exiled. This includes spells and abilities that can't be countered. 2) If there are any attacking and blocking creatures, they're removed from combat. 3) State-based actions are checked. No player gets priority, and no triggered abilities are put onto the stack. 4) The current phase and/or step ends. The game skips straight to the cleanup step. 5) The cleanup step happens in its entirety."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If any triggered abilities do trigger during this process, they're put onto the stack during the cleanup step. If this happens, players will have a chance to cast spells and activate abilities, then there will be another cleanup step before the turn is over."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Though other spells and abilities that are exiled won't get a chance to resolve, they don't count as being countered."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Any \"at the beginning of the next end step\" triggered abilities won't get the chance to trigger that turn because the end step is skipped. Those abilities will trigger at the beginning of the end step of the next turn."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If Glorious End's delayed triggered ability is countered, it won't trigger again. The same is true if it's removed from the stack in any other way (such as by a second even more Glorious End) or if it resolves and you don't lose the game (perhaps because of the emblem of Gideon of the Trials)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Glorybringer
+{
+    "name": "Glorybringer",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, haste\nYou may exert this creature as it attacks. When you do, it deals 4 damage to target non-Dragon creature an opponent controls. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glorybringer:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Dragon"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "What the initiates face in the final trial is completely at Hazoret's discretion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3277ad99-5682-4baa-b106-de15721876a6.jpg?1783936489",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If a creature has a targeted triggered ability that triggers when you exert it, you can exert it even if there isn't a legal target for that triggered ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player's creature until end of turn and exert it, it will untap during that player's untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Glyph Keeper
 {
     "name": "Glyph Keeper",
@@ -4512,6 +4942,190 @@
     ]
 }
 
+// Hazoret the Fervent
+{
+    "name": "Hazoret the Fervent",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Indestructible, haste\nHazoret can't attack or block unless you have one or fewer cards in hand.\n{2}{R}, Discard a card: Hazoret deals 2 damage to each opponent.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "INDESTRUCTIBLE",
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hazoret the Fervent:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36ed9f9d-99a7-49f4-b0ad-d71355809d32.jpg?1783936487",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Once Hazoret has attacked or blocked, it will remain in combat even if the number of cards in your hand becomes two or greater."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "In a Two-Headed Giant game, Hazoret's activated ability causes 2 damage to be dealt to each opponent, which is 4 damage to the opposing team."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hazoret's Favor
+{
+    "name": "Hazoret's Favor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of combat on your turn, you may have target creature you control get +2/+0 and gain haste until end of turn. If you do, sacrifice it at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hazoret's Favor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "SacrificeTarget",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may have target creature you control get +2/+0 and gain haste until end of turn. If you do, sacrifice it at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "Hazoret's gift is bestowed only once.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b467412-c06b-4cd9-a877-7722051fb758.jpg?1783936488"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hazoret's Monument
 {
     "name": "Hazoret's Monument",
@@ -4606,6 +5220,152 @@
         "flavorText": "\"The worthy shall rush to the God-Pharaoh's side with relentless zeal, rising to overcome every obstacle.\"\n—Monument inscription",
         "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a0a70f2-f2cb-4a08-a1a7-95c8fc3de6e3.jpg?1783936452"
     }
+}
+
+// Heart-Piercer Manticore
+{
+    "name": "Heart-Piercer Manticore",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Manticore",
+    "oracleText": "When this creature enters, you may sacrifice another creature. When you do, this creature deals damage equal to that creature's power to any target.\nEmbalm {5}{R} ({5}{R}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a white Zombie Manticore with no mana cost. Embalm only as a sorcery.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "EMBALM"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Heart-Piercer Manticore:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature to sacrifice"
+                            },
+                            {
+                                "type": "StoreNumber",
+                                "name": "heartPiercerManticoreDamage",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "target0"
+                                    },
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "heartPiercerManticoreDamage"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature. When you do, Heart-Piercer Manticore deals damage equal to that creature's power to any target."
+                },
+                "descriptionOverride": "When Heart-Piercer Manticore enters, you may sacrifice another creature. When you do, Heart-Piercer Manticore deals damage equal to that creature's power to any target."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "embalm_{5}{R}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{R}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "overrideColors": [
+                        "WHITE"
+                    ],
+                    "addedSubtypes": [
+                        "Zombie"
+                    ],
+                    "noManaCost": true,
+                    "embalmed": true
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Embalm {5}{R} (Exile this card from your graveyard and pay its embalm cost: Create a token that's a copy of it, except it's a white Zombie in addition to its other types and has no mana cost. Embalm only as a sorcery.)",
+                "keyword": "EMBALM"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd64160a-96e0-4593-ba42-c5e8bbfa0b15.jpg?1783936487",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Heart-Piercer Manticore's triggered ability goes on the stack without a target. While that ability is resolving, you may sacrifice a creature. If you do, a second ability triggers and you pick a target that will be dealt damage. Players may cast spells and activate abilities after the creature is sacrificed but before damage is dealt."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "The damage-dealing ability triggers only when you sacrifice a creature as a result of the instruction of its triggered ability."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "The sacrificed creature's last known existence on the battlefield is checked to determine its power."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You can't sacrifice multiple creatures to deal damage multiple times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Hieroglyphic Illumination
@@ -5989,6 +6749,70 @@
     ]
 }
 
+// Limits of Solidarity
+{
+    "name": "Limits of Solidarity",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"When the time comes, only one of you will be honored by my spear.\"\n—Hazoret, god of zeal",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95cb6a18-1222-4e56-8466-0f7bd634ef3d.jpg?1783936485"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lord of the Accursed
 {
     "name": "Lord of the Accursed",
@@ -6504,6 +7328,74 @@
         "flavorText": "The lands of the God-Pharaoh are suffused with his breath.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce9a8551-8788-47ea-b774-477f0f3ff22a.jpg?1783936472"
     }
+}
+
+// Nef-Crop Entangler
+{
+    "name": "Nef-Crop Entangler",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nYou may exert this creature as it attacks. When you do, it gets +1/+2 until end of turn. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nef-Crop Entangler:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"If you do not feel the thrill of battle, alive like a flame, you will never triumph.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96569dc0-ea94-4a43-b002-85c5066e5386.jpg?1783936484",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can't exert a creature unless an effect allows you to do so. Similar effects that \"tap and freeze\" a creature (such as that of Decision Paralysis) don't exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player's creature until end of turn and exert it, it will untap during that player's untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Nest of Scarabs
@@ -9048,6 +9940,62 @@
     ]
 }
 
+// Thresher Lizard
+{
+    "name": "Thresher Lizard",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "This creature gets +1/+2 as long as you have one or fewer cards in hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Craig J Spearing",
+        "flavorText": "The sound of its plated tail beating on desert rocks is often mistaken for the footfalls of a much larger predator.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/9642c5f4-4229-47c4-ac44-7feb5ee9cf9e.jpg?1783936482",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, nonlethal damage dealt to Thresher Lizard while you have one or fewer cards in hand may become lethal if cards are put into your hand during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Throne of the God-Pharaoh
 {
     "name": "Throne of the God-Pharaoh",
@@ -9260,6 +10208,149 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Trial of Zeal
+{
+    "name": "Trial of Zeal",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, it deals 3 damage to any target.\nWhen a Cartouche you control enters, return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trial of Zeal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Trial of Zeal:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cartouche ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/543539ce-af50-4bbe-82aa-f35fd2c2a256.jpg?1783936481",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Each Trial has an ability to return to your hand when a Cartouche enters the battlefield under your control. The Trial is returned to its owner's hand only if it's on the battlefield as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Trueheart Twins
+{
+    "name": "Trueheart Twins",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Jackal Warrior",
+    "oracleText": "You may exert this creature as it attacks. (It won't untap during your next untap step.)\nWhenever you exert a creature, creatures you control get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trueheart Twins:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "filter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "Shoulder to shoulder until blade must turn against blade.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac510911-1a65-4509-b6c9-ddac1950c838.jpg?1783936481",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "You can't exert a creature unless an effect allows you to do so. Similar effects that \"tap and freeze\" a creature (such as that of Decision Paralysis) don't exert that creature."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If an exerted creature is already untapped during your next untap step (most likely because it had vigilance or an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you gain control of another player's creature until end of turn and exert it, it will untap during that player's untap step."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have abilities that trigger whenever you exert any creature. These abilities trigger when you exert that creature or any other creature you control."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "All cards in the Amonkhet set that let you exert a creature let you do so as you declare it as an attacking creature, as do some of the cards in the Hour of Devastation set. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9576,6 +10667,65 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Warfire Javelineer
+{
+    "name": "Warfire Javelineer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "When this creature enters, it deals X damage to target creature an opponent controls, where X is the number of instant and sorcery cards in your graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warfire Javelineer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Yohann Schepacz",
+        "flavorText": "Minotaurs favor magic that manifests as weapons wrapped in flame.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ce75b3c-4f83-4c09-9361-d7463e4921e6.jpg?1783936481",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "A split card only counts once for Warfire Javelineer's ability, even if it's both an instant and a sorcery."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

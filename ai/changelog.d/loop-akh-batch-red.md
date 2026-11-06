@@ -1,0 +1,1 @@
+- #TBD Reads "end the turn" (Time Stop, Discontinuity, Glorious End) as a counter-everything held for a spell on the stack, never casts Glorious End (it loses the game), and counts "sacrifice it at the next end step" (Hazoret's Favor, Junkyo Bell) as fuel for death payoffs
