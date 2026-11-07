@@ -1899,6 +1899,68 @@
     ]
 }
 
+// Sandsteppe Outcast
+{
+    "name": "Sandsteppe Outcast",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, choose one —\n• Put a +1/+1 counter on this creature.\n• Create a 1/1 white Spirit creature token with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sandsteppe Outcast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "description": "Put a +1/+1 counter on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Spirit"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ]
+                            },
+                            "description": "Create a 1/1 white Spirit creature token with flying"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f29943bb-aa89-443b-96b7-8f6f24672a9d.jpg?1783938709"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shamanic Revelation
 {
     "name": "Shamanic Revelation",
