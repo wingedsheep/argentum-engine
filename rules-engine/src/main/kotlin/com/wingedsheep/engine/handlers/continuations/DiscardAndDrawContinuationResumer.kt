@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseL
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent
 import com.wingedsheep.sdk.core.Zone
 
 class DiscardAndDrawContinuationResumer(
@@ -60,7 +61,10 @@ class DiscardAndDrawContinuationResumer(
         // actions. Finish them now — otherwise marked damage (notably deathtouch damage that an
         // expiring "until end of turn" indestructible had suppressed) persists into the next turn
         // and kills the creature on the following turn's state-based-action check.
+        // The settle after this answer finishes the step (CR 514.3a): if the discard triggered
+        // anything, the active player receives priority in this cleanup step; otherwise the turn ends.
         val cleanedState = CleanupPhaseManager.applyCleanupTurnBasedActions(result.state, services.cardRegistry)
+            .updateEntity(continuation.playerId) { it.with(CleanupCheckPendingComponent) }
         return checkForMore(cleanedState, result.events)
     }
 

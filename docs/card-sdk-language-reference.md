@@ -1976,7 +1976,8 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   source and any triggered abilities the resolution queued — even ones that can't be countered — so those never
   reach the stack, CR 724.1a), creatures are removed from combat, and the game skips straight to the cleanup step
   (discard to maximum hand size, marked damage wears off, "this turn" / "until end of turn" effects end) before the
-  next turn begins. Takes no target — it always ends the active player's turn. Modeled as a two-step effect: the
+  next turn begins. Abilities that triggered during the process go on the stack in that cleanup step, the active
+  player gets priority, and another cleanup step follows before the turn ends. Takes no target — it always ends the active player's turn. Modeled as a two-step effect: the
   executor records an `EndTheTurnRequestedComponent` on the active player, and `PassPriorityHandler` runs the
   sequence via `TurnManager.performEndTheTurn` once the current resolution finishes (so it can exile the *rest* of
   the stack and drop the pending triggers). Compose after a board wipe with
@@ -9360,7 +9361,11 @@ single "it" for "one or more cards"; the discarded cards matching `card` are ins
 captured collection (`CollectionSlot.TriggerCaptured`), the "them" of the payoff.
 
 - `Triggers.anOpponent.discards()` — whenever an opponent discards a card. (Entropic Battlecruiser.)
-- `Triggers.you.discards()` — whenever you discard a card.
+- `Triggers.you.discards()` — whenever you discard a card. A trigger from the cleanup-step hand-size
+  discard goes on the stack **in that cleanup step**: the active player gets priority there, and once the
+  stack is empty and everyone passes another cleanup step begins, discarding to hand size again (CR 514.3a;
+  Midnight Oil's "whenever you discard a card, you lose 1 life"). The discard's answer leaves the game in
+  cleanup marked `CleanupCheckPendingComponent`, and the `Settler` either grants that priority or ends the turn.
 - `Triggers.self.isDiscarded(cause = ZoneChangeCause.DiscardedByOpponentEffect)` — "when a spell or
   ability an opponent controls causes you to discard this card" (Psychic Purge): `DiscardEvent.cause`
   admits only a discard whose stamped cause controller is an opponent of the discarder — never a

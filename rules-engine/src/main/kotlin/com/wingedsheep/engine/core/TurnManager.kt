@@ -26,6 +26,7 @@ import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseCom
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsAfterStepComponent
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
+import com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent
 import com.wingedsheep.engine.state.components.player.UpkeepStepEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
 import com.wingedsheep.engine.state.components.player.InsertedPhasesResumeComponent
@@ -593,9 +594,12 @@ class TurnManager(
             }
         }
 
-        // Check if we're wrapping to next turn
+        // Leaving a cleanup step: the turn ends there unless players received priority in it
+        // (CR 514.3a), and that is the only way a cleanup step is left by passing priority. Once
+        // the stack is empty and all players pass in succession, another cleanup step begins.
         if (currentStep == Step.CLEANUP) {
-            return endTurn(state)
+            val again = state.copy(priorityPlayerId = null, priorityPassedBy = emptySet())
+            return runCleanupStep(again, listOf(StepChangedEvent(Step.CLEANUP)))
         }
 
         // An upkeep step of the active (team) player's turn is ending: "until the end of your next
@@ -1041,23 +1045,29 @@ class TurnManager(
                 newState = newState.withPriority(activePlayer)
             }
 
-            Step.CLEANUP -> {
-                val cleanupResult = cleanupPhaseManager.performCleanupStep(newState)
-                if (cleanupResult.error != null) return cleanupResult
-                if (cleanupResult.outcome is Outcome.Paused) {
-                    return parkRestOfTurn(cleanupResult, newState, AdvanceStepContinuation, events + cleanupResult.events)
-                }
-                newState = cleanupResult.newState
-                events.addAll(cleanupResult.events)
-
-                if (newState.priorityPlayerId == null && newState.pendingDecision == null) {
-                    val endTurnResult = endTurn(newState)
-                    return endTurnResult.copy(events = events + endTurnResult.events)
-                }
-            }
+            Step.CLEANUP -> return runCleanupStep(newState, events)
         }
 
         return ExecutionResult.success(newState, events)
+    }
+
+    /**
+     * Perform a cleanup step's turn-based actions (CR 514.1, 514.2) and, when none of them asked a
+     * question, end the turn: with no discard nothing has happened that could trigger, so no
+     * player receives priority. The hand-size discard stops for the player's choice, and its
+     * answer leaves the game in this cleanup step marked [CleanupCheckPendingComponent]: the
+     * [Settler] then checks for triggers and state-based actions (CR 514.3a) and either hands the
+     * active player priority here or ends the turn.
+     */
+    private fun runCleanupStep(state: GameState, priorEvents: List<GameEvent>): ExecutionResult {
+        val cleanupResult = cleanupPhaseManager.performCleanupStep(state)
+        if (cleanupResult.error != null) return cleanupResult
+        val events = priorEvents + cleanupResult.events
+        if (cleanupResult.outcome is Outcome.Paused) {
+            return ExecutionResult.propagatePause(cleanupResult.newState, events)
+        }
+        val endTurnResult = endTurn(cleanupResult.newState)
+        return endTurnResult.copy(events = events + endTurnResult.events)
     }
 
     /**
@@ -1414,13 +1424,14 @@ class TurnManager(
      *    marked damage wears off, and "until end of turn" / "this turn" effects end. Then the turn
      *    ends into the next turn.
      *
-     * Abilities that trigger during this process go on the stack at the next settle, which is after
-     * the next turn has begun. CR 724.1f would put them on the stack in an extra cleanup step
-     * instead, and the engine doesn't model that.
+     * Abilities that trigger during this process go on the stack during the cleanup step, then the
+     * active player gets priority, and another cleanup step follows before the turn ends. This
+     * returns in the cleanup step marked [CleanupCheckPendingComponent], and the [Settler] that
+     * called it puts those triggers on the stack — or, with none, ends the turn.
      *
-     * The cleanup and the turn end reuse the machinery of a natural cleanup step. If the active
-     * player is over their maximum hand size, this returns paused for the discard, with an
-     * [AdvanceStepContinuation] beneath it that ends the turn once the discard resolves.
+     * The cleanup reuses the machinery of a natural cleanup step. If the active player is over
+     * their maximum hand size, this returns paused for the discard, and the answer's settle
+     * finishes the step the same way.
      */
     fun performEndTheTurn(state: GameState): ExecutionResult {
         val activePlayer = state.activePlayerId
@@ -1493,21 +1504,19 @@ class TurnManager(
         val cleanupResult = cleanupPhaseManager.performCleanupStep(newState)
         if (cleanupResult.outcome is Outcome.Paused) {
             // Over max hand size: pause for the discard. The HandSizeDiscardContinuation finishes the
-            // cleanup turn-based actions, then the parked frame advances CLEANUP → next turn.
-            return parkRestOfTurn(cleanupResult, newState, AdvanceStepContinuation, events + cleanupResult.events)
+            // cleanup turn-based actions, and the answer's settle ends the turn — or, when the
+            // discard triggered something, gives the active player priority in this cleanup step
+            // first (see [runCleanupStep]).
+            return ExecutionResult.propagatePause(cleanupResult.newState, events + cleanupResult.events)
         }
         if (cleanupResult.outcome is Outcome.Rejected) return cleanupResult
-        newState = cleanupResult.newState
+        // Abilities that triggered during this process go on the stack in this cleanup step, then the
+        // active player gets priority and another cleanup step follows; with none, nobody gets
+        // priority and the turn ends. Detection is the settle boundary's job, so the Settler that
+        // called this finishes the step (see [CleanupCheckPendingComponent]).
+        newState = cleanupResult.newState.updateEntity(activePlayer) { it.with(CleanupCheckPendingComponent) }
         events.addAll(cleanupResult.events)
-
-        val endTurnResult = endTurn(newState)
-        if (endTurnResult.outcome is Outcome.Paused) {
-            return ExecutionResult.propagatePause(
-                endTurnResult.newState,
-                events + endTurnResult.events
-            )
-        }
-        return ExecutionResult.success(endTurnResult.newState, events + endTurnResult.events)
+        return ExecutionResult.success(newState, events)
     }
 
     /**

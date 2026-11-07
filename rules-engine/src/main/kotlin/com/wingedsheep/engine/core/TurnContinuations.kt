@@ -5,9 +5,11 @@ import kotlinx.serialization.Serializable
 
 /**
  * The rest of a step in which no player receives priority, parked beneath a choice that one of the
- * step's turn-based actions asked: a "may not untap" choice in the untap step (CR 502.3) or the
- * discard to maximum hand size in the cleanup step (CR 514.1). Once the choice is answered, the
- * auto-resumer advances the game out of that step, exactly as the unpaused path does.
+ * step's turn-based actions asked: a "may not untap" choice in the untap step (CR 502.3). Once the
+ * choice is answered, the auto-resumer advances the game out of that step, exactly as the unpaused
+ * path does. The cleanup step's discard no longer parks one (the settle after the answer finishes
+ * that step, see [com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent]); a
+ * frame saved beneath one by an older build advances into another cleanup step, which ends the turn.
  */
 @Serializable
 data object AdvanceStepContinuation : AutomaticContinuation

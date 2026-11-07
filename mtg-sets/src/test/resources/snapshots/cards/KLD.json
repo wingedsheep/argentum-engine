@@ -9548,6 +9548,90 @@
     }
 }
 
+// Midnight Oil
+{
+    "name": "Midnight Oil",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "This enchantment enters with seven hour counters on it.\nAt the beginning of your draw step, draw an additional card and remove two hour counters from this enchantment.\nYour maximum hand size is equal to the number of hour counters on this enchantment.\nWhenever you discard a card, you lose 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Midnight Oil:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "RemoveCounters",
+                            "counterType": "HOUR",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Midnight Oil:2",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Controller"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SetMaximumHandSize",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "HOUR"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "HOUR",
+                "count": 7,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14875840-044d-482f-845e-79240cad66f3.jpg?1783937203"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Minister of Inquiries
 {
     "name": "Minister of Inquiries",

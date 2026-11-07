@@ -10,6 +10,7 @@ import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.mechanics.TriggerOrdering
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.nameVisibleToAll
+import com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent
 import com.wingedsheep.engine.state.components.player.EndTheTurnRequestedComponent
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -120,7 +121,28 @@ class Settler(
             return ExecutionResult.propagatePause(detected, result.events)
         }
         if (detected.pendingSubgame != null && subgames != null) return startSubgame(detected, result.events)
-        return drain(detected, result.events)
+        return finishCleanupStep(drain(detected, result.events), result.events.size)
+    }
+
+    /**
+     * A cleanup step whose turn-based actions stopped for the hand-size discard, or that an "end
+     * the turn" effect skipped to, is finished here ([CleanupCheckPendingComponent]), because only
+     * this boundary sees what those actions triggered. CR 514.3a: if a state-based action was
+     * performed or a triggered ability was put on the stack, the active player gets priority in
+     * this cleanup step, and another cleanup step begins once the stack is empty and all players
+     * pass ([TurnManager.advanceStep]). Otherwise no player gets priority and the turn ends; the
+     * next turn's start settles on its own events only, since [drained]'s were already detected.
+     */
+    private fun finishCleanupStep(drained: ExecutionResult, eventsBeforeDrain: Int): ExecutionResult {
+        val state = drained.state
+        if (drained.outcome !is Outcome.Done || state.pendingDecision != null || state.gameOver) return drained
+        val activePlayer = state.activePlayerId ?: return drained
+        if (state.getEntity(activePlayer)?.has<CleanupCheckPendingComponent>() != true) return drained
+        val checked = state.updateEntity(activePlayer) { it.without<CleanupCheckPendingComponent>() }
+        val acted = checked.stack.isNotEmpty() || drained.events.size > eventsBeforeDrain
+        if (acted) return drained.copy(state = checked.withPriority(activePlayer))
+        val nextTurn = settleThisGame(turnManager.endTurn(checked))
+        return nextTurn.copy(events = drained.events + nextTurn.events)
     }
 
     /**
