@@ -323,6 +323,9 @@ object SynergyAxes {
             if (discards(ability.cost)) add(SynergyAxis.GRAVEYARD)
         }
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
+        // "As an additional cost, discard a card / X cards" bins our cards like a discard effect
+        // (Nahiri's Wrath, Channeled Force, Tormenting Voice).
+        if (script.additionalCosts.any(::discards)) add(SynergyAxis.GRAVEYARD)
     }
 
     private fun effectFeeds(
@@ -456,6 +459,13 @@ object SynergyAxes {
         is AbilityCost.Atom -> cost.atom is CostAtom.Sacrifice
         is AbilityCost.Composite -> cost.costs.any { sacrifices(it, creatureSource) }
         AbilityCost.SacrificeSelf -> creatureSource
+        else -> false
+    }
+
+    private fun discards(cost: AdditionalCost): Boolean = when (cost) {
+        is AdditionalCost.Atom -> cost.atom is CostAtom.Discard
+        is AdditionalCost.VariableCards -> cost.action == com.wingedsheep.sdk.scripting.CardCostAction.DISCARD
+        is AdditionalCost.Composite -> cost.steps.any(::discards)
         else -> false
     }
 

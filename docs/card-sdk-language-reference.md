@@ -1139,10 +1139,20 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   its own pool (CR 601.2a). Don't combine it with a paid `{X}` on the same cast — both write the one X.
   Both are `AdditionalCost.VariableCards` with a `CardCostAction` axis (`EXILE` here, `DISCARD` below).
 - `Costs.additional.DiscardVariableCards(minCount = 0, filter = Any)` — "as an additional cost to cast this
-  spell, discard X cards" (Channeled Force). The caster picks how many cards to discard from hand (zero
-  included); the number discarded **is the spell's X**, read with `DynamicAmount.XValue`. It's a real discard
-  through the shared discard path, so discard triggers and madness see it. Client picker: `DiscardCard` with
-  `discardCount` as the minimum and `discardMaxCount` as the maximum.
+  spell, discard X cards" (Channeled Force). The cost defines X, so — like `SacrificeX` — the caster announces
+  X with the spell (CR 601.2b), before targets, and the payment discards exactly X (zero included); the spell
+  reads it as `DynamicAmount.XValue`, so "up to X target creatures" is `dynamicMaxCount = DynamicAmounts.xValue()`.
+  The cast offer carries `hasXCost` with `maxAffordableX` = the hand cards that could be discarded (never the
+  spell itself), and the `DiscardCard` picker sets `countIsX`: the client asks X, then requires exactly X picks
+  (skipping the picker at X = 0). A cast with no announced X (an engine-made cast) lets the discard define X.
+  It's a real discard through the shared discard path, so discard triggers and madness see it. "The total mana value of the discarded
+  cards" is `DynamicAmounts.discardedAsCostTotalManaValue()` (`ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE`):
+  it sums every card the cost discarded wherever it is now (madness exile included), X in a discarded card's
+  cost counts as 0 (CR 202.3e), and a copy reads the original's discards (CR 707.10). It reads an activated
+  ability's discard cost the same way. Nahiri's Wrath:
+  `additionalCost(Costs.additional.DiscardVariableCards())` +
+  `target = TargetObject(optional = true, filter = TargetFilter.CreatureOrPlaneswalker, dynamicMaxCount = DynamicAmounts.xValue())` +
+  `Effects.ForEachTarget(Effects.DealDamage(DynamicAmounts.discardedAsCostTotalManaValue(), EffectTarget.ContextTarget(0)))`.
 - `Costs.additional.ExileOtherCardsWithCardTypes(minTypes, filter = Any)` — "exile any number of other
   cards from your graveyard with N or more card types among them" (Nethergoyf's escape cost). A
   `CostAtom.ExileFromGraveyardForTotal` under the union measure `CardMeasure.DistinctCardTypes`; see
@@ -1173,7 +1183,7 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   `targets(TargetFilter.Creature, exactly = DynamicAmounts.xValue())` — and the payment (601.2h) must
   sacrifice exactly X, which may be 0. The spell reads it as `DynamicAmounts.xValue()`. The cast offer
   carries `hasXCost` with `maxAffordableX` = the creatures that could be sacrificed (and the usual
-  exact-target cap), and the `SacrificeVariable` picker sets `sacrificeCountIsX`: the client asks X,
+  exact-target cap), and the `SacrificeVariable` picker sets `countIsX`: the client asks X,
   then requires exactly X picks (skipping the picker at X = 0). Not `SacrificePermanents` — "you may
   sacrifice any number" announces nothing, so its count can't size targets. `exactly` is the whole
   count: it leaves `minCount`/`maxCount`/`minMeasure` open and accepts only the announced X.
@@ -17569,7 +17579,7 @@ forbids `DynamicAmount.X` in card definitions.
   `triggerCountersRemoved()`, `triggerDiscoverValue()`, `triggerManaProduced()`, `triggeringSpellManaValue()`,
   `manaSpentOnTriggeringSpell()`, `modesChosenOnTriggeringSpell()`, `lastKnownPlusOneCounters()`,
   `lastKnownCounterCount()`, `linkedExileCardCount()`, `linkedExileDistinctCardTypeCount()`,
-  `targetCount()`, `additionalCostExiledCount()`, `colorsSpentOnTriggeringSpell()`,
+  `targetCount()`, `additionalCostExiledCount()`, `discardedAsCostTotalManaValue()`, `colorsSpentOnTriggeringSpell()`,
   `xValueOfTriggeringSpell()`, `diedBatchTotalPower()`, `preventedDamage()`.
 
 ### Math

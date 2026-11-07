@@ -19,19 +19,21 @@ import io.kotest.matchers.shouldNotBe
  *  Target player draws X cards. Channeled Force deals X damage to up to one target creature or
  *  planeswalker."
  *
- * The first spell on `Costs.additional.DiscardVariableCards`: the caster picks how many cards to
- * discard (zero included) and that number is the spell's X.
+ * The first spell on `Costs.additional.DiscardVariableCards`: the caster announces X with the spell
+ * (CR 601.2b) and discards exactly X cards (zero included). A cast with no announced X lets the
+ * number discarded define it.
  */
 class ChanneledForceScenarioTest : ScenarioTestBase() {
 
     private fun TestGame.channeledForce(): EntityId =
         state.getHand(player1Id).first { state.getEntity(it)?.get<CardComponent>()?.name == "Channeled Force" }
 
-    private fun TestGame.cast(discarded: List<EntityId>, targets: List<ChosenTarget>) = execute(
+    private fun TestGame.cast(discarded: List<EntityId>, targets: List<ChosenTarget>, x: Int? = null) = execute(
         CastSpell(
             player1Id,
             channeledForce(),
             targets,
+            xValue = x,
             additionalCostPayment = AdditionalCostPayment(discardedCards = discarded)
         )
     )
@@ -54,14 +56,17 @@ class ChanneledForceScenarioTest : ScenarioTestBase() {
         .build()
 
     init {
-        test("offers a 0..hand-size discard, never the spell itself") {
+        test("announces X up to the hand size, then a discard of exactly X, never the spell itself") {
             val game = board()
             val castInfo = game.getLegalActions(1).first {
                 it.actionType == "CastSpell" && it.description.contains("Channeled Force")
             }
+            castInfo.hasXCost shouldBe true
+            castInfo.maxAffordableX shouldBe 3
             val cost = castInfo.additionalCostInfo
             cost shouldNotBe null
             cost!!.costType shouldBe "DiscardCard"
+            cost.countIsX shouldBe true
             cost.discardCount shouldBe 0
             cost.discardMaxCount shouldBe 3
             withClue("the spell isn't in its own discard pool") {
@@ -74,7 +79,7 @@ class ChanneledForceScenarioTest : ScenarioTestBase() {
             val discards = game.state.getHand(game.player1Id).filter { it != game.channeledForce() }.take(2)
             val bears = game.findPermanent("Grizzly Bears")!!
 
-            val cast = game.cast(discards, listOf(ChosenTarget.Player(game.player1Id), ChosenTarget.Permanent(bears)))
+            val cast = game.cast(discards, listOf(ChosenTarget.Player(game.player1Id), ChosenTarget.Permanent(bears)), x = 2)
             withClue("cast discarding two: ${cast.error}") { cast.error shouldBe null }
             withClue("both discards are in the graveyard") { game.graveyardSize(1) shouldBe 2 }
             game.resolveStack()

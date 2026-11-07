@@ -155,6 +155,8 @@ class SpellCostOffer {
     var discardCount = 0
     /** Set by a variable discard ("discard X cards"): [discardCount] is then its minimum. */
     var discardMaxCount: Int? = null
+    /** Set by "discard X cards": the picker takes exactly the announced X (`AdditionalCostData.countIsX`). */
+    var discardCountIsX: Boolean = false
     var discardDescription: String? = null
     var bounceTargets = emptyList<EntityId>()
     var bounceCount = 0

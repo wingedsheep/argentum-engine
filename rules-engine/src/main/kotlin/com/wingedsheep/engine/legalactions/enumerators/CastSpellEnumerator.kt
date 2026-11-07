@@ -644,7 +644,7 @@ class CastSpellEnumerator(
 
             // Calculate X cost info if the spell has X in its cost (printed, or the waterbend {X}
             // folded in above).
-            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, additionalCosts, context.predicateEvaluator)
+            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, additionalCosts, context.predicateEvaluator, castCardId = cardId)
             val hasXCost = effectiveCost.hasX || counterMaxX != null
             val manaMaxX: Int? = if (effectiveCost.hasX) {
                 // Pass the spell context so floating restricted mana this spell may spend
@@ -2918,6 +2918,7 @@ class CastSpellEnumerator(
                     validDiscardTargets = offer.discardTargets,
                     discardCount = offer.discardCount,
                     discardMaxCount = offer.discardMaxCount,
+                    countIsX = offer.discardCountIsX,
                 ))
             }
             if (offer.bounceTargets.isNotEmpty()) {

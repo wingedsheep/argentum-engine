@@ -5887,6 +5887,84 @@
     ]
 }
 
+// Nahiri's Wrath
+{
+    "name": "Nahiri's Wrath",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, discard X cards.\nNahiri's Wrath deals damage equal to the total mana value of the discarded cards to each of up to X target creatures and/or planeswalkers.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "DISCARDED_AS_COST_TOTAL_MANA_VALUE"
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "dynamicMaxCount": "XValue"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "VariableCards",
+                "action": "DISCARD",
+                "minCount": 0,
+                "fromZone": "HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e6cb8b0-e3a5-4a94-845d-3b286aa392ac.jpg?1783937457",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Nahiri's Wrath adds the mana values of the discarded cards in whatever zone they were put into as a result of being discarded, even if they weren't put into a graveyard (due to madness, for example) or are no longer in that zone."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The damage is not divided. Nahiri's Wrath will deal that much damage to each target."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You can't target the same creature or planeswalker multiple times to deal more damage to it."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you discard a card with {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you cast Nahiri's Wrath without paying its mana cost, you'll still choose a value for X and discard X cards."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you copy Nahiri's Wrath, it has the same number of targets and deals the same amount of damage as the original spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Nebelgast Herald
 {
     "name": "Nebelgast Herald",

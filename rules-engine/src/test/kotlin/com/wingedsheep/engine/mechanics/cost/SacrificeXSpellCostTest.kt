@@ -95,7 +95,7 @@ class SacrificeXSpellCostTest : FunSpec({
         action.xConstrainsTargetCountExactly shouldBe true
         val info = action.additionalCostInfo.shouldNotBeNull()
         info.costType shouldBe "SacrificeVariable"
-        info.sacrificeCountIsX shouldBe true
+        info.countIsX shouldBe true
         info.validSacrificeTargets shouldContainExactlyInAnyOrder b.mine
     }
 
