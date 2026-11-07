@@ -465,6 +465,17 @@ enum class IntentTag {
     SPELL_TAX,
 
     /**
+     * Makes its controller's own spells cost more — Geist-Fueled Scarecrow's "creature spells you
+     * cast cost {1} more", the Invasion Leeches' "white spells you cast cost {W} more", Derelor's
+     * "black spells you cast cost {B} more". A drawback on the card, like [COMBAT_RESTRICTION]: the
+     * price of an oversized body, never a payoff. Tagged so the static reads as understood instead
+     * of "abilities not recognised", and kept apart from [SPELL_TAX] (which taxes the opponent and
+     * counts as disruption) and [COST_REDUCER] (a discount) — either would price the tax as a plus.
+     * It earns no prior-ladder rung and the draft heuristic scores it below zero.
+     */
+    OWN_SPELL_TAX,
+
+    /**
      * Makes an opponent's creatures attack this turn if able — Imaginary Threats' "creatures target
      * opponent controls attack this turn if able", Kardur's "each creature your
      * opponents control attacks … if able".

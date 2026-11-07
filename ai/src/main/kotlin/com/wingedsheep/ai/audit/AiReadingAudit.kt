@@ -803,6 +803,7 @@ object AiReadingAudit {
         IntentTag.TAPPER -> "taps things"
         IntentTag.CAST_BAN -> "stops opponents casting spells"
         IntentTag.SPELL_TAX -> "makes opponents' spells cost more"
+        IntentTag.OWN_SPELL_TAX -> "makes its controller's own spells cost more (a drawback)"
         IntentTag.FORCED_ATTACK -> "makes an opponent's creatures attack"
         IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"

@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -520,6 +521,11 @@ object LimitedCardRater {
             // into bad blocks, a milder cost since a block is usually wanted anyway.
             is MustAttack -> if (static.filter.scope == Scope.Self) return -0.2
             is MustBlock -> if (static.filter.scope == Scope.Self) return -0.1
+            // "Creature spells you cast cost {1} more" (Geist-Fueled Scarecrow): every matching
+            // spell costs one more mana, often a turn late — the price of its body, a little under "can't block".
+            is ModifySpellCost -> if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
+                CardIntentAnalyzer.taxes(static.modification)
+            ) return -0.2
             else -> Unit
         }
         if (static is ModifyStats) {

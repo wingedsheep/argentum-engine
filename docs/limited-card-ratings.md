@@ -94,7 +94,8 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
   top, put one into your hand") like a card drawn.
 - **Activation costs and drawbacks** — activated payoffs costing more than four mana retain a
   `4 / mana value` share of their usual value. Self-only blocking restrictions and requirements
-  to attack or block alongside another creature reduce the static score.
+  to attack or block alongside another creature reduce the static score, as does a tax on its
+  controller's own spells (Geist-Fueled Scarecrow's "creature spells you cast cost {1} more").
 - **Rarity and curve** — small nudges (mythic +0.8, a 2-drop +0.3, a 6-drop −0.2).
 
 It reads what a card *does*, so it tells removal from a vanilla body, but it can't see synergy or

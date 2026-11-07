@@ -287,6 +287,7 @@ object AiCardRating {
         IntentTag.EXTRA_TURN to "Takes an extra turn",
         IntentTag.FREE_SPELL to "Casts spells for free",
         IntentTag.SPELL_TAX to "Taxes opponents' spells",
+        IntentTag.OWN_SPELL_TAX to "Taxes its controller's own spells",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
         IntentTag.EXTRA_BLOCKING to "Blocks additional creatures",
     )
