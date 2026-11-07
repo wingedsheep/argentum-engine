@@ -1753,17 +1753,6 @@ object DamageUtils {
     }
 
     /**
-     * Check if all damage from a specific source creature is prevented this turn.
-     * Used by Chain of Silence and similar "prevent all damage creature would deal" effects.
-     */
-    fun isAllDamageFromSourcePrevented(state: GameState, sourceId: EntityId): Boolean {
-        return state.floatingEffects.any { floatingEffect ->
-            floatingEffect.effect.modification is SerializableModification.PreventAllDamageDealtBy &&
-                sourceId in floatingEffect.effect.affectedEntities
-        }
-    }
-
-    /**
      * Check for damage redirection shields (Glarecaster, Zealous Inquisitor, Blood of the Martyr).
      *
      * Scans floating effects for RedirectNextDamage covering the entity.

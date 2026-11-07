@@ -241,7 +241,8 @@ class PreventDamageExecutor(
             objectReferences = context.objectReferences,
                 sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
                 nextInstanceOnly = effect.nextInstanceOnly,
-                halvePreventedDamage = effect.halvePreventedDamage
+                halvePreventedDamage = effect.halvePreventedDamage,
+                combatOnly = effect.scope == PreventionScope.CombatOnly
             )
             return EffectResult.from(state.suspendForDecision(decision, continuation))
         }
@@ -391,7 +392,9 @@ class PreventDamageExecutor(
                     ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
-                modification = SerializableModification.PreventAllDamageDealtBy
+                modification = SerializableModification.PreventAllDamageDealtBy(
+                    combatOnly = effect.scope == PreventionScope.CombatOnly
+                )
             }
 
             // Amount-based prevention (prevent next N damage to target), optionally gaining the

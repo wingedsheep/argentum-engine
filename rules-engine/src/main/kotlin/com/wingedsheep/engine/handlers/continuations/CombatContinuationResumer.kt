@@ -492,7 +492,7 @@ class CombatContinuationResumer(
         if (continuation.silenceChosenSource && continuation.amount == null) {
             val silenced = state.addFloatingEffect(
                 layer = Layer.ABILITY,
-                modification = SerializableModification.PreventAllDamageDealtBy,
+                modification = SerializableModification.PreventAllDamageDealtBy(combatOnly = continuation.combatOnly),
                 affectedEntities = setOf(chosenSourceId),
                 duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
                 context = context
