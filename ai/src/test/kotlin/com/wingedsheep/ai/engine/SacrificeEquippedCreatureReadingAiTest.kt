@@ -13,6 +13,7 @@ import io.kotest.matchers.collections.shouldNotContain
  * controller sacrifices the creature they equipped, their own: the Axe's drawback. Read as a
  * sacrifice of any other permanent it was REMOVAL, and the end-step trigger made the Axe "repeatable
  * removal" worth four board points — an Equipment the AI would have valued for killing its own team.
+ * The same holds for every "sacrifice it" aimed at the permanent a card is attached to.
  */
 class SacrificeEquippedCreatureReadingAiTest : ScenarioTestBase() {
 
@@ -30,10 +31,18 @@ class SacrificeEquippedCreatureReadingAiTest : ScenarioTestBase() {
             }
         }
 
-        test("a sacrifice aimed at another permanent still reads as removal") {
-            withClue("Breath of Fury sacrifices the creature it enchants, which can be the opponent's") {
-                intent("Breath of Fury").tags shouldContain IntentTag.REMOVAL
+        test("every attached-host sacrifice is the card's own price: Breath of Fury, Stitcher's Graft") {
+            // "Enchant creature you control … sacrifice it", "whenever Stitcher's Graft becomes
+            // unattached from a permanent, sacrifice that permanent": you can sacrifice only your own.
+            listOf("Breath of Fury", "Stitcher's Graft").forEach { name ->
+                withClue("$name: ${intent(name).tags}") {
+                    intent(name).tags shouldNotContain IntentTag.REMOVAL
+                }
             }
+        }
+
+        test("an edict still reads as removal") {
+            intent("Diabolic Edict").tags shouldContain IntentTag.REMOVAL
         }
     }
 }

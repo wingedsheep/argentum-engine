@@ -122,9 +122,13 @@ class ThirstingAxeScenarioTest : ScenarioTestBase() {
             game.isOnBattlefield("Grizzly Bears") shouldBe true
         }
 
-        test("an unattached Axe does nothing") {
+        test("an unattached Axe doesn't trigger") {
             val game = board(axeOn = null)
-            game.reachEndStep()
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            withClue("no equipped creature, so the intervening-if fails and nothing goes on the stack") {
+                game.state.stack.isEmpty() shouldBe true
+            }
+            game.resolveStack()
             game.isOnBattlefield("Grizzly Bears") shouldBe true
             game.isOnBattlefield("Hill Giant") shouldBe true
             game.isOnBattlefield("Thirsting Axe") shouldBe true

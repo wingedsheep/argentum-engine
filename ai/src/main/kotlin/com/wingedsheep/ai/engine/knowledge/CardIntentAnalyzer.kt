@@ -1959,11 +1959,8 @@ object CardIntentAnalyzer {
             if (hitsAnotherPermanent(effect.target)) removalTags(effect.target) else emptySet()
         is PhaseOutUntilLeavesEffect -> setOf(IntentTag.REMOVAL)
         is ForceSacrificeEffect -> setOf(IntentTag.REMOVAL)
-        // "Sacrifice it" aimed at an Equipment's host (Thirsting Axe's end-step upkeep) sacrifices
-        // the creature its controller equipped — their own: the Equipment's drawback, never an answer.
         is SacrificeTargetEffect ->
-            if (!effect.sacrificedByItsController && effect.target == EffectTarget.EquippedCreature) emptySet()
-            else setOf(IntentTag.REMOVAL)
+            if (sacrificesOwnAttachedHost(effect)) emptySet() else setOf(IntentTag.REMOVAL)
         is GainControlEffect -> setOf(IntentTag.REMOVAL)
         // "Exchange control of target artifact you control and target artifact or creature you don't
         // control" (Shrewd Negotiation, Switcheroo, Chromeshell Crab): their permanent is taken as
@@ -2582,6 +2579,23 @@ object CardIntentAnalyzer {
             target is EffectTarget.ContextTarget || target is EffectTarget.BoundVariable
 
     /** Spot removal or a wrath, depending on whether the effect names a group. */
+    /**
+     * "Sacrifice it" aimed at the permanent this card is attached to — Thirsting Axe's equipped
+     * creature, Breath of Fury's enchanted creature, Stitcher's Graft's host as it becomes unattached.
+     * Its controller sacrifices it, and a player can sacrifice only their own permanents (an
+     * opponent's host is left alone), so it is the card's drawback or its price, never an answer.
+     * [com.wingedsheep.ai.audit.AiReadingAudit] reads the same leaf as needing no intent.
+     */
+    fun sacrificesOwnAttachedHost(effect: SacrificeTargetEffect): Boolean =
+        !effect.sacrificedByItsController && effect.target in ATTACHED_HOSTS
+
+    private val ATTACHED_HOSTS: Set<EffectTarget> = setOf(
+        EffectTarget.EquippedCreature,
+        EffectTarget.EnchantedCreature,
+        EffectTarget.EnchantedPermanent,
+        EffectTarget.AttachedToTriggeringPermanent,
+    )
+
     private fun removalTags(target: EffectTarget): Set<IntentTag> =
         if (targetsAGroup(target)) setOf(IntentTag.REMOVAL, IntentTag.SWEEPER)
         else setOf(IntentTag.REMOVAL)

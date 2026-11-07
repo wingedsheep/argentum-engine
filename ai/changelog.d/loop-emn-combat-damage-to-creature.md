@@ -1,1 +1,1 @@
-- #TBD The AI reads an Equipment's "sacrifice the equipped creature" (Thirsting Axe) as the Equipment's drawback rather than repeatable removal
+- #TBD The AI reads "sacrifice it" aimed at the permanent a card is attached to (Thirsting Axe, Breath of Fury, Stitcher's Graft) as that card's drawback rather than repeatable removal
