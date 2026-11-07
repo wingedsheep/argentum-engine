@@ -281,6 +281,7 @@ Aid the Fallen
 Aim High
 Aim for the Head
 Ainok Bond-Kin
+Ainok Guide
 Ainok Strike Leader
 Ainok Tracker
 Ainok Wayfarer
@@ -454,6 +455,7 @@ Always Watching
 Amalia Benavides Aguirre
 Amaranthine Wall
 Amazing Acrobatics
+Ambassador Oak
 Ambition's Cost
 Ambitious Aetherborn
 Ambitious Assault
@@ -618,6 +620,7 @@ Animating Faerie
 Animation Module
 Animist's Awakening
 Animist's Might
+Anje's Ravager
 Anje, Maid of Dishonor
 Ankh of Mishra
 Ankle Biter
@@ -628,7 +631,7 @@ Annie Flash, the Veteran	intent: GrantMayPlayFromExileEffect; intent: Pipeline(T
 Annie Joins Up
 Annihilate
 Annihilating Glare
-Annoyed Altisaur	intent: CascadeEffect
+Annoyed Altisaur
 Annul
 Anodet Lurker
 Anoint with Affliction
@@ -756,6 +759,7 @@ Arcbound Slasher
 Arcbound Whelp
 Arch of Orazca
 Archaeological Dig
+Archaeomancer
 Archaeomancer's Map
 Archaeomender
 Archaic's Agony
@@ -1271,6 +1275,7 @@ Baneslayer Angel
 Banewhip Punisher
 Banish from Edoras
 Banish into Fable
+Banisher Priest
 Banishing Betrayal
 Banishing Light
 Banishing Slash
@@ -1631,6 +1636,7 @@ Bitterblade Warrior
 Bitterbloom Bearer
 Bitterblossom
 Bitterbow Sharpshooters
+Bituminous Blast
 Black Cat
 Black Cat, Cunning Thief
 Black Dragon
@@ -1827,7 +1833,7 @@ Blood-Chin Rager
 Blood-Cursed Knight
 Bloodbond March	intent: Pipeline(graveyard→battlefield)
 Bloodbond Vampire
-Bloodbraid Elf	intent: CascadeEffect
+Bloodbraid Elf
 Bloodbriar
 Bloodchief Ascension
 Bloodchief's Thirst
@@ -2173,6 +2179,7 @@ Bre of Clan Stoutarm
 Breach
 Breach the Multiverse	intent: ForEach>AddCreatureTypeEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→battlefield)
 Breaching Dragonstorm
+Breaching Hippocamp
 Break Asunder
 Break Down
 Break Down the Door
@@ -2405,6 +2412,7 @@ By Invitation Only	intent: ChooseNumberThenEffect
 Bygone Colossus
 Byrke, Long Ear of the Law
 Byway Barterer
+Byway Courier
 C.A.M.P.
 Cabal Archon
 Cabal Coffers
@@ -3820,6 +3828,7 @@ Cyclops Electromancer
 Cyclops Superconductor
 Cyclops of One-Eyed Pass
 Cylian Elf
+Cynette, Jelly Drover
 Cynical Loner
 D'Avenant Archer
 D'Avenant Healer
@@ -5443,6 +5452,7 @@ Enlightened Ascetic
 Enlightened Confidant
 Enlightened Maniac
 Enlightened Tutor
+Enlisted Wurm
 Ennis, Debate Moderator
 Enormous Baloth
 Enormous Energy Blade
@@ -5594,7 +5604,7 @@ Etherium Astrolabe
 Etherium Pteramander
 Etherium Sculptor
 Ethersworn Adjudicator
-Ethersworn Sphinx	intent: CascadeEffect
+Ethersworn Sphinx
 Etrata, Deadly Fugitive	intent: Pipeline(TopOfLibrary→battlefield)
 Etrata, the Silencer
 Eumidian Hatchery
@@ -5821,6 +5831,7 @@ Falkenrath Celebrants
 Falkenrath Exterminator
 Falkenrath Forebear
 Falkenrath Gorger
+Falkenrath Marauders
 Falkenrath Noble
 Falkenrath Perforator
 Falkenrath Pit Fighter
@@ -7027,6 +7038,7 @@ Gilded Goose
 Gilded Light	timing: GrantEvasionKeywordEffect
 Gilded Lotus
 Gilded Pinions
+Gilded Scuttler
 Gilded Sentinel
 Gilgamesh, Master-at-Arms
 Gilt-Leaf Ambush
@@ -7212,6 +7224,7 @@ Gnottvold Hermit
 Gnottvold Recluse
 Gnottvold Slumbermound
 Go Blank
+Go Forth
 Go Ninja Go
 Go Nuts!
 Go for Blood
@@ -7264,6 +7277,7 @@ Goblin Fire Fiend
 Goblin Firebomb
 Goblin Firebug
 Goblin Fireleaper
+Goblin Fireslinger
 Goblin Firestarter
 Goblin Flotilla	intent: PayOrSufferEffect
 Goblin Gardener
@@ -7434,6 +7448,7 @@ Gorehorn Raider
 Goremand
 Goretusk Firebeast
 Gorging Vulture
+Gorgon Flail
 Gorilla Warrior
 Goring Ceratops
 Goring Warplow
@@ -7702,6 +7717,7 @@ Guardian Angel	timing: GrantPlayerActionEffect
 Guardian Automaton
 Guardian Beast
 Guardian Gladewalker
+Guardian Idol
 Guardian Project
 Guardian Sunmare
 Guardian of Cloverdell
@@ -8010,6 +8026,7 @@ Hearthhull, the Worldseed
 Heartless Act
 Heartless Pillage
 Heartless Summoning
+Heartstabber Mosquito
 Heartstring Puller
 Heartwarming Redemption
 Heartwood Crafter
@@ -8455,6 +8472,7 @@ Hungry Flames
 Hungry Ghoul
 Hungry Graffalon
 Hungry Lynx
+Hungry Megasloth
 Hungry Ridgewolf
 Hungry Spriggan
 Hungry for More
@@ -9794,6 +9812,7 @@ Krosan Vorine	intent: ProvokeEffect; polarity: ProvokeEffect
 Krosan Warchief
 Krosan Wayfarer
 Krotiq Nestguard
+Krovikan Mist
 Krovikan Scoundrel
 Krovod Haunch
 Kroxa and Kunoros
@@ -10335,6 +10354,7 @@ Lord of the Forsaken
 Lord of the Nazgûl
 Lord of the Pit
 Lord of the Undead
+Lord of the Unreal
 Lord of the Void	intent: Pipeline(TopOfLibrary→battlefield|exile)
 Lore Broker
 Lore Drakkis
@@ -10740,6 +10760,7 @@ Market Gnome
 Marketback Walker
 Marketwatch Phantom
 Markov Baron
+Markov Blademaster
 Markov Dreadknight
 Markov Patrician
 Markov Purifier
@@ -11019,7 +11040,7 @@ Meteor Golem
 Meteor Storm
 Meteor Swarm
 Meteor Sword
-Meteoric Mace	intent: CascadeEffect
+Meteoric Mace
 Meteorite
 Meticulous Archive
 Meticulous Artisan
@@ -11703,7 +11724,7 @@ Nath's Elite
 Natural End
 Natural Obsolescence
 Natural Order
-Natural Reclamation	intent: CascadeEffect
+Natural Reclamation
 Natural Selection	intent: Pipeline(TopOfLibrary→library); polarity: Pipeline(TopOfLibrary→library)
 Natural Spring
 Naturalize
@@ -12061,6 +12082,7 @@ Nyota Uhura, Communications
 Nyx Herald
 Nyx Lotus
 Nyx Weaver
+Nyx-Fleece Ram
 Nyxbloom Ancient
 Nyxborn Brute
 Nyxborn Colossus
@@ -13259,6 +13281,7 @@ Prowling Serpopard
 Prudent Fateseer
 Prying Blade
 Prying Eyes
+Psemilla, Meletian Poet
 Pseudodragon Familiar
 Psionic Blast
 Psionic Entity
@@ -13386,7 +13409,7 @@ Quandrix Charm
 Quandrix Command	polarity: ForEachEffect; polarity: Pipeline(?→?)
 Quandrix Cultivator
 Quandrix Pledgemage
-Quandrix, the Proof	intent: CascadeEffect
+Quandrix, the Proof
 Quantum Riddler
 Quark's Bar
 Quark, Humble Proprietor
@@ -13537,7 +13560,7 @@ Rain of Blades
 Rain of Daggers	polarity: LoseLifeEffect; polarity: Pipeline(BattlefieldMatching→graveyard)
 Rain of Embers
 Rain of Revelation
-Rain of Riches	intent: CascadeEffect
+Rain of Riches
 Rain of Salt
 Rain of Tears
 Rain of Thorns
@@ -14839,6 +14862,7 @@ Satyr Rambler
 Satyr Wayfinder
 Satyr's Cunning
 Saurian Explorer
+Saurian Symbiote
 Sauroform Hybrid
 Sauron's Ransom	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); polarity: TheRingTemptsYouEffect
 Sauron, Lord of the Rings
@@ -14991,6 +15015,7 @@ Scoured Barrens
 Scourge of Valkas
 Scourge of the Skyclaves
 Scourge of the Throne	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
+Scourge of the Undercity
 Scourgemark
 Scouring Sands
 Scouring Swarm
@@ -15434,7 +15459,8 @@ Shapers' Sanctuary
 Shapesharer
 Shapeshifter	intent: ChooseNumberForSourceEffect
 Sharae of Numbing Depths
-Shardless Agent	intent: CascadeEffect
+Shardless Agent
+Shardless Outlander
 Shardmage's Rescue
 Shared Animosity
 Shared Discovery
@@ -16645,6 +16671,7 @@ Starlit Sanctum
 Starlit Soothsayer
 Starnheim Aspirant
 Starnheim Courser
+Starnheim Memento
 Starnheim Unleashed
 Starport Security
 Starry-Eyed Skyrider
@@ -20108,7 +20135,7 @@ Wildfire Wickerfolk
 Wildgrowth Archaic
 Wildgrowth Walker
 Wildheart Invoker
-Wildsear, Scouring Maw	intent: CascadeEffect
+Wildsear, Scouring Maw
 Wildsize
 Wildslayer Elves
 Wildvine Pummeler
@@ -20322,6 +20349,7 @@ Woodland Changeling
 Woodland Chasm
 Woodland Druid
 Woodland Guidance
+Woodland Liege
 Woodland Mystic
 Woodland Stream
 Woodland Weavemaster
@@ -20389,6 +20417,7 @@ Wretched Camel
 Wretched Doll
 Wretched Gryff
 Wretched Throng
+Wriggling Grub
 Wring Flesh
 Writhing Chrysalis
 Writhing Necromass
