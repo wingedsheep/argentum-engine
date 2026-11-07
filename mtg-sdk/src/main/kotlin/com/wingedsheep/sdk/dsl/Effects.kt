@@ -6090,6 +6090,28 @@ object Effects {
         )
 
     /**
+     * Copy [target] with a specified new target taken from the pipeline collection [among] (CR
+     * 707.10e): the copy's every target slot is that object, no copy is made when it isn't a legal
+     * target for each instance of "target", and when the collection holds several legal objects the
+     * copier chooses one. Pair it after the step that fills [among].
+     *
+     * Models Frontline Heroism: "create a 1/1 red Soldier creature token with haste, then copy that
+     * spell. The copy targets that token." — `CreateToken(...) then CopyTargetingOneOf(CollectionSlot.CreatedTokens)`.
+     */
+    fun CopyTargetingOneOf(
+        among: CollectionSlot,
+        target: EffectTarget = EffectTarget.TriggeringEntity,
+        copier: Player = Player.You
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect(
+            target = target,
+            candidates = GameObjectFilter.Any,
+            copier = copier,
+            selection = com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies.ONE_CHOSEN,
+            collection = among.key
+        )
+
+    /**
      * Grant a keyword to a spell or ability on the stack (e.g., wither, lifelink).
      * Lasts while the spell remains on the stack. Used for "that spell gains X"
      * effects on triggered abilities like Spinerock Tyrant.

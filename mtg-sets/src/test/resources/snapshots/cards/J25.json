@@ -153,6 +153,129 @@
     ]
 }
 
+// Frontline Heroism
+{
+    "name": "Frontline Heroism",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 1/1 red Soldier creature token with haste.\nWhenever you cast a spell that targets only a single creature you control, create a 1/1 red Soldier creature token with haste, then copy that spell. The copy targets that token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Frontline Heroism:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfb0ae06-9a02-4cd6-bc1d-423662d7a1bd.jpg?1783903464"
+                },
+                "descriptionOverride": "When this enchantment enters, create a 1/1 red Soldier creature token with haste."
+            },
+            {
+                "id": "Frontline Heroism:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": "creature ctrl:you",
+                            "only": true
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Soldier"
+                            ],
+                            "keywords": [
+                                "HASTE"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfb0ae06-9a02-4cd6-bc1d-423662d7a1bd.jpg?1783903464"
+                        },
+                        {
+                            "type": "CopyForOtherPossibleTargets",
+                            "candidates": {},
+                            "selection": "ONE_CHOSEN",
+                            "collection": "createdTokens"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a spell that targets only a single creature you control, create a 1/1 red Soldier creature token with haste, then copy that spell. The copy targets that token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e78eda51-255a-4421-9b6f-025a432e9df9.jpg?1783908866",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Frontline Heroism's last ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If you cast a spell that has multiple targets but all of them are the same creature you control, Frontline Heroism's last ability will trigger. In that case, the copy's targets will all be the token created by the ability."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The copy created by Frontline Heroism's last ability is created on the stack, so it's not \"cast\". Abilities that trigger when a player casts a spell (like Frontline Heroism's own ability) won't trigger."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast, the copy will have the same value of X."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Any choices made when the spell resolves won't have been made yet when it's copied. Any such choices will be made separately when the copy resolves."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If a permanent spell is copied, the copy is put onto the battlefield as a token as the spell resolves rather than putting the copy of the spell onto the battlefield. The rules that apply to a permanent spell becoming a permanent apply to a copy of a spell becoming a token."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The token that a resolving copy of a permanent spell becomes isn't \"created\" and won't interact with abilities that care about tokens being created, such as the first ability of Doubling Season."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // General Kreat, the Boltbringer
 {
     "name": "General Kreat, the Boltbringer",

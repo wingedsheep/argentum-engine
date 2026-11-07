@@ -764,6 +764,7 @@ object CardLinter {
             "PairWithSource", "EmitChampionedEvent", "EnchantPutOntoBattlefield",
         )) put(type to "from", read(Space.COLLECTION))
         put("GrantCantBeBlockedExceptByCollection" to "collection", read(Space.COLLECTION))
+        put("CopyForOtherPossibleTargets" to "collection", read(Space.COLLECTION))
         put("ChoosePile" to "pileA", read(Space.COLLECTION))
         put("ChoosePile" to "pileB", read(Space.COLLECTION))
         put("ForEachCapturedController" to "collection", read(Space.COLLECTION))
