@@ -193,6 +193,7 @@ Aether Herder
 Aether Hub
 Aether Inspector
 Aether Meltdown
+Aether Poisoner
 Aether Revolt
 Aether Rift	intent: AnyPlayerMayPayEffect; intent: Pipeline(hand→graveyard)
 Aether Spellbomb
@@ -1390,6 +1391,7 @@ Battle Plan
 Battle Rampart
 Battle Sliver
 Battle Squadron
+Battle at the Bridge
 Battle for Bretagard
 Battle of Frost and Fire
 Battle of Hoover Dam
@@ -3521,6 +3523,7 @@ Cowabunga!
 Cowl Prowler
 Crabomination
 Crack Open
+Crackdown Construct
 Cracked Skull
 Crackle with Power
 Crackling Cyclops
@@ -3869,6 +3872,7 @@ Darigaaz, the Igniter	intent: ChooseColorThenEffect
 Daring Apprentice
 Daring Archaeologist
 Daring Buccaneer
+Daring Demolition
 Daring Discovery
 Daring Escape
 Daring Leap
@@ -5864,6 +5868,7 @@ Fasting
 Fatal Fissure	polarity: CreateDelayedTriggerEffect
 Fatal Grudge
 Fatal Mutation
+Fatal Push
 Fate Forgotten
 Fate Unraveler
 Fate of the Sun-Cryst
@@ -7092,6 +7097,7 @@ Glint Weaver
 Glint-Horn Buccaneer
 Glint-Nest Crane
 Glint-Sleeve Artisan
+Glint-Sleeve Siphoner
 Glintwing Invoker
 Glissa Sunseeker
 Glissa Sunslayer
@@ -7378,6 +7384,7 @@ Gollum, Silent Slinker
 Golos, Tireless Pilgrim
 Goma Fada Vanguard
 Gongaga, Reactor Town
+Gonti's Machinations
 Gonti, Night Minister	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Goobbue Gardener
 Good-Fortune Unicorn
@@ -8952,6 +8959,7 @@ Iron-Craw Crusher
 Iron-Fist Pulverizer
 Iron-Shield Elf
 Ironclad Krovod
+Ironclad Revolutionary
 Ironclad Slayer
 Ironclaw Orcs
 Ironfist Crusher
@@ -11806,6 +11814,7 @@ Nicol Bolas, the Ravager	intent: Pipeline(TopOfLibrary→exile)
 Night Clubber
 Night Dealings
 Night Market
+Night Market Aeronaut
 Night Market Guard
 Night Market Lookout
 Night Nurse, Healer of Heroes
@@ -13952,6 +13961,7 @@ Resculpt
 Research Assistant
 Resentful Revelation
 Reservoir Kraken	intent: AnyPlayerMayPayEffect
+Reservoir Walker
 Reset
 Reshape
 Reshape the Earth
@@ -15081,6 +15091,7 @@ Secret Identity	polarity: SetCreatureSubtypesEffect
 Secret Invasion
 Secret Plans
 Secret Rendezvous
+Secret Salvage
 Secret Tunnel	timing: ForEach>GrantKeywordEffect
 Secret of Bloodbending	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
 Secrets of the Dead
@@ -17642,6 +17653,7 @@ Tezzeret the Seeker
 Tezzeret's Ambition
 Tezzeret's Gambit
 Tezzeret's Gatebreaker	combat: CantBeBlockedGroupEffect; timing: CantBeBlockedGroupEffect
+Tezzeret's Simulacrum
 Tezzeret's Strider
 Tezzeret, Artifice Master
 Tezzeret, Betrayer of Flesh	polarity: AddCardTypeEffect; polarity: BecomeCreatureEffect
@@ -19179,6 +19191,7 @@ Vengeful Creeper
 Vengeful Dead
 Vengeful Possession
 Vengeful Reaper
+Vengeful Rebel
 Vengeful Strangler	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
 Vengeful Townsfolk
 Vengeful Tracker
@@ -20277,6 +20290,7 @@ Worthy Cost
 Worthy Knight
 Wose Pathfinder
 Wraith, Vicious Vigilante
+Wrangle
 Wrangler of the Damned
 Wrap in Flames
 Wrath of God
@@ -20338,6 +20352,7 @@ Xun Yu, Wei Advisor
 Xyris, the Writhing Storm
 Y'shtola Rhul
 Y'shtola, Night's Blessed
+Yahenni's Expertise
 Yahenni, Undying Partisan
 Yamabushi's Flame
 Yamabushi's Storm
