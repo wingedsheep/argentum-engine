@@ -6939,9 +6939,10 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
   memory. `DamageType.Any` (the default) counts combat and noncombat alike — "target player dealt damage
   by this creature this turn" (Wicked Akuba); `DamageType.Combat` / `DamageType.NonCombat` count one kind,
   each with its own turn stamp — "target player who was dealt combat damage by Hope of Ghirapur this
-  turn" (Hope of Ghirapur, whose sacrifice cost moves it to the graveyard before the target re-check). The memory survives the source leaving the battlefield (last-known information,
-  CR 113.7a), so the ability still resolves if its source dies in response; it is dropped on the card's
-  next zone change, so a returned permanent has dealt damage to nobody (CR 400.7).
+  turn" (Hope of Ghirapur, whose sacrifice cost moves it to the graveyard before the target re-check).
+  The memory survives the source leaving the battlefield (last-known information, CR 113.7a), so the
+  ability still resolves if its source dies in response; it is dropped on the card's next zone change,
+  so a returned permanent has dealt damage to nobody (CR 400.7).
 
 Because `Condition` descriptions don't read as English relative clauses, pass `descriptionOverride`
 whenever `restriction` is set:
