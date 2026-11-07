@@ -2330,6 +2330,54 @@
     ]
 }
 
+// Lightwalker
+{
+    "name": "Lightwalker",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature has flying as long as it has a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Winona Nelson",
+        "flavorText": "\"The greatest gift Dromoka gives is the ability to fly without wings.\"\n—Urdnan, Dromoka warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01bf1837-41b0-4ff1-9cb1-ee2d75d410c7.jpg?1783938616"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Necromaster Dragon
 {
     "name": "Necromaster Dragon",

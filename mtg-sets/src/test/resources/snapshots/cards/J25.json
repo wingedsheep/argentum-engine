@@ -153,6 +153,56 @@
     ]
 }
 
+// Faithful Pikemaster
+{
+    "name": "Faithful Pikemaster",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Rhino Monk Soldier",
+    "oracleText": "When this creature enters, scry 2. (Look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)\nAs long as it's your turn, this creature has first strike.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faithful Pikemaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Justine Cruz",
+        "flavorText": "\"I seek no fight with you, but neither will I stand aside.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de149bae-dd71-4a27-a975-4d0fbc646ee4.jpg?1783908870"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Frontline Heroism
 {
     "name": "Frontline Heroism",
