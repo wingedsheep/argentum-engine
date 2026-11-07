@@ -2064,6 +2064,9 @@ object CardIntentAnalyzer {
         // casts free or puts into their hand: either way one more card than they had, like the
         // free cast off the library top that [digTags] reads as a draw.
         is DiscoverEffect -> setOf(IntentTag.DRAW)
+        // Cascade is the same free cast off the library top, bounded by the spell's own mana
+        // value instead of a number: one more spell than its controller held.
+        is CascadeEffect -> setOf(IntentTag.DRAW)
         // "Whenever this creature becomes the target of a spell or ability …, counter that spell or
         // ability" (Glyph Keeper) shields the permanent from what targets it — ward-like
         // protection, not a counterspell: it never answers a spell aimed elsewhere, and reading it

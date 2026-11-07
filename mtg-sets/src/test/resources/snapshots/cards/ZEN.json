@@ -2275,6 +2275,63 @@
     ]
 }
 
+// Heartstabber Mosquito
+{
+    "name": "Heartstabber Mosquito",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Kicker {2}{B} (You may pay an additional {2}{B} as you cast this spell.)\nFlying\nWhen this creature enters, if it was kicked, destroy target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Heartstabber Mosquito:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d20016d-2b5a-445e-a59b-5305e76f549c.jpg?1783942153"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hedron Crab
 {
     "name": "Hedron Crab",

@@ -407,6 +407,57 @@
     ]
 }
 
+// Breaching Hippocamp
+{
+    "name": "Breaching Hippocamp",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Horse Fish",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhen this creature enters, untap another target creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Breaching Hippocamp:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Christopher Burdett",
+        "flavorText": "Don't try to ride this steed unless you've got gills too.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/8841c01e-015e-4541-942a-f8859dd03fea.jpg?1783939802"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Bronze Sable
 {
     "name": "Bronze Sable",

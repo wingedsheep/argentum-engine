@@ -1,3 +1,92 @@
+// Ainok Guide
+{
+    "name": "Ainok Guide",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dog Scout",
+    "oracleText": "When this creature enters, choose one —\n• Put a +1/+1 counter on this creature.\n• Search your library for a basic land card, reveal it, then shuffle and put that card on top.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ainok Guide:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "description": "Put a +1/+1 counter on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "basicland"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a basic land card to put on top of your library",
+                                        "selectedLabel": "Put on top of your library"
+                                    },
+                                    "ShuffleLibrary",
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Top"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            },
+                            "description": "Search your library for a basic land card, reveal it, then shuffle and put that card on top of your library"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c361ea9c-a989-4ded-8b2c-f565aa9d8a1d.jpg?1783938682"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Archfiend of Depravity
 {
     "name": "Archfiend of Depravity",

@@ -1621,6 +1621,52 @@
     ]
 }
 
+// Markov Blademaster
+{
+    "name": "Markov Blademaster",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Double strike (This creature deals both first-strike and regular combat damage.)\nWhenever this creature deals combat damage to a player, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Markov Blademaster:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "flavorText": "\"Mortals practice swordplay for a few decades at best. How can they ever attain the exquisite mastery that eternity has to offer?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/122163dd-e070-48af-8036-e9850541d138.jpg?1783940816"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Markov Warlord
 {
     "name": "Markov Warlord",

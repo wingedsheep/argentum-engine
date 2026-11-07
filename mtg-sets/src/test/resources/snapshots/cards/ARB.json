@@ -71,6 +71,57 @@
     ]
 }
 
+// Bituminous Blast
+{
+    "name": "Bituminous Blast",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)\nBituminous Blast deals 4 damage to target creature.",
+    "keywords": [
+        "CASCADE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "Bituminous Blast:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": "Cascade",
+                "descriptionOverride": "Cascade"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd6a3c48-b01e-4462-a4a1-8d5009a6a844.jpg?1783942435"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Bloodbraid Elf
 {
     "name": "Bloodbraid Elf",
@@ -104,6 +155,42 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Enlisted Wurm
+{
+    "name": "Enlisted Wurm",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "CASCADE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Enlisted Wurm:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": "Cascade",
+                "descriptionOverride": "Cascade"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "A match for any army—even its own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66605149-3959-4a51-8400-350e6fac2ab2.jpg?1783942427"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
