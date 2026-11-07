@@ -272,6 +272,7 @@ class HoldPolicy(
                     state, playerId, resolves, cast.targets + cast.modeTargetsOrdered.flatten(), intents,
                     readKeywordGrants = refuseUnspendableGrants && IntentTag.COMBAT_TRICK !in intent.tags,
                     fightMustBeOn = intent.speed == Speed.INSTANT && state.stack.isEmpty(),
+                    canWaitForATarget = intent.speed == Speed.INSTANT,
                     xValue = cast.xValue,
                 )
             ) {
