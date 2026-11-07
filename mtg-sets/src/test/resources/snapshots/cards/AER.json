@@ -586,6 +586,112 @@
     ]
 }
 
+// Aethersphere Harvester
+{
+    "name": "Aethersphere Harvester",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhen this Vehicle enters, you get {E}{E} (two energy counters).\nPay {E}: This Vehicle gains lifelink until end of turn.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aethersphere Harvester:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aethersphere Harvester:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Pay {E}: This Vehicle gains lifelink until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/4160bb5f-4b49-4535-94f5-776d7abd1d1a.jpg?1783936732",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Each Vehicle is printed with a power and toughness, but it's not a creature. If it becomes a creature (most likely through its crew ability), it will have that power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Vehicle is an artifact type, not a creature type. A Vehicle that's crewed won't normally have any creature type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may activate a crew ability of a Vehicle even if it's already an artifact creature. Doing so has no effect on the Vehicle. It doesn't change its power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For a Vehicle to be able to attack, it must be a creature as the declare attackers step begins, so the latest you can activate its crew ability to attack with it is during the beginning of combat step. For a Vehicle to be able to block, it must be a creature as the declare blockers step begins, so the latest you can activate its crew ability to block with it is during the declare attackers step. In either case, players may take actions after the crew ability resolves but before the Vehicle has been declared as an attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "When a Vehicle becomes a creature, that doesn't count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Any untapped creature you control can be tapped to pay a crew cost, even one that just came under your control."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may tap more creatures than necessary to activate a crew ability."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Once a Vehicle becomes a creature, it behaves exactly like any other artifact creature. It can't attack unless you've controlled it continuously since your turn began, it can block if it's untapped, it can be tapped to pay a Vehicle's crew cost, and so on."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Multiple instances of lifelink on the same creature are redundant."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "If an effect says you get one or more {E}, you get that many energy counters. To pay one or more {E}, you lose that many energy counters. You can't pay more energy counters than you have. Any effects that interact with counters a player gets, has, or loses can interact with energy counters."
+            }
+        ]
+    }
+}
+
 // Aetherstream Leopard
 {
     "name": "Aetherstream Leopard",
@@ -982,6 +1088,177 @@
     ]
 }
 
+// Ajani Unyielding
+{
+    "name": "Ajani Unyielding",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+2: Reveal the top three cards of your library. Put all nonland permanent cards revealed this way into your hand and the rest on the bottom of your library in any order.\n−2: Exile target creature. Its controller gains life equal to its power.\n−9: Put five +1/+1 counters on each creature you control and five loyalty counters on each other planeswalker you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani Unyielding:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "looked"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "looked",
+                            "filter": "nonland permanent",
+                            "storeMatching": "kept",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani Unyielding:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "Power"
+                            },
+                            "target": "TargetController"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani Unyielding:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 5,
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "planeswalker ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "LOYALTY",
+                                "count": 5,
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23b82ee9-2ac6-4b81-8c64-dd4f47c2d8cb.jpg?1783936737",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The amount of life gained from Ajani's second ability is equal to power of the creature as it last existed on the battlefield."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Ajani's Comrade
 {
     "name": "Ajani's Comrade",
@@ -1028,6 +1305,162 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ajani, Valiant Protector
+{
+    "name": "Ajani, Valiant Protector",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+2: Put two +1/+1 counters on up to one target creature.\n+1: Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order.\n−11: Put X +1/+1 counters on target creature, where X is your life total. That creature gains trample until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani, Valiant Protector:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Valiant Protector:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "creature",
+                            "storeMatch": "ignored",
+                            "storeRevealed": "revealed"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed",
+                            "filter": "creature",
+                            "storeMatching": "matchedToHand",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matchedToHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Valiant Protector:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -11
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": "YourLifeTotal",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/791fdd9a-0ab6-4db9-84f9-859d2d862518.jpg?1783936716",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If you don't have a creature card in your library while resolving Ajani's second ability, you'll reveal your library and then randomize it."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The value of X for Ajani's third ability is determined only as it resolves. The number of +1/+1 counters on the creature won't change later if your life total changes."
+            }
+        ],
+        "inBooster": false
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -2373,6 +2806,159 @@
     ]
 }
 
+// Daredevil Dragster
+{
+    "name": "Daredevil Dragster",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "At end of combat, if this Vehicle attacked or blocked this combat, put a velocity counter on it. Then if it has two or more velocity counters on it, sacrifice it and draw two cards.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daredevil Dragster:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "VELOCITY",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "VELOCITY"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisCombat"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "BlockedThisCombat"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At end of combat, if this Vehicle attacked or blocked this combat, put a velocity counter on it. Then if it has two or more velocity counters on it, sacrifice it and draw two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19bbbc98-0806-4226-8fd1-16b812334cee.jpg?1783936730",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If a second velocity counter is put on Daredevil Dragster by something other than the resolution of its triggered ability, you won't sacrifice it yet."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If Daredevil Dragster has one velocity counter on it and leaves the battlefield while its triggered ability is on the stack, it won't get a second velocity counter and you won't draw cards."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If Daredevil Dragster somehow has two velocity counters on it and leaves the battlefield while its triggered ability is on the stack, you'll draw two cards even though you can't sacrifice it."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If Daredevil Dragster doesn't survive the combat damage step, its ability won't trigger."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "For a Vehicle to be able to attack, it must be a creature as the declare attackers step begins, so the latest you can activate its crew ability to attack with it is during the beginning of combat step. For a Vehicle to be able to block, it must be a creature as the declare blockers step begins, so the latest you can activate its crew ability to block with it is during the declare attackers step. In either case, players may take actions after the crew ability resolves but before the Vehicle has been declared as an attacking or blocking creature."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Each Vehicle is printed with a power and toughness, but it's not a creature. If it becomes a creature (most likely through its crew ability), it will have that power and toughness."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Vehicle is an artifact type, not a creature type. A Vehicle that's crewed won't normally have any creature type."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "Any untapped creature you control can be tapped to pay a crew cost, even one that just came under your control."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "You may tap more creatures than necessary to activate a crew ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Daring Demolition
 {
     "name": "Daring Demolition",
@@ -2407,6 +2993,181 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dark Intimations
+{
+    "name": "Dark Intimations",
+    "manaCost": "{2}{U}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent sacrifices a creature or planeswalker of their choice, then discards a card. You return a creature or planeswalker card from your graveyard to your hand, then draw a card.\nWhen you cast a Bolas planeswalker spell, exile this card from your graveyard. That planeswalker enters with an additional loyalty counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature|planeswalker",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature|planeswalker"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return a creature or planeswalker card from your graveyard to your hand",
+                            "selectedLabel": "Return to hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Dark Intimations:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Bolas"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "LOYALTY",
+                            "count": 1,
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "When you cast a Bolas planeswalker spell, exile this card from your graveyard. That planeswalker enters with an additional loyalty counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd8f103c-a688-4f22-ae59-2bce1db9d44a.jpg?1783936737",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "Each opponent chooses a permanent to sacrifice from among the creatures and planeswalkers that player controls. You don't choose which type of permanent the player has to sacrifice."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an opponent can't sacrifice a creature or planeswalker, that player still discards a card if able. You still return a creature or planeswalker card to your hand if able, even if no opponent sacrifices a permanent and/or discards a card. You still draw a card even if you can't return a card to your hand."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If two or more Dark Intimations are in your graveyard when you cast a Bolas planeswalker spell, you'll exile each of them and that planeswalker will enter the battlefield with that many additional loyalty counters."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "You choose the creature or planeswalker card to return to your hand while Dark Intimations is resolving. No player may take actions between the time you choose one and the time you put it into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -3922,6 +4683,65 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Gonti's Aether Heart
+{
+    "name": "Gonti's Aether Heart",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever Gonti's Aether Heart or another artifact you control enters, you get {E}{E} (two energy counters).\nPay eight {E}, Exile Gonti's Aether Heart: Take an extra turn after this one.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gonti's Aether Heart:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gonti's Aether Heart:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 8
+                                }
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": "TakeExtraTurn",
+                "descriptionOverride": "Take an extra turn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "MYTHIC",
+        "artist": "Vincent Proce",
+        "flavorText": "Despite the magic that sustains Gonti's life, the crime lord is often described as heartless.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e4fc5ed-e90d-4965-985a-ed126a713506.jpg?1783936730"
+    },
+    "colorIdentityOverride": []
 }
 
 // Gonti's Machinations
@@ -5472,6 +6292,44 @@
     ]
 }
 
+// Inspiring Statuary
+{
+    "name": "Inspiring Statuary",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Nonartifact spells you cast have improvise. (Your artifacts can help cast those spells. Each artifact you tap after you're done activating mana abilities pays for {1}.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "IMPROVISE",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNonartifact"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Kirsten Zirngibl",
+        "flavorText": "Ghirapur's most celebrated inventors have been immortalized in clockwork.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40e2564f-0066-41e0-a767-13ef33a17024.jpg?1783936725",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "When using improvise to cast a spell with {X} in its mana cost, first choose the value for X. That choice, plus any cost increases or decreases, will determine the spell's total cost. Then you can tap artifacts you control to help pay that cost."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you cast a nonartifact spell that requires you to sacrifice a permanent as an additional cost, you may tap that permanent (if it's an artifact) for the spell's improvise ability before you sacrifice it to pay that cost."
+            }
+        ]
+    }
+}
+
 // Invigorated Rampage
 {
     "name": "Invigorated Rampage",
@@ -6623,6 +7481,122 @@
             {
                 "date": "2017-02-09",
                 "text": "If the enchanted artifact leaves the battlefield in response to Mechanized Production's triggered ability but Mechanized Production does not, Mechanized Production is put into its owner's graveyard as a state-based action with no enchanted artifact. The triggered ability creates no token, but you can still win the game if you control enough artifacts with the same name."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Merchant's Dockhand
+{
+    "name": "Merchant's Dockhand",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{3}{U}, {T}, Tap X untapped artifacts you control: Look at the top X cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Merchant's Dockhand:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostTapXPermanents",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsArtifact"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsSource"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": "XValue"
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Christine Choi",
+        "flavorText": "\"If you can build it, we can move it.\"\n—Bes Tavani, Bomat merchant",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/955b4bc9-1ded-4f23-b415-ab968c681eb7.jpg?1783936724",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If the value of X is greater than or equal to the number of cards in your library, you can order your library as you wish."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the value of X is 0, you don't look at or move any cards."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Merchant's Dockhand is tapped to pay the {T} cost. It can't also be one of the X untapped artifacts you tap."
             }
         ]
     },
@@ -10480,6 +11454,373 @@
     ]
 }
 
+// Tezzeret the Schemer
+{
+    "name": "Tezzeret the Schemer",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Tezzeret",
+    "oracleText": "+1: Create a colorless artifact token named Etherium Cell with \"{T}, Sacrifice this token: Add one mana of any color.\"\n−2: Target creature gets +X/-X until end of turn, where X is the number of artifacts you control.\n−7: You get an emblem with \"At the beginning of combat on your turn, target artifact you control becomes an artifact creature with base power and toughness 5/5.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tezzeret the Schemer:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Etherium Cell"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a colorless artifact token named Etherium Cell with \"{T}, Sacrifice this token: Add one mana of any color.\""
+            },
+            {
+                "id": "Tezzeret the Schemer:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "artifact"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target creature gets +X/-X until end of turn, where X is the number of artifacts you control."
+            },
+            {
+                "id": "Tezzeret the Schemer:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Tezzeret the Schemer:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "BEGIN_COMBAT"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "BecomeCreature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "duration": "Permanent"
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact ctrl:you"
+                            },
+                            "id": "t1"
+                        },
+                        "descriptionOverride": "At the beginning of combat on your turn, target artifact you control becomes an artifact creature with base power and toughness 5/5."
+                    },
+                    "descriptionOverride": "At the beginning of combat on your turn, target artifact you control becomes an artifact creature with base power and toughness 5/5.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"At the beginning of combat on your turn, target artifact you control becomes an artifact creature with base power and toughness 5/5.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58265203-bc16-41d2-875c-2ff3b4870824.jpg?1783936735",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The value of X for Tezzeret's second ability is determined only as the ability resolves. It won't change later in the turn if the number of artifacts you control changes."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The effect of the emblem's triggered ability lasts indefinitely."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "An artifact that becomes a creature due to the emblem's ability can't attack unless you've controlled it continuously since your turn began. It doesn't matter whether or not it was a creature at that time."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "An artifact creature targeted by the emblem's ability becomes 5/5 instead of its normal power and toughness."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "A Vehicle targeted by the emblem's ability becomes a 5/5 creature. Crewing it won't change its power and toughness."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an Equipment becomes a creature, it becomes unattached and it can't be attached to a creature."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Tezzeret's Betrayal
+{
+    "name": "Tezzeret's Betrayal",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. You may search your library and/or graveyard for a card named Tezzeret, Master of Metal, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Tezzeret, Master of Metal"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card named Tezzeret, Master of Metal to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Tezzeret, Master of Metal"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your graveyard for a card named Tezzeret, Master of Metal to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your library and graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Library",
+                                                "Graveyard"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Tezzeret, Master of Metal"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library and/or graveyard for a card named Tezzeret, Master of Metal to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"You can't hope to comprehend the plans that are in motion.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d71efa6-5de8-476f-86ce-0790956e574f.jpg?1783936714",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If the target creature becomes an illegal target for Tezzeret's Betrayal, the spell won't resolve and none of its effects will happen. You won't search for Tezzeret, Master of Metal."
+            }
+        ],
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Tezzeret's Simulacrum
 {
     "name": "Tezzeret's Simulacrum",
@@ -10536,6 +11877,245 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eacfeec-a341-45bc-bf95-e3df0094505a.jpg?1783936713"
     },
     "colorIdentityOverride": []
+}
+
+// Tezzeret's Touch
+{
+    "name": "Tezzeret's Touch",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact\nEnchanted artifact is a creature with base power and toughness 5/5 in addition to its other types.\nWhen enchanted artifact is put into a graveyard, return that card to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tezzeret's Touch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantCardType",
+                "cardType": "CREATURE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 5,
+                "toughness": 5
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c2e917f-734e-4b8b-abc6-ea33c0fc722e.jpg?1783936732",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "An artifact that becomes a creature due to Tezzeret's Touch can't attack unless you've controlled it continuously since your turn began. It doesn't matter whether or not it was a creature at that time."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "An artifact creature enchanted by Tezzeret's Touch becomes 5/5 instead of its normal power and toughness."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "A Vehicle enchanted by Tezzeret's Touch becomes a 5/5 creature. Crewing it won't change its power and toughness."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If the enchanted artifact is an Equipment, it becomes unattached and it can't be attached to anything for as long as it remains a creature."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If Tezzeret's Touch becomes unattached from an artifact that's attacking or blocking, that artifact will be removed from combat unless it's normally a creature or another effect such as a crew ability is also making it a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Tezzeret, Master of Metal
+{
+    "name": "Tezzeret, Master of Metal",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Tezzeret",
+    "oracleText": "+1: Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest on the bottom of your library in a random order.\n−3: Target opponent loses life equal to the number of artifacts you control.\n−8: Gain control of all artifacts and creatures target opponent controls.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tezzeret, Master of Metal:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "artifact",
+                            "storeMatch": "ignored",
+                            "storeRevealed": "revealed"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed",
+                            "filter": "artifact",
+                            "storeMatching": "matchedToHand",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matchedToHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest on the bottom of your library in a random order."
+            },
+            {
+                "id": "Tezzeret, Master of Metal:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target opponent loses life equal to the number of artifacts you control."
+            },
+            {
+                "id": "Tezzeret, Master of Metal:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsCreature",
+                                            "IsArtifact"
+                                        ]
+                                    }
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GainControl",
+                        "target": "IterationEntity"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Gain control of all artifacts and creatures target opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7c6614c-cc2b-4e5b-9c0d-ce8e4b2d8ea7.jpg?1783936714",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "If you don't have an artifact card in your library while resolving Tezzeret's first ability, you'll reveal your library and then randomize it."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "The effect of Tezzeret's third ability lasts indefinitely."
+            }
+        ],
+        "inBooster": false
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Thopter Arrest
@@ -10627,6 +12207,105 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Treasure Keeper
+{
+    "name": "Treasure Keeper",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature dies, reveal cards from the top of your library until you reveal a nonland card with mana value 3 or less. You may cast that card without paying its mana cost. Put all revealed cards not cast this way on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Treasure Keeper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "nonland mv<=3",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matched0",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "matched0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching4"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, reveal cards from the top of your library until you reveal a nonland card with mana value 3 or less. You may cast that card without paying its mana cost. Put all revealed cards not cast this way on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c5d73d2-60cc-4b64-8274-4ba1bb98b6fa.jpg?1783936719",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If you don't cast the nonland card with mana value 3 or less, it'll be put on the bottom of your library in a random order with the other cards."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If your library has no nonland cards in it with mana value 3 or less, you'll reveal all the cards in your library, then put them back in a random order."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            }
+        ]
+    }
 }
 
 // Trophy Mage

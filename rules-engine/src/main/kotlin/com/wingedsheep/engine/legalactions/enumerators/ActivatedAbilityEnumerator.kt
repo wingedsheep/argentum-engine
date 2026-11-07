@@ -881,7 +881,7 @@ class ActivatedAbilityEnumerator(
                                 is AbilityCost.TapXPermanents -> {
                                     // TapXPermanents: validated via maxAffordableX cap below
                                     // Also provide tap targets for the UI
-                                    tapTargets = context.costUtils.findAbilityTapTargets(state, playerId, subCost.filter)
+                                    tapTargets = context.costUtils.findAbilityTapTargets(state, playerId, subCost.filter, sourceId = entityId)
                                 }
                                 is AbilityCost.Craft -> {
                                     // Combined BF+GY material pool (CR 702.167a-b). Records the cost

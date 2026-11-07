@@ -153,11 +153,12 @@ object GraveyardSynergy {
         return searches.all { it.player == Player.You } && searches.any { Zone.LIBRARY in it.zones }
     }
 
-    private const val SDK_PACKAGE = "com.wingedsheep.sdk."
+    internal const val SDK_PACKAGE = "com.wingedsheep.sdk."
 
     private val fieldCache = ConcurrentHashMap<Class<*>, List<java.lang.reflect.Field>>()
 
-    private fun fieldsOf(type: Class<*>): List<java.lang.reflect.Field> = fieldCache.getOrPut(type) {
+    /** The instance fields of an SDK data class and its SDK superclasses, made readable — shared with [CardAsks]. */
+    internal fun fieldsOf(type: Class<*>): List<java.lang.reflect.Field> = fieldCache.getOrPut(type) {
         generateSequence(type) { it.superclass }
             .takeWhile { it.name.startsWith(SDK_PACKAGE) }
             .flatMap { it.declaredFields.asSequence() }

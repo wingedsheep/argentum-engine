@@ -1524,7 +1524,7 @@ object TargetPolarityAnalyzer {
             is MarkExileOnDeathEffect -> leaf.target to TargetPolarity.HARMFUL
             is TapUntapEffect -> leaf.target to
                 if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
-            is ModifyStatsEffect -> leaf.target to statsPolarity(leaf.powerModifier, leaf.toughnessModifier)
+            is ModifyStatsEffect -> leaf.target to oneShotStatsPolarity(leaf.powerModifier, leaf.toughnessModifier)
             // "Target creature has base power and toughness 0/0" (Multiply by Zero) is removal. A
             // larger fixed base names nothing here, so the slot's other effects decide it (Taranika's
             // 4/4 + indestructible), and alone it reads flexible ([largeBaseSlots]). A dynamic base (Exuberant Wolfbear copies its own power) can
@@ -1744,6 +1744,17 @@ object TargetPolarityAnalyzer {
             AmountSign.ZERO, AmountSign.UNKNOWN -> null
         }
     }
+
+    /**
+     * A one-shot "+X/-X" whose toughness loss is a count that grows with the board — "where X is the
+     * number of artifacts you control" (Tezzeret the Schemer), "sacrifice X Squirrels" (Chatterfang)
+     * — is removal: X is sized to kill, and whatever the power side adds dies with the creature. A
+     * fixed "+2/-1" stays unread by [statsPolarity]: that small a loss is a trick for a sturdy
+     * creature of ours as often as a kill.
+     */
+    private fun oneShotStatsPolarity(power: DynamicAmount, toughness: DynamicAmount): TargetPolarity? =
+        statsPolarity(power, toughness)
+            ?: TargetPolarity.HARMFUL.takeIf { toughness !is DynamicAmount.Fixed && AmountSign.of(toughness) == AmountSign.LOSS }
 
     /** The side a counter's removal favours: the other one than its placement's. */
     private fun opposite(polarity: TargetPolarity): TargetPolarity? = when (polarity) {

@@ -796,10 +796,21 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     data class TapXPermanents(
         val filter: GameObjectFilter = GameObjectFilter.Creature
     ) : AbilityCost {
-        override val description: String =
-            "Tap X untapped ${com.wingedsheep.sdk.scripting.util.pluralNounPhrase(
-                filter.copy(controllerPredicate = null).description
-            )} you control"
+        override val description: String = run {
+            // "Tap X untapped other artifacts" (Merchant's Dockhand, `notSourceItself()`) — the
+            // source-exclusion predicate reads as "other", the way CostAtom's excludeSelf does,
+            // not as the filter's literal "not this".
+            val notSource = com.wingedsheep.sdk.scripting.predicates.StatePredicate.Not(
+                com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSource
+            )
+            val other = notSource in filter.statePredicates
+            val nounFilter = filter.copy(
+                controllerPredicate = null,
+                statePredicates = filter.statePredicates - notSource
+            )
+            val noun = com.wingedsheep.sdk.scripting.util.pluralNounPhrase(nounFilter.description)
+            "Tap X untapped ${if (other) "other " else ""}$noun you control"
+        }
 
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
             val newFilter = filter.applyTextReplacement(replacer)
