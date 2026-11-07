@@ -902,7 +902,10 @@ data class AiProfile(
      * the opening hand to the end, pinned by `HiddenZoneToHandAiTest`). An instant-speed activated ability that
      * only draws gets the end-step bonus at the opponent's end step, and is floored below passing
      * before it while an instant-speed card is in hand (lethal on board or a full hand releases
-     * the hold). Needs [useCardIntent].
+     * the hold). A this-turn impulse (Act on Impulse) gets the same idle bonus in either main
+     * phase of ours while the mana beyond its cost could play what it exiles, and is refused on an
+     * opponent's turn, where its cards would evaporate unplayed (`ThisTurnImpulseReadingAiTest`).
+     * Needs [useCardIntent].
      *
      * Measured 2026-10-11: `just arena production-candidate-expiring production-candidate-idledraw
      * 100` (BLB, seed 20260727) — 48W-51L-1D for the baseline, pair win 48.5% CI [45.0%, 52.0%]

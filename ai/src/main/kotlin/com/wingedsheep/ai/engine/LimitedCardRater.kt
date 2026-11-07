@@ -606,6 +606,9 @@ object LimitedCardRater {
         var score = reanimation
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        // Cards off the top to play this turn only (Act on Impulse): a card drawn, less the ones
+        // the turn's mana can't reach before cleanup.
+        else if (IntentTag.IMPULSE in tags) score += TAG_VALUE.getValue(IntentTag.IMPULSE)
         // A spell cast for free off the pile this turn only (Maralen): no card banked, the cast itself.
         else if (IntentTag.FREE_SPELL in tags) score += TAG_VALUE.getValue(IntentTag.FREE_SPELL)
         if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
@@ -881,6 +884,8 @@ object LimitedCardRater {
         IntentTag.GRAVEYARD_HATE to 0.2,
         IntentTag.ANTHEM to 0.8,
         IntentTag.DRAW to 0.6,
+        // Cards to play this turn only: a draw that must be spent before cleanup — a little under one.
+        IntentTag.IMPULSE to 0.4,
         IntentTag.TUTOR to 0.6,
         IntentTag.RECURSION to 0.6,
         IntentTag.TAPPER to 0.5,

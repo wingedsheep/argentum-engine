@@ -91,7 +91,9 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
   analyzer's reading beats the leaf's own fields, the reading wins: a -N/-N it reads as removal
   scores like N damage (a dynamic -X/-X like unknown-X damage), a gather → move pipeline it reads
   as a wrath or a picked destroy scores like a destroy, and one it reads as card draw ("look at the
-  top, put one into your hand") like a card drawn.
+  top, put one into your hand") like a card drawn. A this-turn impulse ("exile the top three cards
+  of your library. Until end of turn, you may play those cards") scores a little under one: the
+  cards must be spent before cleanup.
 - **Activation costs and drawbacks** — activated payoffs costing more than four mana retain a
   `4 / mana value` share of their usual value. Self-only blocking restrictions and requirements
   to attack or block alongside another creature reduce the static score.

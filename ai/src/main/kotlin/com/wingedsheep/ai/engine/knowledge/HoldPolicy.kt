@@ -580,6 +580,40 @@ class HoldPolicy(
     }
 
     /**
+     * Whether casting [cast] — a spell whose whole payoff is a this-turn impulse ([IntentTag.IMPULSE]:
+     * "exile the top three cards of your library. Until end of turn, you may play those cards") —
+     * comes in a main phase of ours with mana left over to play what it exiles. Under [drawWithIdleMana].
+     *
+     * The impulse's own board value is about nothing — a card spent, cards in exile the evaluator
+     * does not count as held, since they evaporate at cleanup — so on a tie the AI passed with Act on
+     * Impulse and six lands untapped. The cards are only worth what the turn's mana can still play
+     * of them, so the window wants mana beyond the impulse's own cost, and no instant-speed card in
+     * hand that mana could be held up for. Its bonus ([IDLE_IMPULSE_WINDOW]) repays the card the
+     * evaluator sees spent as well as tipping the tie, and is [TimingVerdict.Adjust.onlyWhenIdle]
+     * like [idleDrawWindow]'s, so it only ever decides between the impulse and passing: a threat or
+     * a land drop still goes first. Unlike a draw it earns no
+     * end-step window: cast into an opponent's end step, the cards are gone before we can use them.
+     */
+    private fun idleImpulseWindow(
+        state: GameState,
+        playerId: EntityId,
+        intent: CardIntent,
+        cast: CastSpell?,
+    ): Boolean {
+        if (cast == null || !isImpulseOnly(intent)) return false
+        if (!state.isActiveTurnFor(playerId) || state.step !in MAIN_STEPS || state.stack.isNotEmpty()) return false
+        if (holdsInstantSpeedCard(state, playerId)) return false
+        val card = state.getEntity(cast.cardId)?.get<CardComponent>() ?: return false
+        if (card.typeLine.isPermanent) return false
+        val mana = intents.availableMana(state, playerId) ?: return false
+        return mana > card.manaValue
+    }
+
+    /** Whether [intent]'s whole payoff is a this-turn impulse — a scry beside it is a rider. */
+    private fun isImpulseOnly(intent: CardIntent): Boolean =
+        IntentTag.IMPULSE in intent.tags && intent.tags.all { it == IntentTag.IMPULSE || it == IntentTag.CARD_SELECTION }
+
+    /**
      * Whether a wish has anything to take: our sideboard holds a card one of its gathers matches.
      *
      * The leaf prices a wish as a card spent and a card gained — the same tie as a cantrip, which is
@@ -639,7 +673,15 @@ class HoldPolicy(
         if (drawWithIdleMana && intent.speed == Speed.SORCERY && idleDrawWindow(state, playerId, intent, cast)) {
             return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "draw with idle mana", onlyWhenIdle = true)
         }
+        if (drawWithIdleMana && idleImpulseWindow(state, playerId, intent, cast)) {
+            return TimingVerdict.Adjust(IDLE_IMPULSE_WINDOW, reason = "impulse with mana to play off it", onlyWhenIdle = true)
+        }
         if (intent.speed != Speed.INSTANT) return TimingVerdict.Neutral
+        // An instant-speed impulse off our turn exiles cards that must be played before cleanup,
+        // with our sorcery-speed cards and land drop out of reach until then: cards thrown away.
+        if (drawWithIdleMana && isImpulseOnly(intent) && !state.isActiveTurnFor(playerId) && state.stack.isEmpty()) {
+            return TimingVerdict.NoWindow
+        }
 
         val stackHasSomething = state.stack.isNotEmpty()
 
@@ -968,6 +1010,14 @@ class HoldPolicy(
         const val END_STEP_WINDOW = 1.5
 
         /**
+         * [idleImpulseWindow]'s bonus: the card the evaluator sees an impulse spend (its exiled cards
+         * are not counted as held, since they evaporate at cleanup — about 1.5 on its scale, measured
+         * on `ThisTurnImpulseReadingAiTest`'s position) plus [END_STEP_WINDOW]'s tie-break. Idle-only,
+         * so it never outbids another play.
+         */
+        const val IDLE_IMPULSE_WINDOW = 3.0
+
+        /**
          * The reward for an [IntentTag.CAST_BAN] cast where it denies an opponent a whole turn
          * ([CastBanWindow]). Sized like [END_STEP_WINDOW]: both name the window a card is strictly
          * better spent in, which the board score is blind to.
@@ -994,6 +1044,9 @@ class HoldPolicy(
 
         /** Tags of a spell whose whole payoff is card flow — cards into hand, or a scry — see [idleDrawWindow]. */
         val CARD_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION)
+
+        /** Our two main phases — where a this-turn impulse's cards can still be played, lands and all. */
+        val MAIN_STEPS = setOf(Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
 
         /** What [drawActivationVerdict] cashes at the opponent's end step: a draw, or a look at the top (scry, surveil). */
         val ACTIVATION_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.CARD_SELECTION)

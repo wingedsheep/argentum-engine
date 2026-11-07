@@ -57,12 +57,13 @@ class AiReadingAuditSnapshotTest : FunSpec({
         // The team form: hexproof for our permanents beside a lasting Amass. The evasion grant to the
         // player is a separate, still-unread leaf.
         "Lazotep Plating" to listOf("timing: GrantEvasionKeywordEffect"),
+        // A this-turn impulse we time ourselves: cards to spend before cleanup, read as IMPULSE.
+        "Act on Impulse" to emptyList(),
         // Unread — the effect types the audit names as the work to do.
         // Team hexproof beside a damage shield, every part gone at cleanup: a trick nothing holds yet.
         "Blinding Fog" to listOf("timing: ForEach>GrantKeywordEffect"),
         // A draw beside the trample outlasts the turn, so the keyword floor does not read the spell.
         "Charge Through" to listOf("timing: GrantKeywordEffect"),
-        "Act on Impulse" to listOf("intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)"),
         // "Target creature can't attack or block this turn": the can't-block reads as evasion for our
         // attack (intent), as a blocker taken out of the crack-back (combat), and the restriction
         // window judges when it is worth spending (timing).
