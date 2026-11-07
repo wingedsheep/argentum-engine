@@ -1,1 +1,1 @@
-- #PR The AI reads "creature spells you cast cost {1} more" (Geist-Fueled Scarecrow, the Invasion Leeches) as a drawback on its own spells, and its draft heuristic now rates such a card below the same body without the tax
+- #4552 The AI reads "creature spells you cast cost {1} more" (Geist-Fueled Scarecrow, the Invasion Leeches) as a drawback on its own spells, and its draft heuristic now rates such a card below the same body without the tax
