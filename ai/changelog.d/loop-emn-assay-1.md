@@ -1,1 +1,1 @@
-- #PR The AI reads a lasting "+N/-M" Aura (Boon of Emrakul, Maggot Therapy) as two-sided and lets simulation pick its host: it kills a small creature of theirs or turns a sturdy one of ours into a bigger attacker
+- #4548 The AI reads a lasting "+N/-M" Aura (Boon of Emrakul, Maggot Therapy) as two-sided and lets simulation pick its host: it kills a small creature of theirs or turns a sturdy one of ours into a bigger attacker
