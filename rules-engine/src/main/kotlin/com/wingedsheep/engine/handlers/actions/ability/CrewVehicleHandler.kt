@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComp
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCrewedEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -38,6 +39,7 @@ class CrewVehicleHandler(
     private val castPermissionUtils: com.wingedsheep.engine.legalactions.utils.CastPermissionUtils? = null,
     private val manaSolver: com.wingedsheep.engine.mechanics.mana.ManaSolver? = null,
     private val costPaymentService: com.wingedsheep.engine.mechanics.cost.CostPaymentService? = null,
+    private val predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator? = null,
 ) : ActionHandler<CrewVehicle> {
     override val actionType: KClass<CrewVehicle> = CrewVehicle::class
 
@@ -79,6 +81,20 @@ class CrewVehicleHandler(
             } else {
                 "This permanent doesn't have crew"
             }
+
+        // The alternative crew cost (Heart of Kiran) is paid instead of tapping creatures.
+        if (action.alternativeCostFrom != null) {
+            if (action.crewCreatures.isNotEmpty()) {
+                return "An alternative crew cost is paid instead of tapping creatures"
+            }
+            alternativePayment(state, action)
+                ?: return "That permanent can't pay this Vehicle's alternative crew cost"
+            val tax = TapForPowerActivationTax.of(castPermissionUtils, state, action.vehicleId, action.playerId)
+            if (!TapForPowerActivationTax.canPay(manaSolver, state, action.playerId, tax, emptyList())) {
+                return "Not enough mana to pay the crew cost ($tax)"
+            }
+            return null
+        }
 
         if (action.crewCreatures.isEmpty()) {
             return "Must select at least one creature to crew"
@@ -154,6 +170,22 @@ class CrewVehicleHandler(
 
         var currentState = state
         val events = mutableListOf<GameEvent>()
+
+        // Pay the alternative crew cost (Heart of Kiran's loyalty counter) in place of tapping
+        // creatures — no creature crews the Vehicle this way.
+        if (action.alternativeCostFrom != null) {
+            val payment = alternativePayment(state, action)
+                ?: return ExecutionResult.error(state, "That permanent can't pay this Vehicle's alternative crew cost")
+            val service = costPaymentService
+                ?: return ExecutionResult.error(state, "Alternative crew costs need the cost payment service")
+            val paid = service.performPayment(
+                currentState, action.playerId, PayCost.Atom(payment.cost), action.vehicleId,
+                mapOf(payment.permanentId to 1)
+            )
+            if (!paid.success) return ExecutionResult.error(state, "Couldn't pay the alternative crew cost")
+            currentState = paid.state
+            events.addAll(paid.events)
+        }
 
         // Pay the cost: tap each crew creature
         for (creatureId in action.crewCreatures) {
@@ -243,6 +275,13 @@ class CrewVehicleHandler(
         )
     }
 
+    private fun alternativePayment(state: GameState, action: CrewVehicle): CrewRequirement.AlternativePayment? {
+        val evaluator = predicateEvaluator ?: return null
+        return CrewRequirement.alternativePayments(
+            state, state.projectedState, cardRegistry, evaluator, action.vehicleId, action.playerId
+        ).firstOrNull { it.permanentId == action.alternativeCostFrom }
+    }
+
     companion object {
         fun create(services: EngineServices): CrewVehicleHandler {
             return CrewVehicleHandler(
@@ -251,6 +290,7 @@ class CrewVehicleHandler(
                 services.castPermissionUtils,
                 services.manaSolver,
                 services.costPaymentService,
+                services.predicateEvaluator,
             )
         }
     }

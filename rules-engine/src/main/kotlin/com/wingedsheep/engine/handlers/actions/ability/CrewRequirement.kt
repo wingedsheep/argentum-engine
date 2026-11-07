@@ -1,13 +1,19 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AlternativeCrewCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 
 /**
  * The crew ability a Vehicle can activate right now, if any — the one place `CrewEnumerator` and
@@ -52,6 +58,43 @@ internal object CrewRequirement {
     /** How many crew abilities [vehicleId] has, printed and granted — each instance is an activated ability. */
     fun count(state: GameState, projected: ProjectedState, cardRegistry: CardRegistry, vehicleId: EntityId): Int =
         all(state, projected, cardRegistry, vehicleId).size
+
+    /** One way to pay a Vehicle's [AlternativeCrewCost]: [cost] paid by removing a counter from [permanentId]. */
+    data class AlternativePayment(val cost: CostAtom.RemoveCounters, val permanentId: EntityId)
+
+    /**
+     * Every permanent [playerId] could pay [vehicleId]'s alternative crew cost with right now — one
+     * entry per eligible permanent, since each is a different way to pay. Empty when the Vehicle has
+     * no [AlternativeCrewCost] (printed or granted), is face down, or has lost all abilities. The
+     * enumerator offers exactly these and the handler accepts exactly these.
+     */
+    fun alternativePayments(
+        state: GameState,
+        projected: ProjectedState,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+        vehicleId: EntityId,
+        playerId: EntityId
+    ): List<AlternativePayment> {
+        val container = state.getEntity(vehicleId) ?: return emptyList()
+        if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(vehicleId)) return emptyList()
+        val printed = container.get<CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            ?.staticAbilities
+            .orEmpty()
+        val granted = state.grantedStaticAbilities.filter { it.entityId == vehicleId }.map { it.ability }
+        val costs = (printed + granted).filterIsInstance<AlternativeCrewCost>().map { it.cost }.distinct()
+        if (costs.isEmpty()) return emptyList()
+        val context = PredicateContext(controllerId = playerId, sourceId = vehicleId)
+        val controlled = projected.getBattlefieldControlledBy(playerId)
+        return costs.flatMap { cost ->
+            val counterType = cost.counterType ?: return@flatMap emptyList()
+            controlled.filter { permanentId ->
+                (state.getEntity(permanentId)?.get<CountersComponent>()?.getCount(counterType) ?: 0) >= 1 &&
+                    predicateEvaluator.matches(state, projected, permanentId, cost.filter, context)
+            }.map { AlternativePayment(cost, it) }
+        }.distinctBy { it.permanentId }
+    }
 
     private fun all(
         state: GameState,
