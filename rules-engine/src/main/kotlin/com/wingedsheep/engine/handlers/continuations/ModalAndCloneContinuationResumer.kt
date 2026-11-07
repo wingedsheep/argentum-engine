@@ -263,8 +263,12 @@ class ModalAndCloneContinuationResumer(
     ): ExecutionResult {
         if (response !is OptionChosenResponse || response.optionIndex !in 0..continuation.destinations.size)
             return ExecutionResult.error(state, "Expected a discard destination")
-        val destination = continuation.destinations.getOrNull(response.optionIndex)
-        val context = continuation.context.copy(discardDestinations = continuation.context.discardDestinations + (continuation.cardId to destination))
+        val choice = continuation.destinations.getOrNull(response.optionIndex)
+        val context = continuation.context.copy(
+            discardDestinations = continuation.context.discardDestinations + (continuation.cardId to choice?.destination),
+            revealedDiscards = if (choice?.reveal == true) continuation.context.revealedDiscards + continuation.cardId
+                else continuation.context.revealedDiscards,
+        )
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(result.stateWithOutputsHandedOn(), result.events)

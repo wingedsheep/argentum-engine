@@ -1201,6 +1201,20 @@ class MoveCollectionExecutor(
             } else null
 
             val discardDestination = if (moveType == MoveType.Discard) context.discardDestinations[cardId] else null
+            // "You may reveal that card and put it on top of your library" (Nephalia Academy): the
+            // card is shown to every player on its way to the chosen destination.
+            val discardRevealed = discardDestination != null && cardId in context.revealedDiscards
+            if (discardRevealed) {
+                val card = newState.getEntity(cardId)?.get<CardComponent>()
+                events.add(CardsRevealedEvent(
+                    revealingPlayerId = discarderOf[cardId] ?: destPlayerId,
+                    cardIds = listOf(cardId),
+                    cardNames = listOf(card?.name ?: "Card"),
+                    imageUris = listOf(card?.let { cardRegistry.getCard(it.cardDefinitionId)?.metadata?.imageUri }),
+                    fromZone = Zone.HAND,
+                    toZone = discardDestination!!.zone,
+                ))
+            }
             val chosenZone = discardDestination?.zone ?: destZone
             val chosenPlacement = when (discardDestination?.placement) {
                 ZonePlacement.Bottom -> com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom
@@ -1231,7 +1245,7 @@ class MoveCollectionExecutor(
                 // LibraryRevealUtils.placementAudience — this only names the mover and whether the
                 // move was public.
                 libraryMoverId = context.controllerId,
-                libraryMovePublic = revealed,
+                libraryMovePublic = revealed || discardRevealed,
                 // The whole collection moves as one event (CR 603.10a look-back).
                 lookBackGrants = lookBack[cardId] ?: com.wingedsheep.engine.event.LookBackGrants()
             )
@@ -1243,7 +1257,7 @@ class MoveCollectionExecutor(
             )
             newState = transitionResult.state
             events.addAll(transitionResult.events)
-            if (moveType == MoveType.Discard && transitionResult.actualDestination == Zone.LIBRARY && !revealed && transitionResult.redirectResult?.reveal != true) {
+            if (moveType == MoveType.Discard && transitionResult.actualDestination == Zone.LIBRARY && !revealed && !discardRevealed && transitionResult.redirectResult?.reveal != true) {
                 undefinedDiscards.add(cardId)
             }
 

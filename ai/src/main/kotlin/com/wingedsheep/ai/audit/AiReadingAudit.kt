@@ -812,6 +812,7 @@ object AiReadingAudit {
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
+        IntentTag.DISCARD_SHIELD -> "puts cards an effect makes its controller discard back on their library"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.EXTRA_TURN -> "takes an extra turn"
         IntentTag.FREE_SPELL -> "casts a spell without paying its mana cost"

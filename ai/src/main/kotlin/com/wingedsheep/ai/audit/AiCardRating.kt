@@ -284,6 +284,7 @@ object AiCardRating {
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
+        IntentTag.DISCARD_SHIELD to "Keeps cards an effect discards",
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.EXTRA_TURN to "Takes an extra turn",
         IntentTag.FREE_SPELL to "Casts spells for free",

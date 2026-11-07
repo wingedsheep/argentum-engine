@@ -373,6 +373,11 @@ object CardIntentAnalyzer {
         if (scripts.any { script -> script.replacementEffects.any(LossShields::reads) }) {
             tags += IntentTag.PROTECTION
         }
+        // "If an effect causes you to discard a card, you may put it on top of your library instead"
+        // (Library of Leng, Nephalia Academy): the discarded card is our next draw ([DiscardShields]).
+        if (scripts.any { script -> script.replacementEffects.any(DiscardShields::reads) }) {
+            tags += IntentTag.DISCARD_SHIELD
+        }
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP

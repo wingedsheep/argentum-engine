@@ -6,6 +6,7 @@ import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
 import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.LossShields
+import com.wingedsheep.ai.engine.knowledge.DiscardShields
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
@@ -557,6 +558,9 @@ object LimitedCardRater {
         // A second life for its controller (Exquisite Archangel): about a removal spell's worth
         // of game the opponent has to win twice.
         LossShields.reads(replacement) -> LOSS_SHIELD_VALUE
+        // "If an effect causes you to discard a card, you may put it on top of your library
+        // instead" (Library of Leng, Nephalia Academy): undoes discard spells, which are rare.
+        DiscardShields.reads(replacement) -> TAG_VALUE.getValue(IntentTag.DISCARD_SHIELD)
         else -> DamageAmplifiers.pickValue(replacement)
     }
 
@@ -932,6 +936,9 @@ object LimitedCardRater {
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
         IntentTag.TOKEN_THEFT to 0.2,
+        // Undoing an opponent's discard spell pays only against one — a sideboard-grade rider in
+        // Limited, where few decks discard: priced like the trigger lock.
+        IntentTag.DISCARD_SHIELD to 0.1,
         // "That player loses the game" only pays when the creature carrying it connects — a
         // bomb's rider rather than a card on its own, so a little over a pump.
         IntentTag.GAME_WIN to 0.4,

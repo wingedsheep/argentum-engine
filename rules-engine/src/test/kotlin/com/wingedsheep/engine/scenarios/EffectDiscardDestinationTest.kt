@@ -24,6 +24,13 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
             replacementEffect(OptionalEffectDiscardDestination(CardDestination.ToZone(Zone.LIBRARY),
                 EventPattern.DiscardEvent(Player.EachOpponent, GameObjectFilter.Creature)))
         }
+        // "If a spell or ability an opponent controls causes you to discard a card, you may reveal
+        // that card and put it on top of your library instead" (Nephalia Academy's shape).
+        val opponentRevealed = card("Effect Discard Test Opponent Reveal") {
+            typeLine = "Land"
+            replacementEffect(OptionalEffectDiscardDestination(CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                EventPattern.DiscardEvent(Player.You, cause = ZoneChangeCause.DiscardedByOpponentEffect), reveal = true))
+        }
         val madness = card("Effect Discard Test Madness") {
             typeLine = "Creature — Beast"; power = 2; toughness = 2; madness("{R}")
         }
@@ -34,16 +41,17 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
                 effect = Effects.GainLife(1)
             }
         }
-        listOf(redirect, filtered, madness, selfDiscard).forEach(cardRegistry::register)
+        listOf(redirect, filtered, opponentRevealed, madness, selfDiscard).forEach(cardRegistry::register)
         fun board(source: String = redirect.name, sourcePlayer: Int = 1, cards: List<String> = listOf("Grizzly Bears")) = scenario()
             .withPlayers("First", "Second").withCardOnBattlefield(sourcePlayer, source)
             .apply { cards.forEach { withCardInHand(1, it) } }
             .withCardInLibrary(1, "Forest").withCardInLibrary(2, "Forest")
             .withActivePlayer(1).withPriorityPlayer(1).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
-        fun run(game: TestGame, effect: Effect = Patterns.Hand.discardHand(), controller: Int = 1, target: com.wingedsheep.sdk.model.EntityId? = null) {
+        fun run(game: TestGame, effect: Effect = Patterns.Hand.discardHand(), controller: Int = 1, target: com.wingedsheep.sdk.model.EntityId? = null,
+                targetPlayer: com.wingedsheep.sdk.model.EntityId? = null) {
             val result = services.effectExecutorRegistry.execute(game.state, effect,
                 EffectContext(sourceId = null, controllerId = if (controller == 1) game.player1Id else game.player2Id,
-                    targets = target?.let { listOf(ChosenTarget.Permanent(it)) }.orEmpty()))
+                    targets = target?.let { listOf(ChosenTarget.Permanent(it)) } ?: targetPlayer?.let { listOf(ChosenTarget.Player(it)) }.orEmpty()))
             result.error shouldBe null; game.state = result.state
         }
         fun choose(game: TestGame, index: Int = 0): ExecutionResult {
@@ -241,6 +249,62 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
             filtered.updatedCollections["ranked"] shouldBe emptyList()
             services.predicateEvaluator.amounts.evaluate(game.state,
                 DynamicAmounts.powerOf(EffectTarget.PipelineTarget("discarded")), context) shouldBe 0
+        }
+        test("an opponent-caused scope is offered for an opponent's discard effect") {
+            val game = board(opponentRevealed.name)
+            run(game, Patterns.Hand.discardHand(EffectTarget.ContextTarget(0)), controller = 2,
+                targetPlayer = game.player1Id)
+            val decision = game.state.pendingDecision as ChooseOptionDecision
+            decision.playerId shouldBe game.player1Id
+            decision.options.first() shouldBe "Reveal and discard to a library (top)"
+            choose(game)
+            game.state.getLibrary(game.player1Id).size shouldBe 2
+            game.graveyardSize(1) shouldBe 0
+        }
+        test("an opponent-caused scope is not offered for your own discard effect") {
+            val game = board(opponentRevealed.name)
+            run(game)
+            game.state.pendingDecision shouldBe null
+            game.graveyardSize(1) shouldBe 1
+        }
+        test("an opponent-caused scope reads the effect's controller inside a for-each-player loop") {
+            // "Each player discards …": controllerId is the iterated discarder, effectControllerId the caster.
+            val game = board(opponentRevealed.name)
+            val result = services.effectExecutorRegistry.execute(game.state, Patterns.Hand.discardHand(),
+                EffectContext(sourceId = null, controllerId = game.player1Id, effectControllerId = game.player2Id))
+            result.error shouldBe null; game.state = result.state
+            (game.state.pendingDecision as ChooseOptionDecision).playerId shouldBe game.player1Id
+            val own = services.effectExecutorRegistry.execute(board(opponentRevealed.name).state, Patterns.Hand.discardHand(),
+                EffectContext(sourceId = null, controllerId = game.player1Id, effectControllerId = game.player1Id))
+            own.state.pendingDecision shouldBe null
+        }
+        test("an opponent-caused scope ignores a discard paid as a cost") {
+            val game = board(opponentRevealed.name)
+            val result = services.effectExecutorRegistry.execute(game.state, Patterns.Hand.discardHand(),
+                EffectContext(sourceId = null, controllerId = game.player1Id, effectControllerId = game.player2Id, discardIsCost = true))
+            result.error shouldBe null
+            result.state.pendingDecision shouldBe null
+            result.state.getGraveyard(game.player1Id).size shouldBe 1
+        }
+        test("a revealed library discard is public and keeps its characteristics") {
+            val game = board(opponentRevealed.name, cards = listOf(selfDiscard.name))
+            val cardId = game.state.getHand(game.player1Id).single()
+            run(game, Patterns.Hand.discardHand(EffectTarget.ContextTarget(0)), controller = 2,
+                targetPlayer = game.player1Id)
+            val result = choose(game)
+            game.state.getLibrary(game.player1Id).first() shouldBe cardId
+            val revealed = result.events.filterIsInstance<CardsRevealedEvent>().single()
+            revealed.cardIds shouldBe listOf(cardId)
+            revealed.revealingPlayerId shouldBe game.player1Id
+            revealed.toZone shouldBe Zone.LIBRARY
+            val discarded = result.events.filterIsInstance<CardsDiscardedEvent>().single()
+            discarded.undefinedCharacteristics shouldBe emptySet()
+            // The revealed card is known: its own "when discarded" ability fires and the opponent sees its name.
+            result.events.filterIsInstance<AbilityTriggeredEvent>().size shouldBe 1
+            val opponentView = com.wingedsheep.engine.view.ClientEventTransformer.transform(result.events, game.player2Id, game.state)
+            opponentView.filterIsInstance<com.wingedsheep.engine.view.ClientEvent.CardDiscarded>().single().cardName shouldBe selfDiscard.name
+            game.state.getEntity(cardId)?.get<com.wingedsheep.engine.state.components.identity.RevealedToComponent>()
+                ?.playerIds?.contains(game.player2Id) shouldBe true
         }
         test("paused destination frames round trip and keep target identity") {
             val game = board()

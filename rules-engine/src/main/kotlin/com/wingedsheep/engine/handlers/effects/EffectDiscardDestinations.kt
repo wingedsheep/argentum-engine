@@ -69,15 +69,19 @@ object EffectDiscardDestinations {
         val entries = ActiveReplacements.all(state).filter { it.granted || !state.projectedState.hasLostAllAbilities(it.sourceId) }.filter { it.effect is OptionalEffectDiscardDestination }
         if (entries.isEmpty()) return null
         val hand = state.getHand(playerId)
+        // The resolving spell or ability is the discard's cause; inside a "for each player" loop
+        // `controllerId` is the discarder, so its real controller is `effectControllerId`.
+        val causeControllerId = context.effectControllerId ?: context.controllerId
         for (id in cards) {
             if (id !in hand || id in context.discardDestinations) continue
             val candidates = entries.mapNotNull { entry ->
                 val replacement = entry.effect as OptionalEffectDiscardDestination
                 if (!zones.predicateEvaluator.matchesPlayer(state, state.projectedState, replacement.appliesTo.player, playerId, PredicateContext(controllerId = entry.controllerId, sourceId = entry.sourceId))) return@mapNotNull null
+                if (!ZoneTransitionService.discardCauseMatches(state, replacement.appliesTo.cause, causeControllerId, playerId, asCyclingCost = false)) return@mapNotNull null
                 val filter = replacement.appliesTo.cardFilter
                 if (filter != null && !zones.predicateEvaluator.matches(state, state.projectedState, id, filter,
                     PredicateContext(controllerId = entry.controllerId, sourceId = entry.sourceId))) return@mapNotNull null
-                replacement.destination
+                DiscardDestinationChoice(replacement.destination, replacement.reveal)
             }.distinct()
             if (candidates.isEmpty()) continue
             val name = state.getEntity(id)?.get<CardComponent>()?.name ?: "this card"
@@ -86,7 +90,8 @@ object EffectDiscardDestinations {
                     id = decisionId, playerId = playerId,
                     prompt = "Where do you want to discard $name?",
                     context = DecisionContext(sourceId = context.sourceId, phase = DecisionPhase.RESOLUTION),
-                    options = candidates.map { "Discard to ${it.description}" } + "Use the normal discard destination",
+                    options = candidates.map { (if (it.reveal) "Reveal and discard to " else "Discard to ") + it.destination.description } +
+                        "Use the normal discard destination",
                 ) },
                 answer = EffectDiscardDestinationContinuation(effect, context, id, candidates),
             ))

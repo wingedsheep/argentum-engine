@@ -800,17 +800,13 @@ object ZoneMovementUtils {
         entityId: EntityId,
         container: ComponentContainer,
         requiredCause: ZoneChangeCause
-    ): Boolean = when (requiredCause) {
-        ZoneChangeCause.Any -> true
-        ZoneChangeCause.DiscardedByOpponentEffect -> {
-            ZoneTransitionService.isDiscardCausedByOpponent(
-                state,
-                state.pendingDiscardCauseControllers[entityId],
-                container.get<CardComponent>()?.ownerId
-            )
-        }
-        ZoneChangeCause.NotCycled -> entityId !in state.pendingCyclingDiscardIds
-    }
+    ): Boolean = ZoneTransitionService.discardCauseMatches(
+        state,
+        requiredCause,
+        causeControllerId = state.pendingDiscardCauseControllers[entityId],
+        discardingPlayerId = container.get<CardComponent>()?.ownerId,
+        asCyclingCost = entityId in state.pendingCyclingDiscardIds,
+    )
 
     /**
      * The madness cost that applies (CR 702.35a) when *this particular move* is the discard the
