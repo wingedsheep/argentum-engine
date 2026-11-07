@@ -95,6 +95,13 @@ data class ZoneChangeEvent(
      * that are not craft materials (removal, the crafted card's own self-exile, etc.).
      */
     val craftMaterial: Boolean = false,
+    /**
+     * True when this battlefield exit was the sacrifice of the creature chosen to pay an emerge
+     * cost (CR 702.119a). Lets a SELF trigger "When you sacrifice this creature while casting a
+     * spell with emerge" (Foul Emissary) tell it apart from every other sacrifice. Always `false`
+     * for anything but that one sacrifice.
+     */
+    val emergeSacrifice: Boolean = false,
     /** Captured at the actual move, never reconstructed from the final event-batch state. */
     val oldObject: com.wingedsheep.engine.state.ObjectRef? = null,
     val newObject: com.wingedsheep.engine.state.ObjectRef? = null,

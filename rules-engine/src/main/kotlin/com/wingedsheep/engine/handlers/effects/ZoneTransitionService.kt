@@ -155,6 +155,13 @@ data class ZoneEntryOptions(
      */
     val craftMaterial: Boolean = false,
     /**
+     * True when this move is the sacrifice of the creature chosen to pay an emerge cost
+     * (CR 702.119a). Stamped onto the emitted [ZoneChangeEvent.emergeSacrifice] for "when you
+     * sacrifice this while casting a spell with emerge" (Foul Emissary). Set only by the emerge
+     * cast's cost payment.
+     */
+    val emergeSacrifice: Boolean = false,
+    /**
      * The player performing a move into a library — the one who chose the card and watched where
      * it landed, and so the one who may keep seeing it (CR 400.2). Only consulted for a
      * [Zone.LIBRARY] destination at a known position; see
@@ -1326,6 +1333,7 @@ class ZoneTransitionService(
                 // Only a battlefield exit can be a craft-material exile; the flag is carried on the
                 // ZoneEntryOptions by the Craft cost payment for each chosen material.
                 craftMaterial = leavingBattlefield && options.craftMaterial,
+                emergeSacrifice = leavingBattlefield && options.emergeSacrifice,
                 oldObject = oldObject,
                 newObject = newObject,
                 requestedDestination = destinationZone,

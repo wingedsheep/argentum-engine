@@ -656,7 +656,7 @@ class DeathAndLeaveTriggerDetector(
             when (ability.binding) {
                 TriggerBinding.SELF, TriggerBinding.ANY -> {
                     // SELF: its own departure, still gated by the pattern's event-fact qualifiers
-                    // (`requireCraftMaterial` — Market Gnome) and any `Triggers.self.matching(...)`
+                    // (`requireCraftMaterial` — Market Gnome; `requireEmergeSacrifice` — Foul Emissary) and any `Triggers.self.matching(...)`
                     // filter, read from last-known information. Under a disjunction, any atom this
                     // departure satisfies fires it.
                     // ANY: "Whenever [this creature or] another creature you control leaves..." —

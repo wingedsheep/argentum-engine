@@ -175,7 +175,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * triggering event's craft-material flag, which the Craft cost payment stamps onto the
          * exile of each chosen material (and only those — an unrelated exile leaves it `false`).
          */
-        val requireCraftMaterial: Boolean = false
+        val requireCraftMaterial: Boolean = false,
+        /**
+         * When true, the trigger fires only if this object left the battlefield because it was
+         * sacrificed to pay an emerge cost (CR 702.119a) — "When you sacrifice this creature while
+         * casting a spell with emerge" (Foul Emissary). The craft sibling of
+         * [requireCraftMaterial]: the matcher reads the triggering event's emerge-sacrifice flag,
+         * which the emerge cast's cost payment stamps on the sacrifice of the chosen creature (and
+         * only that one — any other sacrifice leaves it `false`). Leave [to] null: the sacrifice
+         * still happened when a replacement sends the creature somewhere other than the graveyard.
+         */
+        val requireEmergeSacrifice: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append(describeObjectForEvent(filter))
@@ -206,6 +216,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(" would leave ${from.displayName}")
             }
             if (requireCraftMaterial) append(" while you're activating a craft ability")
+            if (requireEmergeSacrifice) append(" because it was sacrificed while casting a spell with emerge")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

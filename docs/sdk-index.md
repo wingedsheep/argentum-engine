@@ -1301,7 +1301,7 @@ Families:
 - `EventPattern.UntapEvent(filter: GameObjectFilter?, batch: Boolean)` — When a permanent becomes untapped.
 - `EventPattern.VenturedIntoDungeonEvent(player: Player)` — Whenever a player ventures into the dungeon (CR 701.49) — once per venture, whether it entered a dungeon's first room or moved the marker on, and for "venture into Undercity" too.
 - `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player, attackedPlayer: Player?)` — When you attack with at least minAttackers creatures.
-- `EventPattern.ZoneChangeEvent(filter: GameObjectFilter, from: Zone?, to: Zone?, excludeTo: Zone?, excludeSacrifice: Boolean, requireCraftMaterial: Boolean)` — When an object changes zones.
+- `EventPattern.ZoneChangeEvent(filter: GameObjectFilter, from: Zone?, to: Zone?, excludeTo: Zone?, excludeSacrifice: Boolean, requireCraftMaterial: Boolean, requireEmergeSacrifice: Boolean)` — When an object changes zones.
 
 ## FeasibilityCheck
 

@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.costs.ForageCostResolver
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.bend.BendEvents
@@ -347,7 +348,9 @@ internal class CastCostPayer(
         // gone (a sacrificed token leaves no entity to read a name off). The snapshot feeds "as it
         // last existed on the battlefield" reads (CR 608.2h) exactly like a scripted sacrifice cost.
         ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(emergeSacrifice), ledger.state))
-        ledger.sacrifice(emergeSacrifice)
+        // Stamped so "when you sacrifice this while casting a spell with emerge" (Foul Emissary)
+        // can tell this sacrifice from any other.
+        ledger.sacrifice(emergeSacrifice, ZoneEntryOptions(emergeSacrifice = true))
     }
 
     /** Adds this cast's mana to the player's running total for the turn (Expend). */
