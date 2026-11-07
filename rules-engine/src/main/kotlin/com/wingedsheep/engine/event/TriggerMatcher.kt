@@ -379,10 +379,11 @@ class TriggerMatcher(
                 // SELF: the ability's source must be this permanent. (ATTACHED abilities are
                 // matched by AttachmentTriggerDetector against the host.)
                 if (binding == TriggerBinding.SELF && event.sourceId != sourceId) return false
-                // sourceFilter: the permanent whose ability was activated must match (e.g. an
-                // artifact, or an artifact an opponent controls). A source its own cost sacrificed
-                // or exiled (a fetch land, a Clue) is matched as it last existed (CR 113.7a) — the
-                // live object is in the graveyard, or gone entirely if it was a token.
+                // sourceFilter: the object whose ability was activated must match (e.g. an
+                // artifact, an artifact an opponent controls, a card in your graveyard). A source
+                // its own cost took out of the zone it was activated from (a fetch land, a Clue, a
+                // graveyard card exiled for its own embalm) is matched as it last existed there
+                // (CR 113.7a) — the live object has moved on, or is gone entirely as a token.
                 val sourceFilter = trigger.sourceFilter
                 if (sourceFilter != null) {
                     val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
@@ -390,8 +391,11 @@ class TriggerMatcher(
                         sourceId = sourceId
                     )
                     val lastKnown = event.sourceLastKnown
-                    val matched = if (lastKnown != null && event.sourceId !in state.getBattlefield()) {
-                        predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, predicateContext, onBattlefield = true)
+                    val matched = if (lastKnown != null) {
+                        predicateEvaluator.matchesSnapshot(
+                            state, lastKnown, sourceFilter, predicateContext,
+                            zone = event.sourceZone ?: com.wingedsheep.sdk.core.Zone.BATTLEFIELD
+                        )
                     } else {
                         predicateEvaluator.matches(
                             state, state.projectedState, event.sourceId, sourceFilter, predicateContext
@@ -2311,7 +2315,7 @@ class TriggerMatcher(
             return predicateEvaluator.matches(state, state.projectedState, abilitySourceId, sourceFilter, context)
         }
         val lastKnown = activated?.sacrificedPermanents?.firstOrNull { it.entityId == abilitySourceId } ?: return false
-        return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, context, onBattlefield = true)
+        return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, context, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
     }
 
     fun matchesDealsDamageTrigger(

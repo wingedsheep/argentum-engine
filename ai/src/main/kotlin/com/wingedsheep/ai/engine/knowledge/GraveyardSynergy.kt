@@ -9,6 +9,10 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.CostZone
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -34,7 +38,8 @@ import java.util.concurrent.ConcurrentHashMap
  *  - carries a keyword that is cast or activated from, or feeds on, the graveyard — flashback,
  *    escape, delve, dredge, disturb, embalm, unearth, harmonize, mayhem, aftermath;
  *  - has an ability that works from the graveyard (`activateFromZone`, a trigger's `activeZones`,
- *    a state trigger's `activeZone`);
+ *    a state trigger's `activeZone`), or triggers on casting a spell from a graveyard or
+ *    activating an ability of a card in one;
  *  - moves cards out of a graveyard (`fromZone` / `fromZones` — recursion, cast-from-graveyard
  *    permissions);
  *  - counts or reads **your** graveyard — any object holding `zone = GRAVEYARD` beside
@@ -106,6 +111,12 @@ object GraveyardSynergy {
             if (node is KeywordAbility && node.keyword in GRAVEYARD_KEYWORDS) return true
             // A standing cast-from-graveyard permission names no zone field: the zone is its type.
             if (node is com.wingedsheep.sdk.scripting.MayCastFromGraveyard) return true
+            // "Whenever you cast a spell from your graveyard" (Secrets of the Dead, Neerdiv) cashes in
+            // the flashback and escape cards a stocked graveyard holds.
+            if (node is SpellCastPredicate.CastFromZone && node.zone == Zone.GRAVEYARD) return true
+            // "Whenever you activate an ability of a card in your graveyard" (Neerdiv) does the same
+            // for embalm, unearth and the other graveyard abilities.
+            if (node is EventPattern.AbilityActivatedEvent && node.sourceFilter?.namesGraveyard() == true) return true
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false
@@ -140,6 +151,10 @@ object GraveyardSynergy {
             return values.values.any(::visit)
         }
     }
+
+    /** The filter is "a card in a graveyard" — [StatePredicate.InZone] on it or on any of its alternatives. */
+    private fun GameObjectFilter.namesGraveyard(): Boolean =
+        statePredicates.any { it is StatePredicate.InZone && it.zone == Zone.GRAVEYARD } || anyOf.any { it.namesGraveyard() }
 
     /**
      * "Search your library and/or graveyard for a card named …" (Vraska's Scorn,

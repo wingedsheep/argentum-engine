@@ -246,10 +246,11 @@ class StackResolver(
         isLoyalty: Boolean = false,
         loyaltyCountersRemoved: Int = 0,
         sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
+        sourceZone: com.wingedsheep.sdk.core.Zone? = null,
     ): ExecutionResult =
         StackPlacement.putActivatedAbility(
             state, ability, targets, targetRequirements, emitActivationEvent, costsTap, onceOnlyKind,
-            cantBeCopied, isLoyalty, loyaltyCountersRemoved, sourceLastKnown
+            cantBeCopied, isLoyalty, loyaltyCountersRemoved, sourceLastKnown, sourceZone
         )
 
     // =========================================================================

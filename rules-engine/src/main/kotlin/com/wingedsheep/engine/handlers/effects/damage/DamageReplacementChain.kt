@@ -529,7 +529,7 @@ object DamageReplacementChain {
         val projected = viewState.projectedState
         fun sourceMatches(floating: ActiveFloatingEffect, filter: GameObjectFilter): Boolean =
             d.sourceId != null && (d.sourceSnapshot?.let {
-                evaluator.matchesSnapshot(viewState, it, filter, PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId), onBattlefield = true)
+                evaluator.matchesSnapshot(viewState, it, filter, PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId), zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
             } ?: evaluator.matches(viewState, projected, d.sourceId, filter,
                 PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId)))
         fun replace(floating: ActiveFloatingEffect, replacement: SerializableModification?): GameState = state.copy(
@@ -680,7 +680,7 @@ object DamageReplacementChain {
             val controller = DamageUtils.damageSourceController(state, projected, d.sourceId, sourceSnapshot = d.sourceSnapshot)
             if (controller != null) {
                 state.getEntity(controller)?.get<DamageBonusComponent>()?.let { bonus ->
-                    if (d.sourceSnapshot?.let { evaluator.matchesSnapshot(viewState, it, bonus.sourceFilter, PredicateContext(controllerId = controller), onBattlefield = true) }
+                    if (d.sourceSnapshot?.let { evaluator.matchesSnapshot(viewState, it, bonus.sourceFilter, PredicateContext(controllerId = controller), zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD) }
                         ?: evaluator.matches(viewState, projected, d.sourceId, bonus.sourceFilter, PredicateContext(controllerId = controller))) {
                         out += Candidate("player-bonus:$controller", "Damage bonus — add ${bonus.bonusAmount} damage", commute = "add") {
                             Step(state, listOf(d.copy(amount = (d.amount + bonus.bonusAmount).coerceAtLeast(0))))

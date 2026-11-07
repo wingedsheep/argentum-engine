@@ -110,6 +110,7 @@ internal class ActivatedManaAbilityResolver(
         // exits — an any-color effect (Birds of Paradise) and an any-color tap bonus (Fertile
         // Ground) — and the ability is already activated by this point: its costs are paid.
         // Adding it to the carried events now carries it out through those exits too.
+        val manaActivatedFrom = activationZone(stateBeforeActivation, action.sourceId)
         val manaAbilityActivatedEvent = AbilityActivatedEvent(
             sourceId = action.sourceId,
             sourceName = sourceName,
@@ -120,9 +121,10 @@ internal class ActivatedManaAbilityResolver(
             onceOnlyKind = ability.onceOnlyKind,
             // A Treasure sacrificed for its own mana is gone (CR 704.5d) before any trigger is
             // matched; "an ability of an artifact" reads it as it last existed (CR 113.7a).
-            sourceLastKnown = if (action.sourceId !in state.getBattlefield() &&
-                action.sourceId in stateBeforeActivation.getBattlefield()
-            ) com.wingedsheep.engine.state.components.stack.captureLastKnown(stateBeforeActivation, action.sourceId) else null,
+            sourceLastKnown = activationSourceLastKnown(
+                stateBeforeActivation, state, action.sourceId, manaActivatedFrom
+            ) { null },
+            sourceZone = manaActivatedFrom,
         )
         val activationEvents = events + manaAbilityActivatedEvent
 
