@@ -144,7 +144,9 @@ class ManaAbilitySideEffectExecutor(
             abilityEntityId = null,
             costsTap = true,
             isManaAbility = true,
-            onceOnlyKind = matchingAbility?.onceOnlyKind
+            onceOnlyKind = matchingAbility?.onceOnlyKind,
+            // This path only ever taps permanents.
+            sourceZone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD,
         )
     }
 

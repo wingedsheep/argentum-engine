@@ -997,15 +997,21 @@ data class AbilityActivatedEvent(
      */
     val keyword: com.wingedsheep.sdk.core.Keyword? = null,
     /**
-     * The source permanent as it last existed on the battlefield, when its own activation cost
-     * took it away — a self-sacrifice or self-exile cost (CR 113.7a): a cracked fetch land, a
-     * sacrificed Clue or Treasure. Null when the source stays on the battlefield, and when it was
-     * activated from another zone (cycling, a graveyard self-exile) — those were never "an ability
-     * of a permanent". "Whenever an opponent activates an ability of an artifact, creature, or land
-     * on the battlefield" (Harsh Mentor) matches its filter against this snapshot once the live
-     * object is in the graveyard, or gone entirely as a token.
+     * The source as it last existed in the zone it was activated from ([sourceZone]), when its own
+     * activation cost took it out of that zone (CR 113.7a) — a cracked fetch land, a sacrificed
+     * Clue or Treasure, a graveyard card exiled to pay for its own embalm or scavenge. Null when the
+     * source stays where it was. Trigger filters are matched
+     * against it as an object in [sourceZone]: "an ability of an artifact, creature, or land on
+     * the battlefield" (Harsh Mentor) still sees the sacrificed fetch land, and "an ability of a
+     * card in your graveyard" (Neerdiv, Devious Diver) still sees the card its embalm exiled.
      */
     val sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
+    /**
+     * The zone the source was in when the ability was activated (CR 602.2) — battlefield, or the
+     * graveyard / hand / exile / command zone for an ability that functions there. Null when the
+     * emitter didn't record it, which the matcher reads as the battlefield.
+     */
+    val sourceZone: Zone? = null,
 ) : GameEvent
 
 /**

@@ -590,6 +590,7 @@ class ActivateAbilityHandler(
             outer.mapIndexed { i, req -> req.withCount(binding.counts[i]) } + orderedModeRequirements.flatten()
         } else boundTargetRequirements(stateBeforeActivation, activation)
 
+        val activatedFrom = activationZone(stateBeforeActivation, action.sourceId)
         val stackResult = stackResolver.putActivatedAbility(
             state, abilityOnStack, action.targets,
             targetRequirements = effectiveTargetReqs,
@@ -602,15 +603,14 @@ class ActivateAbilityHandler(
                 AbilityCost.LoyaltyX -> activation.effectiveXValue ?: 0
                 else -> 0
             },
-            // A permanent its own cost took away (CR 113.7a) — a self-sacrifice, or a "sacrifice a
-            // creature" cost that chose the source — for "an ability of a land on the battlefield"
-            // (Harsh Mentor); a graveyard self-exile was never a permanent's ability.
-            sourceLastKnown = if (action.sourceId in stateBeforeActivation.getBattlefield() &&
-                action.sourceId !in state.getBattlefield()
-            ) {
+            // A source its own cost took out of the zone it was activated from (CR 113.7a) — a
+            // self-sacrifice, a "sacrifice a creature" cost that chose the source, a graveyard card
+            // exiled for its own embalm — matched as it was there: "an ability of a land on the
+            // battlefield" (Harsh Mentor), "an ability of a card in your graveyard" (Neerdiv).
+            sourceLastKnown = activationSourceLastKnown(stateBeforeActivation, state, action.sourceId, activatedFrom) {
                 snapshots.lastKnownSourceSnapshot
-                    ?: com.wingedsheep.engine.state.components.stack.captureLastKnown(stateBeforeActivation, action.sourceId)
-            } else null,
+            },
+            sourceZone = activatedFrom,
         )
         var currentState = stackResult.newState
         events.addAll(stackResult.events)

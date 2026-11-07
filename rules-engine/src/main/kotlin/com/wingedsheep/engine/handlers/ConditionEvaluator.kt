@@ -1651,7 +1651,7 @@ class ConditionEvaluator(
         for (record in records) {
             for (snapshot in record.declaredAs) {
                 if (snapshot.entityId in matched) continue
-                if (predicates.matchesSnapshot(state, snapshot, condition.filter, predicateContext, onBattlefield = true)) {
+                if (predicates.matchesSnapshot(state, snapshot, condition.filter, predicateContext, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)) {
                     matched += snapshot.entityId
                     if (matched.size >= cap) return matched.size
                 }

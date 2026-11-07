@@ -577,6 +577,127 @@
     ]
 }
 
+// Neerdiv, Devious Diver
+{
+    "name": "Neerdiv, Devious Diver",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Merfolk Rogue",
+    "oracleText": "Whenever Neerdiv becomes tapped, target player mills cards equal to its power.\nWhenever you cast a spell from your graveyard or activate an ability of a card in your graveyard, draw a card and put a +1/+1 counter on Neerdiv.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Neerdiv, Devious Diver:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Neerdiv, Devious Diver:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "requires": [
+                                {
+                                    "type": "SpellCastFromZone",
+                                    "zone": "Graveyard"
+                                },
+                                {
+                                    "type": "SpellMatches",
+                                    "filter": "own:you"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "AbilityActivatedEvent",
+                            "sourceFilter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Graveyard"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "includeManaAbilities": true
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a spell from your graveyard or activate an ability of a card in your graveyard, draw a card and put a +1/+1 counter on Neerdiv."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Yuchi Yuki",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/070e0081-b0fe-4417-b943-d0496e3b8cd7.jpg?1783908859"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Psemilla, Meletian Poet
 {
     "name": "Psemilla, Meletian Poet",
