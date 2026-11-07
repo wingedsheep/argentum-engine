@@ -26,12 +26,14 @@ fun hasDealtDamage(
     predicate: StatePredicate.HasDealtDamage
 ): Boolean {
     val marker = container.get<HasDealtDamageComponent>() ?: return false
-    // combatOnly narrows the damage type: read the combat stamp, absent if this object has only
-    // ever dealt noncombat damage.
+    // recipient narrows the kind of object damaged: its stamp pair is absent if this object never
+    // damaged that kind. combatOnly narrows the damage type: read the combat stamp, absent if this
+    // object has only ever dealt noncombat damage (to that kind).
+    val stamp = marker.stampFor(predicate.recipient) ?: return false
     val lastTurn = if (predicate.combatOnly) {
-        marker.lastDealtCombatDamageTurn ?: return false
+        stamp.lastCombatTurn ?: return false
     } else {
-        marker.lastDealtDamageTurn
+        stamp.lastTurn
     }
     if (!predicate.thisTurnOnly) return true
     return lastTurn == currentTurn

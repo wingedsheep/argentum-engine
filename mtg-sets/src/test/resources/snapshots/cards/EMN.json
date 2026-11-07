@@ -8155,6 +8155,107 @@
     ]
 }
 
+// Thirsting Axe
+{
+    "name": "Thirsting Axe",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +4/+0.\nAt the beginning of your end step, if equipped creature didn't deal combat damage to a creature this turn, sacrifice it.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thirsting Axe:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "EquippedCreature"
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "EquippedCreature",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasDealtDamage",
+                                            "thisTurnOnly": true,
+                                            "combatOnly": true,
+                                            "recipient": "Creature"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, if equipped creature didn't deal combat damage to a creature this turn, sacrifice it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Thirsting Axe:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "Sometimes the weapon wields the bearer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f47e5303-c07a-4be0-a314-bf5739a856e5.jpg?1783937424"
+    },
+    "colorIdentityOverride": []
+}
+
 // Thraben Foulbloods
 {
     "name": "Thraben Foulbloods",

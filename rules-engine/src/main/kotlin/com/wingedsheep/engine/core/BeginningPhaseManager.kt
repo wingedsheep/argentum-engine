@@ -599,10 +599,10 @@ class BeginningPhaseManager(
         // answer (match everything rather than nothing). The lifetime window is just the marker (its
         // combat stamp, for `combatOnly`).
         is StatePredicate.HasDealtDamage -> {
-            val marker = container.get<HasDealtDamageComponent>()
+            val stamp = container.get<HasDealtDamageComponent>()?.stampFor(predicate.recipient)
             when {
-                predicate.thisTurnOnly || marker == null -> false
-                predicate.combatOnly -> marker.lastDealtCombatDamageTurn != null
+                predicate.thisTurnOnly || stamp == null -> false
+                predicate.combatOnly -> stamp.lastCombatTurn != null
                 else -> true
             }
         }
@@ -675,7 +675,6 @@ class BeginningPhaseManager(
         is StatePredicate.EnteredThisTurn,
         StatePredicate.ActivatedThisTurn,
         is StatePredicate.WasDealtDamageThisTurn,
-        StatePredicate.HasDealtCombatDamageToPlayer,
         StatePredicate.DealtCombatDamageToSourceControllerThisTurn,
         StatePredicate.ControllerDealtCombatDamageBySourceThisTurn,
         StatePredicate.WasDealtDamageBySourceThisTurn,

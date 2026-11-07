@@ -16,7 +16,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
-import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageTurnStamp
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -415,16 +416,28 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
         matched shouldContainExactlyInAnyOrder setOf(thisTurn)
     }
 
-    test("HasDealtCombatDamageToPlayer matches only creatures that dealt combat damage to a player") {
+    test("HasDealtDamage(combatOnly, recipient = Player) matches only creatures that dealt combat damage to a player") {
         val connected = EntityId.generate()
+        val fought = EntityId.generate()
         val other = EntityId.generate()
         val state = battlefield(
             listOf(
-                connected to container(playerA, creature(playerA), HasDealtCombatDamageToPlayerComponent),
+                connected to container(
+                    playerA, creature(playerA),
+                    HasDealtDamageComponent(2, lastDealtCombatDamageTurn = 2, toPlayer = DamageTurnStamp(2, lastCombatTurn = 2))
+                ),
+                // Dealt combat damage only to a creature: not "to a player".
+                fought to container(
+                    playerA, creature(playerA),
+                    HasDealtDamageComponent(2, lastDealtCombatDamageTurn = 2, toCreature = DamageTurnStamp(2, lastCombatTurn = 2))
+                ),
                 other to container(playerA, creature(playerA))
             )
         )
-        val matched = resolver.resolveAffectedEntities(state, connected, filterWith(StatePredicate.HasDealtCombatDamageToPlayer))
+        val matched = resolver.resolveAffectedEntities(
+            state, connected,
+            filterWith(StatePredicate.HasDealtDamage(combatOnly = true, recipient = DamageRecipientKind.Player))
+        )
         matched shouldContainExactlyInAnyOrder setOf(connected)
     }
 

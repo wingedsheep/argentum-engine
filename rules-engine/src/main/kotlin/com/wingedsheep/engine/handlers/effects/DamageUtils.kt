@@ -45,6 +45,8 @@ import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
 import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.stamped
+import com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
@@ -433,7 +435,14 @@ object DamageUtils {
         }
 
         newState = newState.updateEntity(targetId) { WasDealtDamageThisTurnComponent.markedOn(it, isCombatDamage) }
-        if (sourceSnapshot == null) newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage)
+        if (sourceSnapshot == null) {
+            val recipientKind = when {
+                lifeComponent != null -> DamageRecipientKind.Player
+                projected.isCreature(targetId) -> DamageRecipientKind.Creature
+                else -> null
+            }
+            newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage, recipientKind)
+        }
         // Record the source on its controller's per-turn set of damage sources. Unlike the stamp
         // above this is not battlefield-only: a resolving burn spell is a source that dealt damage
         // just as much as a creature is (Case of the Burning Masks).
@@ -1105,8 +1114,17 @@ object DamageUtils {
      *
      * [isCombatDamage] has no default: each caller must say whether this was combat damage, because
      * the lifetime marker keeps a separate combat stamp ("hasn't dealt combat damage yet").
+     * [recipient] has no default either: the kind of object the damage landed on — a creature, a
+     * player, or null for a planeswalker or battle that isn't a creature — which the marker records
+     * per kind ("dealt combat damage to a creature this turn").
      */
-    fun trackDamageDealt(state: GameState, sourceId: EntityId?, amount: Int, isCombatDamage: Boolean): GameState {
+    fun trackDamageDealt(
+        state: GameState,
+        sourceId: EntityId?,
+        amount: Int,
+        isCombatDamage: Boolean,
+        recipient: DamageRecipientKind?
+    ): GameState {
         if (sourceId == null || amount <= 0) return state
         // An ability can deal damage using a source that has already left. Do not stamp the
         // new card in its owner's graveyard with the old battlefield object's damage history.
@@ -1120,16 +1138,12 @@ object DamageUtils {
                 it.turnNumber == state.turnNumber && it.sourceObject == sourceObject
             }?.amount ?: 0
             val updated = container.with(DamageDealtThisTurnComponent(state.turnNumber, priorAmount + amount, sourceObject))
-            // Preserve the existing permanent-only lifetime marker's semantics. The combat stamp is
+            // Preserve the existing permanent-only lifetime marker's semantics. The combat stamps are
             // carried forward across a noncombat stamp, so a later ping can't erase "has dealt
             // combat damage".
             if (onBattlefield) {
-                val priorCombatTurn = container.get<HasDealtDamageComponent>()?.lastDealtCombatDamageTurn
                 updated.with(
-                    HasDealtDamageComponent(
-                        lastDealtDamageTurn = state.turnNumber,
-                        lastDealtCombatDamageTurn = if (isCombatDamage) state.turnNumber else priorCombatTurn
-                    )
+                    container.get<HasDealtDamageComponent>().stamped(state.turnNumber, isCombatDamage, recipient)
                 )
             } else {
                 updated

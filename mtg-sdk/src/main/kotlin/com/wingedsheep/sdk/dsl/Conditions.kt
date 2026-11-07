@@ -1428,7 +1428,7 @@ object Conditions {
     val SourceHasDealtCombatDamageToPlayer: ConditionInterface =
         SourceMatches(
             com.wingedsheep.sdk.scripting.GameObjectFilter.Any
-                .copy(statePredicates = listOf(StatePredicate.HasDealtCombatDamageToPlayer))
+                .hasDealtCombatDamage(to = com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind.Player)
         )
 
     /** If this permanent entered the battlefield this turn. */

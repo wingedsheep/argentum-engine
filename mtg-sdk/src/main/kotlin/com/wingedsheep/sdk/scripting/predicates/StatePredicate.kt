@@ -618,28 +618,34 @@ sealed interface StatePredicate {
      * recipient — "Ruric Thar has hexproof as long as they haven't dealt combat damage yet" (Ruric
      * Thar, Magecrusher), via `Conditions.SourceHasDealtCombatDamage`. The same marker records the
      * turn of the most recent *combat* damage beside the turn of the most recent damage of any kind,
-     * so both windows work for both types. The recipient-scoped combat predicates
-     * ([HasDealtCombatDamageToPlayer], [DealtCombatDamageToSourceControllerThisTurn]) stay separate
-     * because they also scope by who was dealt the damage.
+     * so both windows work for both types.
+     *
+     * [recipient] narrows *what kind of object* was dealt the damage: [DamageRecipientKind.Any]
+     * (default) counts every recipient; [DamageRecipientKind.Creature] only creatures — "if equipped
+     * creature didn't deal combat damage to a creature this turn" (Thirsting Axe); and
+     * [DamageRecipientKind.Player] only players. The marker keeps a stamp pair per recipient kind
+     * beside the any-recipient one, so every combination of the three axes reads the same record. The
+     * source-relative combat predicates ([DealtCombatDamageToSourceControllerThisTurn],
+     * [ControllerDealtCombatDamageBySourceThisTurn]) stay separate because they scope by *which*
+     * player, not by kind of recipient.
      */
     @SerialName("HasDealtDamage")
     @Serializable
     data class HasDealtDamage(
         val thisTurnOnly: Boolean = false,
-        val combatOnly: Boolean = false
+        val combatOnly: Boolean = false,
+        val recipient: DamageRecipientKind = DamageRecipientKind.Any
     ) : History {
         override val description: String = buildString {
             append(if (thisTurnOnly) "dealt " else "has dealt ")
             append(if (combatOnly) "combat damage" else "damage")
+            when (recipient) {
+                DamageRecipientKind.Any -> {}
+                DamageRecipientKind.Creature -> append(" to a creature")
+                DamageRecipientKind.Player -> append(" to a player")
+            }
             if (thisTurnOnly) append(" this turn")
         }
-    }
-
-    /** Has dealt combat damage to a player (ever, since entering the battlefield) */
-    @SerialName("HasDealtCombatDamageToPlayer")
-    @Serializable
-    data object HasDealtCombatDamageToPlayer : History {
-        override val description: String = "has dealt combat damage to a player"
     }
 
     /**
@@ -1894,4 +1900,23 @@ enum class ControlMark {
      * it (echo, CR 702.30a).
      */
     YOUR_LAST_UPKEEP
+}
+
+/**
+ * The kind of object a permanent dealt damage to, for [StatePredicate.HasDealtDamage]'s recipient
+ * axis — "dealt combat damage to a **creature** this turn" (Thirsting Axe), "has dealt combat damage
+ * to a **player**". A kind, not a filter: the engine records one turn stamp per kind as the damage
+ * lands, so the question stays answerable after the recipient has died or left. A creature that is
+ * also a planeswalker counts as a creature.
+ */
+@Serializable
+enum class DamageRecipientKind {
+    /** Any recipient — player, creature, planeswalker or battle. */
+    Any,
+
+    /** Only creatures. */
+    Creature,
+
+    /** Only players. */
+    Player
 }

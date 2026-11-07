@@ -7650,14 +7650,24 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   window and whose recorded turn number answers the per-turn one. Nothing is cleared at end of turn —
   the stamp just stops matching — and every damage-dealing path records both windows in one write, so
   neither can silently drift from the other. Combat and noncombat damage both count, to any recipient
-  (player, creature, planeswalker, battle); "dealt **combat** damage" to a *specific* recipient has its
-  own recipient-scoped predicates below. Both windows reset when the permanent changes zones (CR 400.7).
+  (player, creature, planeswalker, battle) unless the `recipient` axis below narrows the kind; damage to a
+  *specific* player has its own source-relative predicates below. Both windows reset when the permanent changes zones (CR 400.7).
 - `.hasDealtCombatDamage()` — the same predicate narrowed to **combat** damage, to any recipient:
   `StatePredicate.HasDealtDamage(combatOnly = true)`. The marker keeps a separate combat stamp beside
   the any-damage one, carried forward across later noncombat damage, so a fight or a ping does not
   count and cannot erase earlier combat damage. `combatOnly` combines with `thisTurnOnly` for "dealt
   combat damage this turn". The source-scoped view is `Conditions.SourceHasDealtCombatDamage` —
   negated for Ruric Thar, Magecrusher's "has hexproof as long as they haven't dealt combat damage yet".
+- `.hasDealtDamageThisTurn(combatOnly, to)` / `.hasDealtCombatDamage(to)` — the same predicate narrowed by
+  the **kind of recipient**: `StatePredicate.HasDealtDamage(recipient = DamageRecipientKind.Creature |
+  Player | Any)`. "If equipped creature didn't deal combat damage to a creature this turn, sacrifice it"
+  (Thirsting Axe) is `Conditions.Not(Conditions.EntityMatches(EffectTarget.EquippedCreature,
+  GameObjectFilter.Creature.hasDealtDamageThisTurn(combatOnly = true, to = DamageRecipientKind.Creature)))`.
+  The marker keeps a stamp pair (any damage / combat damage) per recipient kind, written from the object
+  the damage actually landed on, so it still answers after the damaged creature died. A creature
+  planeswalker counts as a creature; a non-creature planeswalker or battle stamps only the
+  any-recipient pair. All three axes combine freely; "has dealt combat damage to a player" is
+  `.hasDealtCombatDamage(to = DamageRecipientKind.Player)` (`Conditions.SourceHasDealtCombatDamageToPlayer`).
   `.hasDealtDamageThisTurn()` is also on `TargetFilter` — "destroy target creature an opponent controls
   that dealt damage this turn" (Red Guardian, Super-Soldier) is
   `TargetFilter.Creature.hasDealtDamageThisTurn().opponentControls()`. The source-scoped view of the
@@ -16919,7 +16929,8 @@ that works in both resolution and static-ability (projection) contexts.
 - `SourceHasDealtCombatDamage` — source has dealt combat damage (to any recipient) since entering the
   battlefield; `SourceMatches(GameObjectFilter.Any.hasDealtCombatDamage())`. Noncombat damage doesn't
   count. `Conditions.Not(SourceHasDealtCombatDamage)` gates Ruric Thar, Magecrusher's hexproof.
-- `SourceHasDealtCombatDamageToPlayer` — saboteur-style payoff gate.
+- `SourceHasDealtCombatDamageToPlayer` — saboteur-style payoff gate; `SourceMatches(GameObjectFilter.Any
+  .hasDealtCombatDamage(to = DamageRecipientKind.Player))`.
 - `SourceIsModified` — has counters, attached Equipment, or controller-owned Aura
   attached (CR 700.9). Kept as a dedicated condition because the controller-of-Aura
   match isn't expressible via the generic `EntityMatches` filter machinery. Once the source has

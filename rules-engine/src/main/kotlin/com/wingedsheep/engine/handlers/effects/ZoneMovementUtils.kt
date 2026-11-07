@@ -27,7 +27,6 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
-import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
@@ -587,7 +586,6 @@ object ZoneMovementUtils {
             .without<HasBecomeTappedComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.EntryTapStateComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.UntapCountComponent>()
-            .without<HasDealtCombatDamageToPlayerComponent>()
             .without<CountersComponent>()
             // A battle's protector is a designation on the battlefield object (CR 310.9); the
             // object that leaves takes it with it, and one that comes back is a new object
