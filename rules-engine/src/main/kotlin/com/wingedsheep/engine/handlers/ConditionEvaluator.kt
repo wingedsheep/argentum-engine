@@ -601,14 +601,15 @@ class ConditionEvaluator(
             is SourceIsModified -> evaluateSourceIsModifiedCtx(state, ctx)
 
             // The source's per-recipient damage memory, stamped with the turn of its latest damage
-            // to each player; stripped on a zone change, so a returned permanent has no history.
+            // (of each kind) to each player; stripped on a zone change, so a returned permanent has
+            // no history.
             is com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn -> {
                 val playerId = resolvePlayer(state, condition.player, ctx)
                 val sourceId = ctx.sourceId
                 playerId != null && sourceId != null &&
                     state.getEntity(sourceId)
                         ?.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
-                        ?.dealtDamageToOnTurn(playerId, state.turnNumber) == true
+                        ?.dealtDamageToOnTurn(playerId, state.turnNumber, condition.damageType) == true
             }
 
             // The source's per-turn attack record. On the battlefield it must describe the current

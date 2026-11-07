@@ -5804,6 +5804,63 @@
     ]
 }
 
+// Hope of Ghirapur
+{
+    "name": "Hope of Ghirapur",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact Creature — Thopter",
+    "oracleText": "Flying\nSacrifice Hope of Ghirapur: Until your next turn, target player who was dealt combat damage by Hope of Ghirapur this turn can't cast noncreature spells.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hope of Ghirapur:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "CantCastSpells",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0",
+                        "restriction": {
+                            "type": "SourceDealtDamageToPlayerThisTurn",
+                            "player": "Candidate",
+                            "damageType": "DamageCombat"
+                        },
+                        "descriptionOverride": "target player who was dealt combat damage by Hope of Ghirapur this turn"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice Hope of Ghirapur: Until your next turn, target player who was dealt combat damage by Hope of Ghirapur this turn can't cast noncreature spells."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "The renegades mounted an aether disruptor aboard a lightweight thopter to destroy Tezzeret's Planar Bridge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f4bcadd-7eff-4294-94d5-52482a734d5b.jpg?1783936726"
+    },
+    "colorIdentityOverride": []
+}
+
 // Hungry Flames
 {
     "name": "Hungry Flames",

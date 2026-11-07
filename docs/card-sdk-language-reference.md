@@ -6933,10 +6933,13 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
   Conditions.Not(Conditions.candidateIs(Player.TriggeringPlayer)), descriptionOverride = "another
   target player")`. With no trigger bound (spells, activated abilities) `TriggeringPlayer` names no
   one, so every player stays legal.
-- `Conditions.candidateWasDealtDamageBySourceThisTurn()` — this ability's **source** dealt damage (combat
-  or noncombat) to the targeted player this turn; backed by `SourceDealtDamageToPlayerThisTurn(player)`,
-  which reads the source's per-recipient damage memory. "Target player dealt damage by this creature this
-  turn" (Wicked Akuba). The memory survives the source leaving the battlefield (last-known information,
+- `Conditions.candidateWasDealtDamageBySourceThisTurn(damageType = DamageType.Any)` — this ability's
+  **source** dealt damage to the targeted player this turn; backed by
+  `SourceDealtDamageToPlayerThisTurn(player, damageType)`, which reads the source's per-recipient damage
+  memory. `DamageType.Any` (the default) counts combat and noncombat alike — "target player dealt damage
+  by this creature this turn" (Wicked Akuba); `DamageType.Combat` / `DamageType.NonCombat` count one kind,
+  each with its own turn stamp — "target player who was dealt combat damage by Hope of Ghirapur this
+  turn" (Hope of Ghirapur, whose sacrifice cost moves it to the graveyard before the target re-check). The memory survives the source leaving the battlefield (last-known information,
   CR 113.7a), so the ability still resolves if its source dies in response; it is dropped on the card's
   next zone change, so a returned permanent has dealt damage to nobody (CR 400.7).
 
