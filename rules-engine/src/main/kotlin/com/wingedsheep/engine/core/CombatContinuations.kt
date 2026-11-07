@@ -174,6 +174,11 @@ data class PreventDamageFromChosenSourceContinuation(
      * damage, rounded down — Dark Sphere. Ignored otherwise.
      */
     val halvePreventedDamage: Boolean = false,
+    /**
+     * With [silenceChosenSource], only the chosen source's **combat** damage is prevented —
+     * "prevent all combat damage a creature of your choice would deal this turn" (Ajani's Aid).
+     */
+    val combatOnly: Boolean = false,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

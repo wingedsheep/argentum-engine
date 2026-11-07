@@ -554,9 +554,13 @@ sealed interface SerializableModification {
      * Damage prevention: prevent all damage that affected creature(s) would deal this turn.
      * Used by Chain of Silence and similar effects.
      * The affected entities are the creatures whose damage is prevented.
+     *
+     * @property combatOnly only combat damage the affected sources would deal is prevented —
+     *   "prevent all **combat** damage that would be dealt by target creature" (Restrain, Subdue)
+     *   or "… a creature of your choice would deal" (Ajani's Aid); their noncombat damage is dealt.
      */
     @Serializable
-    data object PreventAllDamageDealtBy : SerializableModification
+    data class PreventAllDamageDealtBy(val combatOnly: Boolean = false) : SerializableModification
 
     /**
      * Damage redirection shield: while active, damage that would be dealt to any of the affected

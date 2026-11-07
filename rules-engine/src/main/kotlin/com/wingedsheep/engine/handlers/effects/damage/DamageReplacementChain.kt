@@ -595,7 +595,7 @@ object DamageReplacementChain {
                 is SerializableModification.PreventCombatDamageFromGroup -> if (d.isCombatDamage && sourceMatches(floating, mod.filter)) preventAll()
                 SerializableModification.PreventAllCombatDamage -> if (d.isCombatDamage) preventAll()
                 SerializableModification.PreventCombatDamageToAndBy -> if (d.isCombatDamage && (targetMatches || d.sourceId in floating.effect.affectedEntities)) preventAll()
-                SerializableModification.PreventAllDamageDealtBy -> if (d.sourceId in floating.effect.affectedEntities) preventAll()
+                is SerializableModification.PreventAllDamageDealtBy -> if ((!mod.combatOnly || d.isCombatDamage) && d.sourceId in floating.effect.affectedEntities) preventAll()
                 is SerializableModification.PreventNextDamageInstanceFromSource -> if (!disabled && targetMatches && d.sourceId == mod.damageSourceId) {
                     val prevented = when { mod.halveRoundedDown -> d.amount / 2; mod.maxAmount != null -> minOf(d.amount, mod.maxAmount!!); else -> d.amount }
                     out += Candidate(key, "$hostName — prevent $prevented damage", floating.sourceId) {
