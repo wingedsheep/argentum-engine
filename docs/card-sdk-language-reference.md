@@ -15254,7 +15254,7 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
 - `AlternativeCrewCost(counterType, filter)` — "You may remove a [counterType] counter from a
   [filter] you control rather than pay this Vehicle's crew cost" (Heart of Kiran:
   `AlternativeCrewCost(CounterType.LOYALTY, GameObjectFilter.Planeswalker)`, beside its
-  `KeywordAbility.crew(3)`). An alternative cost for the Vehicle's own crew abilities (CR 118.9): the
+  `KeywordAbility.crew(3)`). An alternative cost for the Vehicle's own crew abilities (CR 118.9, applied to activated abilities by CR 602.2b): the
   crew ability is still the one activated, so it uses the stack, makes the Vehicle become crewed,
   honours "activate only once each turn" and activation prohibitions, and still charges any mana a
   cost-modifying static adds — but the counter is paid instead of tapping creatures, so no creature

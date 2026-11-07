@@ -3,14 +3,17 @@ package com.wingedsheep.engine.handlers.actions.ability
 import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import io.kotest.assertions.withClue
@@ -24,7 +27,7 @@ import io.kotest.matchers.shouldNotBe
  * than pay this Vehicle's crew cost" (Heart of Kiran). The crew ability is still activated (CR
  * 702.122a), but the counter is paid in place of tapping creatures: one crew action per permanent
  * that can pay it, none for an opponent's permanent, none once the Vehicle has lost its abilities,
- * and no creature is recorded as having crewed it.
+ * an activation tax still charged on top, and no creature recorded as having crewed it.
  */
 class AlternativeCrewCostTest : ScenarioTestBase() {
 
@@ -34,6 +37,19 @@ class AlternativeCrewCostTest : ScenarioTestBase() {
         oracleText = "Vehicles lose all abilities."
         staticAbility {
             ability = LoseAllAbilities(GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.VEHICLE)))
+        }
+    }
+
+    private val crewTaxField = card("Test Activation Tax Field") {
+        manaCost = "{1}{W}"
+        typeLine = "Enchantment"
+        oracleText = "Activated abilities cost {2} more to activate unless they're mana abilities."
+        staticAbility {
+            ability = IncreaseActivatedAbilityCost(
+                filter = GroupFilter(GameObjectFilter.Any),
+                amount = DynamicAmounts.fixed(2),
+                excludeManaAbilities = true,
+            )
         }
     }
 
@@ -51,6 +67,7 @@ class AlternativeCrewCostTest : ScenarioTestBase() {
 
     init {
         cardRegistry.register(vehicleSuppressor)
+        cardRegistry.register(crewTaxField)
 
         test("each planeswalker you control is its own crew action; an opponent's is not") {
             val game = scenario()
@@ -112,6 +129,50 @@ class AlternativeCrewCostTest : ScenarioTestBase() {
             crew shouldNotBe null
             crew!!.creatureIds.shouldBeEmpty()
             crew.crewActivations shouldBe 1
+        }
+
+        test("an activation tax is still charged on top of the alternative cost") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Heart of Kiran")
+                .withCardOnBattlefield(1, "Tezzeret the Schemer")
+                .withCardOnBattlefield(2, "Test Activation Tax Field")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val heart = game.findPermanent("Heart of Kiran")!!
+            val tezzeret = game.findPermanent("Tezzeret the Schemer")!!
+
+            val offered = game.getLegalActions(1).single { (it.action as? CrewVehicle)?.alternativeCostFrom == tezzeret }
+            withClue("no lands, so the {2} tax makes the alternative crew unaffordable") {
+                offered.manaCostString shouldBe "{2}"
+                offered.isAffordable shouldBe false
+            }
+            game.execute(CrewVehicle(game.player1Id, heart, emptyList(), alternativeCostFrom = tezzeret)).error shouldBe
+                "Not enough mana to pay the crew cost ({2})"
+            game.loyalty(tezzeret) shouldBe 5
+        }
+
+        test("with mana for the tax, both the counter and the mana are paid") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Heart of Kiran")
+                .withCardOnBattlefield(1, "Tezzeret the Schemer")
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardOnBattlefield(2, "Test Activation Tax Field")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val heart = game.findPermanent("Heart of Kiran")!!
+            val tezzeret = game.findPermanent("Tezzeret the Schemer")!!
+
+            game.getLegalActions(1).single { (it.action as? CrewVehicle)?.alternativeCostFrom == tezzeret }
+                .isAffordable shouldBe true
+            game.execute(CrewVehicle(game.player1Id, heart, emptyList(), alternativeCostFrom = tezzeret)).error shouldBe null
+            game.loyalty(tezzeret) shouldBe 4
+            game.findAllPermanents("Plains").all { game.state.getEntity(it)?.has<TappedComponent>() == true } shouldBe true
+            game.resolveStack()
+            game.state.projectedState.isCreature(heart) shouldBe true
         }
 
         test("a Vehicle that has lost all abilities has no alternative crew cost") {

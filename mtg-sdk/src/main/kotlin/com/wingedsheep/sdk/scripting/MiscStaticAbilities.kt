@@ -76,13 +76,14 @@ enum class CrewSaddleCost {
 }
 
 /**
- * "You may [cost] rather than pay this Vehicle's crew cost" (Heart of Kiran: "You may remove a
- * loyalty counter from a planeswalker you control rather than pay this Vehicle's crew cost").
+ * You may remove a [counterType] counter from a [filter] you control rather than pay this Vehicle's
+ * crew cost (Heart of Kiran: a loyalty counter from a planeswalker).
  *
- * An alternative cost for the Vehicle's own crew abilities (CR 118.9, CR 702.122a): the crew ability
- * is still the one activated — it goes on the stack, the Vehicle becomes crewed when it resolves, and
- * "activate only once each turn" and activation prohibitions still apply — but [cost] is paid in
- * place of tapping creatures, so no creature crews it. Removing the counter is not activating a
+ * An alternative cost for the Vehicle's own crew abilities (CR 118.9, applied to activated abilities
+ * by CR 602.2b; crew is CR 702.122a): the crew ability is still the one activated — it goes on the
+ * stack, the Vehicle becomes crewed when it resolves, and "activate only once each turn" and
+ * activation prohibitions still apply — but the counter is removed in place of tapping creatures,
+ * so no creature crews it. Removing the counter is not activating a
  * loyalty ability, so a planeswalker that already activated one this turn can still pay it.
  * Mana added to the activation by a cost-modifying static is still charged.
  *
