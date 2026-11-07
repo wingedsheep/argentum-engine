@@ -1514,53 +1514,8 @@ object CardIntentAnalyzer {
      */
     private fun destroyAll(root: Effect, eachPlayer: Player?): DestroyAllReading {
         val leaves = readingLeaves(root)
-        // Collection name -> whether it is still a whole group rather than a picked few.
-        val groups = HashMap<String, Boolean>()
-        // Collections whose gather can include our own creatures.
-        val ours = HashSet<String>()
-        for (leaf in leaves) {
-            if (leaf !is GatherCardsEffect) continue
-            val (player, filter) = when (val source = leaf.source) {
-                is CardSource.BattlefieldMatching -> source.player to source.filter
-                is CardSource.ControlledPermanents -> source.player to source.filter
-                else -> continue
-            }
-            val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
-            if (ownOnly && eachPlayer == null) continue
-            // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
-            // Tetravites back: the source's own creations, wherever they now sit, are its upkeep or
-            // its drawback — never an answer to anyone's board.
-            if (StatePredicate.CreatedBySource in filter.statePredicates) continue
-            if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
-            groups[leaf.storeAs] = true
-            // "Exile all attacking creatures target player controls" (Settle the Wreckage) answers
-            // the player you point it at — one-sided, like a target-opponent gather.
-            val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
-                filter.controllerPredicate == ControllerPredicate.ControlledByTargetPlayer ||
-                filter.controllerPredicate is ControllerPredicate.ControlledByReferencedPlayer ||
-                (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
-                player in OPPONENT_PLAYERS
-            if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
-        }
+        val (groups, ours) = boardGroups(leaves, eachPlayer)
         if (groups.isEmpty()) return DestroyAllReading.NONE
-        do {
-            val before = groups.toMap()
-            for (leaf in leaves) {
-                // The *picked* side of a choice is a few, not the group: a selection's chosen cards,
-                // or the one-per-category picks of a per-category edict (Perilous Predicament
-                // sacrificing an artifact creature and a nonartifact creature is spot removal).
-                val picked = when (leaf) {
-                    is SelectFromCollectionEffect -> leaf.storeSelected.takeIf { leaf.from in groups }
-                    is ChooseOnePerCategoryEffect -> leaf.storeAs.takeIf { leaf.from in groups }
-                    else -> null
-                }
-                for (name in derivedCollections(leaf, groups.keys)) {
-                    val parentIsGroup = sourcesOf(leaf).any { groups[it] == true }
-                    groups[name] = (groups[name] ?: false) || (parentIsGroup && name != picked)
-                    if (sourcesOf(leaf).any { it in ours }) ours += name
-                }
-            }
-        } while (groups != before)
         var reading = DestroyAllReading.NONE
         for (leaf in leaves) {
             // "Exile all artifacts your opponents control until this leaves the battlefield"
@@ -1600,6 +1555,75 @@ object CardIntentAnalyzer {
             }
         }
         return reading
+    }
+
+    /**
+     * The battlefield groups [destroyAll] reads a wipe off: collection name -> whether it is still a
+     * whole group rather than a picked few, and the collections that can hold our own creatures.
+     *
+     * A loop over players that hands its per-player collections out ([ForEachEffect.collectCollections])
+     * hands its groups out too: "each player chooses an artifact, a creature, an enchantment and a
+     * planeswalker they control, then sacrifices the rest" (Cataclysmic Gearhulk, Mythos of
+     * Snapdax, Single Combat) gathers each player's permanents inside the loop, read in the loop's
+     * frame, and sacrifices the unchosen rest of all of them at once after it.
+     */
+    private fun boardGroups(leaves: List<Effect>, eachPlayer: Player?): Pair<HashMap<String, Boolean>, HashSet<String>> {
+        val groups = HashMap<String, Boolean>()
+        val ours = HashSet<String>()
+        for (leaf in leaves) {
+            val loop = leaf as? ForEachEffect
+            val players = (loop?.space as? IterationSpace.Players)?.players
+            if (loop != null && players != null && loop.collectCollections.isNotEmpty()) {
+                val (inner, innerOurs) = boardGroups(readingLeaves(loop.body), players)
+                for ((each, all) in loop.collectCollections) {
+                    val whole = inner[each] ?: continue
+                    groups[all] = (groups[all] ?: false) || whole
+                    if (each in innerOurs) ours += all
+                }
+                continue
+            }
+            if (leaf !is GatherCardsEffect) continue
+            val (player, filter) = when (val source = leaf.source) {
+                is CardSource.BattlefieldMatching -> source.player to source.filter
+                is CardSource.ControlledPermanents -> source.player to source.filter
+                else -> continue
+            }
+            val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
+            if (ownOnly && eachPlayer == null) continue
+            // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
+            // Tetravites back: the source's own creations, wherever they now sit, are its upkeep or
+            // its drawback — never an answer to anyone's board.
+            if (StatePredicate.CreatedBySource in filter.statePredicates) continue
+            if (filter.controllerPredicate == ControllerPredicate.ControlledByYou && eachPlayer != null) continue
+            groups[leaf.storeAs] = true
+            // "Exile all attacking creatures target player controls" (Settle the Wreckage) answers
+            // the player you point it at — one-sided, like a target-opponent gather.
+            val opponentsOnly = opponentsOnly(filter.controllerPredicate) ||
+                filter.controllerPredicate == ControllerPredicate.ControlledByTargetPlayer ||
+                filter.controllerPredicate is ControllerPredicate.ControlledByReferencedPlayer ||
+                (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
+                player in OPPONENT_PLAYERS
+            if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
+        }
+        do {
+            val before = groups.toMap()
+            for (leaf in leaves) {
+                // The *picked* side of a choice is a few, not the group: a selection's chosen cards,
+                // or the one-per-category picks of a per-category edict (Perilous Predicament
+                // sacrificing an artifact creature and a nonartifact creature is spot removal).
+                val picked = when (leaf) {
+                    is SelectFromCollectionEffect -> leaf.storeSelected.takeIf { leaf.from in groups }
+                    is ChooseOnePerCategoryEffect -> leaf.storeAs.takeIf { leaf.from in groups }
+                    else -> null
+                }
+                for (name in derivedCollections(leaf, groups.keys)) {
+                    val parentIsGroup = sourcesOf(leaf).any { groups[it] == true }
+                    groups[name] = (groups[name] ?: false) || (parentIsGroup && name != picked)
+                    if (sourcesOf(leaf).any { it in ours }) ours += name
+                }
+            }
+        } while (groups != before)
+        return groups to ours
     }
 
     private data class DestroyAllReading(val tags: Set<IntentTag>, val hitsOwnSide: Boolean) {
@@ -1884,6 +1908,10 @@ object CardIntentAnalyzer {
         is ForceSacrificeEffect -> setOf(IntentTag.REMOVAL)
         is SacrificeTargetEffect -> setOf(IntentTag.REMOVAL)
         is GainControlEffect -> setOf(IntentTag.REMOVAL)
+        // "Exchange control of target artifact you control and target artifact or creature you don't
+        // control" (Shrewd Negotiation, Switcheroo, Chromeshell Crab): their permanent is taken as
+        // [GainControlEffect] takes it; ours, handed back, is the price — a steal, priced as removal.
+        is ExchangeControlEffect -> setOf(IntentTag.REMOVAL)
         is FightEffect -> setOf(IntentTag.REMOVAL, IntentTag.FIGHT)
 
         // Damage to a *player* is a clock, not an answer — a permanent that pings the opponent for
@@ -2026,7 +2054,9 @@ object CardIntentAnalyzer {
         // the fight, so ending our own main phase for nothing is no play ([HoldPolicy]). Beside
         // another payoff it is a rider and never reaches here ([readingLeaves]).
         EndTheTurnEffect -> setOf(IntentTag.COUNTERSPELL)
-        is ChangeTargetEffect -> setOf(IntentTag.SPELL_REDIRECT)
+        // "You may choose new targets for target spell" (Insidious Will, Sideswipe) is the all-targets
+        // form of the same redirect.
+        is ChangeTargetEffect, is ChangeTriggeringObjectTargetsEffect -> setOf(IntentTag.SPELL_REDIRECT)
         // "Copy target spell", "copy target activated or triggered ability", "when you next cast an
         // instant or sorcery spell this turn, copy it": see [IntentTag.SPELL_COPY].
         is CopyTargetSpellEffect, is CopyTargetSpellOrAbilityEffect, is CopyTargetTriggeredAbilityEffect,

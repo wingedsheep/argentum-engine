@@ -2279,6 +2279,229 @@
     ]
 }
 
+// Cataclysmic Gearhulk
+{
+    "name": "Cataclysmic Gearhulk",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Vigilance\nWhen this creature enters, each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cataclysmic Gearhulk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "ControlledPermanents",
+                                            "filter": "nonland permanent"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered1",
+                                        "filter": "artifact",
+                                        "storeMatching": "matching2"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "matching2",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected3",
+                                        "prompt": "Choose an artifact to keep. Unchosen nonland permanents are sacrificed.",
+                                        "selectedLabel": "Keep",
+                                        "remainderLabel": "Sacrifice",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered1",
+                                        "filter": "creature",
+                                        "storeMatching": "matching4"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "matching4",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected5",
+                                        "prompt": "Choose a creature to keep. Unchosen nonland permanents are sacrificed.",
+                                        "selectedLabel": "Keep",
+                                        "remainderLabel": "Sacrifice",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered1",
+                                        "filter": "enchantment",
+                                        "storeMatching": "matching6"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "matching6",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected7",
+                                        "prompt": "Choose an enchantment to keep. Unchosen nonland permanents are sacrificed.",
+                                        "selectedLabel": "Keep",
+                                        "remainderLabel": "Sacrifice",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered1",
+                                        "filter": "planeswalker",
+                                        "storeMatching": "matching8"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "matching8",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected9",
+                                        "prompt": "Choose a planeswalker to keep. Unchosen nonland permanents are sacrificed.",
+                                        "selectedLabel": "Keep",
+                                        "remainderLabel": "Sacrifice",
+                                        "useTargetingUI": true
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "gathered1": "collected10",
+                                "selected3": "collected11",
+                                "selected5": "collected12",
+                                "selected7": "collected13",
+                                "selected9": "collected14"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "collected10",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "collected11"
+                            },
+                            "storeMatching": "matching15"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "matching15",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "collected12"
+                            },
+                            "storeMatching": "matching16"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "matching16",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "collected13"
+                            },
+                            "storeMatching": "matching17"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "matching17",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "collected14"
+                            },
+                            "storeMatching": "matching18"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching18",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b10947b-c276-41c4-b72c-efcddd94d13b.jpg?1783937235",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "First the player whose turn it is chooses permanents they control, then each other player in turn order does the same. Each player will know the choices made by players who chose before them. All of the unchosen nonland permanents are then sacrificed simultaneously."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "A permanent with more than one type may be chosen as either of the types or both. For example, an artifact creature may be chosen as the artifact, the creature, or both. Choosing the same permanent twice this way has the same result as choosing it once."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Cataclysmic Gearhulk will be sacrificed to its own ability if you don't choose it as your artifact or your creature."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Lands can't be chosen and won't be sacrificed, even if they have other types (such as an artifact land)."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you don't control any permanents of one of the types, you'll still choose the permanents of the types you do control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cathartic Reunion
 {
     "name": "Cathartic Reunion",
@@ -3092,6 +3315,85 @@
     ]
 }
 
+// Confiscation Coup
+{
+    "name": "Confiscation Coup",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target artifact or creature. You get {E}{E}{E}{E} (four energy counters), then you may pay an amount of {E} equal to that permanent's mana value. If you do, gain control of it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 4,
+                    "target": "Controller"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "ManaValue"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "flavorText": "\"Citizens, do not resist. This is for your safety. Tezzeret bids you to surrender your inventions. Now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6daf453f-54be-4346-831d-a0434aa086fe.jpg?1783937222",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the target artifact or creature has a mana value of 0, you may choose to pay zero energy and gain control of it."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You choose the target artifact or creature as you cast Confiscation Coup. You don't choose whether or not to pay an amount of {E} until Confiscation Coup resolves. If the target becomes an illegal target, Confiscation Coup won't resolve and you won't get {E}{E}{E}{E}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Consul's Shieldguard
 {
     "name": "Consul's Shieldguard",
@@ -3601,6 +3903,143 @@
         "artist": "James Paick",
         "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9af13a0-a9c1-454c-992d-ce79ff161187.jpg?1783937159"
     }
+}
+
+// Demon of Dark Schemes
+{
+    "name": "Demon of Dark Schemes",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhen this creature enters, all other creatures get -2/-2 until end of turn.\nWhenever another creature dies, you get {E} (an energy counter).\n{2}{B}, Pay {E}{E}{E}{E}: Put target creature card from a graveyard onto the battlefield tapped under your control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Demon of Dark Schemes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Demon of Dark Schemes:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Demon of Dark Schemes:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{B}, Pay {E}{E}{E}{E}: Put target creature card from a graveyard onto the battlefield tapped under your control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99c99736-5c9c-4d2f-946d-05606fcdd039.jpg?1783937212",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Demon of Dark Schemes's second triggered ability triggers whenever another creature dies for any reason, not just due to the first triggered ability."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If Demon of Dark Schemes dies at the same time as another creature, its second triggered ability triggers."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The set of creatures affected by Demon of Dark Schemes's first triggered ability is determined as the ability resolves. Creatures that enter the battlefield later in the turn and noncreature permanents that become creatures later in the turn won't get -2/-2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Dhund Operative
@@ -6351,6 +6790,133 @@
     ]
 }
 
+// Gonti, Lord of Luxury
+{
+    "name": "Gonti, Lord of Luxury",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Aetherborn Rogue",
+    "oracleText": "Deathtouch\nWhen Gonti enters, look at the top four cards of target opponent's library, exile one of them face down, then put the rest on the bottom of that library in a random order. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gonti, Lord of Luxury:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Exile one of those cards face down.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1",
+                            "expiry": "Permanent",
+                            "withAnyManaType": true,
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Gonti enters, look at the top four cards of target opponent's library, exile one of them face down, then put the rest on the bottom of that library in a random order. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/7735ecda-9bb0-4ef9-86b2-16e5b6592e61.jpg?1783937205",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "An effect that instructs you to \"cast\" a card doesn't allow you to play lands."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You may look at and cast that card (and spend mana as though it were mana of any type to do so) even if Gonti leaves the battlefield. If another player gains control of Gonti, that player can't look at or cast the card, and you still can."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Casting the card causes it to leave exile. You can't cast it multiple times."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Gonti doesn't change when you can cast the exiled card. For example, if you exile a creature card without flash, you can cast it only during your main phase when the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Guardian of the Great Conduit
 {
     "name": "Guardian of the Great Conduit",
@@ -6565,6 +7131,68 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Hazardous Conditions
+{
+    "name": "Hazardous Conditions",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures with no counters on them get -2/-2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "HasAnyCounter"
+                            }
+                        ]
+                    }
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "\"There are many reasons we invent, of which survival is not the least.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daa9b08b-c56f-480e-874e-069e72d979c8.jpg?1783937168",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Hazardous Conditions doesn't care what kind of counter a creature has on it. Whether +1/+1, -1/-1, charge, or fate, any kind of counter causes a creature to be unaffected."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The set of creatures affected by Hazardous Conditions is determined as the spell resolves. Creatures that get a counter later in the turn will continue to get -2/-2. Creatures that enter the battlefield or lose their counters later in the turn and noncreature permanents that become creatures later in the turn won't get -2/-2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -6874,6 +7502,123 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Insidious Will
+{
+    "name": "Insidious Will",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target spell.\n• You may choose new targets for target spell.\n• Copy target instant or sorcery spell. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target spell"
+                },
+                {
+                    "effect": {
+                        "type": "ChangeTriggeringObjectTargets",
+                        "spell": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "You may choose new targets for target spell"
+                },
+                {
+                    "effect": {
+                        "type": "CopyTargetSpell",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "instant|sorcery",
+                                "zone": "Stack"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Copy target instant or sorcery spell. You may choose new targets for the copy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"We meet again, pyromancer.\"\n—Baral, Chief of Compliance",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8eafb2bb-58bf-4c6b-ae8f-91bcea12c7d2.jpg?1783937218",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If you choose new targets for the target spell or for the copy, the new targets must be legal."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you copy a spell, you control the copy."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The third mode can copy any instant or sorcery spell, not just one with targets."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. A different mode cannot be chosen."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast (like Eliminate the Competition does), the copy will have the same value of X."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the spell has damage divided as it was cast (like Chandra's Pyrohelix), the division can't be changed (although the targets receiving that damage still can)."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The controller of a copy can't choose to pay any alternative or additional costs for the copy. However, effects based on any alternative or additional costs that were paid for the original spell are copied as though those same costs were paid for the copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8608,6 +9353,142 @@
     ]
 }
 
+// Metallurgic Summonings
+{
+    "name": "Metallurgic Summonings",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast an instant or sorcery spell, create an X/X colorless Construct artifact creature token, where X is that spell's mana value.\n{3}{U}{U}, Exile this enchantment: Return all instant and sorcery cards from your graveyard to your hand. Activate only if you control six or more artifacts.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Metallurgic Summonings:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/2/623a08d1-f5ff-48b7-bdb6-54b8d7a4b931.jpg?1783937240",
+                    "dynamicPower": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "dynamicToughness": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, create an X/X colorless Construct artifact creature token, where X is that spell's mana value."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Metallurgic Summonings:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Return all instant and sorcery cards from your graveyard to your hand. Activate only if you control six or more artifacts."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0ac06f9-5c9f-4d4f-be57-7c58bd8da568.jpg?1783937216",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "For a spell with {X} in its mana cost, use the value chosen for X to determine its mana value. For example, Clash of Wills is an instant spell with mana cost {X}{U}. If you chose 2 as the value of X, then Clash of Wills has mana value 3, and Metallurgic Summonings's ability will create a 3/3 token."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Metallurgic Summonings's first ability resolves before the spell that caused it to trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If Metallurgic Summonings's first ability resolves and the spell that caused it to trigger has been countered, use that spell's mana value as it last existed on the stack to determine the value of X."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The number of artifacts you control is checked only as you activate Metallurgic Summonings's last ability. It's not checked again as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Metalspinner's Puzzleknot
 {
     "name": "Metalspinner's Puzzleknot",
@@ -9687,6 +10568,83 @@
     }
 }
 
+// Paradoxical Outcome
+{
+    "name": "Paradoxical Outcome",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return any number of target nonland, nontoken permanents you control to their owners' hands. Draw a card for each card returned to your hand this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "moved1",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Hand"
+                            }
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "storeMatching": "matching2"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching2_count"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "nonland permanent nontoken ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "flavorText": "The results of Rashmi's experimentation forced her to consider the possibility that multitudinous realities existed beyond her own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17e50157-bf49-4c5f-9b8a-bf73484e63a5.jpg?1783937215",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If you control but don't own some of the target permanents, they won't count when determining how many cards you draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Peema Outrider
 {
     "name": "Peema Outrider",
@@ -10729,6 +11687,270 @@
     ]
 }
 
+// Saheeli Rai
+{
+    "name": "Saheeli Rai",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Saheeli",
+    "oracleText": "+1: Scry 1. Saheeli Rai deals 1 damage to each opponent.\n−2: Create a token that's a copy of target artifact or creature you control, except it's an artifact in addition to its other types. That token gains haste. Exile it at the beginning of the next end step.\n−7: Search your library for up to three artifact cards with different names, put them onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Saheeli Rai:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Scry 1. Saheeli Rai deals 1 damage to each opponent."
+            },
+            {
+                "id": "Saheeli Rai:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "addCardTypes": [
+                                "ARTIFACT"
+                            ],
+                            "exileAtStep": "END"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity",
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a token that's a copy of target artifact or creature you control, except it's an artifact in addition to its other types. That token gains haste. Exile it at the beginning of the next end step."
+            },
+            {
+                "id": "Saheeli Rai:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "artifact"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search for up to three artifact cards with different names to put onto the battlefield",
+                            "restrictions": [
+                                "OnePerCardName"
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Search your library for up to three artifact cards with different names, put them onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "MYTHIC",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94b38464-39cd-4ee6-b9bf-a0bc1e128d9a.jpg?1783937167",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The token copies exactly what was printed on the original permanent and nothing else (unless that permanent is copying something else or is a token; see below). It doesn't copy whether that permanent is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The token is an artifact in addition to its other types. This is a copiable value of the token that other effects may copy. Haste and the ability's delayed triggered ability aren't copiable."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the copied permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the copied permanent is copying something else (for example, if the copied permanent is an Altered Ego), then the token enters the battlefield as whatever that permanent copied."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the copied permanent is a token, the token created with Saheeli copies the original characteristics of that token as stated by the effect that created that token."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Any enters-the-battlefield abilities of the copied permanent will trigger when the token enters the battlefield. Any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities of the chosen permanent will also work."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "As Saheeli's last ability resolves, all three artifacts enter the battlefield at the same time. Triggered abilities of any of those artifacts will see all three entering the battlefield. Replacement effects, such as that of Sculpting Steel, won't see the others on the battlefield as they are being applied."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Saheeli's Artistry
+{
+    "name": "Saheeli's Artistry",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Create a token that's a copy of target artifact.\n• Create a token that's a copy of target creature, except it's an artifact in addition to its other types.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Create a token that's a copy of target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "addCardTypes": [
+                            "ARTIFACT"
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Create a token that's a copy of target creature, except it's an artifact"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"From the first touch, I know exactly what the metal wants to be.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42237c1d-5579-4c15-b97b-bcaaaf0b1ab2.jpg?1783937215",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If you chose the second mode, the token is an artifact in addition to its other types. This is a copiable value of the token that other effects may copy."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you choose both modes, you may target a single artifact creature twice and get two copies of that artifact creature."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you choose both modes, the tokens enter one at a time. Thus, if the token created by the second mode has an ability that triggers \"whenever an artifact enters the battlefield,\" the token created by the first mode will already be on the battlefield and won't cause that ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Salivating Gremlins
 {
     "name": "Salivating Gremlins",
@@ -10783,6 +12005,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Scrapheap Scrounger
+{
+    "name": "Scrapheap Scrounger",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature can't block.\n{1}{B}, Exile another creature card from your graveyard: Return this card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scrapheap Scrounger:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "Some machines refuse to accept their own obsolescence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/216a8e4e-ea7b-41c7-a982-b5751025ff25.jpg?1783937150"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -11115,6 +12397,77 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Shrewd Negotiation
+{
+    "name": "Shrewd Negotiation",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exchange control of target artifact you control and target artifact or creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "ExchangeControl",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    "IsCreature"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Pleasure doing business with you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37900980-c2e2-4b70-8511-405f0a8389cd.jpg?1783937216",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If one of the target permanents is an illegal target as Shrewd Negotiation resolves, the exchange won't happen."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Gaining control of an Equipment doesn't cause it to move, though it will allow you to activate its equip ability later to attach it to a creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -13112,6 +14465,80 @@
     ]
 }
 
+// Unlicensed Disintegration
+{
+    "name": "Unlicensed Disintegration",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. If you control an artifact, Unlicensed Disintegration deals 3 damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "TargetController"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"I'd stand back if I were you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16ad8f86-7860-4896-a161-07bf347bbd5b.jpg?1783937165",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If the target creature is an illegal target by the time Unlicensed Disintegration tries to resolve, the spell won't resolve. It won't deal damage to any player. If the target is legal but not destroyed (most likely because it has indestructible), its controller is dealt 3 damage."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Whether or not you control an artifact is checked only after the creature is destroyed while Unlicensed Disintegration is resolving. For example, if you destroy a Fairgrounds Warden that exiled your artifact creature, Unlicensed Disintegration deals 3 damage to Fairgrounds Warden's controller."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Vedalken Blademaster
 {
     "name": "Vedalken Blademaster",
@@ -13385,6 +14812,76 @@
         ]
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Whirler Virtuoso
+{
+    "name": "Whirler Virtuoso",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Vedalken Artificer",
+    "oracleText": "When this creature enters, you get {E}{E}{E} (three energy counters).\nPay {E}{E}{E}: Create a 1/1 colorless Thopter artifact creature token with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Whirler Virtuoso:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Whirler Virtuoso:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Pay {E}{E}{E}: Create a 1/1 colorless Thopter artifact creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Lake Hurwitz",
+        "flavorText": "The first tentative flaps are like a song to his soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae429806-28b5-4bee-b0e1-1bd876f282c2.jpg?1783937165"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
