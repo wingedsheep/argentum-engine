@@ -1,3 +1,82 @@
+// Cynette, Jelly Drover
+{
+    "name": "Cynette, Jelly Drover",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "When Cynette enters or dies, create a 1/1 blue Jellyfish creature token with flying.\nCreatures you control with flying get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cynette, Jelly Drover:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Jellyfish"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            },
+            {
+                "id": "Cynette, Jelly Drover:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Jellyfish"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Daisuke Tatsuma",
+        "flavorText": "\"Once you build up an immunity to their deadly venom, they're really quite cuddly!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/8810b817-7349-468b-bcca-ba0843bbc852.jpg?1783908859"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dionus, Elvish Archdruid
 {
     "name": "Dionus, Elvish Archdruid",
@@ -164,5 +243,633 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gilded Scuttler
+{
+    "name": "Gilded Scuttler",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact Creature — Crab",
+    "oracleText": "This creature can't be blocked.\nWhen this creature enters, tap target creature an opponent controls and put a stun counter on it. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gilded Scuttler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Samuel Perin",
+        "flavorText": "\"ATTENTION BEACHGOERS: This is a litter-free zone. Violators will be pinched.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e5a6db8-130a-4931-b7a5-2f024331802b.jpg?1783908869"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Go Forth
+{
+    "name": "Go Forth",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Search your library for a basic land card, reveal it, put it into your hand, then shuffle.\n• Target creature gets +2/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for a basic land card, reveal it, put it into your hand, then shuffle"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature gets +2/+2 until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Serena Malyon",
+        "flavorText": "Spark or no, Nissa would always be an explorer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4ed67f0-85cc-4b1d-b745-e13e5bea3397.jpg?1783908864"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Hungry Megasloth
+{
+    "name": "Hungry Megasloth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Sloth Beast",
+    "oracleText": "Reach (This creature can block creatures with flying.)\n{2}, {T}: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hungry Megasloth:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "It supplements its leafy diet with delicacies snatched from low-flying airships.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/455c92ca-bb23-495d-be9e-2e0101b115ac.jpg?1783908864"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Psemilla, Meletian Poet
+{
+    "name": "Psemilla, Meletian Poet",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Bard",
+    "oracleText": "Whenever you cast your first enchantment spell each turn, create a 2/2 white Nymph enchantment creature token.\nAt the beginning of each combat, if you control five or more enchantments, Psemilla gets +4/+4 and gains lifelink until end of turn. (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Psemilla, Meletian Poet:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Nymph"
+                    ],
+                    "enchantmentToken": true
+                }
+            },
+            {
+                "id": "Psemilla, Meletian Poet:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "enchantment"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "KiKi",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/431258f5-705e-411d-b396-6992bc84d816.jpg?1783908861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Saurian Symbiote
+{
+    "name": "Saurian Symbiote",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Fungus Dinosaur",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nWhen this creature enters, choose one —\n• Put a +1/+1 counter on this creature.\n• Create a 1/1 green Saproling creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saurian Symbiote:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "description": "Put a +1/+1 counter on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "GREEN"
+                                ],
+                                "creatureTypes": [
+                                    "Saproling"
+                                ]
+                            },
+                            "description": "Create a 1/1 green Saproling creature token"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Aldo Domínguez",
+        "flavorText": "It's a living, self-contained ecosystem.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b32224ef-cfd4-42ef-857a-24386590c360.jpg?1783908864"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Scourge of the Undercity
+{
+    "name": "Scourge of the Undercity",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Gorgon Vampire",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature enters, another target creature you control gains lifelink until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scourge of the Undercity:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Olivier Bernard",
+        "flavorText": "Her hunger for blood is matched only by her hunger for vengeance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d321cb1-9079-4aa3-b86e-6483552f04ee.jpg?1783908867"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Shardless Outlander
+{
+    "name": "Shardless Outlander",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Construct Scout",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nBasic landcycling {2} ({2}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    "IsBasicLand"
+                ]
+            },
+            "displayPrefix": "Basic landcycling"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Leon Tukker",
+        "flavorText": "The Conflux proved that Alara's strength came from unity, not division.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fccb51a4-cb78-4437-b9ab-cc77736af561.jpg?1783908862"
+    },
+    "colorIdentityOverride": []
+}
+
+// Starnheim Memento
+{
+    "name": "Starnheim Memento",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {W}.\n{1}{W}, {T}: Target creature gets +1/+1 and gains flying until end of turn. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Starnheim Memento:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Starnheim Memento:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Ellis",
+        "flavorText": "Made from a feather from Firja's wing, it marks a worthy hero with the blessing of the valkyries.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16fe39b7-0dbe-4826-aa0a-59e93c6aaa01.jpg?1783908861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Woodland Liege
+{
+    "name": "Woodland Liege",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid Noble",
+    "oracleText": "Whenever a Beast you control enters, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Woodland Liege:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Beast ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Marta Nael",
+        "flavorText": "\"Your human laws mean nothing here. Plead your case before the tribunal of the wilds.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4369919-780f-460e-bbac-db3bba05e01f.jpg?1783908862"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wriggling Grub
+{
+    "name": "Wriggling Grub",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Worm",
+    "oracleText": "When this creature dies, create two 1/1 black and green Worm creature tokens.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wriggling Grub:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Worm"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Caio Monteiro",
+        "flavorText": "The professor of essence studies always relished the looks on the first-years' faces as their vivisections descended into chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e02aa086-13b2-42cf-acf4-086ba406e886.jpg?1783908867"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

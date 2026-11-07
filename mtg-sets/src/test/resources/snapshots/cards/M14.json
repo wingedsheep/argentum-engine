@@ -207,6 +207,79 @@
     ]
 }
 
+// Banisher Priest
+{
+    "name": "Banisher Priest",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, exile target creature an opponent controls until this creature leaves the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Banisher Priest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Banisher Priest:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "flavorText": "\"Oathbreaker, I cast you out!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06823bf8-2fca-49e1-ba40-9b61c9ae55b3.jpg?1783939945"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Barrage of Expendables
 {
     "name": "Barrage of Expendables",

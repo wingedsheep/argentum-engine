@@ -123,6 +123,54 @@
     ]
 }
 
+// Archaeomancer
+{
+    "name": "Archaeomancer",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, return target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archaeomancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Words of power never disappear. They sleep, awaiting those with the will to rouse them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73c6d1be-55ad-4ee4-b044-88438e9b78cc.jpg?1783940513"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Augur of Bolas
 {
     "name": "Augur of Bolas",

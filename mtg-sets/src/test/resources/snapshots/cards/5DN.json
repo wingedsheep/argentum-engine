@@ -1280,6 +1280,68 @@
     "colorIdentityOverride": []
 }
 
+// Guardian Idol
+{
+    "name": "Guardian Idol",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Add {C}.\n{2}: This artifact becomes a 2/2 Golem artifact creature until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Guardian Idol:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Guardian Idol:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "creatureTypes": [
+                        "Golem"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6a62a73-b7db-47ec-9b68-65dd7c1a06a5.jpg?1783944380"
+    },
+    "colorIdentityOverride": []
+}
+
 // Hoverguard Sweepers
 {
     "name": "Hoverguard Sweepers",

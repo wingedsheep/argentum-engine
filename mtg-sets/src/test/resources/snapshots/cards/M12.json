@@ -641,6 +641,52 @@
     ]
 }
 
+// Goblin Fireslinger
+{
+    "name": "Goblin Fireslinger",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "{T}: This creature deals 1 damage to target player or planeswalker.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Goblin Fireslinger:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Pete Venters",
+        "flavorText": "A rock between your eyes hurts. A burning rock between your eyes ruins your whole day.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c11db78-f506-4af2-a7be-c7ac2c0ffcf3.jpg?1783941070"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Grand Abolisher
 {
     "name": "Grand Abolisher",
@@ -844,6 +890,47 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Lord of the Unreal
+{
+    "name": "Lord of the Unreal",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Illusion creatures you control get +1/+1 and have hexproof. (They can't be the targets of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Illusion ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "creature Illusion ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Jason Chan",
+        "flavorText": "\"The dream does not end until I say so.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b09140f6-fa75-4bee-9ca0-3a71cd2b5a7b.jpg?1783941091"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

@@ -1215,6 +1215,47 @@
     ]
 }
 
+// Nyx-Fleece Ram
+{
+    "name": "Nyx-Fleece Ram",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Sheep",
+    "oracleText": "At the beginning of your upkeep, you gain 1 life.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nyx-Fleece Ram:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Terese Nielsen",
+        "flavorText": "The gods are fascinated by innocence, perhaps because it's a quality they themselves lack.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98d13a98-e715-49a8-a59e-a2adfcdec70b.jpg?1783939456"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Oreskos Swiftclaw
 {
     "name": "Oreskos Swiftclaw",

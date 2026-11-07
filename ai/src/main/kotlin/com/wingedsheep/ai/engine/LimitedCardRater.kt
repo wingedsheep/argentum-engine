@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -230,6 +231,7 @@ object LimitedCardRater {
         rating += staticBonus(card)
         rating += replacementBonus(card)
         rating += manaAbilityBonus(card)
+        rating += cyclingBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
         rating += sorceryPumpPenalty(card)
@@ -278,6 +280,7 @@ object LimitedCardRater {
             if (v != 0.0) add(Term("Replacement effect ${i + 1}", v, replacement.description.takeIf { it.isNotBlank() }))
         }
         manaAbilityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Mana ability", it, "a mana source that isn't a land")) }
+        cyclingBonus(card).takeIf { it != 0.0 }?.let { add(Term("Cycling", it, "discards itself for a fresh card or a land when it isn't wanted")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
         curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
         sorceryPumpPenalty(card).takeIf { it != 0.0 }?.let {
@@ -565,6 +568,17 @@ object LimitedCardRater {
     private fun manaAbilityBonus(card: CardDefinition): Double =
         if (!card.typeLine.isLand && card.script.activatedAbilities.any { it.isManaAbility }) TAG_VALUE.getValue(IntentTag.RAMP)
         else 0.0
+
+    /**
+     * Cycling and its typed variants (basic landcycling, Forestcycling …) live in
+     * [CardDefinition.keywordAbilities], which neither [keywordBonus] nor the effect slots see: a
+     * seven-mana fatty with basic landcycling was rated as the body alone. The option to trade a
+     * dead draw for a card — or the land it is short of — is worth a small, flat bonus.
+     */
+    private fun cyclingBonus(card: CardDefinition): Double =
+        if (card.keywordAbilities.any { it is KeywordAbility.Cycling }) CYCLING_BONUS else 0.0
+
+    private const val CYCLING_BONUS = 0.3
 
     /**
      * What a reading is worth when no leaf below prices the effect by its own fields: the highest

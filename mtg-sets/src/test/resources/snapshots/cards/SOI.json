@@ -1144,6 +1144,40 @@
     ]
 }
 
+// Byway Courier
+{
+    "name": "Byway Courier",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "When this creature dies, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Byway Courier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "Investigate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Zoltan Boros",
+        "flavorText": "A good courier travels fast and asks no questions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f243a51-bbd3-4028-a469-469ab5591aae.jpg?1783937737"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Call the Bloodline
 {
     "name": "Call the Bloodline",
