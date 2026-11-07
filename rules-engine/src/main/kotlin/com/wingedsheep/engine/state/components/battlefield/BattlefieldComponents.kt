@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -1644,12 +1645,59 @@ data object DamageUnpreventableThisTurnComponent : Component
  * combat damage yet". Null means this object has never dealt combat damage. It survives a later
  * noncombat stamp (the one stamp site carries it forward), and it goes with the marker on a zone
  * change. Its default exists only so a serialized state from before the field reads back.
+ *
+ * [toCreature] and [toPlayer] are the same pair of stamps narrowed to one kind of recipient, for
+ * `HasDealtDamage(recipient = …)` — "if equipped creature didn't deal combat damage to a creature this
+ * turn" (Thirsting Axe), "has dealt combat damage to a player". Null means this object has never
+ * dealt damage to that kind of recipient. Damage to a planeswalker or battle that isn't a creature
+ * stamps only the any-recipient pair. They are written at the same stamp site, from the recipient the
+ * damage actually landed on, so they can't drift from the any-recipient pair.
  */
 @Serializable
 data class HasDealtDamageComponent(
     val lastDealtDamageTurn: Int,
-    val lastDealtCombatDamageTurn: Int? = null
-) : Component
+    val lastDealtCombatDamageTurn: Int? = null,
+    val toCreature: DamageTurnStamp? = null,
+    val toPlayer: DamageTurnStamp? = null
+) : Component {
+    /** The stamp pair for [kind]; the any-recipient pair is always present. */
+    fun stampFor(kind: DamageRecipientKind): DamageTurnStamp? = when (kind) {
+        DamageRecipientKind.Any -> DamageTurnStamp(lastDealtDamageTurn, lastDealtCombatDamageTurn)
+        DamageRecipientKind.Creature -> toCreature
+        DamageRecipientKind.Player -> toPlayer
+    }
+}
+
+/**
+ * The marker after its object deals damage on [turn] to a recipient of [recipient] kind (null: a
+ * planeswalker or battle that isn't a creature, which only the any-recipient pair records). Every
+ * damage path stamps through this one function, so no pair can be written without the others; the
+ * combat stamps carry forward across later noncombat damage. Called on null for a first stamp.
+ */
+fun HasDealtDamageComponent?.stamped(
+    turn: Int,
+    isCombatDamage: Boolean,
+    recipient: DamageRecipientKind?
+): HasDealtDamageComponent = HasDealtDamageComponent(
+    lastDealtDamageTurn = turn,
+    lastDealtCombatDamageTurn = if (isCombatDamage) turn else this?.lastDealtCombatDamageTurn,
+    toCreature = if (recipient == DamageRecipientKind.Creature) this?.toCreature.stamped(turn, isCombatDamage) else this?.toCreature,
+    toPlayer = if (recipient == DamageRecipientKind.Player) this?.toPlayer.stamped(turn, isCombatDamage) else this?.toPlayer
+)
+
+/**
+ * One recipient kind's damage history on a [HasDealtDamageComponent]: the turn of the most recent
+ * damage of any kind ([lastTurn]) and of the most recent combat damage ([lastCombatTurn], null if
+ * none). The combat stamp survives later noncombat damage.
+ */
+@Serializable
+data class DamageTurnStamp(
+    val lastTurn: Int,
+    val lastCombatTurn: Int? = null
+)
+
+private fun DamageTurnStamp?.stamped(turn: Int, isCombatDamage: Boolean): DamageTurnStamp =
+    DamageTurnStamp(lastTurn = turn, lastCombatTurn = if (isCombatDamage) turn else this?.lastCombatTurn)
 
 /** Actual damage total, scoped to a turn and object incarnation, including resolving spells. */
 @Serializable
@@ -1823,14 +1871,6 @@ data class EntryTapStateComponent(val enteredTapped: Boolean) : Component
  */
 @Serializable
 data class UntapCountComponent(val count: Int) : Component
-
-/**
- * Marks a permanent as having dealt combat damage to a player since entering the battlefield.
- * NOT cleared at end of turn — persists for the permanent's lifetime on the battlefield.
- * Used for StatePredicate.HasDealtCombatDamageToPlayer and SourceHasDealtCombatDamageToPlayer condition.
- */
-@Serializable
-data object HasDealtCombatDamageToPlayerComponent : Component
 
 /**
  * Records which players this creature dealt combat damage to *this turn*.

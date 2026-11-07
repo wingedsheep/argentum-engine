@@ -926,6 +926,12 @@ object AiReadingAudit {
         // resolution: no target, nothing to time, and what is lost is the board the simulation sees.
         // An edict aimed at another player is a ForceSacrificeEffect and reads as removal.
         if (leaf is SacrificeEffect) return true
+        // "Sacrifice it" aimed at an Equipment's host (Thirsting Axe) is its controller sacrificing the
+        // creature they equipped — the Equipment's drawback, read by CardIntentAnalyzer as no answer:
+        // no target to aim, and whether to keep it equipped is the simulation's call on the board.
+        if (leaf is SacrificeTargetEffect && !leaf.sacrificedByItsController &&
+            leaf.target == EffectTarget.EquippedCreature
+        ) return true
         // Its controller paying their own counters on resolution — Greenbelt Rampager's "pay {E}{E}.
         // If you can't, return it to its owner's hand" — is the price of keeping the body, with no
         // target and nothing to time; the energy spent is on the board the simulation prices.

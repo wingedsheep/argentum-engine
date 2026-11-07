@@ -28,7 +28,6 @@ import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnCompon
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
-import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
@@ -2271,9 +2270,6 @@ class PredicateEvaluator(
             // reading, its turn stamp against the current turn for "…this turn".
             is StatePredicate.HasDealtDamage ->
                 hasDealtDamage(container, state.turnNumber, predicate)
-            StatePredicate.HasDealtCombatDamageToPlayer -> {
-                container.has<HasDealtCombatDamageToPlayerComponent>()
-            }
 
             // Dealt combat damage this turn to the player who controls the effect's source.
             // Source-relative: resolves context.sourceId's controller and checks the candidate's

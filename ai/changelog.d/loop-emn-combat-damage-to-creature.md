@@ -1,0 +1,1 @@
+- #TBD The AI reads an Equipment's "sacrifice the equipped creature" (Thirsting Axe) as the Equipment's drawback rather than repeatable removal

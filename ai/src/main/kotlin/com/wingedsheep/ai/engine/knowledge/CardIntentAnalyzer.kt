@@ -1959,7 +1959,11 @@ object CardIntentAnalyzer {
             if (hitsAnotherPermanent(effect.target)) removalTags(effect.target) else emptySet()
         is PhaseOutUntilLeavesEffect -> setOf(IntentTag.REMOVAL)
         is ForceSacrificeEffect -> setOf(IntentTag.REMOVAL)
-        is SacrificeTargetEffect -> setOf(IntentTag.REMOVAL)
+        // "Sacrifice it" aimed at an Equipment's host (Thirsting Axe's end-step upkeep) sacrifices
+        // the creature its controller equipped — their own: the Equipment's drawback, never an answer.
+        is SacrificeTargetEffect ->
+            if (!effect.sacrificedByItsController && effect.target == EffectTarget.EquippedCreature) emptySet()
+            else setOf(IntentTag.REMOVAL)
         is GainControlEffect -> setOf(IntentTag.REMOVAL)
         // "Exchange control of target artifact you control and target artifact or creature you don't
         // control" (Shrewd Negotiation, Switcheroo, Chromeshell Crab): their permanent is taken as

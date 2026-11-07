@@ -1756,8 +1756,7 @@ Families:
 - `StatePredicate.HasActivatedAbilities(atLeast: Int, excludeManaAbilities: Boolean)` — The object currently has at least atLeast activated abilities — printed, copied, keyword (cycling, crew, saddle, class levels), intrinsic basic-land mana abilities, and every ability an effect, sta…
 - `StatePredicate.HasAnyCounter` — Has any counter of any type
 - `StatePredicate.HasCounter(counterType: CounterType, minCount: Int)` — Has at least minCount counters of the specified type.
-- `StatePredicate.HasDealtCombatDamageToPlayer` — Has dealt combat damage to a player (ever, since entering the battlefield)
-- `StatePredicate.HasDealtDamage(thisTurnOnly: Boolean, combatOnly: Boolean)` — This permanent has *dealt* damage — the active voice, mirroring WasDealtDamageThisTurn's passive one.
+- `StatePredicate.HasDealtDamage(thisTurnOnly: Boolean, combatOnly: Boolean, recipient: DamageRecipientKind)` — This permanent has *dealt* damage — the active voice, mirroring WasDealtDamageThisTurn's passive one.
 - `StatePredicate.HasDisguiseAbility` — Has a **disguise** ability (CR 702.168) — the printed keyword, read off the card definition, so it answers the same in every zone.
 - `StatePredicate.HasGreatestManaValueAmongAllCreatures` — Has the greatest mana value among *all* creatures on the battlefield (global scope, both players), not just the ones its controller controls.
 - `StatePredicate.HasGreatestPower` — Has the greatest power among creatures its controller controls

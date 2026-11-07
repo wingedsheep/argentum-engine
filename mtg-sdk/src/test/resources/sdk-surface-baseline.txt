@@ -1325,7 +1325,6 @@ StatePredicate.EnteredThisTurn — StatePredicate
 StatePredicate.ExiledWithSource — StatePredicate
 StatePredicate.HasAnyCounter — StatePredicate
 StatePredicate.HasCounter — StatePredicate
-StatePredicate.HasDealtCombatDamageToPlayer — StatePredicate
 StatePredicate.HasDealtDamage — StatePredicate
 StatePredicate.HasDisguiseAbility — StatePredicate
 StatePredicate.HasGreatestManaValueAmongAllCreatures — StatePredicate
