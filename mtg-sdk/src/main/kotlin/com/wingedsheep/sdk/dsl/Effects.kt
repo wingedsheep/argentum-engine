@@ -4803,8 +4803,10 @@ object Effects {
 
     /**
      * "You may pay [cost]. If you do, [then]." — the mana form of [MayPay]. With no [otherwise] the
-     * engine gives it the optional-mana-payment UX (manual source selection; for a targeted trigger,
-     * pay → select mana → choose target).
+     * engine gives it the optional-mana-payment UX: manual source selection as it resolves. A
+     * targeted trigger of this shape chooses its targets on the stack and asks to pay on resolution;
+     * "When you do, … target …" passes a `ReflexiveTrigger` as [then], so the reflexive half targets
+     * after paying.
      */
     fun MayPay(cost: ManaCost, then: Effect, otherwise: Effect? = null): GatedEffect =
         MayPay(PayManaCostEffect(cost), then, otherwise)

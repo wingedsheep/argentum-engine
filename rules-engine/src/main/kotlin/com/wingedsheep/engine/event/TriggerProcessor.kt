@@ -184,9 +184,8 @@ class TriggerProcessor(
         // optional *payment* — "you may pay {1}. If you do, … target …" (Lightning Rift, Jubilant
         // Mascot): targets are chosen as the ability is put on the stack (CR 603.3d) and whether to
         // pay is decided only as it resolves, so opponents can respond to the targeted ability before
-        // any mana is spent. A "When you do" payment is a different ability shape — a
-        // ReflexiveTriggerEffect whose reflexive half picks its targets after paying (CR 603.12).
-        // Check if this ability requires targets
+        // any mana is spent. A "When you do" payment has no target of its own: its `then` is a
+        // ReflexiveTriggerEffect whose reflexive half picks targets after paying (CR 603.12).
         if (targetRequirement != null) {
             return processTargetedTrigger(currentState, trigger, targetRequirement)
         }

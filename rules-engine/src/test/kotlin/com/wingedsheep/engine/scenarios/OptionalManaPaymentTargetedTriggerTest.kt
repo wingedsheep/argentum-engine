@@ -133,7 +133,7 @@ class OptionalManaPaymentTargetedTriggerTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 withClue("the fizzled ability never offers the payment") {
-                    (game.getPendingDecision() is YesNoDecision) shouldBe false
+                    game.getPendingDecision() shouldBe null
                 }
                 game.isInGraveyard(2, "Savannah Lions") shouldBe true
                 withClue("only the Bolt's mana was spent") { game.tappedMountains() shouldBe 1 }

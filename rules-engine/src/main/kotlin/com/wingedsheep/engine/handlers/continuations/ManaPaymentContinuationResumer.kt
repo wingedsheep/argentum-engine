@@ -29,7 +29,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
 import com.wingedsheep.engine.handlers.effects.stack.counterSpellToLibrary
 import com.wingedsheep.engine.handlers.PredicateContext
-import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.engine.handlers.effects.composite.payManaCostFromPool
 
 class ManaPaymentContinuationResumer(
@@ -1144,7 +1143,7 @@ class ManaPaymentContinuationResumer(
 
     /**
      * Resume after the controller selects mana sources for a "you may pay" ability
-     * (non-targeted). Taps sources, deducts mana, executes the inner effect.
+     * (targeted or not). Taps sources, deducts mana, executes the inner effect.
      */
     fun resumeMayPayManaSelection(
         state: GameState,

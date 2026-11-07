@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.core
 
-import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -11,7 +10,6 @@ import com.wingedsheep.sdk.scripting.effects.CounterDestination
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.WardCost
-import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -101,7 +99,7 @@ data class MayPayManaContinuation(
 
 /**
  * Resume after the controller selects mana sources to pay a "you may pay" cost
- * for a non-targeted triggered ability. After payment, the inner effect is executed.
+ * for a triggered ability (its targets, if any, were locked on the stack). After payment, the inner effect is executed.
  *
  * @property playerId The player paying
  * @property sourceName Name of the source for display
@@ -468,7 +466,7 @@ data class ManaSourceOption(
  * Head of [pendingSubCostSources] is the source the current prompt is for; on response, that
  * source and the chosen permanent(s) are tapped and the source's mana is floated. When no
  * sub-cost sources remain, [resume] — the payment-selection continuation that raised the
- * prompt (ward / counter-unless, "you may pay", a targeted may-pay trigger) — is re-entered
+ * prompt (ward / counter-unless, "you may pay") — is re-entered
  * with an empty confirmation, so it spends the floated mana exactly as if the player had
  * activated those mana abilities inside the payment window (CR 605.3a).
  */

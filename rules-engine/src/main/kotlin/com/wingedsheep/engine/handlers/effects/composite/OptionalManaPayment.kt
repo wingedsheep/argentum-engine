@@ -19,8 +19,9 @@ import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
  *
  * A triggered ability of this shape that also targets (Lightning Rift, Jubilant Mascot) is placed
  * like any other targeted trigger: targets on the stack (CR 603.3d), the pay question as it resolves,
- * against those locked targets. "You may pay … **When you do**, … target …" is not this shape — it is
- * a `ReflexiveTriggerEffect` over `PayManaCostEffect`, whose reflexive half targets after paying.
+ * against those locked targets. "You may pay … **When you do**, … target …" is this same shape with a
+ * `ReflexiveTriggerEffect` as `then`: the ability itself has no target, the payment keeps manual source
+ * selection, and the reflexive half picks its targets after paying (CR 603.12).
  *
  * Composite-cost, life-gated, or `otherwise`-bearing MayPay gates deliberately do **not** match —
  * those resolve through the generic [GatedEffectExecutor] yes/no + cost-composite path (auto-tap),
