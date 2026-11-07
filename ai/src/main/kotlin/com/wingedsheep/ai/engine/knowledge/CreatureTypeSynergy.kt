@@ -75,6 +75,13 @@ internal object CreatureTypeSynergy {
                 // ([SynergyStrength.punished]), it doesn't ask for it.
                 if (type == "ModifyStats" && (element.int("powerBonus") ?: 0) + (element.int("toughnessBonus") ?: 0) < 0) return
                 if ((element["controllerPredicate"] as? JsonObject)?.string("type") in OPPONENT_SCOPES) return
+                // "Must be blocked by an Eldrazi if able" (Slayer's Cleaver), "All Walls able to
+                // block it do so" (Marble Priest): the blocker filter always names the defending
+                // player's creatures — a tribe it fights, never one it asks for.
+                if (type == "MustBeBlockedStatic") {
+                    element.forEach { (key, value) -> if (key != "blockers") collect(value, out) }
+                    return
+                }
                 when (type) {
                     // "As long as enchanted creature is a Pirate" (Sea Legs, Gift of Fangs) wants the
                     // Aura on one of that tribe; its "otherwise" half sits under the `Not` above.

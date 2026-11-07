@@ -190,10 +190,14 @@ data class MustBlock(
  * true, every creature able to block it must (Lure-style). Typically wrapped in a
  * [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] (e.g. gated on `SourceIsRingBearer`).
  *
- * [blockers] narrows which potential blockers the all-creatures requirement binds, evaluated with
- * the static's holder as the predicate source: "All Walls able to block this creature do so"
- * (Marble Priest) is `MustBeBlocked(allCreatures = true, blockers = GameObjectFilter.Creature.withSubtype("Wall"))`.
- * A blocker outside it stays free to block anything. Only meaningful with [allCreatures].
+ * [blockers] narrows which potential blockers can obey the requirement, evaluated with the
+ * static's holder as the predicate source. With [allCreatures] it is the set the Lure binds: "All
+ * Walls able to block this creature do so" (Marble Priest) is
+ * `MustBeBlocked(allCreatures = true, blockers = GameObjectFilter.Creature.withSubtype("Wall"))`, and a
+ * blocker outside it stays free to block anything. Without it, only a matching blocker satisfies the
+ * "if able" requirement: "must be blocked by an Eldrazi if able" (Slayer's Cleaver) is
+ * `MustBeBlocked(filter = GroupFilter.attachedCreature(), blockers = GameObjectFilter.Creature.withSubtype("Eldrazi"))`
+ * — one matching blocker is enough, and every other creature may block or not as it likes.
  */
 @SerialName("MustBeBlockedStatic")
 @Serializable
@@ -202,11 +206,12 @@ data class MustBeBlocked(
     val filter: GroupFilter? = null,
     val blockers: GameObjectFilter? = null,
 ) : StaticAbility {
-    init {
-        require(blockers == null || allCreatures) { "MustBeBlocked.blockers needs allCreatures = true" }
-    }
-
     override val description: String = buildString {
+        if (blockers != null && !allCreatures) {
+            append(if (filter == null) "This creature" else filter.description)
+            append(" must be blocked by ${blockers.indefiniteArticle} ${blockers.singularPermanentDescription} if able")
+            return@buildString
+        }
         if (blockers != null) {
             append("All ${blockers.permanentNounPhrase(plural = true)} able to block ")
             append(if (filter == null) "this creature" else filter.description)

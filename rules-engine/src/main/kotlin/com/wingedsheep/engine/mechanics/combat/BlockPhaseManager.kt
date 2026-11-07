@@ -569,9 +569,15 @@ internal class BlockPhaseManager(
         val rules = BlockStaticRules(state, cardRegistry, predicateEvaluator)
         val potential = findPotentialBlockers(state, blockingPlayer)
         val each = potential.filter { rules.mustBlockEach(it) }
-        if (each.isEmpty() && state.sharedTurnTeam(blockingPlayer).size == 1) return null
+        val mustBeBlockedIfAble = findMustBeBlockedIfAble(state)
+        // A blocker-filtered "must be blocked by an Eldrazi if able" requirement is obeyed only by a
+        // matching blocker, and one blocker can obey several requirements on the same attacker at
+        // once — beyond the attacker↔blocker matching the simple validator computes, so it takes
+        // this exact search instead.
+        if (each.isEmpty() && state.sharedTurnTeam(blockingPlayer).size == 1 &&
+            mustBeBlockedIfAble.none { it.blockers != null }) return null
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
-        data class Demand(val blocker: EntityId? = null, val attacker: EntityId? = null)
+        data class Demand(val blocker: EntityId? = null, val attacker: EntityId? = null, val gate: BlockerGate? = null)
         val demands = mutableListOf<Demand>()
         for (blocker in each) repeat(rules.eachRequirementCount(blocker)) {
             for (attacker in attackers) demands.add(Demand(blocker, attacker))
@@ -582,8 +588,8 @@ internal class BlockPhaseManager(
         for ((attacker, requirement) in findMustBeBlockedByAll(state)) for (blocker in potential) {
             if (requirement.binds(state, blocker)) demands.add(Demand(blocker, attacker))
         }
-        for (attacker in findMustBeBlockedIfAbleAttackers(state)) {
-            demands.add(Demand(attacker = attacker))
+        for (hit in mustBeBlockedIfAble) {
+            demands.add(Demand(attacker = hit.attacker, gate = hit.blockers))
         }
         for (floating in state.floatingEffects) {
             val modification = floating.effect.modification as? SerializableModification.MustBlockSpecificAttacker ?: continue
@@ -594,7 +600,9 @@ internal class BlockPhaseManager(
         }
         if (demands.isEmpty()) return submitted ?: emptyMap()
         fun obeyed(demand: Demand, blocks: Map<EntityId, List<EntityId>>): Boolean = when {
-            demand.blocker == null -> blocks.values.any { demand.attacker in it }
+            demand.blocker == null -> blocks.any { (blocker, targets) ->
+                demand.attacker in targets && (demand.gate == null || demand.gate.binds(state, blocker))
+            }
             demand.attacker == null -> blocks[demand.blocker].orEmpty().isNotEmpty()
             else -> demand.attacker in blocks[demand.blocker].orEmpty()
         }
@@ -658,7 +666,26 @@ internal class BlockPhaseManager(
         fun legal(blocks: Map<EntityId, List<EntityId>>) =
             blocks.all { (blocker, targets) -> targets.size <= capacities.getValue(blocker) } &&
                 pileRestrictionsSatisfied(state, blocks)
-        if (legal(candidates)) return candidates
+        // The suggestion (no [submitted] declaration) keeps only the blocks some requirement needs:
+        // a voluntary block left in it would be pre-assigned for the player and seeded as forced
+        // for the AI (a must-be-blocked-by-an-Eldrazi attacker would drag every other able blocker
+        // along). Validation compares scores, so it takes the unpruned answer.
+        fun needed(blocks: Map<EntityId, List<EntityId>>): Map<EntityId, List<EntityId>> {
+            if (submitted != null) return blocks
+            val target = score(blocks)
+            var current = blocks
+            for ((blocker, targets) in blocks) for (attacker in targets) {
+                val trimmed = current[blocker].orEmpty() - attacker
+                val next = if (trimmed.isEmpty()) current - blocker else current + (blocker to trimmed)
+                if (score(next) == target && legal(next) &&
+                    validateMenaceRequirements(state, next) == null &&
+                    validateMinBlockersRequirements(state, next) == null &&
+                    validateCoBlockerRequirements(state, state.projectedState, next.keys) == null
+                ) current = next
+            }
+            return current
+        }
+        if (legal(candidates)) return needed(candidates)
         var best = emptyMap<EntityId, List<EntityId>>()
         var bestScore = 0
         val holders = candidates.keys.sortedByDescending { if (it in each) Int.MAX_VALUE else candidates[it]!!.size }
@@ -704,7 +731,7 @@ internal class BlockPhaseManager(
             }
         }
         search(0)
-        return if (threshold != null && bestScore <= threshold) submitted else best
+        return if (threshold != null && bestScore <= threshold) submitted else needed(best)
     }
 
     // =========================================================================
@@ -1235,7 +1262,8 @@ internal class BlockPhaseManager(
         // there). Per-pair blocking restrictions go through canCreatureBlockAttacker; declaration-
         // wide restrictions (e.g. can't-block-alone) are not modelled, so the computed maximum can
         // only over-count in those corners — never rejecting more than 509.1c would.
-        val mustBeBlockedIfAbleAttackers = findMustBeBlockedIfAbleAttackers(state)
+        // Blocker-filtered requirements never reach here: eachAttackerRequirements takes them.
+        val mustBeBlockedIfAbleAttackers = findMustBeBlockedIfAble(state).map { it.attacker }.distinct()
         if (mustBeBlockedIfAbleAttackers.isNotEmpty()) {
             val provokePinnedAttackers = state.floatingEffects
                 .filter { it.effect.modification is SerializableModification.MustBlockSpecificAttacker }
@@ -1361,10 +1389,13 @@ internal class BlockPhaseManager(
      */
     private inner class ByAllRequirement(private val gates: List<MustBeBlockedHit>) {
         fun binds(state: GameState, blockerId: EntityId): Boolean = gates.any { gate ->
-            val gateFilter = gate.blockers ?: return@any true
-            predicateEvaluator.matches(state, state.projectedState, blockerId, gateFilter.filter, gateFilter.context)
+            gate.blockers?.binds(state, blockerId) ?: true
         }
     }
+
+    /** Whether [blockerId] is inside this [MustBeBlocked.blockers] filter (projected state). */
+    private fun BlockerGate.binds(state: GameState, blockerId: EntityId): Boolean =
+        predicateEvaluator.matches(state, state.projectedState, blockerId, filter, context)
 
     /**
      * Every attacker with a "must be blocked by all" requirement active (Lure effects), mapped to
@@ -1485,10 +1516,10 @@ internal class BlockPhaseManager(
     }
 
     /**
-     * Find all attackers that have "must be blocked if able" requirement active.
-     * These only require at least one blocker, not all.
+     * Every "must be blocked if able" requirement on an attacker, with the blocker filter it
+     * carries (Slayer's Cleaver: only an Eldrazi obeys it). These only require one blocker, not all.
      */
-    private fun findMustBeBlockedIfAbleAttackers(state: GameState): List<EntityId> {
+    private fun findMustBeBlockedIfAble(state: GameState): List<MustBeBlockedHit> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }.toSet()
 
         val fromFloating = state.floatingEffects
@@ -1496,9 +1527,9 @@ internal class BlockPhaseManager(
                 floatingEffect.effect.modification is SerializableModification.MustBeBlockedIfAble
             }
             .flatMap { floatingEffect ->
-                floatingEffect.effect.affectedEntities.filter { it in attackers }
+                floatingEffect.effect.affectedEntities.filter { it in attackers }.map { MustBeBlockedHit(it) }
             }
-        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = false).map { it.attacker }).distinct()
+        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = false)).distinct()
     }
 
     /**

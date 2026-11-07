@@ -11721,11 +11721,17 @@ in the declare-blockers step, even before the turn-based block action has comple
   uses `MustBeBlocked(filter = GroupFilter.attachedCreature())`. Source-relative scopes
   (`attachedCreature()`, `source()`) resolve correctly; a `Battlefield`-scope filter matches every
   attacker. No separate "while attacking" gate is needed — must-be-blocked only bites while the
-  creature attacks. `blockers` (a `GameObjectFilter`, `allCreatures = true` only) narrows which
-  potential blockers the Lure binds, read with the static's holder as source: "All Walls able to
-  block this creature do so" (Marble Priest) is
+  creature attacks. `blockers` (a `GameObjectFilter`, read with the static's holder as source)
+  narrows which potential blockers can obey the requirement. With `allCreatures = true` it is the
+  set the Lure binds: "All Walls able to block this creature do so" (Marble Priest) is
   `MustBeBlocked(allCreatures = true, blockers = GameObjectFilter.Creature.withSubtype("Wall"))` —
-  every other creature stays free.
+  every other creature stays free. Without it, only a matching blocker satisfies the "if able"
+  requirement and one is enough: "equipped creature … must be blocked by an Eldrazi if able"
+  (Slayer's Cleaver) is
+  `MustBeBlocked(filter = GroupFilter.attachedCreature(), blockers = GameObjectFilter.Creature.withSubtype("Eldrazi"))`.
+  With no matching creature able to block (or only ones that would have to pay a block cost),
+  nothing is forced; the declaration obeys as many requirements as possible, counted per
+  requirement, so one Eldrazi blocking a creature under two Cleavers obeys both.
 - `CantBeBlockedWhilePropertyAtMost(maxValue, properties = {Power, Toughness}, filter = GroupFilter.AllCreaturesYouControl)`
   — "creatures … with power or toughness N or less can't be blocked". One ability for both printed
   scopes: the defaults are **Tetsuko Umezawa, Fugitive** (a lord over its controller's creatures,

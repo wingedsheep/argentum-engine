@@ -1,0 +1,1 @@
+- #TBD Reads a lasting "must be blocked (by an Eldrazi / by all Walls) if able" lure (Slayer's Cleaver, Gaea's Protector, Marble Priest) as combat enhancement instead of an unrecognised ability, no longer reads its blocker filter as a tribe the card asks for, and as the defender blocks with the creature the requirement names
