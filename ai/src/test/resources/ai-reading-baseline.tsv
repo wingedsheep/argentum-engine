@@ -345,6 +345,7 @@ Akoum Refuge
 Akoum Warrior
 Akroan Jailer
 Akroan Sergeant
+Akroan Skyguard
 Akroma's Blessing	intent: ChooseColorThenEffect
 Akroma's Devoted
 Akroma's Vengeance
@@ -5242,6 +5243,7 @@ Elite Inquisitor
 Elite Instructor
 Elite Interceptor
 Elite Javelineer
+Elite Skirmisher
 Elite Spellbinder	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Elite Vanguard
 Elixir
@@ -5689,6 +5691,7 @@ Expedition Envoy
 Expedition Healer
 Expedition Lookout
 Expedition Map
+Expedition Raptor
 Expedition Skulker
 Expel
 Expel from Orazca
@@ -5819,6 +5822,7 @@ Faith's Fetters
 Faithbearer Paladin
 Faithbound Judge	intent: LoseGameEffect
 Faithful Mending
+Faithful Pikemaster
 Faithful Watchdog
 Faithless Looting
 Faithless Salvaging
@@ -5941,6 +5945,7 @@ Faunsbane Troll	intent: CreateAuraTokenEffect
 Favor of Jukai
 Favor of the Mighty
 Favorable Winds
+Favored Hoplite
 Favored of Iroas
 Fblthp, Impossibly Lost
 Fblthp, Knows the Way
@@ -10181,6 +10186,7 @@ Lightning-Rig Crew
 Lightshell Duo
 Lightshield Parry
 Lightstall Inquisitor
+Lightwalker
 Lightwheel Enhancements
 Lignify
 Likeness Looter
@@ -11110,6 +11116,7 @@ Mila, Crafty Companion
 Mild-Mannered Librarian
 Miles Morales	combat: GrantEvasionKeywordEffect; intent: ForEach>DoubleCountersEffect; timing: ChangeColorEffect
 Miles O'Brien, Transporter Ops
+Militant Inquisitor
 Militant Monk
 Military Discipline
 Military Intelligence
@@ -13979,6 +13986,7 @@ Relic Vial
 Relic of Legends
 Relic of Sauron
 Relic's Roar	polarity: AddSubtypeEffect; polarity: BecomeCreatureEffect; timing: AddSubtypeEffect; timing: BecomeCreatureEffect
+Relief Captain
 Reliquary Monk
 Reliquary Tower
 Relive the Past
@@ -14025,6 +14033,7 @@ Repeated Reverberation
 Repeating Barrage
 Repel
 Repel Calamity
+Repel the Darkness
 Repel the Vile
 Repentant Blacksmith
 Replicating Ring
@@ -15635,6 +15644,7 @@ Short Circuit
 Short Sword
 Shortcut Seeker
 Shortcut to Mushrooms
+Shoulder to Shoulder
 Show of Confidence	timing: GrantKeywordEffect
 Show of Valor
 Showdown of the Skalds
@@ -17158,6 +17168,7 @@ Sunset Saboteur
 Sunset Strikemaster
 Sunshot Militia
 Sunshower Druid
+Sunspear Shikari
 Sunspine Lynx
 Sunspire Griffin
 Sunstar Chaplain
@@ -17674,6 +17685,7 @@ Tenacious Drone
 Tenacious Hunter
 Tenacious Tomeseeker
 Tenacious Underdog
+Tenacity
 Tend the Pests
 Tend the Sprigs
 Tender Wildguide
@@ -17752,6 +17764,7 @@ Testament Bearer
 Tester of the Tangential	intent: SelectTargetEffect
 Tether Technician
 Tethermage's Advantage
+Tethmos High Priest
 Tetravus	intent: ConvertCountersToTokensEffect
 Tetsuko Umezawa, Fugitive
 Tetsuko Umezawa, Pursuer
@@ -20258,6 +20271,7 @@ Wings of the Cosmos
 Wingshield Agent
 Wingspan Mentor
 Wingspan Stride
+Wingsteed Rider
 Winnow
 Winnowing
 Winota, Joiner of Forces
