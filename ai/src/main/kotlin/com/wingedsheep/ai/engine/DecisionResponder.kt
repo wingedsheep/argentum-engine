@@ -1298,7 +1298,9 @@ class DecisionResponder(
      *   the game, so they all tie and the alphabetically first won ("A Killer Among Us" against a
      *   Lorwyn deck). Only names and types that actually occur among the players' cards are
      *   simulated — the best few of each side — and a tie leans to the opponent's cards for names
-     *   (strip, mill, shut off) and to our own for creature types (lords, tribal payoffs).
+     *   (strip, mill, shut off) and to our own for creature types (lords, tribal payoffs). Creature
+     *   types also simulate each type that picks out a distinct group of battlefield creatures
+     *   ([boardTypeCandidates]), since a board-reading effect turns on those.
      *
      * Anything else (modes, opponents, a short custom list) keeps the plain simulation.
      */
@@ -1354,12 +1356,44 @@ class DecisionResponder(
             .filter { (weights[key(options[it])] ?: 0.0) > 0.0 }
             .sortedByDescending { weights[key(options[it])] }
             .take(OPEN_LIST_CANDIDATES_PER_SIDE)
-        val candidates = (shortlist(mine) + shortlist(opposing)).distinct()
+        val lean = if (creatureTypes) mine else opposing
+        val preference = { index: Int -> lean[key(options[index])] ?: 0.0 }
+        val onBoard = if (creatureTypes) boardTypeCandidates(state, options, preference) else emptyList()
+        val candidates = (shortlist(mine) + shortlist(opposing) + onBoard).distinct()
         if (candidates.isEmpty()) return OptionChosenResponse(decision.id, 0)
 
-        val lean = if (creatureTypes) mine else opposing
-        val best = bestWithTieBreak(candidates, { lean[key(options[it])] ?: 0.0 }, simulate)
+        val best = bestWithTieBreak(candidates, preference, simulate)
         return OptionChosenResponse(decision.id, best)
+    }
+
+    /**
+     * One creature-type option per distinct group of battlefield creatures a type picks out — the
+     * candidates a board-reading choice ("destroy all creatures that aren't of the chosen type")
+     * has to simulate. The deck-wide shortlist misses them: Kindred Judgment cast from a deck full
+     * of Wizards named Wizard and wiped its own board too, because the creature it could have
+     * kept was the only one of its type in the deck.
+     *
+     * Types that pick out the same creatures leave the board identically, so each group is
+     * simulated once, through the type [preference] rates highest (a lord's tribe stays the pick
+     * among equals). That bounds the cost by the board, not the type list: a changeling carries
+     * every type, yet the types only it has collapse into one group. Types that pick out no
+     * creature are left to the shortlist.
+     */
+    private fun boardTypeCandidates(state: GameState, options: List<String>, preference: (Int) -> Double): List<Int> {
+        val projected = state.projectedState
+        val members = HashMap<String, MutableSet<EntityId>>()
+        for (id in state.getBattlefield()) {
+            if (!projected.isCreature(id)) continue
+            for (type in projected.getSubtypes(id)) members.getOrPut(type.lowercase()) { HashSet() } += id
+        }
+        if (members.isEmpty()) return emptyList()
+        val bestPerGroup = HashMap<Set<EntityId>, Int>()
+        for (index in options.indices) {
+            val group = members[options[index].lowercase()] ?: continue
+            val held = bestPerGroup[group]
+            if (held == null || preference(index) > preference(held)) bestPerGroup[group] = index
+        }
+        return bestPerGroup.values.sorted()
     }
 
     /**
