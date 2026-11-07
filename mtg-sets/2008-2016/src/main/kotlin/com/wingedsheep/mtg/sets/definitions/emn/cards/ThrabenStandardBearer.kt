@@ -13,9 +13,6 @@ import com.wingedsheep.sdk.model.Rarity
  * 1/1
  *
  * {1}{W}, {T}, Discard a card: Create a 1/1 white Human Soldier creature token.
- *
- * Eldritch Moon's own token sheet has no Human Soldier; the token is the one from Shadows over
- * Innistrad's sheet, so its art is pinned here (the differential ignores token art).
  */
 val ThrabenStandardBearer = card("Thraben Standard Bearer") {
     manaCost = "{W}"
@@ -31,8 +28,7 @@ val ThrabenStandardBearer = card("Thraben Standard Bearer") {
             power = 1,
             toughness = 1,
             colors = setOf(Color.WHITE),
-            creatureTypes = setOf("Human", "Soldier"),
-            imageUri = "https://cards.scryfall.io/normal/front/d/9/d9cbf36e-4044-4f08-9bae-f0dcb2455716.jpg?1783937683"
+            creatureTypes = setOf("Human", "Soldier")
         )
     }
 
