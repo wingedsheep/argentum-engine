@@ -1184,7 +1184,7 @@ object CardIntentAnalyzer {
      * "Return all nonland permanent cards from your graveyard to the battlefield" (Return to the
      * Light Realms), "return up to two creature cards from your graveyard to your hand" — a gather
      * from **our own graveyard** whose cards, or the ones picked from among them, are moved onto the
-     * battlefield or into our hand — reads as [IntentTag.RECURSION], as the single-card
+     * battlefield, into our hand or onto our library's top — reads as [IntentTag.RECURSION], as the single-card
      * `MoveToZoneEffect` spelling of the same return does in [tagsOf].
      *
      * The source's linked-exile pile counts as that stock too, onto our battlefield only: "put a
@@ -1232,7 +1232,10 @@ object CardIntentAnalyzer {
             val to = move.destination as? CardDestination.ToZone ?: return@any false
             if (to.player != Player.You) return@any false
             when (move.from) {
-                in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD
+                // "Put an artifact card from your graveyard on top of your library" (Sequestered
+                // Stash) is a regrowth paid for with the next draw, as the single-card move is.
+                in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD ||
+                    (to.zone == Zone.LIBRARY && to.placement == ZonePlacement.Top)
                 // "Under their owners' control" hands the pile back (Lagrella), unless only our
                 // own permanents were ever stashed in it (Endless Sands, Safe Haven).
                 in fromLinkedExile -> to.zone == Zone.BATTLEFIELD && (!move.underOwnersControl || ownPile)
@@ -1969,6 +1972,11 @@ object CardIntentAnalyzer {
         // decides it, as for a plain placement.
         is DistributeCountersAmongTargetsEffect -> counterTags(effect.counterType, EffectTarget.ContextTarget(0))
         is DoubleCountersEffect -> effect.counterType?.let { counterTags(it, effect.target) } ?: emptySet()
+        // "A kind it doesn't have, from among …" reads by the listed kinds when they agree. A kind
+        // chosen among those already on the recipient (Animation Module) names none — proliferate's
+        // one-kind form, whose worth is the board's counters, so it needs no tag.
+        is AddCountersOfChosenKindEffect ->
+            effect.kinds.map { counterTags(it, effect.target) }.distinct().singleOrNull() ?: emptySet()
 
         is TapUntapEffect -> if (effect.tap) setOf(IntentTag.TAPPER) else emptySet()
         // "Creatures target opponent controls don't untap during their next untap step" (Imaginary

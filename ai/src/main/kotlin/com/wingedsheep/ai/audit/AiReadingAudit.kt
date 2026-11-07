@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
+import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -901,6 +902,10 @@ object AiReadingAudit {
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
         // Animating another permanent stays flagged.
         if (leaf is BecomeCreatureEffect && leaf.target == EffectTarget.Self) return true
+        // "When this Vehicle enters, it becomes an artifact creature until end of turn" (Fleetwheel
+        // Cruiser) is the same self-animation spelled as crew's type change: the creature it becomes
+        // is its printed body, which the simulation prices on the board and attacks with.
+        if (leaf is AddCardTypeEffect && leaf.cardType.equals("CREATURE", ignoreCase = true) && leaf.target == EffectTarget.Self) return true
         // A permanent sacrificing itself has no target: on a trigger it is a drawback its controller
         // doesn't choose (Ball Lightning's end step, Glimmervoid with no artifacts, Skittering Horror);
         // on an activation its payoff is the permanent's own leaves trigger (Hopeful Vigil's scry) or
@@ -1028,7 +1033,10 @@ object AiReadingAudit {
         // does not make them taggable.
         // So do the steps of a loop over the kinds already on a permanent — "for each kind of counter
         // on target permanent, put another counter of that kind on it or remove one from it"
-        // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on.
+        // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on — and the
+        // one-kind form, "choose a counter on target permanent or player; give it another of that
+        // kind" (Animation Module, Clockspinning), proliferate on one holder, whose kind is whatever
+        // its controller picks among the ones already there.
         // The counted and chosen moves read the same way even when they do name a kind, because a
         // move of +1/+1 counters is a gain where they land and a loss where they leave, and which side
         // wins is the board's call: Tester of the Tangential's "move X +1/+1 counters", Goldberry's
@@ -1038,7 +1046,7 @@ object AiReadingAudit {
             leaf is MoveCountersEffect || leaf is MoveChosenCountersToTargetEffect ||
             leaf is MoveCountersEachKindMissingEffect ||
             leaf is RemoveAnyNumberOfCountersEffect || leaf is RemoveCountersOfIteratedKindEffect ||
-            (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom == CounterKindSource.ITERATION)
+            (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom != CounterKindSource.LISTED_ABSENT)
         ) return true
         // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
         // counters off its controller's own permanents to pay for a payoff beside it (the doubled
@@ -1057,6 +1065,8 @@ object AiReadingAudit {
             // when it has none: the same self-growth as a plain counter on Self, with no target to aim;
             // when to activate it, mid-combat too, is the simulation's call.
             is AdaptEffect -> leaf.target
+            // "A kind of counter it doesn't have, from among …" on its own source (Crystalline Giant).
+            is AddCountersOfChosenKindEffect -> leaf.target
             else -> return false
         }
         // A counter on a player (poison, rad, energy) is a clock or a resource, like life loss: no

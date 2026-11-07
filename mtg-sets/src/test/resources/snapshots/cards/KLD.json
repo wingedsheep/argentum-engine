@@ -119,6 +119,72 @@
     ]
 }
 
+// Aether Hub
+{
+    "name": "Aether Hub",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, you get {E} (an energy counter).\n{T}: Add {C}.\n{T}, Pay {E}: Add one mana of any color.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aether Hub:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aether Hub:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Aether Hub:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "flavorText": "It powers the dreams of Ghirapur.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25ea04d8-5d85-49d3-8d8d-7fe123d0ed6c.jpg?1783937144"
+    }
+}
+
 // Aether Meltdown
 {
     "name": "Aether Meltdown",
@@ -681,6 +747,139 @@
     ]
 }
 
+// Aetherworks Marvel
+{
+    "name": "Aetherworks Marvel",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever a permanent you control is put into a graveyard, you get {E} (an energy counter).\n{T}, Pay six {E}: Look at the top six cards of your library. You may cast a spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aetherworks Marvel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Aetherworks Marvel:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseSpell",
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast a spell from among them without paying its mana cost.",
+                            "selectedLabel": "Cast for free",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Pay six {E}: Look at the top six cards of your library. You may cast a spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "MYTHIC",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/884f6948-3e03-48c6-8be2-6f2539386c9d.jpg?1783937164",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Aetherworks Marvel's first ability triggers whenever any permanent you control is put into a graveyard from the battlefield, including Aetherworks Marvel itself and other permanents put into a graveyard at the same time as it."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Tokens that are sacrificed or destroyed are put into their owner's graveyard before ceasing to exist. If you controlled the token, Aetherworks Marvel's first ability will trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The card cast with Aetherworks Marvel's second ability is cast from your library."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as emerge costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Incendiary Sabotage, you must pay those to cast the card."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ambitious Aetherborn
 {
     "name": "Ambitious Aetherborn",
@@ -757,6 +956,101 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Animation Module
+{
+    "name": "Animation Module",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever one or more +1/+1 counters are put on a permanent you control, you may pay {1}. If you do, create a 1/1 colorless Servo artifact creature token.\n{3}, {T}: Choose a counter on target permanent or player. Give that permanent or player another counter of that kind.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Animation Module:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "filter": "permanent ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Servo"
+                        ],
+                        "artifactToken": true
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Animation Module:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCountersOfChosenKind",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPermanentOrPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}, {T}: Choose a counter on target permanent or player. Give that permanent or player another counter of that kind."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "flavorText": "Design leads to progress.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34bdc973-db45-46a6-ac48-ce88fb59920a.jpg?1783937163",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If +1/+1 counters are put on more than one permanent you control at the same time, Animation Module's first ability triggers once for each of those permanents."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Abilities that trigger when counters are put on a permanent trigger when a permanent enters the battlefield with counters and when a player puts counters on a permanent."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You can pay {1} only once each time Animation Module's first ability resolves. You can't pay more to create extra Servo tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Appetite for the Unnatural
@@ -3090,6 +3384,181 @@
     ]
 }
 
+// Deadlock Trap
+{
+    "name": "Deadlock Trap",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\nWhen this artifact enters, you get {E}{E} (two energy counters).\n{T}, Pay {E}: Tap target creature or planeswalker. Its activated abilities can't be activated this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadlock Trap:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Deadlock Trap:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}: Tap target creature or planeswalker. Its activated abilities can't be activated this turn."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f956dedc-2cf4-4039-8302-feab94b78426.jpg?1783937160",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Players may respond to Deadlock Trap's last ability by activating an ability of the target permanent if that ability's timing permissions allow it."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the tapped creature somehow becomes untapped, it can attack and block as normal, but its abilities still can't be activated this turn."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "A tapped planeswalker can be attacked or dealt damage as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Decoction Module
+{
+    "name": "Decoction Module",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a creature you control enters, you get {E} (an energy counter).\n{4}, {T}: Return target creature you control to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Decoction Module:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                },
+                "descriptionOverride": "Whenever a creature you control enters, you get {E}."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Decoction Module:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{4}, {T}: Return target creature you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "Progress leads to inspiration.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b08ae769-0070-47a6-aae0-1a3bcfd40d07.jpg?1783937159"
+    }
+}
+
 // Demolition Stomper
 {
     "name": "Demolition Stomper",
@@ -3665,6 +4134,145 @@
     ]
 }
 
+// Dynavolt Tower
+{
+    "name": "Dynavolt Tower",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast an instant or sorcery spell, you get {E}{E} (two energy counters).\n{T}, Pay {E}{E}{E}{E}{E}: This artifact deals 3 damage to any target.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dynavolt Tower:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dynavolt Tower:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}{E}{E}{E}{E}: This artifact deals 3 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "\"I like that Tezzeret. He has vision the other judges don't. He sees the potential in what we're making here.\"\n—Faiz, inventor",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c45fd2ae-0f91-47ca-99bd-22ddf946df9f.jpg?1783937159"
+    },
+    "colorIdentityOverride": []
+}
+
+// Eager Construct
+{
+    "name": "Eager Construct",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, each player may scry 1. (To scry 1, look at the top card of your library, then you may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eager Construct:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        "decisionMaker": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        },
+                        "descriptionOverride": "Scry 1?"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "artist": "Craig J Spearing",
+        "flavorText": "Loyal to a fault, it anticipates its master's every need.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66f8ae7b-02a5-45ce-8a63-aa880b1e582a.jpg?1783937157",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If multiple players are instructed to scry at once, such as while resolving Eager Construct's triggered ability, those players each look at the top card of their library at the same time, then they choose in turn order whether to put those cards on the top or bottom of their library."
+            }
+        ]
+    }
+}
+
 // Eddytrail Hawk
 {
     "name": "Eddytrail Hawk",
@@ -3747,6 +4355,88 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Electrostatic Pummeler
+{
+    "name": "Electrostatic Pummeler",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, you get {E}{E}{E} (three energy counters).\nPay {E}{E}{E}: This creature gets +X/+X until end of turn, where X is its power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Electrostatic Pummeler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Electrostatic Pummeler:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Pay {E}{E}{E}: This creature gets +X/+X until end of turn, where X is its power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c565d11b-a57e-4de4-9d18-2be48a2ef742.jpg?1783937158",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The value of X is determined as Electrostatic Pummeler's last ability resolves."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If this creature's power is negative as its ability resolves, X is considered to be 0."
+            }
+        ]
+    }
 }
 
 // Elegant Edgecrafters
@@ -4220,6 +4910,82 @@
     ]
 }
 
+// Fabrication Module
+{
+    "name": "Fabrication Module",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you get one or more {E} (energy counters), put a +1/+1 counter on target creature you control.\n{4}, {T}: You get {E}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fabrication Module:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "ENERGY",
+                    "recipient": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Fabrication Module:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                },
+                "descriptionOverride": "{4}, {T}: You get {E}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "Inspiration leads to design.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f93a9693-f899-47ac-8ee0-3549d9333fff.jpg?1783937158",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If you get multiple {E} at once, you only put one +1/+1 counter on a creature, not one counter for each {E}. If you get multiple {E} at different times, Fabrication Module's ability triggers once each time."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Failed Inspection
 {
     "name": "Failed Inspection",
@@ -4657,6 +5423,61 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Fleetwheel Cruiser
+{
+    "name": "Fleetwheel Cruiser",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Trample, haste\nWhen this Vehicle enters, it becomes an artifact creature until end of turn.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fleetwheel Cruiser:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCardType",
+                    "cardType": "CREATURE",
+                    "target": "Self",
+                    "duration": "EndOfTurn"
+                },
+                "descriptionOverride": "When this Vehicle enters, it becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Sung Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fdaca1e-5741-456e-ae98-e2c45fd1731b.jpg?1783937156",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "When a Vehicle becomes a creature, that doesn't count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Fortuitous Find
@@ -5283,6 +6104,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Glassblower's Puzzleknot
+{
+    "name": "Glassblower's Puzzleknot",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, scry 2, then you get {E}{E}. (You get two energy counters. To scry 2, look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)\n{2}{U}, Sacrifice this artifact: Scry 2, then you get {E}{E}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glassblower's Puzzleknot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Glassblower's Puzzleknot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d123031-6702-4d49-a788-42eb6dbc569e.jpg?1783937154"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6094,6 +6990,85 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Inventor's Goggles
+{
+    "name": "Inventor's Goggles",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+2.\nWhenever an Artificer you control enters, you may attach this Equipment to it.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inventor's Goggles:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Artificer ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AttachEquipment",
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Inventor's Goggles:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "218",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00a26fdf-fdce-4939-8c6a-c9dff623072f.jpg?1783937154",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the Artificer that entered the battlefield leaves the battlefield before Inventor's Goggles becomes attached, Inventor's Goggles stays as it was. If it's already attached to another creature, it remains attached to that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Inventors' Fair
@@ -7718,6 +8693,87 @@
     ]
 }
 
+// Metalwork Colossus
+{
+    "name": "Metalwork Colossus",
+    "manaCost": "{11}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This spell costs {X} less to cast, where X is the total mana value of noncreature artifacts you control.\nSacrifice two artifacts: Return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Metalwork Colossus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Return this card from your graveyard to your hand"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "TotalPropertyAmongPermanentsYouControl",
+                        "property": "ManaValue",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/474480b5-c60b-4c7f-9d3e-751bca43d074.jpg?1783937152",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The total cost to cast Metalwork Colossus is locked in before you pay that cost. For example, if you control three noncreature artifacts each with mana value 2, including one you can sacrifice to add {C}, the total cost of Metalwork Colossus is {5}. Then you can sacrifice the artifact when you activate mana abilities just before paying the cost."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the total mana value of noncreature artifacts you control is 11 or greater, Metalwork Colossus costs {0} to cast."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Metalwork Colossus's last ability can be activated only if it is in your graveyard."
+            }
+        ]
+    }
+}
+
 // Minister of Inquiries
 {
     "name": "Minister of Inquiries",
@@ -7860,6 +8916,135 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Multiform Wonder
+{
+    "name": "Multiform Wonder",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, you get {E}{E}{E} (three energy counters).\nPay {E}: This creature gains your choice of flying, vigilance, or lifelink until end of turn.\nPay {E}: This creature gets +2/-2 or -2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Multiform Wonder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 3,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Multiform Wonder:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "It gains flying until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "It gains vigilance until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "It gains lifelink until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Pay {E}: This creature gains your choice of flying, vigilance, or lifelink until end of turn."
+            },
+            {
+                "id": "Multiform Wonder:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "It gets +2/-2 until end of turn",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -2
+                                },
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "It gets -2/+2 until end of turn",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Pay {E}: This creature gets +2/-2 or -2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f6956c1-36e2-4c9c-9f69-00b459f094d8.jpg?1783937152",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "As you activate one of Multiform Wonder's two activated abilities, you must announce which one you're activating. However, you don't choose that ability's effect until it resolves."
+            }
+        ]
+    }
 }
 
 // Narnam Cobra
@@ -9723,6 +10908,120 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Sequestered Stash
+{
+    "name": "Sequestered Stash",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{4}, {T}, Sacrifice this land: Mill five cards. Then you may put an artifact card from your graveyard on top of your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sequestered Stash:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Sequestered Stash:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "artifact"
+                            },
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "You may put an artifact card from your graveyard on top of your library",
+                            "selectedLabel": "Put on top of library",
+                            "remainderLabel": "Leave in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}, {T}, Sacrifice this land: Mill five cards. Then you may put an artifact card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86a17084-bb96-4e81-bff0-005bd44a1fbd.jpg?1783937143",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Sequestered Stash's ability doesn't target the artifact card in your graveyard. You may choose one of the five cards you put there from your library."
+            }
+        ]
+    }
 }
 
 // Servant of the Conduit
