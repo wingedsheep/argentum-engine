@@ -3124,7 +3124,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: '+1/+1 Counters',
         colors: ['B', 'G'],
         keyCard: 'Winding Constrictor',
-        description: 'Put +1/+1 counters on everything and add extra with counter-doubling payoffs, while removal clears the way. A midrange deck whose creatures grow out of reach.',
+        description: 'Put +1/+1 counters on everything and grow them further with payoffs that add an extra counter, while removal clears the way. A midrange deck whose creatures grow out of reach.',
       },
       {
         name: 'Vehicles',

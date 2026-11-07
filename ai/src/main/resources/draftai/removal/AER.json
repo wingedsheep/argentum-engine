@@ -1,10 +1,11 @@
 {
   "Ajani Unyielding": [
     "removal",
-    "creature-removal",
-    "artifact-removal",
-    "enchantment-removal",
-    "planeswalker-removal"
+    "creature-removal"
+  ],
+  "Battle at the Bridge": [
+    "removal",
+    "creature-removal"
   ],
   "Caught in the Brights": [
     "removal",

@@ -1348,7 +1348,7 @@ object SetArchetypes {
                 Archetype("Improvise Thopters", listOf(Color.BLUE, Color.RED),
                     "Flood the board with artifacts and tap them to improvise out spells ahead of curve, building a flying Thopter air force. A tempo deck that turns cheap artifacts into early threats."),
                 Archetype("+1/+1 Counters", listOf(Color.BLACK, Color.GREEN),
-                    "Put +1/+1 counters on everything and add extra with counter-doubling payoffs, while removal clears the way. A midrange deck whose creatures grow out of reach."),
+                    "Put +1/+1 counters on everything and grow them further with payoffs that add an extra counter, while removal clears the way. A midrange deck whose creatures grow out of reach."),
                 Archetype("Vehicles", listOf(Color.RED, Color.WHITE),
                     "Crew Vehicles with small creatures and stop blockers as your crew taps, then attack with oversized artifacts. An aggressive deck that turns every crew member into a bigger swing."),
                 Archetype("Energy Value", listOf(Color.GREEN, Color.BLUE),
