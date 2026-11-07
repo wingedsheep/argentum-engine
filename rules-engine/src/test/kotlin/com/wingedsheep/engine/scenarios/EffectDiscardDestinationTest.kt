@@ -256,7 +256,7 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
                 targetPlayer = game.player1Id)
             val decision = game.state.pendingDecision as ChooseOptionDecision
             decision.playerId shouldBe game.player1Id
-            decision.options.first() shouldBe "Reveal and discard to a library (top)"
+            decision.options.first() shouldBe "Reveal it and put it on top of your library"
             choose(game)
             game.state.getLibrary(game.player1Id).size shouldBe 2
             game.graveyardSize(1) shouldBe 0

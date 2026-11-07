@@ -64,6 +64,21 @@ object EffectDiscardDestinations {
         }.toMap()
     }
 
+    /** The player-facing button text: "Reveal it and put it on top of your library". */
+    private fun optionLabel(choice: DiscardDestinationChoice): String {
+        val destination = choice.destination
+        val where = when (destination.zone) {
+            Zone.LIBRARY -> when (destination.placement) {
+                com.wingedsheep.sdk.scripting.effects.ZonePlacement.Bottom -> "on the bottom of your library"
+                com.wingedsheep.sdk.scripting.effects.ZonePlacement.Shuffled -> "into your library and shuffle"
+                else -> "on top of your library"
+            }
+            Zone.GRAVEYARD -> "into your graveyard"
+            else -> "into ${destination.zone.displayName}"
+        }
+        return (if (choice.reveal) "Reveal it and put it " else "Put it ") + where
+    }
+
     fun prepare(state: GameState, effect: Effect, context: EffectContext,
                 cards: List<EntityId>, playerId: EntityId, zones: ZoneTransitionService): EffectResult? {
         val entries = ActiveReplacements.all(state).filter { it.granted || !state.projectedState.hasLostAllAbilities(it.sourceId) }.filter { it.effect is OptionalEffectDiscardDestination }
@@ -90,8 +105,7 @@ object EffectDiscardDestinations {
                     id = decisionId, playerId = playerId,
                     prompt = "Where do you want to discard $name?",
                     context = DecisionContext(sourceId = context.sourceId, phase = DecisionPhase.RESOLUTION),
-                    options = candidates.map { (if (it.reveal) "Reveal and discard to " else "Discard to ") + it.destination.description } +
-                        "Use the normal discard destination",
+                    options = candidates.map(::optionLabel) + "Use the normal discard destination",
                 ) },
                 answer = EffectDiscardDestinationContinuation(effect, context, id, candidates),
             ))

@@ -1211,6 +1211,8 @@ class MoveCollectionExecutor(
                     cardIds = listOf(cardId),
                     cardNames = listOf(card?.name ?: "Card"),
                     imageUris = listOf(card?.let { cardRegistry.getCard(it.cardDefinitionId)?.metadata?.imageUri }),
+                    // The discarder chose the card and knows it; the overlay is for everyone else.
+                    revealToSelf = false,
                     fromZone = Zone.HAND,
                     toZone = discardDestination!!.zone,
                 ))
