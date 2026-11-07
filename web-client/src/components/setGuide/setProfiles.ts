@@ -511,6 +511,25 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Artifacts', inPlay: 'Many cards reward controlling artifacts, and Thopter and Servo tokens count, so artifacts are worth taking over equal-power creatures.' },
     ],
   },
+  AER: {
+    tagline: 'Kaladesh\'s rebellion: crew Vehicles, improvise with artifacts and turn on revolt when your permanents leave the battlefield.',
+    setting: 'Kaladesh after the Inventors\' Fair, where the renegades rise against Tezzeret and a Consulate that has seized the plane\'s aether.',
+    gameplay: 'Games stay fast and artifact-heavy, and are usually decided in combat. Revolt rewards a permanent leaving the battlefield under your control this turn, so Servos, self-sacrificing Implements and blinks turn on bigger effects. Improvise lets your artifacts pay generic mana, so cheap artifacts let you cast spells ahead of curve. Vehicles return and need creatures to crew them, and energy carries over from Kaladesh in a smaller role.',
+    tips: [
+      'Keep a cheap way to make a permanent leave each turn: a Servo or an Implement turns on revolt when you need it.',
+      'Count your artifacts before relying on improvise: tokens and Vehicles help pay for it.',
+      'Draft enough creatures to crew your Vehicles, which are among the set\'s strongest cards.',
+    ],
+    tryIf: 'artifact synergies, sacrifice value and aggressive Vehicle decks',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['aggro', 'artifacts', 'sacrifice'],
+    mechanics: [
+      { name: 'Revolt', inPlay: 'Cards check whether a permanent you controlled left the battlefield this turn, so sacrificing a token or Implement first unlocks their bonus.' },
+      { name: 'Improvise', inPlay: 'Tap your untapped artifacts to pay for the spell\'s generic mana, so an artifact-heavy board casts big spells early.' },
+      { name: 'Vehicles', inPlay: 'Artifacts that become creatures when you tap creatures with enough power to crew them, so small creatures drive big attackers.' },
+      { name: 'Energy', inPlay: 'A few cards still hand you energy counters to spend on later abilities, carried over from Kaladesh.' },
+    ],
+  },
   AKH: {
     tagline: 'A combat-heavy format built on the trials of Amonkhet: exert for bigger attacks, cycle away dead cards, and bring the fallen back with embalm.',
     setting: 'Amonkhet, a desert plane where initiates prove themselves in the God-Pharaoh\'s trials for the glory of the afterlife.',

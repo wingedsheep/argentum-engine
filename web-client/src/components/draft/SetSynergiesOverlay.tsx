@@ -3074,6 +3074,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  AER: {
+    setCode: 'AER',
+    setName: 'Aether Revolt',
+    archetypes: [
+      {
+        name: 'Fliers Tempo',
+        colors: ['W', 'U'],
+        keyCard: 'Spire Patrol',
+        description: 'Lock down blockers with tap effects and freeze the best attacker, then fly over the top with evasive creatures and Thopters. A tempo deck that buys a turn at a time while its air force closes the game.',
+      },
+      {
+        name: 'Artifact Control',
+        colors: ['U', 'B'],
+        keyCard: "Tezzeret's Touch",
+        description: 'Animate artifacts into 5/5 bodies and grind the opponent out with removal and card advantage. A patient control deck that turns every artifact it plays into a threat or a resource.',
+      },
+      {
+        name: 'Artifact Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Weldfast Engineer',
+        description: 'Curve out with cheap artifact creatures and pump them each combat, backed by removal that rewards controlling an artifact. A fast deck that turns its artifact count into damage.',
+      },
+      {
+        name: 'Big Stompy',
+        colors: ['R', 'G'],
+        keyCard: 'Outland Boar',
+        description: "Curve into large creatures that small blockers can't stop, then keep attacking. A stompy deck whose bodies outsize the opponent's and keep swinging.",
+      },
+      {
+        name: 'Revolt Value',
+        colors: ['G', 'W'],
+        keyCard: 'Renegade Rallier',
+        description: 'Make permanents leave the battlefield with Servos, Implements and blinks to turn on revolt, then reap bigger bodies and recursion. A midrange deck that converts every trade into extra value.',
+      },
+      {
+        name: 'Revolt Sacrifice',
+        colors: ['W', 'B'],
+        keyCard: 'Hidden Stockpile',
+        description: 'Sacrifice Servos and creatures to trigger revolt each turn, refilling the board with tokens and draining value. A grindy midrange deck that never runs out of fodder.',
+      },
+      {
+        name: 'Improvise Thopters',
+        colors: ['U', 'R'],
+        keyCard: 'Maverick Thopterist',
+        description: 'Flood the board with artifacts and tap them to improvise out spells ahead of curve, building a flying Thopter air force. A tempo deck that turns cheap artifacts into early threats.',
+      },
+      {
+        name: '+1/+1 Counters',
+        colors: ['B', 'G'],
+        keyCard: 'Winding Constrictor',
+        description: 'Put +1/+1 counters on everything and add extra with counter-doubling payoffs, while removal clears the way. A midrange deck whose creatures grow out of reach.',
+      },
+      {
+        name: 'Vehicles',
+        colors: ['R', 'W'],
+        keyCard: 'Renegade Wheelsmith',
+        description: 'Crew Vehicles with small creatures and stop blockers as your crew taps, then attack with oversized artifacts. An aggressive deck that turns every crew member into a bigger swing.',
+      },
+      {
+        name: 'Energy Value',
+        colors: ['G', 'U'],
+        keyCard: 'Rogue Refiner',
+        description: 'Bank energy from creatures that draw cards, then spend it on bigger threats and tricks. A value midrange deck that out-cards the opponent while its energy engine runs.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',

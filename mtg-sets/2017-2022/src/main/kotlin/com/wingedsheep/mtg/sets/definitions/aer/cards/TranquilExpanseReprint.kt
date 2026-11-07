@@ -16,4 +16,5 @@ val TranquilExpanseReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/2/e/2ea97c40-310e-4774-ae56-d4c0500a6189.jpg",
     releaseDate = "2017-01-20",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

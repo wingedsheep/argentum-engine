@@ -1510,7 +1510,8 @@
         "rarity": "UNCOMMON",
         "artist": "James Ryman",
         "flavorText": "\"I will go where the lion-man leads.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bebef1c-2f03-4e0a-b3ba-861546ebf8a6.jpg?1783936714"
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bebef1c-2f03-4e0a-b3ba-861546ebf8a6.jpg?1783936714",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -6644,7 +6645,8 @@
         "collectorNumber": "186",
         "artist": "Chris Rahn",
         "flavorText": "\"This is about more than aether or inventions. Tezzeret's schemes must be stopped!\"\n—Ajani Goldmane",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ef9708e-bfe4-4d24-8304-1618daa1c3ee.jpg?1783936715"
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ef9708e-bfe4-4d24-8304-1618daa1c3ee.jpg?1783936715",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -8963,7 +8965,8 @@
         "collectorNumber": "192",
         "artist": "Raoul Vitale",
         "flavorText": "Its elaborate designs reveal secrets of aether's flow.",
-        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d19751aa-823e-4a0f-a004-dee333b34327.jpg"
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d19751aa-823e-4a0f-a004-dee333b34327.jpg",
+        "inBooster": false
     },
     "colorIdentityOverride": []
 }
@@ -12223,7 +12226,8 @@
         "rarity": "UNCOMMON",
         "artist": "Craig J Spearing",
         "flavorText": "Tezzeret's command of living metal has nothing to do with intricate gearcraft or aether supplies.",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eacfeec-a341-45bc-bf95-e3df0094505a.jpg?1783936713"
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eacfeec-a341-45bc-bf95-e3df0094505a.jpg?1783936713",
+        "inBooster": false
     },
     "colorIdentityOverride": []
 }

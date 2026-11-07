@@ -1329,6 +1329,32 @@ object SetArchetypes {
                     "Ramp and stockpile energy with efficient creatures, then cash it in for big evasive threats and card advantage. A value deck that keeps its energy engine running all game."),
             )
         ),
+        "AER" to SetSynergies(
+            setCode = "AER",
+            setName = "Aether Revolt",
+            archetypes = listOf(
+                Archetype("Fliers Tempo", listOf(Color.WHITE, Color.BLUE),
+                    "Lock down blockers with tap effects and freeze the best attacker, then fly over the top with evasive creatures and Thopters. A tempo deck that buys a turn at a time while its air force closes the game."),
+                Archetype("Artifact Control", listOf(Color.BLUE, Color.BLACK),
+                    "Animate artifacts into 5/5 bodies and grind the opponent out with removal and card advantage. A patient control deck that turns every artifact it plays into a threat or a resource."),
+                Archetype("Artifact Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with cheap artifact creatures and pump them each combat, backed by removal that rewards controlling an artifact. A fast deck that turns its artifact count into damage."),
+                Archetype("Big Stompy", listOf(Color.RED, Color.GREEN),
+                    "Curve into large creatures that small blockers can't stop, then keep attacking. A stompy deck whose bodies outsize the opponent's and keep swinging."),
+                Archetype("Revolt Value", listOf(Color.GREEN, Color.WHITE),
+                    "Make permanents leave the battlefield with Servos, Implements and blinks to turn on revolt, then reap bigger bodies and recursion. A midrange deck that converts every trade into extra value."),
+                Archetype("Revolt Sacrifice", listOf(Color.WHITE, Color.BLACK),
+                    "Sacrifice Servos and creatures to trigger revolt each turn, refilling the board with tokens and draining value. A grindy midrange deck that never runs out of fodder."),
+                Archetype("Improvise Thopters", listOf(Color.BLUE, Color.RED),
+                    "Flood the board with artifacts and tap them to improvise out spells ahead of curve, building a flying Thopter air force. A tempo deck that turns cheap artifacts into early threats."),
+                Archetype("+1/+1 Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Put +1/+1 counters on everything and add extra with counter-doubling payoffs, while removal clears the way. A midrange deck whose creatures grow out of reach."),
+                Archetype("Vehicles", listOf(Color.RED, Color.WHITE),
+                    "Crew Vehicles with small creatures and stop blockers as your crew taps, then attack with oversized artifacts. An aggressive deck that turns every crew member into a bigger swing."),
+                Archetype("Energy Value", listOf(Color.GREEN, Color.BLUE),
+                    "Bank energy from creatures that draw cards, then spend it on bigger threats and tricks. A value midrange deck that out-cards the opponent while its energy engine runs."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",
