@@ -1,1 +1,1 @@
-- #TBD The AI reads a "+X/-X" whose toughness loss is counted off the board (Tezzeret the Schemer, Chatterfang) as removal and aims it at the opponent's creature, and reads counts of your artifacts and improvise as asking the deck for artifacts
+- #4541 The AI reads a "+X/-X" whose toughness loss is counted off the board (Tezzeret the Schemer, Chatterfang) as removal and aims it at the opponent's creature, and reads counts of your artifacts and improvise as asking the deck for artifacts
