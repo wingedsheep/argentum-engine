@@ -288,6 +288,21 @@ enum class IntentTag {
     /** Draws cards. */
     DRAW,
 
+    /**
+     * Exiles cards off a library top that its controller may play this turn only — "exile the top
+     * three cards of your library. Until end of turn, you may play those cards" (Act on Impulse),
+     * "{R}, sacrifice two artifacts: exile the top card of your library. You may play that card this
+     * turn" (Scion of Opulence). Card advantage only when spent before cleanup, so it is not [DRAW]:
+     * a DRAW reading earns the end-step and idle-mana windows and counts the cards as held, and
+     * these would evaporate cast into an end step. Its window is a main phase of ours with mana
+     * left over to play what it exiles (`HoldPolicy.idleImpulseWindow`); cast or activated, never an
+     * opponent's turn.
+     *
+     * An impulse that lasts past this turn ("until the end of your next turn"), or a this-turn one
+     * made at the start of our own turn, is [DRAW] instead (`CardIntentAnalyzer.isLastingImpulse`).
+     */
+    IMPULSE,
+
     /** Searches a library for a card, or fetches one from outside the game (a wish). */
     TUTOR,
 

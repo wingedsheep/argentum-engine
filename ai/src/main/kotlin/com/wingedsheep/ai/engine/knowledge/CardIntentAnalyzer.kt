@@ -1783,6 +1783,9 @@ object CardIntentAnalyzer {
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.HAND && to.player == Player.You } == true
         }
         val grantsThemToUs = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromAnyTop && isLastingImpulse(it, turnAhead) }
+        // The same grant closing at this turn's cleanup, timed by us (Act on Impulse, Scion of
+        // Opulence): cards to spend now, not cards banked — [IntentTag.IMPULSE].
+        val grantsThemThisTurn = leaves.any { it is GrantMayPlayFromExileEffect && it.from in fromAnyTop && grantsToUs(it) }
         val castsThemNow = leaves.any { it is CastAnyNumberFromCollectionWithoutPayingCostEffect && it.from in fromAnyTop }
         val offersThemToOurHand = leaves.any {
             it is ForEachEffect && (it.space as? IterationSpace.Collection)?.collection in fromOurTop &&
@@ -1796,9 +1799,12 @@ object CardIntentAnalyzer {
             it is MoveCollectionEffect && it.from in fromOurTop && it.faceDown == null &&
                 (it.destination as? CardDestination.ToZone)?.let { to -> to.zone == Zone.BATTLEFIELD && to.player == Player.You } == true
         }
-        return if (movesThemToOurHand || grantsThemToUs || castsThemNow || offersThemToOurHand || putsThemOntoOurBattlefield) {
-            setOf(IntentTag.DRAW)
-        } else emptySet()
+        return when {
+            movesThemToOurHand || grantsThemToUs || castsThemNow || offersThemToOurHand || putsThemOntoOurBattlefield ->
+                setOf(IntentTag.DRAW)
+            grantsThemThisTurn -> setOf(IntentTag.IMPULSE)
+            else -> emptySet()
+        }
     }
 
     /**
@@ -1850,13 +1856,17 @@ object CardIntentAnalyzer {
      * step or on an opponent's turn, the window runs through our whole next turn.
      */
     private fun isLastingImpulse(grant: GrantMayPlayFromExileEffect, turnAhead: Boolean = false): Boolean =
-        grant.recipient == EffectTarget.Controller && !grant.ownerControls && grant.condition == null &&
+        grantsToUs(grant) &&
             when (val expiry = grant.expiry) {
                 MayPlayExpiry.EndOfTurn -> turnAhead
                 is MayPlayExpiry.UntilControllerStep -> !expiry.includeCurrentTurn || expiry.step == Step.END ||
                     (turnAhead && expiry.step == Step.CLEANUP)
                 else -> true
             }
+
+    /** Whether [grant] lets its controller play the cards, unconditionally — an impulse of ours, whatever its window. */
+    private fun grantsToUs(grant: GrantMayPlayFromExileEffect): Boolean =
+        grant.recipient == EffectTarget.Controller && !grant.ownerControls && grant.condition == null
 
     /** The collections [leaf] stores from one of [sources] — the pipeline steps that split or narrow a collection. */
     internal fun derivedCollections(leaf: Effect, sources: Set<String>): List<String> = when (leaf) {
@@ -2426,7 +2436,7 @@ object CardIntentAnalyzer {
      * takes from them (a discard, a sacrifice, life) stays read.
      */
     private val OPPONENT_GIFTS: Set<IntentTag> = setOf(
-        IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION, IntentTag.RAMP, IntentTag.LIFEGAIN,
+        IntentTag.DRAW, IntentTag.IMPULSE, IntentTag.TUTOR, IntentTag.CARD_SELECTION, IntentTag.RAMP, IntentTag.LIFEGAIN,
         IntentTag.TOKEN_MAKER, IntentTag.RECURSION, IntentTag.PROTECTION, IntentTag.PUMP, IntentTag.ANTHEM,
     )
 
@@ -3133,11 +3143,12 @@ object CardIntentAnalyzer {
                         trigger.effect,
                         trigger.allTargetRequirements,
                         turnAhead = EffectWalker.firesWithItsTurnAhead(trigger),
-                    ).tags.let { IntentTag.DRAW in it || IntentTag.FREE_SPELL in it }
+                    ).tags.let { IntentTag.DRAW in it || IntentTag.FREE_SPELL in it || IntentTag.IMPULSE in it }
                 } || script.activatedAbilities.any { ability ->
                     ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
                         !consumesSource(ability.cost) && !isRummage(ability) &&
-                        IntentTag.DRAW in analyzeEffect(ability.effect, ability.targetRequirements).tags
+                        analyzeEffect(ability.effect, ability.targetRequirements).tags
+                            .let { IntentTag.DRAW in it || IntentTag.IMPULSE in it }
                 }
             }
             // A second life (Exquisite Archangel, Enduring Angel — [LossShields]): while it stands,
@@ -3177,6 +3188,9 @@ object CardIntentAnalyzer {
             if (removal) add(PriorRung("removal", 3.5))
             if (repeatable && IntentTag.MILL in tags) add(PriorRung("repeatable mill win condition", 2.0))
             if (repeatable && IntentTag.DRAW in tags) add(PriorRung("repeatable card draw", 3.0))
+            // A card a turn that must be spent the turn it comes (Birgi, Ark of Hunger): an engine,
+            // but only on turns with mana to play what it exiles — below a draw engine.
+            if (repeatable && IntentTag.IMPULSE in tags) add(PriorRung("repeatable impulse draw", 2.0))
             if (repeatable && IntentTag.TOKEN_MAKER in tags) add(PriorRung("repeatable token maker", 3.0))
             if (IntentTag.ANTHEM in tags) add(PriorRung("anthem", 3.0))
             if (IntentTag.DAMAGE_AMPLIFIER in tags) add(PriorRung("amplifies our damage", 2.0))
@@ -3205,6 +3219,7 @@ object CardIntentAnalyzer {
             if (IntentTag.DRAW in cashable || IntentTag.TOKEN_MAKER in cashable) add(PriorRung("one-shot card or token", 1.0))
             if (IntentTag.TUTOR in cashable || IntentTag.RECURSION in cashable) add(PriorRung("one-shot tutor or recursion", 0.8))
             if (IntentTag.CARD_SELECTION in cashable) add(PriorRung("one-shot card selection", 0.7))
+            if (IntentTag.IMPULSE in cashable) add(PriorRung("one-shot impulse draw", 0.7))
             if (IntentTag.LIFEGAIN in cashable) add(PriorRung("one-shot life gain", 0.6))
             // A graveyard answer waiting on the board (Tormod's Crypt): real against recursion, idle
             // against anything else. A repeatable one is priced by the generic repeatable rung.

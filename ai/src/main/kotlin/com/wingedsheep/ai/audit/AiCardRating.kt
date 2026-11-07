@@ -251,6 +251,7 @@ object AiCardRating {
         IntentTag.SWEEPER to "Sweeper",
         IntentTag.NEUTRALIZE to "Neutralizes a creature",
         IntentTag.DRAW to "Card draw",
+        IntentTag.IMPULSE to "Impulse draw (this turn)",
         IntentTag.TUTOR to "Tutor",
         IntentTag.CARD_SELECTION to "Card selection",
         IntentTag.RAMP to "Ramp",
