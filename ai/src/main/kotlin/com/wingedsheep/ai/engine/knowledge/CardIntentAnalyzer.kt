@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
+import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -2806,6 +2807,12 @@ object CardIntentAnalyzer {
         // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
         is MustAttack -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is MustBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature must be blocked if able" (Gaea's Protector), "equipped creature … must be
+        // blocked by an Eldrazi if able" (Slayer's Cleaver), "All Walls able to block this creature
+        // do so" (Marble Priest): the lasting form of the one-shot [MustBeBlockedEffect] — it pulls
+        // blockers where we want them. A battlefield-wide lure binds both teams' attackers alike.
+        is MustBeBlocked ->
+            if (static.filter?.scope == Scope.Battlefield) emptySet() else setOf(IntentTag.COMBAT_ENHANCEMENT)
         // "Spells your opponents cast that target a Merfolk you control cost {2} more" and its
         // activated-ability twin are a ward-like tax on answering our permanents (Kopala, Warden
         // of Waves; Sphinx of New Prahv) — Ward is a [PROTECTIVE_KEYWORDS] member, so the same tag.

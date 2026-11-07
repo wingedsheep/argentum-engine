@@ -6779,6 +6779,78 @@
     ]
 }
 
+// Slayer's Cleaver
+{
+    "name": "Slayer's Cleaver",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+1 and must be blocked by an Eldrazi if able.\nEquip {4}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Slayer's Cleaver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "MustBeBlockedStatic",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "blockers": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Eldrazi"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"Don't stop chopping until the pieces stop wiggling.\"\n—Rem Karolus, Slayer of Eldrazi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9de4a83a-3a0c-4174-ba65-a6e100383b32.jpg?1783937422"
+    },
+    "colorIdentityOverride": []
+}
+
 // Smoldering Werewolf
 {
     "name": "Smoldering Werewolf",
