@@ -933,6 +933,18 @@ object Costs {
         ): AdditionalCost =
             AdditionalCost.AnyNumberForCostReduction(PermanentCostAction.EXILE, filter, reductionPerUnit, CostZone.HAND)
 
+        /**
+         * "You may exile any number of [filter] cards from your graveyard. This spell costs
+         * {[reductionPerUnit]} less to cast for each card exiled this way" (Gorex, the Tombshell). The
+         * exiled cards are linked to the permanent the spell becomes — read them back with
+         * `CardSource.FromLinkedExile()`.
+         */
+        fun ExileAnyNumberFromGraveyardForCostReduction(
+            filter: GameObjectFilter,
+            reductionPerUnit: Int
+        ): AdditionalCost =
+            AdditionalCost.AnyNumberForCostReduction(PermanentCostAction.EXILE, filter, reductionPerUnit, CostZone.GRAVEYARD)
+
         /** Forage (exile three cards from your graveyard or sacrifice a Food). */
         val Forage: AdditionalCost = AdditionalCost.Forage
 

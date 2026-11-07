@@ -305,8 +305,8 @@ internal object VariableCardsCostKind : SpellCostKind<AdditionalCost.VariableCar
 }
 
 /**
- * "You may sacrifice / tap / exile from your hand any number of …; this spell costs {N} less for each"
- * (Torgaar, Explosive Singularity, the NEO Marches). Choosing none is always legal. The discount is
+ * "You may sacrifice / tap / exile from your hand or graveyard any number of …; this spell costs {N}
+ * less for each" (Torgaar, Explosive Singularity, the NEO Marches, Gorex). Choosing none is always legal. The discount is
  * part of the total cost (`CastCostTotaller`), priced from the declared picks — [chosen] reads them
  * from the payment channel the action's picker fills.
  */
@@ -327,7 +327,7 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
                 env.costUtils.findAbilityTapTargets(env.state, env.playerId, cost.filter)
             // The spell is on its way to the stack (CR 601.2a), so it can't pay for itself.
             PermanentCostAction.EXILE ->
-                env.costUtils.findExileTargets(env.state, env.playerId, cost.filter, Zone.HAND)
+                env.costUtils.findExileTargets(env.state, env.playerId, cost.filter, cost.fromZone.toZone())
                     .filter { it != env.castCardId }
         }
 
@@ -344,9 +344,11 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
      * pick is worth — "Tap any number of untapped creatures you control — each one makes this spell
      * cost {1} less" — shorter than the printed two sentences, which the cast's card already shows.
      */
-    fun data(cost: AdditionalCost.AnyNumberForCostReduction, candidates: List<EntityId>) =
+    fun data(cost: AdditionalCost.AnyNumberForCostReduction, candidates: List<EntityId>, genericBefore: Int? = null) =
         pickerData(cost, candidates).copy(
-            description = "${cost.choice} — each one makes this spell cost {${cost.reductionPerUnit}} less"
+            description = "${cost.choice} — each one makes this spell cost {${cost.reductionPerUnit}} less",
+            reductionPerPick = cost.reductionPerUnit,
+            genericBeforeReduction = genericBefore,
         )
 
     private fun pickerData(cost: AdditionalCost.AnyNumberForCostReduction, candidates: List<EntityId>) = when (cost.action) {
@@ -364,7 +366,7 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
         )
         PermanentCostAction.EXILE -> AdditionalCostData(
             description = cost.description,
-            costType = "ExileFromHand",
+            costType = if (cost.fromZone == CostZone.GRAVEYARD) "ExileFromGraveyard" else "ExileFromHand",
             validExileTargets = candidates,
             exileMinCount = 0,
             exileMaxCount = candidates.size,
@@ -395,7 +397,10 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
                 }
                 PermanentCostAction.EXILE -> {
                     if (id == check.action.cardId) return "A spell can't exile itself to pay its own cost"
-                    if (id !in state.getZone(ZoneKey(check.playerId, Zone.HAND))) return "${card.name} is not in your hand"
+                    val zone = cost.fromZone.toZone()
+                    if (id !in state.getZone(ZoneKey(check.playerId, zone))) {
+                        return "${card.name} is not in your ${cost.fromZone.description}"
+                    }
                 }
             }
             if (!check.predicateEvaluator.matches(state, projected, id, cost.filter, context)) {
@@ -423,7 +428,15 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
             }
             PermanentCostAction.EXILE -> {
                 ledger.exiledAsCostCards.addAll(picks)
-                exileFromOwnZone(ledger, picks, Zone.HAND)
+                exileFromOwnZone(ledger, picks, cost.fromZone.toZone())
+                // The cards are exiled *with* the spell (CR 607.2q linked abilities) — the permanent it
+                // becomes keeps the pile, so "a card exiled with Gorex" reads exactly these.
+                if (picks.isNotEmpty()) {
+                    ledger.state = ledger.state.updateEntity(ledger.action.cardId) { c ->
+                        val existing = c.get<LinkedExileComponent>()?.exiledIds.orEmpty()
+                        c.with(LinkedExileComponent(exiledIds = existing + picks))
+                    }
+                }
             }
         }
         return null

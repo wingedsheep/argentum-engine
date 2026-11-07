@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -126,7 +127,9 @@ object GraveyardSynergy {
             val values = fields.associate { it.name to runCatching { it.get(node) }.getOrNull() }
             for ((name, value) in values) {
                 when (name) {
-                    in ZONE_FIELDS -> if (value == Zone.GRAVEYARD) return true
+                    // A cost's zone is a `CostZone`: "exile any number of creature cards from your
+                    // graveyard" (Gorex, the Tombshell), "exile X cards from your graveyard".
+                    in ZONE_FIELDS -> if (value == Zone.GRAVEYARD || value == CostZone.GRAVEYARD) return true
                     in ZONE_SET_FIELDS -> if (value is Collection<*> && Zone.GRAVEYARD in value) return true
                     in OWN_ZONE_FIELDS -> {
                         val graveyard = value == Zone.GRAVEYARD || (value is Collection<*> && Zone.GRAVEYARD in value)

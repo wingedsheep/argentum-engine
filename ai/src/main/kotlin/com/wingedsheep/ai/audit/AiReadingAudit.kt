@@ -331,8 +331,8 @@ object AiReadingAudit {
         val script = face.script
         val faceName = face.name.takeIf { named }
         val intent = CardIntentAnalyzer.analyze(card)
-        // A pile only ever filled with our own permanents comes back to us (Endless Sands).
-        val ownPile = CardIntentAnalyzer.stashesOwnPermanents(listOf(card.script) + card.cardFaces.map { it.script })
+        // A pile only ever filled with our own cards comes back to us (Endless Sands, Gorex).
+        val ownPile = CardIntentAnalyzer.stashesOwnCards(listOf(card.script) + card.cardFaces.map { it.script })
         // A pile it may cast from (Maralen, Theater of Horrors) makes the exile into it a draw.
         val pileCast = CardIntentAnalyzer.pileCastTags(listOf(card.script, script) + card.cardFaces.map { it.script })
         val out = mutableListOf<AbilityReading>()

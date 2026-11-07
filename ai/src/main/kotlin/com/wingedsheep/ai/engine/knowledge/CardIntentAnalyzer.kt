@@ -44,7 +44,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
+import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.UntapLimitPerStep
@@ -333,7 +335,7 @@ object CardIntentAnalyzer {
             }
         }
 
-        val ownPile = stashesOwnPermanents(scripts)
+        val ownPile = stashesOwnCards(scripts)
         val pileCast = pileCastTags(scripts)
         for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root }, ownPile = ownPile, pileCast = pileCast)
         if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
@@ -495,7 +497,7 @@ object CardIntentAnalyzer {
         val manaAbilities = scripts.flatMap { it.activatedAbilities }.filter { it.isManaAbility }
         val sickRamp = sick && manaAbilities.isNotEmpty() && manaAbilities.all { tapsOrUntapsItself(it.cost) }
         if (deferred.isEmpty() && !sickRamp) return tags
-        val ownPile = stashesOwnPermanents(scripts)
+        val ownPile = stashesOwnCards(scripts)
         val pileCast = pileCastTags(scripts)
         fun tagsOfRoots(roots: List<Pair<Effect, List<TargetRequirement>>>) =
             roots.flatMapTo(HashSet()) { (effect, requirements) -> effectTags(effect, requirements, ownPile, pileCast) }
@@ -1109,7 +1111,7 @@ object CardIntentAnalyzer {
      * pile is a draw banked in exile, which the fill ([pileFillTags]) and the release
      * ([pileReleaseTags]) both read as [IntentTag.DRAW].
      *
-     * Conservative like [stashesOwnPermanents]: any other way of filling the pile — a single-card or
+     * Conservative like [stashesOwnCards]: any other way of filling the pile — a single-card or
      * spell exile, exile-until-leaves, a zone-change redirect, a top-of-library exile that can reach
      * another player's library — may hand an opponent their own card back, and answers false.
      */
@@ -1179,17 +1181,22 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * Whether everything [scripts] exile "with this" comes off their controller's own battlefield:
-     * every pile filler is a single-target exile aimed only at "… you control" ("{2}, {T}: Exile
-     * target creature you control" — Endless Sands, Safe Haven). Such a pile holds our own
-     * creatures, so returning it "under its owner's control" brings them back to us ([regrowthTags]).
+     * Whether everything [scripts] exile "with this" is their controller's own: every pile filler is
+     * a single-target exile aimed only at "… you control" ("{2}, {T}: Exile target creature you
+     * control" — Endless Sands, Safe Haven), or the spell's own "exile any number of … from your
+     * hand / graveyard" discount cost, which only ever takes the caster's cards (Gorex, the
+     * Tombshell). Such a pile holds our own cards, so returning it "under its owner's control" or to
+     * "its owner's hand" brings them back to us ([regrowthTags]).
      *
      * Conservative: any other way of filling the pile — a group or pipeline exile, exile-until-leaves,
      * an exiled spell, a zone-change redirect — may reach another player's cards and answers false.
      */
-    fun stashesOwnPermanents(scripts: List<CardScript>): Boolean {
+    fun stashesOwnCards(scripts: List<CardScript>): Boolean {
         var filled = false
         for (script in scripts) {
+            if (script.additionalCosts.any { it is AdditionalCost.AnyNumberForCostReduction && it.action == PermanentCostAction.EXILE }) {
+                filled = true
+            }
             if (script.replacementEffects.any {
                     (it is RedirectZoneChange && it.linkToSource) || (it is RedirectZoneChangeWith && it.linkToSource)
                 }
@@ -1226,8 +1233,9 @@ object CardIntentAnalyzer {
      * a graveyard exiled is graveyard hate, both read (or not) elsewhere.
      *
      * "Under its owner's control" hands the pile back to whoever owned each card — a release, not a
-     * recursion — unless [ownPile]: the card only ever stashes its controller's own permanents there
-     * ([stashesOwnPermanents]: Endless Sands, Safe Haven), so the cards coming back are ours.
+     * recursion — unless [ownPile]: the card only ever stashes its controller's own cards there
+     * ([stashesOwnCards]: Endless Sands, Safe Haven, Gorex), so the cards coming back — onto the
+     * battlefield or into hand — are ours.
      */
     private fun regrowthTags(root: Effect, ownPile: Boolean = false): Set<IntentTag> {
         val leaves = readingLeaves(root)
@@ -1268,8 +1276,10 @@ object CardIntentAnalyzer {
                 in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD ||
                     (to.zone == Zone.LIBRARY && to.placement == ZonePlacement.Top)
                 // "Under their owners' control" hands the pile back (Lagrella), unless only our
-                // own permanents were ever stashed in it (Endless Sands, Safe Haven).
-                in fromLinkedExile -> to.zone == Zone.BATTLEFIELD && (!move.underOwnersControl || ownPile)
+                // own cards were ever stashed in it (Endless Sands, Safe Haven). Its owner's hand is
+                // ours on the same terms (Gorex, the Tombshell's own graveyard cards).
+                in fromLinkedExile -> (to.zone == Zone.BATTLEFIELD && (!move.underOwnersControl || ownPile)) ||
+                    (to.zone == Zone.HAND && ownPile)
                 else -> false
             }
         }
@@ -3141,14 +3151,22 @@ object CardIntentAnalyzer {
             // it is gone before the stream can run twice.
             // A free permanent or spell every time it fires (Kinscaer Sentry and Goblin Lackey
             // putting a creature from hand onto the battlefield, Goliath Daydreamer recasting a
-            // spell) is the same engine paid in mana instead of cards.
+            // spell) is the same engine paid in mana instead of cards, and so is a card back from
+            // the graveyard or a stash every time it fires (Gorex, the Tombshell's attack trigger).
+            // Only a trigger that works from the battlefield is a reason to keep this permanent
+            // alive: a graveyard-only self-return (Bloodghast) streams from the graveyard instead.
+            val ownPile = stashesOwnCards(scripts)
             val repeatableDraw = !repeatableRemoval && !sacrificesItselfAtEndStep(scripts) && scripts.any { script ->
                 script.triggeredAbilities.any { trigger ->
-                    canFireMoreThanOnce(trigger) && analyzeEffect(
+                    Zone.BATTLEFIELD in trigger.activeZones && canFireMoreThanOnce(trigger) && analyzeEffect(
                         trigger.effect,
                         trigger.allTargetRequirements,
                         turnAhead = EffectWalker.firesWithItsTurnAhead(trigger),
-                    ).tags.let { IntentTag.DRAW in it || IntentTag.FREE_SPELL in it || IntentTag.IMPULSE in it }
+                        ownPile = ownPile,
+                    ).tags.let {
+                        IntentTag.DRAW in it || IntentTag.FREE_SPELL in it || IntentTag.IMPULSE in it ||
+                            IntentTag.RECURSION in it
+                    }
                 } || script.activatedAbilities.any { ability ->
                     ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
                         !consumesSource(ability.cost) && !isRummage(ability) &&
@@ -3257,7 +3275,7 @@ object CardIntentAnalyzer {
     /**
      * What [readingLeaves] reads "exile target creature you control" linked to this permanent as
      * (Endless Sands, Safe Haven): our creature stashed out of harm's way until the card returns it
-     * ([stashesOwnPermanents]) — a slow blink, [IntentTag.PROTECTION], never removal. Compared by identity.
+     * ([stashesOwnCards]) — a slow blink, [IntentTag.PROTECTION], never removal. Compared by identity.
      */
     private val OWN_STASH: Effect = CompositeEffect(
         listOf(MoveToZoneEffect(EffectTarget.Self, Zone.EXILE, linkToSource = true)),

@@ -305,6 +305,7 @@ class CastSpellEnumerator(
             if (reducingCost != null && offer.reducingCandidates.isNotEmpty()) {
                 val maxReduction = maxOfferReduction(context, offer)
                 val genericBefore = effectiveCost.genericAmount
+                offer.reducingGenericBefore = genericBefore
                 offerReduction = maxReduction
                 effectiveCost = effectiveCost.reduceGeneric(maxReduction)
                 if (effectiveCost.hasX) {
@@ -2881,7 +2882,7 @@ class CastSpellEnumerator(
         val selections = buildList {
             val reducingCost = offer.reducingCost
             if (reducingCost != null && offer.reducingCandidates.isNotEmpty()) {
-                add(AnyNumberForCostReductionCostKind.data(reducingCost, offer.reducingCandidates))
+                add(AnyNumberForCostReductionCostKind.data(reducingCost, offer.reducingCandidates, offer.reducingGenericBefore))
             }
             if (offer.sacrificeTargets.isNotEmpty()) {
                 val sacCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Sacrifice }

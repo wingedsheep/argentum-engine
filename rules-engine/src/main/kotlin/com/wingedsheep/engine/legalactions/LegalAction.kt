@@ -549,6 +549,22 @@ data class AdditionalCostData(
     val exileMinCount: Int = 0,
     val exileMaxCount: Int = 0,
     /**
+     * Generic mana each pick takes off the spell's total cost — set only on the zero-floor picker of
+     * "you may sacrifice / tap / exile any number of …; this spell costs {N} less for each"
+     * (`AdditionalCost.AnyNumberForCostReduction`), 0 everywhere else. The offer's
+     * `manaCostString` is priced at the largest effective discount (every candidate picked, a
+     * candidate that is also a counted mana source netted at N − 1); with
+     * [genericBeforeReduction] a payer prices any smaller pick exactly — the AI reads both to pick
+     * only as many as the cast needs.
+     */
+    val reductionPerPick: Int = 0,
+    /**
+     * The generic mana in the total cost before that discount — what `manaCostString`'s generic
+     * was before every candidate's [reductionPerPick] came off it, floored at zero (CR 601.2f).
+     * Null when the offer has no such discount.
+     */
+    val genericBeforeReduction: Int? = null,
+    /**
      * The **floor on the combined measure** of the exiled cards, and what each offered card is
      * worth toward it — the sum gate shared by every graveyard exile cost whose constraint is a
      * total rather than a count: collect evidence N (CR 701.59a, measured by mana value) and the

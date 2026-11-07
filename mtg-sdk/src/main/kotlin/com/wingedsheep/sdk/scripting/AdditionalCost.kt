@@ -130,8 +130,10 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      *  - `TAP` — untapped permanents you control; a cost, not the {T} symbol, so summoning sickness
      *    doesn't matter (Explosive Singularity).
      *  - `EXILE` with [fromZone] `HAND` — cards in your hand other than the spell itself (the
-     *    Kamigawa: Neon Dynasty March cycle). Exiling permanents for a discount isn't printed, so
-     *    `EXILE` is hand-only for now.
+     *    Kamigawa: Neon Dynasty March cycle) — or `GRAVEYARD` — cards in your graveyard (Gorex, the
+     *    Tombshell). Exiling permanents for a discount isn't printed, so `EXILE` is hand/graveyard
+     *    only. The exiled cards are *exiled with* the spell (CR 607.2q linked abilities): they join the
+     *    linked-exile pile of the permanent it becomes, so "a card exiled with Gorex" reads them.
      *
      * Closest neighbours: [CostAtom.VariablePermanents] (a variable-count cost whose count becomes
      * the ability's X, never a discount, and battlefield-only) and [VariableCards] (the count is
@@ -140,7 +142,7 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * @property action what is done with each chosen object.
      * @property filter which objects may be chosen.
      * @property reductionPerUnit generic mana taken off per object chosen.
-     * @property fromZone where the chosen objects are: `BATTLEFIELD`, or `HAND` for `EXILE`.
+     * @property fromZone where the chosen objects are: `BATTLEFIELD`, or `HAND` / `GRAVEYARD` for `EXILE`.
      */
     @SerialName("AnyNumberForCostReduction")
     @Serializable
@@ -152,13 +154,14 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     ) : AdditionalCost {
         init {
             require(
-                if (action == PermanentCostAction.EXILE) fromZone == CostZone.HAND else fromZone == CostZone.BATTLEFIELD
+                if (action == PermanentCostAction.EXILE) fromZone == CostZone.HAND || fromZone == CostZone.GRAVEYARD
+                else fromZone == CostZone.BATTLEFIELD
             ) { "AnyNumberForCostReduction: $action from $fromZone is not supported" }
         }
 
         override val description: String get() =
             "You may ${choice.replaceFirstChar { it.lowercase() }}. This spell costs {$reductionPerUnit} " +
-                "less to cast for each ${if (fromZone == CostZone.HAND) "card" else singular()} " +
+                "less to cast for each ${if (fromZone == CostZone.BATTLEFIELD) singular() else "card"} " +
                 "${when (action) {
                     PermanentCostAction.SACRIFICE -> "sacrificed"
                     PermanentCostAction.TAP -> "tapped"
@@ -169,14 +172,14 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         val choice: String get() = when (action) {
             PermanentCostAction.SACRIFICE -> "Sacrifice any number of ${plural()}"
             PermanentCostAction.TAP -> "Tap any number of untapped ${plural()} you control"
-            PermanentCostAction.EXILE -> "Exile any number of ${cardsNoun()} from your hand"
+            PermanentCostAction.EXILE -> "Exile any number of ${cardsNoun()} from your ${fromZone.description}"
         }
 
         private fun singular(): String = filter.copy(controllerPredicate = null).description
 
         private fun plural(): String = com.wingedsheep.sdk.scripting.util.pluralNounPhrase(singular())
 
-        // A colour-only filter describes itself as "white"; a hand pick is always of cards.
+        // A colour-only filter describes itself as "white"; a hand or graveyard pick is always of cards.
         private fun cardsNoun(): String = filter.description.let {
             if (it.endsWith("card")) com.wingedsheep.sdk.scripting.util.pluralNounPhrase(it) else "$it cards"
         }
