@@ -65,6 +65,18 @@ class NahirisWrathScenarioTest : ScenarioTestBase() {
             withClue("the untargeted giant is untouched") { game.findPermanent("Hill Giant") shouldNotBe null }
         }
 
+        test("up to X: two discards may pick a single target") {
+            val game = board()
+            val angel = game.findPermanent("Serra Angel")!!
+
+            val cast = game.cast(x = 2, discarded = listOf("Grizzly Bears", "Hill Giant"), targets = listOf(angel))
+            withClue("cast: ${cast.error}") { cast.error shouldBe null }
+            game.resolveStack()
+
+            withClue("6 damage kills the 4/4") { game.isOnBattlefield("Serra Angel") shouldBe false }
+            game.isOnBattlefield("Jace Beleren") shouldBe true
+        }
+
         test("one discard allows only one target and deals that card's mana value") {
             val game = board()
             val angel = game.findPermanent("Serra Angel")!!

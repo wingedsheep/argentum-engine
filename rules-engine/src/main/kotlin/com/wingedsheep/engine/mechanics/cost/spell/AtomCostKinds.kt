@@ -52,12 +52,22 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 private val CostAtom.leadingDescription: String get() = description.replaceFirstChar { it.uppercase() }
 
 /** The caster's hand minus the spell being cast, narrowed to [filter]. */
-internal fun handCandidates(env: SpellCostEnumeration, filter: GameObjectFilter): List<EntityId> {
-    val handCards = env.state.getZone(ZoneKey(env.playerId, Zone.HAND)).filter { it != env.castCardId }
+internal fun handCandidates(env: SpellCostEnumeration, filter: GameObjectFilter): List<EntityId> =
+    handCandidates(env.state, env.playerId, env.castCardId, filter, env.predicateEvaluator)
+
+/** The payer's hand cards matching [filter], never [castCardId] — it is on the stack as its costs are paid (CR 601.2a). */
+internal fun handCandidates(
+    state: GameState,
+    playerId: EntityId,
+    castCardId: EntityId?,
+    filter: GameObjectFilter,
+    predicateEvaluator: PredicateEvaluator,
+): List<EntityId> {
+    val handCards = state.getZone(ZoneKey(playerId, Zone.HAND)).filter { it != castCardId }
     if (filter == GameObjectFilter.Any) return handCards
-    val predicateContext = PredicateContext(controllerId = env.playerId)
+    val predicateContext = PredicateContext(controllerId = playerId)
     return handCards.filter {
-        env.predicateEvaluator.matches(env.state, env.state.projectedState, it, filter, predicateContext)
+        predicateEvaluator.matches(state, state.projectedState, it, filter, predicateContext)
     }
 }
 

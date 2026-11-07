@@ -8,6 +8,7 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.ChoiceCostResolver
 import com.wingedsheep.engine.handlers.costs.ForageCostResolver
 import com.wingedsheep.engine.handlers.effects.DamageUtils
@@ -198,18 +199,12 @@ internal object VariableCardsCostKind : SpellCostKind<AdditionalCost.VariableCar
         state: GameState,
         payerId: EntityId,
         costs: List<AdditionalCost>,
-        predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator,
+        predicateEvaluator: PredicateEvaluator,
         castCardId: EntityId?,
     ): Int? = SpellCosts.flattenComposites(costs)
         .filterIsInstance<AdditionalCost.VariableCards>()
         .filter { it.action == CardCostAction.DISCARD }
-        .minOfOrNull { cost ->
-            val context = PredicateContext(controllerId = payerId)
-            state.getZone(ZoneKey(payerId, Zone.HAND)).count { cardId ->
-                cardId != castCardId &&
-                    predicateEvaluator.matches(state, state.projectedState, cardId, cost.filter, context)
-            }
-        }
+        .minOfOrNull { cost -> handCandidates(state, payerId, castCardId, cost.filter, predicateEvaluator).size }
 
     // `canPay` has no cast in hand and can't exclude the card being cast; `enumerate` does.
     override fun canPay(state: GameState, payerId: EntityId, cost: AdditionalCost.VariableCards, costHandler: CostHandler): Boolean {

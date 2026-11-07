@@ -5944,7 +5944,15 @@
             },
             {
                 "date": "2016-07-13",
+                "text": "You can't target the same creature or planeswalker multiple times to deal more damage to it."
+            },
+            {
+                "date": "2016-07-13",
                 "text": "If you discard a card with {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you cast Nahiri's Wrath without paying its mana cost, you'll still choose a value for X and discard X cards."
             },
             {
                 "date": "2016-07-13",

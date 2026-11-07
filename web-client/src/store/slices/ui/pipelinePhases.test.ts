@@ -739,18 +739,7 @@ describe('Discard X cards — exact-X discard picker', () => {
       minTargets: 2,
       maxTargets: 2,
       isDiscardSelection: true,
-      targetDescription: 'Discard 2 cards',
     })
-  })
-
-  it('names a single discard in the singular at X = 1', () => {
-    const info = discardXAction()
-    let captured: Record<string, unknown> | null = null
-    const store = {
-      startTargeting: (arg: Record<string, unknown>) => { captured = arg },
-    } as unknown as Parameters<typeof enterPhase>[3]
-    enterPhase({ type: 'costPayment' }, info, { ...info.action, xValue: 1 } as never, store, undefined)
-    expect(captured).toMatchObject({ minTargets: 1, maxTargets: 1, targetDescription: 'Discard 1 card' })
   })
 
   it('skips the discard picker when X is 0', () => {

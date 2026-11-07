@@ -353,6 +353,21 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
 // ---------------------------------------------------------------------------
 
 /**
+ * The count a `countIsX` cost picker owes — the X the xSelection phase put on the cast — or null
+ * when the cost's count isn't X or no X was announced.
+ */
+function announcedCostX(costInfo: { readonly countIsX?: boolean }, action: GameAction): number | null {
+  return costInfo.countIsX && action.type === 'CastSpell' && typeof action.xValue === 'number'
+    ? action.xValue
+    : null
+}
+
+/** "Sacrifice X creatures" → "Sacrifice 2 creatures" / "Sacrifice 1 creature". */
+function describeCostX(description: string, x: number): string {
+  return x === 1 ? description.replace(/\bX (\w+?)s\b/, '1 $1') : description.replace(/\bX\b/, String(x))
+}
+
+/**
  * "Sacrifice X creatures" / "discard X cards" announced at X = 0 owes nothing, so its picker would
  * only ask the player to confirm an empty selection: drop it from the phases left after the X pick.
  */
@@ -986,19 +1001,11 @@ export function enterPhase(
         case 'SacrificeVariable': {
           validTargets = [...(costInfo.validSacrificeTargets ?? [])]
           // "Sacrifice X creatures": exactly the X the xSelection phase put on the action.
-          const xCount =
-            costInfo.countIsX && action.type === 'CastSpell' && typeof action.xValue === 'number'
-              ? action.xValue
-              : null
+          const xCount = announcedCostX(costInfo, action)
           minTargets = xCount ?? costInfo.sacrificeCount ?? 0
           maxTargets = xCount ?? validTargets.length
           flags.isSacrificeSelection = true
-          flags.targetDescription =
-            xCount == null
-              ? costInfo.description
-              : xCount === 1
-                ? costInfo.description.replace(/\bX (\w+?)s\b/, '1 $1')
-                : costInfo.description.replace(/\bX\b/, String(xCount))
+          flags.targetDescription = xCount == null ? costInfo.description : describeCostX(costInfo.description, xCount)
           break
         }
         case 'TapPermanents': {
@@ -1091,23 +1098,14 @@ export function enterPhase(
         case 'DiscardCard': {
           validTargets = [...(costInfo.validDiscardTargets ?? [])]
           // "Discard X cards": exactly the X the xSelection phase put on the action.
-          const xCount =
-            costInfo.countIsX && action.type === 'CastSpell' && typeof action.xValue === 'number'
-              ? action.xValue
-              : null
+          const xCount = announcedCostX(costInfo, action)
           minTargets = xCount ?? costInfo.discardCount ?? 1
           // A variable discard sends its own upper bound; a fixed one doesn't.
           maxTargets = xCount ?? costInfo.discardMaxCount ?? costInfo.discardCount ?? 1
           flags.isSacrificeSelection = true
           flags.isDiscardSelection = true
-          if (xCount != null) {
-            flags.targetDescription =
-              xCount === 1
-                ? costInfo.description.replace(/\bX (\w+?)s\b/, '1 $1')
-                : costInfo.description.replace(/\bX\b/, String(xCount))
-          } else if (costInfo.discardMaxCount != null) {
-            flags.targetDescription = costInfo.description
-          }
+          // An exact X reads "Select card to discard (0/2)"; only a range names the cost.
+          if (xCount == null && costInfo.discardMaxCount != null) flags.targetDescription = costInfo.description
           break
         }
         case 'ExileFromGraveyard':

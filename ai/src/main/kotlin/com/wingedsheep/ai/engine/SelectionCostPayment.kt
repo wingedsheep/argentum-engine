@@ -10,7 +10,13 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Paying a plain selection cost — tap, sacrifice, discard, bounce, reveal N of something — the way
@@ -41,7 +47,7 @@ internal object SelectionCostPayment {
             is ActivateAbility -> (gameAction.costPayment ?: AdditionalCostPayment()) to gameAction.playerId
             else -> return gameAction
         }
-        val order = CandidateOrder(state, payerId, intents)
+        val order = CandidateOrder(state, payerId, intents, discardsByManaValue(state, gameAction, intents))
         val xValue = (gameAction as? CastSpell)?.xValue ?: 0
         val primary = plain(info, existing, order, xValue) ?: return gameAction
         val payment = info.alsoRequired.fold(primary) { acc, extra -> plain(extra, acc, order, xValue) ?: acc }
@@ -103,16 +109,45 @@ internal object SelectionCostPayment {
     }
 
     /**
+     * Whether [gameAction] casts a spell whose damage is "the total mana value of the discarded
+     * cards" (Nahiri's Wrath) — then its discard cost is the fuel, and the cards worth the most
+     * mana value are the ones to discard, not the ones worth least in hand.
+     */
+    fun discardsByManaValue(state: GameState, gameAction: GameAction, intents: IntentCatalog): Boolean {
+        val cast = gameAction as? CastSpell ?: return false
+        val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
+        val effect = intents.definition(name)?.script?.spellEffect ?: return false
+        return dealsDiscardedManaValue(effect)
+    }
+
+    private fun dealsDiscardedManaValue(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
+        when (leaf) {
+            is ForEachEffect -> dealsDiscardedManaValue(leaf.body)
+            is DealDamageEffect -> readsDiscardedManaValue(leaf.amount)
+            else -> false
+        }
+    }
+
+    private fun readsDiscardedManaValue(amount: DynamicAmount): Boolean = when (amount) {
+        is DynamicAmount.ContextProperty -> amount.key == ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE
+        is DynamicAmount.Add -> readsDiscardedManaValue(amount.left) || readsDiscardedManaValue(amount.right)
+        is DynamicAmount.Multiply -> readsDiscardedManaValue(amount.amount)
+        else -> false
+    }
+
+    /**
      * Orders cost candidates least valuable first: permanents by [BoardPresence.permanentValue]
      * (the same price the craft-material pick and the sacrifice decision in [DecisionResponder]
      * use), cards in hand by [CardSelectionValue] (the discard decision's price). Stable, so equal
      * candidates keep the enumerator's order. The hand pricer is built lazily — most actions carry
-     * no discard cost.
+     * no discard cost. With [discardsByManaValue] the hand goes highest mana value first instead,
+     * least valuable among equals ([SelectionCostPayment.discardsByManaValue]).
      */
     class CandidateOrder(
         private val state: GameState,
         private val payerId: EntityId?,
         private val intents: IntentCatalog,
+        private val discardsByManaValue: Boolean = false,
     ) {
         private val handValue by lazy { payerId?.let { CardSelectionValue.of(state, it, intents) } }
 
@@ -127,8 +162,15 @@ internal object SelectionCostPayment {
 
         fun cardsInHand(candidates: List<EntityId>): List<EntityId> {
             if (candidates.size < 2) return candidates
-            val value = handValue ?: return candidates
-            return candidates.sortedBy { value.score(it) }
+            val value = handValue
+            val manaValue = { id: EntityId -> state.getEntity(id)?.get<CardComponent>()?.manaValue ?: 0 }
+            return when {
+                discardsByManaValue && value != null ->
+                    candidates.sortedWith(compareByDescending(manaValue).thenBy { value.score(it) })
+                discardsByManaValue -> candidates.sortedByDescending(manaValue)
+                value != null -> candidates.sortedBy { value.score(it) }
+                else -> candidates
+            }
         }
     }
 }

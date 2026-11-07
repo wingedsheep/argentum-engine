@@ -56,7 +56,16 @@ val NahirisWrath = card("Nahiri's Wrath") {
                 "madness, for example) or are no longer in that zone."
         )
         ruling("2016-07-13", "The damage is not divided. Nahiri's Wrath will deal that much damage to each target.")
+        ruling(
+            "2016-07-13",
+            "You can't target the same creature or planeswalker multiple times to deal more damage to it."
+        )
         ruling("2016-07-13", "If you discard a card with {X} in its mana cost, X is considered to be 0.")
+        ruling(
+            "2016-07-13",
+            "If you cast Nahiri's Wrath without paying its mana cost, you'll still choose a value for X and " +
+                "discard X cards."
+        )
         ruling(
             "2016-07-13",
             "If you copy Nahiri's Wrath, it has the same number of targets and deals the same amount of " +

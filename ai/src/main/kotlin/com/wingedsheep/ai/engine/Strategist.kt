@@ -2314,7 +2314,9 @@ class Strategist(
             is ActivateAbility -> gameAction.playerId
             else -> null
         }
-        val cheapestFirst = SelectionCostPayment.CandidateOrder(state, payerId, intents)
+        val cheapestFirst = SelectionCostPayment.CandidateOrder(
+            state, payerId, intents, SelectionCostPayment.discardsByManaValue(state, gameAction, intents),
+        )
         val xValue = (gameAction as? CastSpell)?.xValue ?: 0
         val discountPicks = if (info.reductionPerPick > 0 && gameAction is CastSpell && !action.hasXCost) {
             costReductionPicks(state, action, gameAction.playerId, info, existing, cheapestFirst)
