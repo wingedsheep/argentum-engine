@@ -70,7 +70,7 @@
                                     "EmitLibrarySearchedEvent"
                                 ]
                             },
-                            "description": "Search your library for a basic land card, then shuffle and put that card on top of your library"
+                            "description": "Search your library for a basic land card, reveal it, then shuffle and put that card on top of your library"
                         }
                     ]
                 }

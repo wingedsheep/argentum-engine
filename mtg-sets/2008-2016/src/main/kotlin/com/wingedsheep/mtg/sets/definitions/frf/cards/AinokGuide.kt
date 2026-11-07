@@ -44,7 +44,7 @@ val AinokGuide = card("Ainok Guide") {
                     destination = SearchDestination.TOP_OF_LIBRARY,
                     reveal = true
                 ),
-                "Search your library for a basic land card, then shuffle and put that card on top of your library",
+                "Search your library for a basic land card, reveal it, then shuffle and put that card on top of your library",
             ),
         )
     }

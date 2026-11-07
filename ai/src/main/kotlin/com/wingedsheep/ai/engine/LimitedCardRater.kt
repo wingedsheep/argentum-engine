@@ -25,7 +25,6 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -576,7 +575,7 @@ object LimitedCardRater {
      * dead draw for a card — or the land it is short of — is worth a small, flat bonus.
      */
     private fun cyclingBonus(card: CardDefinition): Double =
-        if (card.keywordAbilities.any { it is KeywordAbility.Cycling }) CYCLING_BONUS else 0.0
+        if (card.hasCycling) CYCLING_BONUS else 0.0
 
     private const val CYCLING_BONUS = 0.3
 
