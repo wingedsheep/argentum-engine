@@ -33,7 +33,7 @@ Abandoned Outpost
 Abandoned Sarcophagus
 Abattoir Ghoul
 Abbey Griffin
-Abbot of Keral Keep	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Abbot of Keral Keep
 Aberrant Manawurm	intent: ModifyStatsEffect
 Aberrant Mind Sorcerer
 Aberrant Researcher
@@ -113,7 +113,7 @@ Acrobatic Leap
 Acrobatic Maneuver
 Act of Heroism
 Act of Treason
-Act on Impulse	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Act on Impulse
 Action News Crew
 Active Volcano
 Adagia, Windswept Bastion
@@ -162,7 +162,7 @@ Aeolipile
 Aerathi Berserker
 Aerial Assault
 Aerial Boost
-Aerial Caravan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Aerial Caravan
 Aerial Doombot
 Aerial Engineer
 Aerial Guide
@@ -627,7 +627,7 @@ Ankle Biter
 Ankle Shanker
 Annex
 Annex Sentry
-Annie Flash, the Veteran	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Annie Flash, the Veteran
 Annie Joins Up
 Annihilate
 Annihilating Glare
@@ -717,7 +717,7 @@ Aragorn, the Uniter
 Arahbo, the First Fang
 Arashin Sunshield
 Arasta of the Endless Web
-Araña, Heart of the Spider	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Araña, Heart of the Spider
 Arbalest Engineers
 Arbiter of Knollridge
 Arbiter of Woe
@@ -837,7 +837,7 @@ Arid Archway
 Arid Mesa
 Arisen Gorgon
 Ark of Blight
-Ark of Hunger	intent: GrantMayPlayFromExileEffect
+Ark of Hunger
 Arlinn Kord
 Arlinn's Wolf
 Arlinn, Voice of the Pack
@@ -1611,7 +1611,7 @@ Birchlore Rangers
 Bird Admirer
 Bird Maiden
 Birds of Paradise
-Birgi, God of Storytelling	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Birgi, God of Storytelling
 Birnin Zana Plaza
 Birth of the Imperium
 Birthday Escape
@@ -2626,7 +2626,7 @@ Cascade Bluffs
 Cascade Seer	intent: EmitScriedEventEffect
 Cascading Cataracts
 Case File Auditor
-Case of the Burning Masks	intent: BecomeSolvedEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Case of the Burning Masks	intent: BecomeSolvedEffect
 Case of the Crimson Pulse	intent: BecomeSolvedEffect
 Case of the Filched Falcon	intent: BecomeSolvedEffect
 Case of the Gateway Express	intent: BecomeSolvedEffect; polarity: ForEachEffect
@@ -2843,12 +2843,12 @@ Chandra's Triumph
 Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
 Chandra, Awakened Inferno
 Chandra, Chill of Compliance
-Chandra, Dressed to Kill	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
-Chandra, Fire Artisan	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Chandra, Dressed to Kill
+Chandra, Fire Artisan
 Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
 Chandra, Flame's Fury
 Chandra, Flameshaper
-Chandra, Heart of Fire	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary|hand→exile|graveyard)
+Chandra, Heart of Fire
 Chandra, Hope's Beacon
 Chandra, Novice Pyromancer
 Chandra, Pyrogenius
@@ -2882,7 +2882,7 @@ Chaplain's Blessing
 Char
 Charcoal Diamond
 Chardalyn Dragon
-Charforger	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Charforger
 Charge
 Charge Through	timing: GrantKeywordEffect
 Charge of the Forever-Beast
@@ -3934,7 +3934,7 @@ Dark Ritual
 Dark Sphere
 Dark Supplicant
 Dark Withering
-Dark-Dweller Oracle	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Dark-Dweller Oracle
 Darkblade Agent
 Darkblast
 Darkbore Pathway
@@ -4551,7 +4551,7 @@ Divebomber Griffin
 Diver Skaab
 Divergent Equation
 Divergent Growth	intent: GrantActivatedAbilityToGroupEffect; timing: GrantActivatedAbilityToGroupEffect
-Diversion Specialist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Diversion Specialist
 Diversion Unit
 Divert Disaster
 Divest
@@ -5328,7 +5328,7 @@ Embereth Paladin
 Embereth Shieldbreaker
 Embereth Skyblazer
 Embereth Veteran	intent: CreateAuraTokenEffect
-Emberheart Challenger	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Emberheart Challenger
 Emberhorn Minotaur
 Embermage Goblin
 Embermouth Sentinel
@@ -5700,7 +5700,7 @@ Experimental Aviator
 Experimental Confectioner
 Experimental Frenzy
 Experimental Overload
-Experimental Synthesizer	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Experimental Synthesizer
 Expert-Level Safe	intent: Pipeline(TopOfLibrary→exile); intent: SecretChoiceEffect; polarity: SecretChoiceEffect
 Exploration
 Exploration Broodship
@@ -6213,7 +6213,7 @@ Firemantle Mage
 Firemind Vessel
 Firemind's Research
 Fires of Invention
-Fires of Mount Doom	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Fires of Mount Doom
 Fires of Victory
 Fires of Yavimaya
 Firescreamer
@@ -6243,7 +6243,7 @@ Fists of the Anvil
 Fix What's Broken
 Flame Blitz
 Flame Burst
-Flame Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Flame Channeler
 Flame Discharge
 Flame Fusillade	intent: ForEach>GrantActivatedAbilityEffect
 Flame Javelin
@@ -6841,7 +6841,7 @@ Geist of the Moors
 Geist-Fueled Scarecrow
 Geistcatcher's Rig
 Geistflame
-Geistflame Reservoir	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Geistflame Reservoir
 Geistlight Snare
 Geistwave
 Gelatinous Cube	polarity: MoveToZoneEffect
@@ -7605,7 +7605,7 @@ Greenwheel Liberator
 Greenwood Sentinel
 Gremlin Infestation
 Gremlin Tamer
-Grenzo, Havoc Raiser	intent: ModalEffect; polarity: GoadEffect
+Grenzo, Havoc Raiser	polarity: GoadEffect
 Greta, Sweettooth Scourge
 Gretchen Titchwillow
 Grey Havens Navigator
@@ -7914,7 +7914,7 @@ Harmony of Nature
 Harness Infinity
 Harnessed Lightning
 Harnessed Snubhorn
-Harnesser of Storms	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Harnesser of Storms
 Harold and Bob, First Numens	intent: PutOntoBattlefieldAsAuraEffect
 Harpoon Sniper
 Harried Artisan
@@ -8929,7 +8929,7 @@ Invasion of Ikoria
 Invasion of Innistrad
 Invasion of Ixalan
 Invasion of Kaladesh
-Invasion of Kaldheim	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Invasion of Kaldheim
 Invasion of Kamigawa
 Invasion of Karsus
 Invasion of Kylem
@@ -8984,7 +8984,7 @@ Involuntary Employment
 Ionize
 Ioreth of the Healing House
 Ipnu Rivulet
-Irascible Wolverine	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Irascible Wolverine
 Irencrag Feat
 Irencrag Pyromancer
 Irenicus's Vile Duplication
@@ -9168,7 +9168,7 @@ Jaya Ballard
 Jaya's Firenado
 Jaya's Greeting
 Jaya's Immolating Inferno
-Jaya, Fiery Negotiator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→?)
+Jaya, Fiery Negotiator	polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→?)
 Jaya, Venerated Firemage
 Jayemdae Tome
 Jazal Goldmane
@@ -9200,7 +9200,7 @@ Jeskai Revelation
 Jeskai Shrinekeeper
 Jeskai Student
 Jeskai Windscout
-Jessica Jones, Private Eye	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Jessica Jones, Private Eye
 Jet Medallion
 Jet's Brainwashing
 Jet, Freedom Fighter
@@ -10571,7 +10571,7 @@ Magma Vein
 Magmablood Archaic	intent: ForEach>ModifyStatsEffect
 Magmakin Artillerist
 Magmaroth
-Magmatic Channeler	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Magmatic Channeler
 Magmatic Galleon
 Magmatic Hellkite
 Magmatic Insight
@@ -10933,7 +10933,7 @@ Meltstrider's Gear
 Meltstrider's Resolve
 Memnite
 Memorial Team Leader
-Memorial Vault	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Memorial Vault
 Memorial to Folly
 Memorial to Genius
 Memorial to Glory
@@ -10998,7 +10998,7 @@ Merfolk Wayfinder
 Merfolk Windrobber
 Merfolk of the Pearl Trident
 Meria's Outrider
-Meria, Scholar of Antiquity	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Meria, Scholar of Antiquity
 Meriadoc Brandybuck
 Merrow Commerce
 Merrow Grimeblotter
@@ -11462,7 +11462,7 @@ Mordor Trebuchet
 Morgue Theft
 Morgue Toad
 Morgul-Knife Wound	polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
-Moria Marauder	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Moria Marauder
 Moria Scavenger
 Moriok Reaver
 Moriok Scavenger
@@ -12322,7 +12322,7 @@ Opulent Palace
 Oracle of Mul Daya
 Oracle of Tragedy	polarity: Pipeline(ChosenTargets→library)
 Oracle's Restoration
-Oracle's Vault	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Oracle's Vault
 Orah, Skyclave Hierophant
 Oran-Rief Invoker
 Oran-Rief Ooze
@@ -13217,7 +13217,7 @@ Prodigy's Prototype
 Profane Command
 Profane Prayers
 Profane Procession
-Professional Face-Breaker	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Professional Face-Breaker
 Professional Wrestler
 Professor Dellian Fel
 Professor Onyx
@@ -14373,7 +14373,7 @@ Roaring Earth
 Roaring Furnace // Steaming Sauna
 Roaring Slagwurm
 Roast
-Rob the Archives	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Rob the Archives
 Robber of the Rich	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Robe of Mirrors
 Robobrain War Mind
@@ -14992,7 +14992,7 @@ Scion of Darkness
 Scion of Draco
 Scion of Glaciers
 Scion of Oona
-Scion of Opulence	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Scion of Opulence
 Scion of Stygia
 Scion of Ugin
 Scion of the Swarm
@@ -17358,7 +17358,7 @@ Syphon Sliver
 Syphon Soul
 Syr Alin, the Lion's Claw
 Syr Armont, the Redeemer	intent: CreateAuraTokenEffect
-Syr Carah, the Bold	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Syr Carah, the Bold
 Syr Elenora, the Discerning
 Syr Faren, the Hengehammer
 Syr Ginger, the Meal Ender
@@ -17373,7 +17373,7 @@ Szarel, Genesis Shepherd
 T-45 Power Armor
 TCRI Building
 Tablet of Compleation
-Tablet of Discovery	intent: GrantMayPlayFromExileEffect
+Tablet of Discovery
 Tablet of Epityr
 Taborax, Hope's Demise
 Tackle Artist
@@ -17603,7 +17603,7 @@ Temmet, Vizier of Naktamun
 Temperamental Oozewagg
 Tempered Steel
 Tempered Veteran
-Tempered in Solitude	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Tempered in Solitude
 Tempest Angler
 Tempest Caller
 Tempest Djinn
@@ -17715,7 +17715,7 @@ Terrific Team-Up	timing: ForEach>ModifyStatsEffect
 Territorial Allosaurus
 Territorial Baloth
 Territorial Boar
-Territorial Bruntar	intent: GatherUntilMatchEffect; intent: GrantMayPlayFromExileEffect; intent: Pipeline(?→exile)
+Territorial Bruntar
 Territorial Gorger
 Territorial Hammerskull
 Territorial Maro
@@ -18782,7 +18782,7 @@ Turtles Forever
 Turtles in Time
 Turtleshell Changeling	combat: SwitchPowerToughnessEffect; intent: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
 Tusked Colossodon
-Tuskeri Firewalker	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Tuskeri Firewalker
 Tuskguard Captain
 Tweeze
 Twenty-Toed Toad
@@ -18855,7 +18855,7 @@ U.S.Agent, John Walker
 U.S.S. Cerritos, Following Up
 U.S.S. Discovery, at Black Alert
 U.S.S. Enterprise-A, Free Spirit
-U.S.S. Enterprise-D, Galaxy-Class	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+U.S.S. Enterprise-D, Galaxy-Class
 U.S.S. Excelsior, Cutting Edge
 U.S.S. Reliant, From Hell's Heart
 U.S.S. Voyager, Lone Wanderer
@@ -19483,7 +19483,7 @@ Viridian Revel
 Viridian Scout
 Viridian Shaman
 Viridian Zealot
-Virtue of Courage	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Virtue of Courage
 Virtue of Knowledge
 Virtue of Loyalty
 Virtue of Persistence
@@ -20687,7 +20687,7 @@ Zuberi, Golden Feather
 Zuko's Conviction
 Zuko's Exile
 Zuko, Conflicted
-Zuko, Exiled Prince	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
+Zuko, Exiled Prince
 Zuko, Firebending Master
 Zul Ashur, Lich Lord	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Zulaport Cutthroat
