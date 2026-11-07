@@ -47,5 +47,6 @@ val TezzeretsSimulacrum = card("Tezzeret's Simulacrum") {
         artist = "Craig J Spearing"
         flavorText = "Tezzeret's command of living metal has nothing to do with intricate gearcraft or aether supplies."
         imageUri = "https://cards.scryfall.io/normal/front/7/e/7eacfeec-a341-45bc-bf95-e3df0094505a.jpg?1783936713"
+        inBooster = false
     }
 }

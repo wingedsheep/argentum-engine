@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-aer',
+    date: '2026-11-07',
+    kind: 'set',
+    setCode: 'AER',
+    title: 'Aether Revolt is complete',
+    body: "Join the renegades rising against the Consulate on Kaladesh. Turn on revolt by sacrificing Servos and Implements, improvise big spells with your artifacts, and crew Vehicles, across ten two-colour decks from Thopter swarms to +1/+1 counters.",
+    tryIf: 'artifact synergies, sacrifice value and aggressive Vehicle decks',
+  },
+  {
     id: 'set-kld',
     date: '2026-11-07',
     kind: 'set',
