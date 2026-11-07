@@ -2304,159 +2304,52 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "ForEach",
-                            "space": {
-                                "type": "IterationSpace.Players",
-                                "players": "ActivePlayerFirst"
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "nonland permanent"
                             },
-                            "body": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "ControlledPermanents",
-                                            "filter": "nonland permanent"
-                                        },
-                                        "storeAs": "gathered1"
-                                    },
-                                    {
-                                        "type": "FilterCollection",
-                                        "from": "gathered1",
-                                        "filter": "artifact",
-                                        "storeMatching": "matching2"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "matching2",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "selected3",
-                                        "prompt": "Choose an artifact to keep. Unchosen nonland permanents are sacrificed.",
-                                        "selectedLabel": "Keep",
-                                        "remainderLabel": "Sacrifice",
-                                        "useTargetingUI": true
-                                    },
-                                    {
-                                        "type": "FilterCollection",
-                                        "from": "gathered1",
-                                        "filter": "creature",
-                                        "storeMatching": "matching4"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "matching4",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "selected5",
-                                        "prompt": "Choose a creature to keep. Unchosen nonland permanents are sacrificed.",
-                                        "selectedLabel": "Keep",
-                                        "remainderLabel": "Sacrifice",
-                                        "useTargetingUI": true
-                                    },
-                                    {
-                                        "type": "FilterCollection",
-                                        "from": "gathered1",
-                                        "filter": "enchantment",
-                                        "storeMatching": "matching6"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "matching6",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "selected7",
-                                        "prompt": "Choose an enchantment to keep. Unchosen nonland permanents are sacrificed.",
-                                        "selectedLabel": "Keep",
-                                        "remainderLabel": "Sacrifice",
-                                        "useTargetingUI": true
-                                    },
-                                    {
-                                        "type": "FilterCollection",
-                                        "from": "gathered1",
-                                        "filter": "planeswalker",
-                                        "storeMatching": "matching8"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "matching8",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "selected9",
-                                        "prompt": "Choose a planeswalker to keep. Unchosen nonland permanents are sacrificed.",
-                                        "selectedLabel": "Keep",
-                                        "remainderLabel": "Sacrifice",
-                                        "useTargetingUI": true
-                                    }
-                                ]
-                            },
-                            "collectCollections": {
-                                "gathered1": "collected10",
-                                "selected3": "collected11",
-                                "selected5": "collected12",
-                                "selected7": "collected13",
-                                "selected9": "collected14"
-                            }
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ChooseOnePerCategory",
+                            "from": "gathered0",
+                            "categories": [
+                                {
+                                    "cardPredicates": [
+                                        "IsArtifact"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsEnchantment"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "storeAs": "kept1"
                         },
                         {
                             "type": "FilterCollection",
-                            "from": "collected10",
+                            "from": "gathered0",
                             "collectionFilter": {
                                 "type": "ExcludeOtherCollection",
-                                "otherCollectionName": "collected11"
+                                "otherCollectionName": "kept1"
                             },
-                            "storeMatching": "matching15"
-                        },
-                        {
-                            "type": "FilterCollection",
-                            "from": "matching15",
-                            "collectionFilter": {
-                                "type": "ExcludeOtherCollection",
-                                "otherCollectionName": "collected12"
-                            },
-                            "storeMatching": "matching16"
-                        },
-                        {
-                            "type": "FilterCollection",
-                            "from": "matching16",
-                            "collectionFilter": {
-                                "type": "ExcludeOtherCollection",
-                                "otherCollectionName": "collected13"
-                            },
-                            "storeMatching": "matching17"
-                        },
-                        {
-                            "type": "FilterCollection",
-                            "from": "matching17",
-                            "collectionFilter": {
-                                "type": "ExcludeOtherCollection",
-                                "otherCollectionName": "collected14"
-                            },
-                            "storeMatching": "matching18"
+                            "storeMatching": "matching2"
                         },
                         {
                             "type": "MoveCollection",
-                            "from": "matching18",
+                            "from": "matching2",
                             "destination": {
                                 "type": "ToZone",
                                 "zone": "Graveyard"

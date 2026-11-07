@@ -32,9 +32,11 @@ import io.kotest.matchers.shouldBe
  *   may be theirs — two-sided.
  * - **Pipeline bounce of the chosen targets** (Paradoxical Outcome): the single-target bounce, two-sided.
  *
- * The decision it changes: Shrewd Negotiation is cast as the removal it is — the opponent's best
- * creature taken for our least valuable artifact — and the sweeper Gearhulks count against a
- * creature deck's build.
+ * The Shrewd Negotiation decision case is a regression guard rather than a flip: a slot pair read
+ * [FLEXIBLE, HARMFUL] falls back to the removal ranking just as an unread one does, so it pins that
+ * the steal is cast — our least valuable artifact for their best creature — and never vetoed as a
+ * wrong-side target. What the readings change is the card's intent (removal, sweeper) that the
+ * deckbuilder and draft picker see.
  */
 class ControlSwapCopyAndKeepOneSweepReadingAiTest : ScenarioTestBase() {
 
@@ -43,7 +45,7 @@ class ControlSwapCopyAndKeepOneSweepReadingAiTest : ScenarioTestBase() {
     private fun tags(card: String) = CardIntentAnalyzer.analyze(cardRegistry.requireCard(card)).tags
 
     init {
-        test("the five Kaladesh cards read fully") {
+        test("the Kaladesh cards and their kin read fully") {
             for (card in listOf(
                 "Cataclysmic Gearhulk", "Insidious Will", "Paradoxical Outcome", "Saheeli's Artistry",
                 "Shrewd Negotiation", "Mythos of Snapdax",

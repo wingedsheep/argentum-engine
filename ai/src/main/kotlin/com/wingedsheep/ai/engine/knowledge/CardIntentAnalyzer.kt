@@ -1698,7 +1698,8 @@ object CardIntentAnalyzer {
         !opponentsOnly(group.baseFilter.controllerPredicate) && SynergyAxes.couldBeCreature(group.baseFilter)
 
     /** "Creatures your opponents control", "creatures you don't control" (Plague Wind), and the like. */
-    private fun opponentsOnly(predicate: ControllerPredicate?): Boolean = when (predicate) {
+    /** Whether a filter with [predicate] only matches permanents an opponent controls. */
+    internal fun opponentsOnly(predicate: ControllerPredicate?): Boolean = when (predicate) {
         ControllerPredicate.ControlledByOpponent,
         ControllerPredicate.ControlledByTargetOpponent,
         ControllerPredicate.ControlledByDefendingPlayer -> true

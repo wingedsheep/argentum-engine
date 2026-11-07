@@ -1013,13 +1013,8 @@ object TargetPolarityAnalyzer {
 
     /** Whether [requirement]'s filter keeps its target off our side ("… you don't control", "… an opponent controls"). */
     private fun theirsOnly(requirement: TargetRequirement): Boolean {
-        val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
-            ?: return false
-        val predicate = filter.baseFilter.controllerPredicate
-        return filter.alternatives.isEmpty() && (
-            predicate == ControllerPredicate.ControlledByOpponent ||
-                predicate == ControllerPredicate.Not(ControllerPredicate.ControlledByYou)
-            )
+        val filter = objectFilter(requirement) ?: return false
+        return filter.alternatives.isEmpty() && CardIntentAnalyzer.opponentsOnly(filter.baseFilter.controllerPredicate)
     }
 
     /**
