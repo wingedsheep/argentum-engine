@@ -1,0 +1,142 @@
+{
+  "Alchemist's Greeting": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bloodhall Priest": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Boon of Emrakul": [
+    "removal",
+    "creature-removal"
+  ],
+  "Certain Death": [
+    "removal",
+    "creature-removal"
+  ],
+  "Choking Restraints": [
+    "removal",
+    "creature-removal"
+  ],
+  "Clear Shot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Collective Brutality": [
+    "removal",
+    "creature-removal"
+  ],
+  "Collective Defiance": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Collective Effort": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Dark Salvation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Drag Under": [
+    "removal",
+    "creature-removal"
+  ],
+  "Faith Unbroken": [
+    "removal",
+    "creature-removal"
+  ],
+  "Galvanic Bombardment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Imprisoned in the Moon": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Incendiary Flow": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ironwright's Cleansing": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Lashweed Lurker": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Liliana, the Last Hope": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mockery of Nature": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Murder": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nahiri's Wrath": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Oath of Liliana": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prey Upon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ride Down": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ruthless Disposal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Savage Alliance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smoldering Werewolf // Erupting Dreadwolf": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Somberwald Stag": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spell Queller": [
+    "removal"
+  ],
+  "Spreading Flames": [
+    "removal",
+    "creature-removal"
+  ],
+  "Springsage Ritual": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Unsubstantiate": [
+    "removal",
+    "creature-removal"
+  ]
+}

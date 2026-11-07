@@ -25,6 +25,7 @@ Aang, the Last Airbender
 Aarakocra Sneak	intent: TakeDesignationEffect
 Aatchik, Emerald Radian
 Abandon Attachments
+Abandon Reason
 Abandon the Post
 Abandoned Air Temple
 Abandoned Campground
@@ -142,6 +143,7 @@ Adult Gold Dragon
 Adun Oakenshield
 Advance Scout
 Advanced Hoverguard
+Advanced Stitchwing
 Adventure Awaits
 Adventurer's Airship
 Adventurer's Inn
@@ -1200,6 +1202,7 @@ Backlash
 Backslide	intent: TurnFaceDownEffect; polarity: TurnFaceDownEffect
 Backstreet Bruiser
 Backup Agent
+Backwoods Survivalists
 Bad Deal
 Bad Moon
 Bad River
@@ -1825,6 +1828,7 @@ Blood-Cursed Knight
 Bloodbond March	intent: Pipeline(graveyard→battlefield)
 Bloodbond Vampire
 Bloodbraid Elf	intent: CascadeEffect
+Bloodbriar
 Bloodchief Ascension
 Bloodchief's Thirst
 Bloodcrazed Paladin
@@ -1967,6 +1971,7 @@ Bojuka Bog
 Bola Slinger
 Bolas's Citadel
 Bold Biochemist
+Bold Impaler
 Boldwyr Aggressor
 Bolg of the North
 Bolg's Company
@@ -2032,6 +2037,7 @@ Boomerang Basics
 Boommobile
 Boon Reflection
 Boon of Boseiju
+Boon of Emrakul
 Boon of Safety
 Boon of the Wish-Giver
 Boon-Bringer Valkyrie
@@ -2663,6 +2669,7 @@ Caterwauling Boggart
 Cathar Commando
 Cathar's Call
 Cathar's Companion
+Cathar's Shield
 Cathars' Crusade
 Catharsis
 Cathartic Parting
@@ -2951,6 +2958,7 @@ Chocobo Racetrack
 Choke
 Choked Estuary
 Choking Miasma
+Choking Restraints
 Choking Sands
 Choking Tethers
 Chomping Changeling
@@ -3404,6 +3412,7 @@ Contaminated Landscape
 Contentious Plan
 Contested Cliffs
 Contested Game Ball	intent: GainControlByActivePlayerEffect
+Contingency Plan
 Contortionist Troupe
 Contraband Kingpin
 Contract Killing
@@ -3505,6 +3514,7 @@ Countless Gears Renegade
 Country Roads
 Courage in Crisis
 Courageous Goblin
+Courageous Outrider
 Courier Bat
 Courier Griffin
 Courier Hawk
@@ -3635,7 +3645,7 @@ Crown of Convergence
 Crown of Flames
 Crown of Fury	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEnchantedCreatureTypeGroupEffect
 Crown of Skemfar
-Crown of Suspicion	intent: GrantToEnchantedCreatureTypeGroupEffect; polarity: Aura>GrantToEnchantedCreatureTypeGroupEffect; polarity: Aura>ModifyStats; timing: GrantToEnchantedCreatureTypeGroupEffect
+Crown of Suspicion	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEnchantedCreatureTypeGroupEffect
 Crown of Vigor	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEnchantedCreatureTypeGroupEffect
 Crucible of Fire
 Crucible of Worlds
@@ -3728,6 +3738,7 @@ Cult Guildmage
 Cult Healer
 Cultbrand Cinder
 Cultist of the Absolute
+Cultist's Staff
 Cultivate
 Cultivator Colossus	intent: RepeatWhileEffect
 Cultivator of Blades
@@ -3978,6 +3989,7 @@ Davriel's Shadowfugue
 Davriel, Rogue Shadowmage
 Dawn Elemental
 Dawn Evangel
+Dawn Gryff
 Dawn of Hope
 Dawn of a New Age
 Dawn's Light Archer
@@ -4262,6 +4274,7 @@ Depala, Pilot Exemplar
 Depart the Realm
 Departed Deckhand	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; polarity: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Dependable Quinjet
+Deploy the Gatewatch
 Depopulate
 Depose // Deploy
 Depower
@@ -4272,6 +4285,7 @@ Depth Defiler
 Depths of Desire
 Deputy of Detention
 Deranged Assistant
+Deranged Whelp
 Derelict Attic // Widow's Walk
 Derelor
 Derevi, Empyrial Tactician
@@ -4316,6 +4330,7 @@ Desperate Measures	polarity: CreateDelayedTriggerEffect; polarity: ModifyStatsEf
 Desperate Ravings
 Desperate Research
 Desperate Ritual
+Desperate Sentry
 Despise
 Despoil
 Destined // Lead
@@ -4509,6 +4524,7 @@ Dissenter's Deliverance
 Dissipate
 Dissolve
 Distant Melody
+Distemper of the Blood
 Distended Mindbender
 Distinguished Conjurer
 Distorted Curiosity
@@ -4936,6 +4952,7 @@ Durkwood Baloth
 Durkwood Boars
 Dusk // Dawn
 Dusk Charger
+Dusk Feaster
 Dusk Imp
 Dusk Legion Dreadnought
 Dusk Legion Duelist
@@ -5359,6 +5376,7 @@ Empty the Warrens
 Empyreal Voyager
 Empyrean Eagle
 Empyrial Plate
+Emrakul's Influence
 Emrakul's Messenger
 Emrakul, the Exigent Doom
 Emrakul, the Promised End	intent: HijackNextTurnEffect; intent: TakeExtraTurnEffect; polarity: HijackNextTurnEffect; polarity: TakeExtraTurnEffect
@@ -5423,6 +5441,7 @@ Enigmatic Incarnation
 Enlarge
 Enlightened Ascetic
 Enlightened Confidant
+Enlightened Maniac
 Enlightened Tutor
 Ennis, Debate Moderator
 Enormous Baloth
@@ -5715,6 +5734,7 @@ Extravagant Replication
 Extus, Oriq Overlord
 Exuberant Fuseling
 Exuberant Wolfbear
+Exultant Cultist
 Exultant Skymarcher
 Eye Collector
 Eye Spy	intent: Pipeline(TopOfLibrary→graveyard|library)
@@ -5785,6 +5805,7 @@ Fairgrounds Warden
 Faith Unbroken
 Faith of the Devoted
 Faith's Fetters
+Faithbearer Paladin
 Faithbound Judge	intent: LoseGameEffect
 Faithful Mending
 Faithful Watchdog
@@ -6804,7 +6825,9 @@ Geier Reach Sanitarium
 Geist Snatch
 Geist of Saint Thalia
 Geist of Saint Traft
+Geist of the Archives
 Geist of the Moors
+Geist-Fueled Scarecrow
 Geistcatcher's Rig
 Geistflame
 Geistflame Reservoir	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -7178,6 +7201,7 @@ Gnarled Professor
 Gnarled Sage
 Gnarlid Colony
 Gnarlroot Pallbearer
+Gnarlwood Dryad
 Gnashing of Teeth
 Gnaw to the Bone
 Gnawing Crescendo
@@ -7583,6 +7607,7 @@ Grim Bounty
 Grim Captain's Call
 Grim Discovery
 Grim Draugr
+Grim Flayer
 Grim Haruspex
 Grim Initiate
 Grim Javelineer
@@ -8116,6 +8141,7 @@ Heroic Intervention
 Heroic Reinforcements
 Heroism	intent: ForEach>PayOrSufferEffect
 Heron of Hope
+Heron's Grace Champion
 Heron-Blessed Geist
 Hew the Entwood
 Hex
@@ -8596,7 +8622,7 @@ Immersturm Predator
 Immersturm Raider
 Immersturm Skullcairn
 Imminent Doom
-Immolation	polarity: Aura>ModifyStats
+Immolation
 Immolation Shaman
 Immortal Phoenix
 Imodane's Recruiter
@@ -8781,6 +8807,7 @@ Inquisitive Puppet
 Insatiable Appetite
 Insatiable Avarice
 Insatiable Frugivore	intent: RepeatWhileEffect
+Insatiable Gorgers
 Insatiable Harpy
 Insatiable Hemophage
 Insatiable Skittermaw
@@ -8993,6 +9020,7 @@ Ironscale Hydra
 Ironshell Beetle
 Irontread Crusher
 Ironwill Forger
+Ironwright's Cleansing
 Irradiate
 Irregular Cohort
 Irreverent Gremlin
@@ -9820,6 +9848,7 @@ Kíli the Resourceful
 L'Rell, Fierce Visionary
 La'An Noonien-Singh, Security
 Lab Rats
+Laboratory Brute
 Laboratory Maniac
 Labyrinth Guardian
 Labyrinth Raptor
@@ -10500,7 +10529,7 @@ Mage's Guile
 Magebane Lizard
 Mages' Contest	intent: OpenLifeBidEffect; polarity: OpenLifeBidEffect
 Mageta's Boon
-Maggot Therapy	polarity: Aura>ModifyStats
+Maggot Therapy
 Magic Damper
 Magic Missile
 Magic Pot
@@ -11278,7 +11307,7 @@ Mogg Mob
 Mogg Raider
 Mogg War Marshal
 Moggcatcher
-Mogis's Favor	polarity: Aura>ModifyStats
+Mogis's Favor
 Mogis, God of Slaughter
 Moira Brown, Guide Author	intent: AddCountersEffect; polarity: AddCountersEffect
 Mold Adder
@@ -12589,6 +12618,7 @@ Pawpatch Formation
 Pawpatch Recruit
 Peace and Quiet
 Peace in Our Time
+Peace of Mind
 Peacewalker Colossus	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Peach Garden Oath
 Pearl Dragon
@@ -18734,7 +18764,7 @@ Twinshot Sniper
 Twist Reality	intent: ModalEffect
 Twisted Abomination
 Twisted Embrace
-Twisted Experiment	polarity: Aura>ModifyStats
+Twisted Experiment
 Twisted Fates
 Twisted Fealty
 Twisted Justice

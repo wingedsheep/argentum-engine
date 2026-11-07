@@ -520,6 +520,54 @@
     ]
 }
 
+// Peace of Mind
+{
+    "name": "Peace of Mind",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{W}, Discard a card: You gain 3 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Peace of Mind:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Elliott",
+        "flavorText": "Three are the paths of the soul:\nOne out—roam across the plain,\nOne back—dwell with tribe and tent,\nOne in—turn an enemy's hate.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c383f12f-da06-4ef0-bf8e-6a8a9cfcc74c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Reconnaissance
 {
     "name": "Reconnaissance",
