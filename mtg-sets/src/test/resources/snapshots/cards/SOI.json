@@ -5109,6 +5109,32 @@
                                     "type": "Exists",
                                     "player": "You",
                                     "zone": "Battlefield",
+                                    "filter": "creature kw:skulk"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "SKULK",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
                                     "filter": "creature kw:trample"
                                 }
                             },

@@ -92,6 +92,25 @@ class ShadowRule : BlockEvasionRule {
 }
 
 /**
+ * Skulk (CR 702.118b): a creature with skulk can't be blocked by creatures with greater power.
+ *
+ * Both powers are read from projected state as blockers are declared, so a pump or shrink on either
+ * side before then changes the answer, and once blocked a later power change doesn't undo the block
+ * (CR 509.1 checks restrictions only at declaration). Multiple instances are redundant (CR 702.118c).
+ */
+class SkulkRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        if (!ctx.projected.hasKeyword(ctx.attackerId, Keyword.SKULK)) return null
+        val attackerPower = ctx.projected.getPower(ctx.attackerId) ?: 0
+        val blockerPower = ctx.projected.getPower(ctx.blockerId) ?: 0
+        if (blockerPower <= attackerPower) return null
+        val blockerName = ctx.publicName(ctx.blockerId)
+        val attackerName = ctx.publicName(ctx.attackerId)
+        return "$blockerName cannot block $attackerName (skulk: power $blockerPower is greater than $attackerPower)"
+    }
+}
+
+/**
  * Fear: Can only be blocked by artifact creatures or black creatures.
  */
 class FearRule : BlockEvasionRule {
@@ -745,6 +764,7 @@ fun defaultBlockEvasionRules(
     FlyingRule(),
     HorsemanshipRule(),
     ShadowRule(),
+    SkulkRule(),
     FearRule(),
     IntimidateRule(),
     LandwalkRule(predicateEvaluator),

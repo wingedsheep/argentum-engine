@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.dom.cards.KnightOfMalice
+import com.wingedsheep.mtg.sets.definitions.emn.cards.VampireCutthroat
 import com.wingedsheep.mtg.sets.definitions.soi.cards.OdricLunarchMarshal
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -17,7 +18,7 @@ import io.kotest.matchers.shouldBe
  *   creature you control has first strike. The same is true for flying, deathtouch, double strike,
  *   haste, hexproof, indestructible, lifelink, menace, reach, skulk, trample, and vigilance.
  *
- * The card is twelve independent `if you control a creature with K, grant K to creatures you
+ * The card is thirteen independent `if you control a creature with K, grant K to creatures you
  * control` clauses, so the things that can silently go wrong are all about the *gate*, not the
  * grant:
  *
@@ -34,7 +35,7 @@ import io.kotest.matchers.shouldBe
 class OdricLunarchMarshalScenarioTest : ScenarioTestBase() {
 
     init {
-        cardRegistry.register(listOf(OdricLunarchMarshal, KnightOfMalice))
+        cardRegistry.register(listOf(OdricLunarchMarshal, KnightOfMalice, VampireCutthroat))
 
         context("sharing a keyword someone has") {
 
@@ -85,6 +86,34 @@ class OdricLunarchMarshalScenarioTest : ScenarioTestBase() {
                 withClue("\"creatures you control\" excludes the opponent's board") {
                     game.state.projectedState
                         .hasKeyword(theirLions, Keyword.FIRST_STRIKE) shouldBe false
+                }
+            }
+        }
+
+        context("skulk") {
+
+            test("skulk spreads from a creature that has it") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Odric, Lunarch Marshal")
+                    .withCardOnBattlefield(1, "Vampire Cutthroat")
+                    .withCardOnBattlefield(1, "Savannah Lions")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val lions = game.findPermanent("Savannah Lions")!!
+                val odric = game.findPermanent("Odric, Lunarch Marshal")!!
+
+                game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+                game.resolveStack()
+
+                val projected = game.state.projectedState
+                withClue("Vampire Cutthroat has skulk, so Savannah Lions gains it") {
+                    projected.hasKeyword(lions, Keyword.SKULK) shouldBe true
+                }
+                withClue("Odric gains skulk too") {
+                    projected.hasKeyword(odric, Keyword.SKULK) shouldBe true
                 }
             }
         }

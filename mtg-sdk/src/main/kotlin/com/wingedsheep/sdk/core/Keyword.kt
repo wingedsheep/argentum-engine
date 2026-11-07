@@ -19,6 +19,13 @@ enum class Keyword(val displayName: String) {
     SHADOW("Shadow"),
     HORSEMANSHIP("Horsemanship"),
 
+    /**
+     * Skulk (CR 702.118) — "can't be blocked by creatures with greater power". Engine-live through
+     * `SkulkRule`, which compares projected powers when blockers are declared; multiple instances
+     * are redundant (CR 702.118c).
+     */
+    SKULK("Skulk"),
+
     // ── Landwalk ─────────────────────────────────────────────
     SWAMPWALK("Swampwalk"),
     FORESTWALK("Forestwalk"),

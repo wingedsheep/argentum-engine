@@ -135,7 +135,7 @@ object EmptyPayoff {
 
     private val EVASION = listOf(
         Keyword.FLYING, Keyword.MENACE, Keyword.TRAMPLE, Keyword.SHADOW,
-        Keyword.HORSEMANSHIP, Keyword.INTIMIDATE, Keyword.FEAR,
+        Keyword.HORSEMANSHIP, Keyword.INTIMIDATE, Keyword.FEAR, Keyword.SKULK,
     )
 
     /**

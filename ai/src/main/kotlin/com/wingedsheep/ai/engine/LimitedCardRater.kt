@@ -415,6 +415,7 @@ object LimitedCardRater {
         Keyword.INTIMIDATE to 0.4,
         Keyword.FEAR to 0.3,
         Keyword.SHADOW to 0.5,
+        Keyword.SKULK to 0.3,
         Keyword.TRAMPLE to 0.3,
         // Combat keywords
         Keyword.FIRST_STRIKE to 0.4,

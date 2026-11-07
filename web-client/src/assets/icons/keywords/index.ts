@@ -45,6 +45,7 @@ export const keywordManaClass: Record<string, string> = {
   PROWESS: 'ability-prowess',
   WARD: 'ability-ward',
   INTIMIDATE: 'ability-intimidate',
+  SKULK: 'ability-skulk',
   // Landwalk (CR 702.14). Evasion the player has to be able to see: it decides whether an attacker
   // can be blocked at all, and cards grant and strip it (Scarwood Hag does both), so a badge that
   // appears and disappears is the only on-card signal that anything happened.
@@ -89,7 +90,7 @@ export const displayableKeywords = new Set([
   'FIRST_STRIKE', 'DOUBLE_STRIKE', 'DEATHTOUCH',
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE', 'FEAR',
-  'PROWESS', 'WARD', 'INTIMIDATE', 'INFECT',
+  'PROWESS', 'WARD', 'INTIMIDATE', 'SKULK', 'INFECT',
   'SWAMPWALK', 'FORESTWALK', 'ISLANDWALK', 'MOUNTAINWALK', 'PLAINSWALK',
   'DESERTWALK', 'NONBASIC_LANDWALK', 'LEGENDARY_LANDWALK',
   'WITHER', 'TOXIC', 'CANT_BE_BLOCKED', 'CHANGELING',

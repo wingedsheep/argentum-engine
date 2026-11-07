@@ -13,8 +13,8 @@ import io.kotest.matchers.shouldNotBe
  * MacCready, Lamplight Mayor (PIP).
  *
  * - "Whenever a creature you control with power 2 or less attacks, it gains skulk until end of
- *   turn." Skulk is granted as its rules meaning — `CantBeBlockedBy(power greater than the
- *   attacker)` — so the comparison must be made against the *attacker's* power, not MacCready's.
+ *   turn." Skulk is granted as `Keyword.SKULK`, whose block check compares each blocker
+ *   against the *attacker's* power, not MacCready's.
  * - "Whenever a creature with power 4 or greater attacks you, its controller loses 2 life and you
  *   gain 2 life." The `attackingPlayer(Controller)` trigger filter must fire only for big
  *   creatures attacking MacCready's controller.
