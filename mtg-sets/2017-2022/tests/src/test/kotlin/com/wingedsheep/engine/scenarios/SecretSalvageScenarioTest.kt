@@ -50,7 +50,7 @@ class SecretSalvageScenarioTest : ScenarioTestBase() {
             game.isInGraveyard(1, "Secret Salvage") shouldBe true
         }
 
-        test("may find only some, or none, of the same-named cards") {
+        test("may find none of the same-named cards and still exiles the target") {
             val game = board().build()
 
             game.castSpellTargetingGraveyardCard(1, "Secret Salvage", 1, "Lightning Bolt").error shouldBe null
