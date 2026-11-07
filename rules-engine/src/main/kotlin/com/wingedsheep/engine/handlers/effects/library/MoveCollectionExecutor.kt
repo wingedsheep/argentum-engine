@@ -165,7 +165,8 @@ class MoveCollectionExecutor(
             return EffectResult.success(state)
         }
 
-        if (effect.moveType == MoveType.Discard && !context.discardIsCost && destination is CardDestination.ToZone && destination.zone == Zone.GRAVEYARD) {
+        if (effect.moveType == MoveType.Discard && (!context.discardIsCost || context.discardCostCausedBy != null) &&
+            destination is CardDestination.ToZone && destination.zone == Zone.GRAVEYARD) {
             val playerId = resolvePlayer(destination.player, context, state) ?: context.controllerId
             // A collection spanning several hands ("players discard … the same way", Balance) is
             // one simultaneous discard by each of those players, so each discarder answers their
@@ -1065,8 +1066,8 @@ class MoveCollectionExecutor(
         // ZoneTransitionService.moveToZone.
         // Inside a "for each player" loop `controllerId` is the player being iterated — the
         // discarder — so the cause is the effect's real controller, kept in `effectControllerId`.
-        val discardCauseControllerId = (context.effectControllerId ?: context.controllerId)
-            .takeUnless { context.discardIsCost }
+        // A cost discard has no cause, except one paying an opponent's "unless" demand.
+        val discardCauseControllerId = com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.causeControllerOf(context)
         var newState = if (moveType == MoveType.Discard && discardCauseControllerId != null) {
             com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 .markDiscardCause(state, cards, discardCauseControllerId)
@@ -1101,13 +1102,33 @@ class MoveCollectionExecutor(
         }
 
         val chosenOrder = context.discardLibraryOrder.orEmpty()
-        val topOrder = chosenOrder.filter { context.discardDestinations[it]?.placement in listOf(ZonePlacement.Top, ZonePlacement.Default) }
+        val topOrder = chosenOrder.filter { context.discardDestinations[it]?.destination?.placement in listOf(ZonePlacement.Top, ZonePlacement.Default) }
         val libraryOrder = topOrder.asReversed() + chosenOrder.filter { it !in topOrder }
         val movementOrder = if (moveType == MoveType.Discard && libraryOrder.isNotEmpty())
             cards.filter { it !in libraryOrder } + libraryOrder else cards
         val undefinedDiscards = mutableListOf<EntityId>()
         val discardGroups = if (moveType == MoveType.Discard) discardsByPlayer(state, cards, destPlayerId) else emptyMap()
         val discarderOf = discardGroups.flatMap { (playerId, ids) -> ids.map { it to playerId } }.toMap()
+        // Cards an effect discard reveals on their way to an alternate destination (Nephalia
+        // Academy): one reveal per discarder and source, before anything moves. The discarder chose
+        // the card and knows it, so the overlay is for everyone else.
+        if (moveType == MoveType.Discard) {
+            cards.filter { context.discardDestinations[it]?.reveal == true }
+                .groupBy { (discarderOf[it] ?: destPlayerId) to context.discardDestinations[it]?.sourceName }
+                .forEach { (key, ids) ->
+                    val cardsShown = ids.map { newState.getEntity(it)?.get<CardComponent>() }
+                    events.add(CardsRevealedEvent(
+                        revealingPlayerId = key.first,
+                        cardIds = ids,
+                        cardNames = cardsShown.map { it?.name ?: "Card" },
+                        imageUris = cardsShown.map { c -> c?.let { cardRegistry.getCard(it.cardDefinitionId)?.metadata?.imageUri } },
+                        source = key.second,
+                        revealToSelf = false,
+                        fromZone = Zone.HAND,
+                        toZone = context.discardDestinations[ids.first()]?.destination?.zone,
+                    ))
+                }
+        }
         for (cardId in movementOrder) {
             if (destZone == Zone.BATTLEFIELD && cardId in context.entryAuraHosts &&
                 context.entryAuraHosts[cardId] == null) continue
@@ -1200,7 +1221,11 @@ class MoveCollectionExecutor(
                 } else null
             } else null
 
-            val discardDestination = if (moveType == MoveType.Discard) context.discardDestinations[cardId] else null
+            val discardChoice = if (moveType == MoveType.Discard) context.discardDestinations[cardId] else null
+            val discardDestination = discardChoice?.destination
+            // "You may reveal that card and put it on top of your library" (Nephalia Academy): the
+            // card was shown to every player before the batch moved (see the reveal event above).
+            val discardRevealed = discardChoice?.reveal == true
             val chosenZone = discardDestination?.zone ?: destZone
             val chosenPlacement = when (discardDestination?.placement) {
                 ZonePlacement.Bottom -> com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom
@@ -1231,7 +1256,7 @@ class MoveCollectionExecutor(
                 // LibraryRevealUtils.placementAudience — this only names the mover and whether the
                 // move was public.
                 libraryMoverId = context.controllerId,
-                libraryMovePublic = revealed,
+                libraryMovePublic = revealed || discardRevealed,
                 // The whole collection moves as one event (CR 603.10a look-back).
                 lookBackGrants = lookBack[cardId] ?: com.wingedsheep.engine.event.LookBackGrants()
             )
@@ -1243,7 +1268,7 @@ class MoveCollectionExecutor(
             )
             newState = transitionResult.state
             events.addAll(transitionResult.events)
-            if (moveType == MoveType.Discard && transitionResult.actualDestination == Zone.LIBRARY && !revealed && transitionResult.redirectResult?.reveal != true) {
+            if (moveType == MoveType.Discard && transitionResult.actualDestination == Zone.LIBRARY && !revealed && !discardRevealed && transitionResult.redirectResult?.reveal != true) {
                 undefinedDiscards.add(cardId)
             }
 

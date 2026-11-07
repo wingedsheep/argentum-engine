@@ -11,8 +11,19 @@ data class EffectDiscardDestinationContinuation(
     val effect: Effect,
     val context: EffectContext,
     val cardId: EntityId,
-    val destinations: List<CardDestination.ToZone>,
+    val destinations: List<DiscardDestinationChoice>,
 ) : AnswerContinuation
+
+/**
+ * One alternate destination offered for an effect discard, whether the card is revealed on the way,
+ * and the name of the permanent whose replacement offers it (the reveal's source).
+ */
+@Serializable
+data class DiscardDestinationChoice(
+    val destination: CardDestination.ToZone,
+    val reveal: Boolean = false,
+    val sourceName: String? = null,
+)
 
 @Serializable
 data class EffectDiscardOrderContinuation(

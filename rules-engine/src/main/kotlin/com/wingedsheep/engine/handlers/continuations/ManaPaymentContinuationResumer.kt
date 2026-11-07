@@ -386,6 +386,9 @@ class ManaPaymentContinuationResumer(
             sourceId = continuation.wardSourceId,
             controllerId = continuation.payingPlayerId,
             discardIsCost = true,
+            // Ward's controller demanded the discard: an "if a spell or ability an opponent controls
+            // causes you to discard" reader sees it (Nephalia Academy).
+            discardCostCausedBy = continuation.controllerId,
             programOrigin = com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(ManaPaymentContinuationResumer::class),
         )
 
@@ -428,16 +431,22 @@ class ManaPaymentContinuationResumer(
                 continuation.controllerId ?: payer, checkForMore
             )
         }
-        // A cost, not an effect: no discard cause, so "if an opponent causes you to discard"
-        // replacements don't apply, as on the yes/no path.
-        val discarded = services.zones.discardCards(state, payer, selected.take(continuation.count))
+        // A cost, not an effect, so "if an effect causes you to discard" replacements skip it; but
+        // ward's controller demanded it, so "if a spell or ability an opponent controls causes you
+        // to discard" readers see it (Nephalia Academy), as on the yes/no path.
+        val discarded = com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.payUnlessDiscard(
+            services.effectExecutorRegistry, state, payer, selected.take(continuation.count),
+            demandedBy = continuation.controllerId, sourceId = continuation.wardSourceId,
+            origin = com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(ManaPaymentContinuationResumer::class),
+        ).toExecutionResult()
+        if (discarded.error != null || discarded.outcome is Outcome.Paused) return discarded
         chargeNextWardPartOrNull(
-            discarded.state, discarded.events,
+            discarded.newState, discarded.events.toList(),
             continuation.remainingWardParts, continuation.spellEntityId,
             payer, continuation.wardSourceId, continuation.controllerId,
             checkForMore
         )?.let { return it }
-        return checkForMore(discarded.state, discarded.events)
+        return checkForMore(discarded.newState, discarded.events.toList())
     }
 
     /**

@@ -19854,12 +19854,23 @@ The priority groups are (CR 616.1a–f):
   `Triggers.self.isDiscarded(cause = ZoneChangeCause.NotCycled)`, which skips the cycling discard.
 
 
-- `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo = DiscardEvent(Player.You))`
+- `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo = DiscardEvent(Player.You), reveal = false)`
   lets the discarding player choose another non-battlefield destination for each card a resolving spell or ability
-  causes them to discard. `DiscardEvent.player` and `cardFilter` scope applicability. Printed instances
+  causes them to discard. `DiscardEvent.player`, `cardFilter` and `cause` scope applicability:
+  `cause = ZoneChangeCause.DiscardedByOpponentEffect` limits it to discards a spell or ability an opponent of the
+  discarding player controls causes (the same kernel the discard trigger and `RedirectZoneChange.requiredCause`
+  use; inside "each player discards" it reads the effect's real controller, not the iterated player).
+  `reveal = true` shows the card to every player on its way (a `CardsRevealedEvent`, public library knowledge),
+  so it keeps its characteristics for discard filters and its name is public. Nephalia Academy:
+  `OptionalEffectDiscardDestination(CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+  DiscardEvent(Player.You, cause = ZoneChangeCause.DiscardedByOpponentEffect), reveal = true)`. Printed instances
   use the projected source controller; `GrantReplacementEffect` captures the projected target controller
   when the grant resolves (or the caster for a resolving spell). Costs, cycling,
-  cleanup hand-size discards, and milling do not offer this replacement. No maximum hand size is a
+  cleanup hand-size discards, and milling do not offer this replacement — with one exception: a discard
+  paying an opponent's "unless" demand (ward's discard, a pay-or-suffer discard such as Perplex's) is a
+  cost that opponent's spell or ability caused, so a `cause = DiscardedByOpponentEffect` instance offers it
+  (Nephalia Academy's ruling) while a plain one does not ("costs aren't effects", Library of Leng). The same
+  payment is the discard's cause for discard triggers and `RedirectZoneChange.requiredCause` readers. No maximum hand size is a
   separate `NoMaximumHandSize` static ability.
 
   All choices precede the batch's zone changes. Each card can be declined independently; multiple
@@ -19867,7 +19878,7 @@ The priority groups are (CR 616.1a–f):
   chosen zone, without visiting the graveyard, and still emit `CardsDiscardedEvent` and contribute
   to discard counts. Existing destination redirects (including madness) remain available via the
   normal-destination choice; choosing the alternate destination runs redirects applicable there.
-  Unrevealed library-bound discards have undefined characteristics for discard filters and downstream
+  Unrevealed (`reveal = false`) library-bound discards have undefined characteristics for discard filters and downstream
   collection characteristic queries, including aliases and resumed selections; count-only queries still count them.
   Characteristic-based self-discard triggers do not fire for these cards. Their names are private
   in discard narration and library placement. Example: Library of Leng uses a library-top destination.

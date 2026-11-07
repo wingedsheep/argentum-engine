@@ -792,7 +792,8 @@ object ZoneMovementUtils {
      * [GameState.pendingDiscardCauseControllers] marker stamped by the discard sites and requires
      * both that a spell/ability caused this discard at all and that its controller is an opponent of
      * the discarding player (the card's owner — you only ever discard from your own hand). That
-     * rules out the cleanup-step hand-size discard, cost payments, and your own Faithless Looting.
+     * rules out the cleanup-step hand-size discard, your own costs, and your own Faithless Looting;
+     * a discard paying an opponent's "unless" demand (ward, Perplex) carries that opponent.
      * `NotCycled` reads [GameState.pendingCyclingDiscardIds]: only the cycling-cost discard fails it.
      */
     private fun causeSatisfied(
@@ -800,17 +801,13 @@ object ZoneMovementUtils {
         entityId: EntityId,
         container: ComponentContainer,
         requiredCause: ZoneChangeCause
-    ): Boolean = when (requiredCause) {
-        ZoneChangeCause.Any -> true
-        ZoneChangeCause.DiscardedByOpponentEffect -> {
-            ZoneTransitionService.isDiscardCausedByOpponent(
-                state,
-                state.pendingDiscardCauseControllers[entityId],
-                container.get<CardComponent>()?.ownerId
-            )
-        }
-        ZoneChangeCause.NotCycled -> entityId !in state.pendingCyclingDiscardIds
-    }
+    ): Boolean = ZoneTransitionService.discardCauseMatches(
+        state,
+        requiredCause,
+        causeControllerId = state.pendingDiscardCauseControllers[entityId],
+        discardingPlayerId = container.get<CardComponent>()?.ownerId,
+        asCyclingCost = entityId in state.pendingCyclingDiscardIds,
+    )
 
     /**
      * The madness cost that applies (CR 702.35a) when *this particular move* is the discard the

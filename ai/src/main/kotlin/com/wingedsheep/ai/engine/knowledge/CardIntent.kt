@@ -539,6 +539,15 @@ enum class IntentTag {
     TOKEN_THEFT,
 
     /**
+     * Shields its controller's hand against effect discards — Library of Leng's "if an effect causes
+     * you to discard a card, … you may put it on top of your library instead", Nephalia Academy's
+     * opponent-caused, revealed form ([DiscardShields]). The card it saves comes back as the next
+     * draw, which no board simulation sees. Without the tag the replacement read as "abilities not
+     * recognised". A defensive rider worth little in Limited, where discard is rare.
+     */
+    DISCARD_SHIELD,
+
+    /**
      * Ends the game in its controller's favour outright — an opponent loses (Phage the Untouchable's
      * "that player loses the game", Vraska, Scheming Gorgon's −10 handing every creature of ours
      * that trigger), or its controller wins.

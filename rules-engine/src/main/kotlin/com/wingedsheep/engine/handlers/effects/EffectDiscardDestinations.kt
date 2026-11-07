@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.OptionalEffectDiscardDestination
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ZoneChangeCause
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -64,21 +65,88 @@ object EffectDiscardDestinations {
         }.toMap()
     }
 
+    /**
+     * The controller of the spell or ability that caused this discard instruction's discards: the
+     * resolving effect's controller (inside a "for each player" loop `controllerId` is the iterated
+     * discarder, so its real controller is `effectControllerId`), or for a cost discard the player
+     * whose "unless" demand it pays ([EffectContext.discardCostCausedBy]; null for other costs).
+     */
+    fun causeControllerOf(context: EffectContext): EntityId? =
+        if (context.discardIsCost) context.discardCostCausedBy else context.effectControllerId ?: context.controllerId
+
+    /**
+     * Pay an "unless [that player] discards …" demand with [cards] from [payerId]'s hand — ward's
+     * discard, a pay-or-suffer discard (Perplex). The one discard path an effect discard takes, run
+     * as a cost: madness and the discard bookkeeping apply, "if an effect causes you to discard"
+     * replacements don't, and [demandedBy] is the discard's cause for the opponent-caused readers.
+     * May pause for a destination choice; the caller propagates the pause.
+     */
+    fun payUnlessDiscard(
+        registry: EffectExecutorRegistry,
+        state: GameState,
+        payerId: EntityId,
+        cards: List<EntityId>,
+        demandedBy: EntityId?,
+        sourceId: EntityId?,
+        origin: com.wingedsheep.engine.core.ProgramOrigin,
+    ): EffectResult {
+        if (cards.isEmpty()) return EffectResult.success(state)
+        val paid = "unlessDiscardPayment"
+        return registry.execute(
+            state,
+            com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect(
+                from = paid,
+                destination = com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone(Zone.GRAVEYARD),
+                moveType = com.wingedsheep.sdk.scripting.effects.MoveType.Discard,
+            ),
+            EffectContext(
+                sourceId = sourceId,
+                controllerId = payerId,
+                discardIsCost = true,
+                discardCostCausedBy = demandedBy,
+                programOrigin = origin,
+                pipeline = com.wingedsheep.engine.handlers.PipelineState(storedCollections = mapOf(paid to cards)),
+            ),
+        )
+    }
+
+    /** The player-facing button text: "Reveal it and put it on top of your library". */
+    private fun optionLabel(choice: DiscardDestinationChoice): String {
+        val destination = choice.destination
+        val where = when (destination.zone) {
+            Zone.LIBRARY -> when (destination.placement) {
+                com.wingedsheep.sdk.scripting.effects.ZonePlacement.Bottom -> "on the bottom of your library"
+                com.wingedsheep.sdk.scripting.effects.ZonePlacement.Shuffled -> "into your library and shuffle"
+                else -> "on top of your library"
+            }
+            Zone.GRAVEYARD -> "into your graveyard"
+            else -> "into ${destination.zone.displayName}"
+        }
+        return (if (choice.reveal) "Reveal it and put it " else "Put it ") + where
+    }
+
     fun prepare(state: GameState, effect: Effect, context: EffectContext,
                 cards: List<EntityId>, playerId: EntityId, zones: ZoneTransitionService): EffectResult? {
         val entries = ActiveReplacements.all(state).filter { it.granted || !state.projectedState.hasLostAllAbilities(it.sourceId) }.filter { it.effect is OptionalEffectDiscardDestination }
         if (entries.isEmpty()) return null
         val hand = state.getHand(playerId)
+        val causeControllerId = causeControllerOf(context)
         for (id in cards) {
             if (id !in hand || id in context.discardDestinations) continue
             val candidates = entries.mapNotNull { entry ->
                 val replacement = entry.effect as OptionalEffectDiscardDestination
                 if (!zones.predicateEvaluator.matchesPlayer(state, state.projectedState, replacement.appliesTo.player, playerId, PredicateContext(controllerId = entry.controllerId, sourceId = entry.sourceId))) return@mapNotNull null
+                // An "unless" payment is a cost: "if an effect causes you to discard" (Library of
+                // Leng) skips it, but "if a spell or ability an opponent controls causes you to
+                // discard" (Nephalia Academy) sees the discard that opponent's demand caused.
+                if (context.discardIsCost && replacement.appliesTo.cause != ZoneChangeCause.DiscardedByOpponentEffect) return@mapNotNull null
+                if (!ZoneTransitionService.discardCauseMatches(state, replacement.appliesTo.cause, causeControllerId, playerId, asCyclingCost = false)) return@mapNotNull null
                 val filter = replacement.appliesTo.cardFilter
                 if (filter != null && !zones.predicateEvaluator.matches(state, state.projectedState, id, filter,
                     PredicateContext(controllerId = entry.controllerId, sourceId = entry.sourceId))) return@mapNotNull null
-                replacement.destination
-            }.distinct()
+                DiscardDestinationChoice(replacement.destination, replacement.reveal,
+                    sourceName = state.getEntity(entry.sourceId)?.get<CardComponent>()?.name)
+            }.distinctBy { it.destination to it.reveal }
             if (candidates.isEmpty()) continue
             val name = state.getEntity(id)?.get<CardComponent>()?.name ?: "this card"
             return EffectResult.from(state.suspendForDecision(
@@ -86,12 +154,12 @@ object EffectDiscardDestinations {
                     id = decisionId, playerId = playerId,
                     prompt = "Where do you want to discard $name?",
                     context = DecisionContext(sourceId = context.sourceId, phase = DecisionPhase.RESOLUTION),
-                    options = candidates.map { "Discard to ${it.description}" } + "Use the normal discard destination",
+                    options = candidates.map(::optionLabel) + "Use the normal discard destination",
                 ) },
                 answer = EffectDiscardDestinationContinuation(effect, context, id, candidates),
             ))
         }
-        val libraryCards = cards.filter { context.discardDestinations[it]?.zone == Zone.LIBRARY }
+        val libraryCards = cards.filter { context.discardDestinations[it]?.destination?.zone == Zone.LIBRARY }
         if (libraryCards.size > 1 && context.discardLibraryOrder == null) {
             return EffectResult.from(com.wingedsheep.engine.handlers.DecisionHandler().createCardSelectionDecision(
                 state = state, playerId = playerId, sourceId = context.sourceId, sourceName = null,

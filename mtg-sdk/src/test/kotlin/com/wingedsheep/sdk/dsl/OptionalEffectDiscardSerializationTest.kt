@@ -16,4 +16,12 @@ class OptionalEffectDiscardSerializationTest : FunSpec({
         Json.decodeFromString<ReplacementEffect>(Json.encodeToString(replacement)) shouldBe replacement
         replacement.optional shouldBe true
     }
+    test("an opponent-caused, revealed discard destination round trips") {
+        val replacement: ReplacementEffect = OptionalEffectDiscardDestination(
+            CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+            EventPattern.DiscardEvent(Player.You, cause = ZoneChangeCause.DiscardedByOpponentEffect),
+            reveal = true)
+        Json.decodeFromString<ReplacementEffect>(Json.encodeToString(replacement)) shouldBe replacement
+        replacement.description shouldBe "You may reveal it and discard into a library (top) instead"
+    }
 })

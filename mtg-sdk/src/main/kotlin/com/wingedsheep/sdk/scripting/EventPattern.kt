@@ -1110,10 +1110,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * What must have caused the discard. [ZoneChangeCause.Any] (the default) is every discard;
          * [ZoneChangeCause.DiscardedByOpponentEffect] is "when a spell or ability an opponent controls
          * causes you to discard this card" (Psychic Purge) — a discard caused by a resolving spell or
-         * ability whose controller is an opponent of the discarding player, never a cost, never the
-         * cleanup-step hand-size discard. The causing controller is "that player" in the effect:
-         * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Trigger-only — the
-         * replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
+         * ability whose controller is an opponent of the discarding player (including a discard paid
+         * to meet that player's "unless" demand), never a cost of your own, never the cleanup-step
+         * hand-size discard. The causing controller is "that player" in the effect:
+         * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Read by discard
+         * triggers and by `OptionalEffectDiscardDestination.appliesTo` (Nephalia Academy); the
+         * zone-change replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
          * [ZoneChangeCause.NotCycled] admits every discard except one paid as a cycling cost.
          */
         val cause: ZoneChangeCause = ZoneChangeCause.Any

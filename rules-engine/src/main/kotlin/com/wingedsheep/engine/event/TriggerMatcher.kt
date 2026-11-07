@@ -1316,12 +1316,8 @@ class TriggerMatcher(
      * controller who is an opponent of the discarding player; costs and the cleanup discard carry none.
      */
     fun discardCauseMatches(state: GameState, cause: ZoneChangeCause, event: CardsDiscardedEvent): Boolean =
-        when (cause) {
-            ZoneChangeCause.Any -> true
-            ZoneChangeCause.NotCycled -> !event.asCyclingCost
-            ZoneChangeCause.DiscardedByOpponentEffect -> com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                .isDiscardCausedByOpponent(state, event.causeControllerId, event.playerId)
-        }
+        com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .discardCauseMatches(state, cause, event.causeControllerId, event.playerId, event.asCyclingCost)
 
     /** A discarded card with undefined characteristics can satisfy only a filter's characteristic-free branches. */
     private fun discardedCardMatches(

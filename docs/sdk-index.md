@@ -1617,7 +1617,7 @@ Families:
 - `ModifyTokenCount(modifier: Int, appliesTo: EventPattern)` — Modify the number of tokens created by a fixed amount.
 - `MultiplyTokenCreation(factor: Int, appliesTo: EventPattern)` — Double the number of tokens created.
 - `OnEnterRun(effect: Effect, appliesTo: EventPattern)` — Generic "as ~ enters the battlefield, run effect" replacement.
-- `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo: EventPattern.DiscardEvent)` — Optional destination replacement for a discard caused by a resolving effect, never a cost.
+- `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo: EventPattern.DiscardEvent, reveal: Boolean)` — Optional destination replacement for a discard caused by a resolving effect, never a cost.
 - `OptionalSkipTurnWith(effect: Effect, appliesTo: EventPattern.TurnBeginEvent, restrictions: List<Condition>)` — Replace a turn with nothing, then perform effect first in the next turn that actually occurs.
 - `PermanentsEnterTapped(appliesTo: EventPattern, condition: Condition?, attackDefender: EnteringAttackDefender?)` — "Permanents matching appliesTo enter the battlefield tapped" — the global/group counterpart of the self-only EntersTapped.
 - `PreventDamage(amount: Int?, restrictions: List<Condition>, appliesTo: EventPattern, onPrevented: Effect?, half: Boolean, roundUp: Boolean, allBut: Int?)` — Prevent damage.

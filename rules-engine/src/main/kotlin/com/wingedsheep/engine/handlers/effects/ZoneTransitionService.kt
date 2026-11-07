@@ -2112,6 +2112,26 @@ class ZoneTransitionService(
         ): Boolean = causeControllerId != null && discardingPlayerId != null &&
             state.isOpponentOf(causeControllerId, discardingPlayerId)
 
+        /**
+         * Whether a discard was caused the way a [ZoneChangeCause] qualifier asks — the one kernel
+         * behind the zone-change replacement (`RedirectZoneChange.requiredCause`), the discard
+         * trigger (`DiscardEvent.cause`) and the effect-discard destination replacement
+         * (`OptionalEffectDiscardDestination.appliesTo.cause`). [causeControllerId] is the controller
+         * of the spell or ability that caused the discard (null for costs and the cleanup discard).
+         */
+        fun discardCauseMatches(
+            state: GameState,
+            cause: com.wingedsheep.sdk.scripting.ZoneChangeCause,
+            causeControllerId: EntityId?,
+            discardingPlayerId: EntityId?,
+            asCyclingCost: Boolean,
+        ): Boolean = when (cause) {
+            com.wingedsheep.sdk.scripting.ZoneChangeCause.Any -> true
+            com.wingedsheep.sdk.scripting.ZoneChangeCause.DiscardedByOpponentEffect ->
+                isDiscardCausedByOpponent(state, causeControllerId, discardingPlayerId)
+            com.wingedsheep.sdk.scripting.ZoneChangeCause.NotCycled -> !asCyclingCost
+        }
+
         fun markDiscardCause(
             state: GameState,
             cardIds: List<EntityId>,

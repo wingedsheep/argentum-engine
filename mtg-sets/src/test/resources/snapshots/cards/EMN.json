@@ -5939,6 +5939,68 @@
     ]
 }
 
+// Nephalia Academy
+{
+    "name": "Nephalia Academy",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "If a spell or ability an opponent controls causes you to discard a card, you may reveal that card and put it on top of your library instead of putting it anywhere else.\n{T}: Add {C}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nephalia Academy:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OptionalEffectDiscardDestination",
+                "destination": {
+                    "zone": "Library",
+                    "placement": "Top"
+                },
+                "appliesTo": {
+                    "cause": "DiscardedByOpponentEffect"
+                },
+                "reveal": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/9243eb5b-905e-446f-9ee0-7557e3b31db3.jpg?1783937421",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If you discard a card with madness, you'll choose whether to exile it or put it on top of your library. If you put it on top of your library, you can't cast it using madness."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "In a Magic game, cards are discarded only from a player's hand. Effects that put cards from a player's library into that player's graveyard do not cause those cards to be discarded."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "When you apply Nephalia Academy's effect, the card was still discarded. Abilities that trigger when a card is discarded will still trigger."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If a spell or ability an opponent controls causes you to make a choice and you choose to discard a card, Nephalia Academy's ability will apply."
+            }
+        ]
+    }
+}
+
 // Noose Constrictor
 {
     "name": "Noose Constrictor",
