@@ -12632,6 +12632,7 @@ Patriarch's Bidding
 Patrician Geist
 Patriot, Shield Wielder
 Patrol Hound
+Patron of the Valiant
 Patron of the Vein
 Patron of the Wild
 Pattern Buffer Preservation
@@ -12766,6 +12767,7 @@ Phantom Nantuko
 Phantom Ninja
 Phantom Train
 Phantom Warrior
+Pharika's Chosen
 Pharika's Cure
 Pharika's Disciple
 Pharika's Libation
@@ -13348,6 +13350,7 @@ Purphoros, Bronze-Blooded
 Purphoros, God of the Forge
 Purple Dragon Punks
 Purple Worm
+Purple-Crystal Crab
 Pursue Glory
 Pursue the Past
 Pursued Whale
@@ -13862,6 +13865,7 @@ Reconstruction
 Recover
 Recruiter of the Guard
 Recruitment Officer
+Recumbent Bliss
 Recuperate
 Recursive Recruitment
 Red Alert!
@@ -14800,6 +14804,7 @@ Sandskitter Outrider
 Sandsower
 Sandstalker Moloch
 Sandsteppe Citadel
+Sandsteppe Outcast
 Sandstone Bridge
 Sandstone Warrior
 Sandstorm
@@ -14987,6 +14992,7 @@ Scion of Darkness
 Scion of Draco
 Scion of Glaciers
 Scion of Oona
+Scion of Opulence	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Scion of Stygia
 Scion of Ugin
 Scion of the Swarm
@@ -16569,6 +16575,7 @@ Springmane Cervin
 Springmantle Cleric
 Springsage Ritual
 Sprite Dragon
+Sprite Noble
 Sprout
 Sprout Swarm
 Sprouting Goblin
@@ -19464,6 +19471,7 @@ Vineshaper Prodigy
 Vineweft
 Violent Echoes
 Violent Impact
+Violent Outburst
 Violent Ultimatum
 Violent Urge
 Viral Spawning
