@@ -8,7 +8,7 @@
  */
 import type { SliceCreator, ActionPipelineState, PhaseResult } from '../types'
 import type { ActivateAbilityAction, CastSpellAction, EntityId, GameAction, LegalActionInfo } from '@/types'
-import { computePhases, mergeResult, enterPhase, dropSacrificeXPickerAtZero } from './pipelinePhases'
+import { computePhases, mergeResult, enterPhase, dropXCountPickerAtZero } from './pipelinePhases'
 import type { PipelineStoreMethods } from './pipelinePhases'
 import {
   parseManaCost as parseManaCostUtil,
@@ -264,7 +264,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     }
 
     if (result.type === 'xSelection') {
-      nextPhases = dropSacrificeXPickerAtZero(nextPhases, actionInfo, result.xValue)
+      nextPhases = dropXCountPickerAtZero(nextPhases, actionInfo, result.xValue)
     }
 
     // Dynamic phase injection: a non-mana escalate cost (CR 702.120a) is owed once per mode

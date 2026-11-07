@@ -2824,7 +2824,7 @@ class Strategist(
         // "Sacrifice X creatures" (Eliminate the Competition) is paid once X is bound — the
         // cheapest X permanents, in [SelectionCostPayment.plain].
         val payableCost = info == null || info.costType == "DiscardCard" ||
-            (info.costType == "SacrificeVariable" && info.sacrificeCountIsX)
+            (info.costType == "SacrificeVariable" && info.countIsX)
         // The Momir avatar is expanded before the generic affordability guard below, because for it
         // "not worth activating" must mean *dropped*, not "fall through to the bare action". The
         // bare action carries `xValue = 0`, and with no mana available (`maxX == 0`) that is exactly

@@ -71,7 +71,7 @@ class AutomaticAdditionalCostPaymentAiTest : FunSpec({
                 costType = "SacrificeVariable",
                 validSacrificeTargets = fodder,
                 sacrificeCount = 0,
-                sacrificeCountIsX = true,
+                countIsX = true,
             ),
         )
 
@@ -80,6 +80,34 @@ class AutomaticAdditionalCostPaymentAiTest : FunSpec({
         val x = chosen.xValue ?: 0
         x shouldBe 2
         chosen.additionalCostPayment?.variableCostPermanents?.size shouldBe x
+    }
+
+    test("AI binds X and discards exactly X for a discard-X spell cost") {
+        val driver = driver()
+        val player = driver.activePlayer!!
+        val spell = driver.putCardInHand(player, "Grizzly Bears")
+        val fodder = List(3) { driver.putCardInHand(player, "Forest") }
+        val legal = LegalAction(
+            action = CastSpell(player, spell),
+            actionType = "CastSpell",
+            description = "test",
+            hasXCost = true,
+            maxAffordableX = 2,
+            additionalCostInfo = AdditionalCostData(
+                description = "Discard X cards",
+                costType = "DiscardCard",
+                validDiscardTargets = fodder,
+                discardCount = 0,
+                discardMaxCount = 3,
+                countIsX = true,
+            ),
+        )
+
+        val chosen = AIPlayer.create(driver.cardRegistry, player)
+            .chooseFrom(driver.state, listOf(legal)).action as CastSpell
+        val x = chosen.xValue ?: 0
+        x shouldBe 2
+        chosen.additionalCostPayment?.discardedCards?.size shouldBe x
     }
 
     test("AI materializes enumerated costs for activated abilities") {

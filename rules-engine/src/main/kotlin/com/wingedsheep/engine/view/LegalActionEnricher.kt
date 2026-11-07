@@ -300,7 +300,7 @@ class LegalActionEnricher(
         validSacrificeTargets = validSacrificeTargets,
         sacrificeCount = sacrificeCount,
         sacrificeMinPowerIsX = sacrificeMinPowerIsX,
-        sacrificeCountIsX = sacrificeCountIsX,
+        countIsX = countIsX,
         costAfterSacrifice = costAfterSacrifice,
         validTapTargets = validTapTargets,
         tapCount = tapCount,

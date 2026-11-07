@@ -179,9 +179,37 @@ internal object PayLifeEqualToManaValueCostKind : SpellCostKind<AdditionalCost.P
  * additional cost is chosen as the spell is cast), so a flashback cost of this shape sets X for a
  * spell whose `{X}` it doesn't pay (Summons of Saruman), and a spell with no `{X}` reads it as its
  * X value (Channeled Force).
+ *
+ * "Discard X cards" is announced like "sacrifice X creatures": X is chosen with the spell (CR
+ * 601.2b) — before targets, so "each of up to X target creatures" (Nahiri's Wrath) is sized by it —
+ * and the payment must discard exactly that X. A cast that arrives with no announced X (an engine
+ * or test cast) lets the discard define it, as before.
  */
 internal object VariableCardsCostKind : SpellCostKind<AdditionalCost.VariableCards> {
     private val AdditionalCost.VariableCards.verb get() = if (action == CardCostAction.DISCARD) "discard" else "exile"
+
+    /**
+     * The X ceiling the "discard X cards" costs among [costs] put on the cast's announcement: the
+     * hand cards that could be discarded, never the card being cast ([castCardId], CR 601.2a).
+     * Null when no such cost is present. Fed to [SpellCosts.additionalCostMaxX], so the cast offer
+     * carries `hasXCost` and the client asks for X before targets.
+     */
+    fun maxX(
+        state: GameState,
+        payerId: EntityId,
+        costs: List<AdditionalCost>,
+        predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator,
+        castCardId: EntityId?,
+    ): Int? = SpellCosts.flattenComposites(costs)
+        .filterIsInstance<AdditionalCost.VariableCards>()
+        .filter { it.action == CardCostAction.DISCARD }
+        .minOfOrNull { cost ->
+            val context = PredicateContext(controllerId = payerId)
+            state.getZone(ZoneKey(payerId, Zone.HAND)).count { cardId ->
+                cardId != castCardId &&
+                    predicateEvaluator.matches(state, state.projectedState, cardId, cost.filter, context)
+            }
+        }
 
     // `canPay` has no cast in hand and can't exclude the card being cast; `enumerate` does.
     override fun canPay(state: GameState, payerId: EntityId, cost: AdditionalCost.VariableCards, costHandler: CostHandler): Boolean {
@@ -202,6 +230,7 @@ internal object VariableCardsCostKind : SpellCostKind<AdditionalCost.VariableCar
                 offer.discardTargets = pool
                 offer.discardCount = cost.minCount
                 offer.discardMaxCount = pool.size
+                offer.discardCountIsX = true
                 offer.discardDescription = cost.description
             }
         }
@@ -232,6 +261,7 @@ internal object VariableCardsCostKind : SpellCostKind<AdditionalCost.VariableCar
                 validDiscardTargets = candidates,
                 discardCount = cost.minCount,
                 discardMaxCount = candidates.size,
+                countIsX = true,
             )
         }
         val costType = when (cost.fromZone) {
@@ -262,6 +292,11 @@ internal object VariableCardsCostKind : SpellCostKind<AdditionalCost.VariableCar
         val picks = chosen(cost, check.payment)
         if (picks.distinct().size != picks.size) {
             return "Each card can be chosen only once"
+        }
+        // "Discard X cards": exactly the announced X (CR 601.2b), which may be 0.
+        val announcedX = check.action.xValue
+        if (cost.action == CardCostAction.DISCARD && announcedX != null && picks.size != announcedX) {
+            return "You must discard exactly $announcedX card(s) to cast this spell (X = $announcedX)"
         }
         if (picks.size < cost.minCount) {
             return "You must ${cost.verb} at least ${cost.minCount} ${cost.filter.description}(s) from your ${cost.fromZone.description}"

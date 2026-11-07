@@ -1425,11 +1425,12 @@ export interface AdditionalCostInfo {
    */
   readonly sacrificeMinPowerIsX?: boolean
   /**
-   * "Sacrifice X creatures" (Eliminate the Competition): the `SacrificeVariable` picker takes
-   * exactly the X announced in the xSelection phase, not `sacrificeCount`-or-more. At X = 0 there
-   * is nothing to pick and the phase is skipped. The server re-validates the count.
+   * The cost's count is the X announced in the xSelection phase: "sacrifice X creatures"
+   * (Eliminate the Competition, `SacrificeVariable`) or "discard X cards" (Nahiri's Wrath,
+   * `DiscardCard`). The picker takes exactly that X, not its floor-or-more. At X = 0 there is
+   * nothing to pick and the phase is skipped. The server re-validates the count.
    */
-  readonly sacrificeCountIsX?: boolean
+  readonly countIsX?: boolean
   /**
    * Emerge (CR 702.119): the mana cost that remains after sacrificing each candidate, keyed by
    * that candidate. Emerge is the only cost whose mana half depends on which permanent pays its

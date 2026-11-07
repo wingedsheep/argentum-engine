@@ -1,0 +1,1 @@
+- #TBD Pays a "discard X cards" spell cost (Nahiri's Wrath, Channeled Force) with exactly the X it announces, and reads a spell's discard additional cost as graveyard fuel

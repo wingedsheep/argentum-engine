@@ -136,7 +136,7 @@ class CastFromZoneEnumerator(
             val card = state.getEntity(action.cardId)?.get<CardComponent>() ?: return@map offer
             val cardDef = context.cardRegistry.getCard(card.cardDefinitionId)
             val owed = costs.owedAdditionalCosts(state, action, cardDef)
-            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, owed, context.predicateEvaluator)
+            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, owed, context.predicateEvaluator, castCardId = action.cardId)
             val hasXCost = offer.hasXCost || counterMaxX != null
             val maxAffordableX = listOfNotNull(offer.maxAffordableX.takeIf { offer.hasXCost }, counterMaxX).minOrNull()
             // "If you cast this spell this way, X can't be 0" (Light Up the Night): the flashback

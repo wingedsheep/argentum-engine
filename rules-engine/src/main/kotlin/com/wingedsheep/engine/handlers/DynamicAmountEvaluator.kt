@@ -1369,6 +1369,12 @@ class DynamicAmountEvaluator(
 
         ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT -> context.exiledCardCount
 
+        // Every card discarded to pay the cost, in whatever zone it is now: the discard is a fact
+        // of the cast, not a reference to an object that must still be in the graveyard (Nahiri's
+        // Wrath ruling — madness exile and later moves still count).
+        ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE ->
+            context.discardedAsCostCards.sumOf { com.wingedsheep.engine.mechanics.ManaValues.of(state, it) }
+
         ContextPropertyKey.TARGET_COUNT -> context.targets.size
 
         // The summing sibling of TARGET_COUNT, over the same list. A cost carrying this key is

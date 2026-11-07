@@ -162,7 +162,9 @@ internal class JevActions(
         return AdditionalCostPayment(
             sacrificedPermanents = if (variableSacrifice) emptyList()
             else select("Sacrifice for ${c.description}", c.validSacrificeTargets, c.sacrificeCount),
-            discardedCards = select("Discard for ${c.description}", c.validDiscardTargets, c.discardCount),
+            // "Discard X cards" (Nahiri's Wrath) owes exactly the announced X.
+            discardedCards = select("Discard for ${c.description}", c.validDiscardTargets,
+                if (c.countIsX) x ?: 0 else c.discardCount),
             tappedPermanents = select("Tap for ${c.description}", c.validTapTargets, c.tapCount),
             bouncedPermanents = select("Return to hand for ${c.description}", c.validBounceTargets, c.bounceCount),
             exiledCards = if (c.validCraftMaterials.isNotEmpty())
@@ -179,7 +181,7 @@ internal class JevActions(
             blightAmount = if (c.blightVariableMaxX > 0) q.number("Choose blight X", 0, c.blightVariableMaxX) else 0,
             payXLifeAmount = if (c.payXLifeMaxX > 0) q.number("Choose life to pay", 0, c.payXLifeMaxX) else 0,
             // "Sacrifice X creatures" (Eliminate the Competition) owes exactly the announced X.
-            variableCostPermanents = if (variableSacrifice && c.sacrificeCountIsX)
+            variableCostPermanents = if (variableSacrifice && c.countIsX)
                 select("Sacrifice for ${c.description}", c.validSacrificeTargets, x ?: 0)
             else if (variableSacrifice)
                 select("Sacrifice for ${c.description}", c.validSacrificeTargets, c.sacrificeCount, c.validSacrificeTargets.size)

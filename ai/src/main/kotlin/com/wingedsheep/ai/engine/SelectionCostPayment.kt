@@ -81,8 +81,10 @@ internal object SelectionCostPayment {
         "TapPermanents" -> existing.copy(
             tappedPermanents = cheapestFirst.permanents(info.validTapTargets).take(info.tapCount)
         )
+        // "Discard X cards" (Nahiri's Wrath): exactly the cast's announced X.
         "DiscardCard" -> existing.copy(
-            discardedCards = cheapestFirst.cardsInHand(info.validDiscardTargets).take(info.discardCount)
+            discardedCards = cheapestFirst.cardsInHand(info.validDiscardTargets)
+                .take(if (info.countIsX) xValue else info.discardCount)
         )
         "SacrificePermanent" -> existing.copy(
             sacrificedPermanents = cheapestFirst.permanents(info.validSacrificeTargets).take(info.sacrificeCount)
@@ -95,7 +97,7 @@ internal object SelectionCostPayment {
         // "Sacrifice X creatures": exactly the cast's announced X.
         "SacrificeVariable" -> existing.copy(
             variableCostPermanents = cheapestFirst.permanents(info.validSacrificeTargets)
-                .take(if (info.sacrificeCountIsX) xValue else info.sacrificeCount)
+                .take(if (info.countIsX) xValue else info.sacrificeCount)
         )
         else -> null
     }
