@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.AlternativeCrewCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
@@ -15,6 +16,10 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * can crew it yet) and [CREWABLE_SHARE] (the controller's other creatures carry at least N power),
  * linear in between. A crewed Vehicle is a creature in the projection and is priced as one; this
  * reading only covers the turns it sits uncrewed.
+ *
+ * A Vehicle with an [AlternativeCrewCost] (Heart of Kiran: "remove a loyalty counter from a
+ * planeswalker you control rather than pay this Vehicle's crew cost") is fully crewable while its
+ * controller has a permanent that can pay it, whatever creature power they have.
  *
  * Mounts (Saddle N) are creatures already, so they need none of this.
  */
@@ -46,6 +51,17 @@ internal object VehicleBody {
         }
         return (granted + listOfNotNull(fromPrinted)).minOrNull()
     }
+
+    /** The printed alternative crew costs on [card] — each one a way to crew it without creatures. */
+    fun alternativeCrewCosts(card: CardDefinition): List<AlternativeCrewCost> =
+        card.staticAbilities.filterIsInstance<AlternativeCrewCost>()
+
+    /**
+     * Whether a permanent printed as [payer], holding [countersOf] counters of each type, could pay
+     * one of [costs]: it has the cost's counter and its printed card matches the cost's filter.
+     */
+    fun canPay(costs: List<AlternativeCrewCost>, payer: CardDefinition, countersOf: (com.wingedsheep.sdk.core.CounterType) -> Int): Boolean =
+        costs.any { countersOf(it.counterType) >= 1 && PrintedFilter.matches(payer, it.filter) == true }
 
     /** The share of the body worth counting when [crewPower] is what the controller could tap for crew [crew]. */
     fun share(crew: Int, crewPower: Int): Double {

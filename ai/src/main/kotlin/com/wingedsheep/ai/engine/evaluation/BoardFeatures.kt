@@ -594,9 +594,35 @@ object BoardPresence : BoardFeature {
             projected, entityId, card, intents, controller,
             crew = VehicleBody.crewInForce(projected.getKeywords(entityId), intents.definition(card.name)?.let(VehicleBody::printedCrew)),
             keywords = projected.getKeywords(entityId),
+            alternativeCrewReady = alternativeCrewReady(state, projected, entityId, container, card, intents, controller),
         )
         if (vehicle != null) return maxOf(0.5, vehicle + abilityOverBaseline(prior))
         return maxOf(0.5, prior)
+    }
+
+    /**
+     * Whether [controller] could crew the Vehicle [vehicleId] through its alternative crew cost right
+     * now — Heart of Kiran beside a planeswalker with loyalty. Off once the Vehicle is face down or
+     * has lost its abilities, the way the engine's crew action is.
+     */
+    private fun alternativeCrewReady(
+        state: GameState,
+        projected: ProjectedState,
+        vehicleId: EntityId,
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        card: CardComponent,
+        intents: IntentCatalog,
+        controller: EntityId,
+    ): Boolean {
+        if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(vehicleId)) return false
+        val costs = intents.definition(card.name)?.let(VehicleBody::alternativeCrewCosts).orEmpty()
+        if (costs.isEmpty()) return false
+        return projected.getBattlefieldControlledBy(controller).any { payerId ->
+            val payer = state.getEntity(payerId) ?: return@any false
+            val definition = payer.get<CardComponent>()?.let { intents.definition(it.name) } ?: return@any false
+            val counters = payer.get<CountersComponent>()
+            VehicleBody.canPay(costs, definition) { counters?.getCount(it) ?: 0 }
+        }
     }
 
     /** What a prior adds over an unreadable permanent's — the ability half of a body-plus-ability sum. */
@@ -618,11 +644,13 @@ object BoardPresence : BoardFeature {
         controller: EntityId,
         crew: Int?,
         keywords: Set<String>,
+        /** The controller can pay the Vehicle's alternative crew cost ([VehicleBody.alternativeCrewCosts]). */
+        alternativeCrewReady: Boolean = false,
     ): Double? {
         if (crew == null || !intents.isEnabled) return null
         val power = card.baseStats?.basePower ?: return null
         val toughness = card.baseStats?.baseToughness ?: return null
-        val crewPower = projected.getBattlefieldControlledBy(controller).sumOf {
+        val crewPower = if (alternativeCrewReady) crew else projected.getBattlefieldControlledBy(controller).sumOf {
             if (it != vehicleId && projected.isCreature(it)) (projected.getPower(it) ?: 0).coerceAtLeast(0) else 0
         }
         return VehicleBody.share(crew, crewPower) *

@@ -341,6 +341,8 @@ export interface CrewVehicleAction {
   readonly playerId: EntityId
   readonly vehicleId: EntityId
   readonly crewCreatures: readonly EntityId[]
+  /** Pays the Vehicle's alternative crew cost (Heart of Kiran) instead of tapping creatures. */
+  readonly alternativeCostFrom?: EntityId
 }
 
 // =============================================================================

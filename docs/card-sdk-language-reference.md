@@ -15251,6 +15251,20 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   counting plain projected power; the *measure* is what differs between the two costs.) Each candidate
   also carries `canAttack`, the per-creature CR 508.1a attack check via `AttackAvailability`, since
   paying the cost taps the creature out of combat.
+- `AlternativeCrewCost(counterType, filter)` — "You may remove a [counterType] counter from a
+  [filter] you control rather than pay this Vehicle's crew cost" (Heart of Kiran:
+  `AlternativeCrewCost(CounterType.LOYALTY, GameObjectFilter.Planeswalker)`, beside its
+  `KeywordAbility.crew(3)`). An alternative cost for the Vehicle's own crew abilities (CR 118.9): the
+  crew ability is still the one activated, so it uses the stack, makes the Vehicle become crewed,
+  honours "activate only once each turn" and activation prohibitions, and still charges any mana a
+  cost-modifying static adds — but the counter is paid instead of tapping creatures, so no creature
+  crews it (`CreaturesThatCrewedOrSaddledSource` stays empty). Removing a loyalty counter this way
+  isn't a loyalty ability, so a planeswalker that already activated one this turn can still pay.
+  `CrewEnumerator` offers one extra `CrewVehicle` legal action per permanent that can pay (labelled
+  "Crew <Vehicle> — remove a loyalty counter from <permanent>", no `tapForPower`), carrying
+  `CrewVehicle.alternativeCostFrom`; `CrewVehicleHandler` accepts exactly those (resolved by the
+  shared `CrewRequirement.alternativePayments`), with an empty `crewCreatures`. Face-down or
+  lost-all-abilities Vehicles have no alternative cost.
 - `Modular(n)` — ETB with +1/+1 counters, transfer on death. Display-only; nothing in the engine
   reads `Keyword.MODULAR`. Lower it alongside the keyword ability as its two printed halves
   (Arcbound Condor): `replacementEffect(EntersWithCounters(CounterType.PLUS_ONE_PLUS_ONE, n,

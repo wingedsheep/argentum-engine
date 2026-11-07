@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
+import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 
 /**
@@ -53,6 +54,26 @@ class VehicleBodyReadingAiTest : ScenarioTestBase() {
         test("the draft heuristic rates the body less its crew, not as a blank artifact") {
             val explained = LimitedCardRater.explain(card("Consulate Dreadnought"))
             explained.heuristic.first { it.part == "Base" }.value shouldBeGreaterThan 1.5
+        }
+
+        fun heartValue(vararg others: String): Double {
+            var builder = scenario().withPlayers().withCardOnBattlefield(1, "Heart of Kiran")
+            others.forEach { builder = builder.withCardOnBattlefield(1, it) }
+            val game = builder.build()
+            val id = game.findPermanent("Heart of Kiran")!!
+            val component = game.state.getEntity(id)!!.get<CardComponent>()!!
+            return BoardPresence.permanentValue(
+                game.state, game.state.projectedState, id, component, intents, AiProfile.LIVE.creatureValuation,
+            )
+        }
+
+        test("a planeswalker that can pay Heart of Kiran's alternative crew cost makes it crewable") {
+            VehicleBody.alternativeCrewCosts(card("Heart of Kiran")).size shouldBe 1
+            val alone = heartValue()
+            val besideWalker = heartValue("Tezzeret the Schemer") // enters with 5 loyalty
+            besideWalker shouldBeGreaterThan alone
+            // Fully crewable, the same as having crew 3's worth of creature power.
+            besideWalker shouldBe (heartValue("Hill Giant") plusOrMinus 1e-9)
         }
 
         test("a Vehicle spell on the stack is priced by its body too") {
