@@ -20,6 +20,16 @@ import { parseManaCost } from '@/utils/manaCost'
  * into tabs by (owner, zone) so e.g. "Your Graveyard" and "Your Exile" are distinct, browsable
  * piles. Similar to GraveyardTargetingUI in DecisionUI but for client-side spell casting targeting.
  */
+/**
+ * The zone picker's heading. A cost's prompt arrives as a sentence-cased instruction ("Exile any
+ * number of creature cards from your graveyard — …", "Discard a card"), shown verbatim; a target
+ * description ("target creature card") reads as what to select.
+ */
+function selectionHeading(description: string): string {
+  const first = description.charAt(0)
+  return first !== first.toLowerCase() ? description : `Select ${description}`
+}
+
 function ZoneCardTargetingOverlay({
   zoneCards,
   targetingState,
@@ -230,7 +240,7 @@ function ZoneCardTargetingOverlay({
           }}
         >
           {targetingState.targetDescription
-            ? `Select ${targetingState.targetDescription}`
+            ? selectionHeading(targetingState.targetDescription)
             : 'Choose Target'}
         </h2>
         {targetingState.sourceCardName && (

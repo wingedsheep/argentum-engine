@@ -249,6 +249,117 @@
     ]
 }
 
+// Gorex, the Tombshell
+{
+    "name": "Gorex, the Tombshell",
+    "manaCost": "{6}{B}{B}",
+    "typeLine": "Legendary Creature — Zombie Turtle",
+    "oracleText": "As an additional cost to cast this spell, you may exile any number of creature cards from your graveyard. This spell costs {2} less to cast for each card exiled this way.\nDeathtouch\nWhenever Gorex attacks or dies, choose a card at random exiled with Gorex and put that card into its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gorex, the Tombshell:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Gorex attacks, choose a card at random exiled with Gorex and put that card into its owner's hand."
+            },
+            {
+                "id": "Gorex, the Tombshell:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Gorex dies, choose a card at random exiled with Gorex and put that card into its owner's hand."
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "EXILE",
+                "filter": "creature",
+                "reductionPerUnit": 2,
+                "fromZone": "GRAVEYARD"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/398ecf98-b36b-45e1-8ac1-9d364e12d79e.jpg?1790319372"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hordewing Skaab
 {
     "name": "Hordewing Skaab",

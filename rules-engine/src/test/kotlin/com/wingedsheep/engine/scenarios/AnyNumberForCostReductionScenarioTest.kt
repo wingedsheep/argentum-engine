@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -31,6 +32,8 @@ import io.kotest.matchers.shouldBe
  *  - it takes **generic mana only** — the coloured pip is always owed;
  *  - choosing none is legal and pays full price;
  *  - exile from hand: only matching cards, never the spell itself (it is on the stack, CR 601.2a);
+ *  - exile from graveyard: only matching graveyard cards, and the exiled cards are linked to the
+ *    permanent the spell becomes (CR 607 — "a card exiled with Gorex");
  *  - tap: only untapped permanents (CR 701.26a), summoning-sick ones included (a cost isn't {T});
  *  - the cast is offered when the *largest* discount makes it affordable, with a zero-floor picker.
  */
@@ -50,6 +53,14 @@ class AnyNumberForCostReductionScenarioTest : FunSpec({
         spell { effect = Effects.GainLife(10) }
     }
 
+    val tombshell = card("Test Tombshell") {
+        manaCost = "{6}{B}{B}"
+        typeLine = "Creature — Zombie Turtle"
+        power = 4
+        toughness = 4
+        additionalCost(Costs.additional.ExileAnyNumberFromGraveyardForCostReduction(GameObjectFilter.Creature, 2))
+    }
+
     val whiteCard = card("Test White Card") {
         manaCost = "{1}{W}"
         typeLine = "Creature — Human"
@@ -66,7 +77,7 @@ class AnyNumberForCostReductionScenarioTest : FunSpec({
 
     fun driver(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(whiteMarch, singularity, whiteCard, redCard))
+        driver.registerCards(TestCards.all + listOf(whiteMarch, singularity, tombshell, whiteCard, redCard))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 20), startingLife = 20)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -209,6 +220,44 @@ class AnyNumberForCostReductionScenarioTest : FunSpec({
             d.giveMana(me, Color.RED, 2)
 
             d.legalActions(me).none { (it.action as? CastSpell)?.cardId == spell && it.affordable } shouldBe true
+        }
+    }
+
+    context("exile from graveyard") {
+        test("each creature card exiled takes {2} off, and the cards are linked to the permanent the spell becomes") {
+            val (d, me) = driver()
+            val spell = d.putCardInHand(me, "Test Tombshell")
+            val picks = List(3) { d.putCardInGraveyard(me, "Test Red Card") }
+            d.giveMana(me, Color.BLACK, 2) // {6}{B}{B} − {6} = {B}{B}
+
+            d.cast(me, spell, payment = AdditionalCostPayment(exiledCards = picks)).outcome shouldBe Outcome.Done
+            d.getExile(me) shouldContainExactlyInAnyOrder picks
+            d.bothPass()
+            d.state.getEntity(spell)?.get<LinkedExileComponent>()?.exiledIds.orEmpty() shouldContainExactlyInAnyOrder picks
+        }
+
+        test("a card in hand can't pay a graveyard cost") {
+            val (d, me) = driver()
+            val spell = d.putCardInHand(me, "Test Tombshell")
+            val inHand = d.putCardInHand(me, "Test Red Card")
+            d.giveMana(me, Color.BLACK, 8)
+
+            (d.cast(me, spell, payment = AdditionalCostPayment(exiledCards = listOf(inHand))).outcome is Outcome.Rejected) shouldBe true
+        }
+
+        test("the legal action offers a zero-floor graveyard picker carrying its exact pricing") {
+            val (d, me) = driver()
+            val spell = d.putCardInHand(me, "Test Tombshell")
+            val creature = d.putCardInGraveyard(me, "Test Red Card")
+            d.giveMana(me, Color.BLACK, 8)
+
+            val info = d.legalActions(me).first { (it.action as? CastSpell)?.cardId == spell }.additionalCostInfo
+            info.shouldNotBeNull()
+            info.costType shouldBe "ExileFromGraveyard"
+            info.exileMinCount shouldBe 0
+            info.validExileTargets shouldBe listOf(creature)
+            info.reductionPerPick shouldBe 2
+            info.genericBeforeReduction shouldBe 6
         }
     }
 })

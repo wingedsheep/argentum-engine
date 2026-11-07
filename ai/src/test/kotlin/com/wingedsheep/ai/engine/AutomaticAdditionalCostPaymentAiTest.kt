@@ -6,8 +6,13 @@ import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -97,5 +102,46 @@ class AutomaticAdditionalCostPaymentAiTest : FunSpec({
         val chosen = AIPlayer.create(driver.cardRegistry, player)
             .chooseFrom(driver.state, listOf(legal)).action as ActivateAbility
         chosen.costPayment?.tappedPermanents shouldBe listOf(fodder)
+    }
+
+    context("a \"costs {N} less for each\" discount picker") {
+        // Gorex, the Tombshell's shape: exile any number of creature cards from your graveyard,
+        // {2} off for each. The offer is priced at the largest discount; the AI used to submit no
+        // picks at all, so a cast the discount made affordable was refused.
+        val tombshell = card("Test Tombshell") {
+            manaCost = "{6}{B}{B}"
+            typeLine = "Creature — Zombie Turtle"
+            power = 4
+            toughness = 4
+            additionalCost(Costs.additional.ExileAnyNumberFromGraveyardForCostReduction(GameObjectFilter.Creature, 2))
+        }
+
+        fun cast(swamps: Int): Pair<GameTestDriver, CastSpell> {
+            val driver = GameTestDriver().apply {
+                registerCards(TestCards.all + tombshell)
+                initMirrorMatch(Deck.of("Swamp" to 40))
+                passPriorityUntil(Step.PRECOMBAT_MAIN)
+            }
+            val player = driver.activePlayer!!
+            val spell = driver.putCardInHand(player, "Test Tombshell")
+            repeat(swamps) { driver.putLandOnBattlefield(player, "Swamp") }
+            repeat(4) { driver.putCardInGraveyard(player, "Grizzly Bears") }
+            val offer = driver.legalActions(player).first { (it.action as? CastSpell)?.cardId == spell }
+            val chosen = AIPlayer.create(driver.cardRegistry, player)
+                .chooseFrom(driver.state, listOf(offer)).action as CastSpell
+            return driver to chosen
+        }
+
+        test("exiles only as many cards as the mana it has needs, and the cast goes through") {
+            val (driver, chosen) = cast(swamps = 4)
+            // {6}{B}{B} from four Swamps: {4} must come off, two cards' worth.
+            chosen.additionalCostPayment?.exiledCards?.size shouldBe 2
+            driver.submit(chosen).outcome shouldBe Outcome.Done
+        }
+
+        test("pays full price, exiling nothing, when its mana already covers the spell") {
+            val (_, chosen) = cast(swamps = 8)
+            chosen.additionalCostPayment?.exiledCards.orEmpty().size shouldBe 0
+        }
     }
 })

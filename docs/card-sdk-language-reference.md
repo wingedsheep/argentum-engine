@@ -1179,21 +1179,29 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   count: it leaves `minCount`/`maxCount`/`minMeasure` open and accepts only the announced X.
 - `Costs.additional.SacrificeAnyNumberForCostReduction(filter, reductionPerUnit)`,
   `TapAnyNumberForCostReduction(filter, reductionPerUnit)`,
-  `ExileAnyNumberFromHandForCostReduction(filter, reductionPerUnit)` — "as an additional cost to cast
-  this spell, you may sacrifice / tap / exile from your hand any number of …. This spell costs {N} less
-  to cast for each … this way" (Torgaar, Famine Incarnate; Explosive Singularity; the NEO Marches,
-  e.g. `ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE), 2)`). One
+  `ExileAnyNumberFromHandForCostReduction(filter, reductionPerUnit)`,
+  `ExileAnyNumberFromGraveyardForCostReduction(filter, reductionPerUnit)` — "as an additional cost to cast
+  this spell, you may sacrifice / tap / exile from your hand / exile from your graveyard any number of ….
+  This spell costs {N} less to cast for each … this way" (Torgaar, Famine Incarnate; Explosive
+  Singularity; the NEO Marches, e.g. `ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE), 2)`;
+  Gorex, the Tombshell, `ExileAnyNumberFromGraveyardForCostReduction(GameObjectFilter.Creature, 2)`). One
   `AdditionalCost.AnyNumberForCostReduction(action: PermanentCostAction, filter, reductionPerUnit,
-  fromZone = BATTLEFIELD)`; `EXILE` is hand-only (`fromZone = HAND`), `SACRIFICE` / `TAP` battlefield-only.
+  fromZone = BATTLEFIELD)`; `EXILE` takes `fromZone = HAND` or `GRAVEYARD`, `SACRIFICE` / `TAP` are
+  battlefield-only. Cards an `EXILE` pays with are **exiled with the spell** (CR 607 linked abilities):
+  they go into its `LinkedExileComponent`, which the permanent it becomes keeps, so "a card exiled with
+  Gorex" is `gather(CardSource.FromLinkedExile())` — and a dies trigger still reads the pile of the
+  departed permanent.
   The count is a **price, not a value**: each pick takes N generic off the total cost (CR 601.2f — the
   announced X is generic in that total, so on an `{X}{W}` March the discount keeps paying into the X),
   and the effect never reads it; X stays the announced X. Choosing none is always legal. Tapping is a
   cost, not `{T}`, so summoning-sick creatures may pay; exiling from hand never offers the spell itself
   (CR 601.2a). Also valid as a modal-DFC back face's own `additionalCost` (Extus, Oriq Overlord // Awaken
   the Blood Avatar) — the back-face offer counts the discount when judging affordability. The enumerator publishes a zero-floor picker — `costType` `SacrificeForCostReduction`
-  (`sacrificedPermanents`), `TapForCostReduction` (`tappedPermanents`) or `ExileFromHand`
-  (`exiledCards`, `exileMinCount = 0`). Its castability check and X ceiling assume every candidate is
-  used, netting a candidate that is itself a mana source (a mana dork) at N − 1.
+  (`sacrificedPermanents`), `TapForCostReduction` (`tappedPermanents`), `ExileFromHand` or
+  `ExileFromGraveyard` (`exiledCards`, `exileMinCount = 0`), carrying `reductionPerPick = N` and the pre-discount `genericBeforeReduction`. Its
+  castability check and X ceiling assume every candidate is used, netting a candidate that is itself a
+  mana source (a mana dork) at N − 1; the engine AI picks the fewest candidates (least valuable first)
+  that make the cast payable.
 - `Costs.additional.TapForTotalPower(totalPower, filter = GameObjectFilter.Creature)` — "tap any number of
   creatures you control with total power N or more" (Teamwork N, CR 702.194a). A
   `CostAtom.VariablePermanents` with `action = TAP`, `xMeasure = TOTAL_POWER`, `minMeasure = N` and

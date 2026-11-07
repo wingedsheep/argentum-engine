@@ -2316,7 +2316,10 @@ class Strategist(
         }
         val cheapestFirst = SelectionCostPayment.CandidateOrder(state, payerId, intents)
         val xValue = (gameAction as? CastSpell)?.xValue ?: 0
-        val primary = SelectionCostPayment.plain(info, existing, cheapestFirst, xValue) ?: when (info.costType) {
+        val discountPicks = if (info.reductionPerPick > 0 && gameAction is CastSpell && !action.hasXCost) {
+            costReductionPicks(state, action, gameAction.playerId, info, existing, cheapestFirst)
+        } else null
+        val primary = discountPicks ?: SelectionCostPayment.plain(info, existing, cheapestFirst, xValue) ?: when (info.costType) {
             // Teamwork N (CR 702.194a): tap as *few* creatures as will clear the total-power
             // threshold, and among equally-few selections the *smallest* bodies — a board with a
             // 5/5 and a 1/1 paying teamwork 1 should turn the 1/1 sideways and keep the better
@@ -2358,6 +2361,52 @@ class Strategist(
             is CastSpell -> gameAction.copy(additionalCostPayment = payment)
             is ActivateAbility -> gameAction.copy(costPayment = payment)
             else -> gameAction
+        }
+    }
+
+    /**
+     * "You may sacrifice / tap / exile any number of …; this spell costs {N} less for each"
+     * (Torgaar, Explosive Singularity, Gorex, the Tombshell): the fewest picks that make the cast
+     * payable, least valuable first, or null when no count does (the offer then stays as it was).
+     *
+     * The offer's `manaCostString` is priced at the largest discount; its coloured part is owed
+     * whatever is picked, and its generic is [AdditionalCostData.genericBeforeReduction] less
+     * [AdditionalCostData.reductionPerPick] per pick, floored at zero. A tapped or sacrificed pick
+     * can't also make mana, so it is excluded from the sources. Picking only what the cast needs
+     * keeps the rest: creatures to attack and block with, cards in hand, a graveyard for later
+     * recursion.
+     */
+    private fun costReductionPicks(
+        state: GameState,
+        action: LegalAction,
+        playerId: EntityId,
+        info: com.wingedsheep.engine.legalactions.AdditionalCostData,
+        existing: AdditionalCostPayment,
+        cheapestFirst: SelectionCostPayment.CandidateOrder,
+    ): AdditionalCostPayment? {
+        val costString = action.manaCostString ?: return null
+        val genericBefore = info.genericBeforeReduction ?: return null
+        val onBattlefield = info.costType == "SacrificeForCostReduction" || info.costType == "TapForCostReduction"
+        val candidates = when (info.costType) {
+            "SacrificeForCostReduction" -> cheapestFirst.permanents(info.validSacrificeTargets)
+            "TapForCostReduction" -> cheapestFirst.permanents(info.validTapTargets)
+            "ExileFromHand" -> cheapestFirst.cardsInHand(info.validExileTargets)
+            "ExileFromGraveyard" -> info.validExileTargets
+            else -> return null
+        }
+        val discounted = ManaCost.parse(costString)
+        val coloured = discounted.reduceGeneric(discounted.genericAmount)
+        val count = (0..candidates.size).firstOrNull { k ->
+            val generic = (genericBefore - k * info.reductionPerPick).coerceAtLeast(0)
+            val cost = if (generic > 0) coloured + ManaCost.parse("{$generic}") else coloured
+            val excluded = if (onBattlefield) candidates.take(k).toSet() else emptySet()
+            manaSolver.canPay(state, playerId, cost, excludeSources = excluded)
+        } ?: return null
+        val picks = candidates.take(count)
+        return when (info.costType) {
+            "SacrificeForCostReduction" -> existing.copy(sacrificedPermanents = picks)
+            "TapForCostReduction" -> existing.copy(tappedPermanents = picks)
+            else -> existing.copy(exiledCards = picks)
         }
     }
 

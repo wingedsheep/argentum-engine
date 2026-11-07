@@ -144,6 +144,8 @@ class SpellCostOffer {
     val sacrificeTargets = mutableListOf<EntityId>()
     var reducingCost: AdditionalCost.AnyNumberForCostReduction? = null
     var reducingCandidates = emptyList<EntityId>()
+    /** The generic mana in the offer's total cost before [reducingCost]'s discount (CR 601.2f). */
+    var reducingGenericBefore: Int? = null
     var variablePermanentsCost: CostAtom.VariablePermanents? = null
     var variablePermanentsTargets = emptyList<EntityId>()
     var exileTargets = emptyList<EntityId>()
