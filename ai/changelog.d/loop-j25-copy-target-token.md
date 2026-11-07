@@ -1,1 +1,1 @@
-- #4556 Reads "whenever you cast a spell that targets …" triggers (Frontline Heroism, Vesuvan Duplimancy, Legolas) as spell payoffs, so it builds and values them beside its pump spells and Auras
+- #4557 Reads "whenever you cast a spell that targets …" triggers (Frontline Heroism, Vesuvan Duplimancy, Legolas) as spell payoffs, so it builds and values them beside its pump spells and Auras
