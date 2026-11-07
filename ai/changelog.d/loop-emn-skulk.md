@@ -1,1 +1,1 @@
-- #TBD The AI knows skulk (can't be blocked by creatures with greater power): it never proposes an illegal bigger blocker against a skulker, and values skulk as evasion on small bodies in play and in draft
+- #4555 The AI knows skulk (can't be blocked by creatures with greater power): it never proposes an illegal bigger blocker against a skulker, and values skulk as evasion on small bodies in play and in draft
