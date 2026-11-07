@@ -39,7 +39,6 @@ val GontisAetherHeart = card("Gonti's Aether Heart") {
             Costs.ExileSelf
         )
         effect = Effects.TakeExtraTurn()
-        description = "Take an extra turn"
     }
 
     metadata {

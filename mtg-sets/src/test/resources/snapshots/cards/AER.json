@@ -4729,8 +4729,7 @@
                         "CostExileSelf"
                     ]
                 },
-                "effect": "TakeExtraTurn",
-                "descriptionOverride": "Take an extra turn"
+                "effect": "TakeExtraTurn"
             }
         ]
     },
@@ -7516,17 +7515,7 @@
                         "CostTap",
                         {
                             "type": "CostTapXPermanents",
-                            "filter": {
-                                "cardPredicates": [
-                                    "IsArtifact"
-                                ],
-                                "statePredicates": [
-                                    {
-                                        "type": "StateNot",
-                                        "predicate": "IsSource"
-                                    }
-                                ]
-                            }
+                            "filter": "artifact"
                         }
                     ]
                 },

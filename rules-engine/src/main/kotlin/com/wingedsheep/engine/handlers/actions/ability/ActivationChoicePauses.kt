@@ -119,7 +119,9 @@ internal class ActivationChoicePauses(
         val tapXCost = activation.effectiveCost.extractTapXPermanentsCost()
         val alreadyTapping = (action.costPayment?.tappedPermanents?.isNotEmpty() == true)
         if (tapXCost == null || action.xValue != null || alreadyTapping) return null
+        val excluded = activation.effectiveCost.tapXExcludedSource(action.sourceId)
         val tapTargets = costHandler.findUntappedMatchingPermanentsUnified(state, action.playerId, tapXCost.filter, action.sourceId)
+            .filter { it != excluded }
         val maxX = tapTargets.size
         val continuation = ActivateAbilityChooseXContinuation(
             action = action,

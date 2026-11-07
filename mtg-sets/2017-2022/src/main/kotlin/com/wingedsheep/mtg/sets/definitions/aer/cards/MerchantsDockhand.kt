@@ -19,8 +19,8 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
  * {3}{U}, {T}, Tap X untapped artifacts you control: Look at the top X cards of your library.
  * Put one of them into your hand and the rest on the bottom of your library in any order.
  *
- * The Dockhand pays its own {T}, so it can't also be one of the X artifacts (ruling) — the tap-X
- * filter excludes the source.
+ * The Dockhand pays its own {T}, so it can't also be one of the X artifacts (ruling) — the engine
+ * leaves the source out of a tap-X pool whenever the same cost has {T}.
  */
 val MerchantsDockhand = card("Merchant's Dockhand") {
     manaCost = "{1}"
@@ -35,7 +35,7 @@ val MerchantsDockhand = card("Merchant's Dockhand") {
         cost = Costs.Composite(
             Costs.Mana("{3}{U}"),
             Costs.Tap,
-            Costs.TapXPermanents(GameObjectFilter.Artifact.notSourceItself())
+            Costs.TapXPermanents(GameObjectFilter.Artifact)
         )
         effect = Patterns.Library.lookAtTopAndKeep(
             count = DynamicAmounts.xValue(),

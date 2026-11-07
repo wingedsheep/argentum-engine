@@ -118,7 +118,7 @@ class MerchantsDockhandScenarioTest : ScenarioTestBase() {
                 }
                 val costInfo = legal.additionalCostInfo.shouldNotBeNull()
                 costInfo.validTapTargets shouldContainExactlyInAnyOrder ornithopters
-                costInfo.description shouldBe "Tap X untapped other artifacts you control"
+                costInfo.description shouldBe "Tap X untapped artifacts you control"
             }
 
             test("X = 0 looks at and moves no cards") {

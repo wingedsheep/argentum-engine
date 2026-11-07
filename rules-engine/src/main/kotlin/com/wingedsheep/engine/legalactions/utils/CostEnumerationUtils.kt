@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.handlers.actions.ability.tapXExcludedSource
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -158,9 +159,7 @@ class CostEnumerationUtils(
      * "tap two untapped …" may tap the source itself, so null is correct there.
      *
      * [sourceId] goes into the [PredicateContext] so a source-relative filter resolves the way
-     * payment resolves it: "{T}, Tap X untapped artifacts you control" is
-     * `Artifact.notSourceItself()` (Merchant's Dockhand), which is source-blind — and so counts
-     * the source — without it.
+     * payment resolves it (payment always has the source in scope).
      */
     fun findAbilityTapTargets(
         state: GameState,
@@ -850,7 +849,13 @@ class CostEnumerationUtils(
             else -> null
         }
         if (tapXCost != null) {
-            maxX = minOf(maxX, findAbilityTapTargets(state, playerId, tapXCost.filter, sourceId = sourceId).size)
+            maxX = minOf(
+                maxX,
+                findAbilityTapTargets(
+                    state, playerId, tapXCost.filter,
+                    excludeEntityId = abilityCost.tapXExcludedSource(sourceId), sourceId = sourceId
+                ).size
+            )
         }
 
         // Cap by life total if PayXLife. Per CR 119.4 a player may pay an amount of life greater

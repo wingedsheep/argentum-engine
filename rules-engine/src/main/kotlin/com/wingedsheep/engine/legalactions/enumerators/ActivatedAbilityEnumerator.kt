@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.actions.ability.tapXExcludedSource
 import com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment
 import com.wingedsheep.engine.handlers.actions.ability.extractVariablePermanentsCost
 import com.wingedsheep.engine.state.LifePaymentPurpose
@@ -881,7 +882,10 @@ class ActivatedAbilityEnumerator(
                                 is AbilityCost.TapXPermanents -> {
                                     // TapXPermanents: validated via maxAffordableX cap below
                                     // Also provide tap targets for the UI
-                                    tapTargets = context.costUtils.findAbilityTapTargets(state, playerId, subCost.filter, sourceId = entityId)
+                                    tapTargets = context.costUtils.findAbilityTapTargets(
+                                        state, playerId, subCost.filter,
+                                        excludeEntityId = ability.cost.tapXExcludedSource(entityId), sourceId = entityId
+                                    )
                                 }
                                 is AbilityCost.Craft -> {
                                     // Combined BF+GY material pool (CR 702.167a-b). Records the cost
