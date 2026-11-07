@@ -38,7 +38,7 @@ internal class JevActions(
                     attackers, 0, info.blockerMaxBlockCounts?.get(blocker) ?: 1)
             }.filterValues { it.isNotEmpty() })
         }
-        if (action is CrewVehicle) return action.copy(crewCreatures = powerPayment(info))
+        if (action is CrewVehicle) return if (action.alternativeCostFrom != null) action else action.copy(crewCreatures = powerPayment(info))
         if (action is SaddleMount) return action.copy(saddleCreatures = powerPayment(info))
         if (action !is CastSpell && action !is ActivateAbility && action !is CycleCard) return action
 

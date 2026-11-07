@@ -426,7 +426,7 @@ Families:
 - `SourceAttackedPlayerThisTurn(player: Player)` — Condition: the effect's source — a creature — was declared attacking player this turn (CR 508.1).
 - `SourceCastForImpending` — Condition: "If this permanent's impending cost was paid" (CR 702.176a).
 - `SourceChosenModeIs(modeId: String)` — Condition: "If the chosen mode is modeId".
-- `SourceDealtDamageToPlayerThisTurn(player: Player)` — Condition: the effect's source dealt damage — combat or noncombat — to player this turn.
+- `SourceDealtDamageToPlayerThisTurn(player: Player, damageType: DamageType)` — Condition: the effect's source dealt damage of damageType to player this turn — DamageType.Any (the default) for combat or noncombat alike, DamageType.Combat / DamageType.NonCombat for one kind.
 - `SourceForetoldOnPriorTurn` — Gate condition for the cast-from-exile permission granted by foretell (CR 702.143).
 - `SourceInZone(zones: Set<Zone>)` — Condition: "if this is in zones" — where the ability's source object sits *right now*.
 - `SourceIsBlockingOrBlockedBySubtype(subtypes: List<String>)` — Condition: "as long as it's blocking or blocked by a creature of one of subtypes".
@@ -791,7 +791,7 @@ Families:
 - `ChooseCreatureTypeEffect` — Reveal cards from the top of a player's library until a card matching the filter is found.
 - `ChooseNumberForSourceEffect(minValue: Int, maxValue: Int, slot: ChoiceSlot, prompt: String)` — "Choose a number between minValue and maxValue" and store it **durably on the source permanent** in its cast-choices bag under slot, replacing any prior value for that slot.
 - `ChooseNumberThenEffect(then: Effect, minValue: Int, maxValue: DynamicAmount, prompt: String, random: Boolean)` — "Choose a number, then effect." The controller is prompted for an integer in [minValue, maxValue] (or, with random, the engine picks one); the chosen number is stamped onto the effect context (as t…
-- `ChooseOnePerCategoryEffect(from: String, categories: List<GameObjectFilter>, storeAs: String)` — "…chooses a \<permanent of each category\> they control…" — each permanent's **controller** picks one member of from for every filter in categories, and all the picks land in storeAs.
+- `ChooseOnePerCategoryEffect(from: String, categories: List<GameObjectFilter>, storeAs: String, purpose: CategoryPickPurpose)` — "…chooses a \<permanent of each category\> they control…" — each permanent's **controller** picks one member of from for every filter in categories, and all the picks land in storeAs.
 - `ChooseOpponentForSourceEffect(prompt: String)` — The controller chooses an opponent; the choice is written durably onto the source entity's cast-choices bag under com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT, where downstream effects read it…
 - `ChooseOptionEffect(optionType: OptionType, storeAs: String, prompt: String?, excludedOptions: List<String>, cardNamePool: CardNamePool, chooser: Chooser, recordOnSource: Boolean)` — Generic pipeline step that presents a choice from a set of options and stores the result in a named variable (via EffectContext.chosenValues).
 - `ChoosePileEffect(pileA: String, pileB: String, pileALabel: String, pileBLabel: String, chooser: Chooser, storeChosenAs: String, storeOtherAs: String, prompt: String?)` — Present a binary choice between two named collections (piles) and route them to caller-specified destination collections.
@@ -1846,6 +1846,7 @@ Families:
 - `AdditionalManaOnSourceTap(sourceFilter: GameObjectFilter, color: Color?, amount: DynamicAmount, rider: Effect?, whenProducing: TappedForManaType)` — Whenever a permanent matching sourceFilter is tapped for mana, the tapping player adds amount additional mana to their pool.
 - `AdditionalManaOnTap(color: Color?, amount: DynamicAmount, anyColor: Boolean)` — Whenever enchanted land is tapped for mana, its controller adds additional mana.
 - `AdditionalSourceTriggers(sourceFilter: GameObjectFilter, excludeSelf: Boolean, alsoSource: Boolean, condition: Condition?, description: String)` — If a triggered ability of a permanent matching sourceFilter you control triggers, it triggers an additional time.
+- `AlternativeCrewCost(counterType: CounterType, filter: GameObjectFilter)` — You may remove a counterType counter from a filter you control rather than pay this Vehicle's crew cost (Heart of Kiran: a loyalty counter from a planeswalker).
 - `AnimateLandGroup(filter: GroupFilter, power: Int, toughness: Int, creatureSubtypes: List<String>, colors: Set<Color>)` — Animates a group of lands into creatures while keeping them as lands.
 - `AssignCombatDamageAsUnblocked(filter: GroupFilter)` — A creature may assign its combat damage as though it weren't blocked.
 - `AssignDamageEqualToToughness(filter: GroupFilter, onlyWhenToughnessGreaterThanPower: Boolean)` — Creature assigns combat damage equal to its toughness rather than its power.

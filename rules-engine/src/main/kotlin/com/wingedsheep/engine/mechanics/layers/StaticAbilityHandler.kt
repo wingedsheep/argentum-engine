@@ -1339,6 +1339,7 @@ class StaticAbilityHandler(
             is CantBlockUnless,
             is CantBlockUnlessCoBlocker,
             is CrewSaddleContribution,
+            is com.wingedsheep.sdk.scripting.AlternativeCrewCost, // read by CrewRequirement.alternativePayments
 
             // Attachment legality (AttachmentMover / UnattachedAurasCheck):
             is com.wingedsheep.sdk.scripting.EquipmentAttachRestriction,

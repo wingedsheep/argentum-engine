@@ -301,7 +301,7 @@ object DamageUtils {
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
             if (sourceId != null) {
-                if (sourceSnapshot == null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
+                if (sourceSnapshot == null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount, isCombatDamage)
                 newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount, sourceSnapshot)
             }
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
@@ -570,7 +570,7 @@ object DamageUtils {
         // here, so it is the one place to record the source's "has dealt damage to this player this
         // game" memory (The Fallen). Planeswalkers are recorded separately, at their own two
         // loyalty-removal sites.
-        val marked = sourceId?.takeIf { sourceSnapshot == null }?.let { markDealtDamageToThisGame(state, it, playerId, amount) } ?: state
+        val marked = sourceId?.takeIf { sourceSnapshot == null }?.let { markDealtDamageToThisGame(state, it, playerId, amount, isCombatDamage) } ?: state
         // Is the source an artifact at the moment it dealt the damage? For a source still on the
         // battlefield, its projected types are authoritative (a continuous effect may have added or
         // stripped artifact-ness). Only for a source that has already left do we fall back to its
@@ -1198,19 +1198,26 @@ object DamageUtils {
      * memory behind The Fallen ("this game") and the per-turn "dealt damage to you / by this creature
      * this turn" readings, which compare the recorded turn stamp, plus the [amount] dealt to that
      * recipient this turn ("if it has dealt 10 or more damage to that player this turn" — Vessel of
-     * the All-Consuming). [recipientId] is a player or a planeswalker; the consumer decides which of
-     * them the printed line cares about.
+     * the All-Consuming). [isCombatDamage] also stamps the per-kind record (Hope of Ghirapur's
+     * "dealt combat damage by this creature this turn"). [recipientId] is a player or a
+     * planeswalker; the consumer decides which of them the printed line cares about.
      *
      * A no-op when the source entity is gone. Never cleared per turn; it outlives the source's move
      * off the battlefield as last-known information and is dropped on the card's next zone change
      * (see `DealtDamageToThisGameComponent`), so a permanent that leaves and returns starts over
      * (CR 400.7).
      */
-    fun markDealtDamageToThisGame(state: GameState, sourceId: EntityId, recipientId: EntityId, amount: Int): GameState {
+    fun markDealtDamageToThisGame(
+        state: GameState,
+        sourceId: EntityId,
+        recipientId: EntityId,
+        amount: Int,
+        isCombatDamage: Boolean
+    ): GameState {
         if (state.getEntity(sourceId) == null || amount <= 0) return state
         return state.updateEntity(sourceId) { c ->
             val current = c.get<DealtDamageToThisGameComponent>() ?: DealtDamageToThisGameComponent()
-            c.with(current.withDamageTo(recipientId, state.turnNumber, amount))
+            c.with(current.withDamageTo(recipientId, state.turnNumber, amount, isCombatDamage))
         }
     }
 
@@ -1750,17 +1757,6 @@ object DamageUtils {
             } == recipientId
         }
         return targeted && targets.targetObjectRefs[recipientId]?.let(state::isCurrentObject) != false
-    }
-
-    /**
-     * Check if all damage from a specific source creature is prevented this turn.
-     * Used by Chain of Silence and similar "prevent all damage creature would deal" effects.
-     */
-    fun isAllDamageFromSourcePrevented(state: GameState, sourceId: EntityId): Boolean {
-        return state.floatingEffects.any { floatingEffect ->
-            floatingEffect.effect.modification is SerializableModification.PreventAllDamageDealtBy &&
-                sourceId in floatingEffect.effect.affectedEntities
-        }
     }
 
     /**

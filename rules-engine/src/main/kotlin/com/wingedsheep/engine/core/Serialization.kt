@@ -802,6 +802,7 @@ val engineSerializersModule = SerializersModule {
         subclass(InAdditionalUpkeepStepComponent::class)
         subclass(AdditionalUpkeepStepsAfterStepComponent::class)
         subclass(UpkeepStepEndedThisTurnComponent::class)
+        subclass(CleanupCheckPendingComponent::class)
         subclass(InAdditionalBeginningPhaseComponent::class)
         subclass(InsertedPhasesResumeComponent::class)
         subclass(CombatPhaseEndedThisTurnComponent::class)

@@ -923,6 +923,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.PREY,
   // Call for Unity's anthem: creatures you control get +1/+1 for each one on it.
   CounterType.UNITY,
+  // Daredevil Dragster's tally: at two it is sacrificed and its controller draws two cards.
+  CounterType.VELOCITY,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

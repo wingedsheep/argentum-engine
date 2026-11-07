@@ -16,4 +16,5 @@ val SubmergedBoneyardReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/0/9/09dd7aab-c0ac-4566-bf99-c49931eeea2a.jpg",
     releaseDate = "2017-01-20",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

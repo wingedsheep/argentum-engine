@@ -1976,7 +1976,8 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   source and any triggered abilities the resolution queued — even ones that can't be countered — so those never
   reach the stack, CR 724.1a), creatures are removed from combat, and the game skips straight to the cleanup step
   (discard to maximum hand size, marked damage wears off, "this turn" / "until end of turn" effects end) before the
-  next turn begins. Takes no target — it always ends the active player's turn. Modeled as a two-step effect: the
+  next turn begins. Abilities that triggered during the process go on the stack in that cleanup step, the active
+  player gets priority, and another cleanup step follows before the turn ends. Takes no target — it always ends the active player's turn. Modeled as a two-step effect: the
   executor records an `EndTheTurnRequestedComponent` on the active player, and `PassPriorityHandler` runs the
   sequence via `TurnManager.performEndTheTurn` once the current resolution finishes (so it can exile the *rest* of
   the stack and drop the pending triggers). Compose after a board wipe with
@@ -4084,6 +4085,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   to their hands", and swapping the category list gives Cataclysm / Divine Reckoning. For "all
   permanents matching a filter are sacrificed by their controllers" with no choice at all, use
   `Effects.SacrificeAll(filter)` instead.
+- "Each opponent sacrifices \<one permanent per category\> of their choice" — a **per-category
+  edict** (Perilous Predicament: "an artifact creature and a nonartifact creature") — is the same
+  step with the picks as the victims: `chooseOnePerCategory(pool, categories, purpose =
+  CategoryPickPurpose.SACRIFICE)` → `sacrifice(picked)`. Every chooser picks first (APNAP), then all
+  picks are sacrificed at once — never two `ForceSacrifice` edicts in a row. A category the chooser
+  controls nothing of is skipped, so an opponent with only artifact creatures loses one. Keep the
+  categories disjoint: picks are deduplicated, so overlapping ones would let one permanent answer
+  two of them.
 - "Return a permanent you control [to its owner's hand]" is a pipeline composition, not an effect type:
   `GatherCards(BattlefieldMatching(filter, Player.You, excludeSelf?))` →
   `SelectFromCollection(ChooseExactly(1), useTargetingUI = true)` → `MoveCollection(→ HAND)` (the
@@ -4289,7 +4298,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `Effects.PreventDamage(target = Controller, direction = ToTarget, sources = AnySource, amount = null, combatOnly = false, toGroup = null, alsoToYou = false, nextInstanceOnly = false, halve = false, onPrevented = null, stillDealt = false, gainLifeFromColors = emptySet(), gainLifeFromPrevented = false, toPlayersOnly = false, duration = EndOfTurn)` — **the** damage-prevention facade over `PreventDamageEffect` (serial `PreventDamageShield`); each parameter mirrors one field, and a call names only the words the card prints. Named shorthands for the commonest points: `Effects.PreventNextDamage(amount, target)`, `Effects.PreventAllCombatDamage()` (Fog), `Effects.PreventCombatDamageToAndBy(target = Self)`, `Effects.PreventAllDamageDealtBy(target, duration = EndOfTurn, scope = AllDamage)` (pass `PreventionScope.CombatOnly` for "prevent all **combat** damage that would be dealt by …" — Restrain, Safeguard, Loafing Giant, Heroism; `Duration.WhileSourceOnBattlefield` for Old Fat Spider Can't See Me), `Effects.PreventCombatDamageFrom(source: GameObjectFilter, duration)` (Frontline Strategist, Hunter's Ambush).
   - **Amount / scope / direction.** `amount = null` prevents all; `combatOnly` is "combat damage". `direction` is damage dealt *to* `target` (`ToTarget`), *by* it (`FromTarget`), or both. An amount-less combat-only shield left on the default `Controller` target is the global Fog. Fleeting Flight = `PreventDamage(target = t, combatOnly = true)`; Indestructible Aura = `PreventDamage(target = t)`; Decorated Griffin = `PreventDamage(amount = Fixed(1), combatOnly = true)` — a combat-only amount shield lets noncombat damage through and is not spent by it.
   - **Recipient groups.** `toGroup: GameObjectFilter?` protects **every** permanent matching it instead of `target` — "prevent all damage that would be dealt to creatures you control this turn" (Summon: Alexander = `PreventDamage(toGroup = Creature.youControl())`). `alsoToYou` adds the shield's controller ("to **you and** creatures you control" — Safe Passage), and without `toGroup` names you alone. Both recipient filters and any `Matching` source filter are re-evaluated against projected state when each damage instance would be dealt, with the shield's controller as "you"; an unidentifiable damage source fails **closed**.
-  - **`sources: PreventionSourceFilter`** has five members (`TargetingRecipient` below). `AnySource`. `Matching(filter)` — every source matching a `GameObjectFilter`, re-evaluated at damage time; its recipients must be a group (`toGroup` / `alsoToYou` — "to you by attacking creatures" is Heavy Fog / Deep Wood = `PreventDamage(alsoToYou = true, sources = Matching(Creature.attacking()))`, Scarecrow, Eerie Interference), no recipient at all (`direction = FromTarget` — "by creatures", Ethereal Haze; with `gainLifeFromPrevented = true`, Chant of Vitu-Ghazi), or a single `target` with `nextInstanceOnly` (Circle of Solace = `PreventDamage(sources = Matching(Creature.withChosenSubtype()), nextInstanceOnly = true)`). A chosen-value predicate in the filter is bound to the choice when the shield is created, so it survives the source leaving play. A `Matching` shield over a single target for more than one instance has no lowering and fails at resolution. `Chosen(eligible = Any)` — the controller picks one source (permanent or stack spell) at resolution among those matching `eligible`, evaluated relative to the ability's source against projected state (stack spells on their base characteristics): Samite Ministration (`Chosen()` + `gainLifeFromColors = {BLACK, RED}`), Circle of Protection: Artifacts (`Chosen(Artifact)` + `nextInstanceOnly`), Protective Sphere ("shares a color with the mana spent" → `Chosen(Any.withCardPredicate(IsColored))`), Healing Grace (`target = t, amount = Fixed(3), sources = Chosen()`). With `direction = FromTarget` and no amount a chosen source loses its recipient clause — "prevent all damage … by a source of your choice" to *anything* (Mourner's Shield = `Chosen(Any.sharingColorWith(LinkedExiledCard()))`, Burrenton Forge-Tender).
+  - **`sources: PreventionSourceFilter`** has five members (`TargetingRecipient` below). `AnySource`. `Matching(filter)` — every source matching a `GameObjectFilter`, re-evaluated at damage time; its recipients must be a group (`toGroup` / `alsoToYou` — "to you by attacking creatures" is Heavy Fog / Deep Wood = `PreventDamage(alsoToYou = true, sources = Matching(Creature.attacking()))`, Scarecrow, Eerie Interference), no recipient at all (`direction = FromTarget` — "by creatures", Ethereal Haze; with `gainLifeFromPrevented = true`, Chant of Vitu-Ghazi), or a single `target` with `nextInstanceOnly` (Circle of Solace = `PreventDamage(sources = Matching(Creature.withChosenSubtype()), nextInstanceOnly = true)`). A chosen-value predicate in the filter is bound to the choice when the shield is created, so it survives the source leaving play. A `Matching` shield over a single target for more than one instance has no lowering and fails at resolution. `Chosen(eligible = Any)` — the controller picks one source (permanent or stack spell) at resolution among those matching `eligible`, evaluated relative to the ability's source against projected state (stack spells on their base characteristics): Samite Ministration (`Chosen()` + `gainLifeFromColors = {BLACK, RED}`), Circle of Protection: Artifacts (`Chosen(Artifact)` + `nextInstanceOnly`), Protective Sphere ("shares a color with the mana spent" → `Chosen(Any.withCardPredicate(IsColored))`), Healing Grace (`target = t, amount = Fixed(3), sources = Chosen()`). With `direction = FromTarget` and no amount a chosen source loses its recipient clause — "prevent all damage … by a source of your choice" to *anything* (Mourner's Shield = `Chosen(Any.sharingColorWith(LinkedExiledCard()))`, Burrenton Forge-Tender); with `combatOnly = true` only its **combat** damage is prevented and its noncombat damage is still dealt — "prevent all combat damage a creature of your choice would deal this turn" (Ajani's Aid = `PreventDamage(direction = FromTarget, sources = Chosen(Creature.onBattlefield()), combatOnly = true)`). The targeted `FromTarget` shield honours `combatOnly` the same way (Restrain, Subdue).
   - **`ThisSource`** — only damage dealt by the effect's own source object, bound at resolution: "~ deals 2 damage to that player. Prevent X of that damage" (Power Leak = `MayPayX(then = PreventDamage(target = thatPlayer, sources = ThisSource, amount = xValue(), nextInstanceOnly = true), decisionMaker = thatPlayer) then DealDamage(2, thatPlayer)`). Install it *before* the damage in the same resolution. It lowers only as a next-instance shield on one recipient (`nextInstanceOnly = true`, `direction = ToTarget`, no group/reaction/halving): the next instance from this source to the recipient loses up to `amount` (all of it when `amount` is null) and the shield is spent by that instance, so a surplus never carries over. It is real prevention — "damage can't be prevented" beats it. Any other shape fails at resolution.
   - **`TargetingRecipient`** — only damage that a spell or ability **targeting the recipient** would cause a source to deal: "If a spell or ability that targets that creature would cause a source to deal damage to that creature this turn, prevent that damage" (Silhouette = `PreventDamage(target = t, sources = TargetingRecipient)`). Judged on the *cause*, not the source: at damage time the innermost resolving spell or ability must hold the recipient (the same object, CR 400.7) among its chosen targets, in any slot — so an ability of a creature that targets the recipient is covered though the creature is the source, and a spell that targets the recipient for some other reason still has all its damage to it prevented. Combat damage and damage from a spell or ability that doesn't target the recipient ("each creature") are never covered. Lowers only for a single recipient, all damage, no amount (`direction = ToTarget`, no group/reaction); other shapes fail at resolution. Real prevention — "damage can't be prevented" beats it.
   - **Single instance.** `nextInstanceOnly` (with `amount = null`) prevents only the next whole damage instance from a covered source, then spends the shield; `halve` prevents half that instance, rounded down (Dark Sphere), and is spent even when it prevents nothing.
@@ -5671,7 +5680,7 @@ with cards):
 | `flipOntoBattlefield(filter = Permanent)` → the permanents it touches (empty unless it turned over completely) | `FlipOntoBattlefieldEffect` |
 | `chooseExactly(n, from)` / `chooseUpTo` / `chooseAnyNumber` / `chooseRandom` / `chooseSpell` / `selectAll` (+ `chooseExactlySplit` / `chooseUpToSplit` / `chooseAnyNumberSplit` / `chooseRandomSplit` / `selectAllSplit` returning `(selected, remainder)`; `n` is an `Int` or a `DynamicAmount`) | `SelectFromCollectionEffect` |
 | `filter(from, filter)` / `filter(from, collectionFilter, matching?)` / `filterSplit(…)` → `(matching, rest)` / `exclude(from, minus)` (set difference via `CollectionFilter.ExcludeOtherCollection`) | `FilterCollectionEffect` |
-| `chooseOnePerCategory(from, categories)` | `ChooseOnePerCategoryEffect` |
+| `chooseOnePerCategory(from, categories, purpose = KEEP)` | `ChooseOnePerCategoryEffect` |
 | `move(from, destination, …)` / `moveTracked(…)` (all `MoveCollectionEffect` options: `order`, `moveType`, `faceDown`, `lookableInExile`, `underOwnersControl`, `addCounterType`, `markEnteredViaSourceAbility`, `filter`, `attachTo`, …) / sugar `destroy`, `sacrifice`, `discard`, `exile`, `toHand`, `toGraveyard`, `toLibraryTop`, `toLibraryBottom` | `MoveCollectionEffect` |
 | `copyCard(source)` / `copyCards(from)` | `CopyCardIntoCollectionEffect` / `CopyCollectionIntoCollectionEffect` |
 | `pairWithSource(from)` (soulbond, CR 702.95a — empty `from` is a legal no-op, i.e. a declined "you may pair") | `PairWithSourceEffect` |
@@ -5734,7 +5743,9 @@ be the pick for several categories** (an artifact creature spared as both the ar
 creature) — which is why this is a sequence of one-of-each choices and not a single
 `SelectionRestriction.OnePerCardType` selection, under which that permanent could claim only one of
 its types. The step moves nothing; pair it with `exclude` for "the rest" and any move step for their
-fate:
+fate. `purpose` (`CategoryPickPurpose.KEEP`, the default, or `SACRIFICE`) is what the chooser is asked
+— "Choose an artifact to keep" vs "… to sacrifice" — and so which end of the board an AI chooser
+gives up; with `SACRIFICE` the picks themselves go to `sacrifice(…)` (Perilous Predicament):
 
 ```kotlin
 // Liliana, Dreadhorde General −9: "Each opponent chooses a permanent they control of each
@@ -6922,12 +6933,16 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
   Conditions.Not(Conditions.candidateIs(Player.TriggeringPlayer)), descriptionOverride = "another
   target player")`. With no trigger bound (spells, activated abilities) `TriggeringPlayer` names no
   one, so every player stays legal.
-- `Conditions.candidateWasDealtDamageBySourceThisTurn()` — this ability's **source** dealt damage (combat
-  or noncombat) to the targeted player this turn; backed by `SourceDealtDamageToPlayerThisTurn(player)`,
-  which reads the source's per-recipient damage memory. "Target player dealt damage by this creature this
-  turn" (Wicked Akuba). The memory survives the source leaving the battlefield (last-known information,
-  CR 113.7a), so the ability still resolves if its source dies in response; it is dropped on the card's
-  next zone change, so a returned permanent has dealt damage to nobody (CR 400.7).
+- `Conditions.candidateWasDealtDamageBySourceThisTurn(damageType = DamageType.Any)` — this ability's
+  **source** dealt damage to the targeted player this turn; backed by
+  `SourceDealtDamageToPlayerThisTurn(player, damageType)`, which reads the source's per-recipient damage
+  memory. `DamageType.Any` (the default) counts combat and noncombat alike — "target player dealt damage
+  by this creature this turn" (Wicked Akuba); `DamageType.Combat` / `DamageType.NonCombat` count one kind,
+  each with its own turn stamp — "target player who was dealt combat damage by Hope of Ghirapur this
+  turn" (Hope of Ghirapur, whose sacrifice cost moves it to the graveyard before the target re-check).
+  The memory survives the source leaving the battlefield (last-known information, CR 113.7a), so the
+  ability still resolves if its source dies in response; it is dropped on the card's next zone change,
+  so a returned permanent has dealt damage to nobody (CR 400.7).
 
 Because `Condition` descriptions don't read as English relative clauses, pass `descriptionOverride`
 whenever `restriction` is set:
@@ -9350,7 +9365,11 @@ single "it" for "one or more cards"; the discarded cards matching `card` are ins
 captured collection (`CollectionSlot.TriggerCaptured`), the "them" of the payoff.
 
 - `Triggers.anOpponent.discards()` — whenever an opponent discards a card. (Entropic Battlecruiser.)
-- `Triggers.you.discards()` — whenever you discard a card.
+- `Triggers.you.discards()` — whenever you discard a card. A trigger from the cleanup-step hand-size
+  discard goes on the stack **in that cleanup step**: the active player gets priority there, and once the
+  stack is empty and everyone passes another cleanup step begins, discarding to hand size again (CR 514.3a;
+  Midnight Oil's "whenever you discard a card, you lose 1 life"). The discard's answer leaves the game in
+  cleanup marked `CleanupCheckPendingComponent`, and the `Settler` either grants that priority or ends the turn.
 - `Triggers.self.isDiscarded(cause = ZoneChangeCause.DiscardedByOpponentEffect)` — "when a spell or
   ability an opponent controls causes you to discard this card" (Psychic Purge): `DiscardEvent.cause`
   admits only a discard whose stamped cause controller is an opponent of the discarder — never a
@@ -15236,6 +15255,20 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   counting plain projected power; the *measure* is what differs between the two costs.) Each candidate
   also carries `canAttack`, the per-creature CR 508.1a attack check via `AttackAvailability`, since
   paying the cost taps the creature out of combat.
+- `AlternativeCrewCost(counterType, filter)` — "You may remove a [counterType] counter from a
+  [filter] you control rather than pay this Vehicle's crew cost" (Heart of Kiran:
+  `AlternativeCrewCost(CounterType.LOYALTY, GameObjectFilter.Planeswalker)`, beside its
+  `KeywordAbility.crew(3)`). An alternative cost for the Vehicle's own crew abilities (CR 118.9, applied to activated abilities by CR 602.2b): the
+  crew ability is still the one activated, so it uses the stack, makes the Vehicle become crewed,
+  honours "activate only once each turn" and activation prohibitions, and still charges any mana a
+  cost-modifying static adds — but the counter is paid instead of tapping creatures, so no creature
+  crews it (`CreaturesThatCrewedOrSaddledSource` stays empty). Removing a loyalty counter this way
+  isn't a loyalty ability, so a planeswalker that already activated one this turn can still pay.
+  `CrewEnumerator` offers one extra `CrewVehicle` legal action per permanent that can pay (labelled
+  "Crew <Vehicle> — remove a loyalty counter from <permanent>", no `tapForPower`), carrying
+  `CrewVehicle.alternativeCostFrom`; `CrewVehicleHandler` accepts exactly those (resolved by the
+  shared `CrewRequirement.alternativePayments`), with an empty `crewCreatures`. Face-down or
+  lost-all-abilities Vehicles have no alternative cost.
 - `Modular(n)` — ETB with +1/+1 counters, transfer on death. Display-only; nothing in the engine
   reads `Keyword.MODULAR`. Lower it alongside the keyword ability as its two printed halves
   (Arcbound Condor): `replacementEffect(EntersWithCounters(CounterType.PLUS_ONE_PLUS_ONE, n,
@@ -20632,7 +20665,8 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `promotion` (`CounterType.PROMOTION`): TRK — Beckett Mariner, Impetuous Ensign. Passive tally with no inherent rule: `Triggers.self.becomesTapped()` adds one, then `Effects.If(SourceCounterCountAtLeast(PROMOTION, 3), RemoveAllCountersOfType(PROMOTION, Self) then DealDamage(2, PlayerRef(EachOpponent)))`. The passive-counter badge displays its count.
 - `prey` (`CounterType.PREY`): RIX — Tetzimoc, Primal Death. A pure marker with no inherent rule: the hand ability `Costs.Composite(Mana("{B}"), RevealSelf)` puts one on target creature (`activateFromZone = Zone.HAND`, `OnlyDuringYourTurn`), and its ETB trigger runs `DestroyAll(Creature.opponentControls().withCounter(PREY))`. The passive-counter badge displays its count.
 - `unity` (`CounterType.UNITY`): AER — Call for Unity. Passive tally with no inherent rule: a revolt end-step trigger (`Triggers.you.beginningOf(Step.END)`, `interveningIf = Conditions.YouHadPermanentLeaveBattlefieldThisTurn`) puts one on the enchantment, and its `GrantDynamicStats` anthem reads `DynamicAmounts.countersOnSelf(UNITY)` live. The passive-counter badge displays its count.
-- `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
+- `velocity` (`CounterType.VELOCITY`): AER — Daredevil Dragster. Passive tally with no inherent rule: an end-of-combat trigger (`Triggers.anyPlayer.beginningOf(Step.END_COMBAT)`, `interveningIf = Conditions.SourceAttackedOrBlockedThisCombat`) puts one on the Vehicle, then `Effects.If(SourceCounterCountAtLeast(VELOCITY, 2), SacrificeTarget(Self) then DrawCards(2))` — checked only as the trigger resolves, and read off last-known information if the Vehicle has left. The passive-counter badge displays its count.
+- `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,
   `hour`, `energy`, `scry`, `aura`, `chapter`, `citation`, `rune`, `scar`, `crux`, `omen`, `secret`, `feather`,

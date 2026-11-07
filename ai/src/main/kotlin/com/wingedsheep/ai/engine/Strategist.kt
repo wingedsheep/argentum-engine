@@ -2294,7 +2294,7 @@ class Strategist(
         // dropped — the AI never crewed a Vehicle or saddled a Mount (2026-10-31 review, game
         // 556300fa: Surgehacker Mech sat uncrewed for six turns beside a 3/2 and a 1/1).
         when (val raw = action.action) {
-            is CrewVehicle -> if (raw.crewCreatures.isEmpty()) {
+            is CrewVehicle -> if (raw.crewCreatures.isEmpty() && raw.alternativeCostFrom == null) {
                 return tapForPowerSelection(state, action)?.let { raw.copy(crewCreatures = it) } ?: raw
             }
             is SaddleMount -> if (raw.saddleCreatures.isEmpty()) {

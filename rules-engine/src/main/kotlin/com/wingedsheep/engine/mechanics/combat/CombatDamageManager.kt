@@ -1086,7 +1086,7 @@ internal class CombatDamageManager(
         // Planeswalkers (not battles) join the source's "dealt damage to this game" memory, the
         // player half of which is recorded in DamageUtils.trackDamageReceivedByPlayer (The Fallen).
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
-            newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId, amount)
+            newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId, amount, isCombatDamage = true)
             newState = DamageUtils.trackDamageSourceLki(newState, sourceId, targetId, amount)
         }
 

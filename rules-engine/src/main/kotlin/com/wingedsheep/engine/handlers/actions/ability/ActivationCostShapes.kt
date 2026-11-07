@@ -62,6 +62,15 @@ internal fun AbilityCost.hasTapCost(): Boolean = when (this) {
 }
 
 /**
+ * The permanent a "Tap X untapped …" pool must leave out, if any: the source itself whenever the
+ * same cost also has {T} — the source is tapped paying {T}, so it can't also be one of the X
+ * (Merchant's Dockhand, Aryel, Knight of Windgrace rulings). Shared by the legal-action listing,
+ * the X-choice pause and payment validation so the three never disagree.
+ */
+internal fun AbilityCost.tapXExcludedSource(sourceId: com.wingedsheep.sdk.model.EntityId?) =
+    sourceId?.takeIf { hasTapCost() }
+
+/**
  * Whether this cost includes the tap symbol **or the untap symbol** — the CR 302.6
  * summoning-sickness gate for a creature's activated ability.
  */

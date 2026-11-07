@@ -387,7 +387,8 @@ internal class CardActiveEffectsProjector(
         is SerializableModification.PreventAllDamageDealtBy -> ClientCardEffect(
             effectId = "prevent_all_damage_dealt_by",
             name = "Silenced",
-            description = "All damage this creature would deal is prevented",
+            description = if (modification.combatOnly) "All combat damage this creature would deal is prevented"
+                else "All damage this creature would deal is prevented",
             icon = "prevent-damage"
         )
         is SerializableModification.SetCantAttack -> ClientCardEffect(

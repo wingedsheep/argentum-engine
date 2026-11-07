@@ -1,0 +1,147 @@
+{
+  "Ajani Unyielding": [
+    "removal",
+    "creature-removal"
+  ],
+  "Battle at the Bridge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Caught in the Brights": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra's Revolution": [
+    "removal",
+    "creature-removal"
+  ],
+  "Consulate Crackdown": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Cruel Finality": [
+    "removal",
+    "creature-removal"
+  ],
+  "Daring Demolition": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Dark Intimations": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Deadeye Harpooner": [
+    "removal",
+    "creature-removal"
+  ],
+  "Decommission": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Deft Dismissal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Destructive Tampering": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Fatal Push": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fourth Bridge Prowler": [
+    "removal",
+    "creature-removal"
+  ],
+  "Herald of Anguish": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hungry Flames": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ice Over": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Indomitable Creativity": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Monstrous Onslaught": [
+    "removal",
+    "creature-removal"
+  ],
+  "Natural Obsolescence": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Pacification Array": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Perilous Predicament": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prey Upon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Quicksmith Rebel": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Release the Gremlins": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Shock": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Tezzeret the Schemer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tezzeret's Betrayal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thopter Arrest": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Universal Solvent": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Vengeful Rebel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Walking Ballista": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Yahenni's Expertise": [
+    "removal",
+    "creature-removal"
+  ]
+}

@@ -1677,8 +1677,8 @@ data class DamageDealtThisTurnComponent(
  * change — a permanent that leaves and returns is a new object with no history (CR 400.7), which is
  * the printed behaviour: a Fallen that dies and is reanimated has dealt damage to nobody.
  *
- * Both combat and noncombat damage count, and it records planeswalkers alongside players; the
- * consumer filters to what the card asks for.
+ * Both combat and noncombat damage count, each with its own per-turn stamp as well, and it records
+ * planeswalkers alongside players; the consumer filters to what the card asks for.
  *
  * [damageOnLastTurnByRecipient] carries the *amount* dealt to each recipient on its stamped turn —
  * "if it has dealt 10 or more damage to that player this turn" (Vessel of the All-Consuming). It
@@ -1688,22 +1688,44 @@ data class DamageDealtThisTurnComponent(
 @Serializable
 data class DealtDamageToThisGameComponent(
     val lastDamageTurnByRecipient: Map<EntityId, Int> = emptyMap(),
-    val damageOnLastTurnByRecipient: Map<EntityId, Int> = emptyMap()
+    val damageOnLastTurnByRecipient: Map<EntityId, Int> = emptyMap(),
+    /**
+     * The same turn stamp split by kind of damage, so the per-turn reading can ask for one kind —
+     * "target player who was dealt combat damage by this creature this turn" (Hope of Ghirapur).
+     * [lastDamageTurnByRecipient] stays the any-kind stamp the "this game" and amount readings use.
+     */
+    val lastCombatDamageTurnByRecipient: Map<EntityId, Int> = emptyMap(),
+    val lastNoncombatDamageTurnByRecipient: Map<EntityId, Int> = emptyMap()
 ) : Component {
     val recipientIds: Set<EntityId> get() = lastDamageTurnByRecipient.keys
 
-    fun dealtDamageToOnTurn(recipientId: EntityId, turnNumber: Int): Boolean =
-        lastDamageTurnByRecipient[recipientId] == turnNumber
+    /** Whether damage of [damageType] was dealt to [recipientId] during [turnNumber]. */
+    fun dealtDamageToOnTurn(recipientId: EntityId, turnNumber: Int, damageType: DamageType = DamageType.Any): Boolean =
+        when (damageType) {
+            DamageType.Any -> lastDamageTurnByRecipient[recipientId] == turnNumber
+            DamageType.Combat -> lastCombatDamageTurnByRecipient[recipientId] == turnNumber
+            DamageType.NonCombat -> lastNoncombatDamageTurnByRecipient[recipientId] == turnNumber
+        }
 
     /** Total damage dealt to [recipientId] during [turnNumber]; 0 when its stamp is another turn. */
     fun damageDealtToOnTurn(recipientId: EntityId, turnNumber: Int): Int =
         if (dealtDamageToOnTurn(recipientId, turnNumber)) damageOnLastTurnByRecipient[recipientId] ?: 0 else 0
 
-    fun withDamageTo(recipientId: EntityId, turnNumber: Int, amount: Int): DealtDamageToThisGameComponent =
+    fun withDamageTo(
+        recipientId: EntityId,
+        turnNumber: Int,
+        amount: Int,
+        isCombatDamage: Boolean
+    ): DealtDamageToThisGameComponent =
         copy(
             lastDamageTurnByRecipient = lastDamageTurnByRecipient + (recipientId to turnNumber),
             damageOnLastTurnByRecipient = damageOnLastTurnByRecipient +
-                (recipientId to damageDealtToOnTurn(recipientId, turnNumber) + amount)
+                (recipientId to damageDealtToOnTurn(recipientId, turnNumber) + amount),
+            lastCombatDamageTurnByRecipient = if (isCombatDamage) {
+                lastCombatDamageTurnByRecipient + (recipientId to turnNumber)
+            } else lastCombatDamageTurnByRecipient,
+            lastNoncombatDamageTurnByRecipient = if (isCombatDamage) lastNoncombatDamageTurnByRecipient
+            else lastNoncombatDamageTurnByRecipient + (recipientId to turnNumber)
         )
 }
 
