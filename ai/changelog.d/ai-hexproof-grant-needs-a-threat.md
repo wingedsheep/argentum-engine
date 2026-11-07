@@ -1,0 +1,1 @@
+- #4554 Holds an end-of-turn hexproof or shroud grant (Liliana the Faultless) until a spell or ability actually targets the creature, instead of paying for it on an empty stack
