@@ -1554,6 +1554,9 @@ class TriggerMatcher(
         // "while you're activating a craft ability" (Market Gnome, CR 702.167) — fire only when
         // this exile was a chosen craft material, not on any other exile.
         if (trigger.requireCraftMaterial && !event.craftMaterial) return false
+        // "when you sacrifice this while casting a spell with emerge" (Foul Emissary, CR 702.119a)
+        // — fire only on the sacrifice that paid an emerge cost.
+        if (trigger.requireEmergeSacrifice && !event.emergeSacrifice) return false
 
         // Check binding
         when (binding) {

@@ -8871,6 +8871,14 @@ The shapes in this family, with their engine notes.
   `GRAVEYARD`, a companion `Triggers.self.dies()` trigger on the same card does **not** also fire (exile is not
   death). The SELF leaves-battlefield detector honors the `requireCraftMaterial` gate too, so a
   non-craft exile fires neither.
+- `Triggers.self.leaves(asEmergeSacrifice = true)` — SELF, battlefield → any zone, gated on
+  `requireEmergeSacrifice = true`: "When you sacrifice this creature while casting a spell with emerge"
+  (Foul Emissary, CR 702.119a). Fires **only** on the sacrifice that paid an emerge cost — not on any
+  other sacrifice, and not when another creature paid the emerge cost. The matcher reads the
+  triggering `ZoneChangeEvent.emergeSacrifice` flag, which the emerge cast's cost payment
+  (`CastCostPayer.payEmergeSacrifice`) stamps via `ZoneEntryOptions(emergeSacrifice = true)`. Leave
+  `to` null: the creature was still sacrificed if a replacement sends it somewhere other than the
+  graveyard.
 - `Triggers.<subject>.leaves(to, excludeTo, excludeSacrifice)` / `.dies()` —
   `to = GRAVEYARD` gives a "dies" variant scoped beyond the named constants (other tribal deaths,
   any-controller deaths); `excludeTo = GRAVEYARD` gives "leaves without dying"

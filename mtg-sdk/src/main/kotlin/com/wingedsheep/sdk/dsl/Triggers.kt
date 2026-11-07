@@ -194,8 +194,9 @@ class ObjectTriggerSubject internal constructor(
         excludeTo: Zone? = null,
         excludeSacrifice: Boolean = false,
         asCraftMaterial: Boolean = false,
+        asEmergeSacrifice: Boolean = false,
     ): TriggerSpec {
-        require(to != Zone.GRAVEYARD || excludeTo != null || excludeSacrifice || asCraftMaterial) {
+        require(to != Zone.GRAVEYARD || excludeTo != null || excludeSacrifice || asCraftMaterial || asEmergeSacrifice) {
             "leaves(to = Zone.GRAVEYARD) is dies()"
         }
         return spec(
@@ -206,6 +207,7 @@ class ObjectTriggerSubject internal constructor(
                 excludeTo = excludeTo,
                 excludeSacrifice = excludeSacrifice,
                 requireCraftMaterial = asCraftMaterial,
+                requireEmergeSacrifice = asEmergeSacrifice,
             )
         )
     }
