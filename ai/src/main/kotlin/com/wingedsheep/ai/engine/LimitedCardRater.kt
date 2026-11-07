@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
+import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
@@ -528,6 +529,10 @@ object LimitedCardRater {
             is ModifySpellCost -> if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
                 CardIntentAnalyzer.taxes(static.modification)
             ) return -0.2
+            // "As you cascade, you may put a land card from among the exiled cards onto the battlefield
+            // tapped" (Averna, the Chaos Bloom): a land per cascade, so it pays off only in a deck that
+            // cascades — half a ramp term, like a conditional static.
+            is CascadeMayPutOntoBattlefield -> return tagValue(CardIntentAnalyzer.staticTags(static)) * 0.5
             else -> Unit
         }
         if (static is ModifyStats) {

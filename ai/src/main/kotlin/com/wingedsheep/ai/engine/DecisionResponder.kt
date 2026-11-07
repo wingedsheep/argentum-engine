@@ -645,6 +645,17 @@ class DecisionResponder(
             return CardsSelectedResponse(decision.id, proliferateRecipients(state, decision, playerId))
         }
 
+        // "As you cascade, you may put a land card from among the exiled cards onto the battlefield"
+        // (Averna, the Chaos Bloom): a free extra land, and whatever isn't picked goes to the bottom
+        // of the library anyway — always take the best one. The generic "choose up to N" below
+        // declined a lone option under profiles that don't count selections by value.
+        if ((state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
+                ?.answer is CascadePutOntoBattlefieldContinuation
+        ) {
+            val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+            return CardsSelectedResponse(decision.id, ranked.take(max.coerceAtLeast(min)))
+        }
+
         // A `minTotalManaValue` floor (collect evidence N, CR 701.59a) is a *sum* gate, so none of
         // the count-based branches below can satisfy it — taking `min` cheap cards submits an
         // illegal selection the validator rejects, and taking zero silently declines an optional

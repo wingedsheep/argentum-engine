@@ -2,6 +2,13 @@ package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.CascadeMayCastContinuation
+import com.wingedsheep.engine.core.CascadePutOntoBattlefieldContinuation
+import com.wingedsheep.engine.core.CascadeRider
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.standingStaticResults
+import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -31,6 +38,11 @@ import com.wingedsheep.engine.core.Outcome
  * library top-down, exiling cards until a nonland card with mana value strictly
  * less than the threshold is exiled (the "cascade card") or the library is
  * exhausted.
+ *
+ * Before that, each "as you cascade, you may put a land card from among the exiled cards onto
+ * the battlefield tapped" rider the controller has standing (Averna, the Chaos Bloom —
+ * [CascadeMayPutOntoBattlefield]) offers its card, after the last card is exiled and before the
+ * cast offer, whether or not a card to cast was found ([continueCascade]).
  *
  * The "may cast / bottom remainder" flow then follows CR 702.85a:
  *
@@ -108,48 +120,117 @@ class CascadeExecutor(
             }
         }
 
-        if (cascadeCard == null || castForbidden(currentState, controllerId, cascadeCard)) {
-            // A hit a cast prohibition forbids casting (Drannith Magistrate) is no offer at all:
-            // Library exhausted without a qualifying card — bottom-randomize everything
-            // exiled this way and finish, no may-cast offered.
-            val bottomEvents = bottomRandomize(zones, currentState, controllerId, exiledCards) { newState ->
-                currentState = newState
-            }
-            allEvents.addAll(bottomEvents)
-            return EffectResult.success(currentState, allEvents)
-        }
-
-        val cascadeName = currentState.getEntity(cascadeCard)
-            ?.get<CardComponent>()?.name ?: "the exiled card"
-        val continuation = CascadeMayCastContinuation(
+        val riders = riders(currentState, zones, controllerId)
+        val rest = continueCascade(
+            zones = zones,
+            castForbidden = castForbidden,
+            decisionHandler = decisionHandler,
+            state = currentState,
             playerId = controllerId,
             sourceId = context.sourceId,
             objectReferences = context.objectReferences,
             exiledCards = exiledCards.toList(),
-            cascadeCardId = cascadeCard
+            cascadeCardId = cascadeCard,
+            riders = riders,
         )
-
-        val pause = decisionHandler.createYesNoDecision(
-            state = currentState,
-            playerId = controllerId,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            prompt = "Cast $cascadeName without paying its mana cost?",
-            yesText = "Cast for free",
-            noText = "Decline",
-            phase = DecisionPhase.RESOLUTION,
-            answer = continuation
-        )
-
-        val stateWithCont = pause.state
-
-        return EffectResult.propagatePause(
-            stateWithCont,
-            allEvents + pause.events
-        )
+        return if (rest.outcome is Outcome.Paused) EffectResult.propagatePause(rest.state, allEvents + rest.events)
+        else EffectResult.success(rest.state, allEvents + rest.events)
     }
 
     companion object {
+        /**
+         * The "as you cascade, you may put a … card from among the exiled cards onto the
+         * battlefield" riders ([CascadeMayPutOntoBattlefield]) standing for [playerId] — one per
+         * instance on a permanent they control.
+         */
+        fun riders(state: GameState, zones: ZoneTransitionService, playerId: EntityId): List<CascadeRider> =
+            standingStaticResults(state, zones.cardRegistry, zones.predicateEvaluator, CascadeMayPutOntoBattlefield::class) { ability, source, controller ->
+                if (controller == playerId) CascadeRider(ability, source) else null
+            }
+
+        /**
+         * The rest of a cascade once the walk has exiled its cards (CR 702.85a): first each
+         * [riders] entry offers its card from among the exiled ones — after the last card is
+         * exiled, before the cast offer — then the controller is offered [cascadeCardId] for free,
+         * or, with no card to cast (or a cast prohibition forbidding it), every card still exiled
+         * goes to the bottom in a random order. Pauses for each choice; shared by
+         * [CascadeExecutor] and the resumer of [CascadePutOntoBattlefieldContinuation].
+         */
+        fun continueCascade(
+            zones: ZoneTransitionService,
+            castForbidden: (GameState, EntityId, EntityId) -> Boolean,
+            decisionHandler: DecisionHandler,
+            state: GameState,
+            playerId: EntityId,
+            sourceId: EntityId?,
+            objectReferences: ObjectReferenceEnvironment,
+            exiledCards: List<EntityId>,
+            cascadeCardId: EntityId?,
+            riders: List<CascadeRider>,
+        ): ExecutionResult {
+            val exile = state.getZone(ZoneKey(playerId, Zone.EXILE)).toSet()
+            for ((index, rider) in riders.withIndex()) {
+                val options = exiledCards.filter { id ->
+                    id in exile && zones.predicateEvaluator.matches(
+                        state, state.projectedState, id, rider.ability.filter,
+                        PredicateContext(controllerId = playerId, sourceId = rider.sourceId)
+                    )
+                }
+                if (options.isEmpty()) continue
+                val riderName = state.getEntity(rider.sourceId)?.get<CardComponent>()?.name
+                val tapped = if (rider.ability.tapped) " tapped" else ""
+                return decisionHandler.createCardSelectionDecision(
+                    state = state,
+                    playerId = playerId,
+                    sourceId = rider.sourceId,
+                    sourceName = riderName,
+                    prompt = "You may put a ${rider.ability.filter.description} card from among the exiled cards onto the battlefield$tapped",
+                    options = options,
+                    minSelections = 0,
+                    maxSelections = 1,
+                    answer = CascadePutOntoBattlefieldContinuation(
+                        playerId = playerId,
+                        sourceId = sourceId,
+                        exiledCards = exiledCards,
+                        cascadeCardId = cascadeCardId,
+                        rider = rider,
+                        remainingRiders = riders.drop(index + 1),
+                        objectReferences = objectReferences,
+                    ),
+                )
+            }
+
+            if (cascadeCardId == null || castForbidden(state, playerId, cascadeCardId)) {
+                // No card to cast, or a cast prohibition (Drannith Magistrate) forbids it — no
+                // offer at all: bottom-randomize every card still exiled this way and finish.
+                var finalState = state
+                val bottomEvents = bottomRandomize(zones, state, playerId, exiledCards.filter { it in exile }) {
+                    finalState = it
+                }
+                return ExecutionResult.success(finalState, bottomEvents)
+            }
+
+            val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+            val cascadeName = state.getEntity(cascadeCardId)?.get<CardComponent>()?.name ?: "the exiled card"
+            return decisionHandler.createYesNoDecision(
+                state = state,
+                playerId = playerId,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                prompt = "Cast $cascadeName without paying its mana cost?",
+                yesText = "Cast for free",
+                noText = "Decline",
+                phase = DecisionPhase.RESOLUTION,
+                answer = CascadeMayCastContinuation(
+                    playerId = playerId,
+                    sourceId = sourceId,
+                    objectReferences = objectReferences,
+                    exiledCards = exiledCards,
+                    cascadeCardId = cascadeCardId,
+                ),
+            )
+        }
+
         /**
          * Move [cards] (each currently in exile) to the bottom of [playerId]'s library
          * in a random order. Returns the emitted zone-change events; the caller wires

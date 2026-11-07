@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.sdk.scripting.FreeCyclingCosts
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
@@ -114,6 +115,10 @@ internal object CardAsks {
                 // "You may pay {0} rather than pay cycling costs" (New Perspectives) is fuelled
                 // only by the deck's own cycling cards.
                 if (static is FreeCyclingCosts) asks.merge(CYCLING, DeckSynergy.FEEDERS_WANTED, ::minOf)
+                // "As you cascade, you may put a land card from among the exiled cards onto the
+                // battlefield tapped" (Averna, the Chaos Bloom) does something only when the deck's
+                // own cascade cards cascade.
+                if (static is CascadeMayPutOntoBattlefield) asks.merge(CASCADE, DeckSynergy.FEEDERS_WANTED, ::minOf)
             }
             for (replacement in script.replacementEffects.filter(DamageAmplifiers::reads)) {
                 val event = replacement.appliesTo as EventPattern.DamageEvent
@@ -228,6 +233,7 @@ internal object CardAsks {
     private val AURAS: GameObjectFilter = GameObjectFilter.Enchantment.withSubtype(Subtype.AURA.value)
     private val EQUIPMENT: GameObjectFilter = GameObjectFilter.Artifact.withSubtype("Equipment")
     private val CYCLING: GameObjectFilter = GameObjectFilter.Any.withCycling()
+    private val CASCADE: GameObjectFilter = GameObjectFilter.Any.withKeyword(Keyword.CASCADE)
 
     private fun scripts(card: CardDefinition): List<CardScript> = listOf(card.script) + card.cardFaces.map { it.script }
 
