@@ -2191,7 +2191,7 @@ object DamageUtils {
         if (filter == GameObjectFilter.Any) return true
         if (sourceId == null) return false
         val context = PredicateContext(controllerId = hostControllerId, sourceId = hostId, recipientId = recipientId)
-        return if (sourceSnapshot != null) predicateEvaluator.matchesSnapshot(state, sourceSnapshot, filter, context, onBattlefield = true)
+        return if (sourceSnapshot != null) predicateEvaluator.matchesSnapshot(state, sourceSnapshot, filter, context, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
         else predicateEvaluator.matches(state, projected, sourceId, filter, context)
     }
 

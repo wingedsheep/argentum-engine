@@ -1,0 +1,1 @@
+- #TBD The AI reads "whenever you cast a spell from your graveyard / activate an ability of a card in your graveyard" (Neerdiv, Secrets of the Dead) as graveyard payoffs, so its self-mill and surveil feed them in drafting and deckbuilding

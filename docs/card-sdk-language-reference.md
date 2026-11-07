@@ -9501,6 +9501,17 @@ The shapes in this family, with their engine notes.
   Treasure tapped for mana) is gone by the time the trigger is matched; the engine matches it as it last existed on
   the battlefield (CR 113.7a), types and `onBattlefield()` included.
 
+  **"A card in your graveyard."** The zone is part of the filter too: Neerdiv, Devious Diver's "whenever you …
+  activate an ability of a card in your graveyard" is `activatesAbility(of = GameObjectFilter.Any.ownedByYou()
+  .currentlyIn(Zone.GRAVEYARD), includeManaAbilities = true)` — every graveyard holds only its owner's cards, so
+  "your graveyard" is `ownedByYou()`. The engine records the zone each activation came from (the activation event's
+  `sourceZone`), and a source its own cost moved out of that zone — an embalm or scavenge card exiled from the
+  graveyard, a sacrificed permanent — is matched as it last existed *there*: the exiled
+  embalm card is still "a card in your graveyard", and a land its own cost sacrificed into the graveyard never was.
+  Pair it with `Triggers.you.casts(requires = setOf(SpellCastPredicate.CastFromZone(Zone.GRAVEYARD), …))` under
+  `Triggers.or` for the "cast a spell from your graveyard or activate an ability of a card in your graveyard"
+  wording.
+
   **Engine note.** The engine emits `AbilityActivatedEvent` for *every* activated mana ability, on the manual
   activation path and on the auto-tap fast path used to pay for spells and abilities, with `isManaAbility = true`
   and `costsTap` set from the cost. Mana-ability activations are deliberately kept out of the client game log.

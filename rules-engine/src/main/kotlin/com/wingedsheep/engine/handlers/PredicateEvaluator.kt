@@ -269,11 +269,12 @@ class PredicateEvaluator(
      * any snapshot existed. Of the state predicates only the combat status the snapshot freezes —
      * attacking, blocking, tapped — is answered (see [matchesSnapshotState]): a blocker killed by the
      * damage is still "a blocking creature" to the trigger that damage fired (CR 603.10). Pass
-     * [onBattlefield] when [snapshot] is known to be a permanent as it last existed on the
-     * battlefield: `onBattlefield()` then answers true rather than unknown (Harsh Mentor's "an
-     * ability of an artifact, creature, or land on the battlefield" read off a sacrificed source).
-     * Every other state predicate describes a battlefield presence the object no longer has and is
-     * unanswerable.
+     * [zone] when [snapshot] is known to be the object as it last existed in that zone: the zone
+     * predicates (`onBattlefield()`, `currentlyIn(zone)`) then answer against it rather than
+     * unknown — Harsh Mentor's "an ability of an artifact, creature, or land on the battlefield"
+     * read off a sacrificed source, Neerdiv's "an ability of a card in your graveyard" read off a
+     * card its own embalm exiled. Every other state predicate describes a battlefield presence the
+     * object no longer has and is unanswerable.
      *
      * **Caller invariant: pass a snapshot captured with the state-aware
      * [com.wingedsheep.engine.state.components.stack.captureEntitySnapshots] overload** (the
@@ -302,15 +303,15 @@ class PredicateEvaluator(
         snapshot: EntitySnapshot,
         filter: GameObjectFilter,
         context: PredicateContext,
-        onBattlefield: Boolean = false,
+        zone: Zone? = null,
     ): Boolean {
         filter.controllerPredicate?.let { controllerPred ->
             if (!matchesSnapshotController(state, snapshot, controllerPred, context)) return false
         }
-        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it, context, onBattlefield) == true }) return false
+        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it, context, zone) == true }) return false
         if (!filter.cardPredicates.all { matchesSnapshotPredicate(state, snapshot, it, context) == true }) return false
         if (filter.anyOf.isNotEmpty()) {
-            return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context, onBattlefield) }
+            return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context, zone) }
         }
         return true
     }
@@ -396,7 +397,7 @@ class PredicateEvaluator(
         snapshot: EntitySnapshot,
         predicate: StatePredicate,
         context: PredicateContext,
-        onBattlefield: Boolean,
+        zone: Zone?,
     ): Boolean? =
         when (predicate) {
             StatePredicate.IsAttacking -> snapshot.wasAttacking
@@ -409,7 +410,8 @@ class PredicateEvaluator(
             StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
             // Only the caller knows whether the snapshot is of a permanent: "an ability of a land on
             // the battlefield" read off a fetch land its own cost sacrificed (Harsh Mentor).
-            StatePredicate.IsOnBattlefield -> if (onBattlefield) true else null
+            StatePredicate.IsOnBattlefield -> zone?.let { it == Zone.BATTLEFIELD }
+            is StatePredicate.InZone -> zone?.let { it == predicate.zone }
             // The under-your-control form reads the live entry log; the snapshot doesn't freeze it.
             is StatePredicate.EnteredThisTurn ->
                 if (predicate.underYourControl) null else snapshot.enteredOnTurn == state.turnNumber
@@ -425,13 +427,13 @@ class PredicateEvaluator(
             // card's own designation answers it — "if you attacked with your commander" (Neriv).
             StatePredicate.IsCommander -> state.getEntity(snapshot.entityId)
                 ?.has<com.wingedsheep.engine.state.components.identity.CommanderComponent>()
-            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context, onBattlefield)?.not()
+            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context, zone)?.not()
             is StatePredicate.And -> {
-                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, onBattlefield) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, zone) }
                 if (false in results) false else if (null in results) null else true
             }
             is StatePredicate.Or -> {
-                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, onBattlefield) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context, zone) }
                 if (true in results) true else if (null in results) null else false
             }
             else -> null
@@ -647,10 +649,9 @@ class PredicateEvaluator(
     }
 
     /**
-     * [ControllerPredicate] against a snapshot's frozen [EntitySnapshot.controllerId]. Only the
-     * control-based predicates can be answered — ownership isn't frozen — and an unfrozen
-     * controller (or an owner-based predicate) is a non-match, matching [matchesSnapshotPredicate]'s
-     * conservative default.
+     * [ControllerPredicate] against a snapshot's frozen [EntitySnapshot.controllerId] and
+     * [EntitySnapshot.ownerId]. An unfrozen controller — or owner, for the owner-based predicates —
+     * is a non-match, matching [matchesSnapshotPredicate]'s conservative default.
      */
     private fun matchesSnapshotController(
         state: GameState,
@@ -692,12 +693,21 @@ class PredicateEvaluator(
                     ?: resolveReferencedPlayerFromState(state, state.projectedState, predicate.target, context)
                 referenced?.let { controllerId == it } ?: false
             }
-            // Ownership isn't frozen on a snapshot.
-            ControllerPredicate.OwnedByYou,
-            ControllerPredicate.OwnedByOpponent,
-            ControllerPredicate.OwnedByTargetPlayer,
-            ControllerPredicate.OwnedByTriggeringPlayer,
-            is ControllerPredicate.OwnedByReferencedPlayer -> false
+            // Ownership never changes (CR 108.3), so a snapshot that captured its owner answers it
+            // the way the live path does; one without an owner can't.
+            ControllerPredicate.OwnedByYou -> snapshot.ownerId?.let { it == context.controllerId } ?: false
+            ControllerPredicate.OwnedByOpponent -> snapshot.ownerId?.let { it != context.controllerId } ?: false
+            ControllerPredicate.OwnedByTargetPlayer ->
+                snapshot.ownerId != null && snapshot.ownerId == context.targetPlayerId
+            ControllerPredicate.OwnedByTriggeringPlayer -> {
+                val triggeringPlayer = context.triggeringPlayerId ?: context.triggeringEntityId
+                snapshot.ownerId != null && snapshot.ownerId == triggeringPlayer
+            }
+            is ControllerPredicate.OwnedByReferencedPlayer -> {
+                val referenced = context.resolvePlayerTarget(predicate.target)
+                    ?: resolveReferencedPlayerFromState(state, state.projectedState, predicate.target, context)
+                snapshot.ownerId != null && snapshot.ownerId == referenced
+            }
         }
     }
 
