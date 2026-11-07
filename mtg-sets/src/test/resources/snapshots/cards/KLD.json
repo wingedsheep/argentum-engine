@@ -7235,7 +7235,8 @@
         "collectorNumber": "271",
         "rarity": "UNCOMMON",
         "artist": "Christine Choi",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72638ac5-84fd-4688-9b81-0eea3c05e53e.jpg?1783937136"
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72638ac5-84fd-4688-9b81-0eea3c05e53e.jpg?1783937136",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -12083,7 +12084,8 @@
         "rarity": "UNCOMMON",
         "artist": "John Stanko",
         "flavorText": "\"For freedom! For fame! For fire!\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b633884-867c-4b51-bd5b-5f246d0ecd4e.jpg?1783937137"
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b633884-867c-4b51-bd5b-5f246d0ecd4e.jpg?1783937137",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "RED"
@@ -14398,7 +14400,8 @@
         "collectorNumber": "272",
         "artist": "Magali Villeneuve",
         "flavorText": "\"You tread upon the land all the time, yet you seem dismayed when it moves to step on you.\"\n—Nissa Revane",
-        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32b89e5c-ffb4-406f-99d1-ec2797aca061.jpg?1783937136"
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32b89e5c-ffb4-406f-99d1-ec2797aca061.jpg?1783937136",
+        "inBooster": false
     },
     "colorIdentityOverride": [
         "GREEN"

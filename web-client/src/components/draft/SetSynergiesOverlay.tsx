@@ -3008,6 +3008,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  KLD: {
+    setCode: 'KLD',
+    setName: 'Kaladesh',
+    archetypes: [
+      {
+        name: 'Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Cloudblazer',
+        description: 'Hold the ground with sturdy artifacts and Servo-making fabricators, then win in the air with flying creatures and Thopters. A tempo deck that trades cheap blockers for time while evasive threats close the game.',
+      },
+      {
+        name: 'Artifact Control',
+        colors: ['U', 'B'],
+        keyCard: 'Contraband Kingpin',
+        description: 'Lean on artifacts and removal to grind the opponent out, filtering draws with scry and card advantage. A patient control deck that wins with lifelink and value from every artifact it plays.',
+      },
+      {
+        name: 'Artifact Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Unlicensed Disintegration',
+        description: 'Curve out with cheap artifacts and aggressive creatures, then punish blockers with removal that rewards controlling an artifact. A fast deck that turns its artifact count into damage and reach.',
+      },
+      {
+        name: 'Energy Aggro',
+        colors: ['R', 'G'],
+        keyCard: 'Voltaic Brawler',
+        description: 'Bank energy from early creatures and spend it to pump attackers past blockers. A stompy aggro deck that keeps attacking and turns every energy payoff into extra damage.',
+      },
+      {
+        name: 'Go Wide',
+        colors: ['G', 'W'],
+        keyCard: 'Engineered Might',
+        description: 'Fabricate Servos and +1/+1 counters across a wide board, then pump the whole team for an alpha strike. A go-wide midrange deck whose army outsizes every blocker.',
+      },
+      {
+        name: 'Artifact Recursion',
+        colors: ['W', 'B'],
+        keyCard: 'Restoration Gearsmith',
+        description: 'Trade artifacts and creatures early, then return the best ones from the graveyard for another go. A grindy midrange deck that wins the long game on recursion and fabricate value.',
+      },
+      {
+        name: 'Thopter Energy',
+        colors: ['U', 'R'],
+        keyCard: 'Whirler Virtuoso',
+        description: 'Collect energy and convert it into flying Thopter tokens, backed by spells and artifact synergies. A tempo deck that builds an evasive air force while staying interactive.',
+      },
+      {
+        name: '+1/+1 Counters',
+        colors: ['B', 'G'],
+        keyCard: 'Hazardous Conditions',
+        description: "Grow creatures with +1/+1 counters from fabricate and other effects, then sweep the opponent's uncountered board. A midrange deck whose counters both size up its threats and protect them from its own removal.",
+      },
+      {
+        name: 'Vehicles',
+        colors: ['R', 'W'],
+        keyCard: 'Veteran Motorist',
+        description: 'Crew powerful Vehicles with small creatures and Pilots, then attack with oversized artifacts. An aggressive deck that turns every crew member into a bigger threat on the next swing.',
+      },
+      {
+        name: 'Energy Ramp',
+        colors: ['G', 'U'],
+        keyCard: 'Empyreal Voyager',
+        description: 'Ramp and stockpile energy with efficient creatures, then cash it in for big evasive threats and card advantage. A value deck that keeps its energy engine running all game.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',

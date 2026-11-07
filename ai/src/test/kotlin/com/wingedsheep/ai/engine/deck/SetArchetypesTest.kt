@@ -48,6 +48,26 @@ class SetArchetypesTest : StringSpec({
         )
     }
 
+    "Kaladesh exposes its ten signpost colour-pair archetypes, none tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("kld"))
+
+        synergies.setName shouldBe "Kaladesh"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers",
+            "Artifact Control",
+            "Artifact Aggro",
+            "Energy Aggro",
+            "Go Wide",
+            "Artifact Recursion",
+            "Thopter Energy",
+            "+1/+1 Counters",
+            "Vehicles",
+            "Energy Ramp",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() } shouldBe emptyList()
+    }
+
     "Ixalan exposes its ten colour-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("xln"))
 

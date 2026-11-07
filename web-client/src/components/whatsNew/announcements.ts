@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-kld',
+    date: '2026-11-07',
+    kind: 'set',
+    setCode: 'KLD',
+    title: 'Kaladesh is complete',
+    body: "Join the Inventors' Fair on a plane of aether-powered artifice. Bank energy and spend it for bigger attacks, fabricate Servos or +1/+1 counters, and crew Vehicles with your smallest creatures, across ten two-colour decks from Thopter swarms to artifact aggro.",
+    tryIf: 'artifact synergies and resource-juggling combat decks',
+  },
+  {
     id: 'set-akh',
     date: '2026-11-06',
     kind: 'set',
