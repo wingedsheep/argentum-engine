@@ -79,6 +79,8 @@ import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.effects.StoreCardNameEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
@@ -722,6 +724,10 @@ object TargetPolarityAnalyzer {
         for (slot in pipelineBlinkSlots(effect, requirements)) {
             perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
         }
+        // "Exile target nonland card from your graveyard. Search your library for any number of cards
+        // with the same name as that card … put them into your hand" (Secret Salvage): a tutor keyed on
+        // a card of ours, so the slot is our own pick — the name with copies left to find.
+        for (slot in namedTutorSlots(effect, requirements)) perSlot[slot] += TargetPolarity.BENEFICIAL
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
@@ -1362,6 +1368,39 @@ object TargetPolarityAnalyzer {
         return requirements.indices.filter { slot ->
             val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
             requirement is TargetObject && requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+        }
+    }
+
+    /**
+     * The own-graveyard slots of [requirements] whose card's name [effect] notes
+     * ([StoreCardNameEffect], neutral bookkeeping on its own) to search our own library for cards
+     * of that name ([CardPredicate.NameEqualsChosen]) and put them into our hand: the slot names
+     * what we tutor for. Searching an opponent's library for the name (Lobotomy, Cranial
+     * Extraction) is disruption and reads nothing here.
+     */
+    private fun namedTutorSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = allChosenTargets(effect)
+        val names = leaves.filterIsInstance<StoreCardNameEffect>().filter { it.from in chosen }.mapTo(HashSet()) { it.storeAs }
+        if (names.isEmpty()) return emptyList()
+        val found = leaves.filterIsInstance<GatherCardsEffect>().filter { gather ->
+            val source = gather.source as? CardSource.FromZone ?: return@filter false
+            source.zone == Zone.LIBRARY && source.player == Player.You &&
+                source.filter.cardPredicates.any { it is CardPredicate.NameEqualsChosen && it.variableName in names }
+        }.mapTo(HashSet()) { it.storeAs }
+        if (found.isEmpty()) return emptyList()
+        do {
+            val before = found.size
+            for (leaf in leaves) found += CardIntentAnalyzer.derivedCollections(leaf, found)
+        } while (found.size != before)
+        val toHand = leaves.any { leaf ->
+            val to = (leaf as? MoveCollectionEffect)?.destination as? CardDestination.ToZone
+            leaf is MoveCollectionEffect && leaf.from in found && to?.zone == Zone.HAND && to.player == Player.You
+        }
+        if (!toHand) return emptyList()
+        return requirements.indices.filter { slot ->
+            val filter = objectFilter(requirements[slot])
+            filter?.zone == Zone.GRAVEYARD && ownGraveyardOnly(filter)
         }
     }
 
