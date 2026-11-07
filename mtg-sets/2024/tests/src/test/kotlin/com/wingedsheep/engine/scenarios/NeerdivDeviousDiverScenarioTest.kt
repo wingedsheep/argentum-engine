@@ -109,15 +109,26 @@ class NeerdivDeviousDiverScenarioTest : ScenarioTestBase() {
 
         context("tap trigger") {
             test("attacking taps Neerdiv and the target player mills cards equal to its power") {
-                val game = builder().build()
+                val game = builder().withCardInGraveyard(1, "Think Twice").build()
+                // Grow Neerdiv to 3/3 first, so the mill reads its current power, not the printed 2.
+                game.execute(
+                    CastSpell(
+                        playerId = game.player1Id,
+                        cardId = game.findCardsInGraveyard(1, "Think Twice").single(),
+                        useAlternativeCost = true,
+                        alternativeCostType = AlternativeCostType.FLASHBACK,
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+                game.plusOneCounters() shouldBe 1
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
 
                 game.declareAttackers(mapOf("Neerdiv, Devious Diver" to 2)).error shouldBe null
                 game.selectTargets(listOf(game.player2Id)).error shouldBe null
                 game.resolveStack()
 
-                game.graveyardSize(2) shouldBe 2
-                game.librarySize(2) shouldBe 4
+                game.graveyardSize(2) shouldBe 3
+                game.librarySize(2) shouldBe 3
             }
         }
     }

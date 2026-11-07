@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.components.stack.captureLastKnown
 import com.wingedsheep.sdk.core.Zone
@@ -36,6 +37,16 @@ internal fun activationSourceLastKnown(
         return battlefieldSnapshot() ?: captureLastKnown(stateBeforeActivation, sourceId)
     }
     if (activationZone(stateAfterCosts, sourceId) == activatedFrom) return null
+    // Off the battlefield there is no projection entry, so the characteristics are the card's own
+    // (the same reading the live off-battlefield matcher makes): colours, types and keywords.
     val snapshot = captureLastKnown(stateBeforeActivation, sourceId)
-    return if (snapshot.controllerId == null) snapshot.copy(controllerId = snapshot.ownerId) else snapshot
+    val card = stateBeforeActivation.getEntity(sourceId)?.get<CardComponent>() ?: return snapshot
+    return snapshot.copy(
+        controllerId = snapshot.controllerId ?: snapshot.ownerId,
+        typeLine = card.typeLine,
+        subtypes = card.typeLine.subtypes.map { it.value }.toSet(),
+        supertypes = card.typeLine.supertypes.map { it.name }.toSet(),
+        colors = card.colors.map { it.name }.toSet(),
+        keywords = card.baseKeywords.map { it.name }.toSet(),
+    )
 }
