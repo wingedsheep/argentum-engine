@@ -487,8 +487,8 @@ class CombatContinuationResumer(
         // "Prevent all damage that would be dealt this turn by a source of your choice", with no
         // recipient clause (Mourner's Shield): the shield belongs on the *source*, not on a
         // protected recipient, so it reuses the same `PreventAllDamageDealtBy` silence shield that a
-        // targeted `PreventionDirection.FromTarget` installs — and is honored for combat and
-        // noncombat damage alike by the same two read sites.
+        // targeted `PreventionDirection.FromTarget` installs. `combatOnly` narrows it to the
+        // source's combat damage ("… combat damage a creature of your choice would deal", Ajani's Aid).
         if (continuation.silenceChosenSource && continuation.amount == null) {
             val silenced = state.addFloatingEffect(
                 layer = Layer.ABILITY,
