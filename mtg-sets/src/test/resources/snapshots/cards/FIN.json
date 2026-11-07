@@ -25773,33 +25773,42 @@
                         }
                     },
                     "then": {
-                        "type": "AttachTargetEquipmentToCreature",
-                        "equipmentTarget": {
-                            "type": "BoundVariable",
-                            "name": "t0"
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
                         },
-                        "creatureTarget": {
-                            "type": "BoundVariable",
-                            "name": "t1"
-                        }
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "AttachTargetEquipmentToCreature",
+                            "equipmentTarget": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "creatureTarget": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "artifact Equipment ctrl:you"
+                                },
+                                "id": "t0"
+                            },
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                },
+                                "id": "t1"
+                            }
+                        ],
+                        "descriptionOverride": "attach target Equipment you control to target creature you control."
                     }
                 },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "artifact Equipment ctrl:you"
-                    },
-                    "id": "t0"
-                },
-                "additionalTargetRequirements": [
-                    {
-                        "type": "TargetObject",
-                        "filter": {
-                            "baseFilter": "creature ctrl:you"
-                        },
-                        "id": "t1"
-                    }
-                ],
                 "interveningIf": {
                     "type": "Exists",
                     "player": "You",

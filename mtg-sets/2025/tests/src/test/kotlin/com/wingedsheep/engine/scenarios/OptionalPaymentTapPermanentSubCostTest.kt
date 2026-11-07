@@ -95,7 +95,7 @@ class OptionalPaymentTapPermanentSubCostTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 20
         }
 
-        test("paying Lightning Rift's {1} with Gene Pollinator taps the other permanent before targeting") {
+        test("paying Lightning Rift's {1} with Gene Pollinator taps the other permanent on resolution") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
                 .withCardOnBattlefield(1, "Lightning Rift")
@@ -110,6 +110,16 @@ class OptionalPaymentTapPermanentSubCostTest : ScenarioTestBase() {
             val pollinator = game.findPermanent("Gene Pollinator")!!
 
             game.cycleCard(1, "Tranquil Thicket").error shouldBe null
+
+            // The Rift's target is chosen as its trigger goes on the stack (CR 603.3d) …
+            val targeting = game.getPendingDecision()
+            targeting.shouldNotBeNull()
+            targeting.shouldBeInstanceOf<ChooseTargetsDecision>()
+            game.submitDecision(
+                TargetsResponse(targeting.id, mapOf(0 to listOf(game.player2Id)))
+            ).error shouldBe null
+
+            // … and the optional {1} is paid only as it resolves.
             game.resolveStack()
             game.answerYesNo(true).error shouldBe null
 
@@ -120,13 +130,6 @@ class OptionalPaymentTapPermanentSubCostTest : ScenarioTestBase() {
             tapChoice.shouldBeInstanceOf<SelectCardsDecision>()
             tapChoice.options shouldContain rift
             game.selectCards(listOf(rift)).error shouldBe null
-
-            val targeting = game.getPendingDecision()
-            targeting.shouldNotBeNull()
-            targeting.shouldBeInstanceOf<ChooseTargetsDecision>()
-            game.submitDecision(
-                TargetsResponse(targeting.id, mapOf(0 to listOf(game.player2Id)))
-            ).error shouldBe null
             game.resolveStack()
 
             game.isTapped(pollinator) shouldBe true

@@ -50,10 +50,8 @@ class ManaPaymentContinuationResumer(
         resumer(ChangeSpellTargetContinuation::class, ::resumeChangeSpellTarget),
         resumer(MayPayManaContinuation::class, ::resumeMayPayMana),
         resumer(MayPayManaSelectionContinuation::class, ::resumeMayPayManaSelection),
-        resumer(MayPayManaTriggerContinuation::class, ::resumeMayPayManaTrigger),
         resumer(MayPayXContinuation::class, ::resumeMayPayX),
         resumer(PayManaCostRepeatedlyContinuation::class, ::resumePayManaCostRepeatedly),
-        resumer(ManaSourceSelectionContinuation::class, ::resumeManaSourceSelection),
         resumer(ManaActionPaymentContinuation::class, ::resumeActionPayment)
     )
 
@@ -1274,79 +1272,6 @@ class ManaPaymentContinuationResumer(
     }
 
     /**
-     * Resume after the controller decides whether to pay a mana cost for a triggered
-     * ability that also requires targets (e.g., Lightning Rift).
-     *
-     * If the player says yes, shows mana source selection. If no, skips the trigger.
-     */
-    fun resumeMayPayManaTrigger(
-        state: GameState,
-        continuation: MayPayManaTriggerContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is YesNoResponse) {
-            return ExecutionResult.error(state, "Expected yes/no response for may pay mana trigger")
-        }
-
-        if (!response.choice) {
-            // Player declined to pay — skip the trigger entirely
-            return checkForMore(state, emptyList())
-        }
-
-        // Player chose to pay — show mana source selection
-        val playerId = continuation.trigger.controllerId
-        val manaSolver = services.manaSolver
-
-        // Find available sources for the UI
-        val sources = manaSolver.findAvailableManaSources(state, playerId)
-        val sourceOptions = sources.map { source ->
-            ManaSourceOption(
-                entityId = source.entityId,
-                name = source.name,
-                producesColors = source.producesColors,
-                producesColorless = source.producesColorless,
-                requiresSacrifice = source.requiresSacrifice,
-                manaAmount = source.manaAmount,
-                requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null
-            )
-        }
-
-        // Get auto-pay suggestion
-        val solution = manaSolver.solve(state, playerId, continuation.manaCost)
-        val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
-
-        // Create mana source selection decision
-        val question = { decisionId: String -> SelectManaSourcesDecision(
-            id = decisionId,
-            playerId = playerId,
-            prompt = "Pay ${continuation.manaCost}",
-            context = DecisionContext(
-                sourceId = continuation.trigger.sourceId,
-                sourceName = continuation.trigger.sourceName,
-                phase = DecisionPhase.RESOLUTION
-            ),
-            availableSources = sourceOptions,
-            requiredCost = continuation.manaCost.toString(),
-            autoPaySuggestion = autoPaySuggestion
-        ) }
-
-        val manaSourceContinuation = ManaSourceSelectionContinuation(
-            trigger = continuation.trigger,
-            targetRequirement = continuation.targetRequirement,
-            manaCost = continuation.manaCost,
-            availableSources = sourceOptions,
-            autoPaySuggestion = autoPaySuggestion
-        )
-
-        return state.suspendForDecision(
-            question = question,
-            answer = manaSourceContinuation,
-            events = emptyList(),
-        )
-    }
-
-    /**
      * Resume a "you may pay {X}" gate. The yes/no answer declines (running `otherwise`) or asks for
      * X; the number answer pays X — X = 0 included, which is a payment rather than a decline — and
      * runs the inner effect with X bound.
@@ -1509,134 +1434,6 @@ class ManaPaymentContinuationResumer(
         }
 
         return checkForMore(effectResult.state, paymentEvents + effectResult.events)
-    }
-
-    /**
-     * Resume after the controller selects mana sources to pay a cost for a triggered
-     * ability that also requires targets.
-     *
-     * Taps the selected sources, deducts mana, unwraps Effects.MayPay, and proceeds
-     * to target selection with the inner effect.
-     */
-    fun resumeManaSourceSelection(
-        state: GameState,
-        continuation: ManaSourceSelectionContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is ManaSourcesSelectedResponse) {
-            return ExecutionResult.error(state, "Expected mana sources selected response")
-        }
-
-        val playerId = continuation.trigger.controllerId
-        val playerEntity = state.getEntity(playerId)
-            ?: return ExecutionResult.error(state, "Paying player not found")
-
-        val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
-            ?: return ExecutionResult.error(state, "Player has no mana pool")
-
-        val manaPool = ManaPool(
-            manaPoolComponent.white,
-            manaPoolComponent.blue,
-            manaPoolComponent.black,
-            manaPoolComponent.red,
-            manaPoolComponent.green,
-            manaPoolComponent.colorless,
-            restrictedMana = manaPoolComponent.restrictedMana,
-            snowMana = manaPoolComponent.snowMana,
-            manaUnits = manaPoolComponent.manaUnits,
-            snowColorless = manaPoolComponent.snowColorless
-        ).withSpendingColors(state, playerId)
-
-        // Try to pay from floating mana first
-        val partialResult = manaPool.payPartial(continuation.manaCost)
-        val remainingCost = partialResult.remainingCost
-        var currentPool = manaPool
-        var currentState = state
-        val events = mutableListOf<GameEvent>()
-
-        if (!remainingCost.isEmpty()) {
-            if (response.autoPay) {
-                // Auto-tap: use ManaSolver
-                val manaSolver = services.manaSolver
-                val solution = manaSolver.solve(currentState, playerId, remainingCost)
-                    ?: return ExecutionResult.error(state, "Cannot pay mana cost with auto-pay")
-
-                for (source in solution.sources) {
-                    val (tappedState, tapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, source.entityId, playerId, solution.manaProduced[source.entityId])
-                    currentState = tappedState
-                    events.addAll(tapEvents)
-                }
-
-                for ((_, production) in solution.manaProduced) {
-                    currentPool = currentPool.addProduction(production)
-                }
-                // A composite tap's extra fixed colors (Timeless Lotus) aren't in manaProduced.
-                for (source in solution.sources) {
-                    for ((color, amount) in source.compositeBonusMana) currentPool = currentPool.add(color, amount)
-                }
-            } else {
-                when (val manual = tapManualSelection(
-                    currentState, currentPool, continuation.availableSources, response.selectedSources,
-                    playerId, events, resume = continuation
-                )) {
-                    null -> return ExecutionResult.error(state, "Selected source is not a valid mana source")
-                    is ManualSelection.AwaitingSubCost -> return manual.pause
-                    is ManualSelection.Tapped -> {
-                        currentState = manual.result.state
-                        currentPool = manual.result.pool
-                        events.addAll(manual.result.events)
-                    }
-                }
-            }
-        }
-
-        // Deduct the cost from the pool
-        val newPool = currentPool.pay(continuation.manaCost)
-            ?: return ExecutionResult.error(state, "Cannot pay mana cost after tapping sources")
-
-        currentState = currentState.updateEntity(playerId) { container ->
-            container.with(
-                ManaPoolComponent(
-                    white = newPool.white,
-                    blue = newPool.blue,
-                    black = newPool.black,
-                    red = newPool.red,
-                    green = newPool.green,
-                    colorless = newPool.colorless,
-                    restrictedMana = newPool.restrictedMana,
-                    snowMana = newPool.snowMana,
-                    manaUnits = newPool.manaUnits,
-                    snowColorless = newPool.snowColorless
-                )
-            )
-        }
-
-        // Unwrap the optional-mana-payment gate to get its inner effect (mana already paid).
-        val trigger = continuation.trigger
-        val innerEffect = trigger.ability.effect.asOptionalManaPayment()!!.then
-
-        // Create a modified trigger with the inner effect (mana already paid)
-        val unwrappedAbility = trigger.ability.copy(effect = innerEffect)
-        val unwrappedTrigger = trigger.copy(ability = unwrappedAbility)
-
-        // Proceed to target selection
-        val result = services.triggerProcessor.processTargetedTrigger(currentState, unwrappedTrigger, continuation.targetRequirement)
-
-        if (result.outcome is Outcome.Paused) {
-            // Target selection is needed - return paused with accumulated events
-            return ExecutionResult.propagatePause(
-                result.state,
-                events + result.events
-            )
-        }
-
-        if (result.outcome !is Outcome.Done) {
-            return result
-        }
-
-        // Target was auto-selected - check for more continuations
-        return checkForMore(result.newState, events + result.events.toList())
     }
 
     /** Outcome of [tapManualSelection]. */
@@ -1971,8 +1768,6 @@ class ManaPaymentContinuationResumer(
                 resumeCounterUnlessPaysManaSelection(currentState, resume, confirm, checkForMore)
             is MayPayManaSelectionContinuation ->
                 resumeMayPayManaSelection(currentState, resume, confirm, checkForMore)
-            is ManaSourceSelectionContinuation ->
-                resumeManaSourceSelection(currentState, resume, confirm, checkForMore)
             else -> return ExecutionResult.error(
                 state, "Unsupported payment to resume after a tap-permanents sub-cost: ${resume::class.simpleName}"
             )

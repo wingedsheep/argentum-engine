@@ -12,14 +12,15 @@ import com.wingedsheep.sdk.scripting.effects.PayManaCostEffect
  * [PayManaCostEffect], with no `otherwise` branch and the default (controller) decision-maker.
  *
  * The engine recognizes this exact shape to preserve the bespoke optional-mana-payment UX that the
- * wrapper used to own, rather than treating it like a generic [Gate.MayPay]:
+ * wrapper used to own, rather than treating it like a generic [Gate.MayPay]: manual mana-source
+ * selection at resolution (a `SelectManaSourcesDecision`), so the player chooses *which* sources to
+ * tap — sources that sacrifice (Treasures) or carry a tap sub-cost (Springleaf Drum) can't be
+ * auto-tapped silently.
  *
- *  - **Resolution:** manual mana-source selection (a `SelectManaSourcesDecision`), so the player
- *    chooses *which* sources to tap — sources that sacrifice (Treasures) or carry a tap sub-cost
- *    (Springleaf Drum) can't be auto-tapped silently.
- *  - **Triggered abilities that also require a target** (the Onslaught "Words of ..." cycle,
- *    Lightning Rift, ...): the deliberate pay → select-mana → choose-target order, so the player
- *    isn't asked to pick a target before deciding whether to pay.
+ * A triggered ability of this shape that also targets (Lightning Rift, Jubilant Mascot) is placed
+ * like any other targeted trigger: targets on the stack (CR 603.3d), the pay question as it resolves,
+ * against those locked targets. "You may pay … **When you do**, … target …" is not this shape — it is
+ * a `ReflexiveTriggerEffect` over `PayManaCostEffect`, whose reflexive half targets after paying.
  *
  * Composite-cost, life-gated, or `otherwise`-bearing MayPay gates deliberately do **not** match —
  * those resolve through the generic [GatedEffectExecutor] yes/no + cost-composite path (auto-tap),

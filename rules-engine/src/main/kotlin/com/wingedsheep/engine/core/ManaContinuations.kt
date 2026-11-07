@@ -204,24 +204,6 @@ data class PayManaCostRepeatedlyContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the controller decides whether to pay a mana cost for a triggered
- * ability that also requires targets (e.g., Lightning Rift).
- *
- * The flow is: ask "pay {cost}?" → if yes, show mana source selection → then target selection.
- * This is different from MayPayManaContinuation which asks about targets first.
- *
- * @property trigger The full pending trigger to process if the player pays
- * @property targetRequirement The target requirement for the ability
- * @property manaCost The mana cost to pay
- */
-@Serializable
-data class MayPayManaTriggerContinuation(
-    val trigger: PendingTrigger,
-    val targetRequirement: TargetRequirement,
-    val manaCost: ManaCost
-) : AnswerContinuation
-
-/**
  * Resume after the controller selects mana sources to pay a "counter unless pays" cost.
  * After payment, the spell resolves normally. If the player selected invalid sources,
  * the spell is countered.
@@ -267,27 +249,6 @@ data class CounterUnlessPaysManaSelectionContinuation(
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
     /** See [CounterUnlessPaysContinuation.deferCounter]. */
     val deferCounter: Boolean = false,
-) : AnswerContinuation
-
-/**
- * Resume after the controller selects mana sources to pay a cost for a triggered
- * ability that also requires targets.
- *
- * After mana sources are selected and cost is paid, proceeds to target selection.
- *
- * @property trigger The full pending trigger to process after payment
- * @property targetRequirement The target requirement for the ability
- * @property manaCost The mana cost to pay
- * @property availableSources Available mana sources the player can choose from
- * @property autoPaySuggestion Pre-computed auto-tap suggestion
- */
-@Serializable
-data class ManaSourceSelectionContinuation(
-    val trigger: PendingTrigger,
-    val targetRequirement: TargetRequirement,
-    val manaCost: ManaCost,
-    val availableSources: List<ManaSourceOption>,
-    val autoPaySuggestion: List<EntityId>
 ) : AnswerContinuation
 
 /**
@@ -520,8 +481,7 @@ data class TapPermanentsSubCostContinuation(
     val availableSources: List<ManaSourceOption>,
     /**
      * The payment-selection continuation to finish the payment with once every sub-cost is
-     * paid: a [CounterUnlessPaysManaSelectionContinuation], [MayPayManaSelectionContinuation]
-     * or [ManaSourceSelectionContinuation], with any waterbend reduction already applied to
+     * paid: a [CounterUnlessPaysManaSelectionContinuation] or [MayPayManaSelectionContinuation], with any waterbend reduction already applied to
      * its cost.
      */
     val resume: AnswerContinuation,

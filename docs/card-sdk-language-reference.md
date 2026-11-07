@@ -4872,10 +4872,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   decision-maker, however it was authored — and gives it the
   bespoke optional-mana-payment UX rather than the generic gated yes/no: **manual mana-source
   selection** at resolution (a `SelectManaSourcesDecision`, so sources that sacrifice or carry a tap
-  sub-cost aren't auto-tapped), and, for a **triggered ability that also requires a target** (the
-  Onslaught "Words of …" cycle, Lightning Rift), the deliberate **pay → select-mana → choose-target**
-  order so the player isn't asked to pick a target before deciding to pay. Composite-cost, life-gated,
-  or `otherwise`-bearing MayPay gates keep the generic auto-tapping path.
+  sub-cost aren't auto-tapped). A **triggered ability that also targets** ("you may pay {1}. If you
+  do, … any target" — Lightning Rift, Jubilant Mascot's support 2) goes on the stack like any other
+  targeted trigger: its targets are chosen then (CR 603.3d), opponents can respond, and the pay
+  question is asked only as it resolves, against the locked targets — no legal targets, no trigger.
+  The **"When you do"** template is a different ability (CR 603.12): put the target on a reflexive
+  trigger the payment gates — `Effects.MayPay(cost, then = Effects.ReflexiveTrigger(Effects.Nothing,
+  optional = false) { target(…); effect = … })` (Spellbook Vendor, Snaremaster Sprite, Tolarian
+  Kraken) — so the target is chosen only after paying, and the payment keeps manual source selection. Composite-cost,
+  life-gated, or `otherwise`-bearing MayPay gates keep the generic auto-tapping path.
 - `Effects.UnlessYouWaterbend(amount, otherwise)` — "[otherwise] unless you waterbend {amount}." An
   **in-resolution waterbend payment gate** (Avatar: The Last Airbender). Lowers to
   `GatedEffect(Gate.MayPay(PayManaCostEffect("{amount}", waterbend = true)), then = Composite(), otherwise = otherwise)`.

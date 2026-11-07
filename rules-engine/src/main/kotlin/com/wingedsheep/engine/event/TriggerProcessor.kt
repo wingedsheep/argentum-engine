@@ -8,7 +8,6 @@ import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.TargetFinder
-import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.modal.ChosenModeMemory
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
@@ -37,7 +36,6 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor
 import com.wingedsheep.engine.mechanics.modal.DistinctModeTargets
-import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
@@ -181,14 +179,13 @@ class TriggerProcessor(
             return processTargetedTrigger(currentState, trigger, targetRequirement)
         }
 
-        // If the effect is a Effects.MayPay AND has targets, ask payment first, then targets.
-        // This reverses the old flow where targets were chosen before the pay question.
-        if (targetRequirement != null && ability.effect.asOptionalManaPayment() != null) {
-            return processMayPayManaThenTargetTrigger(currentState, trigger, targetRequirement)
-        }
-
         // Optional effects keep their consent gate on the stack: announce targets now,
-        // then let the gated executor ask as this particular instance resolves.
+        // then let the gated executor ask as this particular instance resolves. That includes an
+        // optional *payment* — "you may pay {1}. If you do, … target …" (Lightning Rift, Jubilant
+        // Mascot): targets are chosen as the ability is put on the stack (CR 603.3d) and whether to
+        // pay is decided only as it resolves, so opponents can respond to the targeted ability before
+        // any mana is spent. A "When you do" payment is a different ability shape — a
+        // ReflexiveTriggerEffect whose reflexive half picks its targets after paying (CR 603.12).
         // Check if this ability requires targets
         if (targetRequirement != null) {
             return processTargetedTrigger(currentState, trigger, targetRequirement)
@@ -230,103 +227,6 @@ class TriggerProcessor(
             else -> return this
         }
         return gated.copy(gate = gate.copy(feasibility = implied))
-    }
-
-    /**
-     * Process a triggered ability that has both Effects.MayPay and targets.
-     *
-     * Asks "Pay {cost}?" first. If the player says yes, proceeds to mana source selection,
-     * then target selection. If the player says no, the trigger is skipped entirely.
-     * If the player can't pay, the trigger is skipped silently.
-     *
-     * Before asking, checks if legal targets exist — if not, the ability fizzles
-     * without even asking the pay question.
-     */
-    private fun processMayPayManaThenTargetTrigger(
-        state: GameState,
-        trigger: PendingTrigger,
-        targetRequirement: TargetRequirement
-    ): ExecutionResult {
-        val ability = trigger.ability
-        val manaCost = ability.effect.asOptionalManaPayment()!!.cost
-
-        // Check if the player can pay the mana cost
-        val manaSolver = ManaSolver(cardRegistry, amountEvaluator.predicates)
-        if (!manaSolver.canPay(state, trigger.controllerId, manaCost)) {
-            // Can't pay - skip silently
-            return ExecutionResult.success(state)
-        }
-
-        // Check if legal targets exist before asking the pay question
-        val legalTargets = targetFinder.findLegalTargets(
-            state = state,
-            requirement = targetRequirement,
-            controllerId = trigger.controllerId,
-            sourceId = trigger.sourceId,
-            targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
-            triggeringEntityId = trigger.triggerContext.triggeringEntityId,
-            // Carry the triggering player so a "target … that player controls" filter
-            // (ControllerPredicate.ControlledByTriggeringPlayer / ControlledByReferencedPlayer over
-            // Player.TriggeringPlayer) resolves identically here to the on-stack targeting path — a
-            // trigger whose associated player rides on triggeringPlayerId must reach the same
-            // legal-target verdict in this pre-check, or the may/pay question is wrongly skipped.
-            pipelineContext = com.wingedsheep.engine.handlers.PredicateContext(
-                controllerId = trigger.controllerId,
-                triggeringEntityId = trigger.triggerContext.triggeringEntityId,
-                triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
-                triggerContext = trigger.triggerContext,
-                // The X carried by the triggering event (an {X} cycling cost, a megamorph turn-up)
-                // so an X-relative target filter — `manaValueEqualsX()` on Webstrike Elite's
-                // "artifact or enchantment with mana value X" — finds targets at legality time.
-                // Without it those predicates read an unbound X and match nothing.
-                xValue = trigger.triggerContext.xValue,
-                storedCollections = triggerStoredCollections(trigger.triggerContext, trigger.carriedPipeline),
-                chosenValues = trigger.carriedPipeline?.chosenValues ?: emptyMap(),
-                storedStringLists = trigger.carriedPipeline?.storedStringLists ?: emptyMap(),
-                storedSubtypeGroups = trigger.carriedPipeline?.storedSubtypeGroups ?: emptyMap(),
-                storedNumbers = trigger.carriedPipeline?.storedNumbers ?: emptyMap(),
-            )
-        )
-
-        if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) {
-            // No legal targets - ability doesn't go on stack
-            return ExecutionResult.success(
-                state,
-                listOf(
-                    AbilityFizzledEvent(
-                        trigger.sourceId,
-                        ability.description,
-                        "No legal targets available"
-                    )
-                )
-            )
-        }
-
-        val sourceName = trigger.sourceName
-
-        // Create yes/no decision: "Pay {cost}?"
-        val decisionResult = decisionHandler.createYesNoDecision(
-            state = state,
-            playerId = trigger.controllerId,
-            sourceId = trigger.sourceId,
-            sourceName = sourceName,
-            prompt = "Pay $manaCost?",
-            yesText = "Pay $manaCost",
-            noText = "Don't pay",
-            phase = DecisionPhase.RESOLUTION,
-            abilityIdentity = state.triggerIdentityFromCurrentCardDefinition(trigger.sourceId, ability.id),
-            answer = MayPayManaTriggerContinuation(
-                trigger = trigger,
-                targetRequirement = targetRequirement,
-                manaCost = manaCost
-            ),
-        )
-
-        if (decisionResult.outcome !is Outcome.Paused || decisionResult.pendingDecision == null) {
-            return ExecutionResult.error(state, "Failed to create yes/no decision for may pay mana trigger")
-        }
-
-        return decisionResult
     }
 
     /**

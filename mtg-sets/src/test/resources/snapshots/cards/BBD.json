@@ -513,6 +513,96 @@
     ]
 }
 
+// Jubilant Mascot
+{
+    "name": "Jubilant Mascot",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "At the beginning of combat on your turn, you may pay {3}{W}. If you do, support 2. (Put a +1/+1 counter on each of up to two other target creatures.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jubilant Mascot:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{3}{W}"
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may pay {3}{W}. If you do, support 2 — put a +1/+1 counter on each of up to two other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "The competition is but one aspect of the spectacle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc7c73fd-e5f8-40e6-97ed-bfff0d6cf8d8.jpg?1783934871",
+        "rulings": [
+            {
+                "date": "2018-06-08",
+                "text": "You choose the target creatures to support when Jubilant Mascot's triggered ability is put onto the stack, but you don't choose whether to pay {3}{W} until the ability resolves."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "Support can target a creature another player controls."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "If some, but not all, targets for a spell become illegal, the remaining targets are affected as appropriate. If all of a spell's targets become illegal, that spell doesn't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Luxury Suite
 {
     "name": "Luxury Suite",
