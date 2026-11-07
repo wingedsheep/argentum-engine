@@ -1824,6 +1824,16 @@ object TargetPolarityAnalyzer {
         statsPolarity(power, toughness)
             ?: TargetPolarity.HARMFUL.takeIf { toughness !is DynamicAmount.Fixed && AmountSign.of(toughness) == AmountSign.LOSS }
 
+    /**
+     * A lasting "+N/-M" or "-N/+M" on the host (Boon of Emrakul's "+3/-3", Maggot Therapy's "+2/-2",
+     * Twisted Experiment's "+3/-1") trades one stat for the other for as long as it stays attached:
+     * it kills a small creature of theirs and turns a sturdy one of ours into a bigger attacker.
+     * Which side it belongs on is the board's call, so it reads [TargetPolarity.FLEXIBLE] and the
+     * simulation compares the candidates. Null unless the two signs really differ.
+     */
+    private fun lastingTradePolarity(power: Int, toughness: Int): TargetPolarity? =
+        TargetPolarity.FLEXIBLE.takeIf { (power > 0 && toughness < 0) || (power < 0 && toughness > 0) }
+
     /** The side a counter's removal favours: the other one than its placement's. */
     private fun opposite(polarity: TargetPolarity): TargetPolarity? = when (polarity) {
         TargetPolarity.BENEFICIAL -> TargetPolarity.HARMFUL
@@ -2267,6 +2277,7 @@ object TargetPolarityAnalyzer {
     private fun hostStaticPolarity(static: StaticAbility): TargetPolarity? = when (static) {
         is ModifyStats -> if (static.filter.scope != Scope.AttachedTo) null
             else statsPolarity(DynamicAmount.Fixed(static.powerBonus), DynamicAmount.Fixed(static.toughnessBonus))
+                ?: lastingTradePolarity(static.powerBonus, static.toughnessBonus)
         is GrantKeyword -> if (static.filter.scope != Scope.AttachedTo) null else keywordPolarity(static.keyword)
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
