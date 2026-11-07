@@ -2408,16 +2408,27 @@ data class FilterCollectionEffect(
  * Swapping the last step gives Consuming Tide ("returns the rest to their hands"); swapping the
  * category list gives Cataclysm and Divine Reckoning.
  *
+ * The picks can also be the ones that suffer: a per-category edict ("each opponent sacrifices an
+ * artifact creature and a nonartifact creature" — Perilous Predicament) sets [purpose] to
+ * [CategoryPickPurpose.SACRIFICE] and feeds the picks themselves to the move step, so every pick is
+ * sacrificed at once rather than one edict after another. Give a SACRIFICE step **disjoint**
+ * categories: the picks are deduplicated (so a keep can spare one permanent as several types), so
+ * overlapping categories would let a single permanent answer two of them.
+ *
  * @property from Collection to choose from — every candidate, across all affected players.
  * @property categories One filter per choice each controller makes, in the order they are offered.
  * @property storeAs Collection receiving every player's picks (deduplicated).
+ * @property purpose What the picks are for — what the chooser is asked ("… to keep" / "… to
+ *   sacrifice"), and so which end of their board an AI chooser reaches for. The step itself still
+ *   moves nothing.
  */
 @SerialName("ChooseOnePerCategory")
 @Serializable
 data class ChooseOnePerCategoryEffect(
     val from: String,
     val categories: List<GameObjectFilter>,
-    val storeAs: String
+    val storeAs: String,
+    val purpose: CategoryPickPurpose = CategoryPickPurpose.KEEP
 ) : Effect {
     init {
         require(categories.isNotEmpty()) {
@@ -2425,14 +2436,30 @@ data class ChooseOnePerCategoryEffect(
         }
     }
 
-    override val description: String =
-        "each player chooses ${categories.joinToString(", ") { it.description }} they control"
+    override val description: String = when (purpose) {
+        CategoryPickPurpose.KEEP ->
+            "each player chooses ${categories.joinToString(", ") { it.description }} they control"
+        CategoryPickPurpose.SACRIFICE ->
+            "each player chooses ${categories.joinToString(" and ") { "${it.indefiniteArticle} ${it.description}" }} " +
+                "they control to sacrifice"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newCategories = categories.map { it.applyTextReplacement(replacer) }
         val changed = newCategories.indices.any { newCategories[it] !== categories[it] }
         return if (changed) copy(categories = newCategories) else this
     }
+}
+
+/**
+ * What the picks of a [ChooseOnePerCategoryEffect] are for: the ones the chooser **keeps** while
+ * "the rest" suffer (Liliana, Dreadhorde General's −9), or the ones they **sacrifice** (Perilous
+ * Predicament's per-category edict). Sets the question the chooser is asked.
+ */
+@Serializable
+enum class CategoryPickPurpose(val verb: String) {
+    KEEP("keep"),
+    SACRIFICE("sacrifice")
 }
 
 /**

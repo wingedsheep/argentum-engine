@@ -4084,6 +4084,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   to their hands", and swapping the category list gives Cataclysm / Divine Reckoning. For "all
   permanents matching a filter are sacrificed by their controllers" with no choice at all, use
   `Effects.SacrificeAll(filter)` instead.
+- "Each opponent sacrifices \<one permanent per category\> of their choice" — a **per-category
+  edict** (Perilous Predicament: "an artifact creature and a nonartifact creature") — is the same
+  step with the picks as the victims: `chooseOnePerCategory(pool, categories, purpose =
+  CategoryPickPurpose.SACRIFICE)` → `sacrifice(picked)`. Every chooser picks first (APNAP), then all
+  picks are sacrificed at once — never two `ForceSacrifice` edicts in a row. A category the chooser
+  controls nothing of is skipped, so an opponent with only artifact creatures loses one. Keep the
+  categories disjoint: picks are deduplicated, so overlapping ones would let one permanent answer
+  two of them.
 - "Return a permanent you control [to its owner's hand]" is a pipeline composition, not an effect type:
   `GatherCards(BattlefieldMatching(filter, Player.You, excludeSelf?))` →
   `SelectFromCollection(ChooseExactly(1), useTargetingUI = true)` → `MoveCollection(→ HAND)` (the
@@ -5671,7 +5679,7 @@ with cards):
 | `flipOntoBattlefield(filter = Permanent)` → the permanents it touches (empty unless it turned over completely) | `FlipOntoBattlefieldEffect` |
 | `chooseExactly(n, from)` / `chooseUpTo` / `chooseAnyNumber` / `chooseRandom` / `chooseSpell` / `selectAll` (+ `chooseExactlySplit` / `chooseUpToSplit` / `chooseAnyNumberSplit` / `chooseRandomSplit` / `selectAllSplit` returning `(selected, remainder)`; `n` is an `Int` or a `DynamicAmount`) | `SelectFromCollectionEffect` |
 | `filter(from, filter)` / `filter(from, collectionFilter, matching?)` / `filterSplit(…)` → `(matching, rest)` / `exclude(from, minus)` (set difference via `CollectionFilter.ExcludeOtherCollection`) | `FilterCollectionEffect` |
-| `chooseOnePerCategory(from, categories)` | `ChooseOnePerCategoryEffect` |
+| `chooseOnePerCategory(from, categories, purpose = KEEP)` | `ChooseOnePerCategoryEffect` |
 | `move(from, destination, …)` / `moveTracked(…)` (all `MoveCollectionEffect` options: `order`, `moveType`, `faceDown`, `lookableInExile`, `underOwnersControl`, `addCounterType`, `markEnteredViaSourceAbility`, `filter`, `attachTo`, …) / sugar `destroy`, `sacrifice`, `discard`, `exile`, `toHand`, `toGraveyard`, `toLibraryTop`, `toLibraryBottom` | `MoveCollectionEffect` |
 | `copyCard(source)` / `copyCards(from)` | `CopyCardIntoCollectionEffect` / `CopyCollectionIntoCollectionEffect` |
 | `pairWithSource(from)` (soulbond, CR 702.95a — empty `from` is a legal no-op, i.e. a declined "you may pair") | `PairWithSourceEffect` |
@@ -5734,7 +5742,9 @@ be the pick for several categories** (an artifact creature spared as both the ar
 creature) — which is why this is a sequence of one-of-each choices and not a single
 `SelectionRestriction.OnePerCardType` selection, under which that permanent could claim only one of
 its types. The step moves nothing; pair it with `exclude` for "the rest" and any move step for their
-fate:
+fate. `purpose` (`CategoryPickPurpose.KEEP`, the default, or `SACRIFICE`) is what the chooser is asked
+— "Choose an artifact to keep" vs "… to sacrifice" — and so which end of the board an AI chooser
+gives up; with `SACRIFICE` the picks themselves go to `sacrifice(…)` (Perilous Predicament):
 
 ```kotlin
 // Liliana, Dreadhorde General −9: "Each opponent chooses a permanent they control of each

@@ -1546,7 +1546,14 @@ object CardIntentAnalyzer {
         do {
             val before = groups.toMap()
             for (leaf in leaves) {
-                val picked = (leaf as? SelectFromCollectionEffect)?.takeIf { it.from in groups }?.storeSelected
+                // The *picked* side of a choice is a few, not the group: a selection's chosen cards,
+                // or the one-per-category picks of a per-category edict (Perilous Predicament
+                // sacrificing an artifact creature and a nonartifact creature is spot removal).
+                val picked = when (leaf) {
+                    is SelectFromCollectionEffect -> leaf.storeSelected.takeIf { leaf.from in groups }
+                    is ChooseOnePerCategoryEffect -> leaf.storeAs.takeIf { leaf.from in groups }
+                    else -> null
+                }
                 for (name in derivedCollections(leaf, groups.keys)) {
                     val parentIsGroup = sourcesOf(leaf).any { groups[it] == true }
                     groups[name] = (groups[name] ?: false) || (parentIsGroup && name != picked)
