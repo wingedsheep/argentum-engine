@@ -1585,7 +1585,7 @@ data class RestrictVenturesPerTurn(
 
 /**
  * "As you cascade, you may put a land card from among the exiled cards onto the battlefield
- * tapped." (Averna, the Chaos Bloom) — a rider on every cascade (CR 702.85a) its controller
+ * tapped." (Averna, the Chaos Bloom) — a rider on every cascade (CR 702.85b) its controller
  * resolves, read where cascade resolves.
  *
  * After the last card is exiled and before the cast offer, the cascading player may put one card
@@ -1616,7 +1616,10 @@ data class CascadeMayPutOntoBattlefield(
         if (tapped) append(" tapped")
     }
 
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 @SerialName("PlayersCantCastSpells")

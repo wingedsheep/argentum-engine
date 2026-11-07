@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -24,7 +25,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * [CascadeMayPutOntoBattlefield] — "As you cascade, you may put a land card from among the exiled
  * cards onto the battlefield tapped. (Do this after the last card is exiled but before deciding
- * whether to cast a nonland card.)" (Averna, the Chaos Bloom), on cascade (CR 702.85a).
+ * whether to cast a nonland card.)" (Averna, the Chaos Bloom) — an "as you cascade" action (CR 702.85b).
  *
  * Pins the rulings: the choice comes after the walk and before the cast offer; it is offered even
  * when the walk finds nothing to cast; it isn't a land play (no land drop needed, none used, any
@@ -142,6 +143,33 @@ class CascadeMayPutOntoBattlefieldTest : ScenarioTestBase() {
                 game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
             }
 
+            test("a cast prohibition still leaves the land choice; then everything left is bottomed, no cast offered") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardInHand(1, "Quandrix, the Proof")
+                    .withLandsOnBattlefield(1, "Forest", 5)
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardOnBattlefield(1, "Averna, the Chaos Bloom")
+                    .withCardOnBattlefield(2, "Drannith Magistrate")
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(1, "Grizzly Bears")
+                    .build()
+                game.castSpell(1, "Quandrix, the Proof").error shouldBe null
+                game.resolveStack()
+
+                val choice = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+                val mountain = choice.options.single()
+                game.selectCards(listOf(mountain))
+
+                withClue("The Magistrate forbids the cast, so no offer follows") {
+                    game.getPendingDecision() shouldBe null
+                }
+                game.resolveStack()
+                (mountain in game.state.getBattlefield()) shouldBe true
+                game.isOnBattlefield("Grizzly Bears") shouldBe false
+                game.libraryNames(1) shouldBe listOf("Grizzly Bears")
+            }
+
             test("no exiled land, no prompt") {
                 val game = cascadeWithAverna(library = listOf("Grizzly Bears", "Mountain"))
                 game.castSpell(1, "Quandrix, the Proof").error shouldBe null
@@ -200,6 +228,41 @@ class CascadeMayPutOntoBattlefieldTest : ScenarioTestBase() {
                 driver.state.getBattlefield(me)
                     .filter { driver.getCardName(it) in setOf("Forest", "Mountain") }
                     .none { driver.state.getEntity(it)?.has<TappedComponent>() == true } shouldBe true
+            }
+
+            test("a rider that takes the hit itself leaves nothing to cast") {
+                val anything = card("Test Cascade Planter") {
+                    manaCost = "{2}{G}"
+                    typeLine = "Creature — Elf Druid"
+                    power = 1
+                    toughness = 1
+                    staticAbility { ability = CascadeMayPutOntoBattlefield(filter = GameObjectFilter.Any, tapped = false) }
+                }
+                val driver = GameTestDriver()
+                driver.registerCards(TestCards.all + ViolentOutburst + anything)
+                driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
+                driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+                val me = driver.activePlayer!!
+                driver.putCreatureOnBattlefield(me, "Test Cascade Planter")
+                driver.putCardOnTopOfLibrary(me, "Grizzly Bears")
+                driver.putCardOnTopOfLibrary(me, "Forest")
+
+                val outburst = driver.putCardInHand(me, "Violent Outburst")
+                driver.giveMana(me, Color.RED, 1)
+                driver.giveMana(me, Color.GREEN, 1)
+                driver.giveColorlessMana(me, 1)
+                driver.castSpell(me, outburst).outcome shouldBe Outcome.Done
+                driver.bothPass()
+
+                val choice = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+                val bears = choice.options.single { driver.getCardName(it) == "Grizzly Bears" }
+                driver.submitCardSelection(me, listOf(bears))
+
+                withClue("The hit left exile onto the battlefield, so no cast is offered") {
+                    driver.pendingDecision shouldBe null
+                }
+                (bears in driver.state.getBattlefield(me)) shouldBe true
+                driver.state.getExile(me).none { driver.getCardName(it) == "Forest" } shouldBe true
             }
         }
     }

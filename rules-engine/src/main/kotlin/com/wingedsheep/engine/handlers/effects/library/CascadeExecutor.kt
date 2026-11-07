@@ -151,7 +151,7 @@ class CascadeExecutor(
         /**
          * The rest of a cascade once the walk has exiled its cards (CR 702.85a): first each
          * [riders] entry offers its card from among the exiled ones — after the last card is
-         * exiled, before the cast offer — then the controller is offered [cascadeCardId] for free,
+         * exiled, before the cast offer (CR 702.85b) — then the controller is offered [cascadeCardId] for free,
          * or, with no card to cast (or a cast prohibition forbidding it), every card still exiled
          * goes to the bottom in a random order. Pauses for each choice; shared by
          * [CascadeExecutor] and the resumer of [CascadePutOntoBattlefieldContinuation].
@@ -200,7 +200,9 @@ class CascadeExecutor(
                 )
             }
 
-            if (cascadeCardId == null || castForbidden(state, playerId, cascadeCardId)) {
+            // A rider whose filter took the hit itself put it onto the battlefield: nothing to cast.
+            val hit = cascadeCardId?.takeIf { it in exile }
+            if (hit == null || castForbidden(state, playerId, hit)) {
                 // No card to cast, or a cast prohibition (Drannith Magistrate) forbids it — no
                 // offer at all: bottom-randomize every card still exiled this way and finish.
                 var finalState = state
@@ -211,7 +213,7 @@ class CascadeExecutor(
             }
 
             val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
-            val cascadeName = state.getEntity(cascadeCardId)?.get<CardComponent>()?.name ?: "the exiled card"
+            val cascadeName = state.getEntity(hit)?.get<CardComponent>()?.name ?: "the exiled card"
             return decisionHandler.createYesNoDecision(
                 state = state,
                 playerId = playerId,
@@ -226,7 +228,7 @@ class CascadeExecutor(
                     sourceId = sourceId,
                     objectReferences = objectReferences,
                     exiledCards = exiledCards,
-                    cascadeCardId = cascadeCardId,
+                    cascadeCardId = hit,
                 ),
             )
         }
