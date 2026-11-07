@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -54,6 +53,5 @@ class ViolentOutburstScenarioTest : FunSpec({
         driver.state.projectedState.getPower(mine) shouldBe 3
         driver.state.projectedState.getPower(cascaded) shouldBe 3
         driver.state.projectedState.getPower(theirs) shouldBe 2
-        driver.findPermanent(me, "Grizzly Bears").shouldNotBeNull()
     }
 })

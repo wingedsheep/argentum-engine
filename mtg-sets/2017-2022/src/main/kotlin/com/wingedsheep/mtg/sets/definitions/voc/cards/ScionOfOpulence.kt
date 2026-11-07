@@ -16,8 +16,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * Whenever this creature or another nontoken Vampire you control dies, create a Treasure token.
  * {R}, Sacrifice two artifacts: Exile the top card of your library. You may play that card this turn.
  *
- * "This creature or another nontoken Vampire you control" folds into one leaves-the-battlefield
- * trigger over nontoken Vampires you control — Scion is itself a nontoken Vampire.
+ * "This creature or another nontoken Vampire you control" folds into one dies trigger over nontoken
+ * Vampires you control, Scion being one itself — the shape Assay compiles and Headless Rider uses.
+ * A token copy of Scion dying is outside that filter.
  */
 val ScionOfOpulence = card("Scion of Opulence") {
     manaCost = "{2}{R}"
