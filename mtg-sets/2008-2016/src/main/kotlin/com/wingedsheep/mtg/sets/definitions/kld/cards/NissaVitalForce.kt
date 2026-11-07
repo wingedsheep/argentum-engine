@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.kld.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -50,9 +49,7 @@ val NissaVitalForce = card("Nissa, Vital Force") {
     }
 
     loyaltyAbility(-3) {
-        val permanentCard = target(
-            TargetFilter(GameObjectFilter.Permanent.ownedByYou(), zone = Zone.GRAVEYARD)
-        )
+        val permanentCard = target(TargetFilter.PermanentInYourGraveyard)
         effect = Effects.ReturnToHand(permanentCard)
         description = "Return target permanent card from your graveyard to your hand."
     }
