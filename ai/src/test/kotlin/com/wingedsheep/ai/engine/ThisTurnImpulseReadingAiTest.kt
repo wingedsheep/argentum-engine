@@ -72,6 +72,24 @@ class ThisTurnImpulseReadingAiTest : ScenarioTestBase() {
             .advanceToPriority(1, Step.POSTCOMBAT_MAIN)
     }
 
+    /**
+     * Scion of Opulence with two spare artifacts and a Mountain, at the opponent's end step: its
+     * "{R}, sacrifice two artifacts: exile the top card … you may play that card this turn" would
+     * exile a card that evaporates before our next main phase.
+     */
+    private val scionAtTheirEndStep = { s: ScenarioBuilder ->
+        s.withPlayers()
+            .withActivePlayer(2)
+            .withLandsOnBattlefield(1, "Mountain", 1)
+            .withCardOnBattlefield(1, "Scion of Opulence")
+            .withCardOnBattlefield(1, "Fountain of Youth")
+            .withCardOnBattlefield(1, "Fountain of Youth")
+            .apply { repeat(12) { withCardInLibrary(1, "Raging Goblin") } }
+            .apply { repeat(12) { withCardInLibrary(2, "Island") } }
+            .build()
+            .advanceToPriority(1, Step.END)
+    }
+
     init {
         test("a this-turn impulse we time ourselves reads as an impulse, not as card draw") {
             val tags = CardIntentAnalyzer.analyze(card("Act on Impulse")).tags
@@ -106,6 +124,13 @@ class ThisTurnImpulseReadingAiTest : ScenarioTestBase() {
         test("an impulse is cast in our main phase with mana left to play what it exiles") {
             val result = decide(impulseWithManaToSpare) { shouldCast("Act on Impulse") }
             withClue("a this-turn impulse with three mana to spare after it is three goblins, not three idle Mountains: chose ${result.move} — ${result.failure}") {
+                result.passed shouldBe true
+            }
+        }
+
+        test("an impulse activation is not spent on an opponent's turn") {
+            val result = decide(scionAtTheirEndStep) { shouldNotActivate("Scion of Opulence") }
+            withClue("the exiled card can only be played this turn — their turn: chose ${result.move} — ${result.failure}") {
                 result.passed shouldBe true
             }
         }

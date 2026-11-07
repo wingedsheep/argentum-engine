@@ -295,7 +295,8 @@ enum class IntentTag {
      * turn" (Scion of Opulence). Card advantage only when spent before cleanup, so it is not [DRAW]:
      * a DRAW reading earns the end-step and idle-mana windows and counts the cards as held, and
      * these would evaporate cast into an end step. Its window is a main phase of ours with mana
-     * left over to play what it exiles (`HoldPolicy.idleImpulseWindow`), never an opponent's turn.
+     * left over to play what it exiles (`HoldPolicy.idleImpulseWindow`); cast or activated, never an
+     * opponent's turn.
      *
      * An impulse that lasts past this turn ("until the end of your next turn"), or a this-turn one
      * made at the start of our own turn, is [DRAW] instead (`CardIntentAnalyzer.isLastingImpulse`).

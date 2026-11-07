@@ -427,6 +427,13 @@ class HoldPolicy(
             return TimingVerdict.NoWindow
         }
         if (drawWithIdleMana) drawActivationVerdict(state, playerId, ability)?.let { return it }
+        // An impulse activation off our turn (Scion of Opulence's "exile the top card … you may play
+        // that card this turn" at their end step): the card evaporates before our main phase comes.
+        if (drawWithIdleMana && !ability.isManaAbility && !state.isActiveTurnFor(playerId) && state.stack.isEmpty() &&
+            isImpulseOnly(CardIntentAnalyzer.analyzeEffect(ability.effect, ability.targetRequirements).tags)
+        ) {
+            return TimingVerdict.NoWindow
+        }
         // A tap that costs an attack or a block, for counters the opponent's end step buys for free.
         if (tapToGrowAtTheirEndStep && SelfTapGrowthWindow.holds(state, playerId, ability, activation)) {
             return TimingVerdict.NoWindow
@@ -600,18 +607,18 @@ class HoldPolicy(
         intent: CardIntent,
         cast: CastSpell?,
     ): Boolean {
-        if (cast == null || !isImpulseOnly(intent)) return false
+        if (cast == null || !isImpulseOnly(intent.tags)) return false
         if (!state.isActiveTurnFor(playerId) || state.step !in MAIN_STEPS || state.stack.isNotEmpty()) return false
-        if (holdsInstantSpeedCard(state, playerId)) return false
+        if (holdsInstantSpeedCard(state, playerId, except = cast.cardId)) return false
         val card = state.getEntity(cast.cardId)?.get<CardComponent>() ?: return false
         if (card.typeLine.isPermanent) return false
         val mana = intents.availableMana(state, playerId) ?: return false
         return mana > card.manaValue
     }
 
-    /** Whether [intent]'s whole payoff is a this-turn impulse — a scry beside it is a rider. */
-    private fun isImpulseOnly(intent: CardIntent): Boolean =
-        IntentTag.IMPULSE in intent.tags && intent.tags.all { it == IntentTag.IMPULSE || it == IntentTag.CARD_SELECTION }
+    /** Whether [tags] say the whole payoff is a this-turn impulse — a scry beside it is a rider. */
+    private fun isImpulseOnly(tags: Set<IntentTag>): Boolean =
+        IntentTag.IMPULSE in tags && tags.all { it == IntentTag.IMPULSE || it == IntentTag.CARD_SELECTION }
 
     /**
      * Whether a wish has anything to take: our sideboard holds a card one of its gathers matches.
@@ -653,8 +660,9 @@ class HoldPolicy(
     }
 
     /** Whether our hand holds an instant-speed card — something mana left untapped can still buy. */
-    private fun holdsInstantSpeedCard(state: GameState, playerId: EntityId): Boolean =
+    private fun holdsInstantSpeedCard(state: GameState, playerId: EntityId, except: EntityId? = null): Boolean =
         state.getZone(playerId, Zone.HAND).any { id ->
+            if (id == except) return@any false
             val name = state.getEntity(id)?.get<CardComponent>()?.name ?: return@any false
             intents.forName(name)?.speed == Speed.INSTANT
         }
@@ -679,7 +687,7 @@ class HoldPolicy(
         if (intent.speed != Speed.INSTANT) return TimingVerdict.Neutral
         // An instant-speed impulse off our turn exiles cards that must be played before cleanup,
         // with our sorcery-speed cards and land drop out of reach until then: cards thrown away.
-        if (drawWithIdleMana && isImpulseOnly(intent) && !state.isActiveTurnFor(playerId) && state.stack.isEmpty()) {
+        if (drawWithIdleMana && isImpulseOnly(intent.tags) && !state.isActiveTurnFor(playerId) && state.stack.isEmpty()) {
             return TimingVerdict.NoWindow
         }
 
