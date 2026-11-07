@@ -60,8 +60,12 @@ class DiscardAndDrawContinuationResumer(
         // actions. Finish them now — otherwise marked damage (notably deathtouch damage that an
         // expiring "until end of turn" indestructible had suppressed) persists into the next turn
         // and kills the creature on the following turn's state-based-action check.
+        // The settle after this answer finishes the step (CR 514.3a): if the discard triggered
+        // anything, the active player receives priority in this cleanup step; otherwise the turn ends.
         val cleanedState = CleanupPhaseManager.applyCleanupTurnBasedActions(result.state, services.cardRegistry)
-        return checkForMore(cleanedState, result.events)
+        val finished = services.turnManager.finishCleanupStepActions(cleanedState)
+        if (finished.error != null) return finished
+        return checkForMore(finished.newState, result.events + finished.events)
     }
 
     fun resumeEachPlayerDiscardsOrLoseLife(
