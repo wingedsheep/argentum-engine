@@ -2794,6 +2794,9 @@ object CardIntentAnalyzer {
             // every spell of theirs that matches is slower, which no board simulation sees.
             static.target is SpellCostTarget.OpponentsCast && taxes(static.modification) ->
                 setOf(IntentTag.SPELL_TAX)
+            // "Creature spells you cast cost {1} more" (Geist-Fueled Scarecrow, the Leeches): the
+            // price of the body, a drawback on our own spells — never disruption, never a discount.
+            ownSpellsOnly(static.target) && taxes(static.modification) -> setOf(IntentTag.OWN_SPELL_TAX)
             else -> emptySet()
         }
         // "You may cast spells from your hand without paying their mana costs" (Omniscience,
@@ -2879,7 +2882,12 @@ object CardIntentAnalyzer {
     }
 
     /** Exhaustive, so a new cost-increase variant has to decide whether it reads as a tax. */
-    private fun taxes(modification: CostModification): Boolean = when (modification) {
+    /** A [ModifySpellCost] reach that touches only its controller's own spells. */
+    internal fun ownSpellsOnly(target: SpellCostTarget): Boolean =
+        target is SpellCostTarget.YouCast || target is SpellCostTarget.YouCastFromZones ||
+            target == SpellCostTarget.FaceDownYouCast
+
+    internal fun taxes(modification: CostModification): Boolean = when (modification) {
         is CostModification.IncreaseGeneric, is CostModification.IncreaseGenericBy,
         is CostModification.IncreaseGenericIfAnyTargetMatches,
         is CostModification.IncreaseGenericPerOtherSpellThisTurn,
@@ -3185,7 +3193,9 @@ object CardIntentAnalyzer {
             // stays, like an O-Ring that leaves the body on the board.
             if (IntentTag.NEUTRALIZE in tags) add(PriorRung("neutralizes a creature", 3.0))
             if (IntentTag.TAPPER in tags) add(PriorRung("tapper", 1.5))
-            if (intent.speed == Speed.STATIC && tags.isNotEmpty()) add(PriorRung("static effect", 1.0))
+            // A drawback (its own combat restriction, a tax on its controller's spells) is no
+            // effect worth a removal spell.
+            if (intent.speed == Speed.STATIC && tags.any { it !in DRAWBACK_TAGS }) add(PriorRung("static effect", 1.0))
             // A one-shot payoff still waiting to be cashed — a Spellbomb, a Bauble, an Omen, an
             // incubator — is a card's worth of value sitting on the board, below any repeatable
             // engine but above a permanent nothing reads (0.5).
@@ -3256,6 +3266,9 @@ object CardIntentAnalyzer {
      */
     private val RECAST_FROM_OUR_GRAVEYARD: Effect =
         MoveToZoneEffect(EffectTarget.Self, Zone.HAND, fromZone = Zone.GRAVEYARD)
+
+    /** Tags that name what a card costs its controller rather than what it does for them. */
+    private val DRAWBACK_TAGS = setOf(IntentTag.COMBAT_RESTRICTION, IntentTag.OWN_SPELL_TAX)
 
     private val OPPONENT_FACING = setOf(
         IntentTag.CAST_BAN,
