@@ -562,6 +562,8 @@ object CardIntentAnalyzer {
             (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) +
             // Hour of Eternity's exile-and-copy pipeline: the single-card exile to use, below.
             (if (exilesChosenGraveyardTargetsToUse(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
+            // Wildest Dreams' "return X target cards from your graveyard to your hand" pipeline.
+            (if (returnsChosenGraveyardTargetsToHand(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
             payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
@@ -839,6 +841,30 @@ object CardIntentAnalyzer {
         val objects = requirements.map { ((it as? TargetOther)?.baseRequirement ?: it) as? TargetObject }
         if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
         return putsChosenTargetsOntoOurBattlefield(effect)
+    }
+
+    /**
+     * Whether [effect] returns its own chosen targets, every one a graveyard card, to our hand —
+     * "Return X target cards from your graveyard to your hand" (Wildest Dreams) gathers its targets
+     * and moves the lot: the single-card return to hand ([IntentTag.RECURSION]) it adds up to.
+     */
+    internal fun returnsChosenGraveyardTargetsToHand(effect: Effect, requirements: List<TargetRequirement>): Boolean {
+        val objects = requirements.map { ((it as? TargetOther)?.baseRequirement ?: it) as? TargetObject }
+        if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
+        }
+        if (chosen.isEmpty()) return false
+        do {
+            val before = chosen.size
+            for (leaf in leaves) chosen += derivedCollections(leaf, chosen)
+        } while (chosen.size != before)
+        return leaves.any { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@any false
+            val to = move.destination as? CardDestination.ToZone ?: return@any false
+            move.from in chosen && to.zone == Zone.HAND && to.player == Player.You
+        }
     }
 
     /**
@@ -3222,7 +3248,8 @@ object CardIntentAnalyzer {
     /**
      * What [readingLeaves] reads a card exiled from our own graveyard and then granted a cast from
      * exile as: the return a recursion's `MoveToZoneEffect` out of the graveyard is
-     * ([IntentTag.RECURSION]), only by way of exile.
+     * ([IntentTag.RECURSION]), only by way of exile. A pipeline returning its graveyard targets to
+     * our hand ([returnsChosenGraveyardTargetsToHand]) is that return outright.
      */
     private val RECAST_FROM_OUR_GRAVEYARD: Effect =
         MoveToZoneEffect(EffectTarget.Self, Zone.HAND, fromZone = Zone.GRAVEYARD)

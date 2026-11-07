@@ -38,13 +38,18 @@ class ModifyStatsExecutor(
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for stat modification")
 
-        // Verify target exists and is a creature (use projected types for animated lands etc.)
+        // Verify target exists and is a creature (use projected types for animated lands etc.).
+        // A noncreature permanent still takes the effect: it waits in layer 7c and applies once
+        // the permanent becomes a creature (Veteran Motorist pumps a Vehicle before its crew
+        // ability resolves).
         val targetContainer = state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target creature no longer exists")
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
         val projected = state.projectedState
-        if (!projected.isCreature(targetId) && !targetContainer.has<FaceDownComponent>()) {
+        if (!projected.isCreature(targetId) && !targetContainer.has<FaceDownComponent>() &&
+            targetId !in state.getBattlefield()
+        ) {
             return EffectResult.error(state, "Target is not a creature")
         }
 

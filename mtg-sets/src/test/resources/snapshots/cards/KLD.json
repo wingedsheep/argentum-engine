@@ -3519,6 +3519,93 @@
     ]
 }
 
+// Cultivator of Blades
+{
+    "name": "Cultivator of Blades",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elf Artificer",
+    "oracleText": "Fabricate 2 (When this creature enters, put two +1/+1 counters on it or create two 1/1 colorless Servo artifact creature tokens.)\nWhenever this creature attacks, you may have other attacking creatures get +X/+X until end of turn, where X is this creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FABRICATE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "FABRICATE",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cultivator of Blades:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature attacking",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "IfPositive",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            "toughnessModifier": {
+                                "type": "IfPositive",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d21d35b-1b4e-43aa-8fb7-0dd7a2fa91a1.jpg?1783937180",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If this creature's power is negative as its ability resolves, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The value of X is determined as Cultivator of Blades's last ability resolves. It won't change later, even if its power changes. If Cultivator of Blades is no longer on the battlefield, use its power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You choose whether or not to have your other attacking creatures get +X/+X as Cultivator of Blades's triggered ability resolves, not as you put it onto the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cultivator's Caravan
 {
     "name": "Cultivator's Caravan",
@@ -3935,6 +4022,112 @@
     ]
 }
 
+// Depala, Pilot Exemplar
+{
+    "name": "Depala, Pilot Exemplar",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Dwarf Pilot",
+    "oracleText": "Other Dwarves you control get +1/+1.\nEach Vehicle you control gets +1/+1 as long as it's a creature.\nWhenever Depala becomes tapped, you may pay {X}. If you do, reveal the top X cards of your library, put all Dwarf and Vehicle cards from among them into your hand, then put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Depala, Pilot Exemplar:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayPayX",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": "XValue"
+                                },
+                                "storeAs": "looked"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "looked"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "looked",
+                                "filter": "Dwarf|Vehicle",
+                                "storeMatching": "kept",
+                                "storeNonMatching": "rest"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "kept",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may pay {X}. If you do, reveal the top X cards of your library, put all Dwarf and Vehicle cards from among them into your hand, then put the rest on the bottom of your library in a random order."
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Dwarf ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Vehicle ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "RARE",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/592f3a92-787e-4180-9d0b-06c973ce8975.jpg?1783937169",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Depala, Pilot Exemplar's last ability is a triggered ability, not an activated ability. It doesn't allow you to tap Depala whenever you want; rather, you need some other way of tapping it, such as by attacking."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "For the ability to trigger, Depala has to actually change from untapped to tapped. If an effect attempts to tap Depala, but it was already tapped at the time, this ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Dhund Operative
 {
     "name": "Dhund Operative",
@@ -4290,6 +4483,131 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dubious Challenge
+{
+    "name": "Dubious Challenge",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top ten cards of your library, exile up to two creature cards from among them, then shuffle. Target opponent may choose one of the exiled cards and put it onto the battlefield under their control. Put the rest onto the battlefield under your control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected1",
+                    "prompt": "Exile up to two creature cards",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                "ShuffleLibrary",
+                {
+                    "type": "SelectFromCollection",
+                    "from": "moved2",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected4",
+                    "storeRemainder": "remainder4",
+                    "prompt": "You may choose one of the exiled cards to put onto the battlefield under your control",
+                    "selectedLabel": "Under your control",
+                    "remainderLabel": "Under their control"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92965a78-277d-4a27-8174-fc2564bd1ee3.jpg?1783937180",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The creature cards you exile are face up. Your opponent can see them while deciding whether to take one and which to take."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You may choose to exile only one creature card. If you do, the target opponent chooses who gets the card."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "You may choose to exile no creature cards, even if there are one or more among the top ten cards of your library."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The cards that you look at but don't exile never leave your library. They're shuffled along with the rest of your library."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "In a multiplayer game, you must choose the target opponent before you look at your top ten cards and decide what to exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4929,6 +5247,57 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Empyreal Voyager
+{
+    "name": "Empyreal Voyager",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Vedalken Scout",
+    "oracleText": "Flying, trample\nWhenever this creature deals combat damage to a player, you get that many {E} (energy counters).",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Empyreal Voyager:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "Controller"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "\"For years, I studied the aethersphere from afar, but it was not until I touched the aether for myself that I came to know the power contained in the swirling sky.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/4554b10e-9c3e-4eb4-b0fe-044e483e872f.jpg?1783937169"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -10171,6 +10540,294 @@
     ]
 }
 
+// Nissa, Nature's Artisan
+{
+    "name": "Nissa, Nature's Artisan",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "+3: You gain 3 life.\n−4: Reveal the top two cards of your library. Put all land cards from among them onto the battlefield and the rest into your hand.\n−12: Creatures you control get +5/+5 and gain trample until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Nature's Artisan:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 3
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Nature's Artisan:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "land",
+                            "storeMatching": "matching1",
+                            "storeNonMatching": "rest1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa, Nature's Artisan:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -12
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "270",
+        "rarity": "MYTHIC",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/777533c3-0a87-4625-8987-d850fc236ddb.jpg?1783937134",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The set of creatures affected by Nissa's last ability is determined as the ability resolves. Creatures you begin to control later in the turn and noncreature permanents that become creatures later in the turn won't get +5/+5 or gain trample."
+            }
+        ],
+        "inBooster": false
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nissa, Vital Force
+{
+    "name": "Nissa, Vital Force",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "+1: Untap target land you control. Until your next turn, it becomes a 5/5 Elemental creature with haste. It's still a land.\n−3: Return target permanent card from your graveyard to your hand.\n−6: You get an emblem with \"Whenever a land you control enters, you may draw a card.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Vital Force:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "BecomeCreature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "keywords": [
+                                "HASTE"
+                            ],
+                            "creatureTypes": [
+                                "Elemental"
+                            ],
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Untap target land you control. Until your next turn, it becomes a 5/5 Elemental creature with haste. It's still a land."
+            },
+            {
+                "id": "Nissa, Vital Force:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return target permanent card from your graveyard to your hand."
+            },
+            {
+                "id": "Nissa, Vital Force:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Nissa, Vital Force:3",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land ctrl:you",
+                            "to": "Battlefield"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        "descriptionOverride": "Whenever a land you control enters, you may draw a card."
+                    },
+                    "descriptionOverride": "Whenever a land you control enters, you may draw a card.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever a land you control enters, you may draw a card.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "MYTHIC",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbaaa98a-ec40-4ff1-8762-a719cf1c475d.jpg?1783937176",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You can activate Nissa's first ability targeting a land that's already untapped."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "After resolving Nissa's first ability, the target land still has any abilities it had before it became a creature and any other types it had."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "A permanent card is an artifact, creature, enchantment, land, or planeswalker card."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Noxious Gearhulk
 {
     "name": "Noxious Gearhulk",
@@ -10406,6 +11063,107 @@
         "flavorText": "It'll either crash or win the race. Possibly both.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/0/20411aa0-f87b-49dd-b943-ca82d59db185.jpg?1783937152"
     }
+}
+
+// Oviya Pashiri, Sage Lifecrafter
+{
+    "name": "Oviya Pashiri, Sage Lifecrafter",
+    "manaCost": "{G}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "{2}{G}, {T}: Create a 1/1 colorless Servo artifact creature token.\n{4}{G}, {T}: Create an X/X colorless Construct artifact creature token, where X is the number of creatures you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oviya Pashiri, Sage Lifecrafter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Servo"
+                    ],
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Create a 1/1 colorless Servo artifact creature token."
+            },
+            {
+                "id": "Oviya Pashiri, Sage Lifecrafter:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/2/623a08d1-f5ff-48b7-bdb6-54b8d7a4b931.jpg?1783937240",
+                    "dynamicPower": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "dynamicToughness": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Create an X/X colorless Construct artifact creature token, where X is the number of creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Inspiration is reciprocal: we all have a responsibility to each other to create.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27eb9d40-958b-41b8-b04b-7f45adc0a862.jpg?1783937175",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "The value of X is determined only as Oviya Pashiri's last ability resolves. The token's power and toughness won't change as the number of creatures you control changes."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "The Construct token you're creating doesn't count towards X for the ability that creates it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Padeem, Consul of Innovation
@@ -11048,6 +11806,141 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Rashmi, Eternities Crafter
+{
+    "name": "Rashmi, Eternities Crafter",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Creature — Elf Druid",
+    "oracleText": "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with lesser mana value. If you don't cast it, put it into your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rashmi, Eternities Crafter:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseSpell",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "Subtract",
+                                            "left": {
+                                                "type": "ContextProperty",
+                                                "key": "TRIGGERING_SPELL_MANA_VALUE"
+                                            },
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast the revealed card without paying its mana cost if it's a spell with lesser mana value. Otherwise it goes to your hand.",
+                            "selectedLabel": "Cast for free",
+                            "remainderLabel": "Put into hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3ce37555-49a2-4112-95b4-f3376b55b45b.jpg?1783937168",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If the revealed card is a land card, you put it into your hand."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Rashmi's ability triggers when you cast your first spell each turn, not just on your turn."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Rashmi has to be on the battlefield at the moment you cast your first spell. If that spell is Rashmi itself, Rashmi's ability can't trigger. If that spell causes Rashmi to leave the battlefield as an additional cost to cast it, Rashmi's ability can't trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value. For cards in your library with {X} in their mana costs, X is considered to be 0."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If Rashmi's ability resolves and the spell that caused it to trigger has been countered, use that spell's mana value as it last existed on the stack to determine whether or not you may cast the top card of your library."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If you cast the top card of your library, you do so as part of the resolution of Rashmi's ability. You can't wait to cast it later in the turn. Timing permissions based on the card's type are ignored, but other restrictions (such as \"Cast [this card] only during combat\") are not."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -14568,6 +15461,237 @@
     ]
 }
 
+// Verdant Crescendo
+{
+    "name": "Verdant Crescendo",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card and put it onto the battlefield tapped. Search your library and graveyard for a card named Nissa, Nature's Artisan, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Graveyard"
+                                ],
+                                "filter": "name:Nissa, Nature's Artisan"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library and/or graveyard for a card named Nissa, Nature's Artisan to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea890019-f48f-4164-b057-773499ef273f.jpg?1783937135",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Verdurous Gearhulk
+{
+    "name": "Verdurous Gearhulk",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Trample\nWhen this creature enters, distribute four +1/+1 counters among any number of target creatures you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Verdurous Gearhulk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 4,
+                    "minCount": 0,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0130b99e-5b2f-4482-b141-752e59b72c31.jpg?1783937171",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You choose how the counters will be distributed as you put Verdurous Gearhulk's triggered ability onto the stack. Each target creature must be assigned at least one counter."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "If one of the target creatures becomes an illegal target in response to Verdurous Gearhulk's triggered ability, the +1/+1 counters that would have been put on that creature are lost. They can't be put on another legal target."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Verdurous Gearhulk can be the target of its own triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Veteran Motorist
+{
+    "name": "Veteran Motorist",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Dwarf Pilot",
+    "oracleText": "When this creature enters, scry 2.\nWhenever this creature crews a Vehicle, that Vehicle gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Veteran Motorist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Veteran Motorist:2",
+                "trigger": "CrewsEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "flavorText": "He's set to compete in every race at the Fair, and he plans to win them all.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f5be9c1-cb28-42bd-b159-5548124ba8d1.jpg?1783937165",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Veteran Motorist's last ability triggers when it becomes tapped to activate a crew ability. Even if Veteran Motorist leaves the battlefield before its triggered ability resolves, that Vehicle still gets +1/+1 until end of turn."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "Veteran Motorist's last ability resolves before the crew ability that it was tapped to activate. The +1/+1 bonus will be in effect as the Vehicle becomes an artifact creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Visionary Augmenter
 {
     "name": "Visionary Augmenter",
@@ -14597,6 +15721,95 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Voltaic Brawler
+{
+    "name": "Voltaic Brawler",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever this creature attacks, you may pay {E}. If you do, it gets +1/+1 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voltaic Brawler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Voltaic Brawler:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb038fd3-51b7-4de7-9b38-cbad7c8717c2.jpg?1783937165",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities state that you \"may pay\" a certain amount of {E}. You can't pay that amount multiple times to multiply the effect. You simply choose whether or not to pay that amount of {E} as the ability resolves."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Some triggered abilities that state that you \"may pay\" a certain amount of {E} describe an effect that happens \"If you do.\" In that case, no player may take actions to try to stop the ability's effect after you make your choice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -14981,6 +16194,63 @@
         "artist": "Sidharth Chaturvedi",
         "flavorText": "\"We all began in nature, and nature is where we belong.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d20e020-30e1-4deb-8dfc-4c5fe056193d.jpg?1783937172"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wildest Dreams
+{
+    "name": "Wildest Dreams",
+    "manaCost": "{X}{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return X target cards from your graveyard to your hand. Exile Wildest Dreams.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"I opened my mind to the immensity of the wonders around me. It was only then that I could see the Great Conduit.\"\n—Rashmi, aether-seer",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fedd63c-22e4-4c36-8a7a-a167a070678f.jpg?1783937172",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "If each target card is an illegal target as Wildest Dreams resolves, Wildest Dreams doesn't resolve and is put into its owner's graveyard. It's not exiled."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"

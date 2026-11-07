@@ -616,15 +616,7 @@ object TargetPolarityAnalyzer {
             if (leaf is GatherCardsEffect) {
                 val top = leaf.source as? CardSource.TopOfLibrary
                 if (top != null) {
-                    val slot = when (val player = top.player) {
-                        Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
-                            requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
-                        }.singleOrNull()
-                        is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
-                        is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }
-                            .takeIf { it >= 0 }
-                        else -> null
-                    }
+                    val slot = playerSlotOf(top.player, requirements)
                     val reading = if (top.isMill) TargetPolarity.HARMFUL else libraryTopPolarity(leaf.storeAs, effect)
                     if (reading != null) slot?.let { perSlot[it] += reading }
                 }
@@ -731,6 +723,8 @@ object TargetPolarityAnalyzer {
         // graveyard; for each, create a token that's a copy of it" (Hour of Eternity): the single-card
         // exile-and-copy above (The Scarab God), as a pipeline. The best card is the one to name.
         if (CardIntentAnalyzer.exilesChosenGraveyardTargetsToUse(effect, requirements)) recursions += requirements.indices
+        // Graveyard cards a pipeline returns to our hand (Wildest Dreams): the best card is the one to name.
+        if (CardIntentAnalyzer.returnsChosenGraveyardTargetsToHand(effect, requirements)) recursions += requirements.indices
         // Graveyard cards a pipeline lets us cast (Zul Ashur, Torrential Gearhulk): recursion by way of the stack.
         recursions += castGraveyardSlots(effect, requirements)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
@@ -984,10 +978,28 @@ object TargetPolarityAnalyzer {
      * target is an opponent ([com.wingedsheep.ai.engine.TargetSelection.aimsOnlyAtTheWrongSide]).
      */
     private fun tokenGiftSlot(leaf: Effect, requirements: List<TargetRequirement>): Pair<Int, TargetPolarity>? {
-        if (leaf !is CreateTokenEffect) return null
-        val controller = leaf.controller?.takeIf { it.isSlot() } ?: return null
-        val slot = slotOf(controller, requirements) ?: return null
+        val slot = when (leaf) {
+            is CreateTokenEffect -> leaf.controller?.takeIf { it.isSlot() }?.let { slotOf(it, requirements) }
+            // A card put onto the battlefield under a target player's control is the same body on
+            // their side: "Target opponent may choose one of the exiled cards and put it onto the
+            // battlefield under their control" (Dubious Challenge).
+            is MoveCollectionEffect -> (leaf.destination as? CardDestination.ToZone)
+                ?.takeIf { it.zone == Zone.BATTLEFIELD }
+                ?.player?.takeIf { it is Player.BoundVariable || it is Player.ContextPlayer }
+                ?.let { playerSlotOf(it, requirements) }
+            else -> null
+        } ?: return null
         return slot to if (requirements[slot] is TargetOpponent) TargetPolarity.FLEXIBLE else TargetPolarity.BENEFICIAL
+    }
+
+    /** The player slot [player] names among [requirements] — a bound or indexed target player — or null. */
+    private fun playerSlotOf(player: Player, requirements: List<TargetRequirement>): Int? = when (player) {
+        Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
+            requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
+        }.singleOrNull()
+        is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
+        is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }.takeIf { it >= 0 }
+        else -> null
     }
 
     /**
