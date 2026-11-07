@@ -86,8 +86,8 @@ data class GameObjectFilter(
      * partition, so every other pairing keeps its original insertion order.
      */
     private fun orderedCardPredicates(): List<CardPredicate> {
-        // Type negations lead, as Oracle templates them: "nonartifact, nonblack creature" (Terror),
-        // "nonartifact creature", never "creature nonartifact".
+        // Card-type negations (nonartifact / nonland / noncreature / nonenchantment) lead, as
+        // Oracle templates them: "nonartifact creature", never "creature nonartifact".
         val (negations, rest0) = cardPredicates.partition { it.isTypeNegation() }
         val (colors, others) = rest0.partition { it.isColorAdjective() }
         val (subtypes, rest) = others.partition {

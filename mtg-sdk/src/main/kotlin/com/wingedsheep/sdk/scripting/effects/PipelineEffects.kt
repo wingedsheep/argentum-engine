@@ -2411,7 +2411,9 @@ data class FilterCollectionEffect(
  * The picks can also be the ones that suffer: a per-category edict ("each opponent sacrifices an
  * artifact creature and a nonartifact creature" — Perilous Predicament) sets [purpose] to
  * [CategoryPickPurpose.SACRIFICE] and feeds the picks themselves to the move step, so every pick is
- * sacrificed at once rather than one edict after another.
+ * sacrificed at once rather than one edict after another. Give a SACRIFICE step **disjoint**
+ * categories: the picks are deduplicated (so a keep can spare one permanent as several types), so
+ * overlapping categories would let a single permanent answer two of them.
  *
  * @property from Collection to choose from — every candidate, across all affected players.
  * @property categories One filter per choice each controller makes, in the order they are offered.

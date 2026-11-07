@@ -57,6 +57,9 @@ class PerilousPredicamentScenarioTest : ScenarioTestBase() {
                 game.selectCards(listOf(sable)).error shouldBe null
                 game.resolveStack()
 
+                withClue("nothing is sacrificed until every pick is in") {
+                    game.state.getBattlefield().contains(sable) shouldBe true
+                }
                 withClue("then the nonartifact creature to sacrifice") {
                     val decision = game.getPendingDecision()!!
                     decision.playerId shouldBe EntityId.of("player-2")
@@ -78,22 +81,31 @@ class PerilousPredicamentScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("an opponent with only artifact creatures sacrifices just one, without a prompt") {
+            test("an opponent with only artifact creatures sacrifices just one of them") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInHand(1, "Perilous Predicament")
                     .withLandsOnBattlefield(1, "Swamp", 5)
                     .withCardOnBattlefield(2, "Ornithopter")
+                    .withCardOnBattlefield(2, "Bronze Sable")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
+                val ornithopter = game.findPermanent("Ornithopter")!!
+
                 game.castSpell(1, "Perilous Predicament").error shouldBe null
+                game.resolveStack()
+
+                withClue("one artifact-creature pick, and no nonartifact question") {
+                    game.getPendingDecision()!!.prompt shouldContain "artifact creature to sacrifice"
+                }
+                game.selectCards(listOf(ornithopter)).error shouldBe null
                 game.resolveStack()
 
                 game.hasPendingDecision() shouldBe false
                 game.isInGraveyard(2, "Ornithopter") shouldBe true
-                game.findPermanents("Ornithopter").size shouldBe 0
+                game.findPermanents("Bronze Sable").size shouldBe 1
             }
         }
     }

@@ -4089,7 +4089,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   step with the picks as the victims: `chooseOnePerCategory(pool, categories, purpose =
   CategoryPickPurpose.SACRIFICE)` → `sacrifice(picked)`. Every chooser picks first (APNAP), then all
   picks are sacrificed at once — never two `ForceSacrifice` edicts in a row. A category the chooser
-  controls nothing of is skipped, so an opponent with only artifact creatures loses one.
+  controls nothing of is skipped, so an opponent with only artifact creatures loses one. Keep the
+  categories disjoint: picks are deduplicated, so overlapping ones would let one permanent answer
+  two of them.
 - "Return a permanent you control [to its owner's hand]" is a pipeline composition, not an effect type:
   `GatherCards(BattlefieldMatching(filter, Player.You, excludeSelf?))` →
   `SelectFromCollection(ChooseExactly(1), useTargetingUI = true)` → `MoveCollection(→ HAND)` (the
