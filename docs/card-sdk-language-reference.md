@@ -14694,7 +14694,7 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
 are declared — a later pump on either side doesn't undo a legal block. Equal power can block. Multiple instances
 are redundant (CR 702.118c). Shows as an on-card badge. Don't spell skulk as
 `CantBeBlockedBy(powerGreaterThanEntity(Self))`: that is the same restriction without the keyword, so "if a creature
-you control has skulk" (Odric, Lunarch Marshal) can't see it. Fogwalker, Wharf Infiltrator, Ingenious Prodigy,
+you control has skulk" (Odric, Lunarch Marshal) can't see it. Fogwalker, Vampire Cutthroat, Ingenious Prodigy,
 MacCready, Lamplight Mayor (granted).
 
 **Parameterized `KeywordAbility.*`**

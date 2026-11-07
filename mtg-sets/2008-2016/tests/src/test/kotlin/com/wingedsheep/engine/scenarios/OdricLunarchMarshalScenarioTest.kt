@@ -145,6 +145,9 @@ class OdricLunarchMarshalScenarioTest : ScenarioTestBase() {
                 withClue("nobody has flying, so nobody gains flying") {
                     projected.hasKeyword(lions, Keyword.FLYING) shouldBe false
                 }
+                withClue("nobody has skulk, so nobody gains skulk") {
+                    projected.hasKeyword(lions, Keyword.SKULK) shouldBe false
+                }
             }
 
             test("with no first striker on board, first strike is not granted") {

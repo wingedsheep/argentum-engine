@@ -18,7 +18,7 @@ import io.kotest.matchers.shouldNotBe
  *   lesser power blocks normally.
  * - Both powers are the projected values when blockers are declared: a pump on the attacker before
  *   then widens who can block it.
- * - Restrictions are checked only as blocks are declared (CR 509.1b–c), so a blocker pumped past the
+ * - Restrictions are checked only as blocks are declared (CR 509.1b), so a blocker pumped past the
  *   skulker's power afterwards stays blocking.
  * - Skulk granted until end of turn (`Effects.GrantKeyword(Keyword.SKULK, …)`) works like printed skulk.
  * - CR 702.118c — multiple instances are redundant, so a single grant on a printed skulker changes

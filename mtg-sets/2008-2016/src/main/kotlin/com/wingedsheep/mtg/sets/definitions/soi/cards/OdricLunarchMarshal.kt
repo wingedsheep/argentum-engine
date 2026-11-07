@@ -96,7 +96,7 @@ val OdricLunarchMarshal = card("Odric, Lunarch Marshal") {
             descriptionOverride = "Creatures you control gain first strike until end of turn if a " +
                 "creature you control has first strike. The same is true for flying, deathtouch, " +
                 "double strike, haste, hexproof, indestructible, lifelink, menace, reach, " +
-                "trample, and vigilance."
+                "skulk, trample, and vigilance."
         )
     }
 
