@@ -1,1 +1,1 @@
-- #TBD The AI reads "sacrifice it" aimed at the permanent a card is attached to (Thirsting Axe, Breath of Fury, Stitcher's Graft) as that card's drawback rather than repeatable removal
+- #4562 The AI reads "sacrifice it" aimed at the permanent a card is attached to (Thirsting Axe, Breath of Fury, Stitcher's Graft) as that card's drawback rather than repeatable removal
