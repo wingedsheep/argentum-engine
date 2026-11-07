@@ -21,8 +21,8 @@ import io.kotest.matchers.shouldBe
  */
 class OwnSpellTaxReadingAiTest : ScenarioTestBase() {
 
-    private fun card(name: String) = cardRegistry.getCard(name)!!
-    private fun tags(name: String) = CardIntentAnalyzer.analyze(card(name)).tags
+    private fun registered(name: String) = cardRegistry.getCard(name)!!
+    private fun tags(name: String) = CardIntentAnalyzer.analyze(registered(name)).tags
 
     init {
         test("a tax on its controller's own spells reads as a drawback, not disruption or a discount") {
@@ -39,9 +39,12 @@ class OwnSpellTaxReadingAiTest : ScenarioTestBase() {
         }
 
         test("the drawback is not aimed at the opponent and adds no worth on the battlefield") {
-            val intent = CardIntentAnalyzer.analyze(card("Geist-Fueled Scarecrow"))
+            val intent = CardIntentAnalyzer.analyze(registered("Geist-Fueled Scarecrow"))
             intent.affectsOpponent shouldBe false
             intent.staticPriorValue shouldBe CardIntent.UNKNOWN.staticPriorValue
+            withClue("a drawback earns no \"static effect\" rung on the prior ladder") {
+                CardIntentAnalyzer.priorLadder(intent).map { it.claim } shouldNotContain "static effect"
+            }
         }
 
         test("the draft heuristic picks a vanilla 4/4 for four over the Scarecrow") {
@@ -52,7 +55,7 @@ class OwnSpellTaxReadingAiTest : ScenarioTestBase() {
                 toughness = 4
                 metadata { rarity = Rarity.UNCOMMON }
             }
-            val scarecrow = LimitedCardRater.explain(card("Geist-Fueled Scarecrow"))
+            val scarecrow = LimitedCardRater.explain(registered("Geist-Fueled Scarecrow"))
             val plain = LimitedCardRater.explain(vanilla)
             withClue("terms: ${scarecrow.heuristic}") {
                 scarecrow.heuristic.filter { it.part.startsWith("Static") }.sumOf { it.value } shouldBeLessThan 0.0

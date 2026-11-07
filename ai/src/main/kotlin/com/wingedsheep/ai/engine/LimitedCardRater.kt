@@ -522,7 +522,7 @@ object LimitedCardRater {
             is MustAttack -> if (static.filter.scope == Scope.Self) return -0.2
             is MustBlock -> if (static.filter.scope == Scope.Self) return -0.1
             // "Creature spells you cast cost {1} more" (Geist-Fueled Scarecrow): every matching
-            // spell after it comes a turn late — the price of its body, a little under "can't block".
+            // spell costs one more mana, often a turn late — the price of its body, a little under "can't block".
             is ModifySpellCost -> if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
                 CardIntentAnalyzer.taxes(static.modification)
             ) return -0.2

@@ -2881,12 +2881,12 @@ object CardIntentAnalyzer {
         else -> emptySet()
     }
 
-    /** Exhaustive, so a new cost-increase variant has to decide whether it reads as a tax. */
     /** A [ModifySpellCost] reach that touches only its controller's own spells. */
     internal fun ownSpellsOnly(target: SpellCostTarget): Boolean =
         target is SpellCostTarget.YouCast || target is SpellCostTarget.YouCastFromZones ||
             target == SpellCostTarget.FaceDownYouCast
 
+    /** Exhaustive, so a new cost-increase variant has to decide whether it reads as a tax. */
     internal fun taxes(modification: CostModification): Boolean = when (modification) {
         is CostModification.IncreaseGeneric, is CostModification.IncreaseGenericBy,
         is CostModification.IncreaseGenericIfAnyTargetMatches,
