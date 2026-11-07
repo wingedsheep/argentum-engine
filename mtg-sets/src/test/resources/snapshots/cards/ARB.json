@@ -789,6 +789,57 @@
     ]
 }
 
+// Violent Outburst
+{
+    "name": "Violent Outburst",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)\nCreatures you control get +1/+0 until end of turn.",
+    "keywords": [
+        "CASCADE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "IterationEntity"
+            }
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Violent Outburst:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": "Cascade",
+                "descriptionOverride": "Cascade"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Richard Whitters",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b58856a-f88e-4625-8636-62b5c717b956.jpg?1783942428"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Winged Coatl
 {
     "name": "Winged Coatl",

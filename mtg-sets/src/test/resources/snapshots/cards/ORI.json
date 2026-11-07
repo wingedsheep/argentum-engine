@@ -3111,6 +3111,69 @@
     ]
 }
 
+// Patron of the Valiant
+{
+    "name": "Patron of the Valiant",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, put a +1/+1 counter on each creature you control with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Patron of the Valiant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, put a +1/+1 counter on each creature you control with a +1/+1 counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "flavorText": "\"Bant's most gallant knights wear my sigil, and for that I am humbled.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b5c0526-ac1f-40ca-a597-bf004f2e2377.jpg?1783938361"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pharika's Disciple
 {
     "name": "Pharika's Disciple",

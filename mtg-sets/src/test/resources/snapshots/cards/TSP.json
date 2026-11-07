@@ -4500,6 +4500,73 @@
     ]
 }
 
+// Sprite Noble
+{
+    "name": "Sprite Noble",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Faerie Noble",
+    "oracleText": "Flying\nOther creatures you control with flying get +0/+1.\n{T}: Other creatures you control with flying get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sprite Noble:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{T}: Other creatures you control with flying get +1/+0 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "flavorText": "\"By thorn and by stone, we will fight to see the day when beauty returns to this world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0de52e53-8a45-4c0a-bb7d-6dc0d659a7c0.jpg?1783943240"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sprout
 {
     "name": "Sprout",

@@ -1296,6 +1296,30 @@
     ]
 }
 
+// Pharika's Chosen
+{
+    "name": "Pharika's Chosen",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Jonas De Ro",
+        "flavorText": "The serpents' dens built into statues of Pharika serve not only to consecrate her temples, but as a hidden line of defense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/8119ce0c-d709-463c-9abc-f7025673ea72.jpg?1783939434"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Returned Reveler
 {
     "name": "Returned Reveler",
