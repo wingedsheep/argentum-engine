@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
+import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
@@ -2868,6 +2869,12 @@ object CardIntentAnalyzer {
         // ("each player") is a symmetric price; an Aura's on its enchanted player is the polarity
         // reader's question.
         is PlayersCantCastSpells -> if (static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_BAN) else emptySet()
+        // "As you cascade, you may put a land card from among the exiled cards onto the battlefield
+        // tapped" (Averna, the Chaos Bloom): every cascade we resolve also drops a land — an extra
+        // land onto our battlefield, as a land-only put from hand reads. Another filter would put a
+        // permanent that skipped its mana cost.
+        is CascadeMayPutOntoBattlefield ->
+            setOf(if (isLandOnly(static.filter)) IntentTag.RAMP else IntentTag.FREE_SPELL)
         is CantReceiveCounters ->
             if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.COUNTER_LOCK) else emptySet()
         // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a

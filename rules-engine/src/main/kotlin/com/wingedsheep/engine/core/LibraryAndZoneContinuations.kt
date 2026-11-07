@@ -381,6 +381,38 @@ data class CascadeMayCastContinuation(
 ) : AnswerContinuation
 
 /**
+ * One standing "as you cascade, you may put a … card from among the exiled cards onto the
+ * battlefield" rider ([com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield]) and the
+ * permanent it sits on, which names the prompt.
+ */
+@Serializable
+data class CascadeRider(
+    val ability: com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield,
+    val sourceId: EntityId,
+)
+
+/**
+ * Resume cascade resolution after the controller picks (or declines) a card for a
+ * [CascadeRider] — Averna, the Chaos Bloom's "you may put a land card from among the exiled
+ * cards onto the battlefield tapped". The pick enters, leaves [exiledCards], and the walk
+ * continues with the next rider in [remainingRiders], then the cast offer for
+ * [cascadeCardId] (null when the walk found no card to cast — everything left is bottomed).
+ *
+ * @property rider The rider this answer is for
+ * @property remainingRiders Riders still to ask after this one, in order
+ */
+@Serializable
+data class CascadePutOntoBattlefieldContinuation(
+    val playerId: EntityId,
+    val sourceId: EntityId?,
+    val exiledCards: List<EntityId>,
+    val cascadeCardId: EntityId?,
+    val rider: CascadeRider,
+    val remainingRiders: List<CascadeRider>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+) : AnswerContinuation
+
+/**
  * Resume after the controller answers "cast the discovered card for free, or put it
  * into your hand?" during the resolution of a [com.wingedsheep.sdk.scripting.effects.DiscoverEffect]
  * (CR 701.57a).

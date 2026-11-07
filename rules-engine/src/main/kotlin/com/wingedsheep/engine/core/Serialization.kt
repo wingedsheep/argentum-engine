@@ -428,6 +428,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CounterToLibraryPositionContinuation::class)
         subclass(ReturnFromLinkedExileContinuation::class)
         subclass(CascadeMayCastContinuation::class)
+        subclass(CascadePutOntoBattlefieldContinuation::class)
         subclass(DiscoverMayCastContinuation::class)
         subclass(ForcedPlayContinuation::class)
         subclass(ActivateManaAbilityChoiceContinuation::class)

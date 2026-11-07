@@ -2407,6 +2407,14 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   **plus** `triggeredAbility { trigger = Triggers.self.isCast(); effect = Effects.Cascade }`.
   Quandrix, the Proof; Meteoric Mace; Annoyed Altisaur. The card type is irrelevant — it fires on an
   Equipment spell exactly as on a creature spell.
+- `CascadeMayPutOntoBattlefield(filter = GameObjectFilter.Land, tapped = true)` — static ability, a rider on
+  every cascade its controller resolves: "As you cascade, you may put a land card from among the exiled cards
+  onto the battlefield tapped" (**Averna, the Chaos Bloom**: `staticAbility { ability = CascadeMayPutOntoBattlefield() }`).
+  Read by `CascadeExecutor` after the last card is exiled and before the cast offer — offered even when the walk
+  found nothing to cast. The controller picks up to one exiled card matching `filter`; it enters under their
+  control (`tapped` when the text says so) and is no longer one of the cards bottomed. It isn't a land play: no
+  land drop is needed or used, and it works on any turn. Each instance is its own choice of one card; an
+  opponent's instance doesn't apply to your cascade.
 - `Effects.Discover(amount, storeDiscoveredAs?, thenEffect?)` — Discover N, CR 701.57 (`DiscoverEffect`).
   Exile from the top of the controller's library until a nonland card with mana value **≤ N** is exiled
   (the "discovered card"), then present a two-option prompt: **cast it for free** or **put it into your

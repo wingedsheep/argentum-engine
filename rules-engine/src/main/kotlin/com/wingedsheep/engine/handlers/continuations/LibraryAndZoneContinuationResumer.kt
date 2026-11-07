@@ -55,6 +55,7 @@ class LibraryAndZoneContinuationResumer(
         resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom),
         resumer(CounterToLibraryPositionContinuation::class, ::resumeCounterToLibraryPosition),
         resumer(CascadeMayCastContinuation::class, ::resumeCascadeMayCast),
+        resumer(CascadePutOntoBattlefieldContinuation::class, ::resumeCascadePutOntoBattlefield),
         resumer(DiscoverMayCastContinuation::class, ::resumeDiscoverMayCast),
         resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
         resumer(CastAnyNumberFromCollectionContinuation::class, ::resumeCastAnyNumberFromCollection)
@@ -878,6 +879,60 @@ class LibraryAndZoneContinuationResumer(
             )
         )
         return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume cascade resolution after the controller picks (or declines) a card for an "as you
+     * cascade, you may put a land card from among the exiled cards onto the battlefield tapped"
+     * rider (Averna, the Chaos Bloom). The pick enters under their control — not a land play, so
+     * land plays and timing don't matter — and the cascade continues with the next rider, then
+     * the cast offer (or the bottoming, when there's nothing to cast).
+     */
+    fun resumeCascadePutOntoBattlefield(
+        state: GameState,
+        continuation: CascadePutOntoBattlefieldContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse || response.selectedCards.size > 1) {
+            return ExecutionResult.error(state, "Choose at most one card to put onto the battlefield")
+        }
+        val playerId = continuation.playerId
+        val exileKey = ZoneKey(playerId, Zone.EXILE)
+        val picked = response.selectedCards.firstOrNull()
+        if (picked != null && (picked !in continuation.exiledCards || picked !in state.getZone(exileKey))) {
+            return ExecutionResult.error(state, "That card isn't one of the cards exiled by cascade")
+        }
+
+        var current = state
+        val events = mutableListOf<GameEvent>()
+        if (picked != null) {
+            val moved = services.zones.moveToZone(
+                state, picked, Zone.BATTLEFIELD,
+                com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
+                    controllerId = playerId,
+                    tapped = continuation.rider.ability.tapped
+                ),
+                exileKey
+            )
+            current = moved.state
+            events.addAll(moved.events)
+        }
+
+        val rest = CascadeExecutor.continueCascade(
+            zones = services.zones,
+            castForbidden = { s, p, card -> castSpellHandler.resolutionCastProhibition(s, CastSpell(p, card)) != null },
+            decisionHandler = com.wingedsheep.engine.handlers.DecisionHandler(),
+            state = current,
+            playerId = playerId,
+            sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
+            exiledCards = continuation.exiledCards.filter { it != picked },
+            cascadeCardId = continuation.cascadeCardId,
+            riders = continuation.remainingRiders,
+        )
+        if (rest.outcome is Outcome.Paused) return ExecutionResult.propagatePause(rest.state, events + rest.events)
+        return checkForMore(rest.state, events + rest.events)
     }
 
     /**

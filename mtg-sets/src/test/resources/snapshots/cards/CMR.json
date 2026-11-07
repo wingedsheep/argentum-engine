@@ -474,6 +474,45 @@
     ]
 }
 
+// Averna, the Chaos Bloom
+{
+    "name": "Averna, the Chaos Bloom",
+    "manaCost": "{G}{U}{R}",
+    "typeLine": "Legendary Creature — Elemental Shaman",
+    "oracleText": "As you cascade, you may put a land card from among the exiled cards onto the battlefield tapped. (Do this after the last card is exiled but before deciding whether to cast a nonland card.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "CascadeMayPutOntoBattlefield"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Nature is a dance. Master it, and the world can keep no secrets from you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e46b3ef3-3ba9-4da7-a675-86468a8da4c7.jpg?1783928776",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If you don't cast the nonland card you reveal, or if you don't reveal any nonland cards with lesser mana value, you can still put a land card onto the battlefield before you finish cascading."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Averna's ability isn't the same as playing a land. You may do this even if you've already played a land during your turn and even if it isn't your turn at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Boarding Party
 {
     "name": "Boarding Party",
