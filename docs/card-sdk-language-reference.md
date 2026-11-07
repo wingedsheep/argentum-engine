@@ -1187,7 +1187,7 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   Gorex, the Tombshell, `ExileAnyNumberFromGraveyardForCostReduction(GameObjectFilter.Creature, 2)`). One
   `AdditionalCost.AnyNumberForCostReduction(action: PermanentCostAction, filter, reductionPerUnit,
   fromZone = BATTLEFIELD)`; `EXILE` takes `fromZone = HAND` or `GRAVEYARD`, `SACRIFICE` / `TAP` are
-  battlefield-only. Cards an `EXILE` pays with are **exiled with the spell** (CR 607 linked abilities):
+  battlefield-only. Cards an `EXILE` pays with are **exiled with the spell** (CR 607.2q linked abilities):
   they go into its `LinkedExileComponent`, which the permanent it becomes keeps, so "a card exiled with
   Gorex" is `gather(CardSource.FromLinkedExile())` — and a dies trigger still reads the pile of the
   departed permanent.

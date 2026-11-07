@@ -429,7 +429,7 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
             PermanentCostAction.EXILE -> {
                 ledger.exiledAsCostCards.addAll(picks)
                 exileFromOwnZone(ledger, picks, cost.fromZone.toZone())
-                // The cards are exiled *with* the spell (CR 607 linked abilities) — the permanent it
+                // The cards are exiled *with* the spell (CR 607.2q linked abilities) — the permanent it
                 // becomes keeps the pile, so "a card exiled with Gorex" reads exactly these.
                 if (picks.isNotEmpty()) {
                     ledger.state = ledger.state.updateEntity(ledger.action.cardId) { c ->

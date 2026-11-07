@@ -33,7 +33,7 @@ import io.kotest.matchers.shouldBe
  *  - choosing none is legal and pays full price;
  *  - exile from hand: only matching cards, never the spell itself (it is on the stack, CR 601.2a);
  *  - exile from graveyard: only matching graveyard cards, and the exiled cards are linked to the
- *    permanent the spell becomes (CR 607 — "a card exiled with Gorex");
+ *    permanent the spell becomes (CR 607.2q — "a card exiled with Gorex");
  *  - tap: only untapped permanents (CR 701.26a), summoning-sick ones included (a cost isn't {T});
  *  - the cast is offered when the *largest* discount makes it affordable, with a zero-floor picker.
  */

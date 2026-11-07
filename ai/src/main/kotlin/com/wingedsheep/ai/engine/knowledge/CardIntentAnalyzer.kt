@@ -3148,10 +3148,12 @@ object CardIntentAnalyzer {
             // putting a creature from hand onto the battlefield, Goliath Daydreamer recasting a
             // spell) is the same engine paid in mana instead of cards, and so is a card back from
             // the graveyard or a stash every time it fires (Gorex, the Tombshell's attack trigger).
+            // Only a trigger that works from the battlefield is a reason to keep this permanent
+            // alive: a graveyard-only self-return (Bloodghast) streams from the graveyard instead.
             val ownPile = stashesOwnCards(scripts)
             val repeatableDraw = !repeatableRemoval && !sacrificesItselfAtEndStep(scripts) && scripts.any { script ->
                 script.triggeredAbilities.any { trigger ->
-                    canFireMoreThanOnce(trigger) && analyzeEffect(
+                    Zone.BATTLEFIELD in trigger.activeZones && canFireMoreThanOnce(trigger) && analyzeEffect(
                         trigger.effect,
                         trigger.allTargetRequirements,
                         turnAhead = EffectWalker.firesWithItsTurnAhead(trigger),

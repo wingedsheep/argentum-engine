@@ -28,9 +28,8 @@ import io.kotest.matchers.shouldBe
  */
 class GraveyardDiscountCostReadingAiTest : FunSpec({
 
-    val gorex by lazy {
-        MtgSetCatalog.all.flatMap { it.cards }.first { it.name == "Gorex, the Tombshell" }
-    }
+    fun card(name: String) = MtgSetCatalog.all.flatMap { it.cards }.first { it.name == name }
+    val gorex by lazy { card("Gorex, the Tombshell") }
 
     test("returning a card exiled by its own graveyard cost to hand is recursion, read fully") {
         CardIntentAnalyzer.analyze(gorex).tags shouldContain IntentTag.RECURSION
@@ -41,6 +40,9 @@ class GraveyardDiscountCostReadingAiTest : FunSpec({
 
     test("the repeatable attack-trigger return lifts the in-play prior over a vanilla body") {
         CardIntentAnalyzer.analyzeInPlay(gorex).staticPriorValue shouldBeGreaterThan CardIntent.UNKNOWN.staticPriorValue
+        withClue("a graveyard-only self-return (Bloodghast) streams from the graveyard, not from the permanent") {
+            CardIntentAnalyzer.analyzeInPlay(card("Bloodghast")).staticPriorValue shouldBe CardIntent.UNKNOWN.staticPriorValue
+        }
     }
 
     test("a graveyard-exile discount cost makes it a graveyard payoff") {

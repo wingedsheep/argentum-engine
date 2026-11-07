@@ -2367,7 +2367,9 @@ class Strategist(
     /**
      * "You may sacrifice / tap / exile any number of …; this spell costs {N} less for each"
      * (Torgaar, Explosive Singularity, Gorex, the Tombshell): the fewest picks that make the cast
-     * payable, least valuable first, or null when no count does (the offer then stays as it was).
+     * payable, or null when no count does (the offer then stays as it was). Permanents and cards in
+     * hand go least valuable first ([SelectionCostPayment.CandidateOrder]); graveyard cards, which
+     * have no such price, in the order offered.
      *
      * The offer's `manaCostString` is priced at the largest discount; its coloured part is owed
      * whatever is picked, and its generic is [AdditionalCostData.genericBeforeReduction] less

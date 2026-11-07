@@ -15,12 +15,6 @@ import { ManaSymbol } from '@/components/ui/ManaSymbols'
 import { parseManaCost } from '@/utils/manaCost'
 
 /**
- * Cross-zone card targeting overlay — shows when targeting mode requires selecting card(s) from a
- * card zone (graveyard or exile), possibly a union of both (Sorceress's Schemes). Cards are grouped
- * into tabs by (owner, zone) so e.g. "Your Graveyard" and "Your Exile" are distinct, browsable
- * piles. Similar to GraveyardTargetingUI in DecisionUI but for client-side spell casting targeting.
- */
-/**
  * The zone picker's heading. A cost's prompt arrives as a sentence-cased instruction ("Exile any
  * number of creature cards from your graveyard — …", "Discard a card"), shown verbatim; a target
  * description ("target creature card") reads as what to select.
@@ -30,6 +24,12 @@ function selectionHeading(description: string): string {
   return first !== first.toLowerCase() ? description : `Select ${description}`
 }
 
+/**
+ * Cross-zone card targeting overlay — shows when targeting mode requires selecting card(s) from a
+ * card zone (graveyard or exile), possibly a union of both (Sorceress's Schemes). Cards are grouped
+ * into tabs by (owner, zone) so e.g. "Your Graveyard" and "Your Exile" are distinct, browsable
+ * piles. Similar to GraveyardTargetingUI in DecisionUI but for client-side spell casting targeting.
+ */
 function ZoneCardTargetingOverlay({
   zoneCards,
   targetingState,

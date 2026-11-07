@@ -132,7 +132,7 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      *  - `EXILE` with [fromZone] `HAND` — cards in your hand other than the spell itself (the
      *    Kamigawa: Neon Dynasty March cycle) — or `GRAVEYARD` — cards in your graveyard (Gorex, the
      *    Tombshell). Exiling permanents for a discount isn't printed, so `EXILE` is hand/graveyard
-     *    only. The exiled cards are *exiled with* the spell (CR 607 linked abilities): they join the
+     *    only. The exiled cards are *exiled with* the spell (CR 607.2q linked abilities): they join the
      *    linked-exile pile of the permanent it becomes, so "a card exiled with Gorex" reads them.
      *
      * Closest neighbours: [CostAtom.VariablePermanents] (a variable-count cost whose count becomes

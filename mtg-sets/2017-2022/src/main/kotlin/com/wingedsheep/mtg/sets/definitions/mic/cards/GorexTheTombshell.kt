@@ -29,7 +29,7 @@ private fun returnRandomExiledCard() = Effects.Pipeline {
  * Whenever Gorex attacks or dies, choose a card at random exiled with Gorex and put that card into
  * its owner's hand.
  *
- * The cost's exiled cards are linked to Gorex (CR 607), so "a card exiled with Gorex" is exactly
+ * The cost's exiled cards are linked to Gorex (CR 607.2q), so "a card exiled with Gorex" is exactly
  * them; the dies trigger reads that pile from the departed Gorex. A graveyard holds only its owner's
  * cards, so "its owner's hand" is always yours. The discount takes generic mana only — never below
  * {B}{B} — and you may exile more cards than the discount can use (Gorex rulings).
