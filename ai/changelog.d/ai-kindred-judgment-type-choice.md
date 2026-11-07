@@ -1,0 +1,1 @@
+- #4535 Naming a creature type (Kindred Judgment, Kindred Dominance and other board-reading choices) now considers every type on the battlefield, so the AI keeps its own creatures instead of naming its deck's majority type and wiping its board
