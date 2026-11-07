@@ -1,1 +1,1 @@
-- #TBD Averna, the Chaos Bloom's cascade rider reads as ramp, asks for cascade cards, and the AI takes the exiled land when cascading
+- #4561 Averna, the Chaos Bloom's cascade rider reads as ramp, asks for cascade cards, and the AI takes the exiled land when cascading
