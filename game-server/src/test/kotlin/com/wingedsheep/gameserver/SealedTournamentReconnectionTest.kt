@@ -491,7 +491,7 @@ class SealedTournamentReconnectionTest : FunSpec() {
                     .first().lobbyId
 
                 // Best-of-1 keeps the test's 3-round round-robin contract; the lobby default is best-of-3.
-                hostClient.send(ClientMessage.UpdateLobbySettings(gamesPerMatch = 1))
+                hostClient.send(ClientMessage.UpdateLobbySettings(gamesPerMatch = 1, bestOf = 1))
 
                 players.add(PlayerTestContext(
                     name = playerNames[0],

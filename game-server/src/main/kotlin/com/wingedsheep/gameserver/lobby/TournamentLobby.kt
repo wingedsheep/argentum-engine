@@ -332,6 +332,12 @@ class TournamentLobby(
     var pickTimeSeconds: Int = 45,    // Draft only; 0 = no time limit (see [hasPickTimer])
     var picksPerRound: Int = 1,       // Draft only: cards to pick each round (1 or 2); 2 is the default for new Draft / Commander Draft lobbies (see LobbyHandler.handleCreateTournamentLobby)
     var gamesPerMatch: Int = 3,
+    /**
+     * Games per tournament match: 1, or 3 for a best-of-three won by the first to two game wins.
+     * Between the games of a best-of-three the players may sideboard ([allowsSideboarding]).
+     * Independent of [gamesPerMatch], which is how many times each pair meets.
+     */
+    var bestOf: Int = 1,
     var isPublic: Boolean = false,
     /**
      * Optional deck-construction format (Standard, Modern, Commander, …) used to restrict which
@@ -2172,6 +2178,8 @@ class TournamentLobby(
                 pickTimeSeconds = pickTimeSeconds,
                 picksPerRound = picksPerRound,
                 gamesPerMatch = gamesPerMatch,
+                bestOf = bestOf,
+                allowsSideboarding = allowsSideboarding,
                 isPublic = isPublic,
                 deckFormat = deckFormat?.name,
                 rules = rules.name,
@@ -2276,6 +2284,68 @@ class TournamentLobby(
         }
 
         return null
+    }
+
+    // =========================================================================
+    // Sideboarding between the games of a match (CR 100.4)
+    // =========================================================================
+
+    /**
+     * Whether players may change their deck between the games of a best-of-N match. Every format
+     * with a sideboard may: Limited (the unplayed pool is the sideboard, CR 100.4b), Pool Play (its
+     * wishboard) and premade decks (the sideboard they brought). Jumpstart decks are exactly the two
+     * chosen packs, and Commander decks are held to identity and singleton rules the between-games
+     * screen doesn't edit, so those play every game with the registered deck.
+     */
+    val allowsSideboarding: Boolean get() = !isJumpstart && !usesCommanderRules
+
+    /**
+     * Why [deckList] can't be [playerId]'s deck for the next game of the match, or null when it can.
+     *
+     * Limited decks pass the same check a submission does — every card from the pool, basic lands
+     * free. A premade deck may only trade cards with the sideboard it was registered with: the deck
+     * and sideboard together are a fixed set of cards (CR 100.4a), so nothing enters from outside.
+     */
+    fun matchDeckError(playerId: EntityId, deckList: Map<String, Int>): String? {
+        if (!allowsSideboarding) return "Decks can't be changed between games in this format"
+        val playerState = players[playerId] ?: return "Player not in lobby"
+        val registered = playerState.submittedDeck ?: return "No registered deck"
+        val deck = deckList.filterValues { it > 0 }
+        if (format == TournamentFormat.PREMADE_DECKS) {
+            val available = (registered.keys + playerState.submittedSideboard.keys).associateWith { name ->
+                (registered[name] ?: 0) + (playerState.submittedSideboard[name] ?: 0)
+            }
+            for ((name, count) in deck) {
+                val have = available[name] ?: 0
+                if (count > have) {
+                    return if (have == 0) "$name isn't in your deck or sideboard"
+                    else "Only $have ${if (have == 1) "copy" else "copies"} of $name between your deck and sideboard"
+                }
+            }
+            return validatePremadeDeck(deck)
+        }
+        return validateDeck(playerState.cardPool, deck)
+    }
+
+    /**
+     * The sideboard that goes with [deckList] for [playerId] — everything they could have played but
+     * didn't. Derived the same way submission derives it (pool − deck, CR 100.4b), or, for a premade
+     * deck, registered deck + sideboard − this deck.
+     */
+    fun sideboardFor(playerId: EntityId, deckList: Map<String, Int>): Map<String, Int> {
+        val playerState = players[playerId] ?: return emptyMap()
+        val registered = playerState.submittedDeck ?: return playerState.submittedSideboard
+        if (deckList == registered) return playerState.submittedSideboard
+        return when {
+            format == TournamentFormat.PREMADE_DECKS -> {
+                val names = registered.keys + playerState.submittedSideboard.keys
+                names.associateWith { name ->
+                    (registered[name] ?: 0) + (playerState.submittedSideboard[name] ?: 0) - (deckList[name] ?: 0)
+                }.filterValues { it > 0 }
+            }
+            isCubePoolPlay -> Wishboard.build(playerState.cardPool, exclude = deckList.keys)
+            else -> SideboardDerivation.fromPool(playerState.cardPool, deckList)
+        }
     }
 
     sealed interface DeckSubmissionResult {

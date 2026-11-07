@@ -940,10 +940,18 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       const playerName = localStorage.getItem('argentum-player-name') ?? 'You'
       const { tournamentState, playerId } = get()
       let round: number | undefined
+      let matchGame: string | undefined
       let playerRecord: string | undefined
       let opponentRecord: string | undefined
       if (tournamentState && playerId) {
         round = tournamentState.currentRound
+        const game = tournamentState.currentGame
+        if (game && game.bestOf > 1) {
+          // "Game 2 · 1–0": which game of the best-of-three, and the score going in (ours first).
+          matchGame = game.gameNumber > 1
+            ? `Game ${game.gameNumber} · ${game.yourGameWins}–${game.opponentGameWins}`
+            : `Game 1 of ${game.bestOf}`
+        }
         const playerStanding = tournamentState.standings.find((s) => s.playerId === playerId)
         const opponentStanding = tournamentState.standings.find((s) => s.playerName === opponentName)
         if (playerStanding) {
@@ -961,6 +969,7 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
           playerAvatar: msg.players.find((p) => p.isYou)?.avatar ?? null,
           opponentAvatars: msg.players.filter((p) => !p.isYou).map((p) => p.avatar ?? null),
           ...(round != null ? { round } : {}),
+          ...(matchGame != null ? { matchGame } : {}),
           ...(playerRecord != null ? { playerRecord } : {}),
           ...(opponentRecord != null ? { opponentRecord } : {}),
         },

@@ -192,6 +192,12 @@ class LobbyHandler(
         }
     }
 
+    fun handleSubmitMatchDeck(session: WebSocketSession, message: ClientMessage.SubmitMatchDeck) =
+        tournamentMatchHandler.handleSubmitMatchDeck(session, message.deck, message.playFirst)
+
+    fun handleEditMatchDeck(session: WebSocketSession) =
+        tournamentMatchHandler.handleEditMatchDeck(session)
+
     fun handleMatchResult(lobbyId: String, gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int) {
         val lobby = lobbyRepository.findLobbyById(lobbyId)
         if (lobby?.isFreeForAll == true) {
@@ -795,6 +801,10 @@ class LobbyHandler(
             maxPlayers = maxPlayers,
             pickTimeSeconds = TournamentLobby.clampPickTimeSeconds(message.pickTimeSeconds, 120),
             picksPerRound = initialPicksPerRound,
+            // A new bracket plays best-of-three matches, each pair meeting once — the Magic Tournament
+            // Rules shape. (The old default, three separate one-game matches per pair, stood in for it.)
+            gamesPerMatch = 1,
+            bestOf = 3,
             isPublic = message.isPublic,
             // Commander formats enable Chaos boosters by default — 20-card commander packs
             // need to mix sets to give a workable pool when multiple sets are selected. A pack-shape
@@ -2745,6 +2755,8 @@ class LobbyHandler(
             }
         }
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
+        // Best of one or best of three — the two match lengths the Magic Tournament Rules use.
+        message.bestOf?.let { lobby.bestOf = if (it >= 3) 3 else 1 }
         message.pickTimeSeconds?.let { lobby.pickTimeSeconds = TournamentLobby.clampPickTimeSeconds(it, 180) }
         message.picksPerRound?.let { lobby.picksPerRound = it.coerceIn(1, 2) }
         message.isPublic?.let { lobby.isPublic = it }

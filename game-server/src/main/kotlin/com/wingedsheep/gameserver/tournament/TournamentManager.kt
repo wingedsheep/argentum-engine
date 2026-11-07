@@ -17,6 +17,8 @@ data class PlayerStanding(
     var draws: Int = 0,
     var gamesWon: Int = 0,
     var gamesLost: Int = 0,
+    /** Games that ended in a draw — worth one game point each in GW% (Magic Tournament Rules). */
+    var gamesDrawn: Int = 0,
     var lifeDifferential: Int = 0,
     /** Of [wins], the matches won because the opponent left the tournament — never played. */
     var forfeitWins: Int = 0,
@@ -84,9 +86,50 @@ data class TournamentMatch(
      * had a [gameSessionId], so it has no replay and never appeared as an active match to spectate;
      * the flag is what lets the standings say so instead of passing it off as a played result.
      */
-    var isSimulated: Boolean = false
+    var isSimulated: Boolean = false,
+    /** Games of this match that ended in a draw. They don't count toward the wins a best-of-N needs. */
+    var gamesDrawn: Int = 0,
+    /** Session ids of this match's finished games, in order — one per game of a best-of-N. */
+    val completedGameSessionIds: MutableList<String> = mutableListOf(),
+    /**
+     * Who chooses who takes the first turn in the next game (CR 103.1): the loser of the previous
+     * game, or — after a draw — whoever made the choice for that game. Null before game 2.
+     */
+    var playDrawChooserId: EntityId? = null,
+    /** Winner of the most recently finished game of this match; null before one finishes or after a draw. */
+    var lastGameWinnerId: EntityId? = null,
+    /** Who took the first turn in the game being played (or last played) — the chooser for a draw's rematch. */
+    var currentStarterId: EntityId? = null,
+    /** The player the chooser picked to go first in the next game; null until they choose. */
+    var nextStarterId: EntityId? = null,
+    /**
+     * Each seat's deck for the rest of this match, after sideboarding between games (CR 100.4). An
+     * absent seat plays its registered deck. Match-scoped: the next match starts from the registered
+     * deck again, so a plan against one opponent never leaks into a game against the next.
+     */
+    val matchDecks: MutableMap<EntityId, Map<String, Int>> = mutableMapOf(),
+    /** Seats that have finished sideboarding and are ready for the next game of this match. */
+    val sideboardReady: MutableSet<EntityId> = mutableSetOf(),
 ) {
     val isBye: Boolean get() = player2Id == null
+
+    /** Games of this match that have finished, decided or drawn. */
+    val gamesPlayed: Int get() = player1GameWins + player2GameWins + gamesDrawn
+
+    /**
+     * True while a best-of-N match sits between two of its games: at least one game finished, the
+     * match isn't decided, and the next game hasn't started. The seats are sideboarding.
+     */
+    val isBetweenGames: Boolean get() = !isComplete && gameSessionId == null && gamesPlayed > 0
+
+    /** Started and not finished — a game is running or the seats are between games. */
+    val isUnderway: Boolean get() = !isComplete && (gameSessionId != null || gamesPlayed > 0)
+
+    fun involves(playerId: EntityId): Boolean = player1Id == playerId || player2Id == playerId
+
+    fun otherSeat(playerId: EntityId): EntityId? = if (player1Id == playerId) player2Id else player1Id
+
+    fun gameWinsOf(playerId: EntityId): Int = if (player1Id == playerId) player1GameWins else player2GameWins
 
     /**
      * Check if this match involves both of the specified players.
@@ -94,6 +137,20 @@ data class TournamentMatch(
     fun hasPlayers(p1: EntityId, p2: EntityId): Boolean {
         return (player1Id == p1 && player2Id == p2) || (player1Id == p2 && player2Id == p1)
     }
+}
+
+/**
+ * What one finished game did to its match — see [TournamentManager.reportMatchResult].
+ */
+sealed interface GameReport {
+    /** The result didn't belong to an open match (already decided, or an unknown session). */
+    data object Ignored : GameReport
+
+    /** The game decided the match; the standings moved. */
+    data class MatchDecided(val match: TournamentMatch) : GameReport
+
+    /** A best-of-N match goes on: the seats sideboard, then play the next game. */
+    data class NextGame(val match: TournamentMatch) : GameReport
 }
 
 /**
@@ -115,8 +172,20 @@ data class TournamentRound(
 class TournamentManager(
     private val lobbyId: String,
     players: List<Pair<EntityId, String>>, // (playerId, playerName)
-    private val gamesPerMatch: Int = 1
+    /**
+     * How many times the round-robin repeats — each pair meets this many times, every meeting its
+     * own match. Not the length of a match; that is [bestOf].
+     */
+    private val gamesPerMatch: Int = 1,
+    /**
+     * Games per match: 1, or a best-of-N (3) played until one player wins a majority. Between the
+     * games of a best-of-N the seats may sideboard (CR 100.4).
+     */
+    val bestOf: Int = 1,
 ) {
+    /** Game wins that decide a best-of-[bestOf] match. */
+    val winsNeeded: Int get() = bestOf / 2 + 1
+
     companion object {
         /**
          * Floor applied to each opponent's percentage when averaging OMW%/OGW% (Magic Tournament Rules:
@@ -244,17 +313,44 @@ class TournamentManager(
      * @param winnerId The winner's player ID, or null for a draw
      * @param winnerLifeRemaining The winner's remaining life total (for tiebreaker calculations)
      */
-    fun reportMatchResult(gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int = 0) {
+    fun reportMatchResult(gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int = 0): GameReport {
         // Search all rounds for the match (supports dynamic matchmaking where matches
         // from different rounds may be active simultaneously)
         val match = rounds.asSequence()
             .flatMap { r -> r.matches.asSequence() }
             .find { m -> m.gameSessionId == gameSessionId }
-            ?: return
+            ?: return GameReport.Ignored
+        if (match.isComplete) return GameReport.Ignored
 
-        if (!applyResult(match, winnerId, winnerLifeRemaining)) return
-        logger.info("Match result reported for game $gameSessionId: winner=${winnerId?.value ?: "draw"}, life=$winnerLifeRemaining")
+        recordGame(match, winnerId, winnerLifeRemaining)
+        match.completedGameSessionIds.add(gameSessionId)
+        logger.info("Game result reported for game $gameSessionId: winner=${winnerId?.value ?: "draw"}, life=$winnerLifeRemaining")
+
+        if (!isDecided(match)) {
+            // The match goes on. The session pointer is cleared so the match reads as between games
+            // (see [TournamentMatch.isBetweenGames]); the next game gets a session of its own.
+            match.gameSessionId = null
+            match.sideboardReady.clear()
+            match.nextStarterId = null
+            // CR 103.1: the loser of the previous game chooses; after a draw, whoever chose last time.
+            match.playDrawChooserId = when (winnerId) {
+                null -> match.playDrawChooserId ?: match.currentStarterId ?: match.player1Id
+                else -> match.otherSeat(winnerId)
+            }
+            return GameReport.NextGame(match)
+        }
+
+        finishMatch(match)
+        return GameReport.MatchDecided(match)
     }
+
+    /**
+     * Whether [match] is over: someone holds a majority of [bestOf] in game wins, or every game has
+     * been played (drawn games included, so the match can't run forever). A single game always decides.
+     */
+    private fun isDecided(match: TournamentMatch): Boolean =
+        match.player1GameWins >= winsNeeded || match.player2GameWins >= winsNeeded ||
+            match.gamesPlayed >= bestOf
 
     /**
      * Record a match decided by [AiMatchSimulator] instead of played out — see
@@ -264,51 +360,60 @@ class TournamentManager(
      * displayed life differential does, and inventing a number for it would be inventing data.
      */
     fun reportSimulatedResult(match: TournamentMatch, winnerId: EntityId) {
-        if (!applyResult(match, winnerId, winnerLifeRemaining = 0)) return
+        if (match.isComplete) return
+        recordGame(match, winnerId, winnerLifeRemaining = 0)
+        finishMatch(match)
         match.isSimulated = true
         logger.info("Simulated match result in lobby $lobbyId: winner=${winnerId.value}")
     }
 
     /**
-     * Apply a decided [match] to the standings. Shared by the played and the simulated path so both
-     * move wins/losses/draws, game wins and the life differential the same way. Returns false when the
-     * match was already decided, so neither caller announces a result it didn't record.
+     * Apply one finished game of [match] to the game-level standings: game wins and losses (or a
+     * drawn game for both), and the winner's remaining life. Shared by the played and the simulated
+     * path; the match-level result is [finishMatch]'s job.
      */
-    private fun applyResult(match: TournamentMatch, winnerId: EntityId?, winnerLifeRemaining: Int): Boolean {
-        if (match.isComplete) return false
-
-        match.isComplete = true
-
+    private fun recordGame(match: TournamentMatch, winnerId: EntityId?, winnerLifeRemaining: Int) {
+        match.lastGameWinnerId = winnerId
         if (winnerId != null) {
-            match.winnerId = winnerId
             standings[winnerId]?.apply {
-                wins += 1
                 gamesWon += 1
                 lifeDifferential += winnerLifeRemaining
             }
+            match.otherSeat(winnerId)?.let { loserId -> standings[loserId]?.apply { gamesLost += 1 } }
+            if (match.player1Id == winnerId) match.player1GameWins += 1 else match.player2GameWins += 1
+        } else {
+            match.gamesDrawn += 1
+            standings[match.player1Id]?.apply { gamesDrawn += 1 }
+            match.player2Id?.let { p2 -> standings[p2]?.apply { gamesDrawn += 1 } }
+        }
+    }
 
-            val loserId = if (match.player1Id == winnerId) match.player2Id else match.player1Id
-            if (loserId != null) {
-                standings[loserId]?.apply {
-                    losses += 1
-                    gamesLost += 1
-                }
-            }
-
-            // Track game wins per player in the match
-            if (match.player1Id == winnerId) {
-                match.player1GameWins += 1
-            } else {
-                match.player2GameWins += 1
-            }
+    /**
+     * Decide [match] from its game wins and move the match-level standings: the player with more game
+     * wins takes the match, equal game wins draw it (Magic Tournament Rules). Clears the between-games
+     * state — sideboarded decks are match-scoped and die with the match.
+     */
+    private fun finishMatch(match: TournamentMatch) {
+        match.isComplete = true
+        match.sideboardReady.clear()
+        match.matchDecks.clear()
+        match.nextStarterId = null
+        val player2Id = match.player2Id
+        val winnerId = when {
+            player2Id == null -> null
+            match.player1GameWins > match.player2GameWins -> match.player1Id
+            match.player2GameWins > match.player1GameWins -> player2Id
+            else -> null
+        }
+        if (winnerId != null) {
+            match.winnerId = winnerId
+            standings[winnerId]?.apply { wins += 1 }
+            match.otherSeat(winnerId)?.let { loserId -> standings[loserId]?.apply { losses += 1 } }
         } else {
             match.isDraw = true
-            standings[match.player1Id]?.draws = (standings[match.player1Id]?.draws ?: 0) + 1
-            match.player2Id?.let { p2 ->
-                standings[p2]?.draws = (standings[p2]?.draws ?: 0) + 1
-            }
+            standings[match.player1Id]?.apply { draws += 1 }
+            player2Id?.let { p2 -> standings[p2]?.apply { draws += 1 } }
         }
-        return true
     }
 
     /**
@@ -321,6 +426,8 @@ class TournamentManager(
                 if (match.isComplete) continue
                 if (match.player1Id == playerId || match.player2Id == playerId) {
                     match.isComplete = true
+                    match.sideboardReady.clear()
+                    match.matchDecks.clear()
                     val opponentId = if (match.player1Id == playerId) match.player2Id else match.player1Id
                     if (opponentId != null) {
                         match.winnerId = opponentId
@@ -424,10 +531,14 @@ class TournamentManager(
         return if (matchesPlayed == 0) 0.0 else points.toDouble() / (3.0 * matchesPlayed)
     }
 
-    /** A player's own game-win % = games won / games played; 0 with no games played. */
+    /**
+     * A player's own game-win % = game points / (3 × games played), a won game worth 3 and a drawn
+     * game 1 (Magic Tournament Rules); 0 with no games played. Without drawn games this is plain
+     * games won / games played.
+     */
     private fun PlayerStanding.gameWinPercentage(): Double {
-        val gamesPlayed = gamesWon + gamesLost
-        return if (gamesPlayed == 0) 0.0 else gamesWon.toDouble() / gamesPlayed
+        val gamesPlayed = gamesWon + gamesLost + gamesDrawn
+        return if (gamesPlayed == 0) 0.0 else (gamesWon * 3.0 + gamesDrawn) / (3.0 * gamesPlayed)
     }
 
     /**
@@ -571,7 +682,9 @@ class TournamentManager(
                 winnerId = match.winnerId?.value,
                 isDraw = match.isDraw,
                 isBye = match.isBye,
-                isSimulated = match.isSimulated
+                isSimulated = match.isSimulated,
+                player1GameWins = match.player1GameWins,
+                player2GameWins = match.player2GameWins,
             )
         }
     }
@@ -581,8 +694,14 @@ class TournamentManager(
      */
     fun getCompletedGameSessionIds(): List<String> {
         return rounds.flatMap { it.matches }
-            .filter { it.isComplete && !it.isBye && it.gameSessionId != null }
-            .mapNotNull { it.gameSessionId }
+            .filter { !it.isBye }
+            .flatMap { match ->
+                // A best-of-N match keeps every finished game; the running one isn't complete yet.
+                match.completedGameSessionIds.ifEmpty {
+                    listOfNotNull(match.gameSessionId.takeIf { match.isComplete })
+                }
+            }
+            .distinct()
     }
 
     /**
@@ -632,14 +751,18 @@ class TournamentManager(
     /**
      * Check if a player has any in-progress match (started but not complete) across all rounds.
      */
-    fun hasActiveMatch(playerId: EntityId): Boolean {
-        return rounds.any { round ->
-            round.matches.any {
-                (it.player1Id == playerId || it.player2Id == playerId) &&
-                    it.gameSessionId != null && !it.isComplete
-            }
-        }
-    }
+    fun hasActiveMatch(playerId: EntityId): Boolean = underwayMatchFor(playerId) != null
+
+    /**
+     * The player's match that has started and isn't decided — a game running, or a best-of-N between
+     * its games (see [TournamentMatch.isUnderway]). A player is in at most one.
+     */
+    fun underwayMatchFor(playerId: EntityId): TournamentMatch? =
+        rounds.asSequence().flatMap { it.matches.asSequence() }
+            .firstOrNull { it.involves(playerId) && it.isUnderway }
+
+    /** The round holding [match]. */
+    fun roundOf(match: TournamentMatch): TournamentRound? = rounds.find { round -> round.matches.any { it === match } }
 
     /**
      * Get the next unplayed match for a player across all rounds.
@@ -649,7 +772,7 @@ class TournamentManager(
         for (round in rounds) {
             val match = round.matches.find {
                 (it.player1Id == playerId || it.player2Id == playerId) &&
-                    !it.isComplete && it.gameSessionId == null
+                    !it.isComplete && it.gameSessionId == null && it.gamesPlayed == 0
             }
             if (match != null) return round to match
         }
@@ -673,7 +796,8 @@ class TournamentManager(
         val startable = mutableListOf<Pair<TournamentRound, TournamentMatch>>()
         for (round in rounds) {
             for (match in round.matches) {
-                if (match.isBye || match.isComplete || match.gameSessionId != null) continue
+                // A match between its games is started by its own sideboarding handshake, not the ready set.
+                if (match.isBye || match.isComplete || match.gameSessionId != null || match.gamesPlayed > 0) continue
                 val player2Id = match.player2Id ?: continue
                 if (match.player1Id !in readyPlayerIds || player2Id !in readyPlayerIds) continue
                 if (hasIncompleteMatchBefore(match.player1Id, round.roundNumber)) continue
@@ -711,9 +835,14 @@ class TournamentManager(
      */
     fun getRoundForMatch(gameSessionId: String): TournamentRound? {
         return rounds.find { round ->
-            round.matches.any { it.gameSessionId == gameSessionId }
+            round.matches.any { it.gameSessionId == gameSessionId || gameSessionId in it.completedGameSessionIds }
         }
     }
+
+    /** The match a game session belongs to — the running game, or any finished game of the match. */
+    fun matchForGame(gameSessionId: String): TournamentMatch? =
+        rounds.asSequence().flatMap { it.matches.asSequence() }
+            .find { it.gameSessionId == gameSessionId || gameSessionId in it.completedGameSessionIds }
 
     /**
      * Get match results for a specific round.
@@ -728,7 +857,9 @@ class TournamentManager(
                 winnerId = match.winnerId?.value,
                 isDraw = match.isDraw,
                 isBye = match.isBye,
-                isSimulated = match.isSimulated
+                isSimulated = match.isSimulated,
+                player1GameWins = match.player1GameWins,
+                player2GameWins = match.player2GameWins,
             )
         }
     }

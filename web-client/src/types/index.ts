@@ -295,6 +295,9 @@ export type {
   TournamentCompleteMessage,
   TournamentResumedMessage,
   ReadyForNextRoundMessage,
+  SubmitMatchDeckMessage,
+  EditMatchDeckMessage,
+  BetweenGamesMessage,
   AddExtraRoundMessage,
   // Free-for-All types
   LobbyGameMode,
@@ -444,6 +447,8 @@ export {
   isGridDraftStateMessage,
   // Tournament message factories & guards
   createReadyForNextRoundMessage,
+  createSubmitMatchDeckMessage,
+  createEditMatchDeckMessage,
   createAddExtraRoundMessage,
   isTournamentStartedMessage,
   isTournamentMatchStartingMessage,

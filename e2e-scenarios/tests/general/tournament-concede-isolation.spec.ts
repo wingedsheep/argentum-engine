@@ -20,6 +20,8 @@ async function createLobbyWithPlayers(players: PlayerPage[]): Promise<string> {
   const host = players[0]!
   await enterName(host.page, host.name)
   const lobbyId = await createLobby(host.page, GROUP_SEALED)
+  // These specs concede single games and expect each to end its match; new brackets default to best of three.
+  await host.page.getByRole('button', { name: 'Best of 1', exact: true }).click()
 
   for (let i = 1; i < players.length; i++) {
     const player = players[i]!

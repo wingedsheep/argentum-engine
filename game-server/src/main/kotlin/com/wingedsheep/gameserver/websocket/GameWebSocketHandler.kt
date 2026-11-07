@@ -132,6 +132,14 @@ class GameWebSocketHandler(
                     lobbyHandler.handleReadyForNextRound(session)
                 }
 
+                is ClientMessage.SubmitMatchDeck -> {
+                    lobbyHandler.handleSubmitMatchDeck(session, clientMessage)
+                }
+
+                is ClientMessage.EditMatchDeck -> {
+                    lobbyHandler.handleEditMatchDeck(session)
+                }
+
                 is ClientMessage.AddExtraRound -> {
                     lobbyHandler.handleAddExtraRound(session)
                 }

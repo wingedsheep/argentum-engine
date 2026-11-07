@@ -25,7 +25,10 @@ export interface PublicTournamentSummary {
   format: TournamentFormat
   setNames: string[]
   boosterCount: number
+  /** How many times each pair meets in the round-robin. */
   gamesPerMatch: number
+  /** Games per match: 1, or 3 for a best-of-three. */
+  bestOf?: number
   deckFormat?: string | null
   hostName?: string | null
   hostAvatar?: string | null
@@ -368,7 +371,10 @@ function lobbyTags(entry: PublicLobbyEntry): string[] {
     if (entry.cubeName) tags.push('Cube')
     tags.push(`${entry.boosterCount} ${isDraft(entry.format) ? 'packs' : 'boosters'}`)
   }
-  if ((entry.gameMode ?? 'TOURNAMENT') === 'TOURNAMENT' && entry.gamesPerMatch > 1) tags.push(`Best of ${entry.gamesPerMatch}`)
+  if ((entry.gameMode ?? 'TOURNAMENT') === 'TOURNAMENT') {
+    if ((entry.bestOf ?? 1) > 1) tags.push(`Best of ${entry.bestOf}`)
+    if (entry.gamesPerMatch > 1) tags.push(`Meet each player ${entry.gamesPerMatch}×`)
+  }
   return tags
 }
 

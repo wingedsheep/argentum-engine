@@ -1,0 +1,1 @@
+- #4538 Between the games of a best-of-three tournament match the AI keeps its registered deck and, when it lost the last game, always chooses to play first

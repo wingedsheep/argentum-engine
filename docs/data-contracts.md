@@ -594,6 +594,29 @@ sealed, or premade), then one N-player game".
   than a separate lobby kind; the create message's `vsAi` remains a shortcut for initially filling
   the seat.
 
+## 3d½. Best-of-three tournament matches (WebSocket)
+
+A round-robin lobby's `LobbySettings.bestOf` is `1` (default) or `3`, set with
+`updateLobbySettings { bestOf }`; `gamesPerMatch` stays the number of times each pair meets.
+`LobbySettings.allowsSideboarding` is false for Jumpstart and Commander rules.
+
+- **Each game** starts with `tournamentMatchStarting`, which now also carries `gameNumber`, `bestOf`
+  and the score going in (`yourGameWins`, `opponentGameWins`).
+- **Between games.** A game that doesn't decide the match is followed (after `gameOver`) by
+  **`betweenGames`** to each seat: the score, `lastGameResult` (`WIN`/`LOSS`/`DRAW`), the seat's
+  `deck` for the next game, its `sideboard` (pool − deck in Limited, CR 100.4b; the brought sideboard
+  for premade decks), the `registeredDeck`, `cards` (a `SealedCardInfo` for every name), free
+  `basicLands` (Limited), `youChoosePlayDraw` (the loser of the last game, or after a draw whoever chose
+  last time — CR 103.1), `startingPlayer` once chosen, and both seats' ready flags. It is re-sent whole
+  on every change and on reconnect (after `tournamentStarted`).
+- The seat answers **`submitMatchDeck`** `{ deck, playFirst? }`: the server validates the deck like a
+  submission (Limited: from the pool, basic lands free, ≥40; premade: only trades with its registered
+  sideboard), stores it for the rest of the match, and readies the seat. **`editMatchDeck`** takes the
+  ready back. The next game starts when both seats are ready; AI seats ready at once and always play.
+- **Decided.** `matchComplete` as before; `MatchResultInfo` now carries `player1GameWins` /
+  `player2GameWins`. Sideboarded decks are match-scoped: the next match starts from the registered deck.
+  Between matches the player may `unsubmitDeck` to rebuild from the pool (refused mid-match).
+
 ## 3e. Playing for Ante (WebSocket / REST)
 
 An opt-in lobby setting (CR 407), never on together with ranked. Lobby fields: `LobbySettings.playingForAnte`

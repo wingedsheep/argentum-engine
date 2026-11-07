@@ -76,6 +76,9 @@ export function MatchIntroAnimation() {
           {matchIntro.round != null && (
             <p className={styles.roundLabel}>Round {matchIntro.round}</p>
           )}
+          {matchIntro.matchGame != null && (
+            <p className={styles.roundLabel}>{matchIntro.matchGame}</p>
+          )}
           <p className={styles.vsText}>vs</p>
         </div>
 

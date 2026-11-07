@@ -8,6 +8,7 @@ import type { ReplayData } from '@/replay/reconstructSnapshots.ts'
 import { useDeckLibrary, buildDraftedDeckSave, type SavedDeckEntry } from '@/store/deckLibrary'
 import { useSaveDeck } from '@/store/useSaveDeck'
 import { deriveRoundPhase } from './roundPhase'
+import { SideboardingScreen } from './SideboardingScreen'
 import styles from '../ui/GameUI.module.css'
 import { randomBackground } from '@/utils/background'
 
@@ -142,6 +143,13 @@ export function TournamentOverlay({
     return await res.json() as ReplayData
   }, [tournamentState.lobbyId])
 
+  // Between the games of a best-of-three the match isn't over: the sideboarding step owns the screen.
+  // Keyed by game, so game 3 starts from the deck that played game 2, not from stale local edits.
+  const betweenGames = tournamentState.betweenGames
+  if (betweenGames && !isSpectator) {
+    return <SideboardingScreen key={`${betweenGames.round}-${betweenGames.nextGameNumber}`} snapshot={betweenGames} />
+  }
+
   if (showReplays) {
     return (
       <ReplayViewer
@@ -230,8 +238,16 @@ export function TournamentOverlay({
               >
                 {isPlayerReady ? '✓ Ready' : readyLabel}
               </button>
-              {!lobbyState?.settings.jumpstartActive && tournamentState.currentRound === 0 && !isPlayerReady && (
-                <button onClick={unsubmitDeck} className={styles.editDeckButton}>
+              {/* Rebuilding from the pool is allowed before round 1 and between matches — "continuous
+                  construction", the casual-event norm. The server refuses it mid-match. */}
+              {!lobbyState?.settings.jumpstartActive && !isPlayerReady && (tournamentState.currentRound === 0 || deckBuildingState) && (
+                <button
+                  onClick={unsubmitDeck}
+                  className={styles.editDeckButton}
+                  title={tournamentState.currentRound === 0
+                    ? 'Change your deck before the first round'
+                    : 'Rebuild your deck from your pool before your next match'}
+                >
                   Edit Deck
                 </button>
               )}
@@ -489,13 +505,18 @@ export function TournamentOverlay({
             const decided = !result.isBye && !result.isDraw
             const p1Won = decided && result.winnerId === result.player1Id
             const p2Won = decided && result.winnerId === result.player2Id
+            // A best-of-three reports its game score ("2–1") in place of the bare "vs".
+            const gameWins = (result.player1GameWins ?? 0) + (result.player2GameWins ?? 0)
+            const gameScore = (lobbyState?.settings.bestOf ?? 1) > 1 && !result.isBye && !result.isSimulated && gameWins > 0
+              ? `${result.player1GameWins ?? 0}–${result.player2GameWins ?? 0}`
+              : null
             return (
               <div key={i} className={styles.resultRow}>
                 <span className={p1Won ? styles.resultWinner : decided ? styles.resultLoser : undefined}>
                   {result.player1Name}
                 </span>
                 <span className={styles.resultOutcome}>
-                  {result.isBye ? 'Bye' : result.isDraw ? 'Draw' : 'vs'}
+                  {result.isBye ? 'Bye' : gameScore ? (result.isDraw ? `Draw ${gameScore}` : gameScore) : result.isDraw ? 'Draw' : 'vs'}
                   {result.isSimulated && (
                     <span
                       className={styles.resultSimulated}

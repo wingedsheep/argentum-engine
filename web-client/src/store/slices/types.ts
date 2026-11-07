@@ -24,6 +24,7 @@ import type {
   GameRules,
   PlayerStandingInfo,
   MatchResultInfo,
+  BetweenGamesMessage,
   ActiveMatchInfo,
   FfaStandingInfo,
   LobbyGameMode,
@@ -742,6 +743,32 @@ export interface TournamentState {
    * that *our* match ended, so it must never be read as "the round is over".
    */
   currentRoundComplete: boolean
+  /**
+   * Set while our best-of-three sits between two of its games — the sideboarding step. The server's
+   * latest snapshot, replaced whole; null (or absent) the rest of the time.
+   */
+  betweenGames?: BetweenGamesMessage | null
+  /** The game being played in our current match, when the match is longer than one game. */
+  currentGame?: CurrentMatchGame | null
+  /**
+   * Our last decided best-of-three, for the game-over card ("You won the match 2–1"). Set when the
+   * match completes and cleared when the next one starts, so it never describes an older match.
+   */
+  lastMatchScore?: LastMatchScore | null
+}
+
+export interface LastMatchScore {
+  readonly result: 'WIN' | 'LOSS' | 'DRAW'
+  readonly yourGameWins: number
+  readonly opponentGameWins: number
+}
+
+/** Where a best-of-N match stands while one of its games is played. */
+export interface CurrentMatchGame {
+  readonly gameNumber: number
+  readonly bestOf: number
+  readonly yourGameWins: number
+  readonly opponentGameWins: number
 }
 
 /**
@@ -815,6 +842,8 @@ export interface MatchIntro {
   playerAvatar?: string | null
   opponentAvatars?: (string | null)[]
   round?: number
+  /** Within a best-of-three: "Game 1 of 3", or "Game 2 · 1–0" with the score going in. */
+  matchGame?: string
   playerRecord?: string
   opponentRecord?: string
 }
@@ -1163,6 +1192,10 @@ export type GameStore = {
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
+  /** Between games of a best-of-three: play `deck` for the rest of the match and ready up. */
+  submitMatchDeck: (deck: Readonly<Record<string, number>>, playFirst?: boolean) => void
+  /** Between games: take back a ready to keep sideboarding. */
+  editMatchDeck: () => void
   addExtraRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
