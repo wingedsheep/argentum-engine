@@ -9102,6 +9102,9 @@
         "power": 0,
         "toughness": 1
     },
+    "keywords": [
+        "SKULK"
+    ],
     "script": {
         "triggeredAbilities": [
             {
@@ -9147,20 +9150,6 @@
                             }
                         ]
                     }
-                }
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "CantBeBlockedBy",
-                "blockerFilter": {
-                    "cardPredicates": [
-                        "IsCreature",
-                        {
-                            "type": "PowerGreaterThanEntity",
-                            "reference": "Self"
-                        }
-                    ]
                 }
             }
         ],

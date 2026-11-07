@@ -165,6 +165,7 @@ object Reminders {
         Keyword.FEAR -> "$self can't be blocked except by artifact creatures and/or black creatures."
         Keyword.SHADOW -> "$self can block or be blocked by only creatures with shadow."
         Keyword.HORSEMANSHIP -> "$self can't be blocked except by creatures with horsemanship."
+        Keyword.SKULK -> "$self can't be blocked by creatures with greater power."
         Keyword.SWAMPWALK -> landwalkGloss(self, "Swamp")
         Keyword.FORESTWALK -> landwalkGloss(self, "Forest")
         Keyword.ISLANDWALK -> landwalkGloss(self, "Island")

@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.woe.cards
 
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -8,9 +9,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Step
@@ -26,8 +25,7 @@ import com.wingedsheep.sdk.core.Step
  * At the beginning of your upkeep, if this creature has one or more +1/+1 counters on it, you may
  * remove a +1/+1 counter from it. If you do, draw a card.
  *
- * Skulk is expressed by its rules text rather than a keyword badge: projected blocker power is
- * compared with the Prodigy's projected power. The upkeep clause is an intervening-if condition,
+ * The upkeep clause is an intervening-if condition,
  * checked both when it would trigger and again on resolution. The optional effect keeps removing
  * the counter and drawing the card in one yes/no branch.
  */
@@ -42,11 +40,7 @@ val IngeniousProdigy = card("Ingenious Prodigy") {
     power = 0
     toughness = 1
 
-    staticAbility {
-        ability = CantBeBlockedBy(
-            GameObjectFilter.Creature.powerGreaterThanEntity(EffectTarget.Self)
-        )
-    }
+    keywords(Keyword.SKULK)
 
     replacementEffect(
         EntersWithDynamicCounters(

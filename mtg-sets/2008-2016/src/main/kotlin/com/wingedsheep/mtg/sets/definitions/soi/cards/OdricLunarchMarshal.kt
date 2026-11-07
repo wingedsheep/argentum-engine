@@ -46,14 +46,6 @@ import com.wingedsheep.sdk.core.Step
  *    passes on that specific variant, which is a projected `HEXPROOF_FROM_WHITE` keyword rather than
  *    [Keyword.HEXPROOF], so a trailing [Effects.GrantKeywordVariantsSharedByGroup] clause fans every
  *    hexproof-from variant some creature you control has out to the group.
- *  - **Skulk is omitted** — it is the one keyword on the printed list with no
- *    [com.wingedsheep.sdk.core.Keyword] entry and no blocking rule in the engine, so nothing in the
- *    card pool can currently *have* skulk and the "if a creature you control has skulk" clause can
- *    never be satisfied. The twelve modelled clauses are therefore exact in every reachable game
- *    state. Adding skulk is `add-feature` work (a `Keyword` value, a
- *    `CantBeBlockedByCreaturesWithGreaterPower` static ability mirroring the existing
- *    `CantBeBlockedByCreaturesWithLessPower`, a `BlockEvasionRule`, and client keyword display);
- *    when it lands, add `Keyword.SKULK` to [SHARED_KEYWORDS] and this card is complete.
  */
 private val SHARED_KEYWORDS = listOf(
     Keyword.FIRST_STRIKE,
@@ -66,7 +58,7 @@ private val SHARED_KEYWORDS = listOf(
     Keyword.LIFELINK,
     Keyword.MENACE,
     Keyword.REACH,
-    // Keyword.SKULK — not yet in the engine; see the class doc.
+    Keyword.SKULK,
     Keyword.TRAMPLE,
     Keyword.VIGILANCE,
 )
@@ -104,7 +96,7 @@ val OdricLunarchMarshal = card("Odric, Lunarch Marshal") {
             descriptionOverride = "Creatures you control gain first strike until end of turn if a " +
                 "creature you control has first strike. The same is true for flying, deathtouch, " +
                 "double strike, haste, hexproof, indestructible, lifelink, menace, reach, " +
-                "trample, and vigilance."
+                "skulk, trample, and vigilance."
         )
     }
 

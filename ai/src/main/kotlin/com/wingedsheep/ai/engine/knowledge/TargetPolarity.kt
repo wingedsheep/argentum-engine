@@ -2320,7 +2320,7 @@ object TargetPolarityAnalyzer {
 
     private val BENEFICIAL_KEYWORDS = setOf(
         Keyword.FLYING, Keyword.MENACE, Keyword.INTIMIDATE, Keyword.FEAR, Keyword.SHADOW,
-        Keyword.HORSEMANSHIP, Keyword.SWAMPWALK, Keyword.FORESTWALK, Keyword.ISLANDWALK,
+        Keyword.HORSEMANSHIP, Keyword.SKULK, Keyword.SWAMPWALK, Keyword.FORESTWALK, Keyword.ISLANDWALK,
         Keyword.MOUNTAINWALK, Keyword.PLAINSWALK, Keyword.FIRST_STRIKE, Keyword.DOUBLE_STRIKE,
         Keyword.TRAMPLE, Keyword.DEATHTOUCH, Keyword.LIFELINK, Keyword.VIGILANCE, Keyword.REACH,
         Keyword.HASTE, Keyword.INDESTRUCTIBLE, Keyword.HEXPROOF, Keyword.SHROUD, Keyword.WARD,

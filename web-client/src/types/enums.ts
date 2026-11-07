@@ -161,6 +161,7 @@ export enum Keyword {
   FEAR = 'FEAR',
   SHADOW = 'SHADOW',
   HORSEMANSHIP = 'HORSEMANSHIP',
+  SKULK = 'SKULK',
   // Landwalk
   SWAMPWALK = 'SWAMPWALK',
   FORESTWALK = 'FORESTWALK',
@@ -335,6 +336,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.FEAR]: 'Fear',
   [Keyword.SHADOW]: 'Shadow',
   [Keyword.HORSEMANSHIP]: 'Horsemanship',
+  [Keyword.SKULK]: 'Skulk',
   [Keyword.SWAMPWALK]: 'Swampwalk',
   [Keyword.FORESTWALK]: 'Forestwalk',
   [Keyword.ISLANDWALK]: 'Islandwalk',

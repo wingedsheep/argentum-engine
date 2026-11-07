@@ -64,6 +64,11 @@ object CombatMath {
             if (Keyword.HORSEMANSHIP.name !in bKeywords) return false
         }
 
+        // Skulk (CR 702.118b): can't be blocked by creatures with greater power
+        if (Keyword.SKULK.name in aKeywords) {
+            if ((projected.getPower(blocker) ?: 0) > (projected.getPower(attacker) ?: 0)) return false
+        }
+
         // Fear: only blocked by artifact or black creatures
         if (Keyword.FEAR.name in aKeywords) {
             val bColors = projected.getColors(blocker)

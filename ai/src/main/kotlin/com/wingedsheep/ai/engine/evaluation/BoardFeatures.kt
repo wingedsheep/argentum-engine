@@ -834,6 +834,8 @@ object BoardPresence : BoardFeature {
         if (Keyword.FEAR.name in keywords) value += 0.8
         if (Keyword.INTIMIDATE.name in keywords) value += 0.8
         if (Keyword.SHADOW.name in keywords) value += 1.0
+        // Skulk evades only bigger blockers, so it is worth most on a small body.
+        if (Keyword.SKULK.name in keywords) value += (0.9 - power * 0.15).coerceAtLeast(0.2)
         // Landwalk — contextual but often evasion
         if (Keyword.SWAMPWALK.name in keywords) value += 0.6
         if (Keyword.FORESTWALK.name in keywords) value += 0.6
