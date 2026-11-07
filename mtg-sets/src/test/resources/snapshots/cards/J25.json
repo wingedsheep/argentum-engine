@@ -180,7 +180,7 @@
                     "keywords": [
                         "HASTE"
                     ],
-                    "imageUri": "https://cards.scryfall.io/normal/front/b/a/bafa4e17-9da6-4abc-98f3-146cfa55fcf2.jpg?1783913152"
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfb0ae06-9a02-4cd6-bc1d-423662d7a1bd.jpg?1783903464"
                 },
                 "descriptionOverride": "When this enchantment enters, create a 1/1 red Soldier creature token with haste."
             },
@@ -213,13 +213,13 @@
                             "keywords": [
                                 "HASTE"
                             ],
-                            "imageUri": "https://cards.scryfall.io/normal/front/b/a/bafa4e17-9da6-4abc-98f3-146cfa55fcf2.jpg?1783913152"
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfb0ae06-9a02-4cd6-bc1d-423662d7a1bd.jpg?1783903464"
                         },
                         {
                             "type": "CopyForOtherPossibleTargets",
                             "candidates": {},
                             "selection": "ONE_CHOSEN",
-                            "among": "createdTokens"
+                            "collection": "createdTokens"
                         }
                     ]
                 },

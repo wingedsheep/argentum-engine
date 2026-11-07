@@ -41,10 +41,13 @@ class FrontlineHeroismScenarioTest : ScenarioTestBase() {
         }
 
         test("a spell on a single creature you control makes a Soldier and a copy aimed at it") {
+            // Hill Giant is another creature the spell could target: the copy still goes only to the
+            // token the ability just created, with no choice offered.
             val game = scenario()
                 .withPlayers()
                 .withCardOnBattlefield(1, "Frontline Heroism")
                 .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Hill Giant")
                 .withCardInHand(1, "Giant Growth")
                 .withLandsOnBattlefield(1, "Forest", 1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -59,6 +62,33 @@ class FrontlineHeroismScenarioTest : ScenarioTestBase() {
             val projected = game.state.projectedState
             withClue("the copy pumps the token") { projected.getPower(soldier) shouldBe 4 }
             withClue("the original still pumps the Bears") { projected.getPower(bears) shouldBe 5 }
+            withClue("the bystander gets nothing") { projected.getPower(game.findPermanent("Hill Giant")!!) shouldBe 3 }
+        }
+
+        test("the spell is still copied onto the Soldier when it was countered before the trigger resolved") {
+            // Ruling: the ability "resolves even if that spell is countered" — the copy is made from
+            // the spell as it last existed on the stack.
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Frontline Heroism")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardInHand(1, "Giant Growth")
+                .withLandsOnBattlefield(1, "Forest", 1)
+                .withCardInHand(2, "Counterspell")
+                .withLandsOnBattlefield(2, "Island", 2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val bears = game.findPermanent("Grizzly Bears")!!
+            game.castSpell(1, "Giant Growth", bears).error shouldBe null
+            game.passPriority().error shouldBe null
+            game.castSpellTargetingStackSpell(2, "Counterspell", "Giant Growth").error shouldBe null
+            game.resolveStack()
+
+            val soldier = game.findPermanents("Soldier Token").shouldHaveSize(1).single()
+            val projected = game.state.projectedState
+            withClue("the copy pumps the token") { projected.getPower(soldier) shouldBe 4 }
+            withClue("the countered original pumps nothing") { projected.getPower(bears) shouldBe 2 }
         }
 
         test("a spell targeting an opponent's creature doesn't trigger it") {
@@ -80,22 +110,24 @@ class FrontlineHeroismScenarioTest : ScenarioTestBase() {
 
         test("when the token isn't a legal target the Soldier is made but no copy is (707.10e)") {
             // Smite the Monstrous: "Destroy target creature with power 4 or greater." The 1/1 token
-            // can't be its target, so the spell isn't copied and the token survives.
+            // can't be its target, so the spell isn't copied and the token survives — nor does the
+            // copy fall to the second Wurm, which the spell could target.
             val game = scenario()
                 .withPlayers()
                 .withCardOnBattlefield(1, "Frontline Heroism")
+                .withCardOnBattlefield(1, "Craw Wurm")
                 .withCardOnBattlefield(1, "Craw Wurm")
                 .withCardInHand(1, "Smite the Monstrous")
                 .withLandsOnBattlefield(1, "Plains", 4)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
 
-            game.castSpell(1, "Smite the Monstrous", game.findPermanent("Craw Wurm")!!).error shouldBe null
+            game.castSpell(1, "Smite the Monstrous", game.findPermanents("Craw Wurm").first()).error shouldBe null
             game.resolveStack()
 
             game.hasPendingDecision() shouldBe false
             game.findPermanents("Soldier Token") shouldHaveSize 1
-            game.findPermanent("Craw Wurm") shouldBe null
+            game.findPermanents("Craw Wurm") shouldHaveSize 1
         }
 
         test("with a token doubler you choose one of the two Soldiers and only it gets the copy") {
@@ -104,6 +136,7 @@ class FrontlineHeroismScenarioTest : ScenarioTestBase() {
                 .withCardOnBattlefield(1, "Frontline Heroism")
                 .withCardOnBattlefield(1, "Anointed Procession")
                 .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Hill Giant")
                 .withCardInHand(1, "Giant Growth")
                 .withLandsOnBattlefield(1, "Forest", 1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -115,7 +148,9 @@ class FrontlineHeroismScenarioTest : ScenarioTestBase() {
 
             val soldiers = game.findPermanents("Soldier Token").shouldHaveSize(2)
             val decision = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
-            decision.options.toSet() shouldBe soldiers.toSet()
+            withClue("only the new Soldiers are offered, not the Hill Giant") {
+                decision.options.toSet() shouldBe soldiers.toSet()
+            }
             game.selectCards(listOf(soldiers.first())).error shouldBe null
             game.resolveStack()
 
@@ -123,6 +158,7 @@ class FrontlineHeroismScenarioTest : ScenarioTestBase() {
             projected.getPower(soldiers.first()) shouldBe 4
             projected.getPower(soldiers.last()) shouldBe 1
             projected.getPower(bears) shouldBe 5
+            projected.getPower(game.findPermanent("Hill Giant")!!) shouldBe 3
         }
 
         test("an Aura spell is copied too, and its copy becomes a token Aura on the Soldier") {

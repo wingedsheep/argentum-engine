@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 
 private const val SOLDIER_TOKEN_IMAGE =
-    "https://cards.scryfall.io/normal/front/b/a/bafa4e17-9da6-4abc-98f3-146cfa55fcf2.jpg?1783913152"
+    "https://cards.scryfall.io/normal/front/d/f/dfb0ae06-9a02-4cd6-bc1d-423662d7a1bd.jpg?1783903464"
 
 private fun soldierToken() = Effects.CreateToken(
     power = 1,

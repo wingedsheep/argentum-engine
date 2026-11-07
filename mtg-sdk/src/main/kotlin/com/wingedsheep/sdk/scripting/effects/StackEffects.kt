@@ -1148,10 +1148,10 @@ enum class PossibleTargetCopies {
  * creatures. Copy that spell. The copy targets the chosen creature." — the copier picks one candidate
  * (no prompt when there is only one) and gets a single copy aimed at it.
  *
- * [among] narrows the candidates to the objects in a named pipeline collection — CR 707.10e, "copy a
+ * [collection] narrows the candidates to the objects in a named pipeline collection — CR 707.10e, "copy a
  * spell or ability and specify a new target for the copy". Frontline Heroism's "create a 1/1 red
  * Soldier creature token with haste, then copy that spell. The copy targets that token." is
- * `among = CREATED_TOKENS` with `ONE_CHOSEN` after the `CreateToken`: no copy when the token isn't a
+ * `collection = CREATED_TOKENS` with `ONE_CHOSEN` after the `CreateToken`: no copy when the token isn't a
  * legal target for every instance of "target", and when a doubler made two tokens the copier chooses
  * one of them (the rule's own example — the copy never targets both).
  *
@@ -1162,7 +1162,7 @@ enum class PossibleTargetCopies {
  * @property candidates Which objects the copies are aimed at, one copy each.
  * @property copier Who copies: controls the copies, and the reference player for [candidates].
  * @property selection Every candidate gets a copy, or only the one the copier chooses.
- * @property among When set, only objects in this pipeline collection are candidates (707.10e's
+ * @property collection When set, only objects in this pipeline collection are candidates (707.10e's
  *   specified new target — e.g. `CREATED_TOKENS`); `null` is every object on the board.
  */
 @SerialName("CopyForOtherPossibleTargets")
@@ -1176,12 +1176,12 @@ data class CopyForOtherPossibleTargetsEffect(
     val selection: PossibleTargetCopies = PossibleTargetCopies.EACH,
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val among: String? = null
+    val collection: String? = null
 ) : Effect {
     override val description: String = buildString {
-        if (among != null) {
+        if (collection != null) {
             val copied = if (target == EffectTarget.TargetingSource) "that ability" else "that spell"
-            val chosen = if (among == CREATED_TOKENS) "that token" else "one of those objects"
+            val chosen = if (collection == CREATED_TOKENS) "that token" else "one of those objects"
             append(if (copier != Player.You) "${copier.description.replaceFirstChar { it.uppercase() }} copies " else "Copy ")
             append("$copied. The copy targets $chosen")
             return@buildString

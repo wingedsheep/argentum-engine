@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlin.reflect.KClass
 
@@ -65,7 +66,7 @@ import kotlin.reflect.KClass
  * copier picks from a board selection ([CopyForChosenPossibleTargetContinuation] resumes into
  * [copyOnto]).
  *
- * With `among` set (CR 707.10e — "copy a spell or ability and specify a new target for the copy",
+ * With `collection` set (CR 707.10e — "copy a spell or ability and specify a new target for the copy",
  * Frontline Heroism's "the copy targets that token") the candidates are further narrowed to the
  * objects in that pipeline collection; legality is the same 707.10d check, so an illegal token gets
  * no copy, and several legal ones (a token doubler) go through `ONE_CHOSEN`'s pick.
@@ -87,13 +88,15 @@ class CopyForOtherPossibleTargetsExecutor(
         effect: CopyForOtherPossibleTargetsEffect,
         context: EffectContext
     ): EffectResult {
-        // The object may have left the stack (countered, or it resolved before this trigger did), in
-        // which case there is nothing to copy. That is the same known limitation every other
-        // "copy that spell" trigger has — see Thousand-Year Storm's note on last-known information
-        // for stack objects.
+        // "Copy that spell" names the triggering spell, which may have left the stack without
+        // resolving (countered, bounced) and so become a new object (CR 400.7). The copy is then made
+        // from the spell as it last existed on the stack (CR 608.2h), as for [CopyTargetSpellExecutor].
         val originalId = context.resolveTarget(effect.target)
+            ?: context.objectReferences.triggering
+                ?.takeIf { effect.target == EffectTarget.TriggeringEntity }
+                ?.let(state::departedSpellEntity)
             ?: return EffectResult.success(state)
-        val container = state.getEntity(originalId)
+        val container = stackObjectOrLastKnown(state, originalId)
             ?: return EffectResult.success(state)
         if (container.has<CantBeCopiedComponent>()) return EffectResult.success(state)
 
@@ -107,7 +110,7 @@ class CopyForOtherPossibleTargetsExecutor(
 
         // 707.10e: a specified new target ("the copy targets that token") narrows the candidates to
         // the objects an earlier step of this resolution recorded.
-        val among = effect.among?.let { context.pipeline.storedCollections[it].orEmpty().toSet() }
+        val among = effect.collection?.let { context.pipeline.storedCollections[it].orEmpty().toSet() }
         val candidates = otherPossibleTargets(
             state, targetFinder, predicateEvaluator, originalId, effect.candidates, copierId,
             filterSourceId = context.sourceId
@@ -154,7 +157,7 @@ class CopyForOtherPossibleTargetsExecutor(
         copierId: EntityId,
         copyTargets: List<EntityId>
     ): EffectResult {
-        val container = state.getEntity(originalId) ?: return EffectResult.success(state)
+        val container = stackObjectOrLastKnown(state, originalId) ?: return EffectResult.success(state)
         val isAbility = container.has<TriggeredAbilityOnStackComponent>() ||
             container.has<ActivatedAbilityOnStackComponent>()
         val requirements = container.get<TargetsComponent>()?.targetRequirements ?: emptyList()
@@ -242,6 +245,15 @@ class CopyForOtherPossibleTargetsExecutor(
 
     companion object {
         /**
+         * The ability on the stack, or the spell as it is on the stack or — once it left without
+         * resolving — as it last existed there ([GameState.spellOrLastKnown]).
+         */
+        private fun stackObjectOrLastKnown(state: GameState, id: EntityId): ComponentContainer? =
+            state.getEntity(id)?.takeIf {
+                it.has<TriggeredAbilityOnStackComponent>() || it.has<ActivatedAbilityOnStackComponent>()
+            } ?: state.spellOrLastKnown(id)
+
+        /**
          * The CR 707.10d candidate set for copying [originalId] (a spell or an ability on the stack):
          * objects matching [candidates] — read relative to [copierId] and [filterSourceId] — that
          * are a legal target for **every** instance of the word "target" on it, minus what it
@@ -258,7 +270,7 @@ class CopyForOtherPossibleTargetsExecutor(
             copierId: EntityId,
             filterSourceId: EntityId?
         ): List<EntityId> {
-            val container = state.getEntity(originalId) ?: return emptyList()
+            val container = stackObjectOrLastKnown(state, originalId) ?: return emptyList()
             val triggered = container.get<TriggeredAbilityOnStackComponent>()
             val activated = container.get<ActivatedAbilityOnStackComponent>()
             val targetsComponent = container.get<TargetsComponent>()

@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.mtg.sets.definitions.dmu.cards.VesuvanDuplimancy
+import com.wingedsheep.mtg.sets.definitions.fra.cards.DanithaSpearOfAgony
 import com.wingedsheep.mtg.sets.definitions.j25.cards.FrontlineHeroism
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -17,5 +18,10 @@ class TargetingCastTriggerSynergyTest : FunSpec({
     test("a cast trigger on a spell that targets only a single creature you control rewards spells") {
         SynergyAxes.of(FrontlineHeroism).rewards shouldContain SynergyAxis.SPELLS
         SynergyAxes.of(VesuvanDuplimancy).rewards shouldContain SynergyAxis.SPELLS
+    }
+
+    test("an any-of of targeting requirements rewards spells too") {
+        // "a spell that targets an opponent or a creature an opponent controls"
+        SynergyAxes.of(DanithaSpearOfAgony).rewards shouldContain SynergyAxis.SPELLS
     }
 })

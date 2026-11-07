@@ -6108,7 +6108,7 @@ object Effects {
             candidates = GameObjectFilter.Any,
             copier = copier,
             selection = com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies.ONE_CHOSEN,
-            among = among.key
+            collection = among.key
         )
 
     /**

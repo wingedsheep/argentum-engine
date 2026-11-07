@@ -263,7 +263,7 @@ object SynergyAxes {
         // spells this axis is fed by — so it rewards it like an instant-or-sorcery trigger does.
         is EventPattern.SpellCastEvent ->
             if (pattern.player == Player.You &&
-                (rewardsSpells(pattern.spellFilter) || pattern.requires.any { it in TARGETING_SPELL_PREDICATES || it is SpellCastPredicate.TargetsMatching })
+                (rewardsSpells(pattern.spellFilter) || pattern.requires.any(::requiresTargeting))
             ) setOf(SynergyAxis.SPELLS)
             else emptySet()
         // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
@@ -471,10 +471,23 @@ object SynergyAxes {
         IntentTag.COUNTERSPELL,
     )
 
-    /** Cast-trigger requirements that the spell targets something — only a noncreature spell, in practice. */
-    private val TARGETING_SPELL_PREDICATES: Set<SpellCastPredicate> = setOf(
-        SpellCastPredicate.TargetsSource, SpellCastPredicate.TargetsOnlySource, SpellCastPredicate.TargetsOpponent
-    )
+    /**
+     * The cast-trigger requirement holds only for a spell that targets something — only a
+     * noncreature spell, in practice. An `AnyOf` qualifies when every option does.
+     */
+    private fun requiresTargeting(predicate: SpellCastPredicate): Boolean = when (predicate) {
+        SpellCastPredicate.TargetsSource, SpellCastPredicate.TargetsOnlySource,
+        SpellCastPredicate.TargetsOpponent, is SpellCastPredicate.TargetsMatching,
+        is SpellCastPredicate.CouldTargetOther -> true
+        is SpellCastPredicate.AnyOf -> predicate.options.isNotEmpty() && predicate.options.all(::requiresTargeting)
+        is SpellCastPredicate.CastFromZone, is SpellCastPredicate.CastFromZoneOtherThan,
+        SpellCastPredicate.WasKicked, is SpellCastPredicate.PaidWithManaFromSubtype,
+        is SpellCastPredicate.PaidWithManaFromCardType, SpellCastPredicate.PaidWithSnowManaOfItsColors,
+        SpellCastPredicate.PaidWithManaFromSource, SpellCastPredicate.IsModal, SpellCastPredicate.HasXInCost,
+        SpellCastPredicate.NotOwnedByController,
+        SpellCastPredicate.CastAsAdventure, SpellCastPredicate.CastAsPrepareSpell, SpellCastPredicate.IsCard,
+        is SpellCastPredicate.SpellMatches -> false
+    }
 
     private val SPELL_PREDICATES: Set<CardPredicate> =
         setOf(CardPredicate.IsInstant, CardPredicate.IsSorcery, CardPredicate.IsNoncreature)
