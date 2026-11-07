@@ -65,6 +65,11 @@ import kotlin.reflect.KClass
  * copier picks from a board selection ([CopyForChosenPossibleTargetContinuation] resumes into
  * [copyOnto]).
  *
+ * With `among` set (CR 707.10e — "copy a spell or ability and specify a new target for the copy",
+ * Frontline Heroism's "the copy targets that token") the candidates are further narrowed to the
+ * objects in that pipeline collection; legality is the same 707.10d check, so an illegal token gets
+ * no copy, and several legal ones (a token doubler) go through `ONE_CHOSEN`'s pick.
+ *
  * An object flagged can't-be-copied yields no copies at all.
  */
 class CopyForOtherPossibleTargetsExecutor(
@@ -100,10 +105,13 @@ class CopyForOtherPossibleTargetsExecutor(
         val copierId = TargetResolutionUtils.resolvePlayerRef(effect.copier, context, state)
             ?: return EffectResult.success(state)
 
+        // 707.10e: a specified new target ("the copy targets that token") narrows the candidates to
+        // the objects an earlier step of this resolution recorded.
+        val among = effect.among?.let { context.pipeline.storedCollections[it].orEmpty().toSet() }
         val candidates = otherPossibleTargets(
             state, targetFinder, predicateEvaluator, originalId, effect.candidates, copierId,
             filterSourceId = context.sourceId
-        )
+        ).let { all -> if (among == null) all else all.filter { it in among } }
         if (candidates.isEmpty()) return EffectResult.success(state)
 
         if (effect.selection == PossibleTargetCopies.ONE_CHOSEN && candidates.size > 1) {

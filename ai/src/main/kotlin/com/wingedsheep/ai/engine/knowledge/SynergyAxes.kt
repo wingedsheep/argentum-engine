@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
+import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
@@ -257,8 +258,13 @@ object SynergyAxes {
             if (pattern.controller == Player.You) setOf(SynergyAxis.TOKENS) else emptySet()
         is EventPattern.LifeGainEvent ->
             if (pattern.player == Player.You) setOf(SynergyAxis.LIFEGAIN) else emptySet()
+        // "Whenever you cast a spell that targets …" (Frontline Heroism, Vesuvan Duplimancy, Legolas)
+        // watches spells that target — in practice instants, sorceries and Auras, the noncreature
+        // spells this axis is fed by — so it rewards it like an instant-or-sorcery trigger does.
         is EventPattern.SpellCastEvent ->
-            if (pattern.player == Player.You && rewardsSpells(pattern.spellFilter)) setOf(SynergyAxis.SPELLS)
+            if (pattern.player == Player.You &&
+                (rewardsSpells(pattern.spellFilter) || pattern.requires.any { it in TARGETING_SPELL_PREDICATES || it is SpellCastPredicate.TargetsMatching })
+            ) setOf(SynergyAxis.SPELLS)
             else emptySet()
         // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
         // counterspells — instants, which is what feeds the spells axis.
@@ -463,6 +469,11 @@ object SynergyAxes {
     private val ANSWERS: Set<IntentTag> = setOf(
         IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER, IntentTag.NEUTRALIZE, IntentTag.FIGHT,
         IntentTag.COUNTERSPELL,
+    )
+
+    /** Cast-trigger requirements that the spell targets something — only a noncreature spell, in practice. */
+    private val TARGETING_SPELL_PREDICATES: Set<SpellCastPredicate> = setOf(
+        SpellCastPredicate.TargetsSource, SpellCastPredicate.TargetsOnlySource, SpellCastPredicate.TargetsOpponent
     )
 
     private val SPELL_PREDICATES: Set<CardPredicate> =
