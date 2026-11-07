@@ -212,6 +212,7 @@ Aetherize
 Aetherjacket
 Aethershield Artificer
 Aethersnipe
+Aethersphere Harvester
 Aethersquall Ancient
 Aetherstorm Roc
 Aetherstream Leopard
@@ -303,6 +304,7 @@ Ajani Fells the Godsire
 Ajani Goldmane
 Ajani Resolute
 Ajani Unrelenting
+Ajani Unyielding
 Ajani's Anguish
 Ajani's Comrade
 Ajani's Influence
@@ -318,6 +320,7 @@ Ajani, Nacatl Pariah
 Ajani, Outland Chaperone
 Ajani, Sleeper Agent	intent: CreateGlobalTriggeredAbilityEffect
 Ajani, Strength of the Pride
+Ajani, Valiant Protector
 Ajani, Wise Counselor
 Ajani, the Greathearted
 Akal Pakal, First Among Equals
@@ -2899,7 +2902,7 @@ Chase Inspiration
 Chasm Guide
 Chasm Skulker
 Chatter of the Squirrel
-Chatterfang, Squirrel General	polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Chatterfang, Squirrel General	timing: ModifyStatsEffect
 Chatterstorm
 Check for Traps
 Checkpoint Officer
@@ -3866,6 +3869,7 @@ Danitha, Spear of Agony
 Danitha, Sword of Hope
 Dapper Shieldmate
 Darba
+Daredevil Dragster
 Daredevil, Man Without Fear
 Daretti, Rocketeer Engineer
 Darigaaz Reincarnated
@@ -3895,6 +3899,7 @@ Dark Fortress
 Dark Hatchling
 Dark Heart of the Wood
 Dark Inquiry
+Dark Intimations
 Dark Knight's Greatsword
 Dark Leo & Shredder
 Dark Matter Manipulator
@@ -7387,6 +7392,7 @@ Gollum, Silent Slinker
 Golos, Tireless Pilgrim
 Goma Fada Vanguard
 Gongaga, Reactor Town
+Gonti's Aether Heart
 Gonti's Machinations
 Gonti, Lord of Luxury
 Gonti, Night Minister	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -8798,6 +8804,7 @@ Inspiring Cleric
 Inspiring Overseer
 Inspiring Paladin
 Inspiring Roar
+Inspiring Statuary
 Inspiring Unicorn
 Inspiring Vantage
 Inspiring Veteran
@@ -10903,6 +10910,7 @@ Merchant Ship
 Merchant of Many Hats
 Merchant of Secrets
 Merchant of the Vale
+Merchant's Dockhand
 Merciless Enforcers
 Merciless Eternal
 Merciless Executioner
@@ -17663,16 +17671,20 @@ Teyo, the Shieldmage
 Teysa Karlov
 Teysa, Opulent Oligarch
 Teysa, Orzhov Scion
+Tezzeret the Schemer
 Tezzeret the Seeker
 Tezzeret's Ambition
+Tezzeret's Betrayal
 Tezzeret's Gambit
 Tezzeret's Gatebreaker	combat: CantBeBlockedGroupEffect; timing: CantBeBlockedGroupEffect
 Tezzeret's Simulacrum
 Tezzeret's Strider
+Tezzeret's Touch
 Tezzeret, Artifice Master
 Tezzeret, Betrayer of Flesh	polarity: AddCardTypeEffect; polarity: BecomeCreatureEffect
 Tezzeret, Cruel Captain
 Tezzeret, Cruel Machinist	intent: Pipeline(hand→battlefield); polarity: BecomeCreatureEffect
+Tezzeret, Master of Metal
 Tezzeret, Master of the Bridge
 Thalakos Seer
 Thalakos Sentry
@@ -18508,6 +18520,7 @@ Treasure Chest
 Treasure Cruise
 Treasure Dredger
 Treasure Hunter
+Treasure Keeper
 Treasure Map
 Treasure Trove
 Treasure Vault
