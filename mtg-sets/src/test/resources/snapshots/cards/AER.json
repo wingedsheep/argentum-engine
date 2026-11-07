@@ -7645,6 +7645,78 @@
     "colorIdentityOverride": []
 }
 
+// Perilous Predicament
+{
+    "name": "Perilous Predicament",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Each opponent sacrifices an artifact creature and a nonartifact creature of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature ctrl:opponent"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "ChooseOnePerCategory",
+                    "from": "gathered0",
+                    "categories": [
+                        {
+                            "cardPredicates": [
+                                "IsArtifact",
+                                "IsCreature"
+                            ]
+                        },
+                        {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonartifact"
+                            ]
+                        }
+                    ],
+                    "storeAs": "picked1",
+                    "purpose": "SACRIFICE"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "picked1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Comrades in life. Comrades in death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0edc708-0c76-4fcd-a175-d9c6f1ca3ac1.jpg?1783936759",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "When Perilous Predicament resolves, first the player whose turn it is (if that player is an opponent) chooses which creatures they will sacrifice, then each other opponent in turn order does the same, then all chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If each creature an opponent controls is an artifact creature, that player sacrifices only one creature. Similarly, if each creature an opponent controls is a nonartifact creature, that player sacrifices only one creature. If an opponent controls no creatures, that player doesn't sacrifice anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pia's Revolution
 {
     "name": "Pia's Revolution",

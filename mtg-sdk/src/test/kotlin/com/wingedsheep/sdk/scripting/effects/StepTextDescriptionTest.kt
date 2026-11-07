@@ -229,6 +229,24 @@ class StepTextDescriptionTest : DescribeSpec({
         }
     }
 
+    describe("a type negation is an adjective ahead of the noun") {
+
+        it("nonartifact creature, never creature nonartifact") {
+            GameObjectFilter.Creature.nonartifact().description shouldBe "nonartifact creature"
+            GameObjectFilter.Creature.nonartifact().indefiniteArticle shouldBe "a"
+        }
+
+        it("Perilous Predicament's per-category edict names both picks as sacrificed") {
+            ChooseOnePerCategoryEffect(
+                from = "pool",
+                categories = listOf(GameObjectFilter.ArtifactCreature, GameObjectFilter.Creature.nonartifact()),
+                storeAs = "picked",
+                purpose = CategoryPickPurpose.SACRIFICE,
+            ).description shouldBe
+                "each player chooses an artifact creature and a nonartifact creature they control to sacrifice"
+        }
+    }
+
     describe("a battlefield gather is its consumer's object") {
 
         val newcomers = GameObjectFilter.Creature

@@ -80,18 +80,26 @@ data class GameObjectFilter(
         }
 
     /**
-     * Card predicates in rendering order: color adjectives first, then subtypes, then the card
+     * Card predicates in rendering order: type negations and color adjectives first, then subtypes, then the card
      * type, because Magic templates them that way — "white permanent", "green Elf creature",
      * "Frog, Rabbit, or Squirrel creature", never "permanent white" or "creature Wolf". A stable
      * partition, so every other pairing keeps its original insertion order.
      */
     private fun orderedCardPredicates(): List<CardPredicate> {
-        val (colors, others) = cardPredicates.partition { it.isColorAdjective() }
+        // Type negations lead, as Oracle templates them: "nonartifact, nonblack creature" (Terror),
+        // "nonartifact creature", never "creature nonartifact".
+        val (negations, rest0) = cardPredicates.partition { it.isTypeNegation() }
+        val (colors, others) = rest0.partition { it.isColorAdjective() }
         val (subtypes, rest) = others.partition {
             it is CardPredicate.HasSubtype || it is CardPredicate.HasAnyOfSubtypes
         }
-        return colors + subtypes + rest
+        return negations + colors + subtypes + rest
     }
+
+    /** "Not this card type" predicates — adjectives ahead of the noun ("nonland permanent"). */
+    private fun CardPredicate.isTypeNegation(): Boolean =
+        this == CardPredicate.IsNonartifact || this == CardPredicate.IsNonland ||
+            this == CardPredicate.IsNoncreature || this == CardPredicate.IsNonenchantment
 
     /** One-word color predicates that read as an adjective ahead of the noun ("nonblack", "multicolored"). */
     private fun CardPredicate.isColorAdjective(): Boolean =
