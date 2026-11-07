@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.handlers.actions.ability.extractTapXPermanentsCost
+import com.wingedsheep.engine.handlers.actions.ability.tapXExcludedSource
 import com.wingedsheep.engine.handlers.effects.LibraryPlacement
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -617,6 +619,17 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     if (toTap.size < xCount) {
                         return CostPaymentResult.failure("Not enough permanents chosen to tap (need $xCount, got ${toTap.size})")
                     }
+                    // The chosen ids arrive on the client-supplied action: re-check them against the
+                    // same pool the listing and the X pause offer, so X can't be "paid" by
+                    // re-tapping a tapped permanent (the {T} source among them) or an ineligible one.
+                    val chosen = toTap.take(xCount)
+                    if (chosen.toSet().size != chosen.size) {
+                        return CostPaymentResult.failure("Cannot tap the same permanent twice for one cost")
+                    }
+                    val pool = findUntappedMatchingPermanentsUnified(state, controllerId, cost.filter, sourceId).toSet()
+                    if (chosen.any { it !in pool }) {
+                        return CostPaymentResult.failure("Can only tap untapped matching permanents you control for this cost")
+                    }
 
                     var newState = state
                     val events = mutableListOf<GameEvent>()
@@ -691,6 +704,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
             }
             is AbilityCost.Craft -> payCraftCost(state, cost, sourceId, controllerId, manaPool, choices)
             is AbilityCost.Composite -> {
+                // "{T}, Tap X untapped …": the source pays {T}, so it is never one of the X —
+                // whichever order the sub-costs are paid in.
+                val tapXExcluded = cost.extractTapXPermanentsCost()?.let { cost.tapXExcludedSource(sourceId) }
+                if (tapXExcluded != null && tapXExcluded in choices.tapChoices.take(choices.xValue)) {
+                    return CostPaymentResult.failure("The permanent paying {T} can't also be tapped for X")
+                }
                 var currentState = state
                 var currentPool = manaPool
                 val allEvents = mutableListOf<GameEvent>()

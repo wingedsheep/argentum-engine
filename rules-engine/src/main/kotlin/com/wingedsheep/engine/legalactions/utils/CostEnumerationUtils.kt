@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.handlers.actions.ability.tapXExcludedSource
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -156,14 +157,18 @@ class CostEnumerationUtils(
      * is set — "tap another untapped …". Pass `if (atom.excludeSelf) sourceId else null` from every
      * enumeration site so the offered pool matches what payment validation will accept; a plain
      * "tap two untapped …" may tap the source itself, so null is correct there.
+     *
+     * [sourceId] goes into the [PredicateContext] so a source-relative filter resolves the way
+     * payment resolves it (payment always has the source in scope).
      */
     fun findAbilityTapTargets(
         state: GameState,
         playerId: EntityId,
         filter: GameObjectFilter,
-        excludeEntityId: EntityId? = null
+        excludeEntityId: EntityId? = null,
+        sourceId: EntityId? = null
     ): List<EntityId> {
-        val predicateContext = PredicateContext(controllerId = playerId)
+        val predicateContext = PredicateContext(controllerId = playerId, sourceId = sourceId)
         val projected = state.projectedState
         return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
             if (entityId == excludeEntityId) return@filter false
@@ -844,7 +849,13 @@ class CostEnumerationUtils(
             else -> null
         }
         if (tapXCost != null) {
-            maxX = minOf(maxX, findAbilityTapTargets(state, playerId, tapXCost.filter).size)
+            maxX = minOf(
+                maxX,
+                findAbilityTapTargets(
+                    state, playerId, tapXCost.filter,
+                    excludeEntityId = abilityCost.tapXExcludedSource(sourceId), sourceId = sourceId
+                ).size
+            )
         }
 
         // Cap by life total if PayXLife. Per CR 119.4 a player may pay an amount of life greater

@@ -122,6 +122,28 @@ object PredefinedTokens {
     }
 
     /**
+     * Etherium Cell — the colorless artifact token of Tezzeret the Schemer's +1:
+     * "{T}, Sacrifice this artifact: Add one mana of any color." Like a Lotus it has no subtype,
+     * only the name — it is *not* a Treasure, so "Treasure you control" never counts it.
+     */
+    val EtheriumCell = card("Etherium Cell") {
+        typeLine = "Artifact"
+        oracleText = "{T}, Sacrifice this artifact: Add one mana of any color."
+
+        activatedAbility {
+            cost = Costs.Composite(Costs.Tap, Costs.SacrificeSelf)
+            effect = Effects.AddAnyColorMana(1)
+            manaAbility = true
+            description = "{T}, Sacrifice this artifact: Add one mana of any color."
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/9/6/9616ca53-ea6a-4fc1-8e01-94e0fb47e5ed.jpg?1783936711"
+            artist = "Craig J Spearing"
+        }
+    }
+
+    /**
      * Meteorite token — a colorless artifact (Roxanne, Starfall Savant) with:
      * "When this token enters, it deals 2 damage to any target." and
      * "{T}: Add one mana of any color."
@@ -1504,6 +1526,7 @@ object PredefinedTokens {
         ReplicatedRing,
         TamiyosNotebook,
         Feather,
-        Gold
+        Gold,
+        EtheriumCell
     )
 }
