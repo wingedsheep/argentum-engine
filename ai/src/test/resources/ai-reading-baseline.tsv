@@ -190,6 +190,7 @@ Aether Chaser
 Aether Gust
 Aether Helix
 Aether Herder
+Aether Hub
 Aether Inspector
 Aether Meltdown
 Aether Revolt
@@ -217,6 +218,7 @@ Aethertide Whale
 Aethertorch Renegade
 Aethertow
 Aetherwind Basker
+Aetherworks Marvel
 Aettir and Priwen
 Affa Guard Hound
 Affectionate Indrik
@@ -606,6 +608,7 @@ Animate Artifact	polarity: Aura>CompositeStaticAbility
 Animate Dead	intent: EnchantPutOntoBattlefieldEffect; intent: Pipeline(graveyard→battlefield)
 Animate Wall	polarity: Aura>CanAttackDespiteDefender
 Animating Faerie
+Animation Module
 Animist's Awakening
 Animist's Might
 Anje, Maid of Dishonor
@@ -3098,7 +3101,7 @@ Cloak of Feathers
 Cloak of Mists
 Cloak of the Bat
 Cloaked Cadet	intent: EmitKeywordCounterEventEffect
-Clockspinning	intent: AddCountersOfChosenKindEffect
+Clockspinning
 Clockwork Avian	intent: ChooseNumberThenEffect
 Clockwork Beast	intent: ChooseNumberThenEffect
 Clockwork Beetle
@@ -3702,7 +3705,7 @@ Crystal Slipper
 Crystal Spray	polarity: ChangeWordInTextEffect; timing: ChangeWordInTextEffect
 Crystal Vein
 Crystalline Entity
-Crystalline Giant	intent: AddCountersOfChosenKindEffect
+Crystalline Giant
 Cuboid Colony
 Cubwarden
 Cudgel Troll
@@ -3938,7 +3941,7 @@ Daru Warchief
 Dashing Bloodsucker
 Data, New Life
 Dathon and Picard at El-Adrel
-Dathon, His Heart Open	intent: AddCountersOfChosenKindEffect; polarity: AddCountersOfChosenKindEffect
+Dathon, His Heart Open
 Daunting Defender
 Dauntless Aven
 Dauntless Bodyguard
@@ -4017,6 +4020,7 @@ Deadeye Rig-Hauler
 Deadeye Tormentor
 Deadeye Tracker
 Deadfall
+Deadlock Trap
 Deadly Alliance
 Deadly Allure
 Deadly Brew
@@ -4100,6 +4104,7 @@ Decimator of the Provinces
 Decision Paralysis
 Decisive Denial
 Declare Dominance
+Decoction Module
 Decode Transmissions
 Decommission
 Deconstruct
@@ -4977,6 +4982,7 @@ Dwynen, Gilt-Leaf Daen
 Dyadrine, Synthesis Amalgam
 Dying to Serve
 Dynamite Diver
+Dynavolt Tower
 Dáin Ironfoot
 Dáin's Company
 Dáin, Lord of the Iron Hills
@@ -4986,6 +4992,7 @@ Dúnedain Rangers
 ED-E, Lonesome Eyebot
 EPF Point Squad
 Eager Cadet
+Eager Construct
 Eager First-Year
 Eager Glyphmage
 Eager Trufflesnout
@@ -5022,7 +5029,7 @@ Earthcraft
 Earthen Ally
 Earthquake
 Earthquake Dragon
-Earthrumbler	intent: AddCardTypeEffect; timing: AddCardTypeEffect
+Earthrumbler	timing: AddCardTypeEffect
 Earthshaker
 Earthshaker Dreadmaw
 Earthshaker Khenra
@@ -5151,6 +5158,7 @@ Electrosiphon
 Electrostatic Bolt
 Electrostatic Field
 Electrostatic Infantry
+Electrostatic Pummeler
 Electrozoa
 Elegant Edgecrafters
 Elegant Entourage
@@ -5718,6 +5726,7 @@ Fable of the Mirror-Breaker
 Fabled Passage
 Fabricate
 Fabrication Foundry
+Fabrication Module
 Face Yourself	polarity: ForEachEffect
 Face of Fear
 Faceless Haven
@@ -6251,6 +6260,7 @@ Fleeting Flight	timing: GrantKeywordEffect
 Fleeting Image
 Fleeting Reflection
 Fleeting Spirit
+Fleetwheel Cruiser
 Flensing Raptor
 Flesh Burrower
 Flesh to Dust
@@ -7039,6 +7049,7 @@ Glaring Fleshraker
 Glass Casket
 Glass Golem
 Glass of the Guildpact
+Glassblower's Puzzleknot
 Glasses of Urza	intent: LookAtTargetHandEffect
 Glasspool Mimic
 Glasswing Grace
@@ -7124,7 +7135,7 @@ Glowering Rogon
 Glowing Anemone
 Glowing One
 Glowrider
-Glowspore Shaman	intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
+Glowspore Shaman
 Glowstone Recluse
 Gluntch, the Bestower
 Gluttonous Guest
@@ -7766,7 +7777,7 @@ Halo Fountain
 Halo Hopper
 Halo Hunter
 Halo Scarab
-Halo-Charged Skaab	intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
+Halo-Charged Skaab
 Halvar, God of Battle
 Hama Pashar, Ruin Seeker
 Hama, the Bloodbender
@@ -8500,7 +8511,7 @@ Ichor Rats
 Ichor Shade
 Ichor Synthesizer
 Ichor Wellspring
-Ichormoon Gauntlet	intent: AddCountersOfChosenKindEffect; polarity: AddCountersOfChosenKindEffect
+Ichormoon Gauntlet
 Ichorplate Golem	intent: AddCountersEffect
 Ichorspit Basilisk
 Ichthyomorphosis
@@ -8830,7 +8841,7 @@ Intrusive Packbeast
 Invade the City
 Invading Manticore
 Invasion Reinforcements
-Invasion Submersible	intent: AddCardTypeEffect
+Invasion Submersible
 Invasion Tactics
 Invasion of Alara
 Invasion of Amonkhet
@@ -8874,6 +8885,7 @@ Inventive Iteration
 Inventive Wingsmith
 Inventor's Apprentice
 Inventor's Axe
+Inventor's Goggles
 Inventors' Fair
 Inventory Management	intent: ForEach>AttachToChosenHostEffect
 Invert // Invent	intent: ForEach>SwitchPowerToughnessEffect; polarity: ForEachEffect; timing: ForEach>SwitchPowerToughnessEffect
@@ -10934,6 +10946,7 @@ Metallic Rebuke
 Metallic Sliver
 Metallurgeon
 Metalspinner's Puzzleknot
+Metalwork Colossus
 Metamorphic Alteration	polarity: Aura>(nothing on the host)
 Metamorphic Blast	polarity: BecomeCreatureEffect
 Metamorphose
@@ -11461,6 +11474,7 @@ Mulch
 Muldrotha, the Gravetide
 Mulldrifter
 Multani, Yavimaya's Avatar
+Multiform Wonder
 Multiple Choice
 Multiply by Zero
 Multiversal Incursion
@@ -15195,6 +15209,7 @@ Sephiroth's Intervention
 Sephiroth, Fabled SOLDIER
 Sephiroth, Planet's Heir
 Sepulcher Ghoul
+Sequestered Stash
 Serah Farron
 Seraph Sanctuary
 Seraph of Dawn
@@ -16649,7 +16664,7 @@ Steward of the Harvest
 Sticky Fingers
 Stickytongue Sentinel
 Stifle
-Stillness in Motion	intent: Pipeline(TopOfLibrary|graveyard→graveyard|library)
+Stillness in Motion
 Stiltzkin, Moogle Merchant	polarity: DrawCardsEffect
 Stimulus Package
 Sting, Bilbo's Sword	polarity: AddDynamicCountersEffect; polarity: AttachEquipmentEffect
