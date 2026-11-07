@@ -62,5 +62,6 @@ val RenegadeFirebrand = card("Renegade Firebrand") {
         artist = "John Stanko"
         flavorText = "\"For freedom! For fame! For fire!\""
         imageUri = "https://cards.scryfall.io/normal/front/4/b/4b633884-867c-4b51-bd5b-5f246d0ecd4e.jpg?1783937137"
+        inBooster = false
     }
 }

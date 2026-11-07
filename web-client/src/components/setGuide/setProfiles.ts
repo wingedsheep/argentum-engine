@@ -492,6 +492,25 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Transform', inPlay: 'Legendary enchantments and artifacts flip into lands once you meet their condition, turning a slow card into a lasting engine.' },
     ],
   },
+  KLD: {
+    tagline: 'A fast, artifact-rich format of energy, Vehicles and fabricate: bank resources early, then cash them in for bigger attacks.',
+    setting: 'Kaladesh, a plane of aether-powered invention, during the Inventors\' Fair under the watch of the Consulate.',
+    gameplay: 'Games move quickly and are decided in combat. Energy creatures and spells give you energy counters to spend later on pumps, removal and tokens, so every early play builds toward a bigger turn. Vehicles are strong artifacts that only attack once a creature crews them, which turns small bodies into big threats. Fabricate creatures choose between +1/+1 counters and Servo tokens, and artifacts count toward many payoffs. Common removal is plentiful, so tempo and curve matter more than card advantage.',
+    tips: [
+      'Draft enough creatures to crew your Vehicles: a Vehicle with no crew is a dead card.',
+      'Spend energy with a plan: hold it for the payoff that wins the race, not the first one you can afford.',
+      'Pick fabricate Servos when you need more bodies or artifacts, and counters when one big creature matters more.',
+    ],
+    tryIf: 'artifact synergies, aggressive curves and juggling a resource across turns',
+    power: 3, speed: 4, complexity: 3,
+    themes: ['aggro', 'artifacts', 'counters'],
+    mechanics: [
+      { name: 'Energy', inPlay: 'Cards hand you energy counters that you spend on later abilities, so you decide each turn whether to bank or cash in.' },
+      { name: 'Vehicles', inPlay: 'Artifacts that become creatures when you tap creatures with enough power to crew them, so small creatures drive big attackers.' },
+      { name: 'Fabricate', inPlay: 'When the creature enters, choose +1/+1 counters on it or that many 1/1 Servo artifact tokens: one big body or a wider board.' },
+      { name: 'Artifacts', inPlay: 'Many cards reward controlling artifacts, and Thopter and Servo tokens count, so artifacts are worth taking over equal-power creatures.' },
+    ],
+  },
   AKH: {
     tagline: 'A combat-heavy format built on the trials of Amonkhet: exert for bigger attacks, cycle away dead cards, and bring the fallen back with embalm.',
     setting: 'Amonkhet, a desert plane where initiates prove themselves in the God-Pharaoh\'s trials for the glory of the afterlife.',

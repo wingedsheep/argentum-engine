@@ -1303,6 +1303,32 @@ object SetArchetypes {
                     "Ramp into big creatures and cycle away what you don't need, then sink extra mana into card draw. A midrange deck that out-values the opponent in long games."),
             )
         ),
+        "KLD" to SetSynergies(
+            setCode = "KLD",
+            setName = "Kaladesh",
+            archetypes = listOf(
+                Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Hold the ground with sturdy artifacts and Servo-making fabricators, then win in the air with flying creatures and Thopters. A tempo deck that trades cheap blockers for time while evasive threats close the game."),
+                Archetype("Artifact Control", listOf(Color.BLUE, Color.BLACK),
+                    "Lean on artifacts and removal to grind the opponent out, filtering draws with scry and card advantage. A patient control deck that wins with lifelink and value from every artifact it plays."),
+                Archetype("Artifact Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with cheap artifacts and aggressive creatures, then punish blockers with removal that rewards controlling an artifact. A fast deck that turns its artifact count into damage and reach."),
+                Archetype("Energy Aggro", listOf(Color.RED, Color.GREEN),
+                    "Bank energy from early creatures and spend it to pump attackers past blockers. A stompy aggro deck that keeps attacking and turns every energy payoff into extra damage."),
+                Archetype("Go Wide", listOf(Color.GREEN, Color.WHITE),
+                    "Fabricate Servos and +1/+1 counters across a wide board, then pump the whole team for an alpha strike. A go-wide midrange deck whose army outsizes every blocker."),
+                Archetype("Artifact Recursion", listOf(Color.WHITE, Color.BLACK),
+                    "Trade artifacts and creatures early, then return the best ones from the graveyard for another go. A grindy midrange deck that wins the long game on recursion and fabricate value."),
+                Archetype("Thopter Energy", listOf(Color.BLUE, Color.RED),
+                    "Collect energy and convert it into flying Thopter tokens, backed by spells and artifact synergies. A tempo deck that builds an evasive air force while staying interactive."),
+                Archetype("+1/+1 Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Grow creatures with +1/+1 counters from fabricate and other effects, then sweep the opponent's uncountered board. A midrange deck whose counters both size up its threats and protect them from its own removal."),
+                Archetype("Vehicles", listOf(Color.RED, Color.WHITE),
+                    "Crew powerful Vehicles with small creatures and Pilots, then attack with oversized artifacts. An aggressive deck that turns every crew member into a bigger threat on the next swing."),
+                Archetype("Energy Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp and stockpile energy with efficient creatures, then cash it in for big evasive threats and card advantage. A value deck that keeps its energy engine running all game."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",
