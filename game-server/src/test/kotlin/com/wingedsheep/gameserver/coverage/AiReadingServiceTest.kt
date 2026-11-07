@@ -28,17 +28,15 @@ class AiReadingServiceTest : FunSpec({
     }
 
     test("an implemented card is read from the engine's own definition, ability by ability") {
-        val service = AiReadingService(registryOf("Abbot of Keral Keep"))
-        val card = service.implemented("Abbot of Keral Keep").shouldNotBeNull()
+        val service = AiReadingService(registryOf("Battering Ram"))
+        val card = service.implemented("Battering Ram").shouldNotBeNull()
         val view = service.read(card)
         view.readFully shouldBe false
         view.abilities.count { it.readFully } shouldBe 1
-        val impulse = view.abilities.single { !it.readFully }
-        impulse.kind shouldBe "TRIGGERED"
-        impulse.findings.any { it.check == "intent" && !it.read } shouldBe true
-        view.flags shouldBe listOf(
-            "intent: GrantMayPlayFromExileEffect", "intent: Pipeline(TopOfLibrary→exile)",
-        )
+        val banding = view.abilities.single { !it.readFully }
+        banding.kind shouldBe "TRIGGERED"
+        banding.findings.any { it.check == "intent" && !it.read } shouldBe true
+        view.flags shouldBe listOf("intent: GrantKeywordEffect")
     }
 
     test("an unimplemented card Assay compiles is read as a preview of Assay's definition") {
@@ -58,12 +56,12 @@ class AiReadingServiceTest : FunSpec({
     }
 
     test("the corpus index answers per card and per set once built, and nothing before") {
-        val service = AiReadingService(registryOf("Lightning Bolt", "Abbot of Keral Keep"))
+        val service = AiReadingService(registryOf("Lightning Bolt", "Battering Ram"))
         eventually(30.seconds) {
             service.corpusReady() shouldBe true
         }
         service.readsFully("Lightning Bolt") shouldBe true
-        service.readsFully("Abbot of Keral Keep") shouldBe false
+        service.readsFully("Battering Ram") shouldBe false
         service.readsFully("Not A Card") shouldBe null
         val summary = service.setSummary()
         summary.ready shouldBe true
@@ -72,18 +70,18 @@ class AiReadingServiceTest : FunSpec({
     }
 
     test("a set's detail groups its unread cards by the effect type the AI misses, biggest first") {
-        val ori = MtgSetCatalog.byCode("ORI").shouldNotBeNull()
-        val service = AiReadingService(CardRegistry().apply { ori.cards.forEach { register(it) } })
+        val atq = MtgSetCatalog.byCode("ATQ").shouldNotBeNull()
+        val service = AiReadingService(CardRegistry().apply { atq.cards.forEach { register(it) } })
         eventually(30.seconds) { service.corpusReady() shouldBe true }
-        val detail = service.setDetail("ORI").shouldNotBeNull()
+        val detail = service.setDetail("ATQ").shouldNotBeNull()
         detail.ready shouldBe true
         val score = detail.score.shouldNotBeNull()
         detail.unread.size shouldBe score.total - score.readFully
         detail.groups.zipWithNext().forEach { (a, b) -> a.cards.size shouldBeGreaterThanOrEqual b.cards.size }
-        val abbot = detail.unread.single { it.name == "Abbot of Keral Keep" }
-        detail.groups.single { it.key == "intent: GrantMayPlayFromExileEffect" }.cards shouldContain "Abbot of Keral Keep"
-        abbot.flags shouldContain "intent: Pipeline(TopOfLibrary→exile)"
-        abbot.abilitiesRead shouldBeLessThan abbot.abilities
+        val artisans = detail.unread.single { it.name == "Goblin Artisans" }
+        detail.groups.single { it.key == "intent: FlipCoinEffect" }.cards shouldContain "Goblin Artisans"
+        artisans.flags shouldContain "polarity: FlipCoinEffect"
+        artisans.abilitiesRead shouldBeLessThan artisans.abilities
         service.setDetail("NOPE") shouldBe null
     }
 })
