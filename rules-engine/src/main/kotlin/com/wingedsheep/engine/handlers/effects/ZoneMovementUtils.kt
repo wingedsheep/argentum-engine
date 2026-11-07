@@ -792,7 +792,8 @@ object ZoneMovementUtils {
      * [GameState.pendingDiscardCauseControllers] marker stamped by the discard sites and requires
      * both that a spell/ability caused this discard at all and that its controller is an opponent of
      * the discarding player (the card's owner — you only ever discard from your own hand). That
-     * rules out the cleanup-step hand-size discard, cost payments, and your own Faithless Looting.
+     * rules out the cleanup-step hand-size discard, your own costs, and your own Faithless Looting;
+     * a discard paying an opponent's "unless" demand (ward, Perplex) carries that opponent.
      * `NotCycled` reads [GameState.pendingCyclingDiscardIds]: only the cycling-cost discard fails it.
      */
     private fun causeSatisfied(

@@ -87,9 +87,12 @@ class NephaliaAcademyScenarioTest : ScenarioTestBase() {
                 game.handSize(1) shouldBe 0
 
                 val revealed = events.filterIsInstance<CardsRevealedEvent>()
-                withClue("the Academy card is revealed to every player") {
+                withClue("the Academy card is revealed to the other players, naming the Academy") {
                     revealed shouldHaveSize 1
                     revealed.single().cardNames shouldBe listOf("Grizzly Bears")
+                    revealed.single().revealingPlayerId shouldBe game.player1Id
+                    revealed.single().source shouldBe "Nephalia Academy"
+                    revealed.single().revealToSelf shouldBe false
                 }
                 val discarded = events.filterIsInstance<CardsDiscardedEvent>().single()
                 withClue("both cards were still discarded, and the revealed one stays a known card") {
@@ -101,10 +104,13 @@ class NephaliaAcademyScenarioTest : ScenarioTestBase() {
             test("two cards revealed onto the library are ordered by their owner") {
                 val game = board(caster = 2)
                 game.castSpellTargetingPlayer(2, "Mind Rot", 1).error shouldBe null
-                game.resolveMindRot(
+                val events = game.resolveMindRot(
                     revealFor = setOf("Grizzly Bears", "Lightning Bolt"),
                     libraryOrder = listOf("Lightning Bolt", "Grizzly Bears"),
                 )
+                withClue("both cards are shown in one reveal") {
+                    events.filterIsInstance<CardsRevealedEvent>().single().cardIds shouldHaveSize 2
+                }
                 game.graveyardSize(1) shouldBe 0
                 val library = game.state.getLibrary(game.player1Id)
                     .map { game.state.getEntity(it)?.get<CardComponent>()?.name }

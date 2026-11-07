@@ -76,7 +76,8 @@ enum class ZoneChangeCause {
      * The move is a discard caused by a spell or ability an **opponent** of the discarding player
      * controls (Wilt-Leaf Liege, Loxodon Smiter). Excludes discarding to hand size in the cleanup
      * step (a turn-based action, not a spell or ability) and discarding to pay a cost of your own
-     * spell or ability.
+     * spell or ability. Includes a discard you choose to pay an opponent's "unless" demand — ward's
+     * discard, Perplex's "unless its controller discards their hand" (Nephalia Academy's ruling).
      */
     DiscardedByOpponentEffect,
 

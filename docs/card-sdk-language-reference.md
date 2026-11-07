@@ -19866,7 +19866,11 @@ The priority groups are (CR 616.1a–f):
   DiscardEvent(Player.You, cause = ZoneChangeCause.DiscardedByOpponentEffect), reveal = true)`. Printed instances
   use the projected source controller; `GrantReplacementEffect` captures the projected target controller
   when the grant resolves (or the caster for a resolving spell). Costs, cycling,
-  cleanup hand-size discards, and milling do not offer this replacement. No maximum hand size is a
+  cleanup hand-size discards, and milling do not offer this replacement — with one exception: a discard
+  paying an opponent's "unless" demand (ward's discard, a pay-or-suffer discard such as Perplex's) is a
+  cost that opponent's spell or ability caused, so a `cause = DiscardedByOpponentEffect` instance offers it
+  (Nephalia Academy's ruling) while a plain one does not ("costs aren't effects", Library of Leng). The same
+  payment is the discard's cause for discard triggers and `RedirectZoneChange.requiredCause` readers. No maximum hand size is a
   separate `NoMaximumHandSize` static ability.
 
   All choices precede the batch's zone changes. Each card can be declined independently; multiple

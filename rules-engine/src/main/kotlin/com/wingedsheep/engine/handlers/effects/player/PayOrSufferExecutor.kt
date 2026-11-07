@@ -1437,52 +1437,26 @@ class PayOrSufferExecutor(
     companion object {
 
         /**
-         * Execute the random discard after player confirmed.
+         * The cards a confirmed random "unless you discard" payment discards: [count] of the
+         * [filter]-matching cards in [playerId]'s hand, chosen at random, and the state after the
+         * shuffle that picked them. The caller discards them through the shared discard path.
          */
-        fun executeRandomDiscard(
+        fun pickRandomDiscard(
             zones: ZoneTransitionService,
             state: GameState,
             playerId: EntityId,
             filter: GameObjectFilter,
             count: Int,
             sourceId: EntityId?
-        ): EffectResult {
-            val handZone = ZoneKey(playerId, Zone.HAND)
-            val hand = state.getZone(handZone)
+        ): Pair<List<EntityId>, GameState> {
+            val hand = state.getZone(ZoneKey(playerId, Zone.HAND))
             val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
-
-            // Filter valid cards
             val validCards = hand.filter { cardId ->
                 zones.predicateEvaluator.matches(state, state.projectedState, cardId, filter, context)
             }
-
-            if (validCards.isEmpty()) {
-                return EffectResult.success(state)
-            }
-
-            // Randomly select cards to discard
+            if (validCards.isEmpty()) return emptyList<EntityId>() to state
             val (shuffledValid, stateAfterShuffle) = state.nextRandom { shuffle(validCards) }
-            val cardsToDiscard = shuffledValid.take(count)
-
-            // Shared discard path so a card-intrinsic discard replacement (madness, CR 702.35a)
-            // applies to a randomly discarded card too.
-            val result = zones.discardCards(stateAfterShuffle, playerId, cardsToDiscard)
-
-            return EffectResult.success(result.state, result.events)
-        }
-
-        /**
-         * Pay [CostAtom.DiscardHand]: every card in [playerId]'s hand goes at once, through the
-         * shared discard path so a card-intrinsic discard replacement (madness, CR 702.35a) still
-         * applies. An empty hand is a no-op payment, not a failure.
-         */
-        fun executeDiscardHand(zones: ZoneTransitionService, state: GameState, playerId: EntityId): EffectResult {
-            val hand = state.getZone(ZoneKey(playerId, Zone.HAND))
-            if (hand.isEmpty()) return EffectResult.success(state)
-
-            val result = zones.discardCards(state, playerId, hand.toList())
-
-            return EffectResult.success(result.state, result.events)
+            return shuffledValid.take(count) to stateAfterShuffle
         }
     }
 }

@@ -265,9 +265,7 @@ class ModalAndCloneContinuationResumer(
             return ExecutionResult.error(state, "Expected a discard destination")
         val choice = continuation.destinations.getOrNull(response.optionIndex)
         val context = continuation.context.copy(
-            discardDestinations = continuation.context.discardDestinations + (continuation.cardId to choice?.destination),
-            revealedDiscards = if (choice?.reveal == true) continuation.context.revealedDiscards + continuation.cardId
-                else continuation.context.revealedDiscards,
+            discardDestinations = continuation.context.discardDestinations + (continuation.cardId to choice),
         )
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
@@ -279,7 +277,7 @@ class ModalAndCloneContinuationResumer(
         response: DecisionResponse, checkForMore: CheckForMore,
     ): ExecutionResult {
         if (response !is CardsSelectedResponse) return ExecutionResult.error(state, "Expected library ordering")
-        val expected = continuation.context.discardDestinations.filterValues { it?.zone == Zone.LIBRARY }.keys
+        val expected = continuation.context.discardDestinations.filterValues { it?.destination?.zone == Zone.LIBRARY }.keys
         if (response.selectedCards.size != expected.size || response.selectedCards.toSet() != expected)
             return ExecutionResult.error(state, "Order each discarded library card once")
         val context = continuation.context.copy(discardLibraryOrder = response.selectedCards)

@@ -297,6 +297,9 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
             revealed.cardIds shouldBe listOf(cardId)
             revealed.revealingPlayerId shouldBe game.player1Id
             revealed.toZone shouldBe Zone.LIBRARY
+            revealed.source shouldBe opponentRevealed.name
+            // The discarder chose the card; the overlay is for the other players.
+            revealed.revealToSelf shouldBe false
             val discarded = result.events.filterIsInstance<CardsDiscardedEvent>().single()
             discarded.undefinedCharacteristics shouldBe emptySet()
             // The revealed card is known: its own "when discarded" ability fires and the opponent sees its name.
@@ -305,6 +308,49 @@ class EffectDiscardDestinationTest : ScenarioTestBase() {
             opponentView.filterIsInstance<com.wingedsheep.engine.view.ClientEvent.CardDiscarded>().single().cardName shouldBe selfDiscard.name
             game.state.getEntity(cardId)?.get<com.wingedsheep.engine.state.components.identity.RevealedToComponent>()
                 ?.playerIds?.contains(game.player2Id) shouldBe true
+        }
+        // "Counter … unless its controller discards their hand" (Perplex): paying an opponent's
+        // "unless" demand is a cost that opponent's ability caused (Nephalia Academy's ruling).
+        fun punisher(game: TestGame, demander: Int) {
+            val source = game.findPermanent("Forest")!!
+            val result = services.effectExecutorRegistry.execute(game.state,
+                Effects.PayOrSuffer(Costs.pay.DiscardHand, Effects.GainLife(5), player = EffectTarget.ContextTarget(0)),
+                EffectContext(sourceId = source, controllerId = if (demander == 1) game.player1Id else game.player2Id,
+                    targets = listOf(ChosenTarget.Player(game.player1Id))))
+            result.error shouldBe null; game.state = result.state
+            val pay = game.state.pendingDecision as YesNoDecision
+            pay.playerId shouldBe game.player1Id
+            game.submitDecision(YesNoResponse(pay.id, true)).error shouldBe null
+        }
+        fun punisherBoard(replacementSource: String, demander: Int) = scenario()
+            .withPlayers("First", "Second").withCardOnBattlefield(1, replacementSource)
+            .withCardOnBattlefield(demander, "Forest")
+            .withCardInHand(1, "Grizzly Bears")
+            .withCardInLibrary(1, "Forest").withCardInLibrary(2, "Forest")
+            .withActivePlayer(1).withPriorityPlayer(1).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+        test("paying an opponent's unless-discard demand offers the opponent-caused destination") {
+            val game = punisherBoard(opponentRevealed.name, demander = 2)
+            punisher(game, demander = 2)
+            val decision = game.state.pendingDecision as ChooseOptionDecision
+            decision.playerId shouldBe game.player1Id
+            val result = choose(game)
+            game.state.getLibrary(game.player1Id).size shouldBe 2
+            game.graveyardSize(1) shouldBe 0
+            game.getLifeTotal(1) shouldBe 20
+            result.events.filterIsInstance<CardsDiscardedEvent>().single().causeControllerId shouldBe game.player2Id
+        }
+        test("paying your own unless-discard demand does not offer the opponent-caused destination") {
+            val game = punisherBoard(opponentRevealed.name, demander = 1)
+            punisher(game, demander = 1)
+            game.state.pendingDecision shouldBe null
+            game.graveyardSize(1) shouldBe 1
+        }
+        test("an unless-discard payment is a cost, so an effect-only destination is not offered") {
+            // Library of Leng: "If an effect causes you to discard a card" — costs aren't effects.
+            val game = punisherBoard(redirect.name, demander = 2)
+            punisher(game, demander = 2)
+            game.state.pendingDecision shouldBe null
+            game.graveyardSize(1) shouldBe 1
         }
         test("paused destination frames round trip and keep target identity") {
             val game = board()
