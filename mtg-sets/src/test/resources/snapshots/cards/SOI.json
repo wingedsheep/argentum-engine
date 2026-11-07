@@ -5109,6 +5109,32 @@
                                     "type": "Exists",
                                     "player": "You",
                                     "zone": "Battlefield",
+                                    "filter": "creature kw:skulk"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "SKULK",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
                                     "filter": "creature kw:trample"
                                 }
                             },
@@ -5171,7 +5197,7 @@
                             }
                         }
                     ],
-                    "descriptionOverride": "Creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, trample, and vigilance."
+                    "descriptionOverride": "Creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, skulk, trample, and vigilance."
                 }
             }
         ]

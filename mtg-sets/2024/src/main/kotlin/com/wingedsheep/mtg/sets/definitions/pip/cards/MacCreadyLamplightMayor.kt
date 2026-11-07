@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.pip.cards
 
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -19,11 +19,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever a creature with power 4 or greater attacks you, its controller loses 2 life and you gain
  * 2 life.
  *
- * Skulk's whole rules meaning (CR 702.118b) is the blocking restriction its reminder text states, so
- * the grant is that restriction: `CantBeBlockedBy(powerGreaterThanEntity(Self))` handed to the
- * attacker until end of turn. The block check evaluates a granted restriction with the *attacker*
- * as its source, so "greater" compares each blocker against the attacker's power at declare-blockers
- * — skulk's live comparison (Prehistoric Pet prints the same restriction).
+ * The grant is the keyword itself (`Keyword.SKULK`, CR 702.118b), so the attacker shows the badge and
+ * "greater" compares each blocker against the attacker's projected power as blockers are declared.
  *
  * Both power checks happen only as the abilities trigger (rulings): the conditions are trigger
  * filters, never re-checked on resolution, and "its controller" walks the triggering entity's
@@ -40,10 +37,7 @@ val MacCreadyLamplightMayor = card("MacCready, Lamplight Mayor") {
 
     triggeredAbility {
         trigger = Triggers.a(GameObjectFilter.Creature.youControl().powerAtMost(2)).attacks()
-        effect = Effects.GrantStaticAbility(
-            CantBeBlockedBy(GameObjectFilter.Creature.powerGreaterThanEntity(EffectTarget.Self)),
-            EffectTarget.TriggeringEntity
-        )
+        effect = Effects.GrantKeyword(Keyword.SKULK, EffectTarget.TriggeringEntity)
         description = "Whenever a creature you control with power 2 or less attacks, it gains skulk until end of turn."
     }
 

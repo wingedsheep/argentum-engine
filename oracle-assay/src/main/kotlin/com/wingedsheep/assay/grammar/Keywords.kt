@@ -114,6 +114,7 @@ object Keywords {
         simple(Keyword.FEAR),
         simple(Keyword.SHADOW),
         simple(Keyword.HORSEMANSHIP),
+        simple(Keyword.SKULK),
         // Landwalk
         simple(Keyword.SWAMPWALK),
         simple(Keyword.FORESTWALK),

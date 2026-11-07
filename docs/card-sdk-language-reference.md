@@ -14666,7 +14666,7 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 
 **`Keyword` enum (display-level)**
 
-Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Plainswalk … Forestwalk), Desertwalk
+Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, Skulk (engine-live, see below), all basic landwalks (Plainswalk … Forestwalk), Desertwalk
 (nonbasic landwalk variant — `Keyword.DESERTWALK`, keyed off `Subtype.DESERT`), Nonbasic landwalk
 (`Keyword.NONBASIC_LANDWALK` — unblockable while the defending player controls any non-basic land;
 `LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), Legendary landwalk
@@ -14687,6 +14687,15 @@ triggers, damage tallies, commander damage and lifelink all apply). Damage to a 
 counters exactly like wither (CR 120.3d); damage to a planeswalker or battle is unchanged. A source that has left
 the battlefield is read by last-known information (CR 702.90d). Toxic on the same creature adds its poison on top.
 Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
+
+**Skulk** (`Keyword.SKULK`, CR 702.118) — a plain `keywords(Keyword.SKULK)`, grantable like any other keyword
+(`Effects.GrantKeyword(Keyword.SKULK, …)` for "gains skulk until end of turn", or `GrantKeyword` as a static).
+`SkulkRule` rejects a block when the blocker's projected power is greater than the attacker's, read as blockers
+are declared — a later pump on either side doesn't undo a legal block. Equal power can block. Multiple instances
+are redundant (CR 702.118c). Shows as an on-card badge. Don't spell skulk as
+`CantBeBlockedBy(powerGreaterThanEntity(Self))`: that is the same restriction without the keyword, so "if a creature
+you control has skulk" (Odric, Lunarch Marshal) can't see it. Fogwalker, Vampire Cutthroat, Ingenious Prodigy,
+MacCready, Lamplight Mayor (granted).
 
 **Parameterized `KeywordAbility.*`**
 

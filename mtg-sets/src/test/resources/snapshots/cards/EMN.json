@@ -3439,6 +3439,53 @@
     "colorIdentityOverride": []
 }
 
+// Fogwalker
+{
+    "name": "Fogwalker",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nWhen this creature enters, target creature an opponent controls doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "SKULK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fogwalker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0894d76b-801a-4e3b-8378-bfa81fe24d59.jpg?1783937499"
+    }
+}
+
 // Furyblade Vampire
 {
     "name": "Furyblade Vampire",
@@ -8153,6 +8200,29 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Vampire Cutthroat
+{
+    "name": "Vampire Cutthroat",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nLifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "SKULK",
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "Not all monsters have tentacles.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/954d53f3-ebbe-48e0-9e1a-7019d2b0740c.jpg?1783937474"
+    }
 }
 
 // Vexing Scuttler

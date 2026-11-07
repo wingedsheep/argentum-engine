@@ -6648,19 +6648,8 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "GrantStaticAbility",
-                    "ability": {
-                        "type": "CantBeBlockedBy",
-                        "blockerFilter": {
-                            "cardPredicates": [
-                                "IsCreature",
-                                {
-                                    "type": "PowerGreaterThanEntity",
-                                    "reference": "Self"
-                                }
-                            ]
-                        }
-                    },
+                    "type": "GrantKeyword",
+                    "keyword": "SKULK",
                     "target": "TriggeringEntity"
                 },
                 "descriptionOverride": "Whenever a creature you control with power 2 or less attacks, it gains skulk until end of turn."

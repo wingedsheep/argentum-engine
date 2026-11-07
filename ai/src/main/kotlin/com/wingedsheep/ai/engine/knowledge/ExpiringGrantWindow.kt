@@ -189,6 +189,7 @@ internal object ExpiringGrantWindow {
                 readShrinks = readShrinks,
                 readBorrows = readBorrows,
                 xValue = activation.xValue,
+                canWaitForATarget = ability.timing == TimingRule.InstantSpeed,
             )
         ) {
             return true
@@ -291,6 +292,12 @@ internal object ExpiringGrantWindow {
         fightMustBeOn: Boolean = false,
         /** The announced X, for a shrink counted by it ("-X/-X", Death Wind). */
         xValue: Int? = null,
+        /**
+         * The grant can still be bought at instant speed later this turn — an instant-speed
+         * ability, or an instant — so one spent only against targeting waits for a spell or
+         * ability that targets. See [SPENT_ONLY_AGAINST_TARGETING].
+         */
+        canWaitForATarget: Boolean = false,
     ): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks, readBorrows) ?: return false
         // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf —
@@ -321,6 +328,9 @@ internal object ExpiringGrantWindow {
             when (payoff.kind) {
                 PayoffKind.CREATURE -> {
                     val keyword = payoff.keyword
+                    // Hexproof and shroud change no fight; only a spell or ability that targets the
+                    // creature spends them, and one on the stack has already released this floor.
+                    if (canWaitForATarget && keyword in SPENT_ONLY_AGAINST_TARGETING) return@none false
                     // Already in force, or already on its way: a second grant of the same keyword
                     // adds nothing. Pending is read for a self-grant only, where "the same ability
                     // from the same source" can only mean the same creature.
@@ -429,6 +439,8 @@ internal object ExpiringGrantWindow {
         fightMustBeOn: Boolean = false,
         /** The announced X — see [nothingCanSpend]. */
         xValue: Int? = null,
+        /** The spell is an instant: a hexproof grant can wait for a target — see [nothingCanSpend]. */
+        canWaitForATarget: Boolean = false,
     ): Boolean = effects.isNotEmpty() && effects.all { effect ->
         nothingCanSpend(
             state, playerId, effect,
@@ -442,6 +454,7 @@ internal object ExpiringGrantWindow {
             readBorrows = readBorrows,
             fightMustBeOn = fightMustBeOn,
             xValue = xValue,
+            canWaitForATarget = canWaitForATarget,
         )
     }
 
@@ -1456,6 +1469,16 @@ internal object ExpiringGrantWindow {
     private val MATTERS_ONLY_WHEN_BLOCKED = setOf(
         Keyword.FIRST_STRIKE, Keyword.DEATHTOUCH, Keyword.INDESTRUCTIBLE, Keyword.TRAMPLE,
     ).map { it.name }.toSet()
+
+    /**
+     * Keywords whose whole payoff is turning away a spell or ability that targets — hexproof and
+     * shroud change no fight. Granted until end of turn by something that can still answer at
+     * instant speed, they are worth buying only in response to a targeted threat; on an empty stack
+     * the same grant is still there when one arrives. Off a live misplay report (2026-11-07):
+     * Liliana the Faultless discarding a card in the opponent's declare-attackers step to give a
+     * creature hexproof, with nothing on the stack.
+     */
+    private val SPENT_ONLY_AGAINST_TARGETING = setOf(Keyword.HEXPROOF, Keyword.SHROUD).map { it.name }.toSet()
 
     /**
      * Keywords that change only what a creature's combat damage does — not who can block it, not
