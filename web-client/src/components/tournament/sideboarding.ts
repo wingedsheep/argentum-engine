@@ -66,13 +66,35 @@ export function deckGroupOf(card: SealedCardInfo | undefined): DeckGroup {
 
 const COLOR_ORDER = ['W', 'U', 'B', 'R', 'G']
 
+/** The sideboard's colour filter chips: the five colours, then colourless. */
+export const FILTER_COLORS = ['W', 'U', 'B', 'R', 'G', 'C'] as const
+export type FilterColor = (typeof FILTER_COLORS)[number]
+
+/**
+ * Whether a card passes the colour filter: no chip selected shows everything; otherwise a card shows
+ * when it shares a selected colour, or is colourless and "C" is selected.
+ */
+export function matchesColorFilter(card: SealedCardInfo | undefined, selected: ReadonlySet<FilterColor>): boolean {
+  if (selected.size === 0) return true
+  const colors = colorLetters(card)
+  if (colors.length === 0) return selected.has('C')
+  return colors.some((c) => selected.has(c as FilterColor))
+}
+
+/** The server sends colour identity as `Color` enum names (`BLUE`); the UI speaks in letters (`U`). */
+const COLOR_NAME_TO_LETTER: Readonly<Record<string, string>> = { WHITE: 'W', BLUE: 'U', BLACK: 'B', RED: 'R', GREEN: 'G' }
+
+export function colorLetters(card: SealedCardInfo | undefined): string[] {
+  return (card?.colorIdentity ?? []).map((c) => COLOR_NAME_TO_LETTER[c] ?? c)
+}
+
 /** Colour, then mana value, then name — the order a player scans a pool in. */
 export function compareCards(a: SealedCardInfo | undefined, b: SealedCardInfo | undefined, nameA: string, nameB: string): number {
   return colorRank(a) - colorRank(b) || (a?.cmc ?? 0) - (b?.cmc ?? 0) || nameA.localeCompare(nameB)
 }
 
 function colorRank(card: SealedCardInfo | undefined): number {
-  const colors = card?.colorIdentity ?? []
+  const colors = colorLetters(card)
   if (/\bLand\b/.test(card?.typeLine ?? '')) return 7
   if (colors.length === 0) return 6
   if (colors.length > 1) return 5

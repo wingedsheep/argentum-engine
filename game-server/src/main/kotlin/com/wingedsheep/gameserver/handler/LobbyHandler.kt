@@ -801,6 +801,10 @@ class LobbyHandler(
             maxPlayers = maxPlayers,
             pickTimeSeconds = TournamentLobby.clampPickTimeSeconds(message.pickTimeSeconds, 120),
             picksPerRound = initialPicksPerRound,
+            // A new bracket plays best-of-three matches, each pair meeting once — the Magic Tournament
+            // Rules shape. (The old default, three separate one-game matches per pair, stood in for it.)
+            gamesPerMatch = 1,
+            bestOf = 3,
             isPublic = message.isPublic,
             // Commander formats enable Chaos boosters by default — 20-card commander packs
             // need to mix sets to give a workable pool when multiple sets are selected. A pack-shape

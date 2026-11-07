@@ -174,7 +174,7 @@ export function recipeFromSelection(selection: Selection): LobbyRecipe {
   return {
     v: RECIPE_VERSION,
     selection,
-    settings: cards.kind === 'JUMP_IN' ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1 } : {},
+    settings: cards.kind === 'JUMP_IN' ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1, bestOf: 1 } : {},
     deck: deckForCards(cards),
     aiSeats: roster === 'SOLO' && lobbyNeedsAiSeats(selection)
       ? defaultSoloAiSeats(cards, shape)

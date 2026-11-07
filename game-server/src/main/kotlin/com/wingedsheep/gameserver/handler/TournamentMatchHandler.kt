@@ -1049,6 +1049,7 @@ class TournamentMatchHandler(
     /** Send each human seat of [match] its between-games snapshot. */
     private fun sendBetweenGames(lobby: TournamentLobby, tournament: TournamentManager, match: TournamentMatch) {
         for (seat in listOfNotNull(match.player1Id, match.player2Id)) {
+            if (isAiSeat(lobby, seat)) continue
             val ws = lobby.players[seat]?.identity?.webSocketSession ?: continue
             if (!ws.isOpen) continue
             buildBetweenGames(lobby, tournament, match, seat)?.let { ctx.sender.send(ws, it) }

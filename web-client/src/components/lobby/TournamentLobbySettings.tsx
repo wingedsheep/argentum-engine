@@ -38,7 +38,7 @@ import styles from '../ui/GameUI.module.css'
  * | Cards | cube · card pool · sets · booster mix · ban list · packs · pick timer · cards per pick |
  * | Rules | preset · min deck size · singleton · copy limit |
  * | Table | teams · attack |
- * | Event | games per matchup |
+ * | Event | match length (best of 1 / 3), times each pair meets |
  * | This lobby | AI assistance |
  *
  * There is no Seats row to place: the lobby already holds as many players as its shape allows and

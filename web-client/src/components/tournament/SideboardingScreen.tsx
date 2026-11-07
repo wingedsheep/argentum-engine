@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { BetweenGamesMessage, SealedCardInfo } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { ManaCost } from '../ui/ManaSymbols'
+import { ManaCost, ManaSymbol } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
 import ls from '../draft/limitedScreen.module.css'
 import styles from './SideboardingScreen.module.css'
@@ -12,7 +12,10 @@ import {
   countCards,
   deckChanges,
   deckGroupOf,
+  FILTER_COLORS,
+  matchesColorFilter,
   moveOne,
+  type FilterColor,
   type CardCounts,
   type DeckGroup,
 } from './sideboarding'
@@ -40,6 +43,13 @@ export function SideboardingScreen({ snapshot }: { snapshot: BetweenGamesMessage
   const [playFirst, setPlayFirst] = useState(true)
   const [hover, setHover] = useState<{ card: SealedCardInfo; pos: { x: number; y: number } } | null>(null)
   const [confirmLeave, setConfirmLeave] = useState(false)
+  const [colorFilter, setColorFilter] = useState<ReadonlySet<FilterColor>>(new Set())
+  const toggleColor = (c: FilterColor) => setColorFilter((prev) => {
+    const next = new Set(prev)
+    if (next.has(c)) next.delete(c)
+    else next.add(c)
+    return next
+  })
 
   const ready = snapshot.youAreReady
   const shownDeck = ready ? snapshot.deck : deck
@@ -87,15 +97,17 @@ export function SideboardingScreen({ snapshot }: { snapshot: BetweenGamesMessage
   const onReady = () => {
     submitMatchDeck(deck, snapshot.youChoosePlayDraw ? playFirst : undefined)
   }
+  // Opened by movement only, not on enter: the screen appears under the cursor that just clicked
+  // "Sideboard for game N", and a preview popping up unasked would cover the play/draw choice.
   const hoverProps = (card: SealedCardInfo | undefined) => card ? {
-    onMouseEnter: (e: React.MouseEvent) => setHover({ card, pos: { x: e.clientX, y: e.clientY } }),
     onMouseMove: (e: React.MouseEvent) => setHover({ card, pos: { x: e.clientX, y: e.clientY } }),
     onMouseLeave: () => setHover(null),
   } : {}
 
-  const sideboardTiles = useMemo(() => Object.entries(shownSideboard)
+  const allSideboardTiles = useMemo(() => Object.entries(shownSideboard)
     .filter(([, n]) => n > 0)
     .sort(([a], [b]) => compareCards(cardsByName.get(a), cardsByName.get(b), a, b)), [shownSideboard, cardsByName])
+  const sideboardTiles = allSideboardTiles.filter(([name]) => matchesColorFilter(cardsByName.get(name), colorFilter))
 
   const deckGroups = useMemo(() => {
     const groups: Record<DeckGroup, Array<[string, number]>> = { Creatures: [], Spells: [], Lands: [] }
@@ -212,10 +224,26 @@ export function SideboardingScreen({ snapshot }: { snapshot: BetweenGamesMessage
           <section className={styles.pool} aria-label="Sideboard">
             <div className={styles.sectionHead}>
               <span className={ls.sectionLabel}>Sideboard · {countCards(shownSideboard)}</span>
+              <div className={styles.filters} role="group" aria-label="Filter the sideboard by colour">
+                {FILTER_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={styles.filterChip}
+                    aria-pressed={colorFilter.has(c)}
+                    onClick={() => toggleColor(c)}
+                    title={c === 'C' ? 'Colourless' : `Show ${({ W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' } as const)[c]} cards`}
+                  >
+                    <ManaSymbol symbol={c} size={16} />
+                  </button>
+                ))}
+              </div>
               <span className={styles.hint}>Click a card to bring it in</span>
             </div>
             {sideboardTiles.length === 0 ? (
-              <p className={styles.empty}>Nothing left to bring in.</p>
+              <p className={styles.empty}>
+                {allSideboardTiles.length === 0 ? 'Nothing left to bring in.' : 'No sideboard cards in those colours.'}
+              </p>
             ) : (
               <div className={styles.grid}>
                 {sideboardTiles.map(([name, count]) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { adjustBasic, countCards, deckChanges, deckGroupOf, moveOne } from './sideboarding'
+import { adjustBasic, countCards, deckChanges, deckGroupOf, matchesColorFilter, moveOne } from './sideboarding'
 import type { SealedCardInfo } from '@/types'
 
 describe('sideboarding helpers', () => {
@@ -35,5 +35,22 @@ describe('sideboarding helpers', () => {
     expect(deckGroupOf(card('Land Creature — Forest Dryad'))).toBe('Creatures')
     expect(deckGroupOf(card('Basic Land — Forest'))).toBe('Lands')
     expect(deckGroupOf(card('Enchantment — Aura'))).toBe('Spells')
+  })
+})
+
+describe('sideboard colour filter', () => {
+  const card = (colorIdentity: string[]) => ({ colorIdentity } as unknown as SealedCardInfo)
+  it('shows everything with no chip selected', () => {
+    expect(matchesColorFilter(card(['R']), new Set())).toBe(true)
+  })
+  it('matches any shared colour, and colourless only under C', () => {
+    expect(matchesColorFilter(card(['R', 'G']), new Set(['G'] as const))).toBe(true)
+    expect(matchesColorFilter(card(['U']), new Set(['G'] as const))).toBe(false)
+    expect(matchesColorFilter(card([]), new Set(['G'] as const))).toBe(false)
+    expect(matchesColorFilter(card([]), new Set(['C'] as const))).toBe(true)
+  })
+  it('reads the colour enum names the server sends', () => {
+    expect(matchesColorFilter(card(['BLUE']), new Set(['U'] as const))).toBe(true)
+    expect(matchesColorFilter(card(['BLUE']), new Set(['G'] as const))).toBe(false)
   })
 })
