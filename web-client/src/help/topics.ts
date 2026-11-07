@@ -586,8 +586,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     body: [
       { kind: 'p', text: 'Standings show wins–losses–draws, points and game win rate; hovering a row spells out the tiebreakers actually used (opponents’ match win %, game win %, opponents’ game win %, life differential).' },
       { kind: 'p', text: 'Odd player counts give someone a bye each round. When a round ends, everyone readies up for the next one; the host can add an extra round after the bracket completes.' },
+      { kind: 'p', text: 'Matches are a single game by default; the host can make them best of three, with sideboarding between games. “Each pair meets” plays the whole bracket more than once, each meeting its own match.' },
     ],
-    related: ['ranked', 'axis-limits'],
+    related: ['best-of-three', 'ranked', 'axis-limits'],
   },
   {
     id: 'playing-for-ante',
@@ -993,7 +994,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Between matches you are on the standings screen: your next opponent, a Ready button, the live table, and buttons to share the event, watch replays, and view or save your deck.',
     body: [
       { kind: 'ol', items: [
-        'Everyone submits a deck. Before round 1 you can still Edit Deck.',
+        'Everyone submits a deck. Before round 1 — and between matches — you can Edit Deck to rebuild from your pool.',
         'The screen shows “Next Match: vs X” — or “Sitting out this round” on a bye.',
         'Press Ready for Next Round. The count shows how many are ready; the round starts when everyone is.',
         'Play your match. Matches still running elsewhere are listed live, with both life totals and a ▶ Watch button.',
@@ -1003,7 +1004,22 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Leave Tournament (confirm with a second click) drops you from the event. If a player disconnects, everyone sees a countdown banner; others can extend it by a minute, and kick them once two minutes have passed.' },
       { kind: 'p', text: 'Anyone can follow the event from its tournament link, and every finished match’s replay is under Replays.' },
     ],
-    related: ['event-round-robin', 'limited-deckbuilding', 'spectating', 'replays', 'disconnects', 'playing-for-ante'],
+    related: ['event-round-robin', 'best-of-three', 'limited-deckbuilding', 'spectating', 'replays', 'disconnects', 'playing-for-ante'],
+  },
+  {
+    id: 'best-of-three',
+    section: 'limited',
+    title: 'Best of three and sideboarding',
+    summary:
+      'A bracket can play best-of-three matches: first to two game wins. Between games you can swap cards between your deck and your sideboard, and the loser of the last game picks who plays first.',
+    body: [
+      { kind: 'p', text: 'The host picks Match: Best of 1 or Best of 3 in the lobby’s event settings. A best-of-three ends as soon as someone has two game wins; a drawn game doesn’t count toward them, and if three games pass without a second win, more game wins takes the match (equal is a draw).' },
+      { kind: 'p', text: 'When a game ends and the match isn’t over, you go to the sideboarding screen. Your sideboard is everything in your pool you didn’t put in your deck. Click a sideboard card to bring it in, click a card in your deck list to take it out, and use + / − for basic lands. The footer lists what you changed against your registered deck; Reset puts it back.' },
+      { kind: 'p', text: 'If you lost the last game you choose Play first or Draw first. After a drawn game, whoever chose last time chooses again. Press Ready for game 2 — the game starts when both players are ready, and Keep editing takes your Ready back until then.' },
+      { kind: 'p', text: 'Sideboard changes last for the rest of that match. Your next match starts from the deck you registered; to change that, use Edit Deck on the standings screen between matches.' },
+      { kind: 'p', text: 'Jumpstart and Commander decks stay as registered between games, and brought decks can only swap with the sideboard they were submitted with.' },
+    ],
+    related: ['tournament-flow', 'event-round-robin', 'limited-deckbuilding'],
   },
   {
     id: 'cube-building',

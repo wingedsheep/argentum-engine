@@ -28,6 +28,8 @@ data class PersistentTournamentLobby(
     val maxPlayers: Int,
     val pickTimeSeconds: Int = 45,
     val gamesPerMatch: Int,
+    /** Games per tournament match: 1 or 3. Defaulted so pre-best-of-N payloads still decode. */
+    val bestOf: Int = 1,
     val state: String,  // LobbyState enum name
     val hostPlayerId: String?,
     val players: Map<String, PersistentLobbyPlayer>,  // playerId.value -> player state

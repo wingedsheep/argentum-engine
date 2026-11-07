@@ -80,6 +80,8 @@ export interface RecipeSettings {
   readonly pickTimeSeconds?: number
   readonly picksPerRound?: number
   readonly gamesPerMatch?: number
+  /** Games per match: 1, or 3 for a best-of-three. */
+  readonly bestOf?: number
   readonly deckFormat?: DeckFormat | null
   readonly rules?: GameRules
   readonly deckSizeMin?: number
@@ -247,6 +249,7 @@ export function recipeFromLobby(
         pickTimeSeconds: s.pickTimeSeconds,
         picksPerRound: s.picksPerRound,
         gamesPerMatch: s.gamesPerMatch,
+        ...(s.bestOf !== undefined ? { bestOf: s.bestOf } : {}),
         deckFormat: s.deckFormat ?? null,
         rules: view.axes.rules,
         deckSizeMin: s.deckSizeMin,
@@ -451,6 +454,7 @@ function trimSettings(
   }
   if (raw.picksPerRound !== undefined) out.picksPerRound = clampInt(raw.picksPerRound, 1, 2, 1)
   if (raw.gamesPerMatch !== undefined) out.gamesPerMatch = clampInt(raw.gamesPerMatch, 1, 5, 1)
+  if (raw.bestOf !== undefined) out.bestOf = clampInt(raw.bestOf, 1, 3, 1) >= 3 ? 3 : 1
   if (raw.deckSizeMin !== undefined) out.deckSizeMin = clampInt(raw.deckSizeMin, 40, 100, 60)
   if (typeof raw.useJumpstart === 'boolean') out.useJumpstart = raw.useJumpstart
   if (typeof raw.chaosBoosters === 'boolean') out.chaosBoosters = raw.chaosBoosters

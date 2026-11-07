@@ -13,7 +13,9 @@ data class PersistentTournament(
     val currentRoundIndex: Int,
     val totalRounds: Int,
     val gamesPerMatch: Int,
-    val playerIds: List<String>  // Ordered list of player IDs
+    val playerIds: List<String>,  // Ordered list of player IDs
+    /** Games per match (1 or a best-of-N). Defaulted so pre-best-of-N payloads still decode. */
+    val bestOf: Int = 1,
 )
 
 /**
@@ -28,6 +30,7 @@ data class PersistentStanding(
     val draws: Int,
     val gamesWon: Int = 0,
     val gamesLost: Int = 0,
+    val gamesDrawn: Int = 0,
     val lifeDifferential: Int = 0,
     val forfeitWins: Int = 0,
     val forfeitLosses: Int = 0,
@@ -56,5 +59,15 @@ data class PersistentMatch(
     val player1GameWins: Int = 0,
     val player2GameWins: Int = 0,
     /** Defaulted so a payload written before simulated matches existed still decodes. */
-    val isSimulated: Boolean = false
+    val isSimulated: Boolean = false,
+    // Best-of-N state, all defaulted so a payload written before best-of-N decodes as a one-game match.
+    val gamesDrawn: Int = 0,
+    val completedGameSessionIds: List<String> = emptyList(),
+    val playDrawChooserId: String? = null,
+    val lastGameWinnerId: String? = null,
+    val currentStarterId: String? = null,
+    val nextStarterId: String? = null,
+    /** playerId → card name → count: each seat's sideboarded deck for the rest of the match. */
+    val matchDecks: Map<String, Map<String, Int>> = emptyMap(),
+    val sideboardReady: List<String> = emptyList(),
 )

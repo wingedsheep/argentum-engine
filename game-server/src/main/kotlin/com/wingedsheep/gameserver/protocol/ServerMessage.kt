@@ -564,7 +564,12 @@ sealed interface ServerMessage {
         val maxPlayers: Int,
         val pickTimeSeconds: Int = 45,      // Draft only
         val picksPerRound: Int = 1,         // Draft only: 1 or 2 (Pick 2 mode)
+        /** How many times each pair meets in the round-robin — each meeting its own match. */
         val gamesPerMatch: Int = 1,
+        /** Games per match: 1, or 3 for a best-of-three (first to two game wins). */
+        val bestOf: Int = 1,
+        /** Whether players may change their deck between the games of a best-of-three. */
+        val allowsSideboarding: Boolean = true,
         val isPublic: Boolean = false,
         /** Optional deck-construction format (Standard/Modern/Commander/...). Null = no restriction. */
         val deckFormat: String? = null,
@@ -850,7 +855,10 @@ sealed interface ServerMessage {
         val isBye: Boolean = false,
         /** True when the result was simulated rather than played — an AI-vs-AI match on a server that
          *  has `game.tournament.simulate-ai-matches` on. Such a match has no replay to open. */
-        val isSimulated: Boolean = false
+        val isSimulated: Boolean = false,
+        /** Game wins in this match — 1–0 for a single game, up to 2 in a best-of-three. */
+        val player1GameWins: Int = 0,
+        val player2GameWins: Int = 0,
     )
 
     /**
@@ -877,7 +885,57 @@ sealed interface ServerMessage {
         val lobbyId: String,
         val round: Int,
         val gameSessionId: String,
-        val opponentName: String
+        val opponentName: String,
+        /** Which game of the match this is (1-based). */
+        val gameNumber: Int = 1,
+        /** Games per match — 1, or 3 for a best-of-three. */
+        val bestOf: Int = 1,
+        /** Match score going into this game, from this player's seat. */
+        val yourGameWins: Int = 0,
+        val opponentGameWins: Int = 0,
+    ) : ServerMessage
+
+    /**
+     * A best-of-three match is between two of its games. Sent to each seat when a game ends without
+     * deciding the match, again whenever either seat's sideboarding state changes, and on reconnect —
+     * always the whole picture, so the client replaces rather than merges.
+     *
+     * The seat changes its deck for the rest of the match with `submitMatchDeck` (which also readies
+     * it), and the next game starts once both seats are ready.
+     */
+    @Serializable
+    @SerialName("betweenGames")
+    data class BetweenGames(
+        val lobbyId: String,
+        val round: Int,
+        val opponentName: String,
+        val bestOf: Int,
+        /** The game about to be played (2 or 3). */
+        val nextGameNumber: Int,
+        val yourGameWins: Int,
+        val opponentGameWins: Int,
+        val drawnGames: Int = 0,
+        /** The game that just ended, from this seat: "WIN", "LOSS" or "DRAW". */
+        val lastGameResult: String,
+        /** Whether this format lets the deck change between games; false shows a plain "next game" step. */
+        val canSideboard: Boolean,
+        /** The deck for the next game — the registered deck until this seat sideboards. */
+        val deck: Map<String, Int>,
+        /** What the seat could bring in: pool − deck in Limited, the brought sideboard otherwise. */
+        val sideboard: Map<String, Int>,
+        /** The deck registered for the tournament — what "Reset" returns to. */
+        val registeredDeck: Map<String, Int>,
+        /** Card details for every name in [deck], [sideboard] and [registeredDeck]. */
+        val cards: List<SealedCardInfo>,
+        /** Basic lands the seat may add freely (Limited); empty when basics come from the sideboard. */
+        val basicLands: List<SealedCardInfo> = emptyList(),
+        val minDeckSize: Int = 40,
+        /** True when this seat lost the last game and so picks who takes the first turn (CR 103.1). */
+        val youChoosePlayDraw: Boolean,
+        /** Once the chooser has decided: "YOU" or "OPPONENT" take the first turn; null until then. */
+        val startingPlayer: String? = null,
+        val youAreReady: Boolean,
+        val opponentReady: Boolean,
     ) : ServerMessage
 
     /**

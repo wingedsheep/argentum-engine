@@ -30,6 +30,13 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'feature-best-of-three',
+    date: '2026-11-07',
+    kind: 'feature',
+    title: 'Best-of-three matches with sideboarding',
+    body: 'Brackets can now play best-of-three matches. Between games you sideboard from the rest of your pool, the loser of the last game chooses whether to play or draw, and the match ends at two game wins. Between matches you can also rebuild your deck from your pool before readying up.',
+  },
+  {
     id: 'set-akh',
     date: '2026-11-06',
     kind: 'set',

@@ -10,7 +10,7 @@ import type { SetState, GetState } from './types'
 type LobbyHandlerKeys =
   | 'onLobbyCreated' | 'onLobbyUpdate' | 'onLobbyStopped'
   | 'onTournamentStarted' | 'onTournamentMatchStarting' | 'onTournamentBye'
-  | 'onRoundComplete' | 'onMatchComplete'
+  | 'onRoundComplete' | 'onMatchComplete' | 'onBetweenGames'
   | 'onPlayerReadyForRound' | 'onTournamentComplete' | 'onTournamentResumed'
   | 'onFreeForAllGameStarting' | 'onFreeForAllGameComplete'
 
@@ -141,6 +141,9 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
           nextOpponentName: msg.nextOpponentName ?? null,
           nextRoundHasBye: msg.nextRoundHasBye ?? false,
           currentRoundComplete: false,
+          // A rejoin between games re-sends `betweenGames` right after this message.
+          betweenGames: null,
+          currentGame: null,
         },
         // Keep deckBuildingState but ensure phase is 'submitted'
         deckBuildingState: state.deckBuildingState
@@ -164,6 +167,16 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
               // We're playing in this round, so it plainly isn't finished.
               currentRoundComplete: false,
               activeMatches: [], // Clear - player is now in a game
+              betweenGames: null,
+              lastMatchScore: null,
+              currentGame: (msg.bestOf ?? 1) > 1
+                ? {
+                    gameNumber: msg.gameNumber ?? 1,
+                    bestOf: msg.bestOf ?? 1,
+                    yourGameWins: msg.yourGameWins ?? 0,
+                    opponentGameWins: msg.opponentGameWins ?? 0,
+                  }
+                : null,
             }
           : null,
         sessionId: msg.gameSessionId,
@@ -225,7 +238,20 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
     },
 
     onMatchComplete: (msg) => {
+      const playerId = get().playerId
       set((state) => {
+        // Our match's game score, when it was longer than one game.
+        const mine = playerId ? msg.results.find((r) => r.player1Id === playerId || r.player2Id === playerId) : undefined
+        const asP1 = mine?.player1Id === playerId
+        const ours = (asP1 ? mine?.player1GameWins : mine?.player2GameWins) ?? 0
+        const theirs = (asP1 ? mine?.player2GameWins : mine?.player1GameWins) ?? 0
+        const lastMatchScore = mine && !mine.isBye && state.tournamentState?.currentGame && ours + theirs > 0
+          ? {
+              result: mine.isDraw ? 'DRAW' as const : mine.winnerId === playerId ? 'WIN' as const : 'LOSS' as const,
+              yourGameWins: ours,
+              opponentGameWins: theirs,
+            }
+          : (state.tournamentState?.lastMatchScore ?? null)
         // Don't clear game state if we're in an active game (no gameOverState yet)
         const inActiveGame = state.gameState != null && state.gameOverState == null
         return {
@@ -252,9 +278,41 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
                 // gets false here and must keep seeing the round in progress, not the next one.
                 currentRoundComplete: msg.roundComplete ?? false,
                 activeMatches: [],
+                // The match is decided (or forfeited), so there is no next game to sideboard for.
+                betweenGames: null,
+                currentGame: null,
+                lastMatchScore,
               }
             : null,
           // Preserve game state while in an active game or game-over banner is showing
+          ...(inActiveGame ? {} : {
+            gameState: state.gameOverState ? state.gameState : null,
+            mulliganState: null,
+            waitingForOpponentMulligan: false,
+            legalActions: [],
+          }),
+        }
+      })
+    },
+
+    onBetweenGames: (msg) => {
+      set((state) => {
+        if (!state.tournamentState) return {}
+        // Arrives just after the game-over message: keep the finished board behind the result card,
+        // exactly as a decided match does, and drop it once that card has been dismissed.
+        const inActiveGame = state.gameState != null && state.gameOverState == null
+        return {
+          tournamentState: {
+            ...state.tournamentState,
+            currentRound: msg.round,
+            betweenGames: msg,
+            ...(inActiveGame ? {} : {
+              currentMatchGameSessionId: null,
+              currentMatchOpponentName: null,
+            }),
+            isBye: false,
+            activeMatches: [],
+          },
           ...(inActiveGame ? {} : {
             gameState: state.gameOverState ? state.gameState : null,
             mulliganState: null,

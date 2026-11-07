@@ -241,6 +241,16 @@ class GameSession(
     var playingForAnte: Boolean = false
 
     /**
+     * Who takes the first turn, when the server already knows (CR 103.1): in games 2+ of a
+     * best-of-N tournament match the loser of the previous game chooses. Null leaves it to the
+     * engine's seeded coin flip, as every first game does.
+     */
+    var startingPlayerId: EntityId? = null
+
+    /** The player who took (or will take) the first turn, once the game has started. */
+    val actualStartingPlayerId: EntityId? get() = gameState?.turnOrder?.firstOrNull()
+
+    /**
      * Team partitioning for team variants (Two-Headed Giant — CR 810), as lists of seat indices
      * into the join/turn order; each entry is one team. Set by the lobby / scenario handler before
      * [startGame] and forwarded to [GameConfig.teams], which stamps [TeamComponent] on each player.
@@ -727,6 +737,7 @@ class GameSession(
             format = engineFormat,
             attackMode = attackMode,
             playingForAnte = playingForAnte,
+            startingPlayerIndex = startingPlayerId?.let { id -> players.keys.indexOf(id).takeIf { it >= 0 } },
             // Team partitioning for Two-Headed Giant (CR 810); null for non-team games. The seat
             // indices line up with playerConfigs, which preserves the join/turn order of `players`.
             teams = teams,

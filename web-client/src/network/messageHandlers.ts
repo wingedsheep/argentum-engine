@@ -32,6 +32,7 @@ import type {
   TournamentByeMessage,
   RoundCompleteMessage,
   MatchCompleteMessage,
+  BetweenGamesMessage,
   PlayerReadyForRoundMessage,
   TournamentCompleteMessage,
   TournamentResumedMessage,
@@ -107,6 +108,7 @@ export interface MessageHandlers {
   onTournamentBye: (message: TournamentByeMessage) => void
   onRoundComplete: (message: RoundCompleteMessage) => void
   onMatchComplete: (message: MatchCompleteMessage) => void
+  onBetweenGames: (message: BetweenGamesMessage) => void
   onPlayerReadyForRound: (message: PlayerReadyForRoundMessage) => void
   onTournamentComplete: (message: TournamentCompleteMessage) => void
   onTournamentResumed: (message: TournamentResumedMessage) => void
@@ -262,6 +264,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'matchComplete':
       handlers.onMatchComplete(message)
+      break
+    case 'betweenGames':
+      handlers.onBetweenGames(message)
       break
     case 'playerReadyForRound':
       handlers.onPlayerReadyForRound(message)

@@ -1,0 +1,420 @@
+/*
+ * The between-games sideboarding screen. The frame (header, footer, buttons, pills) comes from
+ * limitedScreen.module.css; this module lays out the score hero and the two card piles.
+ */
+
+/* ── Score + play/draw ─────────────────────────────────────────────────── */
+
+.hero {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px 56px;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, rgba(242, 180, 92, 0.05), rgba(255, 255, 255, 0));
+}
+
+.scoreBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9aa3b8;
+}
+.eyebrow[data-result='WIN'] { color: #8fe0b0; }
+.eyebrow[data-result='LOSS'] { color: #f3a3a3; }
+
+.score {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scoreSide {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.scoreName {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+  color: #c9cfdc;
+}
+
+.scoreNum {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1;
+  color: #f4f5f9;
+}
+
+.scoreDash {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: #6b7389;
+}
+
+.scoreNote {
+  margin: 0;
+  font-size: 13px;
+  color: #8f98ac;
+}
+
+.playDraw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 240px;
+}
+
+.playDrawLabel {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8f98ac;
+}
+
+.playDrawValue {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e6e9f1;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.segment {
+  min-height: 34px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #c9cfdc;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.segment:hover:not(:disabled):not([aria-checked='true']) { background: rgba(255, 255, 255, 0.08); }
+.segment[aria-checked='true'] { background: #f2b45c; color: #1d1405; }
+.segment:disabled { cursor: default; }
+.segment:disabled:not([aria-checked='true']) { opacity: 0.5; }
+.segment:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+
+/* ── The two piles ─────────────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+/* Ready: the piles freeze until the player chooses to keep editing. */
+.body[data-locked] .pool,
+.body[data-locked] .deck { opacity: 0.55; }
+
+.pool {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 20px 20px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: #747d92;
+}
+
+.empty {
+  margin: 24px 0;
+  color: #747d92;
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  position: relative;
+  aspect-ratio: 5 / 7;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  overflow: hidden;
+  background: #11141d;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tile:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #8fe0b0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.tile:disabled { cursor: default; }
+.tile:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+
+.count {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #e6e9f1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tag {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tag[data-kind='in'] { background: rgba(95, 208, 140, 0.18); color: #a5ebc1; border: 1px solid rgba(95, 208, 140, 0.45); }
+.tag[data-kind='out'] { background: rgba(242, 180, 92, 0.2); color: #f6d9a8; border: 1px solid rgba(242, 180, 92, 0.5); }
+.tile .tag { position: absolute; top: 5px; left: 5px; }
+
+/* The deck rail. */
+.deck {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 0 0;
+}
+.deck > .sectionHead { padding: 0 16px; }
+
+.deckCount {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: #c8f2d8;
+  font-variant-numeric: tabular-nums;
+}
+.deckCount[data-short] { color: #f6d9a8; }
+.deckMin { font-size: 14px; color: #747d92; }
+
+.deckScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.group + .group { margin-top: 10px; }
+
+.groupHead {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8f98ac;
+}
+.groupHead span { color: #6b7389; font-variant-numeric: tabular-nums; }
+
+.row,
+.landRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 12px 0 10px;
+  border: none;
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: #dfe3ec;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+.row { cursor: pointer; }
+.row:hover:not(:disabled) { background: rgba(243, 163, 163, 0.08); border-left-color: #f3a3a3; }
+.row:disabled { cursor: default; }
+.row:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: -2px; }
+
+.rowCount {
+  width: 18px;
+  flex: none;
+  text-align: right;
+  font-weight: 700;
+  color: #8fb8f2;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowCost { flex: none; display: inline-flex; }
+
+.stepper {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e6e9f1;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.stepper:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.stepper:disabled { opacity: 0.35; cursor: default; }
+
+/* Formats with fixed decks. */
+.fixedBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.fixedPanel { max-width: 440px; padding: 24px 28px; text-align: center; }
+.fixedTitle { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; color: #f1f3f9; }
+.fixedText { margin: 0; font-size: 14px; color: #9aa3b8; }
+
+/* ── Footer: what changed, and the commit ──────────────────────────────── */
+
+.footer { justify-content: space-between; flex-wrap: wrap; }
+
+.changes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.changesLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8f98ac;
+  margin-right: 2px;
+}
+
+.noChanges { font-size: 13px; color: #747d92; }
+
+.change {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.change[data-kind='in'] { background: rgba(95, 208, 140, 0.14); color: #a5ebc1; }
+.change[data-kind='out'] { background: rgba(242, 180, 92, 0.14); color: #f6d9a8; }
+
+.reset {
+  padding: 3px 8px;
+  border: none;
+  background: transparent;
+  color: #9aa3b8;
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.reset:hover { color: #e6e9f1; }
+
+.commit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.waiting {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c9cfdc;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f2b45c;
+  animation: sbPulse 1.2s ease-in-out infinite;
+}
+@keyframes sbPulse { 50% { opacity: 0.3; } }
+
+/* ── Narrow screens: the piles stack ───────────────────────────────────── */
+
+@media (max-width: 760px) {
+  .hero { gap: 12px 24px; padding: 12px 16px; }
+  .scoreNum { font-size: 34px; }
+  .body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 0.9fr);
+  }
+  .deck { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+  .pool { padding: 12px 16px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+  .footer { gap: 10px; }
+  .commit { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile, .tile:hover:not(:disabled) { transition: none; transform: none; }
+  .dot { animation: none; }
+}

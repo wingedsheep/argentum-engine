@@ -192,6 +192,12 @@ class LobbyHandler(
         }
     }
 
+    fun handleSubmitMatchDeck(session: WebSocketSession, message: ClientMessage.SubmitMatchDeck) =
+        tournamentMatchHandler.handleSubmitMatchDeck(session, message.deck, message.playFirst)
+
+    fun handleEditMatchDeck(session: WebSocketSession) =
+        tournamentMatchHandler.handleEditMatchDeck(session)
+
     fun handleMatchResult(lobbyId: String, gameSessionId: String, winnerId: EntityId?, winnerLifeRemaining: Int) {
         val lobby = lobbyRepository.findLobbyById(lobbyId)
         if (lobby?.isFreeForAll == true) {
@@ -2745,6 +2751,8 @@ class LobbyHandler(
             }
         }
         message.gamesPerMatch?.let { lobby.gamesPerMatch = it.coerceIn(1, 5) }
+        // Best of one or best of three — the two match lengths the Magic Tournament Rules use.
+        message.bestOf?.let { lobby.bestOf = if (it >= 3) 3 else 1 }
         message.pickTimeSeconds?.let { lobby.pickTimeSeconds = TournamentLobby.clampPickTimeSeconds(it, 180) }
         message.picksPerRound?.let { lobby.picksPerRound = it.coerceIn(1, 2) }
         message.isPublic?.let { lobby.isPublic = it }

@@ -75,6 +75,22 @@
   color: #c3c9d7;
 }
 
+/* A best-of-three's standing under the game result: "Match 1–0 · Game 2 next". */
+.matchLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #dfe3ec;
+  font-variant-numeric: tabular-nums;
+}
+
 .actions {
   display: flex;
   flex-direction: column;

@@ -334,6 +334,8 @@ sealed interface ClientMessage {
         val boosterDistribution: Map<String, Int>? = null,  // Per-set booster counts
         val maxPlayers: Int? = null,
         val gamesPerMatch: Int? = null,
+        /** Games per tournament match: 1 or 3. Null = unchanged. */
+        val bestOf: Int? = null,
         val pickTimeSeconds: Int? = null,     // Draft only
         val picksPerRound: Int? = null,       // Draft only: 1 or 2
         val isPublic: Boolean? = null,
@@ -424,6 +426,23 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("readyForNextRound")
     data object ReadyForNextRound : ClientMessage
+
+    /**
+     * Between the games of a best-of-three: play [deck] for the rest of the match and mark this seat
+     * ready for the next game. [playFirst] is read only from the seat that chooses who takes the
+     * first turn (the loser of the last game, CR 103.1); null from them means "play".
+     */
+    @Serializable
+    @SerialName("submitMatchDeck")
+    data class SubmitMatchDeck(
+        val deck: Map<String, Int>,
+        val playFirst: Boolean? = null,
+    ) : ClientMessage
+
+    /** Between games: take back a ready, to keep sideboarding. */
+    @Serializable
+    @SerialName("editMatchDeck")
+    data object EditMatchDeck : ClientMessage
 
     /**
      * Host adds extra rounds to a completed tournament.
