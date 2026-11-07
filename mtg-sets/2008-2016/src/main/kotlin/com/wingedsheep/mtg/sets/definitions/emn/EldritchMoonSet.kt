@@ -40,7 +40,8 @@ object EldritchMoonSet : MtgSet {
     /**
      * Scryfall's `temn` sync covers Eldritch Moon's Eldrazi Horror, Human, Zombie and Spider but
      * not Haunted Dead's Spirit, so that one is self-hosted under
-     * `web-client/public/images/tokens/` and declared here.
+     * `web-client/public/images/tokens/` and declared here. Thraben Standard Bearer's white 1/1
+     * Human Soldier isn't on the `temn` sheet either; it borrows Shadows over Innistrad's token art.
      */
     override val tokenArt: List<TokenPrinting> = listOf(
         TokenPrinting(
@@ -49,6 +50,10 @@ object EldritchMoonSet : MtgSet {
             power = 1,
             toughness = 1,
             colors = setOf(Color.WHITE),
+        ),
+        TokenPrinting(
+            name = "Human Soldier",
+            imageUri = "https://cards.scryfall.io/normal/front/d/9/d9cbf36e-4044-4f08-9bae-f0dcb2455716.jpg?1783937683",
         ),
     )
 
