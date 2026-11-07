@@ -9930,6 +9930,7 @@ Lash of Malice	polarity: ModifyStatsEffect
 Lash of Thorns
 Lash of the Balrog
 Lash of the Whip
+Lashweed Lurker
 Lashwhip Predator
 Lassoed by the Law
 Last Caress
@@ -10974,6 +10975,7 @@ Merciless Executioner
 Merciless Javelineer
 Merciless Repurposing
 Merciless Resolve
+Mercurial Geists
 Mercurial Kite
 Mercurial Spelldancer
 Mercurial Transformation
@@ -11320,6 +11322,7 @@ Mobilization
 Mobilize
 Mobilized District
 Mobilizer Mech	intent: AddCardTypeEffect; polarity: AddCardTypeEffect
+Mockery of Nature
 Mocking Sprite
 Mockingbird
 Mockingbird, Ace Agent
@@ -13152,6 +13155,7 @@ Primal Amulet
 Primal Boost
 Primal Clay
 Primal Command	polarity: Pipeline(graveyard→library)
+Primal Druid
 Primal Empathy
 Primal Frenzy
 Primal Might
@@ -14762,6 +14766,7 @@ Samwise Gamgee
 Samwise the Stouthearted
 Sanar, Innovative First-Year
 Sanar, Unfinished Genius
+Sanctifier of Souls
 Sanctify
 Sanctuary Cat
 Sanctuary Lockdown
@@ -15011,6 +15016,7 @@ Scotty, Miracle Worker
 Scour All Possibilities
 Scour for Scrap
 Scour from Existence
+Scour the Laboratory
 Scoured Barrens
 Scourge of Valkas
 Scourge of the Skyclaves
@@ -15698,6 +15704,7 @@ Sigarda, Champion of Light
 Sigarda, Font of Blessings
 Sigarda, Host of Herons
 Sigardian Paladin
+Sigardian Priest
 Sigardian Savior
 Sight Beyond Sight
 Sigil of Sleep	polarity: Aura>MoveToZoneEffect
@@ -16346,6 +16353,7 @@ Spectral Hunt-Caller
 Spectral Interference
 Spectral Lynx
 Spectral Procession
+Spectral Reserves
 Spectral Sailor
 Spectral Searchlight
 Spectral Shepherd
@@ -16559,6 +16567,7 @@ Springleaf Drum
 Springleaf Parade
 Springmane Cervin
 Springmantle Cleric
+Springsage Ritual
 Sprite Dragon
 Sprout
 Sprout Swarm
@@ -16705,6 +16714,7 @@ Staunch Defenders
 Staunch Shieldmate
 Stay Hidden, Stay Silent
 Steadfast Armasaur
+Steadfast Cathar
 Steadfast Guard
 Steadfast Paladin
 Steadfast Sentinel
@@ -16947,6 +16957,7 @@ Strixhaven Stadium
 Stroke of Midnight
 Stromkirk Bloodthief
 Stromkirk Captain
+Stromkirk Condemned
 Stromkirk Noble
 Stromkirk Occultist
 Strong Back
@@ -16993,6 +17004,7 @@ Subterranean Spirit
 Subtle Strike
 Suburban Sanctuary
 Subway Train
+Succumb to Temptation
 Succumb to the Cold
 Sudden Breakthrough
 Sudden Insight
@@ -17252,6 +17264,7 @@ Swift Justice
 Swift Kick
 Swift Reconfiguration	polarity: Aura>GrantKeyword; polarity: Aura>TransformPermanent
 Swift Response
+Swift Spinner
 Swift Warden
 Swiftblade Vindicator
 Swiftfoot Boots
@@ -17498,6 +17511,7 @@ Tatsumasa, the Dragon's Fang
 Tatsunari, Toad Rider	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; polarity: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Tattered Apparition
 Tattered Drake
+Tattered Haunter
 Tattered Mummy
 Tattered Ratter
 Tattermunge Duo
@@ -18123,9 +18137,11 @@ Thousand-Year Storm
 Thousand-legged Kami
 Thraben Charm
 Thraben Exorcism
+Thraben Foulbloods
 Thraben Heretic
 Thraben Inspector
 Thraben Purebloods
+Thraben Standard Bearer
 Thraben Valiant
 Thraben Watcher
 Thragtusk
@@ -18866,6 +18882,7 @@ Ultron Drone
 Ultron, Artificial Malevolence
 Ultros, Obnoxious Octopus
 Ulvenwald Mysteries
+Ulvenwald Observer
 Ulvenwald Oddity
 Umara Mystic
 Umara Raptor
@@ -19361,6 +19378,7 @@ Vexing Devil
 Vexing Drone
 Vexing Gull
 Vexing Radgull
+Vexing Scuttler
 Veyran, Voice of Duality
 Vial Smasher the Fierce
 Vial Smasher, Gleeful Grenadier
@@ -19992,6 +20010,7 @@ Weight of Conscience
 Weight of Memory
 Weight of the Underworld
 Weird Harvest
+Weirded Vampire
 Welcome the Dead
 Welcome to Sweettooth
 Welcoming Vampire
@@ -20338,6 +20357,7 @@ Wood Elves
 Woodborn Behemoth
 Woodcaller Automaton
 Woodcloaker
+Woodcutter's Grit
 Wooded Foothills
 Wooded Ridgeline
 Wooden Sphere
@@ -20351,6 +20371,7 @@ Woodland Druid
 Woodland Guidance
 Woodland Liege
 Woodland Mystic
+Woodland Patrol
 Woodland Stream
 Woodland Weavemaster
 Woodweaver's Puzzleknot
