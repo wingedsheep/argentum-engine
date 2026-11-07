@@ -74,6 +74,10 @@ class MidnightOilScenarioTest : FunSpec({
         val oil = d.castOil()
 
         d.passPriorityUntil(Step.DRAW, d.player1)
+        withClue("the opponent's own cleanup discard on their turn costs nobody life") {
+            d.getLifeTotal(d.player1) shouldBe 20
+            d.getLifeTotal(d.player2) shouldBe 20
+        }
         val handAfterNormalDraw = d.getHand(d.player1).size
         d.bothPass()
         d.getHand(d.player1).size shouldBe handAfterNormalDraw + 1

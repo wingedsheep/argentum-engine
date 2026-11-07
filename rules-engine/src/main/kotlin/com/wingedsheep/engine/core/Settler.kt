@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent
 import com.wingedsheep.engine.state.components.player.EndTheTurnRequestedComponent
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.EventPattern
 
@@ -125,13 +126,14 @@ class Settler(
     }
 
     /**
-     * A cleanup step whose turn-based actions stopped for the hand-size discard, or that an "end
-     * the turn" effect skipped to, is finished here ([CleanupCheckPendingComponent]), because only
-     * this boundary sees what those actions triggered. CR 514.3a: if a state-based action was
-     * performed or a triggered ability was put on the stack, the active player gets priority in
-     * this cleanup step, and another cleanup step begins once the stack is empty and all players
-     * pass ([TurnManager.advanceStep]). Otherwise no player gets priority and the turn ends; the
-     * next turn's start settles on its own events only, since [drained]'s were already detected.
+     * Every cleanup step is finished here ([CleanupCheckPendingComponent]), because only this
+     * boundary sees what its turn-based actions — the hand-size discard, effects ending — and an
+     * "end the turn" process triggered. CR 514.3a: if a state-based action was performed or a
+     * triggered ability was put on the stack, the active player gets priority in this cleanup step,
+     * and another cleanup step begins once the stack is empty and all players pass
+     * ([TurnManager.advanceStep]). Otherwise no player gets priority and the turn passes; the next
+     * turn's start settles on its own events only, since [drained]'s were already detected. A
+     * marker found outside a cleanup step is stale and only removed.
      */
     private fun finishCleanupStep(drained: ExecutionResult, eventsBeforeDrain: Int): ExecutionResult {
         val state = drained.state
@@ -139,9 +141,10 @@ class Settler(
         val activePlayer = state.activePlayerId ?: return drained
         if (state.getEntity(activePlayer)?.has<CleanupCheckPendingComponent>() != true) return drained
         val checked = state.updateEntity(activePlayer) { it.without<CleanupCheckPendingComponent>() }
+        if (checked.step != Step.CLEANUP) return drained.copy(state = checked)
         val acted = checked.stack.isNotEmpty() || drained.events.size > eventsBeforeDrain
         if (acted) return drained.copy(state = checked.withPriority(activePlayer))
-        val nextTurn = settleThisGame(turnManager.endTurn(checked))
+        val nextTurn = settleThisGame(turnManager.passTurn(checked))
         return nextTurn.copy(events = drained.events + nextTurn.events)
     }
 

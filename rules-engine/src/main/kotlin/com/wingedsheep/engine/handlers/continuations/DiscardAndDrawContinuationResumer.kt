@@ -6,7 +6,6 @@ import com.wingedsheep.engine.handlers.effects.drawing.EachPlayerDiscardsOrLoseL
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent
 import com.wingedsheep.sdk.core.Zone
 
 class DiscardAndDrawContinuationResumer(
@@ -64,8 +63,9 @@ class DiscardAndDrawContinuationResumer(
         // The settle after this answer finishes the step (CR 514.3a): if the discard triggered
         // anything, the active player receives priority in this cleanup step; otherwise the turn ends.
         val cleanedState = CleanupPhaseManager.applyCleanupTurnBasedActions(result.state, services.cardRegistry)
-            .updateEntity(continuation.playerId) { it.with(CleanupCheckPendingComponent) }
-        return checkForMore(cleanedState, result.events)
+        val finished = services.turnManager.finishCleanupStepActions(cleanedState)
+        if (finished.error != null) return finished
+        return checkForMore(finished.newState, result.events + finished.events)
     }
 
     fun resumeEachPlayerDiscardsOrLoseLife(

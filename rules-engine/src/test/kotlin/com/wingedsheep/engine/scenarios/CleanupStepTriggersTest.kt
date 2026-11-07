@@ -1,8 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -10,15 +13,16 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * CR 514.3a: abilities that trigger during the cleanup step (the hand-size discard is the usual
- * source) go on the stack in that cleanup step, the active player gets priority there, and once
- * the stack is empty and all players pass another cleanup step begins. Without such a trigger no
- * player gets priority and the turn ends.
+ * source) or state-based actions performed then go on the stack in that cleanup step, the active
+ * player gets priority there, and once the stack is empty and all players pass another cleanup step
+ * begins. Without either no player gets priority and the turn ends.
  */
 class CleanupStepTriggersTest : FunSpec({
 
@@ -65,8 +69,11 @@ class CleanupStepTriggersTest : FunSpec({
         d.state.step shouldBe Step.CLEANUP
         d.assertStackSize(2)
         d.state.priorityPlayerId shouldBe me
+        // Players may respond: the opponent receives priority in the cleanup step too.
+        d.passPriority(me)
+        d.state.priorityPlayerId shouldBe d.getOpponent(me)
+        d.passPriority(d.getOpponent(me))
 
-        d.bothPass()
         d.bothPass()
         d.getLifeTotal(me) shouldBe 18
         // The stack is empty and both players passed: another cleanup step begins, finds nothing
@@ -111,6 +118,33 @@ class CleanupStepTriggersTest : FunSpec({
 
         d.activePlayer shouldBe d.getOpponent(me)
         d.getLifeTotal(me) shouldBe 20
+    }
+
+    test("a creature an ending 'until end of turn' effect leaves at 0 toughness dies in the cleanup step") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val turn = d.state.turnNumber
+        val bears = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.giveMana(me, Color.GREEN, 1)
+        d.castSpell(me, d.putCardInHand(me, "Giant Growth"), listOf(bears))
+        d.bothPass()
+        d.replaceState(d.state.updateEntity(bears) { container ->
+            val counters = container.get<CountersComponent>() ?: CountersComponent()
+            container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, 2))
+        })
+
+        d.passPriorityUntil(Step.END)
+        d.bothPass()
+
+        withClue("Giant Growth ends in cleanup (CR 514.2); the 0/0 dies there and the player gets priority") {
+            d.state.turnNumber shouldBe turn
+            d.state.step shouldBe Step.CLEANUP
+            d.getGraveyardCardNames(me).contains("Grizzly Bears") shouldBe true
+            d.state.priorityPlayerId shouldBe me
+        }
+        d.bothPass()
+        d.activePlayer shouldBe d.getOpponent(me)
     }
 
     test("an end-the-turn effect's cleanup discard triggers in that cleanup step") {

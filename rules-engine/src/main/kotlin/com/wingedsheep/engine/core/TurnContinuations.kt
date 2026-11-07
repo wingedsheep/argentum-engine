@@ -9,7 +9,8 @@ import kotlinx.serialization.Serializable
  * choice is answered, the auto-resumer advances the game out of that step, exactly as the unpaused
  * path does. The cleanup step's discard no longer parks one (the settle after the answer finishes
  * that step, see [com.wingedsheep.engine.state.components.player.CleanupCheckPendingComponent]); a
- * frame saved beneath one by an older build advances into another cleanup step, which ends the turn.
+ * frame saved beneath one by an older build advances into another cleanup step, which finishes the
+ * same way.
  */
 @Serializable
 data object AdvanceStepContinuation : AutomaticContinuation

@@ -594,9 +594,9 @@ class TurnManager(
             }
         }
 
-        // Leaving a cleanup step: the turn ends there unless players received priority in it
-        // (CR 514.3a), and that is the only way a cleanup step is left by passing priority. Once
-        // the stack is empty and all players pass in succession, another cleanup step begins.
+        // Leaving a cleanup step by passing priority: players received priority in it (CR 514.3a),
+        // and once the stack is empty and all players pass in succession, another cleanup step
+        // begins. A cleanup step nobody received priority in passes the turn from the Settler.
         if (currentStep == Step.CLEANUP) {
             val again = state.copy(priorityPlayerId = null, priorityPassedBy = emptySet())
             return runCleanupStep(again, listOf(StepChangedEvent(Step.CLEANUP)))
@@ -1052,12 +1052,10 @@ class TurnManager(
     }
 
     /**
-     * Perform a cleanup step's turn-based actions (CR 514.1, 514.2) and, when none of them asked a
-     * question, end the turn: with no discard nothing has happened that could trigger, so no
-     * player receives priority. The hand-size discard stops for the player's choice, and its
-     * answer leaves the game in this cleanup step marked [CleanupCheckPendingComponent]: the
-     * [Settler] then checks for triggers and state-based actions (CR 514.3a) and either hands the
-     * active player priority here or ends the turn.
+     * Perform a cleanup step's turn-based actions (CR 514.1, 514.2). The hand-size discard stops for
+     * the player's choice and its answer finishes the actions; otherwise they all happen here.
+     * Either way the step ends marked [CleanupCheckPendingComponent] (see
+     * [finishCleanupStepActions]), and the [Settler] performs the CR 514.3a check.
      */
     private fun runCleanupStep(state: GameState, priorEvents: List<GameEvent>): ExecutionResult {
         val cleanupResult = cleanupPhaseManager.performCleanupStep(state)
@@ -1066,22 +1064,42 @@ class TurnManager(
         if (cleanupResult.outcome is Outcome.Paused) {
             return ExecutionResult.propagatePause(cleanupResult.newState, events)
         }
-        val endTurnResult = endTurn(cleanupResult.newState)
-        return endTurnResult.copy(events = events + endTurnResult.events)
+        val finished = finishCleanupStepActions(cleanupResult.newState)
+        return finished.copy(events = events + finished.events)
     }
 
     /**
-     * End the current turn and start the next player's turn.
+     * The end of a cleanup step's turn-based actions, once marked damage is gone: "until end of
+     * turn" and "this turn" effects end (CR 514.2), and the active player is marked
+     * [CleanupCheckPendingComponent]. Only the settle boundary turns events into triggers, so the
+     * [Settler] then checks for state-based actions and triggered abilities (CR 514.3a): if any,
+     * the active player receives priority in this cleanup step, and another cleanup step follows
+     * once everyone passes ([advanceStep]); if none, it passes the turn ([passTurn]).
      */
-    fun endTurn(state: GameState): ExecutionResult {
+    fun finishCleanupStepActions(state: GameState): ExecutionResult {
+        val activePlayer = state.activePlayerId
+            ?: return ExecutionResult.error(state, "No active player")
+        val ended = cleanupPhaseManager.cleanupEndOfTurn(state)
+            .copy(priorityPlayerId = null, priorityPassedBy = emptySet())
+            .updateEntity(activePlayer) { it.with(CleanupCheckPendingComponent) }
+        return ExecutionResult.success(ended, copyExpiryEvents(state, ended))
+    }
+
+    /** Start the next player's turn, the current turn's cleanup being over. */
+    fun passTurn(state: GameState): ExecutionResult {
         val currentPlayer = state.activePlayerId
             ?: return ExecutionResult.error(state, "No active player")
+        val ready = state.copy(priorityPlayerId = null, priorityPassedBy = emptySet())
+        return selectNextTurn(ready, ready.getNextTeam(currentPlayer))
+    }
 
-        // Clean up end-of-turn effects
-        var cleanedState = cleanupPhaseManager.cleanupEndOfTurn(state)
-
-        cleanedState = cleanedState.copy(priorityPlayerId = null, priorityPassedBy = emptySet())
-        val next = selectNextTurn(cleanedState, cleanedState.getNextTeam(currentPlayer))
+    /**
+     * End the current turn and start the next player's turn: end the turn's effects, then
+     * [passTurn], with no CR 514.3a check between them.
+     */
+    fun endTurn(state: GameState): ExecutionResult {
+        val cleanedState = cleanupPhaseManager.cleanupEndOfTurn(state)
+        val next = passTurn(cleanedState)
         return next.copy(events = copyExpiryEvents(state, cleanedState) + next.events)
     }
 
@@ -1504,19 +1522,18 @@ class TurnManager(
         val cleanupResult = cleanupPhaseManager.performCleanupStep(newState)
         if (cleanupResult.outcome is Outcome.Paused) {
             // Over max hand size: pause for the discard. The HandSizeDiscardContinuation finishes the
-            // cleanup turn-based actions, and the answer's settle ends the turn — or, when the
-            // discard triggered something, gives the active player priority in this cleanup step
-            // first (see [runCleanupStep]).
+            // cleanup turn-based actions, and the answer's settle performs the CR 514.3a check
+            // (see [finishCleanupStepActions]).
             return ExecutionResult.propagatePause(cleanupResult.newState, events + cleanupResult.events)
         }
         if (cleanupResult.outcome is Outcome.Rejected) return cleanupResult
         // Abilities that triggered during this process go on the stack in this cleanup step, then the
         // active player gets priority and another cleanup step follows; with none, nobody gets
         // priority and the turn ends. Detection is the settle boundary's job, so the Settler that
-        // called this finishes the step (see [CleanupCheckPendingComponent]).
-        newState = cleanupResult.newState.updateEntity(activePlayer) { it.with(CleanupCheckPendingComponent) }
+        // called this finishes the step (see [finishCleanupStepActions]).
         events.addAll(cleanupResult.events)
-        return ExecutionResult.success(newState, events)
+        val finished = finishCleanupStepActions(cleanupResult.newState)
+        return finished.copy(events = events + finished.events)
     }
 
     /**
