@@ -61,6 +61,19 @@ class MustBeBlockedByFilteredBlockersTest : FunSpec({
         toughness = 2
         staticAbility { ability = MustBeBlocked() }
     }
+    val menaceBait = card("Test Menace Eldrazi Bait") {
+        typeLine = "Creature — Human Warrior"
+        power = 2
+        toughness = 2
+        keywords(Keyword.MENACE)
+        staticAbility { ability = MustBeBlocked(blockers = eldrazi) }
+    }
+    val menace = card("Test Menace Raider") {
+        typeLine = "Creature — Human Warrior"
+        power = 2
+        toughness = 2
+        keywords(Keyword.MENACE)
+    }
     val drone = card("Test Eldrazi Drone") {
         typeLine = "Creature — Eldrazi Drone"
         power = 2
@@ -69,7 +82,7 @@ class MustBeBlockedByFilteredBlockersTest : FunSpec({
 
     fun setup(): Triple<GameTestDriver, com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(priest, wall, eldraziBait, eldraziBanner, plainBait, drone))
+        d.registerCards(TestCards.all + listOf(priest, wall, eldraziBait, eldraziBanner, plainBait, menaceBait, menace, drone))
         d.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         val p1 = d.activePlayer!!
         val p2 = d.getOpponent(p1)
@@ -212,6 +225,33 @@ class MustBeBlockedByFilteredBlockersTest : FunSpec({
         val suggestion = d.legalActions(p2).single { it.mandatoryBlockerAssignments != null }.mandatoryBlockerAssignments
         suggestion shouldBe mapOf(droneA to listOf(bait))
         d.declareBlockers(p2, suggestion!!).outcome shouldBe Outcome.Done
+    }
+
+    test("if able: with menace, the suggestion adds the second blocker the requirement needs") {
+        val (d, p1, p2) = setup()
+        val bait = d.putCreatureOnBattlefield(p1, menaceBait.name)
+        val other = d.putCreatureOnBattlefield(p1, "Grizzly Bears")
+        val droneA = d.putCreatureOnBattlefield(p2, drone.name)
+        val bears = d.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        attackWith(d, p1, p2, listOf(bait, other))
+
+        d.declareBlockers(p2, emptyMap()).outcome shouldNotBe Outcome.Done
+        val suggestion = d.legalActions(p2).single { it.mandatoryBlockerAssignments != null }.mandatoryBlockerAssignments
+        suggestion shouldBe mapOf(droneA to listOf(bait), bears to listOf(bait))
+        d.declareBlockers(p2, suggestion!!).outcome shouldBe Outcome.Done
+    }
+
+    test("if able: the suggestion leaves out a voluntary double-block on a menace attacker") {
+        val (d, p1, p2) = setup()
+        val raider = d.putCreatureOnBattlefield(p1, menace.name)
+        val bait = d.putCreatureOnBattlefield(p1, eldraziBait.name)
+        val droneA = d.putCreatureOnBattlefield(p2, drone.name)
+        d.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        d.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        attackWith(d, p1, p2, listOf(raider, bait))
+
+        val suggestion = d.legalActions(p2).single { it.mandatoryBlockerAssignments != null }.mandatoryBlockerAssignments
+        suggestion shouldBe mapOf(droneA to listOf(bait))
     }
 
     test("if able: the description reads the blocker filter") {

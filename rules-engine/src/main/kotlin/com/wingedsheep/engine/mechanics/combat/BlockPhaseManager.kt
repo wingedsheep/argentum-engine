@@ -518,7 +518,9 @@ internal class BlockPhaseManager(
 
     /**
      * Compute mandatory blocker assignments from floating effects.
-     * Returns a map of blocker → list of attackers it must block.
+     * Returns a map of blocker → list of attackers it must block. Where a requirement can be
+     * obeyed by any of several blockers ("must be blocked by an Eldrazi if able"), this is one
+     * such declaration, not the requirement itself: another matching blocker would do as well.
      */
     fun getMandatoryBlockerAssignments(state: GameState, blockingPlayer: EntityId): Map<EntityId, List<EntityId>> {
         eachAttackerRequirements(state, blockingPlayer)?.let { return it }
@@ -599,9 +601,13 @@ internal class BlockPhaseManager(
             }
         }
         if (demands.isEmpty()) return submitted ?: emptyMap()
+        // A blocker filter's verdict can't change within one call; the search asks it at every node.
+        val gateVerdicts = HashMap<Pair<BlockerGate, EntityId>, Boolean>()
+        fun admits(gate: BlockerGate?, blocker: EntityId): Boolean =
+            gate == null || gateVerdicts.getOrPut(gate to blocker) { gate.binds(state, blocker) }
         fun obeyed(demand: Demand, blocks: Map<EntityId, List<EntityId>>): Boolean = when {
             demand.blocker == null -> blocks.any { (blocker, targets) ->
-                demand.attacker in targets && (demand.gate == null || demand.gate.binds(state, blocker))
+                demand.attacker in targets && admits(demand.gate, blocker)
             }
             demand.attacker == null -> blocks[demand.blocker].orEmpty().isNotEmpty()
             else -> demand.attacker in blocks[demand.blocker].orEmpty()
@@ -674,14 +680,21 @@ internal class BlockPhaseManager(
             if (submitted != null) return blocks
             val target = score(blocks)
             var current = blocks
-            for ((blocker, targets) in blocks) for (attacker in targets) {
-                val trimmed = current[blocker].orEmpty() - attacker
-                val next = if (trimmed.isEmpty()) current - blocker else current + (blocker to trimmed)
+            fun tryDrop(next: Map<EntityId, List<EntityId>>) {
                 if (score(next) == target && legal(next) &&
                     validateMenaceRequirements(state, next) == null &&
                     validateMinBlockersRequirements(state, next) == null &&
                     validateCoBlockerRequirements(state, state.projectedState, next.keys) == null
                 ) current = next
+            }
+            // Whole attackers first: a voluntary menace pair only leaves together.
+            for (attacker in blocks.values.flatten().distinct()) {
+                tryDrop(current.mapValues { (_, targets) -> targets - attacker }.filterValues { it.isNotEmpty() })
+            }
+            for ((blocker, targets) in blocks) for (attacker in targets) {
+                val trimmed = current[blocker] ?: continue
+                if (attacker !in trimmed) continue
+                tryDrop(if (trimmed.size == 1) current - blocker else current + (blocker to trimmed - attacker))
             }
             return current
         }
@@ -696,7 +709,8 @@ internal class BlockPhaseManager(
             if (optimistic(selected, holders.drop(index)) <= maxOf(bestScore, threshold ?: -1)) return
             if (validateBlockerCountLimits(state, selected.keys) != null ||
                 validateMaxBlockersRequirements(state, selected) != null) return
-            if (score(selected) == upper && legal(selected)) {
+            // Only a finished declaration counts: no menace or minimum-blockers shortfall left open.
+            if (score(selected) == upper && legal(selected) && canComplete(selected, emptyList())) {
                 bestScore = upper; best = selected.toMap(); return
             }
             if (index == holders.size) {
