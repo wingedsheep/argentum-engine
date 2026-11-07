@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.conditions
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -29,20 +30,26 @@ data object YouControlSource : Condition {
 }
 
 /**
- * Condition: the effect's source dealt damage — combat or noncombat — to [player] this turn.
- * Reads the source's per-recipient damage memory, so it answers for the source *as the current
- * object*: a permanent that left the battlefield and returned has dealt damage to nobody (CR 400.7).
+ * Condition: the effect's source dealt damage of [damageType] to [player] this turn —
+ * [DamageType.Any] (the default) for combat or noncombat alike, [DamageType.Combat] /
+ * [DamageType.NonCombat] for one kind. Reads the source's per-recipient damage memory, so it
+ * answers for the source *as the current object*: a permanent that left the battlefield and
+ * returned has dealt damage to nobody (CR 400.7), while an ability that outlives it — including
+ * one whose cost sacrificed it — reads its last known record.
  *
  * As a player-target restriction ([player] = `Player.Candidate`, via
  * `Conditions.candidateWasDealtDamageBySourceThisTurn()`) it backs "target player dealt damage by
- * this creature this turn" (Wicked Akuba).
+ * this creature this turn" (Wicked Akuba) and, with [DamageType.Combat], "target player who was
+ * dealt combat damage by this creature this turn" (Hope of Ghirapur).
  */
 @SerialName("SourceDealtDamageToPlayerThisTurn")
 @Serializable
 data class SourceDealtDamageToPlayerThisTurn(
-    val player: Player
+    val player: Player,
+    val damageType: DamageType = DamageType.Any
 ) : Condition {
-    override val description: String = "if this dealt damage to ${player.description} this turn"
+    override val description: String =
+        "if this dealt ${damageType.description.let { if (it.isEmpty()) "" else "$it " }}damage to ${player.description} this turn"
 }
 
 /**

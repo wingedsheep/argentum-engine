@@ -9,8 +9,8 @@ import com.wingedsheep.sdk.model.TokenPrinting
 /**
  * Aether Revolt (2017)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card the set prints is implemented: originals as canonicals here, reprints as
+ * `Printing` rows.
  *
  * Set Code: AER
  * Release Date: 2017-01-20
@@ -22,7 +22,6 @@ object AetherRevoltSet : MtgSet {
     override val releaseDate = "2017-01-20"
     override val block = "Kaladesh"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
