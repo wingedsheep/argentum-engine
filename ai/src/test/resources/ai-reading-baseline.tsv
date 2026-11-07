@@ -1191,7 +1191,7 @@ Azusa's Many Journeys	intent: Pipeline(BattlefieldMatching→?); intent: TapUnta
 Azusa, Lost but Seeking
 Ba Sing Se
 Back for More	polarity: ReflexiveTriggerEffect
-Back for Seconds	intent: Pipeline(ChosenTargets→battlefield|hand); polarity: Pipeline(ChosenTargets→battlefield|hand)
+Back for Seconds
 Back on Track
 Back to Nature
 Backdraft
@@ -3730,6 +3730,7 @@ Cultbrand Cinder
 Cultist of the Absolute
 Cultivate
 Cultivator Colossus	intent: RepeatWhileEffect
+Cultivator of Blades
 Cultivator's Caravan
 Culvert Ambusher
 Cunning Advisor
@@ -4208,7 +4209,7 @@ Delif's Cone
 Delif's Cube	intent: GrantKeywordEffect
 Delighted Halfling
 Delina, Wild Mage	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
-Deliver Unto Evil	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
+Deliver Unto Evil
 Delivery Moogle
 Delney, Streetwise Lookout
 Delta Bloodflies
@@ -4257,6 +4258,7 @@ Denizen of the Deep
 Dennick, Pious Apprentice
 Deny the Divine
 Denzilore Fatehold
+Depala, Pilot Exemplar
 Depart the Realm
 Departed Deckhand	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; polarity: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Dependable Quinjet
@@ -4900,6 +4902,7 @@ Dual-Sun Adepts
 Dual-Sun Technique	timing: GrantKeywordEffect
 Dualcaster Mage
 Dub
+Dubious Challenge
 Dubious Delicacy
 Duchess, Wayward Tavernkeep	intent: AddCountersEffect
 Due Diligence
@@ -5353,6 +5356,7 @@ Empty the Catacombs	intent: Pipeline(graveyard→hand)
 Empty the Laboratory
 Empty the Pits
 Empty the Warrens
+Empyreal Voyager
 Empyrean Eagle
 Empyrial Plate
 Emrakul's Messenger
@@ -8892,7 +8896,7 @@ Invasion of Pyrulea
 Invasion of Ravnica
 Invasion of Regatha
 Invasion of Segovia
-Invasion of Shandalar	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
+Invasion of Shandalar
 Invasion of Tarkir
 Invasion of Theros
 Invasion of Tolvada
@@ -10061,7 +10065,7 @@ Life Chisel
 Life Goes On
 Life Insurance
 Life Matrix	polarity: AddCountersEffect
-Life from the Loam	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
+Life from the Loam
 Life of Toshiro Umezawa
 Lifeblood
 Lifecraft Awakening
@@ -10263,7 +10267,7 @@ Long Feng, Grand Secretariat
 Long Goodbye
 Long Lake Nuisance
 Long List of the Ents
-Long Rest	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand); polarity: SetLifeTotalEffect
+Long Rest
 Long River Lurker
 Long River's Pull
 Long-Bodied Grey Dog
@@ -11912,8 +11916,10 @@ Nissa's Triumph
 Nissa's Zendikon
 Nissa, Ascended Animist
 Nissa, Genesis Mage
+Nissa, Nature's Artisan
 Nissa, Resurgent Animist
 Nissa, Steward of Elements
+Nissa, Vital Force
 Nissa, Who Shakes the World
 Nita, Forum Conciliator
 Niv-Mizzet Reborn
@@ -12432,6 +12438,7 @@ Overwhelming Surge
 Overwrite the Multiverse
 Overzealous Muscle
 Ovika, Enigma Goliath
+Oviya Pashiri, Sage Lifecrafter
 Oviya, Automech Artisan
 Owl Familiar
 Owlbear
@@ -13633,6 +13640,7 @@ Rapier Wit
 Raptor Companion
 Raptor Hatchling
 Rapturous Moment
+Rashmi, Eternities Crafter
 Rasputin Dreamweaver
 Rat Colony
 Rat King, Verminister	polarity: ReturnSameNamedFromGraveyardEffect
@@ -15478,7 +15486,7 @@ Shifting Ceratops
 Shifting Grift
 Shifting Sliver
 Shifting Woodland
-Shigeki, Jukai Visionary	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
+Shigeki, Jukai Visionary
 Shiko, Paragon of the Way
 Shilgengar, Sire of Famine
 Shimatsu the Bloodcloaked
@@ -15987,7 +15995,7 @@ Sliver Hivelord
 Sliver Overlord
 Slobad, Goblin Tinkerer
 Slobad, Iron Goblin
-Slogurk, the Overslime	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
+Slogurk, the Overslime
 Sludge Monster	intent: AddCountersEffect; polarity: AddCountersEffect
 Slum Reaper
 Slumbering Cerberus
@@ -19245,6 +19253,7 @@ Verazol, the Split Current
 Verdant Automaton
 Verdant Catacombs
 Verdant Command
+Verdant Crescendo
 Verdant Force
 Verdant Kraken
 Verdant Mastery
@@ -19255,6 +19264,7 @@ Verdeloth the Ancient
 Verdigris
 Verduran Emissary
 Verduran Enchantress
+Verdurous Gearhulk
 Verity Circle
 Verix Bladewing
 Vermiculos
@@ -19281,6 +19291,7 @@ Veteran Cavalier
 Veteran Dungeoneer
 Veteran Guardmouse
 Veteran Ice Climber
+Veteran Motorist
 Veteran Survivor
 Veteran of the Depths
 Veteran's Powerblade
@@ -19530,6 +19541,7 @@ Volo, Guide to Monsters
 Volshe Tideturner
 Volt Charge
 Voltage Surge
+Voltaic Brawler
 Voltaic Construct
 Voltaic Key
 Voltaic Servant
@@ -20054,6 +20066,7 @@ Wild-Field Scarecrow
 Wildborn Preserver
 Wilderland Scrounger
 Wilderness Reclamation
+Wildest Dreams
 Wildfire
 Wildfire Elemental
 Wildfire Emissary
