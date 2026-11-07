@@ -8,8 +8,8 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Kaladesh (2016)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card is implemented: canonicals for cards first printed here, `Printing` rows for
+ * the reprints.
  *
  * Set Code: KLD
  * Release Date: 2016-09-30
@@ -21,7 +21,6 @@ object KaladeshSet : MtgSet {
     override val releaseDate = "2016-09-30"
     override val block = "Kaladesh"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
