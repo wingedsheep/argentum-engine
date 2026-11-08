@@ -651,7 +651,66 @@ class CombatAdvisor(
         // Removing an unaffordable partner can invalidate a co-blocker restriction.
         val finalPlan = if (affordable == legal) legal
             else legalizeBlockerPlan(state, playerId, affordable, mandatoryBlockerIds)
-        return blockDeclaration(state, playerId, finalPlan)
+        return blockDeclaration(
+            state, playerId,
+            satisfyUnnamedRequirements(state, projected, playerId, attackers, validBlockers, finalPlan),
+        )
+    }
+
+    /**
+     * Peeling optional blocks can't satisfy a requirement that names no blocker — "must be blocked
+     * if able" (King Harald's Revenge, Lure-style statics) is obeyed by *any* able blocker, so the
+     * engine suggests none and a plan that blocks nothing is rejected. Resubmitting that plan is all
+     * the AI could do, until its clock ran out and it conceded. Add the best-fitting block the engine
+     * accepts instead: one that survives, then one that also kills, then the cheapest. When a single
+     * block isn't enough (several such attackers), give every unblocked attacker its best fit until
+     * the declaration is legal, then drop the additions it didn't need.
+     */
+    private fun satisfyUnnamedRequirements(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        attackers: List<EntityId>,
+        validBlockers: List<EntityId>,
+        plan: Map<EntityId, List<EntityId>>,
+    ): Map<EntityId, List<EntityId>> {
+        fun legal(candidate: Map<EntityId, List<EntityId>>) =
+            simulator.simulate(state, blockDeclaration(state, playerId, candidate)) !is SimulationResult.Illegal
+        if (legal(plan)) return plan
+
+        fun bestFits(attacker: EntityId, taken: Set<EntityId>): List<EntityId> = validBlockers
+            .filter { it !in taken && canBlock(state, projected, attacker, it) }
+            .sortedWith(compareBy(
+                // duel = (attacker dies, blocker dies); false sorts first.
+                { CombatMath.duel(state, projected, attacker, it).second },
+                { !CombatMath.duel(state, projected, attacker, it).first },
+                { CombatMath.creatureValue(state, projected, it) },
+            ))
+        val unblocked = attackers
+            .filter { attacker -> plan.values.none { attacker in it } }
+            .sortedByDescending { CombatMath.effectiveDamage(projected, it) }
+
+        // One added block — the common case of a single must-be-blocked attacker.
+        val single = unblocked.asSequence()
+            .flatMap { attacker -> bestFits(attacker, plan.keys).asSequence().map { plan + (it to listOf(attacker)) } }
+            .firstOrNull(::legal)
+        if (single != null) return single
+
+        // Several: block everything we can, then shed the blocks the declaration doesn't need.
+        var current = plan
+        val added = mutableListOf<EntityId>()
+        for (attacker in unblocked) {
+            if (legal(current)) break
+            val blocker = bestFits(attacker, current.keys).firstOrNull() ?: continue
+            current = current + (blocker to listOf(attacker))
+            added += blocker
+        }
+        if (!legal(current)) return plan
+        for (blocker in added.sortedByDescending { CombatMath.creatureValue(state, projected, it) }) {
+            val without = current - blocker
+            if (legal(without)) current = without
+        }
+        return current
     }
 
     /** Saved proposals inform the plan but remain choices owned by the earlier teammate. */
