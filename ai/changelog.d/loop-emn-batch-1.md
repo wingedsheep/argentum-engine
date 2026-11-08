@@ -1,0 +1,3 @@
+- #TBD Reads setting its own life total to a fixed number above 20 (Providence's "your life total becomes 26") as life gain, so it drafts, casts and builds around those cards as lifegain fuel instead of seeing nothing to read
+- #TBD Reads an exile that returns at the next end step (Long Road Home, Otherworldly Journey, Galepowder Mage) as tempo removal plus a blink to save its own creature, no longer as permanent exile removal
+- #TBD Sees triggers gated on "if you gained (N or more) life this turn" (Lone Rider, Angelic Accord, Courier Bat) as payoffs on the lifegain axis, so it builds and values them beside lifelinkers and life-gain spells

@@ -555,19 +555,27 @@ object CardIntentAnalyzer {
         val leaves = EffectWalker.payoffLeaves(effect)
         // "Exile target creature you control. Return it at the beginning of the next end step"
         // (Liberate, Niko): a blink of ours too, only slower — [DELAYED_BLINK], not removal. Aimed at
-        // anyone's creature (Galepowder Mage) it still takes a blocker away for the turn, so it stays
-        // the removal it reads as.
-        val delayed = EffectWalker.delayedBlinks(leaves).chunked(2)
-            .filter { (exile, _) -> TargetPolarityAnalyzer.targetsOwnSide((exile as MoveToZoneEffect).target, requirements) }
-            .flatten()
-        val blinks = EffectWalker.blinkMoves(effect) + delayed
+        // anyone's creature (Galepowder Mage, Otherworldly Journey, Long Road Home) it still takes a
+        // blocker away for the turn — [TEMPORARY_EXILE], removal that comes back, never the exile
+        // for good [IntentTag.EXILE_REMOVAL] claims — and, where our own creatures can fill the slot,
+        // it is the same slow blink of ours: saving one is what the card is mostly cast for.
+        val (ownPairs, otherPairs) = EffectWalker.delayedBlinks(leaves).chunked(2)
+            .partition { (exile, _) -> TargetPolarityAnalyzer.targetsOwnSide((exile as MoveToZoneEffect).target, requirements) }
+        val tempoPairs = otherPairs.filter { (exile, _) -> slotOf((exile as MoveToZoneEffect).target, requirements) != null }
+        val delayed = ownPairs.flatten()
+        val tempo = tempoPairs.flatten()
+        val blinksOurs = delayed.isNotEmpty() || tempoPairs.any { (exile, _) ->
+            TargetPolarityAnalyzer.ownSideCanFill((exile as MoveToZoneEffect).target, requirements)
+        }
+        val blinks = EffectWalker.blinkMoves(effect) + delayed + tempo
         val payoff = leaves.filterNot { leaf -> blinks.any { it === leaf } }
         // "Exile up to five target creature cards from graveyards … put the pile of your choice onto
         // the battlefield under your control" (Boneyard Parley): graveyard cards brought back onto
         // our side, a reanimation whoever owned them — read as the single-card return it adds up to.
         val reanimates = reanimatesChosenGraveyardTargets(effect, requirements)
         val stored by lazy { storedAmounts(effect) }
-        return (if (delayed.isEmpty()) emptyList() else listOf(DELAYED_BLINK)) +
+        return (if (blinksOurs) listOf(DELAYED_BLINK) else emptyList()) +
+            (if (tempo.isEmpty()) emptyList() else listOf(TEMPORARY_EXILE)) +
             (if (reanimates) listOf(REANIMATE_FROM_A_GRAVEYARD) else emptyList()) +
             // Hour of Eternity's exile-and-copy pipeline: the single-card exile to use, below.
             (if (exilesChosenGraveyardTargetsToUse(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
@@ -1922,6 +1930,7 @@ object CardIntentAnalyzer {
     private fun tagsOf(effect: Effect): Set<IntentTag> = when {
         effect === DELAYED_BLINK -> setOf(IntentTag.PROTECTION)
         effect === OWN_STASH -> setOf(IntentTag.PROTECTION)
+        effect === TEMPORARY_EXILE -> setOf(IntentTag.REMOVAL)
         effect === GRAVEYARD_HATE_LEAF -> setOf(IntentTag.GRAVEYARD_HATE)
         else -> leafTagsOf(effect)
     }
@@ -2124,6 +2133,11 @@ object CardIntentAnalyzer {
         // An exchange is carried out as a gain for the player whose total goes up (rule 701.12c),
         // and its controller only casts it to be that player: Psychic Transfer at 4 against 9.
         is ExchangeLifeTotalsEffect -> setOf(IntentTag.LIFEGAIN)
+        // "Your life total becomes 26" (Providence) is carried out as a gain of the difference
+        // (rule 119.5), and a fixed total above the starting 20 is one its controller only casts
+        // when it is a gain. A total set at or below 20 (Rebirth, Form of the Dragon, Angel of
+        // Grace), one that hangs on the board, or another player's is no gain to read here.
+        is SetLifeTotalEffect -> if (setsOwnLifeAboveStart(effect)) setOf(IntentTag.LIFEGAIN) else emptySet()
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,
         is CreateTokenCopyOfSourceEffect -> setOf(IntentTag.TOKEN_MAKER)
         // Amass makes the Army token when there is none and grows it when there is: either way a
@@ -2569,6 +2583,16 @@ object CardIntentAnalyzer {
         is EffectTarget.BoundVariable -> requirements.firstOrNull { it.id == target.name.substringBefore('[') }
         is EffectTarget.ContextTarget -> requirements.getOrNull(target.index)
         else -> null
+    }
+
+    /**
+     * Whether [effect] sets its controller's own life total to a fixed number above the starting 20
+     * (Providence's 26) — the gain [leafTagsOf] reads it as.
+     */
+    private fun setsOwnLifeAboveStart(effect: SetLifeTotalEffect): Boolean {
+        val ours = effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)
+        val amount = effect.amount as? DynamicAmount.Fixed ?: return false
+        return ours && amount.amount > STARTING_LIFE
     }
 
     /**
@@ -3305,6 +3329,16 @@ object CardIntentAnalyzer {
     )
 
     /**
+     * What [readingLeaves] reads an exile-then-return-at-the-end-step of a creature anyone may
+     * control as (Galepowder Mage, Otherworldly Journey, Long Road Home): a blocker or attacker
+     * taken away for the turn — [IntentTag.REMOVAL] — that comes back, so never the permanent
+     * answer [IntentTag.EXILE_REMOVAL] promises. Compared by identity.
+     */
+    private val TEMPORARY_EXILE: Effect = CompositeEffect(
+        listOf(MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.EXILE)),
+    )
+
+    /**
      * What [readingLeaves] reads "exile target creature you control" linked to this permanent as
      * (Endless Sands, Safe Haven): our creature stashed out of harm's way until the card returns it
      * ([stashesOwnCards]) — a slow blink, [IntentTag.PROTECTION], never removal. Compared by identity.
@@ -3366,6 +3400,9 @@ object CardIntentAnalyzer {
 
     /** The flags that keep a tapped permanent tapped through its controller's untap step. */
     private val LOCKED_TAPPED_FLAGS = setOf(AbilityFlag.DOESNT_UNTAP.name, AbilityFlag.CANT_BECOME_UNTAPPED.name)
+
+    /** The starting life total (rule 103.4) — see [setsOwnLifeAboveStart]. */
+    private const val STARTING_LIFE = 20
 
     /** Riders that leave nothing behind once resolved — see [isExpiringProtectionTrick]. */
     private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)
