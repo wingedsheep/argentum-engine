@@ -1,0 +1,1 @@
+- #PR The AI now obeys "must be blocked if able" (King Harald's Revenge, Lure-style statics) by blocking with its best-fitting able creature, instead of resubmitting a rejected no-block declaration until its clock ran out and it conceded
