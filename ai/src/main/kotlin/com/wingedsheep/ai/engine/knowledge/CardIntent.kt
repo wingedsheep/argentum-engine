@@ -76,6 +76,13 @@ data class CardIntent(
      */
     val pumpToughness: Int = 0,
     /**
+     * The largest fixed base toughness an expiring base P/T change of this card sets ("has base
+     * power and toughness 4/5 until end of turn", Perfected Theory; Phantasmal Form's 3/3), or null.
+     * The [pumpToughness] of a trick that *replaces* toughness instead of adding to it: [HoldPolicy]
+     * asks whether it lifts a creature out of a burn spell's range against the creature's own base.
+     */
+    val setToughness: Int? = null,
+    /**
      * Whether this card **always** enters the battlefield tapped — the Shivan Oasis clause, not the
      * shock-land one.
      *

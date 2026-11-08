@@ -358,7 +358,8 @@ object CardIntentAnalyzer {
             if (isExpiringCopy(effect)) expiringPump = true
         }
         // A replacing base P/T until end of turn is a body for this turn's fight, like a copy —
-        // unless it is the setup for removal (Square Up's fight), whose timing the removal owns.
+        // unless it is the setup for removal (a fight beside it), whose timing the removal owns.
+        val setToughness = if (IntentTag.REMOVAL in tags) null else leaves.mapNotNull(::expiringBaseToughnessOf).maxOrNull()
         if (IntentTag.REMOVAL !in tags && leaves.any(::isExpiringBaseStats)) expiringPump = true
 
         var anthemBonus = 0
@@ -421,6 +422,7 @@ object CardIntentAnalyzer {
             staticPriorValue = CardIntent.UNKNOWN.staticPriorValue,
             anthemBonus = anthemBonus,
             pumpToughness = pumpToughness,
+            setToughness = setToughness,
             entersTapped = scripts.any(::alwaysEntersTapped),
             flashPermanent = card.typeLine.isPermanent && Keyword.FLASH in card.keywords,
             hasHaste = Keyword.HASTE in card.keywords,
@@ -2767,6 +2769,14 @@ object CardIntentAnalyzer {
             effect.toughness?.let(::fixed) != 0 && !setsSmallBase(effect)
         is ForEachEffect -> effect.space == IterationSpace.Targets && readingLeaves(effect.body).any(::isExpiringBaseStats)
         else -> false
+    }
+
+    /** The fixed toughness an [isExpiringBaseStats] effect sets, or null when it sets none or not a number. */
+    private fun expiringBaseToughnessOf(effect: Effect): Int? = when {
+        !isExpiringBaseStats(effect) -> null
+        effect is SetBaseStatsEffect -> effect.toughness?.let(::fixed)
+        effect is ForEachEffect -> readingLeaves(effect.body).mapNotNull(::expiringBaseToughnessOf).maxOrNull()
+        else -> null
     }
 
     /**

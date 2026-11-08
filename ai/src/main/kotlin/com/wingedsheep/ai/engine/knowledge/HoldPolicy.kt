@@ -974,7 +974,10 @@ class HoldPolicy(
         pump: CardIntent,
     ): Boolean {
         val remaining = remainingToughness(state, projected, creature) ?: return false
-        return remaining <= reach && remaining + pump.pumpToughness > reach
+        // A base P/T change replaces the creature's base toughness and keeps its counters and
+        // modifiers (Perfected Theory's 4/5 on a 2/2 is three more toughness, on a 6/6 one less).
+        val reset = pump.setToughness?.let { set -> projected.getBaseToughness(creature)?.let { remaining - it + set } }
+        return remaining <= reach && maxOf(remaining + pump.pumpToughness, reset ?: Int.MIN_VALUE) > reach
     }
 
     /** Whether [creature] dies to [reach] damage — damage already marked counts (CR 704.5g). */
