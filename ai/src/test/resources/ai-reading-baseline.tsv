@@ -65,6 +65,7 @@ Abuna Acolyte
 Abundance
 Abundant Growth
 Abundant Maw
+Abyssal Gatekeeper
 Abyssal Gorestalker
 Abyssal Harvester
 Abyssal Horror
@@ -116,6 +117,7 @@ Act of Treason
 Act on Impulse
 Action News Crew
 Active Volcano
+Ad Nauseam
 Adagia, Windswept Bastion
 Adamant Will
 Adanto Vanguard
@@ -778,6 +780,7 @@ Archers' Parapet
 Archfiend of Depravity
 Archfiend of Despair
 Archfiend of Ifnir
+Archfiend of Spite
 Archfiend of the Dross
 Archfiend's Vessel
 Archghoul of Thraben
@@ -1817,6 +1820,7 @@ Blood Hypnotist
 Blood Knight
 Blood Lust	polarity: ModifyStatsEffect
 Blood Mist
+Blood Money
 Blood Moon
 Blood Operative
 Blood Pact
@@ -3284,7 +3288,7 @@ Combat Thresher
 Combat Tutorial
 Combine Guildmage	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
 Combustible Gearhulk
-Combustion Man	intent: ChooseActionEffect; polarity: ChooseActionEffect
+Combustion Man	polarity: ChooseActionEffect
 Combustion Technique
 Come Back Wrong	intent: Pipeline(ChosenTargets→battlefield|graveyard); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield|graveyard)
 Comet Crawler
@@ -3417,6 +3421,7 @@ Consuming Bonfire
 Consuming Corruption
 Consuming Fervor
 Consuming Tide
+Consuming Vapors
 Consuming Vortex
 Consumptive Goo
 Contact Other Plane
@@ -3762,7 +3767,7 @@ Cultbrand Cinder
 Cultist of the Absolute
 Cultist's Staff
 Cultivate
-Cultivator Colossus	intent: RepeatWhileEffect
+Cultivator Colossus
 Cultivator of Blades
 Cultivator's Caravan
 Culvert Ambusher
@@ -3772,6 +3777,7 @@ Cunning Coyote
 Cunning Evasion
 Cunning Geysermage
 Cunning Giant
+Cunning Lethemancer
 Cunning Maneuver
 Cunning Nightbonder
 Cunning Survivor
@@ -4246,7 +4252,7 @@ Delif's Cone
 Delif's Cube	intent: GrantKeywordEffect
 Delighted Halfling
 Delightful Discovery
-Delina, Wild Mage	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
+Delina, Wild Mage
 Deliver Unto Evil
 Delivery Moogle
 Delney, Streetwise Lookout
@@ -5633,7 +5639,7 @@ Etrata, the Silencer
 Eumidian Hatchery
 Eumidian Terrabotanist
 Eunuchs' Intrigues
-Eureka	intent: RepeatWhileEffect
+Eureka
 Eureka Moment
 Eusocial Engineering
 Eutropia the Twice-Favored
@@ -6475,6 +6481,7 @@ Forbidding Spirit	intent: GrantStaticAbilityEffect
 Force Away
 Force Bubble
 Force Spike
+Force of Despair
 Force of Nature
 Force of Negation
 Force of Vigor
@@ -8302,7 +8309,7 @@ Hivespine Wolverine
 Hoar Shade
 Hoard Hauler
 Hoard Robber
-Hoarder's Greed	intent: RepeatWhileEffect
+Hoarder's Greed
 Hoarder's Overflow
 Hoarding Broodlord
 Hoarding Dragon	intent: Pipeline(FromLinkedExile→hand)
@@ -8871,7 +8878,7 @@ Inquisitive Glimmer
 Inquisitive Puppet
 Insatiable Appetite
 Insatiable Avarice
-Insatiable Frugivore	intent: RepeatWhileEffect
+Insatiable Frugivore
 Insatiable Gorgers
 Insatiable Harpy
 Insatiable Hemophage
@@ -9274,7 +9281,7 @@ Jibbirik Omnivore
 Jidoor, Aristocratic Capital
 Jihad
 Jill, Shiva's Dominant
-Jin-Gitaxias	intent: RepeatWhileEffect
+Jin-Gitaxias
 Jin-Gitaxias, Core Augur
 Jin-Gitaxias, Progress Tyrant
 Jinnie Fay, Jetmir's Second
@@ -10261,7 +10268,7 @@ Liliana, the Necromancer
 Lily Bowen, Raging Grandma
 Lilypad Village
 Lilysplash Mentor
-Lim-Dûl's Vault	intent: RepeatWhileEffect
+Lim-Dûl's Vault
 Limestone Golem
 Liminal Hold
 Limits of Solidarity
@@ -10706,7 +10713,7 @@ Mammoth Bellow
 Mammoth Growth
 Mammoth Spider
 Man-o'-War
-Mana Clash	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
+Mana Clash
 Mana Confluence
 Mana Cylix
 Mana Drain
@@ -11249,6 +11256,7 @@ Mirari's Wake
 Mire Blight
 Mire Boa
 Mire Triton
+Mire in Misery
 Mire's Grasp
 Mirelurk Queen	polarity: AddCountersEffect
 Miriam, Herd Whisperer
@@ -12273,6 +12281,7 @@ Oketra's Last Mercy
 Oketra's Monument
 Okiba Reckoner Raid
 Okiba Salvage
+Okiba-Gang Shinobi
 Okina, Temple to the Grandfathers
 Oko's Accomplices
 Oko's Hospitality
@@ -13669,7 +13678,7 @@ Rakdos Shred-Freak
 Rakdos Signet
 Rakdos Trumpeter
 Rakdos, Lord of Riots
-Rakdos, Patron of Chaos	intent: ChooseActionEffect
+Rakdos, Patron of Chaos
 Rakdos, the Muscle
 Rakdos, the Showstopper	intent: ForEach>FlipCoinsEffect; intent: ForEach>Pipeline(Entity→?); intent: Pipeline(?→graveyard)
 Rakeclaw Gargantuan
@@ -15755,6 +15764,7 @@ Shuri, Wakandan Inventor
 Shuttle Ace
 Sibling Rivalry
 Sibsig Appraiser
+Sibsig Icebreakers
 Sickbay
 Sicken
 Sickle Ripper
@@ -15889,7 +15899,7 @@ Simoon
 Simulacrum
 Simulacrum Shaper
 Simulacrum Synthesizer
-Sin, Spira's Punishment	intent: RepeatWhileEffect
+Sin, Spira's Punishment
 Sindbad
 Sinew Dancer
 Sinew Sliver
@@ -17072,7 +17082,7 @@ Stronghold Zeppelin
 Structural Assault
 Struggle // Survive
 Struggle for Project Purity
-Struggle for Sanity	intent: Pipeline(?→graveyard|hand); intent: RepeatWhileEffect; intent: RevealHandEffect
+Struggle for Sanity
 Struggle for Skemfar
 Stubborn Burrowfiend
 Stubborn Denial
@@ -17460,6 +17470,7 @@ Systems Override	polarity: AddCountersEffect; polarity: CreateDelayedTriggerEffe
 Sythis, Harvest's Hand
 Szadek, Lord of Secrets
 Szarel, Genesis Shepherd
+Szat's Will
 T-45 Power Armor
 TCRI Building
 Tablet of Compleation
@@ -18084,7 +18095,7 @@ The Super Hero Civil War
 The Surgical Bay
 The Swarmweaver
 The Tabernacle at Pendrell Vale
-The Tale of Tamiyo	intent: RepeatWhileEffect
+The Tale of Tamiyo
 The Tarrasque
 The Temporal Anchor	intent: Pipeline(BottomOfLibrary→exile)
 The Ten Rings
@@ -18620,7 +18631,7 @@ Tracker
 Tractor Beam
 Trade Route Envoy
 Trade Routes
-Trade Secrets	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
+Trade Secrets
 Trade the Helm
 Tradewind Rider
 Trading Post
