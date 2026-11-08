@@ -39,6 +39,54 @@
     ]
 }
 
+// Ainok Artillerist
+{
+    "name": "Ainok Artillerist",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Dog Archer",
+    "oracleText": "This creature has reach as long as it has a +1/+1 counter on it. (It can block creatures with flying.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "James Paick",
+        "flavorText": "\"In the Tarkir I once knew, the Abzan revered their ancestor trees. Now, as Dromoka, they cut their finest groves to make weapons.\"\n—Sarkhan Vol",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a4c8964-06e4-4a24-9a7e-9cac0fb8518e.jpg?1783938582"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ancestral Statue
 {
     "name": "Ancestral Statue",

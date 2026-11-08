@@ -5081,6 +5081,97 @@
     ]
 }
 
+// Zada, Hedron Grinder
+{
+    "name": "Zada, Hedron Grinder",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Goblin Ally",
+    "oracleText": "Whenever you cast an instant or sorcery spell that targets only Zada, copy that spell for each other creature you control that the spell could target. Each copy targets a different one of those creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zada, Hedron Grinder:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        "SpellTargetsOnlySource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyForOtherPossibleTargets",
+                    "candidates": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "descriptionOverride": "Copy that spell for each other creature you control that the spell could target. Each copy targets a different one of those creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "\"A hedron holds magic for a thousand years—or less, if need be.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc0969f1-92a0-47c3-8eff-d106fbef2f7e.jpg?1783938190",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Zada's ability triggers whenever you cast an instant or sorcery spell that targets only Zada and no other object or player."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "If you cast an instant or sorcery spell that has multiple targets, but it's targeting only Zada with all of them, Zada's ability will trigger. The copies will similarly each be targeting only one of your other creatures. You can't change any of the copy's targets to other creatures."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "Any creature you control that couldn't be targeted by the original spell (due to shroud, protection abilities, targeting restrictions, or any other reason) is just ignored by Zada's ability."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "You control all the copies. You choose the order the copies are put onto the stack. The original spell will be on the stack beneath those copies and will resolve last."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "The copies that the ability creates are created on the stack, so they're not cast. Abilities that trigger when a player casts a spell (like Zada's ability itself) won't trigger."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copies will have the same mode. You can't choose a different one."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast (like Rolling Thunder does), the copies have the same value of X."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "The controller of a copy can't choose to pay any alternative or additional costs for the copy. However, effects based on any alternative or additional costs that were paid for the original spell are copied as though those same costs were paid for the copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Zulaport Cutthroat
 {
     "name": "Zulaport Cutthroat",

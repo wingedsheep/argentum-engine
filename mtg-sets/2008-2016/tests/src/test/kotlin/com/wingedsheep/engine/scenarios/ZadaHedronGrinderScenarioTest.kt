@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
 class ZadaHedronGrinderScenarioTest : ScenarioTestBase() {
 
     /** Seeds of Strength has three separate "target creature" instances. */
-    private fun TestGame.castSeeds(vararg targets: EntityId): ExecutionResult {
+    private fun TestGame.castSeeds(targets: List<EntityId>): ExecutionResult {
         val seeds = state.getHand(player1Id).first { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == "Seeds of Strength"
         }
@@ -72,7 +72,7 @@ class ZadaHedronGrinderScenarioTest : ScenarioTestBase() {
                 .build()
 
             val zada = game.findPermanent("Zada, Hedron Grinder")!!
-            game.castSeeds(zada, zada, zada).error shouldBe null
+            game.castSeeds(listOf(zada, zada, zada)).error shouldBe null
             game.resolveStack()
 
             val projected = game.state.projectedState
@@ -95,7 +95,7 @@ class ZadaHedronGrinderScenarioTest : ScenarioTestBase() {
 
             val zada = game.findPermanent("Zada, Hedron Grinder")!!
             val bears = game.findPermanent("Grizzly Bears")!!
-            game.castSeeds(zada, zada, bears).error shouldBe null
+            game.castSeeds(listOf(zada, zada, bears)).error shouldBe null
             game.resolveStack()
 
             val projected = game.state.projectedState

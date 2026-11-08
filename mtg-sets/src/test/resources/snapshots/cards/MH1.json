@@ -3640,6 +3640,66 @@
     ]
 }
 
+// Pyrophobia
+{
+    "name": "Pyrophobia",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Pyrophobia deals 3 damage to target creature. Cowards can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature Coward"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Izzy",
+        "flavorText": "\"I hate this! I hate fire! I hate you for taking me on this route!\"\n—Norin the Wary",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff02b3f1-d70f-4e44-bc1c-7fc90ec611dc.jpg?1783933106",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If the target creature is an illegal target by the time Pyrophobia tries to resolve, the spell doesn't resolve. Cowards can block if they're otherwise allowed to."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Because it doesn't modify the characteristics of creatures, Pyrophobia can affect Cowards that enter the battlefield or creatures that become Cowards after the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Quakefoot Cyclops
 {
     "name": "Quakefoot Cyclops",
