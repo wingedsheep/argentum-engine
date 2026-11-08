@@ -7396,7 +7396,7 @@ Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect
 Gods Willing	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Gods' Hall Guardian
-Godsend	intent: Pipeline(?→exile)
+Godsend
 Godtoucher
 Gogo, Master of Mimicry
 Goham Djinn
