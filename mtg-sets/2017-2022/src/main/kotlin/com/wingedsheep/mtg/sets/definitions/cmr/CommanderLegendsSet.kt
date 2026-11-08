@@ -4,6 +4,7 @@ import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * Commander Legends (2020)
@@ -38,6 +39,16 @@ object CommanderLegendsSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    override val tokenArt: List<TokenPrinting> = listOf(
+        // tcmr #5 — Szat's Will's 0/1 black Thrull.
+        TokenPrinting(
+            name = "Thrull",
+            imageUri = "https://cards.scryfall.io/normal/front/b/9/b9f3042b-784c-4006-9bf1-60a323e60c5c.jpg?1783928591",
+            power = 0,
+            toughness = 1,
+        ),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.cmr.cards"
 }
