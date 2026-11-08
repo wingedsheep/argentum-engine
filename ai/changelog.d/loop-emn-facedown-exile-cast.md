@@ -1,1 +1,1 @@
-- #TBD Reads a card's own "you may cast this card from your graveyard / exile" (Squee, the Immortal; Eternal Scourge) as recursion, rating it above its bare body in draft
+- #4571 Reads a card's own "you may cast this card from your graveyard / exile" (Squee, the Immortal; Eternal Scourge) as recursion, rating it above its bare body in draft
