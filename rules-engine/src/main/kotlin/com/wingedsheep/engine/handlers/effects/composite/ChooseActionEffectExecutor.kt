@@ -138,8 +138,8 @@ class ChooseActionEffectExecutor(
  * [context] is the resolving effect's, needed only to evaluate a
  * [FeasibilityCheck.ControlsPermanentMatching.dynamicCount] ("sacrifice that many permanents",
  * Archfiend of Spite) — the amount is read against the same context the payment will run in, so
- * the check and the sacrifice agree on N. A dynamic count with no [context] is a wiring bug and
- * fails loudly rather than being read as zero (which would make an unpayable option look free).
+ * the check and the sacrifice agree on N. It is required so that a caller without one can't
+ * compile, rather than reading the count as zero (which would make an unpayable option look free).
  */
 internal fun checkFeasibility(
     state: GameState,
@@ -148,7 +148,7 @@ internal fun checkFeasibility(
     predicateEvaluator: PredicateEvaluator,
     manaSolver: ManaSolver,
     publicOnly: Boolean = false,
-    context: EffectContext? = null
+    context: EffectContext
 ): Boolean {
     if (check == null) return true
 
@@ -162,12 +162,9 @@ internal fun checkFeasibility(
                 PredicateContext(controllerId = playerId),
                 predicateEvaluator = predicateEvaluator
             )
-            val needed = check.dynamicCount?.let { amount ->
-                val resolving = checkNotNull(context) {
-                    "FeasibilityCheck.ControlsPermanentMatching.dynamicCount needs the resolving EffectContext"
-                }
-                predicateEvaluator.amounts.evaluate(state, amount, resolving)
-            } ?: check.count
+            val needed = check.dynamicCount
+                ?.let { predicateEvaluator.amounts.evaluate(state, it, context) }
+                ?: check.count
             matching.size >= needed
         }
         is FeasibilityCheck.HasCardsInZone -> {
