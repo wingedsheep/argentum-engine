@@ -90,7 +90,7 @@ private val HowlpackAlpha = card("Howlpack Alpha") {
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.UPKEEP)
         interveningIf = Conditions.CompareAmounts(
-            DynamicAmounts.spellsCastLastTurn(),
+            DynamicAmounts.mostSpellsCastLastTurnByAPlayer(),
             ComparisonOperator.GTE,
             2,
         )

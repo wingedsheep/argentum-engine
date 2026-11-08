@@ -266,6 +266,15 @@ data class GameState(
      */
     val previousTurnActiveTeamSpellCounts: Map<EntityId, Int> = emptyMap(),
 
+    /**
+     * Every player's spell count for the previous turn — the spells each of them cast during that
+     * turn, whoever was active — snapshotted in [com.wingedsheep.engine.core.TurnManager.startTurn]
+     * beside [previousTurnActiveTeamSpellCounts]. A player who cast nothing may be absent (read as 0).
+     * Backs `DynamicAmount.SpellsCastLastTurn`: the original werewolves' "if no spells were cast last
+     * turn" counts an opponent's instants too, which the day/night check (active side only) must not.
+     */
+    val previousTurnSpellCountsByPlayer: Map<EntityId, Int> = emptyMap(),
+
     /** Pending spell copies — copy the next instant/sorcery spell cast by a player (e.g., Howl of the Horde) */
     val pendingSpellCopies: List<PendingSpellCopy> = emptyList(),
 

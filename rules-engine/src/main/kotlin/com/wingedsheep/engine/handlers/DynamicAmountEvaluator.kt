@@ -237,7 +237,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.ExtraTurnsBegunThisGame,
         is DynamicAmount.Speed,
         is DynamicAmount.DungeonsCompleted,
-        DynamicAmount.SpellsCastLastTurn,
+        is DynamicAmount.SpellsCastLastTurn,
         is DynamicAmount.CombatDamageSourcesThisTurn,
         is DynamicAmount.SpellsCastThisTurn,
         is DynamicAmount.StartingLifeTotal,
@@ -1176,8 +1176,10 @@ class DynamicAmountEvaluator(
                 }
             }
 
-            DynamicAmount.SpellsCastLastTurn ->
-                state.previousTurnActiveTeamSpellCounts.values.sum()
+            is DynamicAmount.SpellsCastLastTurn ->
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
+                    state.previousTurnSpellCountsByPlayer[playerId] ?: 0
+                }
 
             is DynamicAmount.CraftedMaterialsTotalPower -> {
                 val sourceId = context.sourceId

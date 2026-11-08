@@ -147,6 +147,9 @@ class TurnManager(
                 ?.let(state::sharedTurnTeam)
                 .orEmpty()
                 .associateWith { state.playerSpellsCastThisTurn[it] ?: 0 },
+            // Old werewolves' "spells cast last turn" counts every player's spells, not just the
+            // active side's — keep the whole per-player map as well.
+            previousTurnSpellCountsByPlayer = state.playerSpellsCastThisTurn,
             spellsCastThisTurn = 0,
             playerSpellsCastThisTurn = emptyMap(),
             spellsCastThisTurnByPlayer = emptyMap(),

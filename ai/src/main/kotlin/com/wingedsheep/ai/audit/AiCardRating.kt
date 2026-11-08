@@ -95,7 +95,7 @@ object AiCardRating {
         return Rating(
             limited = Limited(LimitedCardRater.explain(card), setCodes.distinct().map { setPick(card, it) }),
             board = board(card, intent),
-            intent = intent(intent, AiReadingAudit.read(card).abilities.any { !it.body && !it.readFully }),
+            intent = intent(intent, unrecognised(card, intent)),
             advisor = liveAdvisors.getAdvisor(card.name)?.let { it::class.simpleName },
         )
     }
@@ -237,7 +237,21 @@ object AiCardRating {
         )
     }
 
-    private fun intent(intent: CardIntent, hasAbilitiesToPlace: Boolean): Intent {
+    /**
+     * Whether some face has abilities to place and its own intent reading placed none. A transform
+     * back face is judged by its own reading: in play the AI reads it as the card it has become
+     * (the registry holds it by name), so Terror of Kruin Pass's Werewolf menace grant is placed
+     * by the back face's evasion tag, not missed by Kruin Outlaw's front-face reading.
+     */
+    private fun unrecognised(card: CardDefinition, intent: CardIntent): Boolean {
+        val back = card.backFace
+        val unplaced = AiReadingAudit.read(card).abilities.filter { !it.body && !it.readFully }
+        val (onBack, onFront) = unplaced.partition { back != null && it.ability.face == back.name }
+        return (intent.tags.isEmpty() && onFront.isNotEmpty()) ||
+            (back != null && onBack.isNotEmpty() && CardIntentAnalyzer.analyze(back).tags.isEmpty())
+    }
+
+    private fun intent(intent: CardIntent, unrecognised: Boolean): Intent {
         val facts = buildList {
             if (IntentTag.FIGHT in intent.tags) add("Its removal reach is the fighting creature's power")
             else if (intent.removalReach != null) add("Its damage answers toughness ${intent.removalReach} or less")
@@ -254,7 +268,7 @@ object AiCardRating {
             tags = intent.tags.sortedBy { it.ordinal }.map { Tag(it.name, TAG_LABEL[it] ?: it.name) },
             speed = SPEED_LABEL.getValue(intent.speed),
             facts = facts,
-            unrecognised = intent.tags.isEmpty() && hasAbilitiesToPlace,
+            unrecognised = unrecognised,
         )
     }
 
