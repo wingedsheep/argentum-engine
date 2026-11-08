@@ -1022,7 +1022,7 @@ Atraxa's Fall
 Atraxa's Skitterfang
 Atraxa, Grand Unifier
 Atraxa, Praetors' Voice
-Atris, Oracle of Half-Truths	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand)
+Atris, Oracle of Half-Truths
 Atsushi, the Blazing Sky
 Attack-in-the-Box
 Attendant of Vraska
@@ -1191,7 +1191,7 @@ Azorius Signet
 Azorius Skyguard
 Azra Smokeshaper
 Azula Always Lies
-Azula, Cunning Usurper	polarity: Pipeline(BattlefieldMatching|FromLinkedExile|graveyard→exile)
+Azula, Cunning Usurper
 Azula, On the Hunt
 Azure Beastbinder
 Azure Drake
@@ -2949,6 +2949,7 @@ Chill Haunting	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: M
 Chill of the Grave
 Chillbringer
 Chillerpillar	intent: BecomeMonstrousEffect
+Chilling Grasp
 Chilling Trap
 Chimil, the Inner Sun
 Chimney Imp
@@ -3195,6 +3196,7 @@ Coastal Wizard
 Coat of Arms
 Coat with Venom
 Coati Scavenger
+Coax from the Blind Eternities
 Cobalt Golem
 Cobblebrute
 Cobbled Lancer
@@ -3780,6 +3782,7 @@ Curious Cadaver
 Curious Colossus
 Curious Farm Animals
 Curious Forager
+Curious Homunculus
 Curious Inquiry	polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
 Curious Obsession
 Curious Pair
@@ -4519,6 +4522,7 @@ Dispersal Shield
 Dispersal Technician
 Disperse
 Dispersing Orb
+Displace
 Displacer Beast
 Displacer Kitten
 Display of Power	polarity: CopyEachTargetSpellEffect
@@ -4902,6 +4906,7 @@ Drowned Secrets
 Drowner of Secrets
 Drowner of Truth
 Drownyard Amalgam
+Drownyard Behemoth
 Drownyard Explorers
 Drownyard Lurker
 Drownyard Temple
@@ -5411,7 +5416,7 @@ Encroaching Mycosynth
 Encroaching Wastes
 Encumbered Reejerey
 End Hostilities
-End of the Hunt	polarity: Pipeline(BattlefieldMatching→exile)
+End of the Hunt
 End the Festivities
 End-Blaze Epiphany
 End-Raze Forerunners
@@ -5615,7 +5620,7 @@ Etrata, Deadly Fugitive	intent: Pipeline(TopOfLibrary→battlefield)
 Etrata, the Silencer
 Eumidian Hatchery
 Eumidian Terrabotanist
-Eunuchs' Intrigues	polarity: Pipeline(ControlledPermanents→?)
+Eunuchs' Intrigues
 Eureka	intent: RepeatWhileEffect
 Eureka Moment
 Eusocial Engineering
@@ -6518,6 +6523,7 @@ Fortress Crab
 Fortress Kin-Guard
 Fortuitous Find
 Fortune Teller's Talent
+Fortune's Favor
 Fortune, Loyal Steed	intent: Pipeline(CreaturesThatCrewedOrSaddledSource|Entity|FromLinkedExile→battlefield|exile)
 Forum Familiar
 Forum Necroscribe
@@ -6961,7 +6967,7 @@ Ghostform
 Ghosthelm Courier
 Ghostly Changeling
 Ghostly Dancers	polarity: UnlockDoorEffect
-Ghostly Flicker	intent: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
+Ghostly Flicker
 Ghostly Keybearer	intent: UnlockDoorEffect; polarity: UnlockDoorEffect
 Ghostly Pilferer
 Ghostly Prison
@@ -7038,7 +7044,7 @@ Gift of Wrath
 Gift of the Gargantuan
 Gift of the Viper
 Gifted Aetherborn
-Gifts Ungiven	polarity: Pipeline(library→graveyard|hand)
+Gifts Ungiven
 Gigantic Big Bear
 Gigantoad
 Gigantoplasm
@@ -7358,7 +7364,7 @@ Goblin Trashmaster
 Goblin Trenches
 Goblin Tunneler
 Goblin Turncoat
-Goblin War Cry	polarity: Pipeline(ControlledPermanents→?)
+Goblin War Cry
 Goblin War Drums
 Goblin War Paint
 Goblin War Strike
@@ -8500,7 +8506,7 @@ Hunted Bonebrute
 Hunted Dragon
 Hunted Horror
 Hunted Lammasu
-Hunted Nightmare	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?); polarity: Pipeline(ControlledPermanents→?)
+Hunted Nightmare	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?)
 Hunted Phantasm
 Hunted Troll
 Hunted Witness
@@ -8607,6 +8613,7 @@ Icy Blast
 Icy Manipulator
 Icy Reception
 Identity Echo
+Identity Thief
 Idol of Endurance
 Idol of False Gods
 Idol of Oblivion
@@ -8808,6 +8815,7 @@ Ingenious Infiltrator
 Ingenious Leonin
 Ingenious Mastery
 Ingenious Prodigy
+Ingenious Skaab
 Ingenious Smith
 Ingenious Thief	intent: LookAtTargetHandEffect
 Ingenuity Engine
@@ -9433,7 +9441,7 @@ Karn, Gilded Guardian
 Karn, Legacy Reforged
 Karn, Living Legacy	intent: CreatePermanentEmblemEffect
 Karn, Scion of Urza	intent: Pipeline(exile→hand)
-Karn, the Great Creator	intent: Pipeline(FromMultipleZones→hand); polarity: BecomeCreatureEffect
+Karn, the Great Creator	polarity: BecomeCreatureEffect
 Karok Wrangler
 Karona's Zealot	polarity: RedirectNextDamageEffect
 Karona, False God	intent: GainControlByActivePlayerEffect
@@ -9911,7 +9919,7 @@ Lair of the Hydra
 Lairwatch Giant
 Lake-town
 Lake-town Lookout
-Lake-town Mariners	intent: Pipeline(ChosenTargets|FromLinkedExile→battlefield|exile)
+Lake-town Mariners
 Lake-town Toymaker
 Lakeshore Apothecary
 Lakeside Shack
@@ -10483,6 +10491,7 @@ Luminous Broodmoth
 Luminous Rebuke
 Lumra, Bellow of the Woods
 Lunar Convocation
+Lunar Force
 Lunar Frenzy
 Lunar Insight
 Lunar Mystic
@@ -11159,6 +11168,7 @@ Mind Transfer Protocol	polarity: AddCardTypeEffect; polarity: BecomeCreatureEffe
 Mind Twist
 Mind into Matter
 Mind's Desire
+Mind's Dilation
 Mind's Eye
 Mindblaze	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
 Mindbreak Trap	intent: ForEach>ExileTargetSpellEffect
@@ -11903,6 +11913,7 @@ Niall Silvain
 Niambi, Esteemed Speaker
 Nibelheim Aflame	polarity: ForEachEffect
 Niblis of Dusk
+Niblis of Frost
 Niblis of the Urn
 Nicanzil, Current Conductor
 Nick Fury, Agent of S.H.I.E.L.D.
@@ -14903,7 +14914,7 @@ Satyr's Cunning
 Saurian Explorer
 Saurian Symbiote
 Sauroform Hybrid
-Sauron's Ransom	polarity: ChoosePileEffect; polarity: Pipeline(FromVariable|TopOfLibrary→graveyard|hand); polarity: TheRingTemptsYouEffect
+Sauron's Ransom
 Sauron, Lord of the Rings
 Sauron, the Dark Lord
 Sauron, the Lidless Eye
@@ -17438,6 +17449,7 @@ Tajuru Warcaller
 Take Down
 Take Flight
 Take Heart
+Take Inventory
 Take Out the Trash
 Take Up Arms
 Take Up the Shield	timing: GrantKeywordEffect
@@ -18799,6 +18811,7 @@ Tunneler Wurm
 Tunneling Geopede
 Tura Kennerüd, Skyknight
 Turf Wound	polarity: PreventLandPlaysThisTurnEffect
+Turn Aside
 Turn Inside Out
 Turn into a Pumpkin
 Turn the Earth	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→library)
@@ -20086,6 +20099,7 @@ Westvale Abbey
 Wetland Sambar
 Whack
 Whalebone Glider
+Wharf Infiltrator
 Wheel and Deal
 Wheel of Fortune
 Wheel of Potential
