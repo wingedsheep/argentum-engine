@@ -547,6 +547,141 @@
     ]
 }
 
+// Godsend
+{
+    "name": "Godsend",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+3.\nWhenever equipped creature blocks or becomes blocked by one or more creatures, you may exile one of those creatures.\nYour opponents can't cast spells with the same name as a card exiled with Godsend.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Godsend:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "oncePerCombat": true
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsOnBattlefield"
+                                ]
+                            },
+                            "storeMatching": "matching0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may exile one of those creatures",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever equipped creature blocks or becomes blocked by one or more creatures, you may exile one of those creatures."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Godsend:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "SharesNameWithLinkedExile"
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2dcf3975-7f81-4bdd-810d-476f46444b7a.jpg?1783939460",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Godsend's triggered ability will trigger only once no matter how many creatures the equipped creature blocks or becomes blocked by."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Godsend's triggered ability doesn't target any creature. You could exile a creature with protection from white, for example. You choose which creature to exile when the ability resolves."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If Godsend leaves the battlefield, and later another Godsend enters the battlefield, it is a new object (even if the two were represented by the same card). The new Godsend won't stop opponents from casting cards with the same name as cards exiled with the first one."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If Godsend exiles a land card (perhaps because it was turned into a creature and then blocked or was blocked by the equipped creature), opponents can still play land cards with the same name as the exiled card. Godsend stops only the casting of spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gold-Forged Sentinel
 {
     "name": "Gold-Forged Sentinel",

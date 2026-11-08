@@ -1561,8 +1561,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * the partner-less printed wording "whenever this creature blocks or becomes blocked"
          * (Spitting Slug), which is a single trigger no matter how many creatures it is paired
          * with. `TriggerContext.triggeringEntityId` is then the first matching partner, so a
-         * card that says "it" still has one; a card that says "each creature blocking or blocked
-         * by this creature" reads the whole set from live combat state instead
+         * card that says "it" still has one, and **every** matching partner is captured in the
+         * trigger's captured collection (`CollectionSlot.TriggerCaptured`), so "you may exile one
+         * of those creatures" (Godsend) chooses among the creatures it was paired with *at the
+         * time it triggered* — minus any that left the battlefield since (a new object, CR 400.7,
+         * even when flickered back). A card that says "each creature blocking or blocked by this
+         * creature" reads the set from live combat state instead
          * (`GameObjectFilter.Creature.blockingOrBlockedBySource()`).
          */
         val oncePerCombat: Boolean = false

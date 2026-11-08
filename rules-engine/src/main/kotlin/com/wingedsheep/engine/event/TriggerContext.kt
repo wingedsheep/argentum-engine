@@ -278,6 +278,14 @@ data class TriggerContext(
      */
     val capturedEntityIds: List<EntityId>? = null,
     /**
+     * The rules-object identity (CR 400.7) each battlefield permanent in [capturedEntityIds] had when
+     * the trigger fired, for captures that must stop naming a permanent once it leaves — "one of
+     * those creatures" (Godsend's block partners). A permanent that left and came back keeps its
+     * entity id but is a new object, so [withoutDepartedCaptures] drops it from the captured
+     * collection at resolution. Null when the capture tracks no identity.
+     */
+    val capturedObjects: List<com.wingedsheep.engine.state.ObjectRef>? = null,
+    /**
      * The players a "deal combat damage to one or more players" batch trigger hit, seeded into the
      * resolving ability's pipeline under
      * [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS] — "the number
@@ -732,3 +740,21 @@ internal fun triggerStoredCollections(
             ?.let { mapOf(com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_DAMAGED_PLAYERS to it) }
             ?: emptyMap()) +
         (carried?.storedCollections ?: emptyMap())
+
+/**
+ * Drops from the resolving trigger's captured collection every permanent whose
+ * [TriggerContext.capturedObjects] identity is no longer current — it left the battlefield (and
+ * perhaps came back as a new object under the same entity id, CR 400.7) after the trigger fired.
+ * A no-op for triggers that captured no identities.
+ */
+internal fun com.wingedsheep.engine.handlers.EffectContext.withoutDepartedCaptures(
+    state: com.wingedsheep.engine.state.GameState,
+    triggerContext: TriggerContext?,
+): com.wingedsheep.engine.handlers.EffectContext {
+    val refs = triggerContext?.capturedObjects?.takeIf { it.isNotEmpty() } ?: return this
+    val key = com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION
+    val captured = pipeline.storedCollections[key] ?: return this
+    val departed = refs.filterNot { state.isCurrentObject(it) }.mapTo(HashSet()) { it.entityId }
+    if (departed.isEmpty()) return this
+    return copy(pipeline = pipeline.copy(storedCollections = pipeline.storedCollections + (key to captured - departed)))
+}

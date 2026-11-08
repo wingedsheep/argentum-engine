@@ -9101,6 +9101,13 @@ The shapes in this family, with their engine notes.
   collapses the per-partner firings to the first match; the `TriggeringEntity` is that first
   partner, so a card that says "it" still has one. Reach for `Triggers.<subject>.blocksOrBecomesBlocked(by, oncePerCombat)` only when
   the card names a partner quality — that one fires once per matching partner.
+  Whenever `oncePerCombat = true`, the single trigger also captures **every** matching partner in
+  `CollectionSlot.TriggerCaptured`, frozen when it triggered — "you may exile one of those
+  creatures" (Godsend) is `chooseUpTo(1, filter(TriggerCaptured, Creature.onBattlefield()))` then
+  `move(…, linkToSource = true)` at resolution, untargeted. Each partner's object identity is
+  captured too, so a partner that left the battlefield — even one flickered back under the same
+  entity id — is a new object (CR 400.7) and drops out of the collection; one merely removed from
+  combat is still "one of those creatures".
 - `Triggers.self.attacksAndIsntBlocked()` — SELF or ATTACHED. Fires once per attacker that reaches end of
   Declare Blockers with no creatures declared as blockers (CR 509.3g). Backed by
   `BecomesUnblockedEvent` matched against `BlockersDeclaredEvent`. Used for
