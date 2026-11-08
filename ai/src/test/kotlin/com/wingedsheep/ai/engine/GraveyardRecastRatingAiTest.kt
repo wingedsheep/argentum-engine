@@ -9,7 +9,8 @@ import io.kotest.matchers.doubles.shouldBeGreaterThanOrEqual
  * the end of your next turn" (Scholar of Combustion): the intent readers called the pipeline
  * recursion, but the draft heuristic priced it at zero — a gather, an exile and a cast grant are
  * each worth nothing alone — so the card rated as its body. The exiled-and-recast graveyard card is
- * now priced as the recursion it is (less the triggered-ability discount), the way a reanimation pipeline (Boneyard Parley) already was.
+ * now priced as the recursion it is (less the triggered-ability discount), the way a reanimation
+ * pipeline (Boneyard Parley) already was.
  */
 class GraveyardRecastRatingAiTest : ScenarioTestBase() {
 
