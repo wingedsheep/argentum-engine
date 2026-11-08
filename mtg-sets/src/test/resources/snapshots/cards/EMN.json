@@ -4015,6 +4015,63 @@
     ]
 }
 
+// Eternal Scourge
+{
+    "name": "Eternal Scourge",
+    "manaCost": "{3}",
+    "typeLine": "Creature — Eldrazi Horror",
+    "oracleText": "You may cast this card from exile.\nWhen this creature becomes the target of a spell or ability an opponent controls, exile this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eternal Scourge:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "byOpponent": true
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Exile"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Exile"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "\"It has latched onto this place like an infestation. All efforts at eradication have proved futile.\"\n—Yeter, Trostad villager",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13ce52f5-6d49-4d44-a3d7-925340de8406.jpg?1783937526",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You must follow the normal timing permissions and restrictions and pay its cost to cast Eternal Scourge from exile."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Eternal Scourge's triggered ability only triggers while it's on the battlefield. For example, Convolute cast targeting Eternal Scourge won't cause its ability to trigger."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You'll exile Eternal Scourge even if the spell or ability that targets it is countered."
+            }
+        ]
+    }
+}
+
 // Extricator of Sin
 {
     "name": "Extricator of Sin",

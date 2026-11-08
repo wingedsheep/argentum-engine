@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
+import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.CanAttackDespiteDefender
@@ -3018,6 +3019,9 @@ object CardIntentAnalyzer {
         // "You may cast spells that have cycling from your graveyard" (Abandoned Sarcophagus): a
         // standing permission to cast cards back out of our graveyard is recursion, every turn.
         is MayCastFromGraveyard -> setOf(IntentTag.RECURSION)
+        // "You may cast this card from your graveyard or from exile" (Squee, the Immortal; Eternal
+        // Scourge): the card comes back to be cast again after it dies or is exiled — recursion of itself.
+        is MayCastSelfFromZones -> setOf(IntentTag.RECURSION)
         // "Enchanted creature loses all abilities" (Lignify) and "creatures enchanted player
         // controls lose all abilities and have base power and toughness 1/1" (Overwhelming
         // Splendor) leave the creatures on the battlefield, no longer threats worth the name.
