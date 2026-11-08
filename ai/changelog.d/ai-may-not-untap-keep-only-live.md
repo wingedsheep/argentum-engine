@@ -1,0 +1,1 @@
+- #4593 Untaps "you may choose not to untap" permanents (Lwaxana Troi, Couriers, Old Man of the Sea) unless an effect of theirs that lasts while they stay tapped is still in play, instead of leaving them all tapped every turn
