@@ -171,3 +171,70 @@
         "BLACK"
     ]
 }
+
+// Throne of Eldraine
+{
+    "name": "Throne of Eldraine",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "As Throne of Eldraine enters, choose a color.\n{T}: Add four mana of the chosen color. Spend this mana only to cast monocolored spells of that color.\n{3}, {T}: Draw two cards. Spend only mana of the chosen color to activate this ability.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Throne of Eldraine:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": "ManaColorSet.SourceChosenColor",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "restriction": {
+                        "type": "SpellsOfChosenColor",
+                        "exactColorCount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Throne of Eldraine:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "payOnlyWithManaOf": "ManaColorSet.SourceChosenColor"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9076e13d-d16e-4528-aad0-8b8081b00e8d.jpg?1783914983"
+    },
+    "colorIdentityOverride": []
+}

@@ -324,6 +324,26 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     }
 
     /**
+     * This cost with every generic symbol replaced by one symbol of [colors] per mana — "spend only
+     * mana of that color" on an ability's cost ([com.wingedsheep.sdk.scripting.ActivatedAbility.payOnlyWithManaOf]).
+     * One color turns `{3}` into three `{U}`; two colors into three `{U/R}` hybrids (CR 107.4e), so
+     * either color pays each. Colored symbols already demand their own color and are untouched, as
+     * are `{C}`, `{S}` and `{X}`. [colors] that is empty or holds more than two colors can't be
+     * written as symbols, so the generic part becomes `{C}` — mana no color of mana can pay — and the
+     * cost fails closed. A cost with no generic part is returned unchanged.
+     */
+    fun withGenericPaidBy(colors: Set<Color>): ManaCost {
+        val generic = genericAmount
+        if (generic == 0) return this
+        val replacement: ManaSymbol = when (colors.size) {
+            1 -> ManaSymbol.Colored(colors.single())
+            2 -> colors.sortedBy { it.ordinal }.let { (a, b) -> ManaSymbol.Hybrid(a, b) }
+            else -> ManaSymbol.Colorless
+        }
+        return ManaCost(symbols.filterNot { it is ManaSymbol.Generic } + List(generic) { replacement })
+    }
+
+    /**
      * Return a relaxed cost where every colored requirement of a color other than [substitute] may
      * *also* be paid with [substitute] — the narrower "you may spend [color] mana as though it were
      * mana of any color" relaxation (CR 609.4b), as opposed to [relaxColors]'s "mana of any type

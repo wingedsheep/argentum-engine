@@ -1100,6 +1100,18 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   payment path. Per-color amount spent on X is then readable via `DynamicAmount.ManaSpentOnX(color)`.
   Soul Burn (`spell { xManaRestriction = setOf(Color.BLACK, Color.RED) }`) and Atalya, Samite Master
   (`activatedAbility { xManaRestriction = setOf(Color.WHITE) }`) are the first users.
+- `payOnlyWithManaOf = ManaColorSet.SourceChosenColor` (in `activatedAbility { }`) — "Spend only mana of the
+  chosen color to activate this ability": the restriction on the mana *paid* for the ability's own cost, the
+  payment-side twin of a `ManaRestriction` on mana a source produces (and the whole-cost form of
+  `xManaRestriction`, which covers only `{X}`). The set resolves like a mana ability's `ManaColorSet`
+  (`ActivatedAbility.payOnlyWithManaOf`); every **generic** symbol of the cost is then paid with mana of that
+  color — `{3}` becomes `{U}{U}{U}` for one color, `{R/G}` hybrids for two (`ManaCost.withGenericPaidBy`);
+  a set that resolves to nothing, or to more than two colors, becomes `{C}` and fails closed. Applied last in the
+  shared effective-cost pipeline (`CastPermissionUtils.applyPayOnlyWithManaOf`, after reductions and after the
+  spend-as-any-color relaxation, which must not widen it back), by both the activation handler's totaller and
+  `ActivatedAbilityEnumerator`, so the menu price (`{U}{U}{U}, {T}: Draw two cards`), the affordability gate,
+  auto-tap and the charged price agree. Throne of Eldraine: `cost = Costs.Composite(Costs.Mana("{3}"), Costs.Tap)`,
+  `payOnlyWithManaOf = ManaColorSet.SourceChosenColor`.
 - `xMaximum = amount` (in `spell { }`) — "X can't be greater than [amount]." A `DynamicAmount` read
   once, as X is announced (CR 601.2b), never again: the cast offer's X slider is capped at it on every
   casting rail and the cast validator rejects a larger X; a copy of the spell isn't cast and keeps its X.
@@ -18610,10 +18622,22 @@ restriction matches the spell context.
   (`AddManaInAnyCombination(2, restriction = LegendarySpellsOnly())`); Delighted Halfling pairs it with
   the `ManaSpellRider.MakesSpellUncounterable` rider on a one-mana any-color ability. `creatureOnly = true`
   narrows it to legendary *creature* spells (The Ringhart Crest).
-- `ManaRestriction.SpellsWithExactColorCount(count)` — only spells with exactly `count` colors (1–5;
+- `ManaRestriction.SpellsWithExactColorCount(count, includingColor = null)` — only spells with exactly `count` colors (1–5;
   matches `SpellPaymentContext.colorCount`, the cast card's color count; a hybrid pip counts both colors).
   Ability activations never satisfy it, and a context that doesn't set `colorCount` refuses it.
   Meeting of the Five (`AddMana(color, 2, restriction = SpellsWithExactColorCount(3))` ×5).
+  `includingColor` adds "… and one of them is that color" (read off `SpellPaymentContext.colors`, which a
+  context that doesn't set it leaves empty, so it refuses): `SpellsWithExactColorCount(1, Color.RED)` is
+  "monocolored red spells" — a red-and-blue spell, a colorless spell and an ability activation don't qualify.
+  `null` (the default) is the unconstrained shape above.
+- `ManaRestriction.SpellsOfChosenColor(exactColorCount)` — "Spend this mana only to cast monocolored spells of
+  the chosen color" (`SpellsOfChosenColor(1)`): the unbound chosen-color form of `SpellsWithExactColorCount`'s
+  `includingColor`, the colour twin of `OfChosenType`, for a source that chose a color as it entered
+  (`EntersWithChoice(ChoiceType.COLOR)`). The engine binds it, also inside `AnyOf` / `AllOf`, to
+  `SpellsWithExactColorCount(exactColorCount, <chosen color>)` the moment the mana is made (any mana effect's
+  `restriction`, and the auto-pay solver's view of the source) — `ChosenTypeManaRestriction.bind` handles both
+  chosen-value forms. With no color chosen it stays unbound and pays for nothing. Throne of Eldraine:
+  `Effects.AddManaOfChosenColor(4, restriction = SpellsOfChosenColor(1))`.
 - `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype, creatureOnly?)` — only spells (and, unless
   `creatureOnly`, abilities of sources) of a baked subtype. Cards don't write it for "the chosen type" —
   they write `OfChosenType`, which the engine binds to this.

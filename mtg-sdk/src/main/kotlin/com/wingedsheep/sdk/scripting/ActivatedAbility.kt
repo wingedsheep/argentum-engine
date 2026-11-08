@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -196,6 +197,24 @@ data class ActivatedAbility(
      * activated-ability payment path.
      */
     val xManaRestriction: Set<Color> = emptySet(),
+    /**
+     * "Spend only mana of [payOnlyWithManaOf] to activate this ability" — the restriction on the
+     * mana *paid* for the ability's own cost, the payment-side twin of a [ManaRestriction] on mana
+     * a source *produces*. Throne of Eldraine's "{3}, {T}: Draw two cards. Spend only mana of the
+     * chosen color to activate this ability" is `payOnlyWithManaOf = ManaColorSet.SourceChosenColor`.
+     *
+     * Every generic symbol of the cost is paid with mana of the resolved color instead of any mana
+     * (`{3}` becomes `{U}{U}{U}` for a blue choice) — applied last in the shared effective-cost
+     * pipeline, after reductions, so the offered price, the affordability gate, auto-tap and the
+     * charged price all see the same cost; colored symbols already require their own color and
+     * `{C}` stays colorless. The set resolves the way a mana ability's does ([ManaColorSet]) against
+     * the source: one color recolors the generic part, two become hybrid symbols. A set that
+     * resolves to nothing (a color never chosen), or to more than two colors, which symbols can't
+     * express, turns the generic part into `{C}` symbols — no mana of a color pays those, so the
+     * ability fails closed instead of being relaxed to "any mana". `null` (the default) is every
+     * other ability: any mana may pay.
+     */
+    val payOnlyWithManaOf: ManaColorSet? = null,
     /**
      * Minimum legal value for the `{X}` in this ability's cost (CR 601.2b analogue for activated
      * abilities). Defaults to 0. Set to 1 for "X can't be 0" abilities (Gogo, Master of Mimicry:

@@ -86,8 +86,11 @@ internal class ActivationCostTotaller(
         val costAfterEquipDiscount = castPermissionUtils.applyFreeFirstEquipDiscount(
             costAfterEquipReduction, ability, state, action.playerId
         )
-        return castPermissionUtils.relaxAbilityCostColorsIfAny(
-            state, action.sourceId, costAfterEquipDiscount, action.playerId
+        return castPermissionUtils.applyPayOnlyWithManaOf(
+            castPermissionUtils.relaxAbilityCostColorsIfAny(
+                state, action.sourceId, costAfterEquipDiscount, action.playerId
+            ),
+            ability, state, action.sourceId, action.playerId
         )
     }
 

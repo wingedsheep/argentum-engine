@@ -203,7 +203,7 @@ class ActivatedAbilityEnumerator(
                     ),
                     ability, state, entityId, playerId
                 )
-                val effectiveCost = context.castPermissionUtils.relaxAbilityCostColorsIfAny(
+                val effectiveCost = context.castPermissionUtils.applyPayOnlyWithManaOf(context.castPermissionUtils.relaxAbilityCostColorsIfAny(
                     state, entityId,
                     context.castPermissionUtils.applyFreeFirstEquipDiscount(
                         context.castPermissionUtils.applyEquipCostReduction(
@@ -222,7 +222,7 @@ class ActivatedAbilityEnumerator(
                         ability, state, playerId
                     ),
                     playerId
-                )
+                ), ability, state, entityId, playerId)
 
                 // Description shown to the player. When the effective cost differs from the printed
                 // cost — a generic cost reduction (Starport Security "{3}{W}…" → "{1}{W}…"), or a
