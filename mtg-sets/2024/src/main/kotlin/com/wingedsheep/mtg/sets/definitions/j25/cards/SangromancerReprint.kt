@@ -13,7 +13,7 @@ val SangromancerReprint = Printing(
     collectorNumber = "122",
     scryfallId = "63472b56-cbf0-4474-b8c2-c3a3d9ec242a",
     artist = "Steven Belledin",
-    imageUri = "https://cards.scryfall.io/normal/front/6/3/63472b56-cbf0-4474-b8c2-c3a3d9ec242a.jpg?1783908831",
+    imageUri = "https://cards.scryfall.io/normal/front/6/3/63472b56-cbf0-4474-b8c2-c3a3d9ec242a.jpg",
     releaseDate = "2024-11-15",
     rarity = Rarity.RARE,
 )

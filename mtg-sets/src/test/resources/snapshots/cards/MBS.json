@@ -1000,8 +1000,10 @@
                             "type": "Fixed",
                             "amount": 3
                         }
-                    }
-                }
+                    },
+                    "descriptionOverride": "Whenever a creature an opponent controls dies, you may gain 3 life."
+                },
+                "descriptionOverride": "Whenever a creature an opponent controls dies, you may gain 3 life."
             },
             {
                 "id": "Sangromancer:2",
@@ -1019,8 +1021,10 @@
                             "type": "Fixed",
                             "amount": 3
                         }
-                    }
-                }
+                    },
+                    "descriptionOverride": "Whenever an opponent discards a card, you may gain 3 life."
+                },
+                "descriptionOverride": "Whenever an opponent discards a card, you may gain 3 life."
             }
         ]
     },
@@ -1028,7 +1032,13 @@
         "collectorNumber": "53",
         "rarity": "RARE",
         "artist": "Igor Kieryluk",
-        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c374193-4ebb-4f33-a24d-e567aea57b01.jpg?1783941382"
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c374193-4ebb-4f33-a24d-e567aea57b01.jpg?1783941382",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "If one or more creatures an opponent controls are put into the graveyard at the same time as Sangromancer, Sangromancer's first ability will trigger that many times."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

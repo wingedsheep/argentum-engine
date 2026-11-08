@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -49,6 +50,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
@@ -177,7 +179,11 @@ internal object ExpiringGrantWindow {
             return true
         }
 
-        if ((refuseUnspendable || readShrinks || readBorrows) && activation != null &&
+        // A loyalty ability's trigger is not all it buys: the loyalty it adds is permanent value the
+        // leaf prices, so Jace, Cunning Castaway's +1 is never "nothing" with no attacker to connect.
+        val loyaltyConnect = ability.isPlaneswalkerAbility &&
+            expiringPayoffs(ability.effect)?.any { it.kind == PayoffKind.CONNECT } == true
+        if ((refuseUnspendable || readShrinks || readBorrows) && activation != null && !loyaltyConnect &&
             nothingCanSpend(
                 state, playerId, ability.effect,
                 sourceId = activation.sourceId,
@@ -215,8 +221,10 @@ internal object ExpiringGrantWindow {
         // A silence names its source only as it resolves (Mourner's Shield, Burrenton Forge-Tender:
         // "a source of your choice"), so it is best raised once blocks show which source deals the
         // damage — the same reasoning [waitsForBlocks] gives lifelink, on every profile that reads it.
+        // A [PayoffKind.CONNECT] trigger waits for blocks too: it changes no declaration, and only
+        // once blockers are declared is it known which of its creatures connect.
         val untilBlocks = (lifelinkWaitsForBlocks && waitsForBlocks(ability.effect)) ||
-            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.SILENCE } == true
+            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.SILENCE || it.kind == PayoffKind.CONNECT } == true
         if (!laterWindowIsStillAhead(state, playerId, untilBlocks)) return false
 
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
@@ -323,6 +331,10 @@ internal object ExpiringGrantWindow {
                 return@none silenceCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets)
                     ?: return false
             }
+            if (payoff.kind == PayoffKind.CONNECT) {
+                return@none connectorCanStillHit(state, projected, playerId, payoff, sourceId, sourceTaps, intents)
+                    ?: return false
+            }
             val affected = affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
                 ?: return false
             when (payoff.kind) {
@@ -344,7 +356,7 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
-                PayoffKind.SHIELD, PayoffKind.SILENCE -> true // answered above
+                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -390,6 +402,7 @@ internal object ExpiringGrantWindow {
     }
 
     private val HASTE = Keyword.HASTE.name
+    private val TRAMPLE = Keyword.TRAMPLE.name
 
     /** Whether the same ability from the same source is already on the stack. */
     private fun selfGrantPending(state: GameState, sourceId: EntityId, ability: ActivatedAbility): Boolean =
@@ -710,8 +723,15 @@ internal object ExpiringGrantWindow {
          * may once it is a creature — so a fresh land counts as able to attack, the generous side.
          */
         animates: Boolean = false,
+        /**
+         * The payoff is spent only by [creature] dealing combat damage to a player — see
+         * [PayoffKind.CONNECT]. A blocker never does, so their turn has no fight for it, and once
+         * blockers are declared a blocked attacker connects only with trample.
+         */
+        connects: Boolean = false,
     ): Boolean {
         val entity = state.getEntity(creature) ?: return false
+        if (connects && !state.isActiveTurnFor(playerId)) return false
         val tapsAway = sourceTaps && creature == sourceId
         if (animates && !projected.isCreature(creature)) {
             if (tapsAway || entity.has<TappedComponent>()) return false
@@ -735,7 +755,8 @@ internal object ExpiringGrantWindow {
                 Step.DECLARE_ATTACKERS -> entity.has<AttackingComponent>() &&
                     (!blockedOnly || couldBeBlocked(state, projected, playerId, creature))
                 in FIGHT_STILL_AHEAD -> entity.has<AttackingComponent>() &&
-                    (!blockedOnly || entity.has<BlockedComponent>())
+                    (!blockedOnly || entity.has<BlockedComponent>()) &&
+                    (!connects || !entity.has<BlockedComponent>() || projected.hasKeyword(creature, TRAMPLE))
                 else -> false
             }
         } else {
@@ -761,6 +782,30 @@ internal object ExpiringGrantWindow {
     ): Boolean = state.getOpponents(playerId).any { opponent ->
         CombatMath.getOpponentUntappedCreatures(state, projected, opponent).any { blocker ->
             CombatMath.canBeBlockedBy(state, projected, attacker, blocker)
+        }
+    }
+
+    /**
+     * Whether a creature of ours a [PayoffKind.CONNECT] trigger watches can still deal combat
+     * damage to a player this turn — [canStillFight]'s step reading with `connects` on — or null
+     * when the catalog cannot evaluate the trigger's filter, which keeps the leaf in charge.
+     */
+    private fun connectorCanStillHit(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        payoff: Payoff,
+        sourceId: EntityId?,
+        sourceTaps: Boolean,
+        intents: IntentCatalog,
+    ): Boolean? {
+        val filter = payoff.matching ?: return null
+        val predicates = intents.predicates ?: return null
+        val context = PredicateContext(controllerId = playerId)
+        return projected.getBattlefieldControlledBy(playerId).any { id ->
+            projected.isCreature(id) &&
+                predicates.matches(state, projected, id, filter, context) &&
+                canStillFight(state, projected, playerId, id, sourceId, sourceTaps, connects = true)
         }
     }
 
@@ -1063,6 +1108,22 @@ internal object ExpiringGrantWindow {
          * deferral waits for blocks ([holds]).
          */
         SILENCE,
+
+        /**
+         * An until-end-of-turn global trigger that fires when creatures of ours matching a filter
+         * deal combat damage to a player — "until end of turn, whenever one or more Gorgons and/or
+         * Snakes you control deal combat damage to a player, that player loses half their life"
+         * (Aphelia, Viper Whisperer), the shape of The Raven's Warning's chapter II, Jace, Cunning
+         * Castaway's +1 and Mistway Spy's turned-face-up trigger. A loyalty ability carrying it is
+         * never refused on it ([holds]): the loyalty is permanent. Whatever its trigger does, it is
+         * spent only by one of those creatures connecting in this turn's combat, so it is
+         * [PayoffKind.CREATURE]'s fight read from the attacker's side alone ([canStillFight] with
+         * `connects`): on our turn, a matching creature that can still attack, or an attacker not
+         * blocked (or trampling over). Their turn, our second main and the end step have none.
+         * Blocks show who connects and the trigger changes no declaration, so the deferral waits
+         * for them ([holds]).
+         */
+        CONNECT,
     }
 
     /**
@@ -1080,7 +1141,7 @@ internal object ExpiringGrantWindow {
     private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE)
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
-    private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE)
+    private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT)
 
     /** One leaf of an ability whose payoff ends at cleanup, and where it lands. */
     private data class Payoff(
@@ -1099,6 +1160,8 @@ internal object ExpiringGrantWindow {
         val setToughness: Int? = null,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
         val animates: Boolean = false,
+        /** For a [PayoffKind.CONNECT]: the creatures of ours whose combat damage fires the trigger. */
+        val matching: GameObjectFilter? = null,
     )
 
     /**
@@ -1178,6 +1241,11 @@ internal object ExpiringGrantWindow {
                 // something on the stack, which is exactly when a [PayoffKind.SHIELD] is spendable.
                 returnsFromDeathThisTurn(leaf) ->
                     payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
+                // "Until end of turn, whenever one or more Snakes you control deal combat damage to a
+                // player, …" (Aphelia, Viper Whisperer; Jace, Cunning Castaway): see [PayoffKind.CONNECT].
+                leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+                    combatDamageConnectors(leaf.ability) != null ->
+                    payoffs += Payoff(PayoffKind.CONNECT, null, matching = combatDamageConnectors(leaf.ability))
                 leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     firesOnlyInAFight(leaf.ability) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
@@ -1273,6 +1341,25 @@ internal object ExpiringGrantWindow {
             else -> false
         }
     }
+
+    /**
+     * The creatures of ours whose combat damage to a player fires [ability], when that is its whole
+     * trigger — the batched "one or more [filter] you control deal combat damage to a player"
+     * (whose event reads "you control" itself), or "a [filter] deals combat damage to a player"
+     * bound to any matching creature (Mistway Spy's). Null for any other trigger. See
+     * [PayoffKind.CONNECT].
+     */
+    private fun combatDamageConnectors(ability: TriggeredAbility): GameObjectFilter? =
+        when (val pattern = ability.trigger) {
+            is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent -> pattern.sourceFilter
+            is EventPattern.DealsDamageEvent -> pattern.sourceFilter.takeIf {
+                ability.binding == TriggerBinding.ANY && pattern.damageType == DamageType.Combat &&
+                    pattern.recipient in PLAYER_RECIPIENTS && pattern.requires.isEmpty()
+            }
+            else -> null
+        }
+
+    private val PLAYER_RECIPIENTS = setOf(Recipient.AnyPlayer, Recipient.Opponent, Recipient.AnotherPlayer)
 
     /**
      * Whether [effect] grants, until end of turn, a "when this creature dies, return it to the

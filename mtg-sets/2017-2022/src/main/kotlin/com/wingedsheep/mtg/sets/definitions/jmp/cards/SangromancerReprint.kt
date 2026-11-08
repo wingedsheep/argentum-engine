@@ -13,7 +13,7 @@ val SangromancerReprint = Printing(
     collectorNumber = "272",
     scryfallId = "9cdebdfd-a29b-4482-ab83-012d5faba2e4",
     artist = "Igor Kieryluk",
-    imageUri = "https://cards.scryfall.io/normal/front/9/c/9cdebdfd-a29b-4482-ab83-012d5faba2e4.jpg?1783930411",
+    imageUri = "https://cards.scryfall.io/normal/front/9/c/9cdebdfd-a29b-4482-ab83-012d5faba2e4.jpg",
     releaseDate = "2020-07-17",
     rarity = Rarity.RARE,
 )
