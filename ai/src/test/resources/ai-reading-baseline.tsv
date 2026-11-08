@@ -690,7 +690,7 @@ Appetite for Brains
 Appetite for the Unnatural
 Applied Biomancy
 Applied Geometry
-Apprentice Sharpshooter	intent: EmitKeywordCounterEventEffect
+Apprentice Sharpshooter
 Apprentice Sorcerer
 Apprentice Wizard
 Approach of the Second Sun
@@ -967,7 +967,7 @@ Ashnod's Intervention
 Ashnod's Transmogrant
 Ashnod, Flesh Mechanist
 Ashroot Animist
-Asinine Antics	intent: ForEach>CreateAuraTokenEffect
+Asinine Antics
 Asmodeus the Archfiend	intent: Pipeline(FromLinkedExile→hand)
 Aspect of Lamprey
 Aspect of Manticore
@@ -1551,7 +1551,7 @@ Berta, Wise Extrapolator
 Beseech the Mirror
 Beseech the Queen
 Beskir Shieldmate
-Besotted Knight	intent: CreateAuraTokenEffect
+Besotted Knight
 Bespoke Battlegarb
 Bespoke Battlewagon
 Bespoke Bō
@@ -2909,7 +2909,7 @@ Charismatic Vanguard
 Charitable Levy
 Charity Extractor
 Charix, the Raging Isle
-Charmed Clothier	intent: CreateAuraTokenEffect
+Charmed Clothier
 Charmed Sleep
 Charmed Stray
 Charming Prince
@@ -3127,7 +3127,7 @@ Cloak and Phaser
 Cloak of Feathers
 Cloak of Mists
 Cloak of the Bat
-Cloaked Cadet	intent: EmitKeywordCounterEventEffect
+Cloaked Cadet
 Clockspinning
 Clockwork Avian	intent: ChooseNumberThenEffect
 Clockwork Beast	intent: ChooseNumberThenEffect
@@ -3332,7 +3332,7 @@ Compulsory Rest
 Concealed Courtyard
 Concealed Weapon
 Concealing Curtains	polarity: Pipeline(hand→graveyard)
-Conceited Witch	intent: CreateAuraTokenEffect
+Conceited Witch
 Concentrate
 Concerted Defense
 Concerted Effort
@@ -3794,7 +3794,7 @@ Curse of the Werefox	polarity: ReflexiveTriggerEffect
 Curse-Marred Demon
 Cursebreak
 Cursecloth Wrappings	intent: GrantEmbalmEffect; polarity: GrantEmbalmEffect; timing: GrantEmbalmEffect
-Cursed Courtier	intent: CreateAuraTokenEffect
+Cursed Courtier
 Cursed Flesh	polarity: Aura>GrantKeyword; polarity: Aura>ModifyStats
 Cursed Land	polarity: Aura>DealDamageEffect
 Cursed Minotaur
@@ -4426,7 +4426,7 @@ Diligent Zookeeper
 Dimension X
 Dimensional Breach
 Dimensional Exile	polarity: Aura>ExileUntilLeavesEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
-Diminisher Witch	intent: CreateAuraTokenEffect
+Diminisher Witch
 Dimir Aqueduct
 Dimir Cutpurse
 Dimir Doppelganger
@@ -5333,7 +5333,7 @@ Embercleave
 Embereth Paladin
 Embereth Shieldbreaker
 Embereth Skyblazer
-Embereth Veteran	intent: CreateAuraTokenEffect
+Embereth Veteran
 Emberheart Challenger
 Emberhorn Minotaur
 Embermage Goblin
@@ -5945,7 +5945,7 @@ Fathom Fleet Firebrand
 Fathom Trawl
 Faultgrinder
 Fauna Shaman
-Faunsbane Troll	intent: CreateAuraTokenEffect
+Faunsbane Troll
 Favor of Jukai
 Favor of the Mighty
 Favorable Winds
@@ -6059,7 +6059,7 @@ Ferocification
 Ferocious Charge
 Ferocious Pup
 Ferocious Tigorilla
-Ferocious Werefox	intent: CreateAuraTokenEffect
+Ferocious Werefox
 Ferocious Zheng
 Ferocity of the Hunt
 Ferocity of the Wilds
@@ -6706,7 +6706,7 @@ Gabriel Lorca, Mirror Menace
 Gaddock Teeg
 Gadget Technician
 Gadrak, the Crown-Scourge
-Gadwick's First Duel	intent: CreateAuraTokenEffect
+Gadwick's First Duel
 Gadwick, the Wizened
 Gaea's Anthem
 Gaea's Avenger
@@ -7719,10 +7719,10 @@ Gruul Signet
 Gruul Spellbreaker
 Gruul Turf
 Gruul War Chant
-Gryff Rider	intent: EmitKeywordCounterEventEffect
+Gryff Rider
 Gryff Vanguard
 Gryff's Boon	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
-Gryffwing Cavalry	intent: EmitKeywordCounterEventEffect
+Gryffwing Cavalry
 Gríma Wormtongue
 Guac & Marshmallow Pizza
 Guadosalam, Farplane Gateway
@@ -7805,7 +7805,7 @@ Gwenom, Remorseless	intent: GrantStaticAbilityEffect
 Gwyndala, the Progeny
 Gyome, Master Chef	polarity: mixed(GrantKeywordEffect+TapUntapEffect)
 Gyre Engineer
-Gyre Sage	intent: EmitKeywordCounterEventEffect
+Gyre Sage
 Gyruda, Doom of Depths	intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Gysahl Greens
 H.E.R.B.I.E. Scout Unit
@@ -8357,7 +8357,7 @@ Hope Estheim
 Hope Tender
 Hope of Ghirapur
 Hope-Ender Coatl
-Hopeful Initiate	intent: EmitKeywordCounterEventEffect
+Hopeful Initiate
 Hopeful Vigil
 Hopeless Nightmare
 Hopping Automaton
@@ -9290,6 +9290,7 @@ Jousting Lance
 Jovial Evil
 Joyful Stormsculptor
 Joyous Respite
+Jubilant Mascot
 Jubilant Skybonder
 Judge Magister Gabranth
 Judge of Currents
@@ -10365,7 +10366,7 @@ Loran's Escape
 Loran, Disciple of History
 Lord Dregg, Insect Invader
 Lord Magnus
-Lord Skitter's Blessing	intent: CreateAuraTokenEffect
+Lord Skitter's Blessing
 Lord Skitter's Butcher
 Lord Skitter, Sewer King
 Lord Xander, the Collector
@@ -11026,7 +11027,7 @@ Merrow Harbinger
 Merrow Reejerey
 Merrow Skyswimmer
 Merrow Wavebreakers
-Merry Bards	intent: CreateAuraTokenEffect
+Merry Bards
 Merry, Esquire of Rohan
 Merseine	polarity: Aura>ConditionalStaticAbility; polarity: Aura>RemoveCountersEffect
 Mesa Cavalier
@@ -12613,7 +12614,7 @@ Pardic Wanderer
 Parhelion II
 Parhelion Patrol
 Pariah's Shield
-Parish-Blade Trainee	intent: EmitKeywordCounterEventEffect
+Parish-Blade Trainee
 Park Heights Pegasus
 Parker Luck
 Part Water
@@ -13040,7 +13041,7 @@ Polliwallop
 Polluted Dead
 Polluted Delta
 Polluted Mire
-Pollywog Prodigy	intent: EmitKeywordCounterEventEffect
+Pollywog Prodigy
 Pollywog Symbiote
 Polukranos Reborn
 Polukranos, Unchained
@@ -13146,7 +13147,7 @@ Press for Answers
 Press the Advantage
 Press the Enemy
 Pressure Point
-Preston Garvey, Minuteman	intent: CreateAuraTokenEffect
+Preston Garvey, Minuteman
 Preston, the Vanisher
 Presumed Dead	polarity: GrantTriggeredAbilityEffect
 Pretending Poxbearers
@@ -13285,7 +13286,7 @@ Protean Thaumaturge
 Protect the Negotiators
 Protection of the Hekma
 Protective Bubble
-Protective Parents	intent: CreateAuraTokenEffect
+Protective Parents
 Protective Response
 Protective Sphere
 Protector of Gondor
@@ -13918,7 +13919,7 @@ Rediscover the Way
 Redoubled Stormsinger
 Redrock Sentinel
 Redshift, Rocketeer Chief
-Redtooth Genealogist	intent: CreateAuraTokenEffect
+Redtooth Genealogist
 Redtooth Vanguard
 Reduce // Rubble
 Reduce to Ashes
@@ -14550,7 +14551,7 @@ Roxanne, Starfall Savant
 Roxxon Brutes
 Royal Assassin
 Royal Falcon
-Royal Treatment	timing: GrantKeywordEffect
+Royal Treatment
 Royal Trooper
 Rubble Reading
 Rubble Rouser
@@ -14633,7 +14634,7 @@ Runic Armasaur
 Runic Shot
 Runo Stromkirk	intent: Pipeline(TopOfLibrary→?)
 Rupture Spire
-Rural Recruit	intent: EmitKeywordCounterEventEffect
+Rural Recruit
 Ruric Thar, Biomagus
 Ruric Thar, Magecrusher
 Rush of Adrenaline
@@ -14934,7 +14935,7 @@ Savannah Sage
 Savanti Romero, Time's Exile
 Saved by the Shell	timing: GrantKeywordEffect
 Saving Grace
-Savior of Ollenbock	intent: EmitKeywordCounterEventEffect
+Savior of Ollenbock
 Savior of the Sleeping
 Savior of the Small
 Savor
@@ -15117,7 +15118,7 @@ Sculpting Steel
 Sculptor of Winter
 Scurrid Colony
 Scurrilous Sentry
-Scurry Oak	intent: EmitKeywordCounterEventEffect
+Scurry Oak
 Scurry of Gremlins
 Scurry of Squirrels
 Scute Mob
@@ -16409,7 +16410,7 @@ Spell Snare
 Spell Stutter
 Spell Swindle
 Spellbook Seeker
-Spellbook Vendor	intent: CreateAuraTokenEffect
+Spellbook Vendor
 Spelleater Wolverine
 Spellgorger Weird
 Spellgyre
@@ -16536,7 +16537,7 @@ Spite // Malice
 Spitebellows
 Spiteful Banditry
 Spiteful Bully
-Spiteful Hexmage	intent: CreateAuraTokenEffect
+Spiteful Hexmage
 Spiteful Motives
 Spiteful Prankster
 Spiteful Squad
@@ -16550,7 +16551,7 @@ Spitting Slug
 Spitting Spider
 Splash Lasher
 Splash Portal
-Splashy Spellcaster	intent: CreateAuraTokenEffect
+Splashy Spellcaster
 Splatter Goblin
 Splatter Technique
 Splendid Agony
@@ -17389,7 +17390,7 @@ Syphon Mind
 Syphon Sliver
 Syphon Soul
 Syr Alin, the Lion's Claw
-Syr Armont, the Redeemer	intent: CreateAuraTokenEffect
+Syr Armont, the Redeemer
 Syr Carah, the Bold
 Syr Elenora, the Discerning
 Syr Faren, the Hengehammer
@@ -18053,7 +18054,7 @@ The Water Crystal
 The Weatherseed Treaty
 The Wind Crystal
 The Wise Mothman
-The Witch's Vanity	intent: CreateAuraTokenEffect
+The Witch's Vanity
 The Wondrous Wasp
 The World Spell
 The World Tree
@@ -18491,7 +18492,7 @@ Torch Fiend
 Torch Gauntlet
 Torch the Tower
 Torch the Witness
-Torens, Fist of the Angels	intent: EmitKeywordCounterEventEffect
+Torens, Fist of the Angels
 Torgaar, Famine Incarnate
 Torgal, A Fine Hound
 Tori D'Avenant, Fury Rider
@@ -18936,7 +18937,7 @@ Umezawa's Charm
 Umori, the Collector
 Una Chin-Riley, Number One
 Unable to Scream
-Unassuming Sage	intent: CreateAuraTokenEffect
+Unassuming Sage
 Unauthorized Exit
 Unblinking Observer
 Unbreakable Bond
@@ -19942,7 +19943,7 @@ Watchful Automaton
 Watchful Blisterzoa
 Watchful Giant
 Watchful Naga
-Watchful Radstag	intent: EmitKeywordCounterEventEffect
+Watchful Radstag
 Watchwing Scarecrow
 Watchwolf
 Water Elemental
