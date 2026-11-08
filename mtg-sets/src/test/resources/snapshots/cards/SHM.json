@@ -754,6 +754,74 @@
     }
 }
 
+// Crimson Wisps
+{
+    "name": "Crimson Wisps",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature becomes red and gains haste until end of turn. (It can attack and {T} this turn.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChangeColor",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "colors": [
+                        "RED"
+                    ]
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Jim Nelson",
+        "flavorText": "The whispers are incomprehensible, yet cinders always hear a message of urgency.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a65c81ff-fc5d-4191-93fb-52eb806457b7.jpg?1783942749",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "An effect that changes a permanent's colors overwrites all its old colors unless it specifically says \"in addition to its other colors.\" For example, after Cerulean Wisps resolves, the affected creature will just be blue. It doesn't matter what colors it used to be (even if, for example, it used to be blue and black)."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "Changing a permanent's color won't change its text. If you turn Wilt-Leaf Liege blue, it will still affect green creatures and white creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Crowd of Cinders
 {
     "name": "Crowd of Cinders",

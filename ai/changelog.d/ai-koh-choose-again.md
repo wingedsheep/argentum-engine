@@ -1,0 +1,1 @@
+- #4585 The AI no longer pays life over and over to re-choose the same card exiled with Koh, the Face Stealer: it picks once from the pile and holds the activation when nothing new is left to choose.

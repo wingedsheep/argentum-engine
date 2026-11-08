@@ -1,3 +1,88 @@
+// Anep, Vizier of Hazoret
+{
+    "name": "Anep, Vizier of Hazoret",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Jackal Warrior",
+    "oracleText": "Trample\nYou may exert Anep as it attacks. When you do, exile the top two cards of your library. Until the end of your next turn, you may play those cards. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anep, Vizier of Hazoret:1",
+                "trigger": {
+                    "type": "ExertedEvent",
+                    "asItAttacks": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ExertAsItAttacks"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Moopic",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/295658c4-7ab8-473d-abe1-0b6303b6850f.jpg?1783908856",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "You can exert Anep as you declare it as an attacking creature. You can't do so later in combat, and creatures put onto the battlefield attacking can't be exerted. Any abilities that trigger on exerting an attacking creature will resolve before blockers are declared."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If an exerted permanent is already untapped during your next untap step (most likely because an effect untapped it), exert's effect preventing it from untapping expires without having done anything."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You pay all costs and follow all timing rules for cards played with the permission granted by the ability that triggers when you exert Anep. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Aphelia, Viper Whisperer
 {
     "name": "Aphelia, Viper Whisperer",
@@ -181,6 +266,89 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Cleon, Merry Champion
+{
+    "name": "Cleon, Merry Champion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Double strike\nHeroic — Whenever you cast a spell that targets Cleon, exile the top card of your library. You may play that card until the end of your next turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cleon, Merry Champion:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets Cleon, exile the top card of your library. You may play that card until the end of your next turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Mebaru",
+        "flavorText": "\"Let us dance 'round the funeral pyres of our foes!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e793fae6-ca9a-49e7-b90d-fe7e9c72de0d.jpg?1783908856",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Cleon's second ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You pay all costs and follow all timing rules for cards played with the permission granted by Cleon's last ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1169,6 +1337,167 @@
     ]
 }
 
+// Gornog, the Red Reaper
+{
+    "name": "Gornog, the Red Reaper",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Minotaur Warrior",
+    "oracleText": "Haste\nCowards can't block Warriors.\nWhenever one or more Warriors you control attack a player, target creature that player controls becomes a Coward.\nAttacking Warriors you control get +X/+0, where X is the number of Cowards your opponents control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gornog, the Red Reaper:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Warrior"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "attackedPlayer": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Coward"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:triggering-player"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Coward"
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature Warrior"
+                }
+            },
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature Warrior attacking ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "EachOpponent",
+                    "filter": "Coward"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Ishikawa Kenta",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c80a88ae-f2f2-426a-88f3-76b5d598c25f.jpg?1783908855",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Once a creature has blocked a Warrior, turning that creature into a Coward won't remove it from combat or cause the Warrior to become unblocked."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Gornog's third ability overwrites the target's existing creature types. Once the ability resolves, that creature will be a Coward and won't have its previous creature types. It retains any other types and supertypes it has as well as any subtypes that aren't creature types."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Gornog's third ability doesn't have a duration. It will remain in effect until the game ends, the target creature leaves the battlefield, or some subsequent effect changes the creature's characteristics, whichever comes first."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The bonus granted by Gornog's last ability changes as the number of Cowards your opponents control changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hearts on Fire
+{
+    "name": "Hearts on Fire",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "One or two target creatures each get +2/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Eelis Kyttanen",
+        "flavorText": "\"With you by my side, I am unstoppable.\"\n—Halana, to Alena",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b10fcb27-1486-4cf1-8fde-eea6f799ab8b.jpg?1783908865"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hungry Megasloth
 {
     "name": "Hungry Megasloth",
@@ -1217,6 +1546,71 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ivora, Insatiable Heir
+{
+    "name": "Ivora, Insatiable Heir",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Vampire Warrior",
+    "oracleText": "Trample\nWhen Ivora enters and whenever it deals combat damage to a player, create a Blood token. (It's an artifact with \"{1}, {T}, Discard a card, Sacrifice this token: Draw a card.\")\nWhenever you discard a card, put a +1/+1 counter on Ivora.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ivora, Insatiable Heir:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Blood"
+                }
+            },
+            {
+                "id": "Ivora, Insatiable Heir:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Blood"
+                }
+            },
+            {
+                "id": "Ivora, Insatiable Heir:3",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Canata Katana",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2ba70366-b6ae-423a-a8d8-29d2b8afd939.jpg?1783908854"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

@@ -72,6 +72,116 @@
     ]
 }
 
+// Boldwyr Intimidator
+{
+    "name": "Boldwyr Intimidator",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Giant Warrior",
+    "oracleText": "Cowards can't block Warriors.\n{R}: Target creature becomes a Coward until end of turn.\n{2}{R}: Target creature becomes a Warrior until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Boldwyr Intimidator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Coward"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{R}: Target creature becomes a Coward until end of turn."
+            },
+            {
+                "id": "Boldwyr Intimidator:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Warrior"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{2}{R}: Target creature becomes a Warrior until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Coward"
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature Warrior"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Esad Ribic",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/179bec14-2e22-43eb-8854-b70a97dd023b.jpg?1783943103",
+        "rulings": [
+            {
+                "date": "2007-05-01",
+                "text": "Each of the activated abilities replaces all creature types the affected creature may have had."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dakmor Salvage
 {
     "name": "Dakmor Salvage",

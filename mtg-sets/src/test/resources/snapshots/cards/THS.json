@@ -39,6 +39,71 @@
     ]
 }
 
+// Akroan Crusader
+{
+    "name": "Akroan Crusader",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, create a 1/1 red Soldier creature token with haste. (It can attack and {T} as soon as it comes under your control.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akroan Crusader:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/0/509e44d4-72c1-4d68-b942-c3e8de6ed7a8.jpg?1783939699"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, create a 1/1 red Soldier creature token with haste."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Johann Bodin",
+        "flavorText": "An Akroan soldier's worth is measured by the number of swords raised by his battle cry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a47c50d9-11ec-486b-a5ce-5a6b70858f30.jpg?1783939767",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Anvilwrought Raptor
 {
     "name": "Anvilwrought Raptor",
@@ -61,6 +126,75 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/6/76330494-ce39-444e-b5da-8905bcccb8ad.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Arena Athlete
+{
+    "name": "Arena Athlete",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, target creature an opponent controls can't block this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arena Athlete:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, target creature an opponent controls can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Chan",
+        "flavorText": "The Iroan Games award no medals. Athletes vie for a visit from Iroas, god of victory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e201d9e6-d611-4dc4-b665-9062b449f859.jpg?1783939768",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Resolving Arena Athlete's ability after a creature has blocked won't remove the blocking creature from combat or cause the creature it blocked to become unblocked."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Artisan's Sorrow
