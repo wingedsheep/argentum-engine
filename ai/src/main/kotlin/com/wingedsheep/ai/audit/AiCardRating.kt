@@ -13,8 +13,10 @@ import com.wingedsheep.ai.engine.knowledge.LossShields
 import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.Speed
 import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 /**
@@ -129,8 +131,19 @@ object AiCardRating {
             )
         }
         if (type.isCreature) {
-            val power = card.creatureStats?.basePower
-            val toughness = card.creatureStats?.baseToughness
+            // "This creature enters with five +1/+1 counters on it" (Noosegraf Mob, a 0/0): in play it
+            // is the body the counters make, which is what the live evaluator reads off the board.
+            val entryCounters = card.script.replacementEffects.filterIsInstance<EntersWithCounters>()
+                .filter { it.selfOnly && it.condition == null }
+                .sumOf {
+                    when (it.counterType) {
+                        CounterType.PLUS_ONE_PLUS_ONE -> it.count
+                        CounterType.MINUS_ONE_MINUS_ONE -> -it.count
+                        else -> 0
+                    }
+                }
+            val power = card.creatureStats?.basePower?.plus(entryCounters)
+            val toughness = card.creatureStats?.baseToughness?.plus(entryCounters)
             if (power == null || toughness == null) {
                 return Board(
                     BoardKind.VARIABLE_CREATURE, null, emptyList(),
