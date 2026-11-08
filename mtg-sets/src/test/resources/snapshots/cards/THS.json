@@ -3942,6 +3942,91 @@
     ]
 }
 
+// Time to Feed
+{
+    "name": "Time to Feed",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature an opponent controls. When that creature dies this turn, you gain 3 life. Target creature you control fights that creature. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/799d08a6-d978-4731-98ad-38acd57f3196.jpg?1783939736",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Time to Feed has two targets: a creature an opponent controls and a creature you control. If only one of those creatures is a legal target when Time to Feed tries to resolve, the creatures won't fight and neither will deal or be dealt damage. If the creature you don't control is the illegal target, you won't gain life when it dies."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If neither creature is a legal target when Time to Feed tries to resolve, the spell won't resolve and none of its effects will happen."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If the first target creature dies that turn, you'll gain 3 life no matter what caused the creature to die or who controls the creature at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Titan's Strength
 {
     "name": "Titan's Strength",

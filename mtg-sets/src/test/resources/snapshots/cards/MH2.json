@@ -1533,6 +1533,65 @@
     ]
 }
 
+// Deepwood Denizen
+{
+    "name": "Deepwood Denizen",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\n{5}{G}, {T}: Draw a card. This ability costs {1} less to activate for each +1/+1 counter on creatures you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Deepwood Denizen:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{5}{G}, {T}: Draw a card. This ability costs {1} less to activate for each +1/+1 counter on creatures you control.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature",
+                    "aggregation": "SUM",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"You didn't come all this way just to bother me, did you? Say your piece and be gone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/333f02f7-3b8a-41e3-9ae5-2151539e64ad.jpg?1783926833"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Drey Keeper
 {
     "name": "Drey Keeper",

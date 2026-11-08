@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.PayCountersEffect
 import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
+import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -83,8 +84,12 @@ internal enum class AmountSign {
             // A life total is read as-is, not floored by an effect: it can be at or below zero
             // before state-based actions.
             is DynamicAmount.YourLifeTotal, is DynamicAmount.LifeTotal -> UNKNOWN
-            // Opaque at analysis time: a pipeline variable or a trigger-context value could be anything.
-            is DynamicAmount.VariableReference, is DynamicAmount.ContextProperty -> UNKNOWN
+            // Opaque at analysis time: a pipeline variable could be anything.
+            is DynamicAmount.VariableReference -> UNKNOWN
+            // A trigger-context value is a magnitude of the event — life gained, damage dealt, a
+            // die result, counters placed — so "+X/+X where X is the life you gained" (Hurska
+            // Sweet-Tooth) is a pump. See [contextSign].
+            is DynamicAmount.ContextProperty -> contextSign(amount.key)
             // A cast-time capture holds whatever amount the card froze, which can be negative.
             is DynamicAmount.CapturedAtCast -> UNKNOWN
 
@@ -115,6 +120,30 @@ internal enum class AmountSign {
             val left = amount.left as? DynamicAmount.Subtract ?: return false
             val right = amount.right as? DynamicAmount.Subtract ?: return false
             return left.left == right.right && left.right == right.left
+        }
+
+        /**
+         * Every [ContextPropertyKey] names an amount, count, mana value or die result read off the
+         * triggering event or the resolving context; none can go below zero (a toughness or total
+         * power is floored like [DynamicAmount.EntityProperty]). Exhaustive on purpose, so a new
+         * key that could be negative has to say so here.
+         */
+        private fun contextSign(key: ContextPropertyKey): AmountSign = when (key) {
+            ContextPropertyKey.TRIGGER_DIE_RESULT, ContextPropertyKey.TRIGGER_HIGHEST_DIE_RESULT,
+            ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS,
+            ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_LIFE_GAINED,
+            ContextPropertyKey.TRIGGER_LIFE_LOST, ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT,
+            ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE, ContextPropertyKey.TARGET_COUNT,
+            ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE, ContextPropertyKey.LAST_KNOWN_PLUS_ONE_COUNTER_COUNT,
+            ContextPropertyKey.TRIGGER_COUNTERS_PLACED_AMOUNT, ContextPropertyKey.TRIGGER_COUNTERS_REMOVED_AMOUNT,
+            ContextPropertyKey.LAST_KNOWN_TOTAL_COUNTER_COUNT, ContextPropertyKey.LINKED_EXILE_CARD_COUNT,
+            ContextPropertyKey.LINKED_EXILE_DISTINCT_CARD_TYPE_COUNT, ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL,
+            ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL, ContextPropertyKey.COLORS_SPENT_ON_TRIGGERING_SPELL,
+            ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE, ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL,
+            ContextPropertyKey.TRIGGER_SCRY_COUNT, ContextPropertyKey.TRIGGER_SCRY_BOTTOM_COUNT,
+            ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_DISCOVER_VALUE,
+            ContextPropertyKey.DIED_BATCH_TOTAL_POWER, ContextPropertyKey.TRIGGER_DISCARD_COUNT,
+            ContextPropertyKey.TRIGGER_MANA_PRODUCED -> GAIN
         }
 
         private fun ofInt(n: Int): AmountSign = when {
