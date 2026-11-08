@@ -1,0 +1,1 @@
+- #4590 Doesn't spend creatures blocking an attacker that is sacrificed or exiled at the end step anyway (temporary token copies, Mobilize); it takes the hit or chumps when the life matters
