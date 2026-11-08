@@ -109,6 +109,7 @@ internal class ActivationValidator(
         // Apply text-changing effects to cost and target filters
         val textReplacement = com.wingedsheep.engine.state.components.identity.TextChanges.of(state, action.sourceId)
         val effectiveCost = costTotaller.total(state, action, ability, textReplacement)
+            ?: return PAY_ONLY_WITH_MANA_OF_UNPAYABLE
         modalChoices.validate(state, action, ability.effect)?.let { return it }
         val modal = (ability.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)
         val allRequirements = ability.targetRequirements + action.chosenModes.orEmpty().flatMap {
@@ -756,4 +757,8 @@ internal class ActivationValidator(
         }
     }
 
+    companion object {
+        /** "Spend only mana of the chosen color" when no mana qualifies (see `applyPayOnlyWithManaOf`). */
+        const val PAY_ONLY_WITH_MANA_OF_UNPAYABLE = "No mana you could spend can pay this ability's cost"
+    }
 }

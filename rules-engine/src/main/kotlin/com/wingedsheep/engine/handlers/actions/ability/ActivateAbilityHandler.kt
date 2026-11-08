@@ -324,6 +324,7 @@ class ActivateAbilityHandler(
         val textReplacement = TextChanges.of(state, action.sourceId)
         val definedXValue = castPermissionUtils.definedXValue(state, ability, action.sourceId, action.playerId)
         val effectiveCost = costTotaller.total(state, action, ability, textReplacement)
+            ?: return Announcement.Rejected(ActivationValidator.PAY_ONLY_WITH_MANA_OF_UNPAYABLE)
 
         // Variable-count "exile/sacrifice one or more permanents you control" cost: X is defined by
         // the payer's cost choice (CR 601.2b — a variable defined by a cost choice is announced as

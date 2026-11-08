@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -197,6 +198,24 @@ data class ActivatedAbility(
      */
     val xManaRestriction: Set<Color> = emptySet(),
     /**
+     * "Spend only mana of [payOnlyWithManaOf] to activate this ability" — the restriction on the
+     * mana *paid* for the ability's own cost, the payment-side twin of a [ManaRestriction] on mana
+     * a source *produces*. Throne of Eldraine's "{3}, {T}: Draw two cards. Spend only mana of the
+     * chosen color to activate this ability" is `payOnlyWithManaOf = ManaColorSet.SourceChosenColor`.
+     *
+     * Every generic symbol of the cost is paid with mana of the resolved color instead of any mana
+     * (`{3}` becomes `{U}{U}{U}` for a blue choice) — applied last in the shared effective-cost
+     * pipeline, after reductions, so the offered price, the affordability gate, auto-tap and the
+     * charged price all see the same cost; colored symbols already require their own color and
+     * `{C}` stays colorless. The set resolves the way a mana ability's does ([ManaColorSet]) against
+     * the source: one color recolors the generic part, two become hybrid symbols. A set that
+     * resolves to nothing (a color never chosen), or a pip only other mana pays ([com.wingedsheep.sdk.core.ManaCost.payableOnlyWith]
+     * returns null), makes the ability unactivatable — it fails closed instead of being relaxed to
+     * "any mana". Not supported on mana abilities. `null` (the default) is every other ability: any
+     * mana may pay.
+     */
+    val payOnlyWithManaOf: ManaColorSet? = null,
+    /**
      * Minimum legal value for the `{X}` in this ability's cost (CR 601.2b analogue for activated
      * abilities). Defaults to 0. Set to 1 for "X can't be 0" abilities (Gogo, Master of Mimicry:
      * "{X}{X}, {T}: … X can't be 0."). The activated-ability X-choice decision clamps its lower
@@ -239,6 +258,14 @@ data class ActivatedAbility(
      */
     val cantBeCopied: Boolean = false
 ) : TextReplaceable<ActivatedAbility> {
+    init {
+        // Only the non-mana activation pipeline applies payOnlyWithManaOf; a mana ability would
+        // silently ignore it, so refuse the combination when the card is built.
+        require(payOnlyWithManaOf == null || !isManaAbility) {
+            "payOnlyWithManaOf is not supported on mana abilities"
+        }
+    }
+
     /** Backward-compatible secondary constructor for single-target abilities. */
     constructor(
         id: AbilityId,
