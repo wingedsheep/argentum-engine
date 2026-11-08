@@ -60,6 +60,7 @@ import {
 } from './modeMatrix'
 import type { UnifiedLobbyView } from './lobbyViewModel'
 import { NO_PICK_TIME_LIMIT } from './pickTime'
+import { DEFAULT_JUMPSTART_SET } from './jumpstartSets'
 
 /**
  * Bumped when the stored shape changes incompatibly. Unknown versions are **dropped on read, never
@@ -163,7 +164,8 @@ export interface LobbyRecipe {
 /**
  * The recipe a fresh wizard selection describes.
  *
- * Jump In selects J22 published packs and one game per matchup. Other modes leave settings
+ * Jump In selects the newest Jumpstart set's published packs ([DEFAULT_JUMPSTART_SET]) and one
+ * game per matchup. Other modes leave settings
  * absent, which means the lobby opens on the server's defaults for that
  * shape — no sets, six packs, 45 seconds. That is the honest starting point, and notably *not* what
  * the old launch path did: it sent `['ECL']`, so every draft lobby created from the wizard opened
@@ -174,7 +176,7 @@ export function recipeFromSelection(selection: Selection): LobbyRecipe {
   return {
     v: RECIPE_VERSION,
     selection,
-    settings: cards.kind === 'JUMP_IN' ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1, bestOf: 1 } : {},
+    settings: cards.kind === 'JUMP_IN' ? { setCodes: [DEFAULT_JUMPSTART_SET], useJumpstart: true, gamesPerMatch: 1, bestOf: 1 } : {},
     deck: deckForCards(cards),
     aiSeats: roster === 'SOLO' && lobbyNeedsAiSeats(selection)
       ? defaultSoloAiSeats(cards, shape)

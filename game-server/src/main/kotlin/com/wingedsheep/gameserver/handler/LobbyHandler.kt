@@ -42,7 +42,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
 
-/** The Jumpstart set a matchmade Jump In game deals from — the home screen's Jump In mode uses it too. */
+/** The Jumpstart set a matchmade Jump In game deals from. The home screen lets a player choose theirs. */
 private const val MATCHMADE_JUMP_IN_SET = "J22"
 
 /** Fresh builds an AI premade seat gets when the lobby rejects one — at ~1% rejection, ample. */
@@ -472,7 +472,7 @@ class LobbyHandler(
 
     /**
      * Seat two players the matchmaking queue paired for Jump In: a private two-seat Jump In lobby on
-     * the same Jumpstart set the home screen's Jump In mode uses, started at once so both land on
+     * [MATCHMADE_JUMP_IN_SET], started at once so both land on
      * their pack choice. Picking the second pack is each player's ready signal, and the one-game
      * match starts when both have. Returns false, creating nothing, when the lobby can't start.
      */

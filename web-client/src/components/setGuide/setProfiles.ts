@@ -991,6 +991,23 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Theme synergy', inPlay: 'Each pack repeats one idea, so its payoffs show up often; disrupting the key creature can stall the whole plan.' },
     ],
   },
+  J25: {
+    tagline: 'The newest Jumpstart: pick two themed 20-card packs and play. Forty-six themes, many with a mechanical twist, so pairings stay fresh over many games.',
+    setting: 'No single world: 46 themes from across Magic, from Angels and Dinosaurs to Ninjas, Food and Bookworms.',
+    gameplay: 'Each pack is one colour built around one idea, with its own lands, so two packs make a ready-made two-colour deck. Themes range from creature types like Goblins, Elves and Vampires to mechanics like Landfall, Treasures, auras and equipment, ninjutsu and Food. Every theme has a few payoff cards, so games turn on getting your engine going and stopping the opponent\'s.',
+    tips: [
+      'Look at what the other pack is missing: a creature-heavy theme pairs well with one that brings removal or card draw.',
+      'The rare listed first in each pack is usually the payoff the rest of the theme is built to support.',
+      'Learn the opposing themes quickly. Ninjas want unblocked attackers and Landfall wants extra lands, so blocking or racing is the real choice.',
+    ],
+    tryIf: 'a big variety of quick, themed decks with no deckbuilding',
+    power: 3, speed: 3, complexity: 2,
+    themes: ['tribal', 'tokens', 'counters'],
+    mechanics: [
+      { name: 'Two-pack decks', inPlay: 'Your deck is two fixed halves, so the choice is which themes to combine, not which cards to play.' },
+      { name: 'Theme payoffs', inPlay: 'Each pack repeats one idea and pays it off, so removing the key creature can stall a whole plan.' },
+    ],
+  },
   ONE: {
     tagline: 'One of the fastest modern formats. Toxic creatures race on poison and life together, removal is cheap, and a slow hand often dies with its best card stuck in it.',
     setting: 'New Phyrexia, the conquered remains of Mirrodin under the Machine Orthodoxy.',

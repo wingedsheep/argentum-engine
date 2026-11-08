@@ -20,6 +20,7 @@ import type { UnifiedLobbyView } from './lobbyViewModel'
 import { BOOTSTRAP_SET_CODE } from './useApplyRecipe'
 import { setPendingLobbyIntent } from '@/store/slices/pendingLobbyIntent'
 import type { DeckPickerTab } from '../ui/DeckPicker'
+import { DEFAULT_JUMPSTART_SET, isJumpstartSet } from './jumpstartSets'
 
 export interface LobbyCommands {
   /** Cards values the current lobby can express directly. Recreate goes through {@link recreate}. */
@@ -105,7 +106,7 @@ export function useLobbyCommands(
         // because the new lobby is a different shape and most of what was configured wouldn't mean
         // the same thing. Jump In names its published set; other modes use the bootstrap set.
         s().createTournamentLobby(
-          [spec.jumpIn ? 'J22' : BOOTSTRAP_SET_CODE], spec.format, 6, 8, 45, view.isPublic, spec.gameMode,
+          [spec.jumpIn ? DEFAULT_JUMPSTART_SET : BOOTSTRAP_SET_CODE], spec.format, 6, 8, 45, view.isPublic, spec.gameMode,
         )
         if (spec.jumpIn) s().updateLobbySettings({ useJumpstart: true, gamesPerMatch: 1, bestOf: 1 })
       }
@@ -136,12 +137,16 @@ export function useLobbyCommands(
         }
         switch (kind) {
           case 'BRING_A_DECK': s().updateLobbySettings({ format: 'PREMADE_DECKS' }); return
-          case 'JUMP_IN':
+          case 'JUMP_IN': {
+            const lobbySetCodes = s().lobbyState?.settings.setCodes
             s().updateLobbySettings({
-              cubeCards: [], setCodes: ['J22'], format: 'SEALED', rules: 'STANDARD',
+              cubeCards: [],
+              // Keep a Jumpstart set the host already picked; anything else switches to the newest.
+              setCodes: [isJumpstartSet(lobbySetCodes?.[0]) ? lobbySetCodes![0]! : DEFAULT_JUMPSTART_SET], format: 'SEALED', rules: 'STANDARD',
               deckFormat: '', useJumpstart: true, gamesPerMatch: 1, bestOf: 1,
             })
             return
+          }
           case 'SEALED': s().updateLobbySettings({ format: 'SEALED', useJumpstart: false }); return
           case 'DRAFT': s().updateLobbySettings({ format: 'DRAFT', useJumpstart: false }); return
           default: return
