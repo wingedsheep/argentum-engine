@@ -1,0 +1,1 @@
+- #TBD Reads "target creature becomes a Coward / a Warrior" through its card's own "Cowards can't block Warriors" (Boldwyr Intimidator, Kargan Intimidator, Gornog, the Red Reaper): the Coward goes on the opponent's creature and the Warrior on ours, and an until-end-of-turn one is no longer activated once our combat is over

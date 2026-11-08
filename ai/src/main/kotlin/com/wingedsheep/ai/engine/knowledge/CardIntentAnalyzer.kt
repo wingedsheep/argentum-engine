@@ -262,12 +262,23 @@ object CardIntentAnalyzer {
         turnAhead: Boolean = false,
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
+        /**
+         * The card the effect is printed on, when known: a creature-type change reads through that
+         * card's own statics ([TypeEvasion]). The card-level readings need it for nothing — every
+         * card [TypeEvasion] reads carries the [CantBeBlockedBy] that already tags it
+         * [IntentTag.EVASION_GRANT].
+         */
+        source: CardDefinition? = null,
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
         val refunds = handRefundDraws(effect)
         for (leaf in readingLeaves(effect, requirements)) {
             tags += refundedTagsOf(leaf, refunds)
+            // "Target creature becomes a Coward" beside "Cowards can't block Warriors" is the
+            // single-creature can't-block ([CantBlockEffect]'s evasion grant); "becomes a Warrior"
+            // is the evasion itself ([GrantEvasionKeywordEffect]'s).
+            if (leaf is SetCreatureSubtypesEffect && TypeEvasion.of(source, leaf) != null) tags += IntentTag.EVASION_GRANT
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)

@@ -147,6 +147,64 @@
     ]
 }
 
+// Markov Enforcer
+{
+    "name": "Markov Enforcer",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "Whenever this creature or another Vampire you control enters, this creature fights up to one target creature an opponent controls.\nWhenever a creature dealt damage by this creature this turn dies, create a Blood token. (It's an artifact with \"{1}, {T}, Discard a card, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Markov Enforcer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Vampire ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Markov Enforcer:2",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Blood"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/597bc4ae-335d-4d1d-8a57-530291abc540.jpg?1783924998"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Olivia's Wrath
 {
     "name": "Olivia's Wrath",

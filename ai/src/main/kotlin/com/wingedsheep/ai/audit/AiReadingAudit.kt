@@ -32,6 +32,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
@@ -387,6 +388,11 @@ object AiReadingAudit {
                         ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             (leaf is ForEachEffect && intent.expiringGroupPump) ||
+                            // Haste until end of turn on a creature: all it buys is a fresh creature
+                            // attacking now, and the cast's own simulation in our precombat main runs
+                            // that attack. Anywhere else it changes nothing the leaf would score, so a
+                            // cantrip carrying it keeps the end-step window. No hold to add.
+                            isHasteGrant(leaf) ||
                             // A prevention shield on a spell needs no hold: cast before any damage it
                             // could stop, the shield leaves the simulated board unchanged, and cast into
                             // the damage, simulation through that damage prices it. Its other leaves
@@ -448,10 +454,10 @@ object AiReadingAudit {
         script.activatedAbilities.forEachIndexed { i, ability ->
             if (ability.isManaAbility) return@forEachIndexed
             val sink = Sink()
-            abilityPolarity(ability.effect, ability.targetRequirements, lookup, sink) {
+            abilityPolarity(ability.effect, ability.targetRequirements, lookup, sink, card) {
                 TargetPolarityAnalyzer.forAbility(card, ability, lookup)
             }
-            intent(ability.effect, sink, ability.targetRequirements, ownPile, pileCast = pileCast)
+            intent(ability.effect, sink, ability.targetRequirements, ownPile, pileCast = pileCast, source = card)
             combat(ability, sink)
             if (ability.timing == TimingRule.InstantSpeed) {
                 // A pure can't-attack / can't-block activation is judged whole by the restriction
@@ -469,7 +475,7 @@ object AiReadingAudit {
         script.triggeredAbilities.forEachIndexed { i, trigger ->
             val sink = Sink()
             val reqs = listOfNotNull(trigger.targetRequirement) + trigger.additionalTargetRequirements
-            abilityPolarity(trigger.effect, reqs, lookup, sink) {
+            abilityPolarity(trigger.effect, reqs, lookup, sink, card) {
                 TargetPolarityAnalyzer.forRequirements(trigger.effect, reqs, lookup, source = card)
             }
             // "When this leaves the battlefield, return the exiled card" (O-Ring, Fiend Hunter, champion)
@@ -484,7 +490,7 @@ object AiReadingAudit {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
                 // Read as the slots readers see it: a captured collection spelled as what it holds.
-                intent(EffectWalker.readableEffect(trigger), sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast)
+                intent(EffectWalker.readableEffect(trigger), sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast, source = card)
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
@@ -494,7 +500,7 @@ object AiReadingAudit {
         script.sagaChapters.sortedBy { it.chapter }.forEach { chapter ->
             val sink = Sink()
             val reqs = EffectWalker.chapterTargets(chapter)
-            abilityPolarity(chapter.effect, reqs, lookup, sink) {
+            abilityPolarity(chapter.effect, reqs, lookup, sink, card) {
                 TargetPolarityAnalyzer.forRequirements(chapter.effect, reqs, lookup, source = card)
             }
             intent(chapter.effect, sink, reqs, ownPile = ownPile, turnAhead = true)
@@ -532,11 +538,12 @@ object AiReadingAudit {
         reqs: List<TargetRequirement>,
         lookup: CardLookup,
         sink: Sink,
+        source: CardDefinition,
         read: () -> List<TargetPolarity>,
     ) {
         if (effect is ModalEffect && reqs.isEmpty()) {
             effect.modes.forEachIndexed { m, mode ->
-                polarity(mode.effect, mode.targetRequirements, TargetPolarityAnalyzer.forMode(mode, lookup), lookup, sink, m + 1)
+                polarity(mode.effect, mode.targetRequirements, TargetPolarityAnalyzer.forMode(mode, lookup, source), lookup, sink, m + 1)
             }
         } else if (reqs.isNotEmpty()) {
             polarity(effect, reqs, read(), lookup, sink, null)
@@ -597,6 +604,7 @@ object AiReadingAudit {
         ownPile: Boolean = false,
         turnAhead: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
+        source: CardDefinition? = null,
     ) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
@@ -619,7 +627,7 @@ object AiReadingAudit {
                 // follows, like a sacrifice of our own choosing — no answer to anything.
                 (leaf is MoveToZoneEffect && CardIntentAnalyzer.removesOurOwnPermanent(leaf, reqs))
         }
-        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).tags
+        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast, source = source).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
         if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {
@@ -737,7 +745,13 @@ object AiReadingAudit {
             // to wait for.
             val spentWithCast = expiring is GrantStaticAbilityEffect && expiring.ability is AdditionalManaOnSourceTap &&
                 expiring.target == EffectTarget.Controller
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast) {
+            // "Target creature becomes red until end of turn" (Crimson Wisps, Cerulean Wisps): a
+            // colour fights nothing of its own. What it changes — a protection from a colour it
+            // slips, a colour-matters payoff that now counts it — is on the board the moment it
+            // resolves, where the cast's simulation prices it; no later window buys it more. When
+            // to cast it is the question of what it rides beside, which that leaf's reading answers.
+            val colourOnly = expiring is ChangeColorEffect
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),
@@ -1200,6 +1214,11 @@ object AiReadingAudit {
         val all = EffectWalker.leaves(spell).flatMap { if (it is ForEachEffect) EffectWalker.leaves(it.body) else listOf(it) }
         return all.any { !endsThisTurn(it) && CardIntentAnalyzer.analyzeEffect(it).tags.isNotEmpty() }
     }
+
+    /** Haste granted until end of turn to a creature other than its source. */
+    private fun isHasteGrant(leaf: Effect): Boolean =
+        leaf is GrantKeywordEffect && leaf.keyword == Keyword.HASTE.name && endsThisTurn(leaf) &&
+            leaf.target != EffectTarget.Self
 
     /** Whether [effect] carries a `duration` of [Duration.EndOfTurn]. Effects share no interface for it. */
     private fun endsThisTurn(effect: Effect): Boolean = property(effect, "getDuration") == Duration.EndOfTurn

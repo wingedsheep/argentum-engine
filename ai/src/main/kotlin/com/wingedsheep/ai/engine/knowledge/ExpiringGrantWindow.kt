@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -360,7 +361,7 @@ internal object ExpiringGrantWindow {
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
-                PayoffKind.SHRINK, PayoffKind.SET_BASE -> affected.any { id ->
+                PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE -> affected.any { id ->
                     // A set replaces the base (layer 7b) only: counters and pumps (7c, 7d) still
                     // apply on top, so the toughness lost is the old base less the new one.
                     val toughnessLoss = payoff.setToughness
@@ -1075,6 +1076,17 @@ internal object ExpiringGrantWindow {
         SET_BASE,
 
         /**
+         * A creature's types set until end of turn on a creature that is not the source — "target
+         * creature becomes a Coward until end of turn" (Boldwyr Intimidator, Kargan Intimidator),
+         * "… becomes a Warrior". Its whole payoff is what the new type changes in this turn's
+         * combat — a blocker kept off an attacker, an attacker no longer blockable — and it kills
+         * nothing, so it is judged as a [SET_BASE] that sets no toughness: spent only in a fight
+         * its creature can still be in, on either side of the table, and wasted once the turn has
+         * none. Read with the shrinks, under [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs].
+         */
+        RETYPE,
+
+        /**
          * Control of a creature until end of turn — "gain control of target creature until end of
          * turn" (Threaten, Involuntary Employment, Sibling Rivalry). It goes home at cleanup, so it
          * buys only what the creature does before then: an attack or a block on our side, or a fight
@@ -1138,7 +1150,7 @@ internal object ExpiringGrantWindow {
         state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD || it.kind == PayoffKind.SILENCE }
 
     /** The stat-change payoffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
-    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE)
+    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE)
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
     private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT)
@@ -1269,6 +1281,9 @@ internal object ExpiringGrantWindow {
                     if (leaf.power != null && leaf.power !is DynamicAmount.Fixed) return null
                     payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount)
                 }
+                readShrinks && leaf is SetCreatureSubtypesEffect && leaf.duration == Duration.EndOfTurn &&
+                    leaf.target != EffectTarget.Self ->
+                    payoffs += Payoff(PayoffKind.RETYPE, leaf.target)
                 else -> return null
             }
         }
