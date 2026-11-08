@@ -10,6 +10,10 @@ import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.ai.engine.knowledge.TimingVerdict
 import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
@@ -17,6 +21,7 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * "Target creature becomes a Coward" / "becomes a Warrior"
@@ -27,7 +32,9 @@ import io.kotest.matchers.shouldNotBe
  * creature can still be in.
  *
  * The decisions it changes: Boldwyr Intimidator's "becomes a Coward" is no longer spent on our own
- * creature when theirs can't be targeted, nor on their creature once our combat is over.
+ * creature when theirs can't be targeted, nor on their creature once our combat is over; Kargan
+ * Intimidator's modal "becomes a Coward", whose target is asked after the mode is announced, goes
+ * on the opponent's creature.
  */
 class SetCreatureSubtypesReadingAiTest : ScenarioTestBase() {
 
@@ -96,6 +103,33 @@ class SetCreatureSubtypesReadingAiTest : ScenarioTestBase() {
 
             withClue("the hexproof Scout leaves only our own creatures to turn into a Coward") {
                 TargetSelection.aimsOnlyAtTheWrongSide(game.state, action, game.player1Id, intents) shouldBe true
+            }
+        }
+
+        test("Kargan's Coward mode, targeted after the mode is announced, goes on their creature") {
+            val game = scenario()
+                .withPlayers()
+                .withActivePlayer(1)
+                .withCardOnBattlefield(1, "Kargan Intimidator")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withCardOnBattlefield(2, "Hill Giant")
+                .build()
+                .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+            val kargan = card("Kargan Intimidator")
+            game.execute(
+                ActivateAbility(game.player1Id, game.findPermanent("Kargan Intimidator")!!, kargan.script.activatedAbilities[0].id),
+            ).error shouldBe null
+            val modes = game.getPendingDecision().shouldBeInstanceOf<ChooseOptionDecision>()
+            val coward = modes.options.indexOfFirst { it.startsWith("Target creature becomes a Coward") }
+            game.submitDecision(OptionChosenResponse(modes.id, coward)).error shouldBe null
+
+            val decision = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            TargetSelection.decisionPolarities(game.state, decision, intents) shouldBe mapOf(0 to TargetPolarity.HARMFUL)
+            val response = AIPlayer.create(cardRegistry, game.player1Id, AiProfile.LIVE).respondToDecision(game.state, decision)
+            withClue("a Coward can't block Kargan: the curse lands on their Hill Giant, not our Bears") {
+                response.shouldBeInstanceOf<TargetsResponse>().selectedTargets.values.flatten() shouldBe
+                    listOf(game.findPermanent("Hill Giant")!!)
             }
         }
 

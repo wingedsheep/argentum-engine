@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -197,6 +198,7 @@ internal object ExpiringGrantWindow {
                 readBorrows = readBorrows,
                 xValue = activation.xValue,
                 canWaitForATarget = ability.timing == TimingRule.InstantSpeed,
+                source = state.getEntity(activation.sourceId)?.get<CardComponent>()?.name?.let(intents::definition),
             )
         ) {
             return true
@@ -307,8 +309,10 @@ internal object ExpiringGrantWindow {
          * ability that targets. See [SPENT_ONLY_AGAINST_TARGETING].
          */
         canWaitForATarget: Boolean = false,
+        /** The card the effect is printed on — see [PayoffKind.RETYPE]. Null for a spell. */
+        source: CardDefinition? = null,
     ): Boolean {
-        val payoffs = expiringPayoffs(effect, readShrinks, readBorrows) ?: return false
+        val payoffs = expiringPayoffs(effect, readShrinks, readBorrows, source) ?: return false
         // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf —
         // unless it rides on a borrow, where it lands on the creature the borrow is judged by.
         val borrows = payoffs.any { it.kind == PayoffKind.BORROW }
@@ -666,12 +670,14 @@ internal object ExpiringGrantWindow {
      * [castBuysNothing] can judge under some profile flag. With [creatureGrants] false the
      * creature-grant kind is left out, which is what a *spell* gets: [castBuysNothing] reads a
      * grant only when the whole spell is one ([readsSpellKeywordGrant], which the audit asks of the
-     * spell); a pump spell's reading is [HoldPolicy]'s combat-trick tag instead.
+     * spell); a pump spell's reading is [HoldPolicy]'s combat-trick tag instead. [source] is the
+     * card an activated ability is printed on, which [PayoffKind.RETYPE] reads; [holds] resolves
+     * the same card off the activation's source.
      *
      * Read only by the AI card-reading audit (`just ai-reading-audit`); nothing decides on it.
      */
-    fun hasExpiringReading(effect: Effect, creatureGrants: Boolean): Boolean {
-        val payoffs = expiringPayoffs(effect, readShrinks = true, readBorrows = true) ?: return false
+    fun hasExpiringReading(effect: Effect, creatureGrants: Boolean, source: CardDefinition? = null): Boolean {
+        val payoffs = expiringPayoffs(effect, readShrinks = true, readBorrows = true, source = source) ?: return false
         // A spell's shield is not read either: [castBuysNothing] asks only about shrinks.
         return creatureGrants || payoffs.none { it.kind in DEFERRABLE }
     }
@@ -1076,13 +1082,17 @@ internal object ExpiringGrantWindow {
         SET_BASE,
 
         /**
-         * A creature's types set until end of turn on a creature that is not the source — "target
-         * creature becomes a Coward until end of turn" (Boldwyr Intimidator, Kargan Intimidator),
-         * "… becomes a Warrior". Its whole payoff is what the new type changes in this turn's
-         * combat — a blocker kept off an attacker, an attacker no longer blockable — and it kills
-         * nothing, so it is judged as a [SET_BASE] that sets no toughness: spent only in a fight
-         * its creature can still be in, on either side of the table, and wasted once the turn has
-         * none. Read with the shrinks, under [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs].
+         * A creature's types set until end of turn on a creature that is not the source, where the
+         * source card's own blocking restriction names the type ([TypeEvasion]) — "target creature
+         * becomes a Coward until end of turn" beside "Cowards can't block Warriors" (Boldwyr
+         * Intimidator, Kargan Intimidator), "… becomes a Warrior". On that card the new type's
+         * whole payoff is what it changes in this turn's combat — a blocker kept off an attacker,
+         * an attacker no longer blockable — and it kills nothing, so it is judged as a [SET_BASE]
+         * that sets no toughness: spent only in a fight its creature can still be in, on either
+         * side of the table, and wasted once the turn has none. Read with the shrinks, under
+         * [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs]. A retype the source's statics
+         * don't name (Mordenkainen's Polymorph, Wild Shape, Secret Identity) is not collected: what
+         * that type is for is the board's question, not the fight's.
          */
         RETYPE,
 
@@ -1196,7 +1206,13 @@ internal object ExpiringGrantWindow {
      *
      * An effect with no payoff left once those are skipped is not this shape either.
      */
-    private fun expiringPayoffs(effect: Effect, readShrinks: Boolean = false, readBorrows: Boolean = false): List<Payoff>? {
+    private fun expiringPayoffs(
+        effect: Effect,
+        readShrinks: Boolean = false,
+        readBorrows: Boolean = false,
+        /** The card the effect is printed on, for [PayoffKind.RETYPE]'s [TypeEvasion] reading. */
+        source: CardDefinition? = null,
+    ): List<Payoff>? {
         val payoffs = mutableListOf<Payoff>()
         // Leaves that are not payoffs of their own but ride on a borrow — see the end of the loop.
         var borrowRiders = 0
@@ -1222,7 +1238,7 @@ internal object ExpiringGrantWindow {
                     leaf.expiry == DelayedTriggerExpiry.EndOfTurn && leaf.watchedTarget != null ->
                     watchRiders += checkNotNull(leaf.watchedTarget)
                 leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
-                    val body = expiringPayoffs(leaf.body, readShrinks) ?: return null
+                    val body = expiringPayoffs(leaf.body, readShrinks, source = source) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
                     payoffs += body
                 }
@@ -1282,7 +1298,7 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount)
                 }
                 readShrinks && leaf is SetCreatureSubtypesEffect && leaf.duration == Duration.EndOfTurn &&
-                    leaf.target != EffectTarget.Self ->
+                    leaf.target != EffectTarget.Self && TypeEvasion.of(source, leaf) != null ->
                     payoffs += Payoff(PayoffKind.RETYPE, leaf.target)
                 else -> return null
             }

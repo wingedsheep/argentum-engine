@@ -17,7 +17,8 @@ import io.kotest.matchers.shouldBe
  * fights nothing of its own: what it changes is on the board the moment it resolves. The audit
  * reads both as timed.
  *
- * The decision that proves the reading: Crimson Wisps is cast before combat when its haste sends a
+ * The audit exemption changes no decision, so the decisions here show it is safe rather than prove
+ * a new reading — they pass without it: Crimson Wisps is cast before combat when its haste sends a
  * summoning-sick Grizzly Bears into an empty board, and held when the Bears attack without it.
  */
 class ExpiringHasteReadingAiTest : ScenarioTestBase() {

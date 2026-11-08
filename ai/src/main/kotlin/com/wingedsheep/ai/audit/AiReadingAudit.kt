@@ -464,7 +464,7 @@ object AiReadingAudit {
                 // window (ExpiringGrantWindow.restrictionHasNoWindow), not leaf by leaf.
                 val restriction = ExpiringGrantWindow.readsRestriction(ability.effect)
                 timing(ability.effect, sink) {
-                    restriction || ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true)
+                    restriction || ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true, source = card)
                 }
             }
             modal(ability.effect, sink)
@@ -1215,7 +1215,7 @@ object AiReadingAudit {
         return all.any { !endsThisTurn(it) && CardIntentAnalyzer.analyzeEffect(it).tags.isNotEmpty() }
     }
 
-    /** Haste granted until end of turn to a creature other than its source. */
+    /** Haste granted until end of turn to a creature target (not `Self`). */
     private fun isHasteGrant(leaf: Effect): Boolean =
         leaf is GrantKeywordEffect && leaf.keyword == Keyword.HASTE.name && endsThisTurn(leaf) &&
             leaf.target != EffectTarget.Self
