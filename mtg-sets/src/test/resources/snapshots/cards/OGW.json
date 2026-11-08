@@ -530,6 +530,96 @@
     ]
 }
 
+// Goblin Dark-Dwellers
+{
+    "name": "Goblin Dark-Dwellers",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Menace\nWhen this creature enters, you may cast target instant or sorcery card with mana value 3 or less from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Dark-Dwellers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "insteadOfGraveyard": "EXILE"
+                            },
+                            "descriptionOverride": "You may cast target instant or sorcery card with mana value 3 or less from your graveyard without paying its mana cost."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may cast target instant or sorcery card with mana value 3 or less from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddf91a4e-97f7-4189-823d-b619bb3b3d55.jpg?1783937906",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You cast the card during the resolution of the enters-the-battlefield ability, not later in the turn. If it's a sorcery card, ignore the timing restrictions based on it being a sorcery card. Other timing restrictions, such as \"Cast [this card] only during combat,\" must be followed."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If you can't cast the target instant or sorcery card, perhaps because there are no legal targets available, or if you choose not to cast it, it will remain in your graveyard."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay alternative costs such as surge costs. You can pay additional costs. If the card has mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If the instant or sorcery card has {X} in its mana cost, you must choose 0 as its value."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If an instant or sorcery card you cast this way is countered, it will be exiled."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If an instant or sorcery card you cast this way goes to a zone other than exile or a graveyard, perhaps because one of its abilities says to put it into its owner's hand, it won't be exiled. This is true even if the card would be put into a graveyard later that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Make a Stand
 {
     "name": "Make a Stand",

@@ -227,6 +227,95 @@
     ]
 }
 
+// Cavern-Hoard Dragon
+{
+    "name": "Cavern-Hoard Dragon",
+    "manaCost": "{7}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "This spell costs {X} less to cast, where X is the greatest number of artifacts an opponent controls.\nFlying, trample, haste\nWhenever this creature deals combat damage to a player, you create a Treasure token for each artifact that player controls.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavern-Hoard Dragon:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "AggregateBattlefield",
+                        "player": "TriggeringPlayer",
+                        "filter": "artifact"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "GreatestAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c67e509e-a219-4f7f-b7eb-8c446cc0620a.jpg?1783916028",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Cavern-Hoard Dragon's last ability cares about the number of artifacts that player controls as the ability resolves."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Once a player has announced that they are casting Cavern-Hoard Dragon, no player may take actions to try and change the greatest number of artifacts an opponent controls before Cavern-Hoard Dragon's cost is locked in."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "If the greatest number of artifacts an opponent controls is seven or more, Cavern-Hoard Dragon costs {R}{R} to cast."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Cavern-Hoard Dragon's first ability counts only the artifacts controlled by the opponent who controls the greatest number of artifacts among your opponents. If you have an opponent who controls two artifacts and another opponent who controls three artifacts, Cavern-Hoard Dragon's mana cost would be reduced by {3}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Corsairs of Umbar
 {
     "name": "Corsairs of Umbar",
@@ -680,6 +769,120 @@
         "GREEN",
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Gríma, Saruman's Footman
+{
+    "name": "Gríma, Saruman's Footman",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Gríma can't be blocked.\nWhenever Gríma deals combat damage to a player, that player exiles cards from the top of their library until they exile an instant or sorcery card. You may cast that card without paying its mana cost. Then that player puts the exiled cards that weren't cast this way on the bottom of their library in a random order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gríma, Saruman's Footman:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "TriggeringPlayer",
+                            "filter": "instant|sorcery",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matched0",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "matched0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Exile"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching4"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": "TriggeringPlayer",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00f40514-d37d-423f-aa0c-1875300f43a8.jpg?1783916020",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "If you choose not to cast the card, it is put on the bottom of its owner's library in a random order along with the other exiled cards."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't pay any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "If that player exiles their entire library without exiling an instant or sorcery card, they will randomize the order of the exiled cards, and the cards then become that player's library, ending the effect. They will not continue to exile and randomize their library forever."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "You cast the card while the ability is resolving and still on the stack. You can't wait to cast it later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -2102,6 +2305,79 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Wake the Dragon
+{
+    "name": "Wake the Dragon",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 6/6 black and red Dragon creature token with flying, menace, and \"Whenever this token deals combat damage to a player, gain control of target artifact that player controls.\"\nFlashback {6}{B}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{6}{B}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 6,
+            "toughness": 6,
+            "colors": [
+                "BLACK",
+                "RED"
+            ],
+            "creatureTypes": [
+                "Dragon"
+            ],
+            "keywords": [
+                "FLYING",
+                "MENACE"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/1/1/11335886-a422-42ff-be14-226602202603.jpg?1783916054",
+            "triggeredAbilities": [
+                {
+                    "id": "Wake the Dragon:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:triggering-player"
+                        },
+                        "id": "t0"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Henry Peters",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9cf5f78-0316-4c35-a40e-9bfba2e46ad8.jpg?1783916013"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
