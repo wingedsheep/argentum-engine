@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.references.Player
@@ -330,7 +331,9 @@ object EffectWalker {
      * either branch (`CardIntentAnalyzer.punisherBranchLeaves`), the rater at its weaker one.
      *
      * "Proliferate X times" ([RepeatDynamicTimesEffect], Tam, the Possibility) opens onto its body:
-     * doing a thing N times is for what the thing is for, and N is only how much.
+     * doing a thing N times is for what the thing is for, and N is only how much. So does a
+     * do-while ([RepeatWhileEffect], Ad Nauseam's "you may repeat this process"): whether it goes
+     * round again is the loop's condition, what each round does is the card's payoff.
      *
      * The static readers that ask what a card is *for* ([CardIntentAnalyzer], [TargetPolarityAnalyzer])
      * read this walk. [leaves] keeps stopping at the gate, because widening it would move the rater's
@@ -341,6 +344,7 @@ object EffectWalker {
             leaf is ConditionalOnCollectionEffect ->
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap { payoffLeaves(it) }
             leaf is RepeatDynamicTimesEffect -> payoffLeaves(leaf.body)
+            leaf is RepeatWhileEffect -> payoffLeaves(leaf.body)
             leaf is ChooseActionEffect && choosesOwnBranch(leaf) ->
                 leaf.choices.flatMap { payoffLeaves(it.effect) }
             leaf !is GatedEffect || leaf.decisionMaker != null -> listOf(leaf)

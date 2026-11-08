@@ -847,6 +847,7 @@ object TargetPolarityAnalyzer {
             leaf is com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect ->
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap(::targetLeaves)
             leaf is com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect -> targetLeaves(leaf.body)
+            leaf is com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect -> targetLeaves(leaf.body)
             leaf is ChooseActionEffect && EffectWalker.choosesOwnBranch(leaf) ->
                 leaf.choices.flatMap { targetLeaves(it.effect) }
             // "Target creature gains your choice of double strike or lifelink" (Practiced Offense,
