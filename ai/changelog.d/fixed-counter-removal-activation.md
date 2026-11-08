@@ -1,0 +1,1 @@
+- #PR Pays a fixed "remove N counters from among creatures you control" cost (Lieutenant Commander Data) itself — -1/-1 counters first, then off its least valuable creatures — instead of submitting an activation the engine refused
