@@ -667,6 +667,7 @@ Ao, the Dawn Sky
 Apex Devastator
 Apex Witchstalker
 Apex of Power
+Aphelia, Viper Whisperer
 Aphemia, the Cacophony
 Aphetto Alchemist
 Aphetto Dredging
@@ -1261,6 +1262,7 @@ Balshan Collaborator
 Balshan Griffin
 Balthier and Fran	intent: AddCombatPhaseEffect
 Balthor the Defiled	intent: Pipeline(graveyard→battlefield)
+Balustrade Spy
 Balustrade Wurm
 Bamboo Grove Archer
 Band Together
@@ -1853,6 +1855,7 @@ Bloodfire Mentor
 Bloodflow Connoisseur
 Bloodforged Battle-Axe
 Bloodghast
+Bloodgift Demon
 Bloodhall Priest
 Bloodhaze Wolverine
 Bloodhunter Bat	polarity: DrainLifeEffect
@@ -2879,7 +2882,7 @@ Chaos Channeler
 Chaos Maw
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
 Chaos Spewer
-Chaos Wand	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→exile|library)
+Chaos Wand
 Chaos Warp
 Chaoslace	intent: ChangeColorEffect; polarity: ChangeColorEffect
 Chaotic Strike	polarity: FlipCoinEffect
@@ -3406,7 +3409,7 @@ Consult the Necrosages
 Consult the Star Charts
 Consume Spirit
 Consumed by Greed
-Consuming Aberration	intent: ForEach>GatherUntilMatchEffect; intent: ForEach>Pipeline(?→graveyard)
+Consuming Aberration
 Consuming Aetherborn
 Consuming Ashes
 Consuming Blob
@@ -5497,6 +5500,7 @@ Enthusiastic Study
 Entish Restoration
 Entity Tracker
 Entomb
+Entomber Exarch
 Entrails Feaster
 Entrancing Lyre
 Entrancing Melody
@@ -5640,6 +5644,7 @@ Evendo Brushrazer	intent: Pipeline(TopOfLibrary→exile)
 Evendo, Waking Haven
 Evercoat Ursine	intent: Pipeline(TopOfLibrary→exile|library)
 Everdawn Champion
+Evereth, Viceroy of Plunder
 Everflowing Chalice
 Everglove Courier
 Evernight Shade
@@ -6671,6 +6676,7 @@ Fulminous Forte
 Fume Spitter
 Fumigate
 Fuming Effigy
+Fumulus, the Infestation
 Funeral Longboat
 Funeral Rites
 Funeral Room // Awakening Hall
@@ -7551,6 +7557,7 @@ Grave Exchange
 Grave Pact
 Grave Researcher
 Grave Robbers
+Grave Strength
 Grave Titan
 Grave-Shell Scarab
 Graveblade Marauder
@@ -8452,6 +8459,7 @@ Howl of the Hunt	intent: TapUntapEffect
 Howl of the Night Pack
 Howler's Heavy
 Howlgeist
+Howling Banshee
 Howling Fury
 Howling Gale
 Howling Galefang
@@ -9609,6 +9617,7 @@ Killer Bees
 Killer's Mask	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Killian's Confidence
 Killian, Ink Duelist
+Killing Glare
 Killing Wave
 Killmonger, Scourge of Wakanda
 Kiln Fiend
@@ -11518,6 +11527,7 @@ Moriok Scavenger
 Moritte of the Frost
 Morkrut Banshee
 Morkrut Behemoth
+Morkrut Necropod
 Morlun, Devourer of Spiders
 Morningtide's Light
 Mornsong Aria
@@ -11823,6 +11833,7 @@ Necropanther
 Necroplasm
 Necropolis	intent: Pipeline(ExiledAsCost→?)
 Necropolis Fiend
+Necropolis Regent
 Necropotence
 Necroskitter
 Necrosquito
@@ -11938,7 +11949,7 @@ Nick Fury, Agent of S.H.I.E.L.D.
 Nick Valentine, Private Eye
 Nicol Bolas
 Nicol Bolas, Dragon-God
-Nicol Bolas, God-Pharaoh	polarity: GatherUntilMatchEffect; polarity: GrantMayPlayFromExileEffect; polarity: GrantPlayWithoutPayingCostEffect; polarity: Pipeline(?→exile)
+Nicol Bolas, God-Pharaoh
 Nicol Bolas, the Deceiver
 Nicol Bolas, the Ravager	intent: Pipeline(TopOfLibrary→exile)
 Night Clubber
@@ -14202,6 +14213,7 @@ Return to the Sewers
 Returned Centaur
 Returned Pastcaller
 Returned Reveler
+Rev, Tithe Extractor
 Revel Ruiner
 Revel in Riches
 Revelation
@@ -14230,6 +14242,7 @@ Revive
 Revive the Shire
 Reviving Dose
 Reviving Vapors
+Revoke Demise
 Revoke Existence
 Revoke Privileges
 Revolutionary Rebuff
@@ -14882,6 +14895,7 @@ Sandstorm Verge
 Sandworm
 Sandwurm Convergence
 Sangrite Surge
+Sangromancer
 Sanguinary Mage
 Sanguine Bond
 Sanguine Evangelist
@@ -16181,7 +16195,7 @@ Smother
 Smothering Tithe	intent: PayOrSufferEffect
 Smuggler's Copter
 Smuggler's Surprise
-Sméagol, Helpful Guide	intent: GatherUntilMatchEffect; intent: Pipeline(?→battlefield|graveyard); polarity: GatherUntilMatchEffect; polarity: Pipeline(?→battlefield|graveyard)
+Sméagol, Helpful Guide
 Snakeskin Veil
 Snap
 Snapcaster Mage
@@ -17906,7 +17920,7 @@ The Book of Vile Darkness
 The Boulder, Ready to Rumble
 The Brute
 The Cabbage Merchant
-The Caretaker	polarity: CastFromCollectionWithoutPayingCostEffect; polarity: GatherUntilMatchEffect; polarity: Pipeline(?→exile)
+The Caretaker
 The Cauldron of Eternity
 The Cave of Two Lovers
 The Celestus	intent: SetDayNightEffect
@@ -18840,7 +18854,7 @@ Tunnel
 Tunnel Rats
 Tunnel Surveyor
 Tunnel Tipster
-Tunnel Vision	intent: ChooseOptionEffect; intent: GatherUntilMatchEffect; intent: Pipeline(?→graveyard); polarity: Pipeline(?→graveyard)
+Tunnel Vision
 Tunneler Wurm
 Tunneling Geopede
 Tura Kennerüd, Skyknight
@@ -19189,6 +19203,7 @@ Urdnan, Dromoka Warrior
 Ureni of the Unwritten
 Ureni's Rebuff
 Ureni, the Song Unending
+Urge to Feed
 Urgent Exorcism
 Urgent Necropsy	intent: Pipeline(ChosenTargets→graveyard)
 Urgoros, the Empty One
