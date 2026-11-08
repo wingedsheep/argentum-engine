@@ -606,12 +606,16 @@ class DecisionResponder(
         val untapChoice = (state.peekContinuation() as? Suspension)?.takeIf {
             it.question.id == decision.id
         }?.answer as? UntapChoiceContinuation
-        if (untapChoice != null && untapChoice.untapLimits.isNotEmpty()) {
+        if (untapChoice != null) {
             // Start with a legal keep set, then release valuable permanents while every cap holds.
             // The displayed minimum is only a lower bound when restrictions overlap or are disjoint.
+            // A "may choose not to untap" permanent stays tapped only while an effect of its own
+            // rides on it (KeepTappedChoice); with no cap at all, everything else untaps. The
+            // generic "choose up to N" ranking below kept Lwaxana Troi tapped with nothing chosen.
             val keep = options.toMutableSet()
             val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true, legacyOnly = true)
             for (id in ranked) {
+                if (KeepTappedChoice.worthKeepingTapped(state, id, playerId)) continue
                 keep.remove(id)
                 if (untapChoice.untapLimits.any { limit ->
                         limit.matchingPermanents.count { it !in keep } > limit.max
