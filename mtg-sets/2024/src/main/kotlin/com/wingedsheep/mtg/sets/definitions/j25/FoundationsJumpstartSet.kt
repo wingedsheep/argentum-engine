@@ -19,7 +19,6 @@ object FoundationsJumpstartSet : MtgSet {
     override val displayName = "Foundations Jumpstart"
     override val releaseDate = "2024-11-15"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
