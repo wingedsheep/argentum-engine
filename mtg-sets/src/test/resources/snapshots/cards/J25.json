@@ -1912,6 +1912,94 @@
     ]
 }
 
+// Ozox, the Clattering King
+{
+    "name": "Ozox, the Clattering King",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Skeleton Noble",
+    "oracleText": "Ozox can't block.\nWhen Ozox dies, create Jumblebones, a legendary 2/1 black Skeleton creature token with \"Jumblebones can't block\" and \"When Jumblebones leaves the battlefield, return target card named Ozox, the Clattering King from your graveyard to your hand.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ozox, the Clattering King:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Skeleton"
+                    ],
+                    "name": "Jumblebones",
+                    "imageUri": "https://cards.scryfall.io/art_crop/front/0/2/02404852-5788-4adb-b2dc-98bf705d8d96.jpg?1783912608",
+                    "legendary": true,
+                    "staticAbilities": [
+                        "CantBlock"
+                    ],
+                    "triggeredAbilities": [
+                        {
+                            "id": "Ozox, the Clattering King:1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield"
+                            },
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirement": {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "NameEquals",
+                                                "name": "Ozox, the Clattering King"
+                                            }
+                                        ],
+                                        "controllerPredicate": "OwnedByYou"
+                                    },
+                                    "zone": "Graveyard"
+                                },
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "When Jumblebones leaves the battlefield, return target card named Ozox, the Clattering King from your graveyard to your hand."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Ozox dies, create Jumblebones, a legendary 2/1 black Skeleton creature token with \"Jumblebones can't block\" and \"When Jumblebones leaves the battlefield, return target card named Ozox, the Clattering King from your graveyard to your hand.\""
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Inuchiyo Meimaru",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02cf5079-9da8-470d-8eea-00d6aac68d04.jpg?1783908856"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Phantasmal Shieldback
 {
     "name": "Phantasmal Shieldback",
@@ -3527,6 +3615,98 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Taeko, the Patient Avalanche
+{
+    "name": "Taeko, the Patient Avalanche",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Turtle Ninja",
+    "oracleText": "Taeko enters tapped.\nWhenever another creature you control leaves the battlefield, if it didn't die, scry 1 and put a +1/+1 counter on Taeko.\nWhenever Taeko attacks, you may pay {U/B}. When you do, target attacking creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Taeko, the Patient Avalanche:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "excludeTo": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Taeko, the Patient Avalanche:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{U/B}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "GrantKeyword",
+                        "keyword": "CANT_BE_BLOCKED",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "MYTHIC",
+        "artist": "GOSSAN",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65b815a1-98d8-47b9-8d6b-b30e0a5f087c.jpg?1783908859",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "If Taeko leaves the battlefield or dies at the same time as one or more other creatures you control leave the battlefield without dying, its second ability triggers once for each of those other creatures. You will scry for each of those other creatures, but Taeko will not be on the battlefield to receive +1/+1 counters."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You don't choose a target for Taeko's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay {U}{B} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
