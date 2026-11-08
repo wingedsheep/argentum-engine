@@ -35,7 +35,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  */
 val SlinzaTheSpikedStampede = card("Slinza, the Spiked Stampede") {
     manaCost = "{4}{G}"
-    colorIdentity = "G"
+    colorIdentity = "RG"
     typeLine = "Legendary Creature — Beast"
     power = 5
     toughness = 5

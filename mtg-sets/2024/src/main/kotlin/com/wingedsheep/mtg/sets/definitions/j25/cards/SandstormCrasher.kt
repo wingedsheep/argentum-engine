@@ -22,8 +22,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The exert is [ExertAsItAttacks]; "when you do" is its linked self-exert trigger (CR 607.2h),
  * which targets as it goes on the stack before blockers. A bare "tapped and attacking" lets the
  * token's controller pick what it attacks as it enters (CR 508.4) —
- * [EnteringAttackDefender.CONTROLLER_CHOOSES]. "The next end step" is anyone's, so the sacrifice
- * isn't limited to the controller's turn.
+ * [EnteringAttackDefender.CONTROLLER_CHOOSES].
  */
 val SandstormCrasher = card("Sandstorm Crasher") {
     manaCost = "{3}{R}"

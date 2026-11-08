@@ -30,6 +30,8 @@ class RionyaFireDancerScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Rionya, Fire Dancer")
                     .withCardOnBattlefield(1, "Hill Giant")
+                    // "Whenever a creature you control dies" — silent if the copies are exiled, not sacrificed.
+                    .withCardOnBattlefield(1, "Bastion of Remembrance")
                     .withCardInHand(1, "Shock")
                     .withCardInHand(1, "Volcanic Hammer")
                     .withCardInHand(1, "Raging Goblin")
@@ -72,11 +74,16 @@ class RionyaFireDancerScenarioTest : ScenarioTestBase() {
                     projected.getToughness(token) shouldBe 3
                 }
                 projected.hasKeyword(giant, Keyword.HASTE) shouldBe false
+                val ourLife = game.getLifeTotal(1)
+                val theirLife = game.getLifeTotal(2)
 
                 game.passUntilPhase(Phase.ENDING, Step.END)
                 game.resolveStack()
 
                 game.findAllPermanents("Hill Giant") shouldBe listOf(giant)
+                // Exiled, not sacrificed: Bastion of Remembrance never saw a creature die.
+                game.getLifeTotal(1) shouldBe ourLife
+                game.getLifeTotal(2) shouldBe theirLife
             }
 
             test("with no instants or sorceries cast, it makes exactly one copy") {
