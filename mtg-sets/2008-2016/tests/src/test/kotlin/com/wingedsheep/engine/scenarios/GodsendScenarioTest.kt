@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -19,8 +20,8 @@ import io.kotest.matchers.shouldNotBe
  */
 class GodsendScenarioTest : ScenarioTestBase() {
 
-    private fun attackIntoDoubleBlock(): TestGame {
-        val game = scenario()
+    private fun attackIntoDoubleBlock(withFlicker: Boolean = false): TestGame {
+        val builder = scenario()
             .withPlayers("Player1", "Player2")
             .withCardOnBattlefield(1, "Grizzly Bears")
             .withCardAttachedTo(1, "Godsend", "Grizzly Bears")
@@ -28,6 +29,8 @@ class GodsendScenarioTest : ScenarioTestBase() {
             .withCardOnBattlefield(2, "Black Knight")
             .withCardInHand(2, "Ambush Viper")
             .withLandsOnBattlefield(2, "Forest", 2)
+        if (withFlicker) builder.withCardInHand(2, "Cloudshift").withLandsOnBattlefield(2, "Plains", 1)
+        val game = builder
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             .build()
@@ -38,6 +41,12 @@ class GodsendScenarioTest : ScenarioTestBase() {
             mapOf("Ambush Viper" to listOf("Grizzly Bears"), "Black Knight" to listOf("Grizzly Bears"))
         ).error shouldBe null
         return game
+    }
+
+    /** Pass until the opponent (player 2) holds priority in the current step. */
+    private fun TestGame.giveOpponentPriority() {
+        if (state.priorityPlayerId != player2Id) passPriority().error shouldBe null
+        state.priorityPlayerId shouldBe player2Id
     }
 
     init {
@@ -70,7 +79,7 @@ class GodsendScenarioTest : ScenarioTestBase() {
                 game.isInExile(2, "Ambush Viper") shouldBe true
                 game.findPermanent("Black Knight") shouldNotBe null
             }
-            game.passPriority() // the opponent gets priority in the declare blockers step
+            game.giveOpponentPriority()
             withClue("an opponent can't cast a spell with the exiled card's name") {
                 game.castSpell(2, "Ambush Viper").error shouldNotBe null
             }
@@ -85,8 +94,25 @@ class GodsendScenarioTest : ScenarioTestBase() {
             game.findPermanent("Black Knight") shouldBe null
             game.isInExile(2, "Black Knight") shouldBe true
             withClue("an unrelated name stays castable") {
-                game.passPriority()
+                game.giveOpponentPriority()
                 game.castSpell(2, "Ambush Viper").error shouldBe null
+            }
+        }
+
+        test("a blocker flickered in response is a new object and can't be chosen") {
+            val game = attackIntoDoubleBlock(withFlicker = true)
+            game.state.stack.size shouldBe 1
+            val viper = game.findPermanent("Ambush Viper").shouldNotBeNull()
+            game.giveOpponentPriority() // with Godsend's trigger on the stack
+            game.castSpell(2, "Cloudshift", viper).error shouldBe null
+            game.resolveStack()
+            withClue("the Viper came back as a new object (CR 400.7)") {
+                game.findPermanent("Ambush Viper") shouldNotBe null
+            }
+            val knight = game.findPermanent("Black Knight").shouldNotBeNull()
+            val decision = game.state.pendingDecision as SelectCardsDecision
+            withClue("only the Black Knight is still one of those creatures") {
+                decision.options shouldBe listOf(knight)
             }
         }
 

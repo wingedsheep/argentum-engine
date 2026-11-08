@@ -1564,7 +1564,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * card that says "it" still has one, and **every** matching partner is captured in the
          * trigger's captured collection (`CollectionSlot.TriggerCaptured`), so "you may exile one
          * of those creatures" (Godsend) chooses among the creatures it was paired with *at the
-         * time it triggered*. A card that says "each creature blocking or blocked by this
+         * time it triggered* — minus any that left the battlefield since (a new object, CR 400.7,
+         * even when flickered back). A card that says "each creature blocking or blocked by this
          * creature" reads the set from live combat state instead
          * (`GameObjectFilter.Creature.blockingOrBlockedBySource()`).
          */

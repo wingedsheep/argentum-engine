@@ -1353,6 +1353,7 @@ class TriggerDetector(
                                 triggerContext = TriggerContext(
                                     triggeringEntityId = partnerId,
                                     capturedEntityIds = capturedPartners,
+                                    capturedObjects = capturedPartners?.mapNotNull { state.objectRef(it) },
                                     capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
                                 ),
                                 consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
@@ -1940,7 +1941,8 @@ class TriggerDetector(
                                     controllerId = controllerId,
                                     triggerContext = TriggerContext(
                                         triggeringEntityId = partnerId,
-                                        capturedEntityIds = capturedPartners
+                                        capturedEntityIds = capturedPartners,
+                                        capturedObjects = capturedPartners?.mapNotNull { state.objectRef(it) }
                                     )
                                 )
                             )

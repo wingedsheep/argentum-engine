@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.event.withoutDepartedCaptures
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
@@ -49,6 +50,7 @@ internal class AbilityResolver(
             targets = resolvedTargets2,
             targetRequirements = targetReqs
         ).forAbilityResolution(state, abilityId)
+            .withoutDepartedCaptures(state, abilityComponent.triggerContext)
 
         // CR 608.2a, then CR 608.2b — in that lettered order. 608.2a: "If a triggered ability has
         // an intervening 'if' clause, it checks whether the clause's condition is true. If it
