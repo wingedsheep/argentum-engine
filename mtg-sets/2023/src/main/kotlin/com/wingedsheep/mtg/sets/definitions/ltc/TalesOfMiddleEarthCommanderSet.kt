@@ -38,6 +38,13 @@ object TalesOfMiddleEarthCommanderSet : MtgSet {
             power = 3,
             toughness = 3,
         ),
+        // tltc #? — Wake the Dragon's 6/6 black and red Dragon with flying and menace.
+        TokenPrinting(
+            name = "Dragon",
+            imageUri = "https://cards.scryfall.io/normal/front/1/1/11335886-a422-42ff-be14-226602202603.jpg?1783916054",
+            power = 6,
+            toughness = 6,
+        ),
     )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.ltc.cards"
