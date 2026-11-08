@@ -260,6 +260,7 @@ Agent of Treachery
 Agents of HYDRA
 Agents of S.H.I.E.L.D.
 Aggravated Assault
+Aggressive Instinct
 Aggressive Mammoth
 Aggressive Negotiations
 Aggressive Sabotage
@@ -282,6 +283,7 @@ Aid from the Cowl
 Aid the Fallen
 Aim High
 Aim for the Head
+Ainok Artillerist
 Ainok Bond-Kin
 Ainok Guide
 Ainok Strike Leader
@@ -6143,6 +6145,7 @@ Fields of Strife
 Fiend Artisan
 Fiend Binder
 Fiend Hunter
+Fiendish Duo
 Fiendish Panda
 Fierce Empath
 Fierce Guardianship
@@ -6979,6 +6982,7 @@ Ghirapur Osprey
 Ghired, Mirror of the Wilds
 Ghitu Amplifier
 Ghitu Chronicler
+Ghitu Encampment
 Ghitu Fire
 Ghitu Fire-Eater
 Ghitu Journeymage
@@ -11406,6 +11410,7 @@ Mocking Sprite
 Mockingbird
 Mockingbird, Ace Agent
 Mogg Fanatic
+Mogg Flunkies
 Mogg Mob
 Mogg Raider
 Mogg War Marshal
@@ -13488,6 +13493,7 @@ Pyroclastic Hellion
 Pyroconvergence
 Pyromancer's Goggles
 Pyromania
+Pyrophobia
 Pyrostatic Pillar
 Pyrotechnic Performer
 Pyrotechnics
@@ -14356,6 +14362,7 @@ Ringskipper
 Ringwarden Owl
 Ringwraiths
 Rinoa Heartilly
+Rionya, Fire Dancer
 Riot Control
 Riot Devils
 Riot Ringleader
@@ -14912,6 +14919,7 @@ Sandsteppe Outcast
 Sandstone Bridge
 Sandstone Warrior
 Sandstorm
+Sandstorm Crasher
 Sandstorm Salvager
 Sandstorm Verge
 Sandworm
@@ -14973,6 +14981,7 @@ Satoru, the Infiltrator
 Satsuki, the Living Lore	intent: ForEach>AddCountersEffect
 Satyr Enchanter
 Satyr Hedonist
+Satyr Hoplite
 Satyr Rambler
 Satyr Wayfinder
 Satyr's Cunning
@@ -15087,6 +15096,7 @@ Scheming Aspirant
 Scheming Fence
 Scheming Silvertongue
 Scheming Symmetry	polarity: ForEachEffect
+Scholar of Combustion
 Scholar of New Horizons
 Scholar of Stars
 Scholar of the Ages
@@ -15211,6 +15221,7 @@ Scuzzback Scrounger
 Scythe Leopard
 Scythe Tiger
 Scythe of the Wretched
+Scythecat Cub
 Scytheclaw Raptor
 Sea Drake
 Sea Eagle
@@ -16151,11 +16162,13 @@ Slimefoot's Survey
 Slimefoot, the Stowaway
 Slimy Dualleech
 Slimy Kavu	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
+Slimy Piper
 Sling-Gang Lieutenant
 Slingshot Goblin
 Slinking Serpent
 Slinking Skirge
 Slinn Voda, the Rising Deep
+Slinza, the Spiked Stampede
 Slip On the Ring
 Slip Out the Back
 Slippery Karst
@@ -20707,6 +20720,7 @@ Yuriko, the Tiger's Shadow
 Yuyan Archers
 Zacama, Primal Calamity
 Zack Fair
+Zada, Hedron Grinder
 Zaffai and the Tempests
 Zagoth Crystal
 Zagoth Mamba
