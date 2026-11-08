@@ -1,3 +1,64 @@
+// Ad Nauseam
+{
+    "name": "Ad Nauseam",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Reveal the top card of your library and put that card into your hand. You lose life equal to its mana value. You may repeat this process any number of times.",
+    "script": {
+        "spellEffect": {
+            "type": "RepeatWhile",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        },
+                        "revealed": true
+                    },
+                    {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "StoredCardManaValue",
+                            "collectionName": "gathered0"
+                        },
+                        "target": "Controller"
+                    }
+                ]
+            },
+            "repeatCondition": {
+                "type": "PlayerChooses",
+                "decider": "Controller",
+                "prompt": "Reveal another card?"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Jeremy Jarvis",
+        "flavorText": "When the task spilled over into undeath, he stopped calling it his life's work.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a4ce4a1-65e3-4b40-be35-8fc55a968ec8.jpg?1783942570"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Angelsong
 {
     "name": "Angelsong",
@@ -979,6 +1040,82 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Cunning Lethemancer
+{
+    "name": "Cunning Lethemancer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "At the beginning of your upkeep, each player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cunning Lethemancer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Paul Bonner",
+        "flavorText": "\"Give me your memories, and you will have release from the suffering they bring you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/972891e6-6a23-40df-af22-adf8cd7ea582.jpg?1783942568"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
