@@ -1743,7 +1743,16 @@ object TargetPolarityAnalyzer {
             // read here: a draw for "you" is not a target, and [grantedTriggerPolarity] reads it
             // through [controllerPolarity] instead. Sign in Blood's draw and life loss disagree
             // and combine to UNKNOWN, which is right — it is aimed at either side.
-            is DrawCardsEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
+            // A draw that is *sized by* a slot's player rather than aimed at them — "draw cards equal
+            // to the damage dealt to target opponent this turn" (Knollspine Dragon): the controller
+            // draws, so the draw is no gift or curse to the player the amount measures. The slot is
+            // read, not acted on, so both sides stay open and the simulation weighs the candidates.
+            is DrawCardsEffect -> when {
+                leaf.target.isSlot() -> leaf.target to TargetPolarity.BENEFICIAL
+                else -> ((leaf.count as? DynamicAmount.TurnTracking)?.player as? Player.ContextPlayer)
+                    ?.let { EffectTarget.ContextTarget(it.index) to TargetPolarity.FLEXIBLE }
+                    ?: return emptyList()
+            }
             is GainLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
             is LoseLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
             // "Target player can't cast spells this turn" (Orim's Chant, Xanathar): a ban is only ever

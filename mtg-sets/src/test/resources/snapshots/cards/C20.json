@@ -565,6 +565,56 @@
     "colorIdentityOverride": []
 }
 
+// Shiny Impetus
+{
+    "name": "Shiny Impetus",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and is goaded. (It attacks each combat if able and attacks a player other than you if able.)\nWhenever enchanted creature attacks, you create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shiny Impetus:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            "Goaded"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0aa80931-0501-4712-a11b-563a3cd1e1c9.jpg?1783931212",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Shiny Impetus causes you to create a Treasure token, not the attacking creature's controller."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Surly Badgersaur
 {
     "name": "Surly Badgersaur",

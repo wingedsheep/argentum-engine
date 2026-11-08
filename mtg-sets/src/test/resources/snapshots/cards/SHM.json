@@ -2279,6 +2279,98 @@
     }
 }
 
+// Knollspine Dragon
+{
+    "name": "Knollspine Dragon",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, you may discard your hand and draw cards equal to the damage dealt to target opponent this turn.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knollspine Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "discardedHand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discardedHand",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "TurnTracking",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    },
+                                    "tracker": "DAMAGE_RECEIVED"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may discard your hand and draw cards equal to the damage dealt to target opponent this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "flavorText": "It woke to find a vast world in need of a master.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfcfec58-bfe4-4b04-80e3-ee11c44e91a7.jpg?1783942747",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "You target an opponent when the ability triggers. You don't decide whether you want to discard and draw until the ability resolves."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "This ability counts the total amount of damage (both combat and noncombat) dealt to the targeted opponent by all sources (including ones you controlled and ones you didn't) over the course of the turn. Damage that was prevented or replaced doesn't count. Damage that resolved but didn't cause loss of life (due to Worship, for example) will count."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "Knollspine Dragon's ability checks only whether damage was dealt. It doesn't care whether the player's life total also changed for other reasons (such as if the player paid life or gained life). For example, if an opponent was dealt 4 damage and gained 6 life during the turn, that player will have a higher life total than they started the turn with — but Knollspine Dragon's ability will let you discard your hand and draw four cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Leechridden Swamp
 {
     "name": "Leechridden Swamp",
