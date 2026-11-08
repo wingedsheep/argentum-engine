@@ -399,7 +399,7 @@ class ObjectTriggerSubject internal constructor(
         only("tappedForMana", TriggerBinding.SELF, TriggerBinding.ATTACHED)
         unfiltered("tappedForMana")
         val tapper = if (binding == TriggerBinding.ATTACHED) Player.Each else Player.You
-        return spec(LandTappedForMana(player = tapper))
+        return spec(PermanentTappedForMana(player = tapper, permanentFilter = GameObjectFilter.Land))
     }
 
     /**
@@ -1331,7 +1331,17 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * Flare) is a triggered mana ability (CR 605.1b); author it as `AdditionalManaOnSourceTap`.
      */
     fun tapsLandForMana(land: GameObjectFilter? = null): TriggerSpec =
-        spec(LandTappedForMana(player = player, landFilter = land))
+        spec(PermanentTappedForMana(player = player, permanentFilter = GameObjectFilter.Land.let { l -> land?.let(l::and) ?: l }))
+
+    /**
+     * "taps a [permanent] for mana" — [tapsLandForMana]'s general form, for any mana source: an
+     * artifact (Treasure Nabber's "whenever an opponent taps an artifact for mana"), a creature, a
+     * Treasure. The tapped permanent is the triggering entity (`EffectTarget.TriggeringEntity`).
+     * Null is any permanent. Same stack-using rider as the land form; a mana-adding version is
+     * `AdditionalManaOnSourceTap`.
+     */
+    fun tapsPermanentForMana(permanent: GameObjectFilter? = null): TriggerSpec =
+        spec(PermanentTappedForMana(player = player, permanentFilter = permanent))
 
     /** "creates a [token] token". */
     fun createsToken(token: GameObjectFilter? = null): TriggerSpec =

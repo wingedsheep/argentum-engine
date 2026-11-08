@@ -338,7 +338,7 @@ data class TriggerContext(
      */
     val lastKnownChosenCreature: com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice? = null,
     /**
-     * For a [com.wingedsheep.engine.core.LandTappedForManaEvent] trigger — the colors of the mana
+     * For a [com.wingedsheep.engine.core.PermanentTappedForManaEvent] trigger — the colors of the mana
      * the land produced (empty for colorless). Read by
      * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.SharesColorWithTriggeringMana] for
      * "if that creature shares a color with the mana that land produced" (C.A.M.P.). `null` for
@@ -611,8 +611,8 @@ data class TriggerContext(
                 is com.wingedsheep.engine.core.RemovedFromCombatEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
-                is com.wingedsheep.engine.core.LandTappedForManaEvent -> TriggerContext(
-                    triggeringEntityId = event.landId,
+                is com.wingedsheep.engine.core.PermanentTappedForManaEvent -> TriggerContext(
+                    triggeringEntityId = event.permanentId,
                     triggeringPlayerId = event.tapperId,
                     producedManaColors = event.producedColors
                 )

@@ -1238,7 +1238,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
 
     /**
      * Matches objects that share a color with the mana a land produced when it was tapped for mana
-     * — the mana of the [com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana] event that
+     * — the mana of the [com.wingedsheep.sdk.scripting.EventPattern.PermanentTappedForMana] event that
      * triggered the resolving ability ("If that creature shares a color with the mana that land
      * produced" — C.A.M.P.). Colorless is a type of mana but not a color (CR 106.1a–b), so it shares none; outside such
      * a trigger nothing matches. The sibling of [SharesColorWithRecipient], whose reference is the

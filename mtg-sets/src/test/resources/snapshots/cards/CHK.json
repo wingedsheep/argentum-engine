@@ -3707,8 +3707,13 @@
             {
                 "id": "Forbidden Orchard:2",
                 "trigger": {
-                    "type": "LandTappedForMana",
-                    "player": "You"
+                    "type": "PermanentTappedForMana",
+                    "player": "You",
+                    "permanentFilter": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
                 },
                 "effect": {
                     "type": "CreateToken",

@@ -3006,7 +3006,7 @@ class ManaSolver private constructor(
      * The mana each of a player's hand-picked [chosen] sources is credited with when they pay
      * [cost] — the solver run restricted to exactly those sources. The legacy explicit-payment
      * paths (cycling, plot, unlocking a door, turning face up, special actions) tap the chosen
-     * sources directly; this lets them still stamp the tap's `LandTappedForManaEvent` with the
+     * sources directly; this lets them still stamp the tap's `PermanentTappedForManaEvent` with the
      * colour the land produced (C.A.M.P.). Empty when the chosen sources can't pay — the tap then
      * reads as colourless, the same as before the solver knew.
      */

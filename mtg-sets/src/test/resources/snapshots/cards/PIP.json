@@ -1934,7 +1934,14 @@
         "triggeredAbilities": [
             {
                 "id": "C.A.M.P.:1",
-                "trigger": "LandTappedForMana",
+                "trigger": {
+                    "type": "PermanentTappedForMana",
+                    "permanentFilter": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                },
                 "binding": "ATTACHED",
                 "effect": {
                     "type": "Composite",

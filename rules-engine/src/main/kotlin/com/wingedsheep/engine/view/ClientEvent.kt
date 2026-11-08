@@ -1890,7 +1890,7 @@ is PermanentsSacrificedEvent -> {
             is BlockerDeclarationPolicyChangedEvent,
             is TextChangedEvent,
             is com.wingedsheep.engine.core.TextBoxesExchangedEvent,
-            is LandTappedForManaEvent,
+            is PermanentTappedForManaEvent,
             is ManaAbilityResolvedEvent,
             is DecisionRequestedEvent,
             is SagaChapterResolvedEvent,

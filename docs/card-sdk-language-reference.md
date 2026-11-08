@@ -8597,7 +8597,7 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 `drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?, firstTimeEachTurn?)`, `mills(card?, batch?)`, `cycles(firstTimeEachTurn?)`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife(batch?, exactly?, firstTimeEachTurn?)`, `paysLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
-`sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
+`sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `tapsPermanentForMana(permanent?)`, `createsToken(token?)`,
 `exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `countersASpell()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `facesADilemma()`, `proliferates()`,
 `discovers()`, `collectsEvidence()`, `forages()`, `foretells()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
@@ -10013,18 +10013,28 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   each turn**" (Valiant Rescuer): only the player's first cycle of the turn (plain or typecycling) matches,
   and a cycle made before the observer entered still uses it up (`CardCycledEvent.firstThisTurn`).
 - `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — "whenever
-  [player] taps a [land] for mana" (`EventPattern.LandTappedForMana`). `Triggers.self.tappedForMana()`
+  [player] taps a [land] for mana" (`EventPattern.PermanentTappedForMana`, filtered to
+  `GameObjectFilter.Land`). `Triggers.<player>.tapsPermanentForMana(permanent?)` is its general form for
+  **any** mana source — "whenever an opponent taps an **artifact** for mana" (**Treasure Nabber**:
+  `Triggers.anOpponent.tapsPermanentForMana(GameObjectFilter.Artifact)`, then
+  `Effects.GainControl(EffectTarget.TriggeringEntity, Duration.EndOfYourNextTurn)`), a creature, a Treasure;
+  a null filter is any permanent. The pattern's `permanentFilter` is read against the tapped permanent's
+  *projected* characteristics, and the tapped permanent is the triggering entity, so the effect can act on it
+  ("gain control of **that artifact**"; it is gone if a Treasure was sacrificed for the mana, and the control
+  change finds nothing). `Triggers.self.tappedForMana()`
   is "whenever you tap **this** land for mana" (Forbidden Orchard — no subject filter);
   `Triggers.attached.tappedForMana()` is "whenever enchanted / fortified land is tapped for mana" (C.A.M.P.)
-  — by any player (`Player.Each`), detected on the ATTACHED path. The event carries the colors the land's
-  mana ability produced (`LandTappedForManaEvent.producedColors` → `TriggerContext.producedManaColors`);
+  — by any player (`Player.Each`), detected on the ATTACHED path. The event carries the colors the permanent's
+  mana ability produced (`PermanentTappedForManaEvent.producedColors` → `TriggerContext.producedManaColors`);
   `GameObjectFilter.sharingColorWithTriggeringMana()` (`CardPredicate.SharesColorWithTriggeringMana`)
   reads them — "if that creature shares a color with the mana that land produced" is
   `Conditions.TargetMatchesFilter(GameObjectFilter.Any.sharingColorWithTriggeringMana(), creature)`.
-  Colorless mana shares no color. The engine emits `LandTappedForManaEvent` from the one tap helper every mana-payment path uses
+  Colorless mana shares no color. The engine emits `PermanentTappedForManaEvent` for **every** permanent — a land,
+  an artifact, a creature — from the one tap helper every mana-payment path uses
   (`tapForMana`): a manual activation, solver auto-pay, an explicit source list, and the source-selection
-  prompt all fire it. Only a mana ability with {T} in its cost taps the land *for mana*, and
-  land-ness is read from projected state. These are **non-mana** riders — they use the stack and may
+  prompt all fire it; which permanents a trigger cares about is its pattern's filter. Only a mana ability with
+  {T} in its cost taps a permanent *for mana* (CR 106.12): a mana ability without {T} (a life-cost one) and
+  tapping an artifact to **improvise** are not it. These are **non-mana** riders — they use the stack and may
   target. The mana-adding family (Mana Flare, Heartbeat of Spring, Groundchuck & Dirtbag) is a
   triggered mana ability (CR 605.1b) and uses `AdditionalManaOnSourceTap` or the other mana statics
   in §9 instead.
