@@ -1,1 +1,1 @@
-- #PR The AI reads "+X/+X where X is the life you gained / the damage dealt" (any trigger-context amount) as a pump of a friendly target, and "return target spell or permanent to its owner's hand" (Venser, Shaper Savant, Unsubstantiate) as removal it may fire on an empty stack.
+- #4589 The AI reads "+X/+X where X is the life you gained / the damage dealt" (any trigger-context amount) as a pump of a friendly target, and "return target spell or permanent to its owner's hand" (Venser, Shaper Savant, Unsubstantiate) as removal it may fire on an empty stack.
