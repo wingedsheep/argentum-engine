@@ -1090,6 +1090,7 @@ object CardIntentAnalyzer {
         addAll(regrowthTags(root, ownPile))
         addAll(wishTags(root))
         addAll(graveyardExileTags(root))
+        addAll(revealUntilMillTags(root))
         addAll(handToBattlefieldTags(root))
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
@@ -1862,6 +1863,38 @@ object CardIntentAnalyzer {
         else -> false
     }
 
+    /**
+     * "Target player reveals cards from the top of their library until they reveal a land card, then
+     * puts those cards into their graveyard" (Balustrade Spy; Tunnel Vision; Sméagol, Helpful Guide's
+     * "and the rest into their graveyard"): a [GatherUntilMatchEffect] off a library that can be an
+     * opponent's, whose cards — or the ones split from them — are binned. A mill of unknown depth,
+     * read as [IntentTag.MILL] like the fixed-count mill ([CardSource.TopOfLibrary.isMill]) is, under
+     * the same [canMillOpponent] line. Inside "each opponent …" ([eachPlayer], Consuming
+     * Aberration) `You` is the opponent visited. Our own library binned is self-mill fuel, no MILL
+     * claim; revealed cards put onto the battlefield, into a hand or back into the library
+     * (Polymorph, Madcap Experiment, Aurora Awakener) are no mill either.
+     */
+    private fun revealUntilMillTags(root: Effect, eachPlayer: Player? = null): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val iteratesOpponents = eachPlayer in OPPONENT_PLAYERS
+        val revealed = HashSet<String>()
+        for (leaf in leaves) {
+            if (leaf is GatherUntilMatchEffect && (canMillOpponent(leaf.player) || (iteratesOpponents && leaf.player == Player.You))) {
+                revealed += listOf(leaf.storeMatch, leaf.storeRevealed)
+            }
+        }
+        if (revealed.isEmpty()) return emptySet()
+        do {
+            val before = revealed.size
+            for (leaf in leaves) revealed += derivedCollections(leaf, revealed)
+        } while (revealed.size != before)
+        val binned = leaves.any {
+            it is MoveCollectionEffect && it.from in revealed &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD
+        }
+        return if (binned) setOf(IntentTag.MILL) else emptySet()
+    }
+
     /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
     private fun collectionsFromTop(leaves: List<Effect>, whose: (Player) -> Boolean): Set<String> {
         val names = HashSet<String>()
@@ -2296,7 +2329,8 @@ object CardIntentAnalyzer {
                     destroyAll(effect.body, eachPlayer = space.players).tags +
                     handDisruptionTags(effect.body, eachPlayer = space.players) +
                     discardPunisherTags(effect.body, eachPlayer = space.players) +
-                    graveyardExileTags(effect.body, eachPlayer = space.players)
+                    graveyardExileTags(effect.body, eachPlayer = space.players) +
+                    revealUntilMillTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
                 space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP
