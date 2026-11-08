@@ -52,6 +52,7 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -334,8 +335,12 @@ object TargetPolarityAnalyzer {
     }
 
     /** Polarity of each target slot of one [mode] of a modal spell or triggered ability. */
-    fun forMode(mode: Mode, definitions: CardLookup = NO_DEFINITIONS): List<TargetPolarity> =
-        forRequirements(mode.effect, mode.targetRequirements, definitions)
+    fun forMode(
+        mode: Mode,
+        definitions: CardLookup = NO_DEFINITIONS,
+        source: CardDefinition? = null,
+    ): List<TargetPolarity> =
+        forRequirements(mode.effect, mode.targetRequirements, definitions, source = source)
 
     /** Polarity of each target slot of the activated [ability] printed on [card]. */
     fun forAbility(
@@ -1734,6 +1739,12 @@ object TargetPolarityAnalyzer {
             // loss is the curse it reads as.
             is LoseAllCreatureTypesEffect -> leaf.target to TargetPolarity.HARMFUL
                 .takeIf { it != TargetPolarity.UNKNOWN }
+            // "Target creature becomes a Coward" / "becomes a Warrior" on a card whose own "Cowards
+            // can't block Warriors" names the type: the blocker type takes the creature's blocks
+            // away, the protected type makes it evade them — see [TypeEvasion]. A type change the
+            // card's statics don't name stays unread: what it is for is the board's question.
+            is SetCreatureSubtypesEffect -> TypeEvasion.of(source, leaf)?.let { leaf.target to it.polarity }
+                ?: return emptyList()
             // "If a triggered ability of that creature triggers, it triggers an additional time"
             // (Lwaxana Troi, Charming Guest): a doubler only ever repeats its holder's controller's
             // own triggers, so it is aimed at a creature of yours.
