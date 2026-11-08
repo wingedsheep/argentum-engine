@@ -5221,6 +5221,54 @@
     ]
 }
 
+// Turn Aside
+{
+    "name": "Turn Aside",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell that targets a permanent you control.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Shelly Wan",
+        "flavorText": "\"It's not my job to ask our leaders about their experiments at the Knowledge Pool. It's my job to make sure they can continue performing them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56226f57-6ff0-430e-aba6-6b3dd51f8d3c.jpg?1783941734",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Turn Aside can target a spell that has multiple targets, as long as at least one of those targets is a permanent you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Turn to Slag
 {
     "name": "Turn to Slag",

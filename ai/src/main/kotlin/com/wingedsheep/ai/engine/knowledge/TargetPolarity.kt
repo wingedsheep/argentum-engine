@@ -40,8 +40,11 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeTriggeringObjectTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
+import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
+import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect
@@ -707,6 +710,12 @@ object TargetPolarityAnalyzer {
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = targetLeaves(effect)
+        // "Target opponent looks at the top four cards of your library and separates them into a
+        // face-down pile and a face-up pile" (Fortune's Favor, Sauron's Ransom), "target opponent
+        // chooses two of those cards" (Gifts Ungiven): the slot only names who decides a split of our
+        // cards ([Chooser.TargetPlayer]). The decider works against us, so it is the opponent's side
+        // — and an opponent slot can't name anyone else. Only when nothing else reads the slot.
+        if (perSlot[0].isEmpty() && decidedByTargetOpponent(leaves, requirements)) perSlot[0] += TargetPolarity.HARMFUL
         // "Deals damage to target spell's controller equal to that spell's mana value" (Refuse),
         // "that creature deals damage equal to its power to its controller" (Backlash): harm aimed
         // at the first target's controller is harm to that object's side, so the object to name is
@@ -1398,31 +1407,49 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * The permanent slots a pipeline blinks: it exiles its own chosen targets and, in the same
+     * Whether [effect] is a pipeline blink: it exiles its own chosen targets and, in the same
      * resolution, moves them — the exiled collection, or the source's linked-exile pile it filled —
-     * back onto the battlefield. A move behind a condition is still a leaf here, so this reads the
-     * card's plan, as [EffectWalker.blinkMoves] does for "exile it, then return it".
+     * back onto the battlefield (Displace, Ghostly Flicker, Illusionist's Stratagem). A move behind a
+     * condition is still a leaf here, so this reads the card's plan, as [EffectWalker.blinkMoves]
+     * does for "exile it, then return it".
      */
-    private fun pipelineBlinkSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+    internal fun blinksChosenTargets(effect: Effect): Boolean {
         val leaves = EffectWalker.leaves(effect)
         val chosen = chosenTargetCollections(effect)
-        if (chosen.isEmpty()) return emptyList()
+        if (chosen.isEmpty()) return false
         val exiles = leaves.filterIsInstance<MoveCollectionEffect>()
             .filter { it.from in chosen && (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE }
-        if (exiles.isEmpty()) return emptyList()
+        if (exiles.isEmpty()) return false
         val exiled = exiles.flatMapTo(HashSet()) { listOfNotNull(it.from, it.storeMovedAs) }
         if (exiles.any { it.linkToSource }) {
             leaves.filterIsInstance<GatherCardsEffect>()
                 .filter { it.source is CardSource.FromLinkedExile }.mapTo(exiled) { it.storeAs }
         }
-        val returned = leaves.any {
+        return leaves.any {
             it is MoveCollectionEffect && it.from in exiled &&
                 (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
         }
-        if (!returned) return emptyList()
+    }
+
+    /** The permanent slots a pipeline blinks ([blinksChosenTargets]). */
+    private fun pipelineBlinkSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        if (!blinksChosenTargets(effect)) return emptyList()
         return requirements.indices.filter { slot ->
             val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
             requirement is TargetObject && requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+        }
+    }
+
+    /**
+     * Whether [requirements]' first slot is a target opponent and some step of [leaves] has that
+     * player make the selection ([Chooser.TargetPlayer] resolves to the first target).
+     */
+    private fun decidedByTargetOpponent(leaves: List<Effect>, requirements: List<TargetRequirement>): Boolean {
+        val first = requirements.firstOrNull()?.let { (it as? TargetOther)?.baseRequirement ?: it }
+        if (first !is TargetOpponent) return false
+        return leaves.any {
+            (it is SelectFromCollectionEffect && it.chooser == Chooser.TargetPlayer) ||
+                (it is ChoosePileEffect && it.chooser == Chooser.TargetPlayer)
         }
     }
 
