@@ -22,6 +22,7 @@ import { COMMANDER_PRESETS, effectiveCommanderPreset } from './axes'
 import type { UnifiedLobbyView } from './lobbyViewModel'
 import type { GroupId } from './settingsGroups'
 import { PICK_TIME_OPTIONS, pickTimeLabel } from './pickTime'
+import { JUMPSTART_SETS } from './jumpstartSets'
 import styles from '../ui/GameUI.module.css'
 
 /**
@@ -252,6 +253,28 @@ export function TournamentLobbySettings({
                 ? 'Choose two themed 20-card packs, lands included. Your 40-card deck is ready to play. Only fully implemented published packs are offered.'
                 : 'Open regular boosters and build your deck using the selected draft or sealed format.'}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Which published Jumpstart packs are dealt — a one-click switch between the Jumpstart sets,
+          rather than hunting for them in the full set list above. */}
+      {group === 'CARDS' && s.jumpstartActive && (
+        <div className={styles.settingsRow}>
+          <SettingsLabel topicId="cards-jump-in">Packs from</SettingsLabel>
+          <div className={styles.settingsButtons}>
+            {JUMPSTART_SETS.filter((j) => allSets.some((set) => set.code === j.code)).map((j) => (
+              <button
+                key={j.code}
+                type="button"
+                aria-pressed={s.setCodes[0] === j.code}
+                onClick={() => updateLobbySettings({ setCodes: [j.code] })}
+                className={`${styles.settingsButton} ${s.setCodes[0] === j.code ? styles.settingsButtonActive : ''}`}
+                title={allSets.find((set) => set.code === j.code)?.name}
+              >
+                {j.label} <span style={{ opacity: 0.6 }}>{j.year}</span>
+              </button>
+            ))}
           </div>
         </div>
       )}

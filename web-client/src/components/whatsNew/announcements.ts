@@ -36,8 +36,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     setCode: 'J25',
     title: 'Foundations Jumpstart is complete',
     body:
-      'All 768 cards of the half-deck set released alongside Foundations are playable: Vampires, Elves, Wizards, Goblins, Cats, Angels and dozens more themes, mixing new cards with favourites reprinted from across Magic. A deep pool for building around a creature type or a single mechanic.',
-    tryIf: 'tribal synergies and building a deck around one theme',
+      'All 768 cards of the half-deck set released alongside Foundations are playable, and all 121 of its published packs are in Jump In: pick two of 46 themes — Vampires, Ninjas, Dinosaurs, Angels, Food and more — and play the 40-card deck they make. Choose Foundations under "Packs from" when you start a Jump In game.',
+    tryIf: 'quick themed decks with no deckbuilding',
   },
   {
     id: 'feature-best-of-three',
