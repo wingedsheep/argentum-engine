@@ -1,0 +1,1 @@
+- #PR The draft heuristic prices "exile a card from your graveyard, you may cast it" (Scholar of Combustion, Practiced Scrollsmith) as the recursion it is instead of as the bare body.
