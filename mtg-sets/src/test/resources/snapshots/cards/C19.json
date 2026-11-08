@@ -516,6 +516,34 @@
     ]
 }
 
+// Mire in Misery
+{
+    "name": "Mire in Misery",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent sacrifices a creature or enchantment of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature|enchantment",
+            "target": {
+                "type": "PlayerRef",
+                "player": "EachOpponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Podedworna",
+        "flavorText": "Misery loves company.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37b2cc43-307c-429f-a4f7-ac339a97e0bb.jpg?1783932810"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sevinne's Reclamation
 {
     "name": "Sevinne's Reclamation",
