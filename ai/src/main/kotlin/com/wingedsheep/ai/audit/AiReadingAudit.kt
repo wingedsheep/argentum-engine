@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
@@ -49,6 +50,7 @@ import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EmitKeywordCounterEventEffect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
@@ -135,7 +137,8 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a counter on the source itself or one it removes from itself, any counter on a player, damage to a
+ *    ([needsNoIntent]: a counter or a Role on the source itself or a counter it removes from itself, training's or evolve's
+ *    event marker, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
  *    shifting its own P/T with a loss on either side, its controller venturing into the dungeon or being tempted by the Ring, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
@@ -604,6 +607,8 @@ object AiReadingAudit {
                 // So are harmful counters confined to our creatures (Defiant Greatmaw's two -1/-1).
                 (leaf is AddCountersEffect && CardIntentAnalyzer.harmsOwnTarget(leaf.counterType, leaf.target, reqs)) ||
                 (leaf is AddDynamicCountersEffect && CardIntentAnalyzer.harmsOwnTarget(leaf.counterType, leaf.target, reqs)) ||
+                // And a Cursed Role on our own creature (Spiteful Hexmage's "target creature you control").
+                (leaf is CreateAuraTokenEffect && CardIntentAnalyzer.auraTokenHarmsOwnTarget(leaf, reqs)) ||
                 untapsOwnTarget(leaf, reqs) ||
                 // A card exiled from our own graveyard is the price or fuel of what follows
                 // (Patchwork Crawler, Trove Warden), not an answer.
@@ -939,6 +944,14 @@ object AiReadingAudit {
         // "Forage" happened: the marker a forage's payment emits for "whenever you forage" triggers.
         // Bookkeeping, never a payoff of its own; the "if you do" rider beside it is read on its own leaf.
         if (leaf == ForagedEffect) return true
+        // "This creature trained / evolved": the marker training's and evolve's own trigger emits
+        // after its +1/+1 counter on the source, for "whenever this creature trains" payoffs.
+        // Bookkeeping like forage's; the counter beside it is the ability, read on its own leaf.
+        if (leaf is EmitKeywordCounterEventEffect) return true
+        // A Role made on the source itself — Faunsbane Troll's Monster Role, Cursed Courtier's
+        // Cursed Role — is a counter on itself by another name: self-growth or the card's drawback,
+        // with no target to aim and nothing to time. A Role on another creature reads PUMP or NEUTRALIZE.
+        if (leaf is CreateAuraTokenEffect && leaf.target == EffectTarget.Self) return true
         // "Exile that card with a dream counter on it instead of putting it into your graveyard"
         // (Goliath Daydreamer, All Hallow's Eve): where our own resolving spell goes, marked for another
         // ability of the card that later spends the pile. No target, nothing to time; that ability is read on its own.

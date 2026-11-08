@@ -594,6 +594,11 @@ object CardIntentAnalyzer {
                     else listOf(leaf)
                 is AddDynamicCountersEffect -> if (harmsOwnTarget(leaf.counterType, leaf.target, requirements)) emptyList()
                     else listOf(leaf)
+                // "Create a Cursed Role token attached to target creature you control" (Spiteful
+                // Hexmage): the same price paid on our own board. On anyone's creature it is the
+                // answer [auraTokenTags] reads.
+                is CreateAuraTokenEffect -> if (auraTokenHarmsOwnTarget(leaf, requirements)) emptyList()
+                    else listOf(leaf)
                 // Pulling our own attacker out of combat (Reconnaissance) saves it — no answer to
                 // anything; [tagsOf] reads the move off any other creature as one.
                 is RemoveFromCombatEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
@@ -2053,6 +2058,10 @@ object CardIntentAnalyzer {
 
         is AddCountersEffect -> counterTags(effect.counterType, effect.target)
         is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)
+        // "Create a Sorcerer Role token attached to target creature you control" (Spellbook Vendor),
+        // "… a Cursed Role token attached to target creature an opponent controls" (Diminisher
+        // Witch): the token does to its creature what the Aura does — see [auraTokenTags].
+        is CreateAuraTokenEffect -> auraTokenTags(effect)
         // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw),
         // "remove all -1/-1 counters from it" (Hapatra's Mark): the stats the counter took come
         // back, a lasting pump. Removing a +1/+1 or a keyword counter names no purpose a tag holds.
@@ -2515,6 +2524,43 @@ object CardIntentAnalyzer {
         if (type in MARKED_FOR_REMOVAL_COUNTERS) return setOf(IntentTag.REMOVAL)
         return keywordTags(type.name)
     }
+
+    /**
+     * What a predefined Aura token does to the object it is created attached to: what the same
+     * Aura cast onto that object would ([staticTags] over its statics). A Cursed Role's base 1/1
+     * shuts the creature off ([IntentTag.NEUTRALIZE]); every other Role is a lasting
+     * [IntentTag.PUMP] (+1/+1 with trample, ward {1}, an attack scry or a drain when it leaves,
+     * or Young Hero's +1/+1 counter on each attack); a Settlement hands its land a mana ability
+     * ([IntentTag.RAMP], as a granted one reads).
+     *
+     * Named by token rather than read off its definition: this fold is memoized by card name with
+     * no token registry, where [TargetPolarityAnalyzer] reads the Role through a [CardLookup]. The
+     * tokens are a fixed family with rules-defined text, like Treasure's;
+     * `AuraTokenReadingAiTest` holds this table to their definitions' own polarity, so an Aura
+     * token added later without a line here fails there instead of reading as nothing.
+     *
+     * A token attached to the source itself is untagged, like a counter on it ([counterTags]):
+     * Faunsbane Troll's Monster Role is self-growth with no target to choose, Cursed Courtier's
+     * Cursed Role its drawback.
+     */
+    private fun auraTokenTags(effect: CreateAuraTokenEffect): Set<IntentTag> {
+        if (!hitsAnotherPermanent(effect.target)) return emptySet()
+        return when (effect.tokenName) {
+            CURSED_ROLE -> setOf(IntentTag.NEUTRALIZE)
+            "Monster Role", "Royal Role", "Sorcerer Role", "Wicked Role", "Young Hero Role" -> setOf(IntentTag.PUMP)
+            "Settlement" -> setOf(IntentTag.RAMP)
+            else -> emptySet()
+        }
+    }
+
+    private const val CURSED_ROLE = "Cursed Role"
+
+    /**
+     * A Cursed Role put on a creature only our side can fill (Spiteful Hexmage's "target creature
+     * you control"): the card's price, no answer — the Aura-token twin of [harmsOwnTarget].
+     */
+    internal fun auraTokenHarmsOwnTarget(effect: CreateAuraTokenEffect, requirements: List<TargetRequirement>): Boolean =
+        effect.tokenName == CURSED_ROLE && TargetPolarityAnalyzer.targetsOwnSide(effect.target, requirements)
 
     /** Taking a P/T-lowering counter off another permanent gives its stats back: a pump. */
     private fun removedCounterTags(type: CounterType, target: EffectTarget): Set<IntentTag> {
