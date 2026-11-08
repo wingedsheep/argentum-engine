@@ -13677,7 +13677,12 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
 - `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null, exileCastThisWay = CastThisWayExile.NONE)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,
-  EXILE))`. When `condition` is non-null the permission is **gated**: it is available only while the
+  EXILE))`; Eternal Scourge (EMN) = `MayCastSelfFromZones(listOf(EXILE))`. A card **exiled face
+  down** has no characteristics (CR 406.3a), so its own permission doesn't function there: neither
+  `CastFromZoneEnumerator` nor `CastZoneResolver.findMayCastSelfFromZoneAbility` honours it while the
+  card carries `FaceDownComponent` — only a permission granted by the exiling effect can cast it.
+  A face-up card in its owner's exile with an `EXILE` permission is flagged `playableFromExile`, so
+  the client shows it beside the hand like any other castable exiled card. When `condition` is non-null the permission is **gated**: it is available only while the
   condition holds, evaluated in the casting player's context at cast-legality time *and* re-checked
   when the cast is authorized (so it can't outlive the permission). Undead Sprinter (DSK) =
   `MayCastSelfFromZones(listOf(GRAVEYARD), condition = Conditions.NonSubtypeCreatureDiedThisTurn(Subtype.ZOMBIE))`
