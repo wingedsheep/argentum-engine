@@ -1,1 +1,1 @@
-- #<pr> The AI reads "you may repeat this process" loops (Ad Nauseam) as their body, so it knows what the card is for and when to stop repeating.
+- #4578 The AI reads "you may repeat this process" loops (Ad Nauseam) as their body, so it knows what the card is for and when to stop repeating.
