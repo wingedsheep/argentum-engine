@@ -101,9 +101,7 @@ class SubmitDecisionHandler(
         is TriggeredAbilityContinuation,
         is TriggerModalModeSelectionContinuation,
         is TriggerModalTargetSelectionContinuation,
-        is TriggerOpponentChooserContinuation,
-        is MayPayManaTriggerContinuation,
-        is ManaSourceSelectionContinuation -> true
+        is TriggerOpponentChooserContinuation -> true
         else -> false
     }
 

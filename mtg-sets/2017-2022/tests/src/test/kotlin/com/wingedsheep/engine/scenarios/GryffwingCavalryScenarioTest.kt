@@ -16,10 +16,9 @@ import io.kotest.matchers.shouldBe
  * flying-granter.
  *
  * "Whenever this creature attacks, you may pay {1}{W}. If you do, target attacking creature without
- * flying gains flying until end of turn." Modelled as [Effects.MayPay] (the "you may pay … if you
- * do" reflexive, CR 603.12): after the attack trigger resolves the engine offers the optional
- * payment first (yes/no + mana sources), then — only if paid — the "gains flying" effect targets a
- * grounded attacker. The target filter is `AttackingCreature.withoutKeyword(FLYING)`, so only a
+ * flying gains flying until end of turn." Modelled as [Effects.MayPay] ("if you do", not a
+ * reflexive "when you do"): the grounded attacker is targeted as the attack trigger goes on the
+ * stack (CR 603.3d), and the optional payment (yes/no + mana sources) is offered as it resolves. The target filter is `AttackingCreature.withoutKeyword(FLYING)`, so only a
  * grounded attacker is legal and the Cavalry (which flies) is never a legal target for its own
  * trigger.
  *
@@ -49,20 +48,27 @@ class GryffwingCavalryScenarioTest : FunSpec({
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
         d.declareAttackers(you, listOf(cavalry, lions), opp)
 
-        // Engine order: pay (yes) -> auto-pay mana sources -> choose the grounded attacker.
+        // Engine order: choose the grounded attacker (trigger goes on the stack) -> pay (yes) at
+        // resolution -> auto-pay mana sources.
         var targeted = false
+        var paid = false
         var guard = 0
-        while (!targeted && guard++ < 40) {
+        while (!paid && guard++ < 40) {
             when (d.pendingDecision) {
-                is YesNoDecision -> d.submitYesNo(you, true)
-                is SelectManaSourcesDecision -> d.submitManaAutoPayOrDecline(you, true)
                 is ChooseTargetsDecision -> {
                     d.submitTargetSelection(you, listOf(lions)); targeted = true
+                }
+                is YesNoDecision -> {
+                    targeted shouldBe true // the target is locked before the pay question
+                    d.submitYesNo(you, true)
+                }
+                is SelectManaSourcesDecision -> {
+                    d.submitManaAutoPayOrDecline(you, true); paid = true
                 }
                 else -> d.bothPass()
             }
         }
-        targeted shouldBe true
+        paid shouldBe true
         while (!d.isPaused && d.state.stack.isNotEmpty()) d.bothPass()
 
         d.state.projectedState.hasKeyword(lions, Keyword.FLYING) shouldBe true
@@ -85,6 +91,7 @@ class GryffwingCavalryScenarioTest : FunSpec({
         var guard = 0
         while (!answered && guard++ < 40) {
             when (d.pendingDecision) {
+                is ChooseTargetsDecision -> d.submitTargetSelection(you, listOf(lions))
                 is YesNoDecision -> {
                     d.submitYesNo(you, false); answered = true
                 }

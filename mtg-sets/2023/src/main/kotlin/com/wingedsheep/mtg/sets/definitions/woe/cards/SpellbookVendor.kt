@@ -31,10 +31,19 @@ val SpellbookVendor = card("Spellbook Vendor") {
 
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.BEGIN_COMBAT)
-        val targetCreature = target(TargetFilter.CreatureYouControl)
+        // "you may pay {1}. When you do" — the optional payment gates a reflexive trigger, so the
+        // target is chosen only after paying (CR 603.12).
         effect = Effects.MayPay(
             cost = ManaCost.parse("{1}"),
-            then = Effects.CreateRoleToken("Sorcerer Role", targetCreature)
+            then = Effects.ReflexiveTrigger(
+                action = Effects.Nothing,
+                optional = false,
+                descriptionOverride = "create a Sorcerer Role token " +
+                    "attached to target creature you control.",
+            ) {
+                val targetCreature = target(TargetFilter.CreatureYouControl)
+                effect = Effects.CreateRoleToken("Sorcerer Role", targetCreature)
+            },
         )
     }
 

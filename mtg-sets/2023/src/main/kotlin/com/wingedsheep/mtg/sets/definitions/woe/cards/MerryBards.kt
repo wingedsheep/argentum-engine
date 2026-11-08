@@ -35,10 +35,19 @@ val MerryBards = card("Merry Bards") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val targetCreature = target(TargetFilter.CreatureYouControl)
+        // "you may pay {1}. When you do" — the optional payment gates a reflexive trigger, so the
+        // target is chosen only after paying (CR 603.12).
         effect = Effects.MayPay(
             cost = ManaCost.parse("{1}"),
-            then = Effects.CreateRoleToken("Young Hero Role", targetCreature)
+            then = Effects.ReflexiveTrigger(
+                action = Effects.Nothing,
+                optional = false,
+                descriptionOverride = "create a Young Hero Role token " +
+                    "attached to target creature you control.",
+            ) {
+                val targetCreature = target(TargetFilter.CreatureYouControl)
+                effect = Effects.CreateRoleToken("Young Hero Role", targetCreature)
+            },
         )
     }
 

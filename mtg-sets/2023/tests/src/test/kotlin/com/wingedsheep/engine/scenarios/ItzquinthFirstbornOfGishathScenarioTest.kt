@@ -27,8 +27,8 @@ import com.wingedsheep.engine.core.Outcome
  *
  * Tests:
  *  1. Haste is present in projected state and lets Itzquinth attack the turn it enters.
- *  2. ETB trigger fires. "When you do" is a reflexive trigger (CR 603.12): the engine first
- *     offers the "Pay {2}?" YesNoDecision; only after paying does the reflexive trigger go on
+ *  2. ETB trigger fires. "When you do" is a reflexive trigger (CR 603.12): the ETB trigger goes
+ *     on the stack with no targets and, as it resolves, offers the "Pay {2}?" YesNoDecision; only after paying does the reflexive trigger go on
  *     the stack and prompt for its two targets (ChooseTargetsDecision). The Dinosaur then deals
  *     power-damage to the other creature.
  *  3. Declining the may-pay skips targeting entirely and leaves the other creature unharmed.
@@ -98,7 +98,9 @@ class ItzquinthFirstbornOfGishathScenarioTest : FunSpec({
         val card = d.putCardInHand(player, "Itzquinth, Firstborn of Gishath")
         d.castSpell(player, card).outcome shouldBe Outcome.Done
 
-        // Itzquinth resolves → enters the battlefield → ETB trigger resolves to the pay gate.
+        // Itzquinth resolves → enters the battlefield → its ETB trigger (no targets of its own)
+        // goes on the stack → it resolves to the pay gate.
+        d.bothPass()
         d.bothPass()
 
         // Step 1: the "Pay {2}?" gate is offered FIRST (the reflexive-trigger order).
@@ -147,7 +149,8 @@ class ItzquinthFirstbornOfGishathScenarioTest : FunSpec({
 
         val card = d.putCardInHand(player, "Itzquinth, Firstborn of Gishath")
         d.castSpell(player, card).outcome shouldBe Outcome.Done
-        d.bothPass()
+        d.bothPass() // Itzquinth resolves; its ETB trigger goes on the stack
+        d.bothPass() // the trigger resolves to the pay gate
 
         // The "Pay {2}?" gate is offered first — decline it.
         d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()

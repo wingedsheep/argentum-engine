@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.core
 
-import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -11,7 +10,6 @@ import com.wingedsheep.sdk.scripting.effects.CounterDestination
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.WardCost
-import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -101,7 +99,7 @@ data class MayPayManaContinuation(
 
 /**
  * Resume after the controller selects mana sources to pay a "you may pay" cost
- * for a non-targeted triggered ability. After payment, the inner effect is executed.
+ * for a triggered ability (its targets, if any, were locked on the stack). After payment, the inner effect is executed.
  *
  * @property playerId The player paying
  * @property sourceName Name of the source for display
@@ -204,24 +202,6 @@ data class PayManaCostRepeatedlyContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the controller decides whether to pay a mana cost for a triggered
- * ability that also requires targets (e.g., Lightning Rift).
- *
- * The flow is: ask "pay {cost}?" → if yes, show mana source selection → then target selection.
- * This is different from MayPayManaContinuation which asks about targets first.
- *
- * @property trigger The full pending trigger to process if the player pays
- * @property targetRequirement The target requirement for the ability
- * @property manaCost The mana cost to pay
- */
-@Serializable
-data class MayPayManaTriggerContinuation(
-    val trigger: PendingTrigger,
-    val targetRequirement: TargetRequirement,
-    val manaCost: ManaCost
-) : AnswerContinuation
-
-/**
  * Resume after the controller selects mana sources to pay a "counter unless pays" cost.
  * After payment, the spell resolves normally. If the player selected invalid sources,
  * the spell is countered.
@@ -267,27 +247,6 @@ data class CounterUnlessPaysManaSelectionContinuation(
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
     /** See [CounterUnlessPaysContinuation.deferCounter]. */
     val deferCounter: Boolean = false,
-) : AnswerContinuation
-
-/**
- * Resume after the controller selects mana sources to pay a cost for a triggered
- * ability that also requires targets.
- *
- * After mana sources are selected and cost is paid, proceeds to target selection.
- *
- * @property trigger The full pending trigger to process after payment
- * @property targetRequirement The target requirement for the ability
- * @property manaCost The mana cost to pay
- * @property availableSources Available mana sources the player can choose from
- * @property autoPaySuggestion Pre-computed auto-tap suggestion
- */
-@Serializable
-data class ManaSourceSelectionContinuation(
-    val trigger: PendingTrigger,
-    val targetRequirement: TargetRequirement,
-    val manaCost: ManaCost,
-    val availableSources: List<ManaSourceOption>,
-    val autoPaySuggestion: List<EntityId>
 ) : AnswerContinuation
 
 /**
@@ -507,7 +466,7 @@ data class ManaSourceOption(
  * Head of [pendingSubCostSources] is the source the current prompt is for; on response, that
  * source and the chosen permanent(s) are tapped and the source's mana is floated. When no
  * sub-cost sources remain, [resume] — the payment-selection continuation that raised the
- * prompt (ward / counter-unless, "you may pay", a targeted may-pay trigger) — is re-entered
+ * prompt (ward / counter-unless, "you may pay") — is re-entered
  * with an empty confirmation, so it spends the floated mana exactly as if the player had
  * activated those mana abilities inside the payment window (CR 605.3a).
  */
@@ -520,8 +479,7 @@ data class TapPermanentsSubCostContinuation(
     val availableSources: List<ManaSourceOption>,
     /**
      * The payment-selection continuation to finish the payment with once every sub-cost is
-     * paid: a [CounterUnlessPaysManaSelectionContinuation], [MayPayManaSelectionContinuation]
-     * or [ManaSourceSelectionContinuation], with any waterbend reduction already applied to
+     * paid: a [CounterUnlessPaysManaSelectionContinuation] or [MayPayManaSelectionContinuation], with any waterbend reduction already applied to
      * its cost.
      */
     val resume: AnswerContinuation,

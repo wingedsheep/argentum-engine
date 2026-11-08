@@ -10742,20 +10742,31 @@
                         }
                     },
                     "then": {
-                        "type": "CreateAuraToken",
-                        "tokenName": "Young Hero Role",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        }
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "CreateAuraToken",
+                            "tokenName": "Young Hero Role",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "create a Young Hero Role token attached to target creature you control."
                     }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature ctrl:you"
-                    },
-                    "id": "t0"
                 }
             }
         ]
@@ -15484,33 +15495,44 @@
                         }
                     },
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "TapUntap",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "STUN",
+                                    "count": 1,
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
                                 }
-                            },
+                            ]
+                        },
+                        "reflexiveTargetRequirements": [
                             {
-                                "type": "AddCounters",
-                                "counterType": "STUN",
-                                "count": 1,
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                },
+                                "id": "t0"
                             }
-                        ]
+                        ],
+                        "descriptionOverride": "tap target creature an opponent controls and put a stun counter on it."
                     }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature ctrl:opponent"
-                    },
-                    "id": "t0"
                 }
             }
         ]
@@ -15872,20 +15894,31 @@
                         }
                     },
                     "then": {
-                        "type": "CreateAuraToken",
-                        "tokenName": "Sorcerer Role",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        }
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "CreateAuraToken",
+                            "tokenName": "Sorcerer Role",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "create a Sorcerer Role token attached to target creature you control."
                     }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature ctrl:you"
-                    },
-                    "id": "t0"
                 }
             }
         ]

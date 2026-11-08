@@ -93,8 +93,6 @@ class BattleDefenseCheck(private val zones: ZoneTransitionService) : StateBasedA
             when (val entry: Any = if (frame is com.wingedsheep.engine.core.Suspension) frame.answer else frame) {
                 is com.wingedsheep.engine.core.TriggeredAbilityContinuation -> entry.objectReferences.origin == current
                 is com.wingedsheep.engine.core.MayTriggerContinuation -> entry.trigger.objectReferences.origin == current
-                is com.wingedsheep.engine.core.MayPayManaTriggerContinuation -> entry.trigger.objectReferences.origin == current
-                is com.wingedsheep.engine.core.ManaSourceSelectionContinuation -> entry.trigger.objectReferences.origin == current
                 is com.wingedsheep.engine.core.TriggerModalModeSelectionContinuation -> entry.ability.objectReferences.origin == current
                 is com.wingedsheep.engine.core.TriggerModalTargetSelectionContinuation -> entry.ability.objectReferences.origin == current
                 else -> false
