@@ -111,7 +111,7 @@ class ScopedManaProductionTest : FunSpec({
         val production = events.filterIsInstance<ManaAddedEvent>().filter { it.sourceName == choices.name }
         production.size shouldBe 1
         production.single().let { it.green shouldBe 1; it.blue shouldBe 1; it.white shouldBe 1 }
-        events.filterIsInstance<LandTappedForManaEvent>().size shouldBe 1
+        events.filterIsInstance<PermanentTappedForManaEvent>().size shouldBe 1
     }
     test("dynamic two-color split retains one identity across save and resume") {
         val d = driver(); scope(d, pauseAfter = true)
@@ -260,7 +260,7 @@ class ScopedManaProductionTest : FunSpec({
         val result = d.submit(ActivateAbility(p, source, producer.script.activatedAbilities.first().id))
         result.error shouldBe null
         pool(d).red shouldBe 0; pool(d).restrictedMana.size shouldBe 2
-        result.events.filterIsInstance<LandTappedForManaEvent>() shouldBe emptyList()
+        result.events.filterIsInstance<PermanentTappedForManaEvent>() shouldBe emptyList()
     }
     test("zero production creates an unsatisfied obligation and does not trigger a tap bonus") {
         val d = driver(); d.putPermanentOnBattlefield(d.activePlayer!!, bonus.name); scope(d)

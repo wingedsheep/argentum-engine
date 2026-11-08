@@ -362,6 +362,80 @@
     ]
 }
 
+// Treasure Nabber
+{
+    "name": "Treasure Nabber",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Rogue",
+    "oracleText": "Whenever an opponent taps an artifact for mana, gain control of that artifact until the end of your next turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Treasure Nabber:1",
+                "trigger": {
+                    "type": "PermanentTappedForMana",
+                    "player": "EachOpponent",
+                    "permanentFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainControl",
+                    "target": "TriggeringEntity",
+                    "duration": "EndOfYourNextTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Alex Konstad",
+        "flavorText": "The Law of Givesies Backsies is respected by every noble pursuer of shiny things.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c6049a0-2c13-41ae-8c73-978be8b13031.jpg?1783934335",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "An artifact is \"tapped for mana\" when a player activates a mana ability of an artifact that includes {T} (the tap symbol). Notably, tapping an artifact to pay for a spell with the improvise keyword is not tapping that artifact for mana."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If the artifact leaves the battlefield, Treasure Nabber doesn't nab it from the zone it moved to."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "The artifact remains tapped when you gain control of it."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If an opponent taps an artifact for mana during your turn, you'll gain control of it and keep control of it until the end of your next turn."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If you control multiple Treasure Nabbers, their effects all expire at the same time. You won't keep an artifact for any longer."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If multiple players each control Treasure Nabbers, an artifact tapped for mana will make quite a journey. For example, if player A taps an artifact for mana during their turn, and players B and C are the next players in turn order who control Treasure Nabbers, C's ability resolves before B and C gains control of the artifact. Then B gains control of the artifact. B keeps it during their turn, and then C regains control of the artifact once B's effect expires, then A will have it back after C's expires. However, if B or C taps the artifact for mana, one of them will take it from the other. You may need to pay very careful attention to which effects are still in effect, which have expired, and who owns what."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "In a multiplayer game, if a player leaves the game, all cards that player owns leave as well. If that player controls any nabbed treasures, the effect giving that player control of those artifacts ends."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Windgrace's Judgment
 {
     "name": "Windgrace's Judgment",

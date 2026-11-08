@@ -3,7 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseColorDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
-import com.wingedsheep.engine.core.LandTappedForManaEvent
+import com.wingedsheep.engine.core.PermanentTappedForManaEvent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
@@ -133,8 +133,8 @@ class ManaAbilityColorChoicePipelineTest : ScenarioTestBase() {
                 val resumed = game.submitDecision(ColorChosenResponse(decision!!.id, Color.WHITE))
 
                 withClue("events were ${resumed.events.map { it::class.simpleName }}") {
-                    resumed.events.filterIsInstance<LandTappedForManaEvent>()
-                        .any { it.landId == game.findPermanent("Prism Cavern") } shouldBe true
+                    resumed.events.filterIsInstance<PermanentTappedForManaEvent>()
+                        .any { it.permanentId == game.findPermanent("Prism Cavern") } shouldBe true
                 }
             }
         }

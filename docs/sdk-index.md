@@ -278,7 +278,7 @@ Families:
 - `CardPredicate.SharesColorWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a color with the referenced entity
 - `CardPredicate.SharesColorWithPermanentYouControl(filter: GameObjectFilter)` — Matches objects that share a color with at least one permanent the evaluating player controls matching filter.
 - `CardPredicate.SharesColorWithRecipient` — Matches objects that share a color with the recipient of the in-flight damage, and are not that recipient.
-- `CardPredicate.SharesColorWithTriggeringMana` — Matches objects that share a color with the mana a land produced when it was tapped for mana — the mana of the com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana event that triggered the…
+- `CardPredicate.SharesColorWithTriggeringMana` — Matches objects that share a color with the mana a land produced when it was tapped for mana — the mana of the com.wingedsheep.sdk.scripting.EventPattern.PermanentTappedForMana event that triggered…
 - `CardPredicate.SharesCreatureTypeWith(entity: EffectTarget.SingleEntity)` — Matches creatures that share a creature subtype with the referenced entity
 - `CardPredicate.SharesCreatureTypeWithSource` — Matches spells that share a creature subtype with the source permanent's projected types
 - `CardPredicate.SharesCreatureTypeWithTriggeringEntity` — Matches creatures that share a creature subtype with the triggering entity
@@ -1255,7 +1255,6 @@ Families:
 - `EventPattern.GiftGivenEvent(player: Player)` — When a player gives a gift (Bloomburrow gift mechanic).
 - `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
 - `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player, fromZone: Zone?)` — Whenever player plays a land (CR 305.1 — the special land-play action).
-- `EventPattern.LandTappedForMana(player: Player, landFilter: GameObjectFilter?)` — When a player taps a land for mana (a land's mana ability resolves).
 - `EventPattern.LearnEvent(player: Player)` — When a player would learn (CR 701.48).
 - `EventPattern.LeaveBattlefieldWithoutDyingEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control leave the battlefield without dying.
 - `EventPattern.LifeGainEvent(player: Player, firstTimeEachTurn: Boolean)` — When a player would gain life.
@@ -1270,6 +1269,7 @@ Families:
 - `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean, toOneOrMorePlayers: Boolean, toOpponents: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
 - `EventPattern.OneOrMoreDealCombatDamageToYouEvent(sourceFilter: GameObjectFilter, perSourceController: Boolean)` — Whenever one or more creatures matching sourceFilter deal combat damage to *you* (the trigger's controller).
 - `EventPattern.OpponentsDealtCombatDamageEvent` — Whenever one or more of *your opponents* (the trigger controller's opponents, CR 102.3) are dealt combat damage.
+- `EventPattern.PermanentTappedForMana(player: Player, permanentFilter: GameObjectFilter?)` — When a player taps a permanent for mana (a mana ability with {T} in its cost resolves).
 - `EventPattern.PermanentsEnteredEvent(filter: GameObjectFilter, excludeSource: Boolean)` — Whenever one or more permanents matching a filter you control enter the battlefield.
 - `EventPattern.PermanentsSacrificedEvent(filter: GameObjectFilter, sacrificedBy: Player, perPermanent: Boolean)` — Whenever you sacrifice one or more permanents matching a filter.
 - `EventPattern.PhasesInEvent(filter: GameObjectFilter?)` — When a permanent phases in (Rule 702.26).

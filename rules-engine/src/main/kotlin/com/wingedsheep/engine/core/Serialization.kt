@@ -114,7 +114,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PermanentAttachedEvent::class)
         subclass(PermanentUnattachedEvent::class)
         subclass(UntappedEvent::class)
-        subclass(LandTappedForManaEvent::class)
+        subclass(PermanentTappedForManaEvent::class)
         subclass(ManaAbilityResolvedEvent::class)
         subclass(CreaturesPairedEvent::class)
         subclass(CreaturesUnpairedEvent::class)

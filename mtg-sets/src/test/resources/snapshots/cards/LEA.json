@@ -8086,7 +8086,14 @@
         "triggeredAbilities": [
             {
                 "id": "Manabarbs:1",
-                "trigger": "LandTappedForMana",
+                "trigger": {
+                    "type": "PermanentTappedForMana",
+                    "permanentFilter": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ]
+                    }
+                },
                 "binding": "ANY",
                 "effect": {
                     "type": "DealDamage",

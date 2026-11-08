@@ -2,8 +2,8 @@ package com.wingedsheep.engine.handlers.effects.mana
 
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
-import com.wingedsheep.engine.core.LandTappedForManaEvent
-import com.wingedsheep.engine.core.landTappedForManaEvent
+import com.wingedsheep.engine.core.PermanentTappedForManaEvent
+import com.wingedsheep.engine.core.permanentTappedForManaEvent
 import com.wingedsheep.engine.core.ManaAddedEvent
 import com.wingedsheep.engine.event.SourceTriggerDoublers
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -106,14 +106,14 @@ class ManaAbilityResolutionPipeline(
      * The tap payoffs, in resolution order: aura bonuses attached to the source
      * ([AdditionalManaOnTap] — Elvish Guidance), global "whenever a matching source is tapped for
      * mana" statics ([AdditionalManaOnSourceTap] — Lavaleaper, Badgermole Cub, Overabundance), the
-     * [LandTappedForManaEvent] that non-mana "whenever you tap a land for mana" triggers watch
+     * [PermanentTappedForManaEvent] that non-mana "whenever you tap a [permanent] for mana" triggers watch
      * (Forbidden Orchard), and finally the any-color tap bonuses (Fertile Ground), which may pause
      * for a color decision.
      *
      * [manaEvent] describes what the ability itself produced; it gates the `whenProducing` clause
      * and supplies the color a mirror bonus copies. [producedColors] is every color the whole ability
      * added — a land adding {G}{U} through two effects reports both, which [manaEvent] (its first
-     * mana-producing part) cannot — and is what the [LandTappedForManaEvent] carries (C.A.M.P.). [carriedEvents] is the event list to append to
+     * mana-producing part) cannot — and is what the [PermanentTappedForManaEvent] carries (C.A.M.P.). [carriedEvents] is the event list to append to
      * — the caller has already put [manaEvent] (or its dampened replacement) into it.
      */
     fun finishTapBonuses(
@@ -136,7 +136,7 @@ class ManaAbilityResolutionPipeline(
         // its cost taps the land for mana — a tapped source is how that shows here, since the
         // color-choice resume path no longer holds the activation's TappedEvent.
         if (onSourceTap.state.getEntity(sourceId)?.has<TappedComponent>() == true) {
-            landTappedForManaEvent(onSourceTap.state, sourceId, tapperId, producedColors)
+            permanentTappedForManaEvent(onSourceTap.state, sourceId, tapperId, producedColors)
                 ?.let { allManaEvents = allManaEvents + it }
         }
 

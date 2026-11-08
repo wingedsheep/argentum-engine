@@ -2633,33 +2633,38 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When a player taps a land for mana (a land's mana ability resolves).
+     * When a player taps a permanent for mana (a mana ability with {T} in its cost resolves).
      *
-     * Models the "Whenever a player taps a land for mana" family (Overabundance, Mana Flare,
-     * Pulse of Llanowar, Heartbeat of Spring). [player] restricts whose tap fires the trigger
-     * (relative to the trigger's controller — `Each` for any player, `Opponent`, `You`).
-     * [landFilter] optionally restricts which lands count (e.g. only basic lands).
+     * Models the "Whenever a player taps a [permanent] for mana" family: lands (Manabarbs,
+     * Forbidden Orchard, C.A.M.P.) and any other mana source — an artifact (Treasure Nabber's
+     * "whenever an opponent taps an artifact for mana"), a creature, a Treasure. [player] restricts
+     * whose tap fires the trigger (relative to the trigger's controller — `Each` for any player,
+     * `EachOpponent`, `You`). [permanentFilter] restricts which permanents count, read against the
+     * tapped permanent's projected characteristics; `null` is any permanent, so a land family
+     * names its type (`GameObjectFilter.Land`, optionally narrowed — only basic lands).
      *
-     * Fires however the land was tapped to pay — a manual activation or the auto-payer — but only
-     * for a mana ability with {T} in its cost. [TriggerBinding.SELF] is "whenever you tap this land
-     * for mana" (Forbidden Orchard). A non-mana rider: it uses the stack. A trigger that *adds* mana
-     * is a triggered mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`.
+     * Fires however the permanent was tapped to pay — a manual activation or the auto-payer — but
+     * only for a mana ability with {T} in its cost (CR 106.12). [TriggerBinding.SELF] is "whenever
+     * you tap this land for mana" (Forbidden Orchard); the tapped permanent is the triggering
+     * entity, so the resolving effect can act on it ("gain control of that artifact"). A non-mana
+     * rider: it uses the stack. A trigger that *adds* mana is a triggered mana ability
+     * (CR 605.1b) — author that as `AdditionalManaOnSourceTap`.
      */
-    @SerialName("LandTappedForMana")
+    @SerialName("PermanentTappedForMana")
     @Serializable
-    data class LandTappedForMana(
+    data class PermanentTappedForMana(
         val player: Player = Player.Each,
-        val landFilter: GameObjectFilter? = null
+        val permanentFilter: GameObjectFilter? = null
     ) : EventPattern {
         override val description: String = buildString {
             append(player.description.replaceFirstChar { it.uppercase() })
             append(" taps a ")
-            append(landFilter?.description ?: "land")
+            append(permanentFilter?.description ?: "permanent")
             append(" for mana")
         }
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
-            val newFilter = landFilter?.applyTextReplacement(replacer)
-            return if (newFilter !== landFilter) copy(landFilter = newFilter) else this
+            val newFilter = permanentFilter?.applyTextReplacement(replacer)
+            return if (newFilter !== permanentFilter) copy(permanentFilter = newFilter) else this
         }
     }
 
@@ -2674,8 +2679,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * separate triggered mana ability adds on top (Mana Flare, Elvish Guidance) is that ability's,
      * not this permanent's, and isn't counted.
      *
-     * Not [LandTappedForMana]: that one is "tapped for mana" (CR 106.12 — only a mana ability with
-     * {T} in its cost), and land-only. Not [AbilityActivatedEvent]: activation and resolution are
+     * Not [PermanentTappedForMana]: that one is "tapped for mana" (CR 106.12 — only a mana ability with
+     * {T} in its cost), and any permanent. Not [AbilityActivatedEvent]: activation and resolution are
      * different moments, and activation carries no amount of mana. A non-mana rider: the trigger
      * uses the stack.
      */

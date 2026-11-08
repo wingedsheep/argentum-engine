@@ -1741,21 +1741,23 @@ data class PermanentUnattachedEvent(
 ) : GameEvent
 
 /**
- * A player tapped a land for mana (a land's mana ability resolved).
+ * A player tapped a permanent for mana (a mana ability with {T} in its cost resolved) — a land, an
+ * artifact like Sol Ring or a Treasure, a creature.
  *
- * Drives the "Whenever a player taps a land for mana" trigger family
- * ([com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana]). Emitted by the manual
+ * Drives the "Whenever a player taps a [permanent] for mana" trigger family
+ * ([com.wingedsheep.sdk.scripting.EventPattern.PermanentTappedForMana]); the land triggers
+ * (Forbidden Orchard, Manabarbs) are the same pattern narrowed to lands. Emitted by the manual
  * mana-ability pipeline and, through [tapForMana], by every auto-pay / explicit-source path, so the
  * trigger fires however the player paid.
  */
 @Serializable
-@SerialName("LandTappedForManaEvent")
-data class LandTappedForManaEvent(
+@SerialName("PermanentTappedForManaEvent")
+data class PermanentTappedForManaEvent(
     val tapperId: EntityId,
-    val landId: EntityId,
-    val landName: String,
+    val permanentId: EntityId,
+    val permanentName: String,
     /**
-     * The colors of the mana the land's mana ability produced — "the mana that land produced"
+     * The colors of the mana the permanent's mana ability produced — "the mana that land produced"
      * (C.A.M.P.). Empty for colorless mana, and on the few legacy auto-pay paths that tap a source
      * without knowing what it was credited with.
      */

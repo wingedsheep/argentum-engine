@@ -153,12 +153,12 @@ class TapOutcome(
 }
 
 /**
- * Tap [sourceId] as the cost of its mana ability — the [tap] atom plus, when the source is a land,
- * the [LandTappedForManaEvent] that "whenever you tap a land for mana" triggers watch (Forbidden
- * Orchard), and the [ManaAbilityResolvedEvent] for the mana ability it resolved ([producedAmount]
+ * Tap [sourceId] as the cost of its mana ability — the [tap] atom plus
+ * the [PermanentTappedForManaEvent] that "whenever you tap a [permanent] for mana" triggers watch
+ * (Forbidden Orchard, Treasure Nabber), and the [ManaAbilityResolvedEvent] for the mana ability it resolved ([producedAmount]
  * mana). Every path that taps a source to pay mana routes through here — the manual activation
  * pipeline, the solver's auto-pay, explicit source lists and the source-selection prompt — so the
- * trigger fires the same way however the player paid. Land-ness is read off projected state.
+ * trigger fires the same way however the player paid. Which permanents a trigger cares about (lands, artifacts…) is its pattern's filter, read off projected state.
  *
  * Returns `state` and no events when the source was already tapped (see [tap]).
  */
@@ -184,7 +184,7 @@ fun tapForMana(
         activationSourceSnapshot(state, sourceId),
     )
     return stamped to listOfNotNull(
-        outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId, producedColors),
+        outcome.turnedFaceUp, tapEvent, permanentTappedForManaEvent(state, sourceId, tapperId, producedColors),
         // The auto-payer resolved the source's mana ability ("whenever a mana ability of this
         // creature resolves" — Tyvar the Bellicose), crediting [producedAmount] mana.
         ManaAbilityResolvedEvent(playerId = tapperId, sourceId = sourceId, amount = producedAmount),
@@ -192,19 +192,20 @@ fun tapForMana(
 }
 
 /**
- * The [LandTappedForManaEvent] for [tapperId] tapping [sourceId] for mana, or null when the source
- * isn't a land. Split out for the manual mana-ability pipeline, which taps as part of paying the
- * ability's cost and emits this once the mana has been added.
+ * The [PermanentTappedForManaEvent] for [tapperId] tapping [sourceId] for mana, or null when the
+ * source has no card to name. Split out for the manual mana-ability pipeline, which taps as part of
+ * paying the ability's cost and emits this once the mana has been added.
  */
-fun landTappedForManaEvent(
+fun permanentTappedForManaEvent(
     state: GameState,
     sourceId: EntityId,
     tapperId: EntityId,
     producedColors: Set<Color> = emptySet(),
-): LandTappedForManaEvent? {
-    if (!state.projectedState.hasType(sourceId, "LAND")) return null
+): PermanentTappedForManaEvent? {
     val name = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: return null
-    return LandTappedForManaEvent(tapperId = tapperId, landId = sourceId, landName = name, producedColors = producedColors)
+    return PermanentTappedForManaEvent(
+        tapperId = tapperId, permanentId = sourceId, permanentName = name, producedColors = producedColors,
+    )
 }
 
 /**

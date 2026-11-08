@@ -117,7 +117,7 @@ enum class TriggerCategory {
     SAGA_CHAPTER_RESOLVED,
     PLAYER_LOST,
     ROOM_FULLY_UNLOCKED,
-    LAND_TAPPED_FOR_MANA,
+    PERMANENT_TAPPED_FOR_MANA,
     MANA_ABILITY_RESOLVED,
 }
 
@@ -396,7 +396,7 @@ class TriggerIndex(
                 // A *non-mana* "whenever you tap a land for mana" (Forbidden Orchard) — it uses the
                 // stack. A mana-adding one is a triggered mana ability (CR 605.1b), authored as
                 // AdditionalManaOnSourceTap so it resolves immediately instead.
-                is SdkGameEvent.LandTappedForMana -> LAND_TAPPED_FOR_MANA_LIST
+                is SdkGameEvent.PermanentTappedForMana -> PERMANENT_TAPPED_FOR_MANA_LIST
                 // "Whenever a mana ability of this creature resolves" (Tyvar the Bellicose's grant).
                 is SdkGameEvent.ManaAbilityResolved -> MANA_ABILITY_RESOLVED_LIST
             }
@@ -572,7 +572,7 @@ class TriggerIndex(
             // No card triggers on a permanent flipping (CR 710); the flip is its own action.
             is com.wingedsheep.engine.core.FlippedEvent -> emptyList()
 
-            is com.wingedsheep.engine.core.LandTappedForManaEvent -> LAND_TAPPED_FOR_MANA_LIST
+            is com.wingedsheep.engine.core.PermanentTappedForManaEvent -> PERMANENT_TAPPED_FOR_MANA_LIST
             is com.wingedsheep.engine.core.ManaAbilityResolvedEvent -> MANA_ABILITY_RESOLVED_LIST
         }
 
@@ -645,7 +645,7 @@ class TriggerIndex(
         private val BECOMES_UNATTACHED_LIST = listOf(TriggerCategory.BECOMES_UNATTACHED)
         private val SAGA_CHAPTER_RESOLVED_LIST = listOf(TriggerCategory.SAGA_CHAPTER_RESOLVED)
         private val PLAYER_LOST_LIST = listOf(TriggerCategory.PLAYER_LOST)
-        private val LAND_TAPPED_FOR_MANA_LIST = listOf(TriggerCategory.LAND_TAPPED_FOR_MANA)
+        private val PERMANENT_TAPPED_FOR_MANA_LIST = listOf(TriggerCategory.PERMANENT_TAPPED_FOR_MANA)
         private val MANA_ABILITY_RESOLVED_LIST = listOf(TriggerCategory.MANA_ABILITY_RESOLVED)
         private val ROOM_FULLY_UNLOCKED_LIST = listOf(TriggerCategory.ROOM_FULLY_UNLOCKED)
     }

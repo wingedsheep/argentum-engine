@@ -689,12 +689,12 @@ class TriggerMatcher(
                     )
                 } else true
             }
-            is EventPattern.LandTappedForMana -> {
-                if (event !is LandTappedForManaEvent) return false
-                if (binding == TriggerBinding.SELF && event.landId != sourceId) return false
+            is EventPattern.PermanentTappedForMana -> {
+                if (event !is PermanentTappedForManaEvent) return false
+                if (binding == TriggerBinding.SELF && event.permanentId != sourceId) return false
                 if (!matchesPlayer(state, trigger.player, event.tapperId, controllerId, sourceId)) return false
-                val filter = trigger.landFilter ?: return true
-                matchesLandFilter(state, filter, event.landId, sourceId, controllerId)
+                val filter = trigger.permanentFilter ?: return true
+                matchesPermanentFilter(state, filter, event.permanentId, sourceId, controllerId)
             }
             // SELF only: "whenever a mana ability of this creature resolves", whoever activated it.
             is EventPattern.ManaAbilityResolved ->
@@ -2109,18 +2109,18 @@ class TriggerMatcher(
     }
 
     /**
-     * [EventPattern.LandTappedForMana.landFilter] against the tapped land, relative to the trigger's
+     * [EventPattern.PermanentTappedForMana.permanentFilter] against the tapped permanent, relative to the trigger's
      * source and controller. Shared by the main path and the ATTACHED path
-     * ([AttachmentTriggerDetector]) so the two can't disagree about which lands count.
+     * ([AttachmentTriggerDetector]) so the two can't disagree about which permanents count.
      */
-    fun matchesLandFilter(
+    fun matchesPermanentFilter(
         state: GameState,
         filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
-        landId: EntityId,
+        permanentId: EntityId,
         sourceId: EntityId,
         controllerId: EntityId,
     ): Boolean = predicateEvaluator.matches(
-        state, state.projectedState, landId, filter,
+        state, state.projectedState, permanentId, filter,
         com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
     )
 
