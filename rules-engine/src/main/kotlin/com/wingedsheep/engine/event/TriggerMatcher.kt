@@ -379,10 +379,11 @@ class TriggerMatcher(
                 // SELF: the ability's source must be this permanent. (ATTACHED abilities are
                 // matched by AttachmentTriggerDetector against the host.)
                 if (binding == TriggerBinding.SELF && event.sourceId != sourceId) return false
-                // sourceFilter: the permanent whose ability was activated must match (e.g. an
-                // artifact, or an artifact an opponent controls). A source its own cost sacrificed
-                // or exiled (a fetch land, a Clue) is matched as it last existed (CR 113.7a) — the
-                // live object is in the graveyard, or gone entirely if it was a token.
+                // sourceFilter: the object whose ability was activated must match (e.g. an
+                // artifact, an artifact an opponent controls, a card in your graveyard). A source
+                // its own cost took out of the zone it was activated from (a fetch land, a Clue, a
+                // graveyard card exiled for its own embalm) is matched as it last existed there
+                // (CR 113.7a) — the live object has moved on, or is gone entirely as a token.
                 val sourceFilter = trigger.sourceFilter
                 if (sourceFilter != null) {
                     val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
@@ -390,8 +391,11 @@ class TriggerMatcher(
                         sourceId = sourceId
                     )
                     val lastKnown = event.sourceLastKnown
-                    val matched = if (lastKnown != null && event.sourceId !in state.getBattlefield()) {
-                        predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, predicateContext, onBattlefield = true)
+                    val matched = if (lastKnown != null) {
+                        predicateEvaluator.matchesSnapshot(
+                            state, lastKnown, sourceFilter, predicateContext,
+                            zone = event.sourceZone ?: com.wingedsheep.sdk.core.Zone.BATTLEFIELD
+                        )
                     } else {
                         predicateEvaluator.matches(
                             state, state.projectedState, event.sourceId, sourceFilter, predicateContext
@@ -1015,8 +1019,13 @@ class TriggerMatcher(
             }
             // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
             is EventPattern.ExtraTurnEvent -> false
-            // CounterSpellEvent is only used as a replacement effect filter (Guile), not a trigger
-            is EventPattern.CounterSpellEvent -> false
+            // "Whenever a spell or ability [counterer] controls counters a spell" (Baral). A spell
+            // that can't be countered, or one Guile exiles instead, emits no SpellCounteredEvent.
+            is EventPattern.CounterSpellEvent -> {
+                event is com.wingedsheep.engine.core.SpellCounteredEvent &&
+                    event.countererId != null &&
+                    matchesPlayer(state, trigger.counterer, event.countererId, controllerId, sourceId)
+            }
             // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
             is EventPattern.CardsPutIntoGraveyardFromLibraryEvent -> false
             // Batching trigger handled separately by detectAnyToGraveyardBatchTriggers
@@ -1311,12 +1320,8 @@ class TriggerMatcher(
      * controller who is an opponent of the discarding player; costs and the cleanup discard carry none.
      */
     fun discardCauseMatches(state: GameState, cause: ZoneChangeCause, event: CardsDiscardedEvent): Boolean =
-        when (cause) {
-            ZoneChangeCause.Any -> true
-            ZoneChangeCause.NotCycled -> !event.asCyclingCost
-            ZoneChangeCause.DiscardedByOpponentEffect -> com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                .isDiscardCausedByOpponent(state, event.causeControllerId, event.playerId)
-        }
+        com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .discardCauseMatches(state, cause, event.causeControllerId, event.playerId, event.asCyclingCost)
 
     /** A discarded card with undefined characteristics can satisfy only a filter's characteristic-free branches. */
     private fun discardedCardMatches(
@@ -1549,6 +1554,9 @@ class TriggerMatcher(
         // "while you're activating a craft ability" (Market Gnome, CR 702.167) — fire only when
         // this exile was a chosen craft material, not on any other exile.
         if (trigger.requireCraftMaterial && !event.craftMaterial) return false
+        // "when you sacrifice this while casting a spell with emerge" (Foul Emissary, CR 702.119a)
+        // — fire only on the sacrifice that paid an emerge cost.
+        if (trigger.requireEmergeSacrifice && !event.emergeSacrifice) return false
 
         // Check binding
         when (binding) {
@@ -2307,7 +2315,7 @@ class TriggerMatcher(
             return predicateEvaluator.matches(state, state.projectedState, abilitySourceId, sourceFilter, context)
         }
         val lastKnown = activated?.sacrificedPermanents?.firstOrNull { it.entityId == abilitySourceId } ?: return false
-        return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, context, onBattlefield = true)
+        return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, context, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
     }
 
     fun matchesDealsDamageTrigger(
@@ -3259,7 +3267,6 @@ class TriggerMatcher(
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.EnteredThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.ActivatedThisTurn,
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurn,
-        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasDealtCombatDamageToPlayer,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.DealtCombatDamageToSourceControllerThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControllerDealtCombatDamageBySourceThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageBySourceThisTurn,

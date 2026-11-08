@@ -1339,6 +1339,7 @@ class StaticAbilityHandler(
             is CantBlockUnless,
             is CantBlockUnlessCoBlocker,
             is CrewSaddleContribution,
+            is com.wingedsheep.sdk.scripting.AlternativeCrewCost, // read by CrewRequirement.alternativePayments
 
             // Attachment legality (AttachmentMover / UnattachedAurasCheck):
             is com.wingedsheep.sdk.scripting.EquipmentAttachRestriction,
@@ -1395,6 +1396,8 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn,
             // Per-turn venture cap (VentureRestrictions, read by VentureIntoTheDungeonExecutor):
             is com.wingedsheep.sdk.scripting.RestrictVenturesPerTurn,
+            // Cascade riders (CascadeExecutor.riders, read where cascade resolves):
+            is com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield,
 
             // Spell costs (CostCalculator):
             is GrantAlternativeCastingCost,

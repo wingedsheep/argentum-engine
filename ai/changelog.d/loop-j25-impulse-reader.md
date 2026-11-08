@@ -1,0 +1,1 @@
+- #4553 The AI reads "exile the top cards, you may play them this turn" (Act on Impulse, Scion of Opulence) as a this-turn impulse: it casts one in its main phase when it has mana left to play what it exiles, never on an opponent's turn, and draft ratings price it a little under card draw

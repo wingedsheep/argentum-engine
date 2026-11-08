@@ -175,7 +175,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * triggering event's craft-material flag, which the Craft cost payment stamps onto the
          * exile of each chosen material (and only those — an unrelated exile leaves it `false`).
          */
-        val requireCraftMaterial: Boolean = false
+        val requireCraftMaterial: Boolean = false,
+        /**
+         * When true, the trigger fires only if this object left the battlefield because it was
+         * sacrificed to pay an emerge cost (CR 702.119a) — "When you sacrifice this creature while
+         * casting a spell with emerge" (Foul Emissary). The craft sibling of
+         * [requireCraftMaterial]: the matcher reads the triggering event's emerge-sacrifice flag,
+         * which the emerge cast's cost payment stamps on the sacrifice of the chosen creature (and
+         * only that one — any other sacrifice leaves it `false`). Leave [to] null: the sacrifice
+         * still happened when a replacement sends the creature somewhere other than the graveyard.
+         */
+        val requireEmergeSacrifice: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append(describeObjectForEvent(filter))
@@ -206,6 +216,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(" would leave ${from.displayName}")
             }
             if (requireCraftMaterial) append(" while you're activating a craft ability")
+            if (requireEmergeSacrifice) append(" because it was sacrificed while casting a spell with emerge")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
@@ -1048,8 +1059,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     // =========================================================================
 
     /**
-     * When a spell or ability controlled by [counterer] would counter a spell. Replacement-only —
-     * used by [com.wingedsheep.sdk.scripting.ExileCounteredSpellInstead] (Guile).
+     * A spell or ability controlled by [counterer] counters a spell. As a trigger it is "whenever a
+     * spell or ability you control counters a spell" (Baral, Chief of Compliance —
+     * `Triggers.you.countersASpell()`); as a replacement filter it is the "would counter" of
+     * [com.wingedsheep.sdk.scripting.ExileCounteredSpellInstead] (Guile).
      */
     @SerialName("CounterSpellEvent")
     @Serializable
@@ -1057,8 +1070,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val counterer: Player = Player.You
     ) : EventPattern {
         override val description: String = when (counterer) {
-            Player.You -> "a spell or ability you control would counter a spell"
-            else -> "a spell or ability ${counterer.description} controls would counter a spell"
+            Player.You -> "a spell or ability you control counters a spell"
+            else -> "a spell or ability ${counterer.description} controls counters a spell"
         }
     }
 
@@ -1097,10 +1110,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * What must have caused the discard. [ZoneChangeCause.Any] (the default) is every discard;
          * [ZoneChangeCause.DiscardedByOpponentEffect] is "when a spell or ability an opponent controls
          * causes you to discard this card" (Psychic Purge) — a discard caused by a resolving spell or
-         * ability whose controller is an opponent of the discarding player, never a cost, never the
-         * cleanup-step hand-size discard. The causing controller is "that player" in the effect:
-         * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Trigger-only — the
-         * replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
+         * ability whose controller is an opponent of the discarding player (including a discard paid
+         * to meet that player's "unless" demand), never a cost of your own, never the cleanup-step
+         * hand-size discard. The causing controller is "that player" in the effect:
+         * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Read by discard
+         * triggers and by `OptionalEffectDiscardDestination.appliesTo` (Nephalia Academy); the
+         * zone-change replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
          * [ZoneChangeCause.NotCycled] admits every discard except one paid as a cycling cost.
          */
         val cause: ZoneChangeCause = ZoneChangeCause.Any
@@ -1546,8 +1561,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * the partner-less printed wording "whenever this creature blocks or becomes blocked"
          * (Spitting Slug), which is a single trigger no matter how many creatures it is paired
          * with. `TriggerContext.triggeringEntityId` is then the first matching partner, so a
-         * card that says "it" still has one; a card that says "each creature blocking or blocked
-         * by this creature" reads the whole set from live combat state instead
+         * card that says "it" still has one, and **every** matching partner is captured in the
+         * trigger's captured collection (`CollectionSlot.TriggerCaptured`), so "you may exile one
+         * of those creatures" (Godsend) chooses among the creatures it was paired with *at the
+         * time it triggered* — minus any that left the battlefield since (a new object, CR 400.7,
+         * even when flickered back). A card that says "each creature blocking or blocked by this
+         * creature" reads the set from live combat state instead
          * (`GameObjectFilter.Creature.blockingOrBlockedBySource()`).
          */
         val oncePerCombat: Boolean = false

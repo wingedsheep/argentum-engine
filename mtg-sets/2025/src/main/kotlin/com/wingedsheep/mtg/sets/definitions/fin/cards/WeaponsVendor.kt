@@ -21,9 +21,10 @@ import com.wingedsheep.sdk.core.Step
  *   you do, attach target Equipment you control to target creature you control.
  *
  * The combat ability is the Spellbook Vendor shape: an intervening-"if" gates the trigger on
- * controlling an Equipment, then [Effects.MayPay] models the optional {1} payment whose
- * "when you do" reflexive ability chooses its targets as it goes on the stack (Scryfall
- * ruling). The reflexive payoff reuses [Effects.AttachTargetEquipmentToCreature], moving the
+ * controlling an Equipment, then the optional {1} payment ([Effects.MayPay]) gates an
+ * [Effects.ReflexiveTrigger] — the "when you do" ability, which chooses its targets as it goes on
+ * the stack after the payment (Scryfall ruling). The reflexive payoff reuses
+ * [Effects.AttachTargetEquipmentToCreature], moving the
  * chosen Equipment onto the chosen creature.
  */
 val WeaponsVendor = card("Weapons Vendor") {
@@ -46,13 +47,20 @@ val WeaponsVendor = card("Weapons Vendor") {
         interveningIf = Conditions.YouControl(
             GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT)
         )
-        val equipment = target(
-            TargetFilter(baseFilter = GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()),
-        )
-        val creature = target(TargetFilter.CreatureYouControl)
         effect = Effects.MayPay(
             cost = ManaCost.parse("{1}"),
-            then = Effects.AttachTargetEquipmentToCreature(equipment, creature)
+            then = Effects.ReflexiveTrigger(
+                action = Effects.Nothing,
+                optional = false,
+                descriptionOverride = "attach target Equipment you control " +
+                    "to target creature you control.",
+            ) {
+                val equipment = target(
+                    TargetFilter(baseFilter = GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT).youControl()),
+                )
+                val creature = target(TargetFilter.CreatureYouControl)
+                effect = Effects.AttachTargetEquipmentToCreature(equipment, creature)
+            },
         )
     }
 

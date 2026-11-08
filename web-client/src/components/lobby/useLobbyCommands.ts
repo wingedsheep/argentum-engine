@@ -107,7 +107,7 @@ export function useLobbyCommands(
         s().createTournamentLobby(
           [spec.jumpIn ? 'J22' : BOOTSTRAP_SET_CODE], spec.format, 6, 8, 45, view.isPublic, spec.gameMode,
         )
-        if (spec.jumpIn) s().updateLobbySettings({ useJumpstart: true, gamesPerMatch: 1 })
+        if (spec.jumpIn) s().updateLobbySettings({ useJumpstart: true, gamesPerMatch: 1, bestOf: 1 })
       }
     }
 
@@ -139,7 +139,7 @@ export function useLobbyCommands(
           case 'JUMP_IN':
             s().updateLobbySettings({
               cubeCards: [], setCodes: ['J22'], format: 'SEALED', rules: 'STANDARD',
-              deckFormat: '', useJumpstart: true, gamesPerMatch: 1,
+              deckFormat: '', useJumpstart: true, gamesPerMatch: 1, bestOf: 1,
             })
             return
           case 'SEALED': s().updateLobbySettings({ format: 'SEALED', useJumpstart: false }); return

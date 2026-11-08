@@ -1858,6 +1858,53 @@
     ]
 }
 
+// Falkenrath Marauders
+{
+    "name": "Falkenrath Marauders",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Flying\nHaste (This creature can attack and {T} as soon as it comes under your control.)\nWhenever this creature deals combat damage to a player, put two +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Falkenrath Marauders:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "flavorText": "No slinking in the dark for them, no luring whispers. They claim their prey in the speed and glory of the hunt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9c09887-6d2b-48b4-a483-16b8a45babd0.jpg?1783940937"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Falkenrath Noble
 {
     "name": "Falkenrath Noble",

@@ -1332,6 +1332,7 @@ class TriggerDetector(
                             )
                     }
                     val firingPartners = if (specEvent.oncePerCombat) matchingPartners.take(1) else matchingPartners
+                    val capturedPartners = matchingPartners.takeIf { specEvent.oncePerCombat }
                     for (partnerId in firingPartners) {
                         if (delayed.fireOnce && delayed.id in firedOnceIds) continue
                         if (delayed.fireOnce) firedOnceIds.add(delayed.id)
@@ -1351,6 +1352,8 @@ class TriggerDetector(
                                 controllerId = delayed.controllerId,
                                 triggerContext = TriggerContext(
                                     triggeringEntityId = partnerId,
+                                    capturedEntityIds = capturedPartners,
+                                    capturedObjects = capturedPartners?.mapNotNull { state.objectRef(it) },
                                     capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
                                 ),
                                 consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
@@ -1923,8 +1926,12 @@ class TriggerDetector(
                         // (Corrosive Ooze). The partner-less wording "…blocks or becomes blocked"
                         // is a single trigger however many creatures it is paired with (Spitting
                         // Slug), so collapse to the first matching partner — it still binds an "it".
+                        // The single trigger also captures every matching partner under the
+                        // trigger's captured collection — "you may exile one of those creatures"
+                        // (Godsend) chooses among them at resolution, untargeted.
                         val firingPartners =
                             if (trigger.oncePerCombat) matchingPartners.take(1) else matchingPartners
+                        val capturedPartners = matchingPartners.takeIf { trigger.oncePerCombat }
                         for (partnerId in firingPartners) {
                             triggers.add(
                                 PendingTrigger(
@@ -1932,7 +1939,11 @@ class TriggerDetector(
                                     sourceId = entityId,
                                     sourceName = cardComponent.name,
                                     controllerId = controllerId,
-                                    triggerContext = TriggerContext(triggeringEntityId = partnerId)
+                                    triggerContext = TriggerContext(
+                                        triggeringEntityId = partnerId,
+                                        capturedEntityIds = capturedPartners,
+                                        capturedObjects = capturedPartners?.mapNotNull { state.objectRef(it) }
+                                    )
                                 )
                             )
                         }

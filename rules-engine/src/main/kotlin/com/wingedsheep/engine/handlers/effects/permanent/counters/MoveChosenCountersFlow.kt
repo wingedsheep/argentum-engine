@@ -14,28 +14,35 @@ import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 
 /**
- * The prompt-per-counter-kind walk behind
+ * The prompt-per-(source, counter kind) walk behind
  * [com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect], shared by
  * [MoveChosenCountersToTargetExecutor] (which starts it) and
  * [com.wingedsheep.engine.handlers.continuations.MiscContinuationResumer] (which continues it after
  * each answer).
  *
- * The move-side twin of [RemoveAnyNumberOfCountersFlow]: each kind on the source gets a
+ * The move-side twin of [RemoveAnyNumberOfCountersFlow]: each step — one kind on one source — gets a
  * `ChooseNumberDecision` bounded by the same budget-and-floor arithmetic
- * ([RemoveAnyNumberOfCountersFlow.kindBounds]), and a kind whose bounds coincide is moved without
+ * ([RemoveAnyNumberOfCountersFlow.kindBounds]), and a step whose bounds coincide is taken without
  * asking. "Move a counter from target permanent you control onto a second target permanent"
  * (Nesting Grounds) is a budget and floor of one: a source carrying a single kind moves it
  * silently; with several kinds the player picks which one goes.
+ *
+ * Each answer takes its counters off its source at once, but nothing is put on the destination
+ * until the walk ends: then each kind is placed in one go. The move is one event however many
+ * sources and prompts it spans, so a placement replacement such as Hardened Scales ("if one or more
+ * +1/+1 counters would be put on a creature …, that many plus one") applies once, not once per
+ * source — Aetherborn Marauder gathering from three permanents gets one extra counter.
  */
 object MoveChosenCountersFlow {
 
     /** Where the walk ended: everything applied, or a player owes an answer. */
     sealed interface Outcome {
-        /** No prompt left; [state] has every forced move applied. [anyMoved] covers the whole walk. */
+        /** No prompt left; [state] has every move applied. [anyMoved] covers the whole walk. */
         data class Done(val state: GameState, val events: List<GameEvent>, val anyMoved: Boolean) : Outcome
 
         /** A decision is pending; [state] already carries it and the frame holding the rest of the walk. */
@@ -44,17 +51,19 @@ object MoveChosenCountersFlow {
 
     /** The fixed facts of one walk, carried unchanged from prompt to prompt. */
     data class Move(
-        val sourceId: EntityId,
         val destinationId: EntityId,
         val controllerId: EntityId,
-        val sourceName: String,
         val destinationName: String,
         val drawCardOnMove: Boolean,
         val objectReferences: ObjectReferenceEnvironment = ObjectReferenceEnvironment()
     )
 
+    /** The counters taken off sources so far and not yet put on the destination, per kind. */
+    typealias Pending = List<Pair<CounterType, Int>>
+
     /**
-     * Walk [order] applying forced moves until a genuine choice is reached or the kinds run out.
+     * Walk [steps] (source, kind) taking forced moves until a genuine choice is reached or the steps
+     * run out; on running out, place everything [pending] on the destination.
      *
      * @param budget counters still movable in total, or null for no cap
      * @param floor counters that still *must* be moved in total
@@ -62,24 +71,26 @@ object MoveChosenCountersFlow {
     fun advance(
         state: GameState,
         move: Move,
-        order: List<CounterType>,
+        steps: List<Pair<EntityId, CounterType>>,
         budget: Int?,
         floor: Int,
+        pending: Pending,
         anyMovedSoFar: Boolean,
         predicates: PredicateEvaluator,
         priorEvents: List<GameEvent> = emptyList()
     ): Outcome {
         var currentState = state
-        var remaining = order
+        var remaining = steps
         var remainingBudget = budget
         var remainingFloor = floor
+        var held = pending
         var anyMoved = anyMovedSoFar
         val events = priorEvents.toMutableList()
 
         while (remaining.isNotEmpty()) {
-            val kind = remaining.first()
+            val (sourceId, kind) = remaining.first()
             val rest = remaining.drop(1)
-            val live = RemoveAnyNumberOfCountersFlow.countOf(currentState, move.sourceId, kind)
+            val live = RemoveAnyNumberOfCountersFlow.countOf(currentState, sourceId, kind)
             if (live <= 0) {
                 remaining = rest
                 continue
@@ -87,87 +98,106 @@ object MoveChosenCountersFlow {
 
             val (minHere, maxHere) = RemoveAnyNumberOfCountersFlow.kindBounds(
                 live = live,
-                laterAvailable = rest.sumOf { RemoveAnyNumberOfCountersFlow.countOf(currentState, move.sourceId, it) },
+                laterAvailable = rest.sumOf { (id, k) -> RemoveAnyNumberOfCountersFlow.countOf(currentState, id, k) },
                 budget = remainingBudget,
                 floor = remainingFloor
             ) ?: break
 
             if (minHere == maxHere) {
-                // Nothing left to decide — apply it rather than asking a question with one answer.
-                val (moved, moveEvents) = moveCounters(currentState, move, kind, minHere, predicates)
-                currentState = moved
-                events.addAll(moveEvents)
-                if (moveEvents.isNotEmpty()) anyMoved = true
+                // Nothing left to decide — take it rather than asking a question with one answer.
+                val taken = take(currentState, move, sourceId, kind, minHere)
+                currentState = taken.state
+                events.addAll(taken.events)
+                held = held.plusCount(kind, taken.count)
+                if (taken.count > 0) anyMoved = true
                 remainingBudget = remainingBudget?.minus(minHere)
                 remainingFloor = (remainingFloor - minHere).coerceAtLeast(0)
                 remaining = rest
                 continue
             }
 
+            val sourceName = nameOf(currentState, sourceId)
             val decision = { decisionId: String -> ChooseNumberDecision(
                 id = decisionId,
                 playerId = move.controllerId,
-                prompt = "Move how many ${kind.printed} counters from ${move.sourceName} onto ${move.destinationName}? ($minHere-$maxHere)",
+                prompt = "Move how many ${kind.printed} counters from $sourceName onto ${move.destinationName}? ($minHere-$maxHere)",
                 context = DecisionContext(
-                    sourceId = move.sourceId,
-                    sourceName = move.sourceName,
+                    sourceId = sourceId,
+                    sourceName = sourceName,
                     phase = DecisionPhase.RESOLUTION
                 ),
                 minValue = minHere,
                 maxValue = maxHere
             ) }
             val continuation = MoveChosenCountersToTargetContinuation(
-                sourceId = move.sourceId,
+                sourceId = sourceId,
                 destinationId = move.destinationId,
                 controllerId = move.controllerId,
                 currentCounterType = kind,
                 currentMaxAmount = maxHere,
-                // The counts are informational — every later bound is recomputed from live counters.
-                remainingCounterTypes = rest.map { it to RemoveAnyNumberOfCountersFlow.countOf(currentState, move.sourceId, it) },
-                sourceName = move.sourceName,
+                remainingSteps = rest,
                 destinationName = move.destinationName,
                 drawCardOnMove = move.drawCardOnMove,
                 anyMovedSoFar = anyMoved,
                 currentMinAmount = minHere,
                 remainingBudget = remainingBudget,
                 remainingFloor = remainingFloor,
+                pendingPlacements = held,
                 objectReferences = move.objectReferences
             )
             val pause = currentState.suspendForDecision(decision, continuation, events)
             return Outcome.Prompt(pause.state, pause.events)
         }
 
-        return Outcome.Done(currentState, events, anyMoved)
+        val (placed, placeEvents) = place(currentState, move, held, predicates)
+        return Outcome.Done(placed, events + placeEvents, anyMoved)
+    }
+
+    /** What one step took off its source: the state after, its removal event, and the count. */
+    data class Taken(val state: GameState, val events: List<GameEvent>, val count: Int)
+
+    /**
+     * Take [count] of [kind] off [sourceId] toward the destination. CR 122.5: a counter the
+     * destination can't have isn't removed from the source either, so nothing is taken then.
+     */
+    fun take(state: GameState, move: Move, sourceId: EntityId, kind: CounterType, count: Int): Taken {
+        if (count <= 0) return Taken(state, emptyList(), 0)
+        if (!state.projectedState.canReceiveCounters(move.destinationId, kind)) return Taken(state, emptyList(), 0)
+        val sourceCounters = state.getEntity(sourceId)?.get<CountersComponent>() ?: return Taken(state, emptyList(), 0)
+        val removable = minOf(count, sourceCounters.getCount(kind))
+        if (removable <= 0) return Taken(state, emptyList(), 0)
+        val newState = state.updateEntity(sourceId) { it.with(sourceCounters.withRemoved(kind, removable)) }
+        val event = CountersRemovedEvent(sourceId, kind, removable, nameOf(state, sourceId), removedBy = move.controllerId)
+        return Taken(newState, listOf(event), removable)
+    }
+
+    /** Add [count] of [kind] to the held counters. */
+    fun Pending.plusCount(kind: CounterType, count: Int): Pending = when {
+        count <= 0 -> this
+        any { it.first == kind } -> map { if (it.first == kind) kind to it.second + count else it }
+        else -> this + (kind to count)
     }
 
     /**
-     * Move [count] of [kind] from the source onto the destination: removal first, then a placement
-     * that honors counter-placement replacements (Hardened Scales). CR 122.5 — moving a counter
-     * "puts" it onto the destination, so it's a placement by the controller of the moving effect.
-     * Returns no events when nothing actually came off the source.
+     * Put every held kind on the destination, each as one placement that honors counter-placement
+     * replacements (Hardened Scales). Moving a counter "puts" it onto the destination, so it's a
+     * placement by the controller of the moving effect.
      */
-    fun moveCounters(
+    private fun place(
         state: GameState,
         move: Move,
-        kind: CounterType,
-        count: Int,
+        held: Pending,
         predicates: PredicateEvaluator
     ): Pair<GameState, List<GameEvent>> {
-        val sourceCounters = state.getEntity(move.sourceId)?.get<CountersComponent>() ?: return state to emptyList()
-        // CR 122.5: a counter the destination can't have isn't removed from the source either.
-        if (!state.projectedState.canReceiveCounters(move.destinationId, kind)) return state to emptyList()
-        val removable = minOf(count, sourceCounters.getCount(kind))
-        if (removable <= 0) return state to emptyList()
-
-        var newState = state.updateEntity(move.sourceId) { it.with(sourceCounters.withRemoved(kind, removable)) }
-        val events = mutableListOf<GameEvent>(CountersRemovedEvent(move.sourceId, kind, removable, move.sourceName, removedBy = move.controllerId))
-
-        val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
-            newState, move.destinationId, kind, removable,
-            placerId = move.controllerId,
-            predicateEvaluator = predicates, byEffect = true
-        )
-        if (placed > 0) {
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        for ((kind, count) in held) {
+            val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                newState, move.destinationId, kind, count,
+                placerId = move.controllerId,
+                predicateEvaluator = predicates, byEffect = true
+            )
+            if (placed <= 0) continue
             val destCounters = newState.getEntity(move.destinationId)?.get<CountersComponent>() ?: CountersComponent()
             newState = newState.updateEntity(move.destinationId) { it.with(destCounters.withAdded(kind, placed)) }
             val (afterMark, firstThisTurn, firstOfTypeThisTurn) =
@@ -183,4 +213,7 @@ object MoveChosenCountersFlow {
         }
         return newState to events
     }
+
+    private fun nameOf(state: GameState, entityId: EntityId): String =
+        state.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
 }

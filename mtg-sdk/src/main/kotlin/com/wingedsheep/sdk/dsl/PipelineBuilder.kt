@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.CaptureControllersEffect
+import com.wingedsheep.sdk.scripting.effects.CategoryPickPurpose
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics
@@ -704,18 +705,22 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      * Each controller of a permanent in [from] picks one of their own for every filter in
      * [categories] ([ChooseOnePerCategoryEffect]) — "chooses a permanent they control of each
      * permanent type". Choosers are asked in APNAP order and one permanent may cover several
-     * categories. Returns the collection of everyone's picks; feed it to [exclude] for "the rest".
+     * categories. Returns the collection of everyone's picks; feed it to [exclude] for "the rest",
+     * or — with [purpose] [CategoryPickPurpose.SACRIFICE] — straight to [sacrifice] for a
+     * per-category edict ("sacrifices an artifact creature and a nonartifact creature").
      */
     fun chooseOnePerCategory(
         from: CollectionSlot,
         categories: List<GameObjectFilter>,
-        name: String? = null
+        name: String? = null,
+        purpose: CategoryPickPurpose = CategoryPickPurpose.KEEP
     ): CollectionSlot {
-        val slot = CollectionSlot(slotKey("kept", nextIndex(), name))
+        val slot = CollectionSlot(slotKey(if (purpose == CategoryPickPurpose.KEEP) "kept" else "picked", nextIndex(), name))
         steps += ChooseOnePerCategoryEffect(
             from = from.key,
             categories = categories,
-            storeAs = slot.key
+            storeAs = slot.key,
+            purpose = purpose
         )
         return slot
     }

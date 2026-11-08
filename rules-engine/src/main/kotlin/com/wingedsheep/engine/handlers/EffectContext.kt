@@ -419,7 +419,7 @@ data class EffectContext(
     val entryChoices: Map<EntityId, com.wingedsheep.engine.handlers.effects.EntryChoiceAnswers> = emptyMap(),
     /** Answers belong to this one discard instruction, including explicit declines. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val discardDestinations: Map<EntityId, com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone?> = emptyMap(),
+    val discardDestinations: Map<EntityId, com.wingedsheep.engine.core.DiscardDestinationChoice?> = emptyMap(),
     /**
      * The mill / scry / surveil count each acting player chose for this one top-of-library gather,
      * when the order of their [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] replacements
@@ -435,6 +435,16 @@ data class EffectContext(
     /** Internal pipelines used to pay ward discard costs must not pose as resolving effects. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val discardIsCost: Boolean = false,
+    /**
+     * For a [discardIsCost] discard that pays an "unless" demand — "counter it unless that player
+     * discards …" (ward), "… unless its controller discards their hand" (Perplex) — the controller
+     * of the spell or ability that demanded it. The discard is a cost, so "if an effect causes you
+     * to discard" replacements still skip it, but it is the discard that player's spell or ability
+     * caused, which "if a spell or ability an opponent controls causes you to discard" readers see
+     * (Nephalia Academy's ruling). Null for every other cost.
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val discardCostCausedBy: EntityId? = null,
     /** Collection whose discard result is being committed by the current instruction. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val discardCollectionName: String? = null,

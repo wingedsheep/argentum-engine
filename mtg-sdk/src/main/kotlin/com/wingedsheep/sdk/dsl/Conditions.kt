@@ -1428,7 +1428,7 @@ object Conditions {
     val SourceHasDealtCombatDamageToPlayer: ConditionInterface =
         SourceMatches(
             com.wingedsheep.sdk.scripting.GameObjectFilter.Any
-                .copy(statePredicates = listOf(StatePredicate.HasDealtCombatDamageToPlayer))
+                .hasDealtCombatDamage(to = com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind.Player)
         )
 
     /** If this permanent entered the battlefield this turn. */
@@ -2218,12 +2218,17 @@ object Conditions {
     ): ConditionInterface = PlayerCastSpellsThisTurn(Player.Candidate, filter, atLeast)
 
     /**
-     * Candidate-target restriction: this ability's source dealt damage to the player being targeted
-     * this turn. Backs "target player dealt damage by this creature this turn" (Wicked Akuba). Pair
-     * with a `descriptionOverride` on the `TargetPlayer`.
+     * Candidate-target restriction: this ability's source dealt damage of [damageType] to the player
+     * being targeted this turn. Backs "target player dealt damage by this creature this turn"
+     * (Wicked Akuba) and, with `DamageType.Combat`, "target player who was dealt combat damage by
+     * this creature this turn" (Hope of Ghirapur). Pair with a `descriptionOverride` on the
+     * `TargetPlayer`.
      */
-    fun candidateWasDealtDamageBySourceThisTurn(): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn(Player.Candidate)
+    fun candidateWasDealtDamageBySourceThisTurn(
+        damageType: com.wingedsheep.sdk.scripting.events.DamageType =
+            com.wingedsheep.sdk.scripting.events.DamageType.Any
+    ): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn(Player.Candidate, damageType)
 
     /**
      * Candidate restriction: the player being considered has the most life or is tied for the

@@ -24,6 +24,11 @@ import io.kotest.matchers.shouldBe
  * must read the permanent as it last existed on the battlefield — on both activation paths, the
  * stack one and the mana-ability one. A card activated from the graveyard was never a permanent
  * and must stay unmatched by `onBattlefield()` (Harsh Mentor's ruling).
+ *
+ * The same holds off the battlefield: "an ability of a card in your graveyard" (Neerdiv, Devious
+ * Diver) sees a graveyard card whose own cost exiled it as the graveyard card it was when the
+ * ability was activated — and a permanent sacrificed into the graveyard by its own cost was never
+ * a card in a graveyard.
  */
 class ActivatedSourceLastKnownScenarioTest : FunSpec({
 
@@ -105,19 +110,48 @@ class ActivatedSourceLastKnownScenarioTest : FunSpec({
         }
     }
 
+    val graveyardWatcher = card("Graveyard Watcher") {
+        manaCost = "{2}"
+        typeLine = "Enchantment"
+        oracleText = "Whenever a player activates an ability of a card in your graveyard, you gain 1 life."
+        triggeredAbility {
+            trigger = Triggers.anyPlayer.activatesAbility(
+                of = GameObjectFilter.Any.ownedByYou().currentlyIn(Zone.GRAVEYARD), includeManaAbilities = true
+            )
+            effect = Effects.GainLife(1)
+        }
+    }
+
+    // A graveyard ability whose cost leaves the card where it is.
+    val graveWhisper = card("Grave Whisper") {
+        manaCost = "{1}{B}"
+        typeLine = "Creature — Spirit"
+        power = 1
+        toughness = 1
+        oracleText = "{0}: Draw a card. Activate only from your graveyard."
+        activatedAbility {
+            cost = Costs.Free
+            effect = Effects.DrawCards(1)
+            activateFromZone = Zone.GRAVEYARD
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        listOf(landWatcher, artifactWatcher, creatureWatcher, crackLand, fodderBeast, manaTrinket, graveBeast)
+        listOf(
+            landWatcher, artifactWatcher, creatureWatcher, crackLand, fodderBeast, manaTrinket, graveBeast,
+            graveyardWatcher, graveWhisper,
+        )
             .forEach { driver.registerCard(it) }
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
     }
 
-    fun GameTestDriver.activate(source: EntityId, name: String) {
+    fun GameTestDriver.activate(source: EntityId, name: String, by: EntityId = player1) {
         val abilityId = cardRegistry.requireCard(name).activatedAbilities[0].id
-        submitSuccess(ActivateAbility(playerId = player1, sourceId = source, abilityId = abilityId))
+        submitSuccess(ActivateAbility(playerId = by, sourceId = source, abilityId = abilityId))
         var guard = 0
         while (state.stack.isNotEmpty() && guard < 30) { bothPass(); guard++ }
     }
@@ -179,5 +213,48 @@ class ActivatedSourceLastKnownScenarioTest : FunSpec({
         driver.activate(land, "Crack Land")
 
         driver.getLifeTotal(driver.player2) shouldBe 20
+    }
+
+    test("a graveyard card its own cost exiles is still a card in your graveyard to the trigger") {
+        val driver = createDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Graveyard Watcher")
+        val beast = driver.putCardInGraveyard(driver.player1, "Grave Beast")
+
+        driver.activate(beast, "Grave Beast")
+
+        driver.getGraveyardCardNames(driver.player1).contains("Grave Beast") shouldBe false
+        driver.getLifeTotal(driver.player1) shouldBe 21
+    }
+
+    test("a graveyard ability that leaves the card in place is matched live") {
+        val driver = createDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Graveyard Watcher")
+        val whisper = driver.putCardInGraveyard(driver.player1, "Grave Whisper")
+
+        driver.activate(whisper, "Grave Whisper")
+
+        driver.getLifeTotal(driver.player1) shouldBe 21
+    }
+
+    test("a card exiled from another player's graveyard is not a card in your graveyard") {
+        val driver = createDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Graveyard Watcher")
+        val beast = driver.putCardInGraveyard(driver.player2, "Grave Beast")
+        driver.passPriority(driver.player1)
+
+        driver.activate(beast, "Grave Beast", by = driver.player2)
+
+        driver.getLifeTotal(driver.player1) shouldBe 20
+    }
+
+    test("a permanent its own cost sacrificed into the graveyard was never a card in a graveyard") {
+        val driver = createDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Graveyard Watcher")
+        val land = driver.putPermanentOnBattlefield(driver.player1, "Crack Land")
+
+        driver.activate(land, "Crack Land")
+
+        driver.getGraveyardCardNames(driver.player1).contains("Crack Land") shouldBe true
+        driver.getLifeTotal(driver.player1) shouldBe 20
     }
 })

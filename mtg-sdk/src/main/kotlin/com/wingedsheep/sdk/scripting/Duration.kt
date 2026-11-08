@@ -492,6 +492,9 @@ sealed interface Duration {
      * Examples: Aladdin (ARN) — "Gain control of target artifact for as long as you control
      * this creature."  Scroll of Isildur (LTR) — "Gain control of up to one target artifact
      * for as long as you control this Saga."
+     * Also honoured by the activated-ability grant, which records its controller: Quicksmith Spy
+     * (AER) — "target artifact you control gains '{T}: Draw a card' for as long as you control
+     * this creature."
      */
     @SerialName("WhileYouControlSource")
     @Serializable

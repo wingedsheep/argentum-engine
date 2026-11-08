@@ -1,11 +1,13 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -71,6 +73,36 @@ enum class CrewSaddleCharacteristic {
 enum class CrewSaddleCost {
     CREW,
     SADDLE
+}
+
+/**
+ * You may remove a [counterType] counter from a [filter] you control rather than pay this Vehicle's
+ * crew cost (Heart of Kiran: a loyalty counter from a planeswalker).
+ *
+ * An alternative cost for the Vehicle's own crew abilities (CR 118.9, applied to activated abilities
+ * by CR 602.2b; crew is CR 702.122a): the crew ability is still the one activated — it goes on the
+ * stack, the Vehicle becomes crewed when it resolves, and "activate only once each turn" and
+ * activation prohibitions still apply — but the counter is removed in place of tapping creatures,
+ * so no creature crews it. Removing the counter is not activating a
+ * loyalty ability, so a planeswalker that already activated one this turn can still pay it.
+ * Mana added to the activation by a cost-modifying static is still charged.
+ *
+ * The cost removes one [counterType] counter from a single permanent you control matching
+ * [filter] — the only shape printed so far. Each eligible permanent is offered as its own crew
+ * action, so the payer names which one pays.
+ */
+@SerialName("AlternativeCrewCost")
+@Serializable
+data class AlternativeCrewCost(
+    val counterType: CounterType,
+    val filter: GameObjectFilter
+) : StaticAbility {
+    /** The cost as a counter-removal atom, so the engine pays it through the shared payment path. */
+    val cost: CostAtom.RemoveCounters
+        get() = CostAtom.RemoveCounters(counterType, DynamicAmount.Fixed(1), filter)
+
+    override val description: String
+        get() = "You may ${cost.description} rather than pay this Vehicle's crew cost"
 }
 
 /**
@@ -1983,6 +2015,11 @@ data object UntapSelfDuringOtherUntapSteps : StaticAbility {
  * Used by Damping Field — "Players can't untap more than one artifact during their untap steps"
  * (`filter = GameObjectFilter.Artifact`, `max = 1`).
  *
+ * [players] narrows whose untap steps are capped, resolved relative to the source's controller
+ * (default [Player.Each], the global cap). Dovin Baan's emblem — "Your opponents can't untap more
+ * than two permanents during their untap steps" — is `players = Player.EachOpponent`, `max = 2`
+ * over `GameObjectFilter.Permanent`; the engine reads caps on emblems as well as permanents.
+ *
  * `max = 0` is the global "[filter] don't untap during their controllers' untap steps" (Meekstone:
  * creatures with power 3 or greater). With nothing to choose, the engine drops the matching
  * permanents from the untap without a prompt. Unlike a layer-6 `DOESNT_UNTAP` grant, the filter is
@@ -1992,11 +2029,15 @@ data object UntapSelfDuringOtherUntapSteps : StaticAbility {
 @Serializable
 data class UntapLimitPerStep(
     val filter: GameObjectFilter,
-    val max: Int
+    val max: Int,
+    val players: Player = Player.Each
 ) : StaticAbility {
-    override val description: String =
-        if (max == 0) "${filter.description} don't untap during their controllers' untap steps"
-        else "Players can't untap more than $max ${filter.description} during their untap steps"
+    override val description: String = when {
+        max == 0 -> "${filter.description} don't untap during their controllers' untap steps"
+        players == Player.Each -> "Players can't untap more than $max ${filter.description} during their untap steps"
+        else -> "${players.description.replaceFirstChar { it.uppercase() }} can't untap more than $max " +
+            "${filter.description} during their untap steps"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)

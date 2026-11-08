@@ -35,6 +35,7 @@ import com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardU
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
@@ -136,7 +137,7 @@ class CastFromZoneEnumerator(
             val card = state.getEntity(action.cardId)?.get<CardComponent>() ?: return@map offer
             val cardDef = context.cardRegistry.getCard(card.cardDefinitionId)
             val owed = costs.owedAdditionalCosts(state, action, cardDef)
-            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, owed, context.predicateEvaluator)
+            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, owed, context.predicateEvaluator, castCardId = action.cardId)
             val hasXCost = offer.hasXCost || counterMaxX != null
             val maxAffordableX = listOfNotNull(offer.maxAffordableX.takeIf { offer.hasXCost }, counterMaxX).minOrNull()
             // "If you cast this spell this way, X can't be 0" (Light Up the Night): the flashback
@@ -1243,6 +1244,9 @@ class CastFromZoneEnumerator(
                 // or linked exile.
                 if (zone == Zone.EXILE && state.hasMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)) continue
                 if (zone == Zone.EXILE && cardId in linkedExileCardIds) continue
+                // A card exiled face down has no characteristics (CR 406.3a), so its own
+                // "you may cast this card from exile" doesn't function (Eternal Scourge ruling).
+                if (container.has<FaceDownComponent>()) continue
                 val cardComponent = container.get<CardComponent>() ?: continue
                 val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
                 // The card grants its own cast-from-zone permission only if some MayCastSelfFromZones

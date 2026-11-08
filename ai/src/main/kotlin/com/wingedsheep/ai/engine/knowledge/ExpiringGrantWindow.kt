@@ -2,6 +2,8 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.ai.engine.CombatMath
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
@@ -40,6 +42,9 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
+import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -184,6 +189,7 @@ internal object ExpiringGrantWindow {
                 readShrinks = readShrinks,
                 readBorrows = readBorrows,
                 xValue = activation.xValue,
+                canWaitForATarget = ability.timing == TimingRule.InstantSpeed,
             )
         ) {
             return true
@@ -286,6 +292,12 @@ internal object ExpiringGrantWindow {
         fightMustBeOn: Boolean = false,
         /** The announced X, for a shrink counted by it ("-X/-X", Death Wind). */
         xValue: Int? = null,
+        /**
+         * The grant can still be bought at instant speed later this turn — an instant-speed
+         * ability, or an instant — so one spent only against targeting waits for a spell or
+         * ability that targets. See [SPENT_ONLY_AGAINST_TARGETING].
+         */
+        canWaitForATarget: Boolean = false,
     ): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks, readBorrows) ?: return false
         // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf —
@@ -316,6 +328,9 @@ internal object ExpiringGrantWindow {
             when (payoff.kind) {
                 PayoffKind.CREATURE -> {
                     val keyword = payoff.keyword
+                    // Hexproof and shroud change no fight; only a spell or ability that targets the
+                    // creature spends them, and one on the stack has already released this floor.
+                    if (canWaitForATarget && keyword in SPENT_ONLY_AGAINST_TARGETING) return@none false
                     // Already in force, or already on its way: a second grant of the same keyword
                     // adds nothing. Pending is read for a self-grant only, where "the same ability
                     // from the same source" can only mean the same creature.
@@ -424,6 +439,8 @@ internal object ExpiringGrantWindow {
         fightMustBeOn: Boolean = false,
         /** The announced X — see [nothingCanSpend]. */
         xValue: Int? = null,
+        /** The spell is an instant: a hexproof grant can wait for a target — see [nothingCanSpend]. */
+        canWaitForATarget: Boolean = false,
     ): Boolean = effects.isNotEmpty() && effects.all { effect ->
         nothingCanSpend(
             state, playerId, effect,
@@ -437,6 +454,7 @@ internal object ExpiringGrantWindow {
             readBorrows = readBorrows,
             fightMustBeOn = fightMustBeOn,
             xValue = xValue,
+            canWaitForATarget = canWaitForATarget,
         )
     }
 
@@ -483,6 +501,12 @@ internal object ExpiringGrantWindow {
      *    on a creature that could attack ([CombatMath.getCreaturesThatCanAttack]).
      *  - **Can't block** — on our own turn, before blockers are declared, on an untapped creature
      *    (and once attackers are declared, only while something is attacking).
+     *  - **Tapped and locked** — "tap target creature or planeswalker; its activated abilities can't
+     *    be activated this turn" (Deadlock Trap, Koma's serpent sacrifice): the lock buys something
+     *    whenever the permanent has an activated ability to lose, so it is the leaf's call then.
+     *    Without one, all that is left is the tap: on their turn, an untapped permanent tapped now
+     *    stays tapped through our next turn (it can neither attack now nor block us then), so any
+     *    step of their turn is a window; on ours, only before blocks.
      *
      * Outside that window the restriction is worth nothing, and the question is what else the
      * ability buys:
@@ -510,54 +534,97 @@ internal object ExpiringGrantWindow {
 
         val projected = state.projectedState
         val ourTurn = state.isActiveTurnFor(playerId)
-        for ((cantAttack, target) in restrictions) {
+        for ((kind, target) in restrictions) {
             val affected = affectedBy(state, projected, playerId, target, activation.sourceId, activation.targets)
                 ?: return false
-            for (creature in affected) {
-                if (!projected.isCreature(creature)) return false
-                val controller = projected.getController(creature) ?: return false
+            for (permanent in affected) {
+                val controller = projected.getController(permanent) ?: return false
                 if (controller == playerId) return false
-                val spendable = if (cantAttack) {
+                // A lock on a permanent with an activated ability to lose (a planeswalker's loyalty
+                // abilities too) buys something in any window: the leaf's call.
+                if (kind == Restriction.TAPPED_AND_LOCKED && hasActivatedAbility(state, playerId, permanent, intents) != false) return false
+                if (!projected.isCreature(permanent)) return false
+                // Tapped on its controller's turn, it doesn't untap until their next untap step: it
+                // can't block on our coming turn, whichever step of theirs this is.
+                if (kind == Restriction.TAPPED_AND_LOCKED && !ourTurn && state.isActiveTurnFor(controller) &&
+                    state.getEntity(permanent)?.has<TappedComponent>() == false
+                ) return false
+                val cantAttack = kind != Restriction.CANT_BLOCK &&
                     state.isActiveTurnFor(controller) && state.step in UNTIL_ATTACKERS_DECLARED &&
-                        creature in CombatMath.getCreaturesThatCanAttack(state, projected, controller)
-                } else {
-                    ourTurn && opposingCanStillBeBlockedOut(state, creature)
-                }
-                if (spendable) return false
+                    permanent in CombatMath.getCreaturesThatCanAttack(state, projected, controller)
+                val cantBlock = kind != Restriction.CANT_ATTACK && ourTurn && opposingCanStillBeBlockedOut(state, permanent)
+                if (cantAttack || cantBlock) return false
             }
         }
         if (!sideBenefit) return true
 
         // The side benefit is bought again in the restriction's own window, unless activating now
         // keeps the source tapped through it.
-        return tapsItsSource(ability) && ourTurn && restrictions.all { (cantAttack, _) -> cantAttack }
+        return tapsItsSource(ability) && ourTurn && restrictions.all { (kind, _) -> kind == Restriction.CANT_ATTACK }
+    }
+
+    /** What one restriction of [restrictionShape] keeps the permanent from doing this turn. */
+    private enum class Restriction { CANT_ATTACK, CANT_BLOCK, TAPPED_AND_LOCKED }
+
+    /**
+     * Whether [permanent] currently has an activated ability a lock would take away — printed,
+     * keyword or granted ([StatePredicate.HasActivatedAbilities]) — or null when the catalog can't
+     * evaluate it, which counts as having one, keeping the leaf in charge.
+     */
+    private fun hasActivatedAbility(
+        state: GameState,
+        playerId: EntityId,
+        permanent: EntityId,
+        intents: IntentCatalog,
+    ): Boolean? {
+        val predicates = intents.predicates ?: return null
+        return predicates.matches(
+            state,
+            state.projectedState,
+            permanent,
+            GameObjectFilter.Any.withStatePredicate(StatePredicate.HasActivatedAbilities()),
+            PredicateContext(controllerId = playerId),
+        )
     }
 
     /**
      * Whether [effect] is the shape [restrictionHasNoWindow] judges: until-end-of-turn can't-attack
-     * and can't-block restrictions, with at most a counter on or a tap of the source beside them.
+     * and can't-block restrictions, or a tap of a target whose activated abilities are locked until
+     * end of turn, with at most a counter on or a tap of the source beside them.
      * The AI reading audit asks it to know which activations have a window reading.
      */
     fun readsRestriction(effect: Effect): Boolean = restrictionShape(effect) != null
 
     /**
-     * The (isCantAttack, target) restrictions of [effect], and whether it also puts a counter on
-     * its source; null when anything else rides along, or when there is no restriction.
+     * The restrictions of [effect] and their targets, and whether it also puts a counter on its
+     * source; null when anything else rides along, or when there is no restriction. A tap of a
+     * target is read only beside the lock on that same target ([locksActivatedAbilities]): a bare
+     * tapper buys a tap ability's use too, which this does not judge.
      */
-    private fun restrictionShape(effect: Effect): Pair<List<Pair<Boolean, EffectTarget>>, Boolean>? {
-        val restrictions = mutableListOf<Pair<Boolean, EffectTarget>>()
+    private fun restrictionShape(effect: Effect): Pair<List<Pair<Restriction, EffectTarget>>, Boolean>? {
+        val restrictions = mutableListOf<Pair<Restriction, EffectTarget>>()
+        val tapped = mutableListOf<EffectTarget>()
         var sideBenefit = false
         for (leaf in EffectWalker.leaves(effect)) {
             when {
-                leaf is CantAttackEffect && leaf.duration == Duration.EndOfTurn -> restrictions += true to leaf.target
-                leaf is CantBlockEffect && leaf.duration == Duration.EndOfTurn -> restrictions += false to leaf.target
+                leaf is CantAttackEffect && leaf.duration == Duration.EndOfTurn -> restrictions += Restriction.CANT_ATTACK to leaf.target
+                leaf is CantBlockEffect && leaf.duration == Duration.EndOfTurn -> restrictions += Restriction.CANT_BLOCK to leaf.target
+                locksActivatedAbilities(leaf) -> restrictions += Restriction.TAPPED_AND_LOCKED to (leaf as GrantStaticAbilityEffect).target
                 leaf is AddCountersEffect && leaf.target == EffectTarget.Self -> sideBenefit = true
                 leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
+                leaf is TapUntapEffect && leaf.tap -> tapped += leaf.target
                 else -> return null
             }
         }
+        val locked = restrictions.filter { it.first == Restriction.TAPPED_AND_LOCKED }.map { it.second }
+        if (locked.toSet() != tapped.toSet()) return null
         return if (restrictions.isEmpty()) null else restrictions to sideBenefit
     }
+
+    /** "Its activated abilities can't be activated this turn", granted to the permanent it names. */
+    private fun locksActivatedAbilities(leaf: Effect): Boolean =
+        leaf is GrantStaticAbilityEffect && leaf.duration == Duration.EndOfTurn && leaf.target != EffectTarget.Self &&
+            (leaf.ability as? PreventActivatedAbilities)?.filter?.statePredicates?.contains(StatePredicate.IsSource) == true
 
     /** Whether a can't-block on an opposing [creature] still keeps it out of a block this turn. */
     private fun opposingCanStillBeBlockedOut(state: GameState, creature: EntityId): Boolean {
@@ -1402,6 +1469,16 @@ internal object ExpiringGrantWindow {
     private val MATTERS_ONLY_WHEN_BLOCKED = setOf(
         Keyword.FIRST_STRIKE, Keyword.DEATHTOUCH, Keyword.INDESTRUCTIBLE, Keyword.TRAMPLE,
     ).map { it.name }.toSet()
+
+    /**
+     * Keywords whose whole payoff is turning away a spell or ability that targets — hexproof and
+     * shroud change no fight. Granted until end of turn by something that can still answer at
+     * instant speed, they are worth buying only in response to a targeted threat; on an empty stack
+     * the same grant is still there when one arrives. Off a live misplay report (2026-11-07):
+     * Liliana the Faultless discarding a card in the opponent's declare-attackers step to give a
+     * creature hexproof, with nothing on the stack.
+     */
+    private val SPENT_ONLY_AGAINST_TARGETING = setOf(Keyword.HEXPROOF, Keyword.SHROUD).map { it.name }.toSet()
 
     /**
      * Keywords that change only what a creature's combat damage does — not who can block it, not

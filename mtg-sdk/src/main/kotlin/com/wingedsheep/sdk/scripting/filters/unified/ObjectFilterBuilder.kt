@@ -762,7 +762,10 @@ interface ObjectFilterBuilder<out Self> {
 
     /**
      * Must have **dealt** damage this turn — the active voice, and the mirror of
-     * [wasDealtDamageThisTurn]. Combat and noncombat damage both count, to any recipient. Used by
+     * [wasDealtDamageThisTurn]. Combat and noncombat damage both count, to any recipient, unless
+     * [combatOnly] / [to] narrow it — `hasDealtDamageThisTurn(combatOnly = true, to =
+     * DamageRecipientKind.Creature)` is "dealt combat damage to a creature this turn" (Thirsting
+     * Axe). Used by
      * "target creature an opponent controls that dealt damage this turn" (Red Guardian,
      * Super-Soldier).
      *
@@ -771,7 +774,11 @@ interface ObjectFilterBuilder<out Self> {
      * caller into a compile error at the exact line instead of a silent flip to the opposite set of
      * permanents. It also pairs with [hasDealtDamage], the same predicate's lifetime window.
      */
-    fun hasDealtDamageThisTurn() = withStatePredicate(StatePredicate.HasDealtDamage(thisTurnOnly = true))
+    fun hasDealtDamageThisTurn(
+        combatOnly: Boolean = false,
+        to: com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind =
+            com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind.Any
+    ) = withStatePredicate(StatePredicate.HasDealtDamage(thisTurnOnly = true, combatOnly = combatOnly, recipient = to))
 
     /**
      * Must have dealt damage at least once since entering the battlefield — [hasDealtDamageThisTurn]
@@ -783,9 +790,14 @@ interface ObjectFilterBuilder<out Self> {
     /**
      * Must have dealt *combat* damage (to any recipient) at least once since entering the
      * battlefield — [hasDealtDamage] narrowed to combat damage. `Conditions.SourceHasDealtCombatDamage`
-     * is this predicate under `SourceMatches` (Ruric Thar, Magecrusher).
+     * is this predicate under `SourceMatches` (Ruric Thar, Magecrusher). [to] narrows the recipient
+     * kind — `DamageRecipientKind.Player` for "has dealt combat damage to a player"
+     * (`Conditions.SourceHasDealtCombatDamageToPlayer`).
      */
-    fun hasDealtCombatDamage() = withStatePredicate(StatePredicate.HasDealtDamage(combatOnly = true))
+    fun hasDealtCombatDamage(
+        to: com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind =
+            com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind.Any
+    ) = withStatePredicate(StatePredicate.HasDealtDamage(combatOnly = true, recipient = to))
 
     /**
      * Must be in the same combat band as the effect's source (the source itself, or a band-mate

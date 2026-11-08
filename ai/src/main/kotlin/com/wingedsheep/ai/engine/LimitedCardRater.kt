@@ -4,7 +4,9 @@ import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
+import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.LossShields
+import com.wingedsheep.ai.engine.knowledge.DiscardShields
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
@@ -18,8 +20,10 @@ import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
+import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
@@ -229,6 +233,7 @@ object LimitedCardRater {
         rating += staticBonus(card)
         rating += replacementBonus(card)
         rating += manaAbilityBonus(card)
+        rating += cyclingBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
         rating += sorceryPumpPenalty(card)
@@ -277,6 +282,7 @@ object LimitedCardRater {
             if (v != 0.0) add(Term("Replacement effect ${i + 1}", v, replacement.description.takeIf { it.isNotBlank() }))
         }
         manaAbilityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Mana ability", it, "a mana source that isn't a land")) }
+        cyclingBonus(card).takeIf { it != 0.0 }?.let { add(Term("Cycling", it, "discards itself for a fresh card or a land when it isn't wanted")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
         curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
         sorceryPumpPenalty(card).takeIf { it != 0.0 }?.let {
@@ -311,7 +317,10 @@ object LimitedCardRater {
         return -(0.4 + 0.35 * card.cmc)
     }
 
-    private fun baseDetail(card: CardDefinition): String = when {
+    private fun baseDetail(card: CardDefinition): String = vehicleCrew(card)?.let { crew ->
+        val stats = card.creatureStats!!
+        "Vehicle, ${stats.basePower!! + stats.baseToughness!!} stats for ${card.cmc.coerceAtLeast(1)} mana, crew $crew"
+    } ?: when {
         card.typeLine.isCreature -> {
             val p = card.creatureStats?.basePower
             val t = card.creatureStats?.baseToughness
@@ -327,31 +336,53 @@ object LimitedCardRater {
     }
 
     /**
+     * Base rating of a body with [power]/[toughness] for [manaValue] mana: total stats per mana.
+     */
+    private fun statEfficiencyRating(power: Int, toughness: Int, manaValue: Int): Double {
+        val cmc = manaValue.coerceAtLeast(1)
+
+        // Stat efficiency: total stats vs CMC
+        val statTotal = power + toughness
+        val efficiency = statTotal.toDouble() / cmc
+
+        // Base: 2.0 for average, scale with efficiency
+        // A 2/2 for 2 (efficiency=2.0) is average
+        // A 3/3 for 3 (efficiency=2.0) is average
+        // A 4/4 for 3 (efficiency=2.67) is good
+        // A 2/1 for 1 (efficiency=3.0) is aggressive
+        return when {
+            efficiency >= 3.0 -> 3.0
+            efficiency >= 2.5 -> 2.7
+            efficiency >= 2.0 -> 2.3
+            efficiency >= 1.5 -> 2.0
+            else -> 1.5
+        }
+    }
+
+    /** The Crew N of a Vehicle with a printed body, or null for anything else. */
+    private fun vehicleCrew(card: CardDefinition): Int? {
+        if (card.typeLine.isCreature) return null
+        val stats = card.creatureStats ?: return null
+        if (stats.basePower == null || stats.baseToughness == null) return null
+        return VehicleBody.printedCrew(card)
+    }
+
+    /**
      * Base rating from creature efficiency or spell type.
      */
     private fun baseRating(card: CardDefinition): Double {
+        vehicleCrew(card)?.let { crew ->
+            // A Vehicle's body, rated as the creature it becomes, less what tapping the crew costs
+            // ([VehicleBody.DRAFT_CREW_PENALTY] a point) — never below a blank artifact's base.
+            val stats = card.creatureStats!!
+            return (statEfficiencyRating(stats.basePower!!, stats.baseToughness!!, card.cmc) -
+                VehicleBody.DRAFT_CREW_PENALTY * crew).coerceAtLeast(1.5)
+        }
         if (card.typeLine.isCreature) {
             val stats = card.creatureStats ?: return 1.5
             val power = stats.basePower ?: return 2.0 // dynamic stats are usually good
             val toughness = stats.baseToughness ?: return 2.0
-            val cmc = card.cmc.coerceAtLeast(1)
-
-            // Stat efficiency: total stats vs CMC
-            val statTotal = power + toughness
-            val efficiency = statTotal.toDouble() / cmc
-
-            // Base: 2.0 for average, scale with efficiency
-            // A 2/2 for 2 (efficiency=2.0) is average
-            // A 3/3 for 3 (efficiency=2.0) is average
-            // A 4/4 for 3 (efficiency=2.67) is good
-            // A 2/1 for 1 (efficiency=3.0) is aggressive
-            return when {
-                efficiency >= 3.0 -> 3.0
-                efficiency >= 2.5 -> 2.7
-                efficiency >= 2.0 -> 2.3
-                efficiency >= 1.5 -> 2.0
-                else -> 1.5
-            }
+            return statEfficiencyRating(power, toughness, card.cmc)
         }
 
         // A planeswalker is a repeatable engine that has to be attacked to be answered — in limited
@@ -386,6 +417,7 @@ object LimitedCardRater {
         Keyword.INTIMIDATE to 0.4,
         Keyword.FEAR to 0.3,
         Keyword.SHADOW to 0.5,
+        Keyword.SKULK to 0.3,
         Keyword.TRAMPLE to 0.3,
         // Combat keywords
         Keyword.FIRST_STRIKE to 0.4,
@@ -492,6 +524,15 @@ object LimitedCardRater {
             // into bad blocks, a milder cost since a block is usually wanted anyway.
             is MustAttack -> if (static.filter.scope == Scope.Self) return -0.2
             is MustBlock -> if (static.filter.scope == Scope.Self) return -0.1
+            // "Creature spells you cast cost {1} more" (Geist-Fueled Scarecrow): every matching
+            // spell costs one more mana, often a turn late — the price of its body, a little under "can't block".
+            is ModifySpellCost -> if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
+                CardIntentAnalyzer.taxes(static.modification)
+            ) return -0.2
+            // "As you cascade, you may put a land card from among the exiled cards onto the battlefield
+            // tapped" (Averna, the Chaos Bloom): a land per cascade, so it pays off only in a deck that
+            // cascades — half a ramp term, like a conditional static.
+            is CascadeMayPutOntoBattlefield -> return tagValue(CardIntentAnalyzer.staticTags(static)) * 0.5
             else -> Unit
         }
         if (static is ModifyStats) {
@@ -522,6 +563,9 @@ object LimitedCardRater {
         // A second life for its controller (Exquisite Archangel): about a removal spell's worth
         // of game the opponent has to win twice.
         LossShields.reads(replacement) -> LOSS_SHIELD_VALUE
+        // "If an effect causes you to discard a card, you may put it on top of your library
+        // instead" (Library of Leng, Nephalia Academy): undoes discard spells, which are rare.
+        DiscardShields.reads(replacement) -> TAG_VALUE.getValue(IntentTag.DISCARD_SHIELD)
         else -> DamageAmplifiers.pickValue(replacement)
     }
 
@@ -539,6 +583,17 @@ object LimitedCardRater {
     private fun manaAbilityBonus(card: CardDefinition): Double =
         if (!card.typeLine.isLand && card.script.activatedAbilities.any { it.isManaAbility }) TAG_VALUE.getValue(IntentTag.RAMP)
         else 0.0
+
+    /**
+     * Cycling and its typed variants (basic landcycling, Forestcycling …) live in
+     * [CardDefinition.keywordAbilities], which neither [keywordBonus] nor the effect slots see: a
+     * seven-mana fatty with basic landcycling was rated as the body alone. The option to trade a
+     * dead draw for a card — or the land it is short of — is worth a small, flat bonus.
+     */
+    private fun cyclingBonus(card: CardDefinition): Double =
+        if (card.hasCycling) CYCLING_BONUS else 0.0
+
+    private const val CYCLING_BONUS = 0.3
 
     /**
      * What a reading is worth when no leaf below prices the effect by its own fields: the highest
@@ -567,6 +622,9 @@ object LimitedCardRater {
         var score = reanimation
         if (IntentTag.REMOVAL in tags) score += DESTROY_SCORE
         if (IntentTag.DRAW in tags) score += DRAW_PER_CARD
+        // Cards off the top to play this turn only (Act on Impulse): a card drawn, less the ones
+        // the turn's mana can't reach before cleanup.
+        else if (IntentTag.IMPULSE in tags) score += TAG_VALUE.getValue(IntentTag.IMPULSE)
         // A spell cast for free off the pile this turn only (Maralen): no card banked, the cast itself.
         else if (IntentTag.FREE_SPELL in tags) score += TAG_VALUE.getValue(IntentTag.FREE_SPELL)
         if (IntentTag.GRAVEYARD_HATE in tags) score += TAG_VALUE.getValue(IntentTag.GRAVEYARD_HATE)
@@ -601,9 +659,23 @@ object LimitedCardRater {
                 // A toughness cost is not removal. Keep a modest penalty: survivors can pay it,
                 // but it makes the cantrip less broadly usable than a free draw.
                 -0.2
+            } else if (effect is DealDamageEffect && CardIntentAnalyzer.damagesAPlayer(effect.target, targets)) {
+                // "Deals 4 damage to target opponent" (Risk Factor), "3 damage to each opponent":
+                // life off a player, a clock like "target player loses 4 life", not an answer to a
+                // creature — the same line the intent reader draws.
+                LIFE_LOSS_SCORE
+            } else if (effect is GatedEffect && effect.decisionMaker != null && effect.otherwise != null) {
+                // A punisher — another player picks the branch (Risk Factor's four damage or three
+                // cards, Combustible Gearhulk's cards or a milled-damage hit): they take the one
+                // worse for us, so the card is worth its weaker branch. A tax ("unless that player
+                // pays {1}") has an empty branch and is worth nothing here, as before. Every decided
+                // gate with an `otherwise` among the cards is another player's (punisherBranchLeaves).
+                minOf(EffectWalker.fold(effect.then, this), EffectWalker.fold(effect.otherwise!!, this))
+                    .coerceAtLeast(0.0)
             } else {
                 scoreEffect(effect, targets, source)
             }
+
 
         /** Composite — sum children, capped so a long pipeline can't run away with the rating. */
         override fun composite(parts: List<Double>): Double = parts.sum().coerceAtMost(COMPOSITE_CAP)
@@ -750,13 +822,18 @@ object LimitedCardRater {
                 // A shrink the intent reader calls removal kills like damage to toughness: -N/-N is
                 // N damage, and a dynamic -X/-X (Death Wind, Defile) the unknown-X damage default.
                 // Summing it as stats priced Grasp of Darkness below a vanilla instant.
-                if (IntentTag.REMOVAL in CardIntentAnalyzer.leafTags(effect)) damageScore(t?.let { -it } ?: 3)
-                else ((p ?: dynamicStat(effect.powerModifier)) + (t ?: dynamicStat(effect.toughnessModifier))) * 0.15
+                val tags = CardIntentAnalyzer.leafTags(effect)
+                val sum = (p ?: dynamicStat(effect.powerModifier)) + (t ?: dynamicStat(effect.toughnessModifier))
+                if (IntentTag.REMOVAL in tags) damageScore(t?.let { -it } ?: 3)
+                // A cut the intent reader aims at an opposing creature (Dovin Baan's +1, Ominous
+                // Sphinx's -2/-0) blunts it in the fight: worth what the same pump would be, not less.
+                else if (sum < 0 && IntentTag.COMBAT_ENHANCEMENT in tags) -sum * 0.15
+                else sum * 0.15
             }
 
             // Life gain — low value in limited
             is GainLifeEffect -> 0.1
-            is LoseLifeEffect -> 0.2
+            is LoseLifeEffect -> LIFE_LOSS_SCORE
 
             // Counter manipulation
             is AddCountersEffect -> 0.4
@@ -794,6 +871,7 @@ object LimitedCardRater {
 
     private const val DYNAMIC_STAT_GUESS = 2
     private const val DESTROY_SCORE = 1.5
+    private const val LIFE_LOSS_SCORE = 0.2
     private const val COMPOSITE_CAP = 2.5
     private const val MODAL_FLEXIBILITY = 0.2
     private const val PUMP_PER_STAT = 0.15
@@ -822,6 +900,8 @@ object LimitedCardRater {
         IntentTag.GRAVEYARD_HATE to 0.2,
         IntentTag.ANTHEM to 0.8,
         IntentTag.DRAW to 0.6,
+        // Cards to play this turn only: a draw that must be spent before cleanup — a little under one.
+        IntentTag.IMPULSE to 0.4,
         IntentTag.TUTOR to 0.6,
         IntentTag.RECURSION to 0.6,
         IntentTag.TAPPER to 0.5,
@@ -861,6 +941,9 @@ object LimitedCardRater {
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
         IntentTag.TOKEN_THEFT to 0.2,
+        // Undoing an opponent's discard spell pays only against one — a sideboard-grade rider in
+        // Limited, where few decks discard: priced like the trigger lock.
+        IntentTag.DISCARD_SHIELD to 0.1,
         // "That player loses the game" only pays when the creature carrying it connects — a
         // bomb's rider rather than a card on its own, so a little over a pump.
         IntentTag.GAME_WIN to 0.4,

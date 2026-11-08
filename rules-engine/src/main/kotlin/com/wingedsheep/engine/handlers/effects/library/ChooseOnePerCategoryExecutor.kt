@@ -196,7 +196,7 @@ class ChooseOnePerCategoryExecutor(
             playerId = playerId,
             sourceId = sourceId,
             sourceName = sourceName,
-            prompt = "Choose $article $noun to keep",
+            prompt = "Choose $article $noun to ${effect.purpose.verb}",
             options = candidates,
             minSelections = 1,
             maxSelections = 1,

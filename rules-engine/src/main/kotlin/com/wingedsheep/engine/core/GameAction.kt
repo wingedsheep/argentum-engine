@@ -801,13 +801,18 @@ data class Concede(
  * @property playerId The player crewing the vehicle
  * @property vehicleId The Vehicle permanent being crewed
  * @property crewCreatures Creatures to tap as the crew cost
+ * @property alternativeCostFrom The permanent that pays the Vehicle's alternative crew cost
+ *   (`AlternativeCrewCost` — Heart of Kiran's "remove a loyalty counter from a planeswalker you
+ *   control rather than pay this Vehicle's crew cost") instead of tapping creatures; when set,
+ *   [crewCreatures] must be empty.
  */
 @Serializable
 @SerialName("CrewVehicle")
 data class CrewVehicle(
     override val playerId: EntityId,
     val vehicleId: EntityId,
-    val crewCreatures: List<EntityId>
+    val crewCreatures: List<EntityId>,
+    val alternativeCostFrom: EntityId? = null
 ) : GameAction
 
 // =============================================================================

@@ -99,3 +99,44 @@
         "RED"
     ]
 }
+
+// Purple-Crystal Crab
+{
+    "name": "Purple-Crystal Crab",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Crab",
+    "oracleText": "When this creature dies, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Purple-Crystal Crab:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When this creature dies, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Tan Yan Yao",
+        "flavorText": "A precious shell without, a delicious taste within.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e26c576d-94c8-4f63-9f54-732fb1eade12.jpg?1783934637"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

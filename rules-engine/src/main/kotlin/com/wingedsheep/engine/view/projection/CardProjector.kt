@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.dsl.RIOT_MODE_COUNTER
 import com.wingedsheep.sdk.dsl.RIOT_MODE_HASTE
 import com.wingedsheep.sdk.model.CardDefinition
@@ -910,6 +911,18 @@ internal class CardProjector(
         val isSaddled: Boolean,
     )
 
+    /**
+     * The card's own "you may cast this card from exile" (Squee, the Immortal; Eternal Scourge): its
+     * owner's exile only, and never while exiled face down — a face-down card has no characteristics
+     * (CR 406.3a). Like the linked-exile check, a condition gate isn't consulted: the flag marks a card
+     * the viewer can cast from exile, not one castable this moment.
+     */
+    private fun castsItselfFromExile(frame: CardFrame): Boolean =
+        frame.zoneKey.ownerId == frame.viewingPlayerId &&
+            !frame.container.has<FaceDownComponent>() &&
+            frame.cardDef?.script?.staticAbilities.orEmpty()
+                .any { it is MayCastSelfFromZones && Zone.EXILE in it.zones }
+
     private fun zoneStatus(frame: CardFrame): ZoneStatus {
         val container = frame.container
         val inExile = frame.zoneType == Zone.EXILE
@@ -922,7 +935,8 @@ internal class CardProjector(
                     // The legality kernel's linked-exile answer, not a view-layer re-derivation. The
                     // "right now" gates (during your turn, once per turn, the mana-value cap) are
                     // skipped: the flag marks a pile the viewer can cast from, even if not this moment.
-                    legality.linkedExileGranterFor(frame.state, frame.viewingPlayerId, frame.entityId, usableNow = false) != null
+                    legality.linkedExileGranterFor(frame.state, frame.viewingPlayerId, frame.entityId, usableNow = false) != null ||
+                    castsItselfFromExile(frame)
                 ),
             // Plotted cards (CR 718) sit face-up in exile with a PlottedComponent; surface a flag so the
             // client can badge them as plotted (otherwise indistinguishable from any other exiled card).

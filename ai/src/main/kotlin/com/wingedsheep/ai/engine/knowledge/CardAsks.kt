@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -11,6 +12,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.sdk.scripting.FreeCyclingCosts
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
@@ -21,6 +23,7 @@ import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantWard
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SpellCostTarget
@@ -39,6 +42,9 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.Aggregation
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import java.util.IdentityHashMap
 
 /**
  * A kind of card a payoff asks the rest of the deck for, as the filter it is written with — the
@@ -61,7 +67,10 @@ data class CardAsk(val filter: GameObjectFilter, val wanted: Double)
  *  - **group statics** that help your permanents — "[filter]s you control get +1/+1", "…have
  *    flying", "…have '{T}: …'" — which pay per body, so they want [DeckSynergy.TRIBE_MEMBERS_WANTED];
  *  - **spell statics** — "[filter] spells you cast cost {1} less", "…have flash";
- *  - **sacrifice costs** of activated abilities — "Sacrifice an enchantment: …" (Auratog).
+ *  - **sacrifice costs** of activated abilities — "Sacrifice an enchantment: …" (Auratog);
+ *  - **counts of your own permanents** anywhere in the card — "loses life equal to the number of
+ *    artifacts you control", "+1/+1 for each Equipment you control" — and the permanents that pay
+ *    for a spell: improvise (printed, or granted to your spells) and affinity ask for artifacts.
  *
  * Not read: effects and targets ("destroy target artifact" asks the *opponent* for artifacts),
  * anything scoped to an opponent's objects, a shrinking static ("all creatures get -1/-1"), a
@@ -76,17 +85,22 @@ internal object CardAsks {
     fun of(card: CardDefinition): List<CardAsk> {
         val asks = LinkedHashMap<GameObjectFilter, Double>()
         var fedByAnyDeck = false
-        fun add(filter: GameObjectFilter?, wanted: Double, spells: Boolean) {
+        // [broadFeedsAnyDeck] false: a broad filter is no ask, but doesn't mark the card fed by any
+        // deck either — counting "creatures you control" beside Gonti's artifact trigger still
+        // leaves that trigger hungry for artifacts.
+        fun add(filter: GameObjectFilter?, wanted: Double, spells: Boolean, broadFeedsAnyDeck: Boolean = true) {
             if (filter == null || opponents(filter)) return
             // "Whenever an enchanted creature dies" is fed by the deck's Auras, not its creatures.
             attachmentAsk(filter)?.let { asks.merge(it, wanted, ::minOf); return }
             if (namesCreatureType(filter) || namesTokenType(filter)) return
             when (PrintedFilter.isNarrow(filter, spells)) {
                 true -> asks.merge(filter, wanted, ::minOf)
-                false -> fedByAnyDeck = true
+                false -> if (broadFeedsAnyDeck) fedByAnyDeck = true
                 null -> Unit
             }
         }
+        fun addPayers(filter: GameObjectFilter?) =
+            add(filter, DeckSynergy.FEEDERS_WANTED, spells = false, broadFeedsAnyDeck = false)
         for (script in scripts(card)) {
             for (ability in script.triggeredAbilities) {
                 if (ability.binding == TriggerBinding.SELF) continue
@@ -95,9 +109,16 @@ internal object CardAsks {
             for (static in script.staticAbilities.flatMap(::unwrap)) {
                 groupFilter(static)?.let { add(it, DeckSynergy.TRIBE_MEMBERS_WANTED, spells = false) }
                 spellFilter(static)?.let { add(it, DeckSynergy.FEEDERS_WANTED, spells = true) }
+                // "Nonartifact spells you cast have improvise" (Inspiring Statuary) is paid for by
+                // the artifacts you tap: those are what it asks for, not the spells.
+                if (static is GrantKeywordToOwnSpells) addPayers(payersOf(static.keyword))
                 // "You may pay {0} rather than pay cycling costs" (New Perspectives) is fuelled
                 // only by the deck's own cycling cards.
                 if (static is FreeCyclingCosts) asks.merge(CYCLING, DeckSynergy.FEEDERS_WANTED, ::minOf)
+                // "As you cascade, you may put a land card from among the exiled cards onto the
+                // battlefield tapped" (Averna, the Chaos Bloom) does something only when the deck's
+                // own cascade cards cascade.
+                if (static is CascadeMayPutOntoBattlefield) asks.merge(CASCADE, DeckSynergy.FEEDERS_WANTED, ::minOf)
             }
             for (replacement in script.replacementEffects.filter(DamageAmplifiers::reads)) {
                 val event = replacement.appliesTo as EventPattern.DamageEvent
@@ -125,6 +146,12 @@ internal object CardAsks {
             }
         }
         if (Keyword.PROWESS in card.keywords) add(GameObjectFilter.Noncreature, DeckSynergy.FEEDERS_WANTED, spells = true)
+        // Improvise and affinity for artifacts make the spell cheaper per artifact you control.
+        card.keywords.forEach { addPayers(payersOf(it)) }
+        card.keywordAbilities.filterIsInstance<KeywordAbility.Affinity>().forEach { addPayers(ofType(it.forType)?.youControl()) }
+        // "Equal to the number of artifacts you control" (Tezzeret, Master of Metal): a count of
+        // your own permanents of a kind is cashed in by the deck's cards of that kind.
+        ownPermanentCounts(scripts(card)).forEach(::addPayers)
         // A card that also cashes in something every deck has — Shalai's "other creatures you
         // control have hexproof" beside its planeswalkers — is never short of fuel.
         if (fedByAnyDeck) return emptyList()
@@ -155,9 +182,58 @@ internal object CardAsks {
         }
     }
 
+    /** The permanents you tap to pay for a spell with [keyword]: improvise's artifacts. */
+    private fun payersOf(keyword: Keyword): GameObjectFilter? =
+        if (keyword == Keyword.IMPROVISE) GameObjectFilter.Artifact.youControl() else null
+
+    private fun ofType(type: CardType): GameObjectFilter? = when (type) {
+        CardType.ARTIFACT -> GameObjectFilter.Artifact
+        CardType.ENCHANTMENT -> GameObjectFilter.Enchantment
+        CardType.CREATURE -> GameObjectFilter.Creature
+        CardType.LAND -> GameObjectFilter.Land
+        else -> null
+    }
+
+    /**
+     * The kinds of permanent [scripts] count among yours — a [DynamicAmount.AggregateBattlefield]
+     * count or a battlefield [DynamicAmount.Count] over [Player.You], each as "<filter> you
+     * control". Walked reflectively, like [GraveyardSynergy], so an amount is found wherever an
+     * effect, cost, condition or static holds it.
+     */
+    private fun ownPermanentCounts(scripts: List<CardScript>): List<GameObjectFilter> {
+        val found = LinkedHashSet<GameObjectFilter>()
+        val seen = IdentityHashMap<Any, Unit>()
+        fun visit(node: Any?) {
+            if (node == null || node is String || node is Number || node is Boolean || node is Enum<*>) return
+            if (seen.put(node, Unit) != null) return
+            when (node) {
+                is DynamicAmount.AggregateBattlefield ->
+                    if (node.player == Player.You && node.aggregation == Aggregation.COUNT && node.counterType == null) {
+                        node.filter.takeIf { it.controllerPredicate == null }?.let { found += it.youControl() }
+                    }
+                is DynamicAmount.Count ->
+                    if (node.player == Player.You && node.zone == Zone.BATTLEFIELD) {
+                        node.filter.takeIf { it.controllerPredicate == null }?.let { found += it.youControl() }
+                    }
+                else -> Unit
+            }
+            when (node) {
+                is Collection<*> -> node.forEach(::visit)
+                is Map<*, *> -> { node.keys.forEach(::visit); node.values.forEach(::visit) }
+                is Array<*> -> node.forEach(::visit)
+                else -> if (node.javaClass.name.startsWith(GraveyardSynergy.SDK_PACKAGE)) {
+                    GraveyardSynergy.fieldsOf(node.javaClass).forEach { visit(runCatching { it.get(node) }.getOrNull()) }
+                }
+            }
+        }
+        scripts.forEach(::visit)
+        return found.toList()
+    }
+
     private val AURAS: GameObjectFilter = GameObjectFilter.Enchantment.withSubtype(Subtype.AURA.value)
     private val EQUIPMENT: GameObjectFilter = GameObjectFilter.Artifact.withSubtype("Equipment")
     private val CYCLING: GameObjectFilter = GameObjectFilter.Any.withCycling()
+    private val CASCADE: GameObjectFilter = GameObjectFilter.Any.withKeyword(Keyword.CASCADE)
 
     private fun scripts(card: CardDefinition): List<CardScript> = listOf(card.script) + card.cardFaces.map { it.script }
 
@@ -228,7 +304,8 @@ internal object CardAsks {
         is ModifySpellCost -> (ability.target as? SpellCostTarget.YouCast)?.filter
             ?.takeIf { reduces(ability.modification) }
         is GrantFlashToSpellType -> ability.filter
-        is GrantKeywordToOwnSpells -> ability.spellFilter
+        // Improvise granted asks for the artifacts that pay ([payersOf]), not for the spells.
+        is GrantKeywordToOwnSpells -> ability.spellFilter.takeIf { payersOf(ability.keyword) == null }
         else -> null
     }
 

@@ -32,7 +32,8 @@ import { PostGamePanel } from '@/components/tableTalk/PostGamePanel'
 import { useTableTalkStore } from '@/store/tableTalkStore'
 import { LearnCoach } from '@/components/learn/LearnCoach'
 import { useViewingPlayer, useBattlefieldCards, selectTeamMap } from './store/selectors'
-import type { EntityId } from './types'
+import type { EntityId, BetweenGamesMessage } from './types'
+import type { LastMatchScore } from './store/slices/types'
 import { GameOverReason } from './types'
 
 // Limited-format and spectator screens are a minority of sessions but about a third of this
@@ -535,6 +536,10 @@ function GameOverlay() {
   const postGame = useTableTalkStore((state) =>
     state.postGame && state.postGame.gameId === gameOverState?.gameId ? state.postGame : null,
   )
+  // A tournament best-of-three: where the match stands after this game.
+  const betweenGames = useGameStore((state) => state.tournamentState?.betweenGames ?? null)
+  const lastMatchScore = useGameStore((state) => state.tournamentState?.lastMatchScore ?? null)
+  const matchStanding = describeMatchStanding(betweenGames, lastMatchScore)
 
   // Auto-dismiss is handled centrally in the store (setError schedules clearError), so it
   // works on every route — not just where this overlay happens to be mounted. The × button
@@ -558,6 +563,7 @@ function GameOverlay() {
           <p className={overlay.eyebrow}>Game over</p>
           <h1 id="game-over-title" className={overlay.title}>{title}</h1>
           <p className={overlay.reason}>{reasonText}</p>
+          {matchStanding && <p className={overlay.matchLine} data-testid="game-over-match">{matchStanding.text}</p>}
           {/* Played for ante (CR 407): what changed hands, before the next-step actions. */}
           {gameOverState.ante && <AnteResultPanel ante={gameOverState.ante} viewerId={viewerId} />}
           {postGame && <PostGamePanel postGame={postGame} />}
@@ -572,7 +578,12 @@ function GameOverlay() {
                 A rematch and a saved setup are the same object with different seats: a rematch is
                 a recipe replayed with the seats intact, a setup is one replayed with them open. */}
             {/* Against a person, the panel above carries the one primary action (Rematch). */}
-            {postGame ? null : rematch ? (
+            {matchStanding?.nextGame ? (
+              // The match goes on: the one way forward is the sideboarding step for the next game.
+              <button type="button" onClick={returnToMenu} className={overlay.primary} data-testid="game-over-continue">
+                {matchStanding.canSideboard ? `Sideboard for game ${matchStanding.nextGame}` : `Continue to game ${matchStanding.nextGame}`}
+              </button>
+            ) : postGame ? null : rematch ? (
               <button type="button" onClick={rematch.play} className={overlay.primary} data-testid="game-over-play-again">
                 Play Again
               </button>
@@ -618,6 +629,27 @@ function GameOverlay() {
   }
 
   return null
+}
+
+/**
+ * Where a tournament best-of-three stands once a game of it has ended, for the game-over card:
+ * between games ("Match 1–0 · Game 2 next") or decided ("You won the match 2–1"). Null for a
+ * single-game match, or before the server has reported where the match stands.
+ */
+function describeMatchStanding(
+  between: BetweenGamesMessage | null,
+  last: LastMatchScore | null,
+): { text: string; nextGame: number | null; canSideboard: boolean } | null {
+  if (between) {
+    return {
+      text: `Match ${between.yourGameWins}–${between.opponentGameWins} · Game ${between.nextGameNumber} next`,
+      nextGame: between.nextGameNumber,
+      canSideboard: between.canSideboard,
+    }
+  }
+  if (!last) return null
+  const verdict = last.result === 'DRAW' ? 'Match drawn' : last.result === 'WIN' ? 'You won the match' : 'You lost the match'
+  return { text: `${verdict} ${last.yourGameWins}–${last.opponentGameWins}`, nextGame: null, canSideboard: false }
 }
 
 function WaitingForMulliganOverlay() {

@@ -96,6 +96,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is PutOnTopOrBottomContinuation -> objectReferences
     is ReturnFromLinkedExileContinuation -> objectReferences
     is CascadeMayCastContinuation -> objectReferences
+    is CascadePutOntoBattlefieldContinuation -> objectReferences
     is DiscoverMayCastContinuation -> objectReferences
     is CastAnyNumberFromCollectionContinuation -> effectContext.objectReferences
     is ReplacementChoiceContinuation -> context?.objectReferences
@@ -232,6 +233,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is PutOnTopOrBottomContinuation -> copy(objectReferences = refs)
     is ReturnFromLinkedExileContinuation -> copy(objectReferences = refs)
     is CascadeMayCastContinuation -> copy(objectReferences = refs)
+    is CascadePutOntoBattlefieldContinuation -> copy(objectReferences = refs)
     is DiscoverMayCastContinuation -> copy(objectReferences = refs)
     is CastAnyNumberFromCollectionContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is ReplacementChoiceContinuation -> copy(context = context?.copy(objectReferences = refs))

@@ -12,6 +12,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect
 import com.wingedsheep.sdk.scripting.effects.CounterKindSource
@@ -84,7 +85,12 @@ class AddCountersOfChosenKindExecutor(
             )
         }
 
-        val recipientName = state.getEntity(recipientId)?.get<CardComponent>()?.name ?: ""
+        val recipientEntity = state.getEntity(recipientId)
+        val recipientName = recipientEntity?.get<CardComponent>()?.name
+            ?: when {
+                recipientId == context.controllerId -> "yourself"
+                else -> recipientEntity?.get<PlayerComponent>()?.name ?: "that player"
+            }
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
         val prompt = if (effect.kindFrom == CounterKindSource.LISTED_ABSENT) {
             "Choose a kind of counter to put " +

@@ -21,9 +21,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *
  * The tap half is a *reflexive* triggered ability (CR 603.12): no target is chosen when the
  * enters trigger goes on the stack — only when the {2} has actually been paid (2023-09-01
- * ruling). [Effects.MayPay] is exactly that shape: the engine recognizes a flat mana
- * `Gate.MayPay` on a triggered ability that also carries a target requirement and runs the
- * deliberate pay-then-choose-target order (same as Lightning Rift / the "Words of ..." cycle).
+ * ruling). The optional {2} payment ([Effects.MayPay], manual mana-source selection) gates an
+ * [Effects.ReflexiveTrigger] whose half picks its target only after the payment.
  *
  * An already-tapped creature is a legal target and still gets the stun counter.
  */
@@ -42,10 +41,17 @@ val SnaremasterSprite = card("Snaremaster Sprite") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val t = target(TargetFilter.Creature.opponentControls())
         effect = Effects.MayPay(
             cost = ManaCost.parse("{2}"),
-            then = Effects.Tap(t) then Effects.AddCounters(CounterType.STUN, 1, t)
+            then = Effects.ReflexiveTrigger(
+                action = Effects.Nothing,
+                optional = false,
+                descriptionOverride = "tap target creature an opponent " +
+                    "controls and put a stun counter on it.",
+            ) {
+                val t = target(TargetFilter.Creature.opponentControls())
+                effect = Effects.Tap(t) then Effects.AddCounters(CounterType.STUN, 1, t)
+            },
         )
     }
 

@@ -1,0 +1,1 @@
+- #4545 Crews Heart of Kiran by removing a loyalty counter from a planeswalker (its alternative crew cost), and values the Vehicle as crewable whenever a planeswalker with loyalty stands beside it

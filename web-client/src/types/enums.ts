@@ -161,6 +161,7 @@ export enum Keyword {
   FEAR = 'FEAR',
   SHADOW = 'SHADOW',
   HORSEMANSHIP = 'HORSEMANSHIP',
+  SKULK = 'SKULK',
   // Landwalk
   SWAMPWALK = 'SWAMPWALK',
   FORESTWALK = 'FORESTWALK',
@@ -335,6 +336,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.FEAR]: 'Fear',
   [Keyword.SHADOW]: 'Shadow',
   [Keyword.HORSEMANSHIP]: 'Horsemanship',
+  [Keyword.SKULK]: 'Skulk',
   [Keyword.SWAMPWALK]: 'Swampwalk',
   [Keyword.FORESTWALK]: 'Forestwalk',
   [Keyword.ISLANDWALK]: 'Islandwalk',
@@ -724,6 +726,8 @@ export enum CounterType {
   PEACE = 'PEACE',
   PROMOTION = 'PROMOTION',
   PREY = 'PREY',
+  UNITY = 'UNITY',
+  VELOCITY = 'VELOCITY',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -893,6 +897,8 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.PEACE]: 'Peace',
   [CounterType.PROMOTION]: 'Promotion',
   [CounterType.PREY]: 'Prey',
+  [CounterType.UNITY]: 'Unity',
+  [CounterType.VELOCITY]: 'Velocity',
 }
 
 /**

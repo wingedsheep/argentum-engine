@@ -1,0 +1,4 @@
+- #4570 The AI treats an instant or flash creature that sets creatures' base power and toughness until end of turn (Phantasmal Form, Glamer Gifter) as a combat trick, holding it for combat instead of casting it in the main phase
+- #4570 The AI casts a base power/toughness trick in response to burn when the new base toughness saves its creature (Phantasmal Form's 3/3 against a Shock on a 2/2)
+- #4570 The AI reads "assigns combat damage equal to its toughness" grants (Plagon, Lord of the Beach) as a combat enhancement for its own creatures
+- #4570 The AI no longer reads a creature sacrificing itself (Phantasmal Shieldback) as removal, so it stops overrating such drawbacks in the draft

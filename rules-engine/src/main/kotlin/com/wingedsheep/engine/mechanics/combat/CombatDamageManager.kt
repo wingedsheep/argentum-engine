@@ -16,7 +16,7 @@ import com.wingedsheep.engine.state.components.stack.damagedBySourcesOf
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
-import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
@@ -997,14 +997,14 @@ internal class CombatDamageManager(
         )
 
         // Track combat damage: source dealt damage + dealt combat damage to player
-        newState = DamageUtils.trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage = true)
+        newState = DamageUtils.trackDamageDealt(
+            newState, sourceId, effectiveAmount, isCombatDamage = true, recipient = DamageRecipientKind.Player
+        )
         if (sourceId in newState.getBattlefield()) {
             newState = newState.updateEntity(sourceId) { container ->
                 val priorRecipients = container.get<DealtCombatDamageToPlayersThisTurnComponent>()
                     ?.playerIds ?: emptySet()
-                container
-                    .with(HasDealtCombatDamageToPlayerComponent)
-                    .with(DealtCombatDamageToPlayersThisTurnComponent(priorRecipients + targetId))
+                container.with(DealtCombatDamageToPlayersThisTurnComponent(priorRecipients + targetId))
             }
         }
         // Combat damage counts toward "sources you controlled dealt damage this turn" too.
@@ -1080,13 +1080,17 @@ internal class CombatDamageManager(
         val excess = (amount - currentCount).coerceAtLeast(0)
         newState = DamageUtils.trackExcessDamageToPermanent(newState, state.projectedState, targetId, excess)
 
-        newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)
+        newState = DamageUtils.trackDamageDealt(
+            newState, sourceId, amount, isCombatDamage = true,
+            // A planeswalker or battle; a creature planeswalker is also a creature.
+            recipient = if (newState.projectedState.isCreature(targetId)) DamageRecipientKind.Creature else null
+        )
         // Combat damage counts toward "sources you controlled dealt damage this turn" too.
         newState = DamageUtils.trackDamageSourceForController(newState, sourceId)
         // Planeswalkers (not battles) join the source's "dealt damage to this game" memory, the
         // player half of which is recorded in DamageUtils.trackDamageReceivedByPlayer (The Fallen).
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
-            newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId, amount)
+            newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId, amount, isCombatDamage = true)
             newState = DamageUtils.trackDamageSourceLki(newState, sourceId, targetId, amount)
         }
 
@@ -1219,7 +1223,9 @@ internal class CombatDamageManager(
                 WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage = true)
             }
             // Track that source dealt damage
-            newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)
+            newState = DamageUtils.trackDamageDealt(
+                newState, sourceId, amount, isCombatDamage = true, recipient = DamageRecipientKind.Creature
+            )
             // Combat damage counts toward "sources you controlled dealt damage this turn" too.
             newState = DamageUtils.trackDamageSourceForController(newState, sourceId)
             newState = DamageUtils.trackDamageDealtToCreature(newState, sourceId, targetId)

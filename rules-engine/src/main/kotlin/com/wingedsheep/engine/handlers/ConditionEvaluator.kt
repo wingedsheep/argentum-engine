@@ -19,7 +19,6 @@ import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentCom
 import com.wingedsheep.engine.state.components.battlefield.EnteredViaAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
-import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
@@ -601,14 +600,15 @@ class ConditionEvaluator(
             is SourceIsModified -> evaluateSourceIsModifiedCtx(state, ctx)
 
             // The source's per-recipient damage memory, stamped with the turn of its latest damage
-            // to each player; stripped on a zone change, so a returned permanent has no history.
+            // (of each kind) to each player; stripped on a zone change, so a returned permanent has
+            // no history.
             is com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn -> {
                 val playerId = resolvePlayer(state, condition.player, ctx)
                 val sourceId = ctx.sourceId
                 playerId != null && sourceId != null &&
                     state.getEntity(sourceId)
                         ?.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
-                        ?.dealtDamageToOnTurn(playerId, state.turnNumber) == true
+                        ?.dealtDamageToOnTurn(playerId, state.turnNumber, condition.damageType) == true
             }
 
             // The source's per-turn attack record. On the battlefield it must describe the current
@@ -1651,7 +1651,7 @@ class ConditionEvaluator(
         for (record in records) {
             for (snapshot in record.declaredAs) {
                 if (snapshot.entityId in matched) continue
-                if (predicates.matchesSnapshot(state, snapshot, condition.filter, predicateContext, onBattlefield = true)) {
+                if (predicates.matchesSnapshot(state, snapshot, condition.filter, predicateContext, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)) {
                     matched += snapshot.entityId
                     if (matched.size >= cap) return matched.size
                 }

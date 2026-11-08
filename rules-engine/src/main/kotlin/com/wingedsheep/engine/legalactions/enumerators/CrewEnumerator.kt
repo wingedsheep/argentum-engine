@@ -97,6 +97,28 @@ class CrewEnumerator : ActionEnumerator {
                     tapForPowerCreatures = validCrewCreatures
                 )
             )
+
+            // "You may remove a loyalty counter from a planeswalker you control rather than pay
+            // this Vehicle's crew cost" (Heart of Kiran) — one action per permanent that can pay
+            // it, so the choice of payer is the action itself and needs no creature selection.
+            val alternativePayments = CrewRequirement.alternativePayments(
+                state, projected, context.cardRegistry, context.predicateEvaluator, entityId, playerId
+            )
+            val canPayTax = alternativePayments.isNotEmpty() &&
+                (tax.isEmpty() || context.manaSolver.canPay(state, playerId, tax))
+            for (payment in alternativePayments) {
+                val payerName = state.getEntity(payment.permanentId)?.get<CardComponent>()?.name ?: "a permanent"
+                val counter = payment.cost.counterType?.printed ?: "counter"
+                result.add(
+                    LegalAction(
+                        actionType = "CrewVehicle",
+                        description = "Crew ${cardComponent.name} — remove a $counter counter from $payerName",
+                        action = CrewVehicle(playerId, entityId, emptyList(), alternativeCostFrom = payment.permanentId),
+                        affordable = canPayTax,
+                        manaCostString = tax.takeUnless { it.isEmpty() }?.toString()
+                    )
+                )
+            }
         }
 
         return result

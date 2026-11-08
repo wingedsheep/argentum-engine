@@ -1,0 +1,1 @@
+- #4558 The AI reads an effect-discard destination replacement over its own hand (Library of Leng, Nephalia Academy) as a discard shield instead of an unrecognised ability, and gives it a small draft term.

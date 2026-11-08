@@ -38,9 +38,13 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeTriggeringObjectTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
+import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
+import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect
@@ -55,6 +59,8 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect
+import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
@@ -77,6 +83,8 @@ import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.effects.StoreCardNameEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
@@ -87,6 +95,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
+import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
@@ -99,16 +108,19 @@ import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
-import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PutOnLibraryPositionOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
@@ -120,6 +132,7 @@ import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
+import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
@@ -433,7 +446,7 @@ object TargetPolarityAnalyzer {
         if (effect == null) return requirements.map { TargetPolarity.UNKNOWN }
         val perSlot = List(requirements.size) { mutableListOf<TargetPolarity>() }
         val recursions = mutableSetOf<Int>()
-        val stored = EffectWalker.leaves(effect).filterIsInstance<StoreNumberEffect>().associate { it.name to it.amount }
+        val stored = storedAmounts(effect)
         val blinks = EffectWalker.blinkMoves(effect) + EffectWalker.delayedBlinks(targetLeaves(effect))
         for (move in blinks.filterIsInstance<MoveToZoneEffect>()) slotOf(move.target, requirements)?.let { slot ->
             // An unrestricted blink can remove their token or recover a stolen permanent.
@@ -494,8 +507,13 @@ object TargetPolarityAnalyzer {
         // (Lost Legacy): the refund is the price of the hand stripped, not a gift that would aim
         // the spell at us. [lossSlots] reads the slot.
         val refunds = CardIntentAnalyzer.handRefundDraws(effect)
+        // "Target creature blocks this turn if able. You may have it gain reach until end of turn"
+        // (Academic Dispute): the reach lets the forced blocker meet our flier — part of dragging it
+        // into the block, not a gift to it.
+        val forcedBlockers = targetLeaves(effect).filterIsInstance<MarkMustBlockThisTurnEffect>().mapTo(HashSet()) { it.target }
         for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
+            if (leaf is GrantKeywordEffect && leaf.keyword == Keyword.REACH.name && leaf.target in forcedBlockers) continue
             if (leaf is DrawCardsEffect && leaf in refunds) continue
             if (theftGifts.any { it === leaf }) {
                 // Stolen Uniform attaches the Equipment it took to a creature of ours: the Equipment
@@ -526,9 +544,18 @@ object TargetPolarityAnalyzer {
                 val otherwise = leaf.otherwise ?: continue
                 val taken = forRequirements(leaf.then, requirements, definitions, source)
                 val declined = forRequirements(otherwise, requirements, definitions, source)
+                // A gate the targeted player decides themselves — the punisher: "target opponent may
+                // have you draw three cards. If the player doesn't, … deals damage to that player"
+                // (Combustible Gearhulk, Risk Factor, Palantír of Orthanc) — has one branch about
+                // that player and one about us. The branch that says nothing of the slot is the
+                // price they let us have, so the slot reads as the branch that does.
+                val decider = leaf.decisionMaker?.let { slotOf(it, requirements) }
                 for (slot in requirements.indices) {
                     val reading = taken[slot]
                     if (reading != TargetPolarity.UNKNOWN && reading == declined[slot]) perSlot[slot] += reading
+                    else if (slot == decider && (reading == TargetPolarity.UNKNOWN) != (declined[slot] == TargetPolarity.UNKNOWN)) {
+                        perSlot[slot] += if (reading == TargetPolarity.UNKNOWN) declined[slot] else reading
+                    }
                 }
                 continue
             }
@@ -592,15 +619,7 @@ object TargetPolarityAnalyzer {
             if (leaf is GatherCardsEffect) {
                 val top = leaf.source as? CardSource.TopOfLibrary
                 if (top != null) {
-                    val slot = when (val player = top.player) {
-                        Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
-                            requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
-                        }.singleOrNull()
-                        is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
-                        is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }
-                            .takeIf { it >= 0 }
-                        else -> null
-                    }
+                    val slot = playerSlotOf(top.player, requirements)
                     val reading = if (top.isMill) TargetPolarity.HARMFUL else libraryTopPolarity(leaf.storeAs, effect)
                     if (reading != null) slot?.let { perSlot[it] += reading }
                 }
@@ -613,6 +632,7 @@ object TargetPolarityAnalyzer {
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
             val gift = tokenGiftSlot(leaf, requirements)
+            val exchange = exchangeSlots(leaf, requirements)
             // A card exiled or tucked out of a graveyard that may be an opponent's (Scavenging Ooze,
             // Junktroller): graveyard hate, aimed at the card a recursion would want back. Exiled to
             // be used (The Scarab God's token copy, Dimir Doppelganger) it is the best card on
@@ -635,6 +655,8 @@ object TargetPolarityAnalyzer {
                 }
             } else if (gift != null) {
                 perSlot[gift.first] += gift.second
+            } else if (exchange != null) {
+                for ((slot, polarity) in exchange) perSlot[slot] += polarity
             } else {
                 for ((target, polarity) in classify(withStoredNumbers(withRequirementZone(leaf, requirements), stored), definitions, source)) {
                     if (target == EffectTarget.TargetController) controllerReadings += polarity
@@ -650,6 +672,24 @@ object TargetPolarityAnalyzer {
             if (leaf is TapUntapCollectionEffect && leaf.collectionName in allChosenTargets(effect)) {
                 val polarity = if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
                 for (slot in objectSlots(requirements)) perSlot[slot] += polarity
+            }
+            // "You may destroy another target creature. If a creature is destroyed this way, you gain
+            // life equal to its toughness" (Noxious Gearhulk) gathers its chosen targets and moves
+            // them to a graveyard or exile itself, to track what left: the single-target destroy or
+            // exile it is, on every permanent slot. A blink that brings them back is not this.
+            if (leaf is MoveCollectionEffect && removesChosenTargets(leaf, effect)) {
+                for (slot in permanentSlots(requirements)) perSlot[slot] += TargetPolarity.HARMFUL
+            }
+            // "Return any number of target nonland, nontoken permanents you control to their owners'
+            // hands. Draw a card for each card returned to your hand this way" (Paradoxical Outcome)
+            // gathers its chosen targets and bounces the lot, to count what reached a hand: the
+            // single-target bounce ([classify]'s move to hand) on every permanent slot. Even kept on
+            // our own side it stays two-sided: a save and an ETB re-buy, but one paid for in tempo,
+            // so which of ours are worth the card is the simulation's question, not "our best first".
+            if (leaf is MoveCollectionEffect && leaf.from in allChosenTargets(effect) &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND
+            ) {
+                for (slot in permanentSlots(requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
             }
             // "N damage divided as you choose among …" across several requirements (the single-slot
             // case is [implicitTargetPolarity]'s): damage to every target of the requirement it is
@@ -670,6 +710,12 @@ object TargetPolarityAnalyzer {
         // the damage back to it and Burn Together sacrifices it — a price, not a free lend. An
         // unread leaf counts too: it leaves no reading in the slot, but it still names it.
         val leaves = targetLeaves(effect)
+        // "Target opponent looks at the top four cards of your library and separates them into a
+        // face-down pile and a face-up pile" (Fortune's Favor, Sauron's Ransom), "target opponent
+        // chooses two of those cards" (Gifts Ungiven): the slot only names who decides a split of our
+        // cards ([Chooser.TargetPlayer]). The decider works against us, so it is the opponent's side
+        // — and an opponent slot can't name anyone else. Only when nothing else reads the slot.
+        if (perSlot[0].isEmpty() && decidedByTargetOpponent(leaves, requirements)) perSlot[0] += TargetPolarity.HARMFUL
         // "Deals damage to target spell's controller equal to that spell's mana value" (Refuse),
         // "that creature deals damage equal to its power to its controller" (Backlash): harm aimed
         // at the first target's controller is harm to that object's side, so the object to name is
@@ -686,9 +732,21 @@ object TargetPolarityAnalyzer {
         // graveyard; for each, create a token that's a copy of it" (Hour of Eternity): the single-card
         // exile-and-copy above (The Scarab God), as a pipeline. The best card is the one to name.
         if (CardIntentAnalyzer.exilesChosenGraveyardTargetsToUse(effect, requirements)) recursions += requirements.indices
+        // Graveyard cards a pipeline returns to our hand (Wildest Dreams): the best card is the one to name.
+        if (CardIntentAnalyzer.returnsChosenGraveyardTargetsToHand(effect, requirements)) recursions += requirements.indices
         // Graveyard cards a pipeline lets us cast (Zul Ashur, Torrential Gearhulk): recursion by way of the stack.
         recursions += castGraveyardSlots(effect, requirements)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
+        // "Exile up to two target creatures you control, then return those cards to the battlefield"
+        // (Illusionist's Stratagem) as a pipeline: the blink [EffectWalker.blinkMoves] reads in its
+        // single-move spelling — a save and an ETB re-buy on ours, either way on anyone's.
+        for (slot in pipelineBlinkSlots(effect, requirements)) {
+            perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
+        }
+        // "Exile target nonland card from your graveyard. Search your library for any number of cards
+        // with the same name as that card … put them into your hand" (Secret Salvage): a tutor keyed on
+        // a card of ours, so the slot is our own pick — the name with copies left to find.
+        for (slot in namedTutorSlots(effect, requirements)) perSlot[slot] += TargetPolarity.BENEFICIAL
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
@@ -929,10 +987,55 @@ object TargetPolarityAnalyzer {
      * target is an opponent ([com.wingedsheep.ai.engine.TargetSelection.aimsOnlyAtTheWrongSide]).
      */
     private fun tokenGiftSlot(leaf: Effect, requirements: List<TargetRequirement>): Pair<Int, TargetPolarity>? {
-        if (leaf !is CreateTokenEffect) return null
-        val controller = leaf.controller?.takeIf { it.isSlot() } ?: return null
-        val slot = slotOf(controller, requirements) ?: return null
+        val slot = when (leaf) {
+            is CreateTokenEffect -> leaf.controller?.takeIf { it.isSlot() }?.let { slotOf(it, requirements) }
+            // A card put onto the battlefield under a target player's control is the same body on
+            // their side: "Target opponent may choose one of the exiled cards and put it onto the
+            // battlefield under their control" (Dubious Challenge).
+            is MoveCollectionEffect -> (leaf.destination as? CardDestination.ToZone)
+                ?.takeIf { it.zone == Zone.BATTLEFIELD }
+                ?.player?.takeIf { it is Player.BoundVariable || it is Player.ContextPlayer }
+                ?.let { playerSlotOf(it, requirements) }
+            else -> null
+        } ?: return null
         return slot to if (requirements[slot] is TargetOpponent) TargetPolarity.FLEXIBLE else TargetPolarity.BENEFICIAL
+    }
+
+    /** The player slot [player] names among [requirements] — a bound or indexed target player — or null. */
+    private fun playerSlotOf(player: Player, requirements: List<TargetRequirement>): Int? = when (player) {
+        Player.TargetPlayer, Player.TargetOpponent -> requirements.indices.filter {
+            requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
+        }.singleOrNull()
+        is Player.ContextPlayer -> player.index.takeIf { it in requirements.indices }
+        is Player.BoundVariable -> requirements.indexOfFirst { it.id == player.name }.takeIf { it >= 0 }
+        else -> null
+    }
+
+    /**
+     * The slots an **exchange of control** names — "exchange control of target artifact you control
+     * and target artifact or creature you don't control" (Shrewd Negotiation, Chromeshell Crab,
+     * Spawnbroker) — with their readings, or null.
+     *
+     * The permanent taken from a side only an opponent's permanent can fill is a steal,
+     * [TargetPolarity.HARMFUL], as [GainControlEffect] is: their best is the one to take. The
+     * permanent handed over is the price of it, not a side to pick, so it reads
+     * [TargetPolarity.FLEXIBLE] — understood, but pruning nothing — and the removal ranking still
+     * gives away our worst. Read harmful, a slot only our own permanents fill would veto the cast
+     * ([com.wingedsheep.ai.engine.TargetSelection.aimsOnlyAtTheWrongSide]). An exchange of two
+     * permanents either side may hold (Switcheroo's "two target creatures") is flexible on both.
+     */
+    private fun exchangeSlots(leaf: Effect, requirements: List<TargetRequirement>): List<Pair<Int, TargetPolarity>>? {
+        if (leaf !is ExchangeControlEffect) return null
+        return listOf(leaf.target1, leaf.target2).mapNotNull { target ->
+            val slot = slotOf(target, requirements) ?: return@mapNotNull null
+            slot to if (theirsOnly(requirements[slot])) TargetPolarity.HARMFUL else TargetPolarity.FLEXIBLE
+        }
+    }
+
+    /** Whether [requirement]'s filter keeps its target off our side ("… you don't control", "… an opponent controls"). */
+    private fun theirsOnly(requirement: TargetRequirement): Boolean {
+        val filter = objectFilter(requirement) ?: return false
+        return filter.alternatives.isEmpty() && CardIntentAnalyzer.opponentsOnly(filter.baseFilter.controllerPredicate)
     }
 
     /**
@@ -943,8 +1046,8 @@ object TargetPolarityAnalyzer {
      * controller. Where the slot's filter keeps it on that controller's side, the copied object's
      * controller is the one gaining it, so the slot reads beneficial and the best permanent is the
      * one to copy — unless the leaf hands the token to someone else ([CreateTokenCopyOfTargetEffect.controller]). Unread, the removal ranking ordered our own creatures worst first. A copy of
-     * *any* creature stays unattributed: the best copy may be an opponent's, which is a board
-     * question the two-sided simulation answers. Read off the requirement, not the leaf, as
+     * *any* creature reads [TargetPolarity.FLEXIBLE] in [classify]: the best copy may be an
+     * opponent's, which is a board question the two-sided simulation answers. Read off the requirement, not the leaf, as
      * [recursionSlot] does — the leaf names only the slot.
      */
     private fun ownCopySlot(leaf: Effect, requirements: List<TargetRequirement>): Int? = when {
@@ -1147,12 +1250,15 @@ object TargetPolarityAnalyzer {
      * [leaf] with a "+X/+X" whose X is a number the pipeline stored earlier read as that number's
      * own amount: "the chosen creatures get +X/+X, where X is the difference between their powers"
      * (Spry and Mighty) stores X once and pumps by it, and a bare variable reads as either sign.
+     * Through arithmetic too: "-1/-1 for each {E} paid this way" (Die Young) is the negated count
+     * of energy paid — see [storedAmounts].
      */
     private fun withStoredNumbers(leaf: Effect, stored: Map<String, DynamicAmount>): Effect {
         if (leaf !is ModifyStatsEffect || stored.isEmpty()) return leaf
-        fun resolve(amount: DynamicAmount) =
-            (amount as? DynamicAmount.VariableReference)?.let { stored[it.variableName] } ?: amount
-        return leaf.copy(powerModifier = resolve(leaf.powerModifier), toughnessModifier = resolve(leaf.toughnessModifier))
+        return leaf.copy(
+            powerModifier = resolveStored(leaf.powerModifier, stored),
+            toughnessModifier = resolveStored(leaf.toughnessModifier, stored),
+        )
     }
 
     /**
@@ -1249,19 +1355,134 @@ object TargetPolarityAnalyzer {
     }
 
     /**
+     * Whether [move] puts [effect]'s own chosen targets into a graveyard or exile for good — no
+     * owner recast ([ownerRecastsChosenTargets]) and no later step, now or in a delayed trigger,
+     * returning what it moved to the battlefield (a pipeline blink).
+     */
+    internal fun removesChosenTargets(move: MoveCollectionEffect, effect: Effect): Boolean {
+        if (move.from !in allChosenTargets(effect)) return false
+        val zone = (move.destination as? CardDestination.ToZone)?.zone
+        if (zone != Zone.GRAVEYARD && zone != Zone.EXILE) return false
+        if (zone == Zone.EXILE && ownerRecastsChosenTargets(effect)) return false
+        // The return may read the moved cards back by the original collection's name, and sit in a
+        // delayed trigger or an "if any were moved" branch (Phelia, Exuberant Shepherd's end-step return).
+        fun deep(e: Effect): List<Effect> = EffectWalker.payoffLeaves(e).flatMap { leaf ->
+            if (leaf is CreateDelayedTriggerEffect) listOf(leaf) + deep(leaf.effect) else listOf(leaf)
+        }
+        val leaves = deep(effect)
+        val moved = listOfNotNull(move.from, move.storeMovedAs).toHashSet()
+        // An exile linked to the source comes back as its linked-exile pile (Illusionist's Stratagem).
+        if (move.linkToSource) {
+            leaves.filterIsInstance<GatherCardsEffect>()
+                .filter { it.source is CardSource.FromLinkedExile }.mapTo(moved) { it.storeAs }
+        }
+        do {
+            val before = moved.size
+            for (leaf in leaves) moved += CardIntentAnalyzer.derivedCollections(leaf, moved)
+        } while (moved.size != before)
+        return leaves.none {
+            it is MoveCollectionEffect && it.from in moved &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+        }
+    }
+
+    /** The slots of [requirements] that choose a permanent: no player, and no card in another zone. */
+    internal fun permanentSlots(requirements: List<TargetRequirement>): List<Int> = requirements.indices.filter { slot ->
+        val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
+        when (requirement) {
+            is TargetPlayer, is TargetOpponent -> false
+            is TargetObject -> requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+            else -> true
+        }
+    }
+
+    /**
      * The slots an [ownerRecastsChosenTargets] pipeline acts on: every permanent slot, read
      * [TargetPolarity.FLEXIBLE] as a bounce is ([classify]'s move to hand). A slot whose card sits in
      * another zone (a graveyard card exiled beside it) is not bounced, and a player slot is no card.
      */
     private fun ownerRecastSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
         if (!ownerRecastsChosenTargets(effect)) return emptyList()
+        return permanentSlots(requirements)
+    }
+
+    /**
+     * Whether [effect] is a pipeline blink: it exiles its own chosen targets and, in the same
+     * resolution, moves them — the exiled collection, or the source's linked-exile pile it filled —
+     * back onto the battlefield (Displace, Ghostly Flicker, Illusionist's Stratagem). A move behind a
+     * condition is still a leaf here, so this reads the card's plan, as [EffectWalker.blinkMoves]
+     * does for "exile it, then return it".
+     */
+    internal fun blinksChosenTargets(effect: Effect): Boolean {
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = chosenTargetCollections(effect)
+        if (chosen.isEmpty()) return false
+        val exiles = leaves.filterIsInstance<MoveCollectionEffect>()
+            .filter { it.from in chosen && (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE }
+        if (exiles.isEmpty()) return false
+        val exiled = exiles.flatMapTo(HashSet()) { listOfNotNull(it.from, it.storeMovedAs) }
+        if (exiles.any { it.linkToSource }) {
+            leaves.filterIsInstance<GatherCardsEffect>()
+                .filter { it.source is CardSource.FromLinkedExile }.mapTo(exiled) { it.storeAs }
+        }
+        return leaves.any {
+            it is MoveCollectionEffect && it.from in exiled &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+        }
+    }
+
+    /** The permanent slots a pipeline blinks ([blinksChosenTargets]). */
+    private fun pipelineBlinkSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        if (!blinksChosenTargets(effect)) return emptyList()
         return requirements.indices.filter { slot ->
             val requirement = (requirements[slot] as? TargetOther)?.baseRequirement ?: requirements[slot]
-            when (requirement) {
-                is TargetPlayer, is TargetOpponent -> false
-                is TargetObject -> requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
-                else -> true
-            }
+            requirement is TargetObject && requirement.filter.zone.let { it == null || it == Zone.BATTLEFIELD }
+        }
+    }
+
+    /**
+     * Whether [requirements]' first slot is a target opponent and some step of [leaves] has that
+     * player make the selection ([Chooser.TargetPlayer] resolves to the first target).
+     */
+    private fun decidedByTargetOpponent(leaves: List<Effect>, requirements: List<TargetRequirement>): Boolean {
+        val first = requirements.firstOrNull()?.let { (it as? TargetOther)?.baseRequirement ?: it }
+        if (first !is TargetOpponent) return false
+        return leaves.any {
+            (it is SelectFromCollectionEffect && it.chooser == Chooser.TargetPlayer) ||
+                (it is ChoosePileEffect && it.chooser == Chooser.TargetPlayer)
+        }
+    }
+
+    /**
+     * The own-graveyard slots of [requirements] whose card's name [effect] notes
+     * ([StoreCardNameEffect], neutral bookkeeping on its own) to search our own library for cards
+     * of that name ([CardPredicate.NameEqualsChosen]) and put them into our hand: the slot names
+     * what we tutor for. Searching an opponent's library for the name (Lobotomy, Cranial
+     * Extraction) is disruption and reads nothing here.
+     */
+    private fun namedTutorSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
+        val leaves = EffectWalker.leaves(effect)
+        val chosen = allChosenTargets(effect)
+        val names = leaves.filterIsInstance<StoreCardNameEffect>().filter { it.from in chosen }.mapTo(HashSet()) { it.storeAs }
+        if (names.isEmpty()) return emptyList()
+        val found = leaves.filterIsInstance<GatherCardsEffect>().filter { gather ->
+            val source = gather.source as? CardSource.FromZone ?: return@filter false
+            source.zone == Zone.LIBRARY && source.player == Player.You &&
+                source.filter.cardPredicates.any { it is CardPredicate.NameEqualsChosen && it.variableName in names }
+        }.mapTo(HashSet()) { it.storeAs }
+        if (found.isEmpty()) return emptyList()
+        do {
+            val before = found.size
+            for (leaf in leaves) found += CardIntentAnalyzer.derivedCollections(leaf, found)
+        } while (found.size != before)
+        val toHand = leaves.any { leaf ->
+            val to = (leaf as? MoveCollectionEffect)?.destination as? CardDestination.ToZone
+            leaf is MoveCollectionEffect && leaf.from in found && to?.zone == Zone.HAND && to.player == Player.You
+        }
+        if (!toHand) return emptyList()
+        return requirements.indices.filter { slot ->
+            val filter = objectFilter(requirements[slot])
+            filter?.zone == Zone.GRAVEYARD && ownGraveyardOnly(filter)
         }
     }
 
@@ -1287,7 +1508,8 @@ object TargetPolarityAnalyzer {
         // Mirror), it is only ever worth doing to an opposing object. An unrestricted "change the
         // target" (Bolt Bend, Misdirection) can also re-aim one of ours whose target went bad, so
         // its slot stays open to both sides; where it points is the decision's question.
-        is ChangeTargetEffect ->
+        // A redirect of a spell named by reference (the triggering spell) aims at nothing chosen.
+        is ChangeTargetEffect -> if (leaf.spell != EffectTarget.ContextTarget(0)) null else
             if (leaf.newTarget != null || leaf.onlyIfCurrentTargetIsController) TargetPolarity.HARMFUL
             else TargetPolarity.FLEXIBLE
         else -> null
@@ -1310,8 +1532,15 @@ object TargetPolarityAnalyzer {
         // known on the board. +1/+1, loyalty or keyword counters are a gift where they land and a
         // loss where they leave; -1/-1, stun or time counters the reverse. Neither side is fixed,
         // so both stay open and the simulation weighs the counters each candidate holds.
-        if (leaf is MoveAllCountersEffect) {
-            return listOf(leaf.source to TargetPolarity.FLEXIBLE, leaf.destination to TargetPolarity.FLEXIBLE)
+        val move = when (leaf) {
+            is MoveAllCountersEffect -> leaf.source to leaf.destination
+            is MoveCountersEffect -> leaf.source to leaf.destination
+            is MoveChosenCountersToTargetEffect -> leaf.source to leaf.destination
+            is MoveCountersEachKindMissingEffect -> leaf.source to leaf.destination
+            else -> null
+        }
+        if (move != null) {
+            return listOf(move.first to TargetPolarity.FLEXIBLE, move.second to TargetPolarity.FLEXIBLE)
         }
         // "Copy target spell" / "copy target spell or ability" (Twincast, Return the Favor,
         // Lithoform Engine): the copy is ours
@@ -1320,6 +1549,19 @@ object TargetPolarityAnalyzer {
         if (leaf is CopyTargetSpellOrAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         if (leaf is CopyTargetSpellEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         if (leaf is CopyTargetTriggeredAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
+        // "Create a token that's a copy of target artifact" (Saheeli's Artistry, Cackling
+        // Counterpart's any-side kin): the token is ours whichever side the original sits on, as a
+        // copied spell is. A copy of our own permanent is [ownCopySlot]'s gift; one any side can
+        // fill is the best permanent on the board, which only the simulation sees. A token handed
+        // to another player ([CreateTokenCopyOfTargetEffect.controller]) stays unread.
+        if (leaf is CreateTokenCopyOfTargetEffect && leaf.controller == null) {
+            return listOf(leaf.target to TargetPolarity.FLEXIBLE)
+        }
+        // "You may choose new targets for target spell" (Insidious Will, Wild Ricochet): the
+        // all-targets redirect, read as the unrestricted single-target [ChangeTargetEffect] is — an
+        // opposing spell turned away from what it aimed at, or one of ours re-aimed after its
+        // target went bad. Where the targets go is the decision's question.
+        if (leaf is ChangeTriggeringObjectTargetsEffect) return listOf(leaf.spell to TargetPolarity.FLEXIBLE)
         punisherReading(leaf, definitions, source)?.let { return it }
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a
@@ -1361,6 +1603,10 @@ object TargetPolarityAnalyzer {
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
             is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher):
+            // takes the block choice away from its controller, dragging the creature into a block
+            // it would not have made — the opponent's creature, like "can't block" above.
+            is MarkMustBlockThisTurnEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBeRegeneratedEffect -> leaf.target to TargetPolarity.HARMFUL
             // "Target creature loses all abilities" strips its holder — the static LoseAllAbilities
             // an Aura grants reads the same. A drawback-only creature gains from it, but that is a
@@ -1373,7 +1619,7 @@ object TargetPolarityAnalyzer {
             is MarkExileOnDeathEffect -> leaf.target to TargetPolarity.HARMFUL
             is TapUntapEffect -> leaf.target to
                 if (leaf.tap) TargetPolarity.HARMFUL else TargetPolarity.BENEFICIAL
-            is ModifyStatsEffect -> leaf.target to statsPolarity(leaf.powerModifier, leaf.toughnessModifier)
+            is ModifyStatsEffect -> leaf.target to oneShotStatsPolarity(leaf.powerModifier, leaf.toughnessModifier)
             // "Target creature has base power and toughness 0/0" (Multiply by Zero) is removal. A
             // larger fixed base names nothing here, so the slot's other effects decide it (Taranika's
             // 4/4 + indestructible), and alone it reads flexible ([largeBaseSlots]). A dynamic base (Exuberant Wolfbear copies its own power) can
@@ -1408,6 +1654,24 @@ object TargetPolarityAnalyzer {
             // "Double the number of +1/+1 counters on …" (Biogenic Upgrade, Deepglow Skate): more of
             // what it already holds, so the counter decides the side; every kind at once is open.
             is DoubleCountersEffect -> leaf.target to (leaf.counterType?.let(::counterPolarity) ?: TargetPolarity.FLEXIBLE)
+            // "For each kind of counter on target permanent or player, give that permanent or player
+            // another counter of that kind" (Skyship Plunderer, Powerful Broker): one more of
+            // whatever it holds — a +1/+1, loyalty or energy for our side, a -1/-1, poison or time
+            // counter for theirs. Which kinds are there only the board shows, as doubling every kind.
+            is ProliferateEffect -> (leaf.target ?: return emptyList()) to TargetPolarity.FLEXIBLE
+            // "Choose a counter on target permanent or player. Give that permanent or player another
+            // counter of that kind" (Animation Module, Clockspinning): the one-kind form of the line
+            // above — its controller picks the kind on resolution, so a +1/+1 or loyalty counter for
+            // our side and a -1/-1, poison or time counter for theirs. "A kind it doesn't have, from
+            // among …" (Crystalline Giant) reads by the listed kinds when they agree; listed kinds
+            // that pull opposite ways (or that have no side) leave it open, so FLEXIBLE. The iterated kind belongs
+            // to its loop ([readsPerCounterKind]).
+            is AddCountersOfChosenKindEffect -> leaf.target to when (leaf.kindFrom) {
+                CounterKindSource.RECIPIENT -> TargetPolarity.FLEXIBLE
+                CounterKindSource.LISTED_ABSENT ->
+                    leaf.kinds.map(::counterPolarity).distinct().singleOrNull() ?: TargetPolarity.FLEXIBLE
+                CounterKindSource.ITERATION -> return emptyList()
+            }
             is MoveAllLastKnownCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             is RemoveAnyNumberOfCountersEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw,
@@ -1471,10 +1735,10 @@ object TargetPolarityAnalyzer {
             // "Target instant or sorcery card in your graveyard gains flashback": its owner may cast
             // it again, so the best card is the one to give it to — a recursion slot.
             is GrantFlashbackEffect -> leaf.target to TargetPolarity.BENEFICIAL
-            // "Target land gains '{T}: Add {C}{C}'": the mana is its controller's to spend. Other
-            // granted abilities do whatever their effect does and stay unread here.
-            is GrantActivatedAbilityEffect -> if (leaf.ability.isManaAbility) leaf.target to TargetPolarity.BENEFICIAL
-                else return emptyList()
+            // "Target land gains '{T}: Add {C}{C}'": the mana is its controller's to spend. Any
+            // other granted ability is activated by the holder's controller too, so it reads as
+            // that ability's effect would for them (Quicksmith Spy's "{T}: Draw a card").
+            is GrantActivatedAbilityEffect -> leaf.target to grantedActivatedPolarity(leaf.ability)
             // "Target player draws / gains / loses …" (Inspiration, Sign in Blood). Only a slot is
             // read here: a draw for "you" is not a target, and [grantedTriggerPolarity] reads it
             // through [controllerPolarity] instead. Sign in Blood's draw and life loss disagree
@@ -1585,6 +1849,27 @@ object TargetPolarityAnalyzer {
         }
     }
 
+    /**
+     * A one-shot "+X/-X" whose toughness loss is a count that grows with the board — "where X is the
+     * number of artifacts you control" (Tezzeret the Schemer), "sacrifice X Squirrels" (Chatterfang)
+     * — is removal: X is sized to kill, and whatever the power side adds dies with the creature. A
+     * fixed "+2/-1" stays unread by [statsPolarity]: that small a loss is a trick for a sturdy
+     * creature of ours as often as a kill.
+     */
+    private fun oneShotStatsPolarity(power: DynamicAmount, toughness: DynamicAmount): TargetPolarity? =
+        statsPolarity(power, toughness)
+            ?: TargetPolarity.HARMFUL.takeIf { toughness !is DynamicAmount.Fixed && AmountSign.of(toughness) == AmountSign.LOSS }
+
+    /**
+     * A lasting "+N/-M" or "-N/+M" on the host (Boon of Emrakul's "+3/-3", Maggot Therapy's "+2/-2",
+     * Twisted Experiment's "+3/-1") trades one stat for the other for as long as it stays attached:
+     * it kills a small creature of theirs and turns a sturdy one of ours into a bigger attacker.
+     * Which side it belongs on is the board's call, so it reads [TargetPolarity.FLEXIBLE] and the
+     * simulation compares the candidates. Null unless the two signs really differ.
+     */
+    private fun lastingTradePolarity(power: Int, toughness: Int): TargetPolarity? =
+        TargetPolarity.FLEXIBLE.takeIf { (power > 0 && toughness < 0) || (power < 0 && toughness > 0) }
+
     /** The side a counter's removal favours: the other one than its placement's. */
     private fun opposite(polarity: TargetPolarity): TargetPolarity? = when (polarity) {
         TargetPolarity.BENEFICIAL -> TargetPolarity.HARMFUL
@@ -1644,6 +1929,9 @@ object TargetPolarityAnalyzer {
         }
         return when (runCatching { AbilityFlag.valueOf(name.uppercase()) }.getOrNull()) {
             AbilityFlag.CANT_BE_BLOCKED -> TargetPolarity.BENEFICIAL
+            // "Assigns combat damage equal to its toughness rather than its power" (Plagon, Bill the
+            // Pony): granted to our own high-toughness creatures to turn them into attackers.
+            AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS -> TargetPolarity.BENEFICIAL
             AbilityFlag.DOESNT_UNTAP, AbilityFlag.CANT_BECOME_UNTAPPED,
             AbilityFlag.ASSIGNS_NO_COMBAT_DAMAGE -> TargetPolarity.HARMFUL
             else -> null
@@ -1778,6 +2066,7 @@ object TargetPolarityAnalyzer {
             // life unless they sacrifice a nonland permanent or discard a card" (Torment of Scarabs):
             // the host is the player, named by the leaves that act on them.
             readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
+            readings += hostControllerHarms(effect)
         }
         // A replacement effect on an Aura (Sandskin's "prevent all combat damage dealt to and by
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
@@ -1842,6 +2131,14 @@ object TargetPolarityAnalyzer {
      */
     internal fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity =
         grantedEffectPolarity(ability.effect, listOfNotNull(ability.targetRequirement))
+
+    /**
+     * How a granted activated ability reads for the permanent holding it: a mana ability is the
+     * holder's controller's mana; any other does what its effect does for the player activating it.
+     */
+    internal fun grantedActivatedPolarity(ability: ActivatedAbility): TargetPolarity =
+        if (ability.isManaAbility) TargetPolarity.BENEFICIAL
+        else grantedEffectPolarity(ability.effect, ability.targetRequirements)
 
     private fun grantedEffectPolarity(effect: Effect, requirements: List<TargetRequirement>): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()
@@ -1976,6 +2273,28 @@ object TargetPolarityAnalyzer {
         }
     }
 
+    /**
+     * "This Aura deals 2 damage to enchanted artifact's controller" (Gremlin Infestation): a
+     * pipeline gathers the host, then damages or drains the player controlling it. That player is
+     * whoever the Aura is cast onto the side of, so each such leaf is a harm to the host's slot.
+     */
+    private fun hostControllerHarms(effect: Effect): List<TargetPolarity> {
+        val leaves = EffectWalker.leaves(effect)
+        val hostKeys = leaves.filterIsInstance<GatherCardsEffect>()
+            .filter { gather -> (gather.source as? CardSource.Entity)?.entity?.let { it in HOST_TARGETS } == true }
+            .mapTo(HashSet()) { it.storeAs }
+        if (hostKeys.isEmpty()) return emptyList()
+        fun hostController(target: EffectTarget) =
+            target is EffectTarget.ControllerOfPipelineTarget && target.collectionName in hostKeys
+        return leaves.mapNotNull { leaf ->
+            when (leaf) {
+                is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                else -> null
+            }
+        }
+    }
+
     private fun staticPolarity(static: StaticAbility): TargetPolarity? =
         enchantedPlayerPolarity(static) ?: hostStaticPolarity(static)
 
@@ -1997,6 +2316,7 @@ object TargetPolarityAnalyzer {
     private fun hostStaticPolarity(static: StaticAbility): TargetPolarity? = when (static) {
         is ModifyStats -> if (static.filter.scope != Scope.AttachedTo) null
             else statsPolarity(DynamicAmount.Fixed(static.powerBonus), DynamicAmount.Fixed(static.toughnessBonus))
+                ?: lastingTradePolarity(static.powerBonus, static.toughnessBonus)
         is GrantKeyword -> if (static.filter.scope != Scope.AttachedTo) null else keywordPolarity(static.keyword)
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
@@ -2039,7 +2359,7 @@ object TargetPolarityAnalyzer {
 
     private val BENEFICIAL_KEYWORDS = setOf(
         Keyword.FLYING, Keyword.MENACE, Keyword.INTIMIDATE, Keyword.FEAR, Keyword.SHADOW,
-        Keyword.HORSEMANSHIP, Keyword.SWAMPWALK, Keyword.FORESTWALK, Keyword.ISLANDWALK,
+        Keyword.HORSEMANSHIP, Keyword.SKULK, Keyword.SWAMPWALK, Keyword.FORESTWALK, Keyword.ISLANDWALK,
         Keyword.MOUNTAINWALK, Keyword.PLAINSWALK, Keyword.FIRST_STRIKE, Keyword.DOUBLE_STRIKE,
         Keyword.TRAMPLE, Keyword.DEATHTOUCH, Keyword.LIFELINK, Keyword.VIGILANCE, Keyword.REACH,
         Keyword.HASTE, Keyword.INDESTRUCTIBLE, Keyword.HEXPROOF, Keyword.SHROUD, Keyword.WARD,

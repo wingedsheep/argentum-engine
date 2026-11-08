@@ -202,6 +202,7 @@ function tournamentSettings(settings: RecipeSettings): PendingSettingsUpdate {
     ...(settings.bannedCardNames ? { bannedCardNames: [...settings.bannedCardNames] } : {}),
     ...(settings.picksPerRound !== undefined ? { picksPerRound: settings.picksPerRound } : {}),
     ...(settings.gamesPerMatch !== undefined ? { gamesPerMatch: settings.gamesPerMatch } : {}),
+    ...(settings.bestOf !== undefined ? { bestOf: settings.bestOf } : {}),
     ...(settings.deckFormat !== undefined ? { deckFormat: settings.deckFormat ?? '' } : {}),
     ...(settings.deckSizeMin !== undefined ? { deckSizeMin: settings.deckSizeMin } : {}),
     ...(settings.allowDuplicates !== undefined ? { allowDuplicates: settings.allowDuplicates } : {}),

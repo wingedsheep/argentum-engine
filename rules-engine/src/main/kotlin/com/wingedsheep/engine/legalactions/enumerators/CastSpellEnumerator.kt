@@ -305,6 +305,7 @@ class CastSpellEnumerator(
             if (reducingCost != null && offer.reducingCandidates.isNotEmpty()) {
                 val maxReduction = maxOfferReduction(context, offer)
                 val genericBefore = effectiveCost.genericAmount
+                offer.reducingGenericBefore = genericBefore
                 offerReduction = maxReduction
                 effectiveCost = effectiveCost.reduceGeneric(maxReduction)
                 if (effectiveCost.hasX) {
@@ -643,7 +644,7 @@ class CastSpellEnumerator(
 
             // Calculate X cost info if the spell has X in its cost (printed, or the waterbend {X}
             // folded in above).
-            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, additionalCosts, context.predicateEvaluator)
+            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, additionalCosts, context.predicateEvaluator, castCardId = cardId)
             val hasXCost = effectiveCost.hasX || counterMaxX != null
             val manaMaxX: Int? = if (effectiveCost.hasX) {
                 // Pass the spell context so floating restricted mana this spell may spend
@@ -2881,7 +2882,7 @@ class CastSpellEnumerator(
         val selections = buildList {
             val reducingCost = offer.reducingCost
             if (reducingCost != null && offer.reducingCandidates.isNotEmpty()) {
-                add(AnyNumberForCostReductionCostKind.data(reducingCost, offer.reducingCandidates))
+                add(AnyNumberForCostReductionCostKind.data(reducingCost, offer.reducingCandidates, offer.reducingGenericBefore))
             }
             if (offer.sacrificeTargets.isNotEmpty()) {
                 val sacCost = additionalCosts.firstNotNullOfOrNull { (it as? AdditionalCost.Atom)?.atom as? CostAtom.Sacrifice }
@@ -2917,6 +2918,7 @@ class CastSpellEnumerator(
                     validDiscardTargets = offer.discardTargets,
                     discardCount = offer.discardCount,
                     discardMaxCount = offer.discardMaxCount,
+                    countIsX = offer.discardCountIsX,
                 ))
             }
             if (offer.bounceTargets.isNotEmpty()) {

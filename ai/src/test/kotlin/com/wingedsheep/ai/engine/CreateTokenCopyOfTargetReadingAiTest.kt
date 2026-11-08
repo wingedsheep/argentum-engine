@@ -35,7 +35,7 @@ class CreateTokenCopyOfTargetReadingAiTest : ScenarioTestBase() {
                 intents.spellTargetPolarities("Electroduplicate") shouldBe listOf(TargetPolarity.BENEFICIAL)
             }
             withClue("Heat Shimmer: copy of target creature — either side's creature may be the best copy") {
-                intents.spellTargetPolarities("Heat Shimmer") shouldBe listOf(TargetPolarity.UNKNOWN)
+                intents.spellTargetPolarities("Heat Shimmer") shouldBe listOf(TargetPolarity.FLEXIBLE)
             }
             withClue("Echocasting Symposium: target player gets the copy, so our creature slot is not a gift to us") {
                 intents.spellTargetPolarities("Echocasting Symposium") shouldBe listOf(TargetPolarity.UNKNOWN, TargetPolarity.UNKNOWN)

@@ -41,6 +41,7 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         maxPlayers = maxPlayers,
         pickTimeSeconds = pickTimeSeconds,
         gamesPerMatch = gamesPerMatch,
+        bestOf = bestOf,
         state = state.name,
         hostPlayerId = hostPlayerId?.value,
         players = players.mapKeys { it.key.value }.mapValues { (_, playerState) ->
@@ -135,6 +136,7 @@ fun restoreTournamentLobby(
         maxPlayers = persistent.maxPlayers,
         pickTimeSeconds = persistent.pickTimeSeconds,
         gamesPerMatch = persistent.gamesPerMatch,
+        bestOf = persistent.bestOf,
         isPublic = persistent.isPublic,
         aiAssistEnabled = persistent.aiAssistEnabled,
         limitedCopyLimit = persistent.limitedCopyLimit,
@@ -310,6 +312,7 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                 draws = standing.draws,
                 gamesWon = standing.gamesWon,
                 gamesLost = standing.gamesLost,
+                gamesDrawn = standing.gamesDrawn,
                 lifeDifferential = standing.lifeDifferential,
                 forfeitWins = standing.forfeitWins,
                 forfeitLosses = standing.forfeitLosses,
@@ -328,7 +331,15 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
                         isComplete = match.isComplete,
                         player1GameWins = match.player1GameWins,
                         player2GameWins = match.player2GameWins,
-                        isSimulated = match.isSimulated
+                        isSimulated = match.isSimulated,
+                        gamesDrawn = match.gamesDrawn,
+                        completedGameSessionIds = match.completedGameSessionIds.toList(),
+                        playDrawChooserId = match.playDrawChooserId?.value,
+                        lastGameWinnerId = match.lastGameWinnerId?.value,
+                        currentStarterId = match.currentStarterId?.value,
+                        nextStarterId = match.nextStarterId?.value,
+                        matchDecks = match.matchDecks.mapKeys { it.key.value },
+                        sideboardReady = match.sideboardReady.map { it.value },
                     )
                 }
             )
@@ -336,7 +347,8 @@ fun TournamentManager.toPersistent(lobbyId: String): PersistentTournament {
         currentRoundIndex = getCurrentRoundIndexForPersistence(),
         totalRounds = totalRounds,
         gamesPerMatch = getGamesPerMatchForPersistence(),
-        playerIds = playerIds.map { it.value }
+        playerIds = playerIds.map { it.value },
+        bestOf = bestOf,
     )
 }
 
@@ -357,7 +369,8 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
     val tournament = TournamentManager(
         lobbyId = persistent.lobbyId,
         players = players,
-        gamesPerMatch = persistent.gamesPerMatch
+        gamesPerMatch = persistent.gamesPerMatch,
+        bestOf = persistent.bestOf,
     )
 
     // Convert persistent rounds back to TournamentRounds
@@ -374,7 +387,15 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
                     isComplete = persistentMatch.isComplete,
                     player1GameWins = persistentMatch.player1GameWins,
                     player2GameWins = persistentMatch.player2GameWins,
-                    isSimulated = persistentMatch.isSimulated
+                    isSimulated = persistentMatch.isSimulated,
+                    gamesDrawn = persistentMatch.gamesDrawn,
+                    completedGameSessionIds = persistentMatch.completedGameSessionIds.toMutableList(),
+                    playDrawChooserId = persistentMatch.playDrawChooserId?.let { EntityId(it) },
+                    lastGameWinnerId = persistentMatch.lastGameWinnerId?.let { EntityId(it) },
+                    currentStarterId = persistentMatch.currentStarterId?.let { EntityId(it) },
+                    nextStarterId = persistentMatch.nextStarterId?.let { EntityId(it) },
+                    matchDecks = persistentMatch.matchDecks.mapKeys { EntityId(it.key) }.toMutableMap(),
+                    sideboardReady = persistentMatch.sideboardReady.mapTo(mutableSetOf()) { EntityId(it) },
                 )
             }
         )
@@ -390,6 +411,7 @@ fun restoreTournamentManager(persistent: PersistentTournament): TournamentManage
             draws = persistentStanding.draws,
             gamesWon = persistentStanding.gamesWon,
             gamesLost = persistentStanding.gamesLost,
+            gamesDrawn = persistentStanding.gamesDrawn,
             lifeDifferential = persistentStanding.lifeDifferential,
             forfeitWins = persistentStanding.forfeitWins,
             forfeitLosses = persistentStanding.forfeitLosses,

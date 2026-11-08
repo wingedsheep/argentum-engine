@@ -547,6 +547,141 @@
     ]
 }
 
+// Godsend
+{
+    "name": "Godsend",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+3.\nWhenever equipped creature blocks or becomes blocked by one or more creatures, you may exile one of those creatures.\nYour opponents can't cast spells with the same name as a card exiled with Godsend.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Godsend:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "oncePerCombat": true
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsOnBattlefield"
+                                ]
+                            },
+                            "storeMatching": "matching0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may exile one of those creatures",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever equipped creature blocks or becomes blocked by one or more creatures, you may exile one of those creatures."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Godsend:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "SharesNameWithLinkedExile"
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2dcf3975-7f81-4bdd-810d-476f46444b7a.jpg?1783939460",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Godsend's triggered ability will trigger only once no matter how many creatures the equipped creature blocks or becomes blocked by."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Godsend's triggered ability doesn't target any creature. You could exile a creature with protection from white, for example. You choose which creature to exile when the ability resolves."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If Godsend leaves the battlefield, and later another Godsend enters the battlefield, it is a new object (even if the two were represented by the same card). The new Godsend won't stop opponents from casting cards with the same name as cards exiled with the first one."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If Godsend exiles a land card (perhaps because it was turned into a creature and then blocked or was blocked by the equipped creature), opponents can still play land cards with the same name as the exiled card. Godsend stops only the casting of spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gold-Forged Sentinel
 {
     "name": "Gold-Forged Sentinel",
@@ -1215,6 +1350,47 @@
     ]
 }
 
+// Nyx-Fleece Ram
+{
+    "name": "Nyx-Fleece Ram",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Sheep",
+    "oracleText": "At the beginning of your upkeep, you gain 1 life.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nyx-Fleece Ram:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Terese Nielsen",
+        "flavorText": "The gods are fascinated by innocence, perhaps because it's a quality they themselves lack.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98d13a98-e715-49a8-a59e-a2adfcdec70b.jpg?1783939456"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Oreskos Swiftclaw
 {
     "name": "Oreskos Swiftclaw",
@@ -1252,6 +1428,30 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Pharika's Chosen
+{
+    "name": "Pharika's Chosen",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Jonas De Ro",
+        "flavorText": "The serpents' dens built into statues of Pharika serve not only to consecrate her temples, but as a hidden line of defense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/8119ce0c-d709-463c-9abc-f7025673ea72.jpg?1783939434"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1483,6 +1683,77 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Tethmos High Priest
+{
+    "name": "Tethmos High Priest",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Cat Cleric",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, return target creature card with mana value 2 or less from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tethmos High Priest:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, return target creature card with mana value 2 or less from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Zug",
+        "flavorText": "\"Death is tyranny. Like all tyranny, it must be opposed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d901b9d7-6af9-40ce-afb7-d3c9f9143c18.jpg?1783939452",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "If a card in a player's graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

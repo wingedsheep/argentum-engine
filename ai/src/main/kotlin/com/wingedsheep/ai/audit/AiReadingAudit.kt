@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.AlternativeCrewCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -31,6 +32,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
+import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -40,6 +42,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
@@ -47,6 +50,7 @@ import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EmitKeywordCounterEventEffect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
@@ -64,6 +68,7 @@ import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
+import com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersOfIteratedKindEffect
@@ -72,12 +77,16 @@ import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.PhaseOutEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -128,7 +137,8 @@ import java.util.Locale
  *  - [Check.INTENT] — [CardIntentAnalyzer.analyzeEffect] per effect slot (the spell, each trigger,
  *    each non-mana ability): a slot that earns no [IntentTag] at all is invisible to every intent
  *    consumer, and is attributed to each of its leaves — except the leaves that need no tag
- *    ([needsNoIntent]: a counter on the source itself or one it removes from itself, any counter on a player, damage to a
+ *    ([needsNoIntent]: a counter or a Role on the source itself or a counter it removes from itself, training's or evolve's
+ *    event marker, any counter on a player, damage to a
  *    player, life loss, a permanent untapping, moving, transforming, animating or sacrificing itself, a creature
  *    shifting its own P/T with a loss on either side, its controller venturing into the dungeon or being tempted by the Ring, counters of any kind moved between permanents or removed from a target, an upkeep cost its controller pays or suffers
  *    on its own source, an "unless" whose suffer is life loss; and [noIntentPipeline]: a mill, or a return
@@ -263,6 +273,10 @@ object AiReadingAudit {
         // (Hollow One, affinity's Tangle Golem): a change to the card's own cost, which the legal
         // actions the AI is offered already price — part of the card, like its mana cost.
         is ModifySpellCost -> static.target == SpellCostTarget.SelfCast
+        // "Remove a loyalty counter from a planeswalker you control rather than pay this Vehicle's
+        // crew cost" (Heart of Kiran): another way to pay its crew, offered as its own crew action
+        // and read by VehicleBody as the Vehicle being crewable — part of the Vehicle's body.
+        is AlternativeCrewCost -> true
         is ConditionalStaticAbility -> isBodyStatic(static.ability)
         is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::isBodyStatic)
         else -> false
@@ -320,8 +334,8 @@ object AiReadingAudit {
         val script = face.script
         val faceName = face.name.takeIf { named }
         val intent = CardIntentAnalyzer.analyze(card)
-        // A pile only ever filled with our own permanents comes back to us (Endless Sands).
-        val ownPile = CardIntentAnalyzer.stashesOwnPermanents(listOf(card.script) + card.cardFaces.map { it.script })
+        // A pile only ever filled with our own cards comes back to us (Endless Sands, Gorex).
+        val ownPile = CardIntentAnalyzer.stashesOwnCards(listOf(card.script) + card.cardFaces.map { it.script })
         // A pile it may cast from (Maralen, Theater of Horrors) makes the exile into it a draw.
         val pileCast = CardIntentAnalyzer.pileCastTags(listOf(card.script, script) + card.cardFaces.map { it.script })
         val out = mutableListOf<AbilityReading>()
@@ -378,6 +392,11 @@ object AiReadingAudit {
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect ||
+                            // The same shield on each player in turn (Commencement of Festivities'
+                            // "prevent all combat damage that would be dealt to players this turn"):
+                            // a ForEach over players whose body is only that shield.
+                            (leaf is ForEachEffect && leaf.space is IterationSpace.Players &&
+                                EffectWalker.leaves(leaf.body).let { body -> body.isNotEmpty() && body.all { it is PreventDamageEffect } }) ||
                             // A death-return grant (Verdant Rebirth, Feign Death): HoldPolicy holds
                             // it for the removal it answers or the fight its target is in.
                             (ExpiringGrantWindow.returnsFromDeathThisTurn(leaf) && IntentTag.PROTECTION in intent.tags) ||
@@ -588,6 +607,8 @@ object AiReadingAudit {
                 // So are harmful counters confined to our creatures (Defiant Greatmaw's two -1/-1).
                 (leaf is AddCountersEffect && CardIntentAnalyzer.harmsOwnTarget(leaf.counterType, leaf.target, reqs)) ||
                 (leaf is AddDynamicCountersEffect && CardIntentAnalyzer.harmsOwnTarget(leaf.counterType, leaf.target, reqs)) ||
+                // And a Cursed Role on our own creature (Spiteful Hexmage's "target creature you control").
+                (leaf is CreateAuraTokenEffect && CardIntentAnalyzer.auraTokenHarmsOwnTarget(leaf, reqs)) ||
                 untapsOwnTarget(leaf, reqs) ||
                 // A card exiled from our own graveyard is the price or fuel of what follows
                 // (Patchwork Crawler, Trove Warden), not an answer.
@@ -658,7 +679,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself or pays its own, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -787,6 +808,7 @@ object AiReadingAudit {
         IntentTag.TAPPER -> "taps things"
         IntentTag.CAST_BAN -> "stops opponents casting spells"
         IntentTag.SPELL_TAX -> "makes opponents' spells cost more"
+        IntentTag.OWN_SPELL_TAX -> "makes its controller's own spells cost more (a drawback)"
         IntentTag.FORCED_ATTACK -> "makes an opponent's creatures attack"
         IntentTag.MILL -> "mills opponents toward running out of cards"
         IntentTag.TRIBAL_ENABLER -> "grants a chosen creature type to enable tribal payoffs"
@@ -795,9 +817,11 @@ object AiReadingAudit {
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
+        IntentTag.DISCARD_SHIELD -> "puts cards an effect makes its controller discard back on their library"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.EXTRA_TURN -> "takes an extra turn"
         IntentTag.FREE_SPELL -> "casts a spell without paying its mana cost"
+        IntentTag.IMPULSE -> "exiles cards to play this turn"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
     }
@@ -832,7 +856,7 @@ object AiReadingAudit {
     }
 
     /**
-     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, untargeted proliferate, damage to a
+     * The leaves that need no intent tag: equip / attach, a card moving, untapping, transforming, animating, sacrificing or setting the base P/T of itself, proliferate (targeted or not), damage to a
      * player and life loss (commented inline below), and a counter the effect puts on its own source or its own
      * controller — a creature growing itself, a charge, oil, quest or loyalty counter, `{E}` for you. There is no target to choose and nothing
      * to hold it for, and its payoff is already on the board (the evaluator reads a grown creature's
@@ -891,6 +915,10 @@ object AiReadingAudit {
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
         // Animating another permanent stays flagged.
         if (leaf is BecomeCreatureEffect && leaf.target == EffectTarget.Self) return true
+        // "When this Vehicle enters, it becomes an artifact creature until end of turn" (Fleetwheel
+        // Cruiser) is the same self-animation spelled as crew's type change: the creature it becomes
+        // is its printed body, which the simulation prices on the board and attacks with.
+        if (leaf is AddCardTypeEffect && leaf.cardType.equals("CREATURE", ignoreCase = true) && leaf.target == EffectTarget.Self) return true
         // A permanent sacrificing itself has no target: on a trigger it is a drawback its controller
         // doesn't choose (Ball Lightning's end step, Glimmervoid with no artifacts, Skittering Horror);
         // on an activation its payoff is the permanent's own leaves trigger (Hopeful Vigil's scry) or
@@ -898,14 +926,36 @@ object AiReadingAudit {
         // response to removal too, is the simulation's call; no intent tag would change it.
         // Sacrificing another stays flagged.
         if (leaf == SacrificeSelfEffect) return true
+        // The same self-sacrifice spelled as "sacrifice it" aimed at the source (Phantasmal
+        // Shieldback, Skulking Ghost's "when this becomes the target of a spell or ability"): its
+        // drawback, which CardIntentAnalyzer reads as no answer.
+        if (leaf is SacrificeTargetEffect && leaf.target == EffectTarget.Self) return true
         // Its controller sacrificing permanents of its own choosing — Lotus Field's two lands, Korvold's
         // "sacrifice another permanent", forage's Food — is the same price with the pick left to
         // resolution: no target, nothing to time, and what is lost is the board the simulation sees.
         // An edict aimed at another player is a ForceSacrificeEffect and reads as removal.
         if (leaf is SacrificeEffect) return true
+        // "Sacrifice it" aimed at the permanent this card is attached to (Thirsting Axe, Breath of
+        // Fury, Stitcher's Graft) is its controller sacrificing their own host — the card's drawback
+        // or price, read by CardIntentAnalyzer as no answer: no target to aim, and whether to keep
+        // the attachment is the simulation's call on the board.
+        if (leaf is SacrificeTargetEffect && CardIntentAnalyzer.sacrificesOwnAttachedHost(leaf)) return true
+        // Its controller paying their own counters on resolution — Greenbelt Rampager's "pay {E}{E}.
+        // If you can't, return it to its owner's hand" — is the price of keeping the body, with no
+        // target and nothing to time; the energy spent is on the board the simulation prices.
+        // Making another player pay stays flagged.
+        if (leaf is PayExactCountersEffect && leaf.player == Player.You) return true
         // "Forage" happened: the marker a forage's payment emits for "whenever you forage" triggers.
         // Bookkeeping, never a payoff of its own; the "if you do" rider beside it is read on its own leaf.
         if (leaf == ForagedEffect) return true
+        // "This creature trained / evolved": the marker training's and evolve's own trigger emits
+        // after its +1/+1 counter on the source, for "whenever this creature trains" payoffs.
+        // Bookkeeping like forage's; the counter beside it is the ability, read on its own leaf.
+        if (leaf is EmitKeywordCounterEventEffect) return true
+        // A Role made on the source itself — Faunsbane Troll's Monster Role, Cursed Courtier's
+        // Cursed Role — is a counter on itself by another name: self-growth or the card's drawback,
+        // with no target to aim and nothing to time. A Role on another creature reads PUMP or NEUTRALIZE.
+        if (leaf is CreateAuraTokenEffect && leaf.target == EffectTarget.Self) return true
         // "Exile that card with a dream counter on it instead of putting it into your graveyard"
         // (Goliath Daydreamer, All Hallow's Eve): where our own resolving spell goes, marked for another
         // ability of the card that later spends the pile. No target, nothing to time; that ability is read on its own.
@@ -973,11 +1023,12 @@ object AiReadingAudit {
                     blight.any { stage -> stage === it }
             }
         }
-        // Untargeted proliferate has no target to aim and no consistent window to hold it for (+1/+1
-        // counters want precombat, poison or loyalty don't care): which permanents and players get another
-        // counter is chosen at resolution, and the counters it adds are on the board the simulation prices.
-        // A targeted one ("each kind of counter on target permanent") stays flagged.
-        if (leaf is ProliferateEffect && leaf.target == null) return true
+        // Proliferate has no consistent window to hold it for (+1/+1 counters want precombat, poison or
+        // loyalty don't care): which permanents and players get another counter is chosen at resolution,
+        // and the counters it adds are on the board the simulation prices. A targeted one ("each kind of
+        // counter on target permanent or player", Skyship Plunderer) aims its one holder by polarity —
+        // TargetPolarityAnalyzer reads it either way, and the simulation weighs each candidate's counters.
+        if (leaf is ProliferateEffect) return true
         // Its controller venturing into the dungeon (Planar Ally's attack, Clattering Skeletons' ETB, Dungeon
         // Map) has no target to aim and no window to hold it for: which dungeon and room is chosen at
         // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.
@@ -1012,10 +1063,20 @@ object AiReadingAudit {
         // does not make them taggable.
         // So do the steps of a loop over the kinds already on a permanent — "for each kind of counter
         // on target permanent, put another counter of that kind on it or remove one from it"
-        // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on.
+        // (Dramatist's Puppet, Quarry Hauler): the kind is whatever the iteration lands on — and the
+        // one-kind form, "choose a counter on target permanent or player; give it another of that
+        // kind" (Animation Module, Clockspinning), proliferate on one holder, whose kind is whatever
+        // its controller picks among the ones already there.
+        // The counted and chosen moves read the same way even when they do name a kind, because a
+        // move of +1/+1 counters is a gain where they land and a loss where they leave, and which side
+        // wins is the board's call: Tester of the Tangential's "move X +1/+1 counters", Goldberry's
+        // per-kind prompts, Aetherborn Marauder gathering +1/+1 counters from your other permanents
+        // (each prompt answered by simulating the board).
         if (leaf is MoveAllCountersEffect || leaf is MoveAllLastKnownCountersEffect ||
+            leaf is MoveCountersEffect || leaf is MoveChosenCountersToTargetEffect ||
+            leaf is MoveCountersEachKindMissingEffect ||
             leaf is RemoveAnyNumberOfCountersEffect || leaf is RemoveCountersOfIteratedKindEffect ||
-            (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom == CounterKindSource.ITERATION)
+            (leaf is AddCountersOfChosenKindEffect && leaf.kindFrom != CounterKindSource.LISTED_ABSENT)
         ) return true
         // "Remove any number of counters from among creatures you control" (Galloping Lizrog) takes
         // counters off its controller's own permanents to pay for a payoff beside it (the doubled
@@ -1034,6 +1095,8 @@ object AiReadingAudit {
             // when it has none: the same self-growth as a plain counter on Self, with no target to aim;
             // when to activate it, mid-combat too, is the simulation's call.
             is AdaptEffect -> leaf.target
+            // "A kind of counter it doesn't have, from among …" on its own source (Crystalline Giant).
+            is AddCountersOfChosenKindEffect -> leaf.target
             else -> return false
         }
         // A counter on a player (poison, rad, energy) is a clock or a resource, like life loss: no
@@ -1114,7 +1177,7 @@ object AiReadingAudit {
 
     /** The targets [CardIntentAnalyzer] reads as a player rather than a permanent (its `hitsAnotherPermanent`). */
     private fun isPlayerTarget(target: EffectTarget): Boolean = when (target) {
-        is EffectTarget.PlayerRef, EffectTarget.Controller, EffectTarget.TargetController,
+        is EffectTarget.PlayerRef, is EffectTarget.ControllerOfPipelineTarget, EffectTarget.Controller, EffectTarget.TargetController,
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
         else -> false
     }
@@ -1230,7 +1293,10 @@ object AiReadingAudit {
         val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
         return sources.isNotEmpty() && sources.all { source ->
             source is CardSource.BattlefieldMatching &&
-                (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou)
+                (source.player == Player.You || source.filter.controllerPredicate == ControllerPredicate.ControlledByYou ||
+                    // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
+                    // Tetravites back: the source's own creations are its drawback, whoever controls them.
+                    StatePredicate.CreatedBySource in source.filter.statePredicates)
         }
     }
 

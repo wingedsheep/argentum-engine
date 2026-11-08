@@ -298,8 +298,28 @@ class SacrificeAndPayContinuationResumer(
 
         // Player paid the cost — discard the selected cards through the shared discard path, so a
         // card-intrinsic discard replacement (madness, CR 702.35a) applies here too.
-        val result = services.zones.discardCards(state, playerId, selectedCards)
-        return checkForMore(result.state, result.events)
+        return payUnlessDiscard(state, continuation, selectedCards, checkForMore)
+    }
+
+    /**
+     * Discard [cards] to pay [continuation]'s "unless you discard" demand, caused by the spell or
+     * ability that made it ([EffectDiscardDestinations.payUnlessDiscard]); may pause for a
+     * discard-destination choice (Nephalia Academy).
+     */
+    private fun payUnlessDiscard(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        cards: List<EntityId>,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        val result = com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.payUnlessDiscard(
+            services.effectExecutorRegistry, state, continuation.playerId, cards,
+            demandedBy = continuation.abilityControllerId, sourceId = continuation.sourceId,
+            origin = com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter
+                .startedBy(SacrificeAndPayContinuationResumer::class, continuation.programOrigin),
+        ).toExecutionResult()
+        if (result.error != null || result.outcome is Outcome.Paused) return result
+        return checkForMore(result.newState, result.events.toList())
     }
 
     /**
@@ -320,8 +340,8 @@ class SacrificeAndPayContinuationResumer(
             return executePayOrSufferConsequence(state, continuation, checkForMore)
         }
 
-        // Player chose to pay - execute random discard
-        val result = com.wingedsheep.engine.handlers.effects.player.PayOrSufferExecutor.executeRandomDiscard(
+        // Player chose to pay - pick the random cards, then discard them
+        val (picked, afterShuffle) = com.wingedsheep.engine.handlers.effects.player.PayOrSufferExecutor.pickRandomDiscard(
             services.zones,
             state,
             continuation.playerId,
@@ -329,7 +349,7 @@ class SacrificeAndPayContinuationResumer(
             continuation.requiredCount,
             continuation.sourceId
         )
-        return checkForMore(result.state, result.events.toList())
+        return payUnlessDiscard(afterShuffle, continuation, picked, checkForMore)
     }
 
     /**
@@ -352,12 +372,8 @@ class SacrificeAndPayContinuationResumer(
             return executePayOrSufferConsequence(state, continuation, checkForMore)
         }
 
-        val result = com.wingedsheep.engine.handlers.effects.player.PayOrSufferExecutor.executeDiscardHand(
-            services.zones,
-            state,
-            continuation.playerId
-        )
-        return checkForMore(result.state, result.events.toList())
+        // An empty hand pays for free (nothing moves).
+        return payUnlessDiscard(state, continuation, state.getHand(continuation.playerId).toList(), checkForMore)
     }
 
     /**

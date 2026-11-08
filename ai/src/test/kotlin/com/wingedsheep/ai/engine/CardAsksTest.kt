@@ -9,6 +9,7 @@ import com.wingedsheep.ai.engine.knowledge.DeckSynergy
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.sdk.model.CardDefinition
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -99,5 +100,18 @@ class CardAsksTest : FunSpec({
             return scores.getValue("Bonesplitter").total - scores.getValue("Grizzly Bears").total
         }
         gap(plain.withSynergyAxes(defs)) shouldBeGreaterThan gap(plain)
+    }
+
+    test("a count of your artifacts and the artifacts that pay for improvise ask for artifacts") {
+        // "Loses life equal to the number of artifacts you control", "+X/-X where X is the number
+        // of artifacts you control", "nonartifact spells you cast have improvise".
+        for (asker in listOf("Tezzeret, Master of Metal", "Tezzeret the Schemer", "Inspiring Statuary")) {
+            withClue("$asker asks ${read(asker).asks}") {
+                answers(asker, "Bonesplitter") shouldBe true
+                answers(asker, "Grizzly Bears") shouldBe false
+            }
+        }
+        // The spells Statuary grants improvise to are every deck's: that grant asks for nothing.
+        answers("Inspiring Statuary", "Lightning Bolt") shouldBe false
     }
 })

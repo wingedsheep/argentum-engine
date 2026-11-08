@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.mtg.sets.definitions.blb.cards.FestivalOfEmbers
 import com.wingedsheep.mtg.sets.definitions.blb.cards.OtterballAntics
@@ -333,6 +334,19 @@ class CastFromZoneEnumeratorTest : FunSpec({
                 .castActionsFor("Squee, the Immortal").first()
 
             cast.sourceZone shouldBe "EXILE"
+        }
+
+        test("Squee exiled face down has no characteristics, so no cast from exile (CR 406.3a)") {
+            val driver = setupP1(
+                battlefield = listOf("Mountain", "Mountain", "Mountain"),
+                exile = listOf("Squee, the Immortal"),
+                extraSetCards = listOf(SqueeTheImmortal)
+            )
+            val squeeId = driver.game.state.getZone(ZoneKey(driver.player1, Zone.EXILE)).single()
+            val hidden = driver.game.state.getEntity(squeeId)!!.with(FaceDownComponent)
+            driver.game.replaceState(driver.game.state.withEntity(squeeId, hidden))
+
+            driver.enumerateFor(driver.player1) shouldNotContainCastOf "Squee, the Immortal"
         }
 
         test("Squee with no mana is shown as unaffordable") {

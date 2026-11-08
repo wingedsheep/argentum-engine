@@ -70,7 +70,8 @@ internal object CastSettledConditions {
         DynamicAmount.SnowManaSpent, is DynamicAmount.DistinctColorsManaSpent,
         DynamicAmount.PermanentsSacrificedThisWay, DynamicAmount.TotalPowerSacrificedThisWay,
         DynamicAmount.CountersRemovedAsCost -> true
-        is DynamicAmount.ContextProperty -> amount.key == ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT
+        is DynamicAmount.ContextProperty -> amount.key == ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT ||
+            amount.key == ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE
         is DynamicAmount.Add -> isSettled(amount.left) && isSettled(amount.right)
         is DynamicAmount.Subtract -> isSettled(amount.left) && isSettled(amount.right)
         is DynamicAmount.Max -> isSettled(amount.left) && isSettled(amount.right)

@@ -32,6 +32,7 @@ import com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardU
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
@@ -182,7 +183,11 @@ class CastZoneResolver(
         cardId: EntityId,
         action: CastSpell? = null
     ): MayCastSelfFromZones? {
-        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        val container = state.getEntity(cardId) ?: return null
+        // A card exiled face down has no characteristics (CR 406.3a): its own cast permission is
+        // gone with them, whatever the hidden card says — mirrors the enumerator gate.
+        if (container.has<FaceDownComponent>()) return null
+        val cardComponent = container.get<CardComponent>() ?: return null
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
 
         // A permission applies if the card is currently in one of its named zones for this player

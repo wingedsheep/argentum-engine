@@ -35,6 +35,8 @@ class TournamentController(
         val setNames: List<String>,
         val boosterCount: Int,
         val gamesPerMatch: Int,
+        /** Games per match: 1, or 3 for a best-of-three. */
+        val bestOf: Int = 1,
         val deckFormat: String? = null,
         val hostName: String? = null,
         /** The host's account avatar id, or null for a guest — drawn beside "Hosted by". */
@@ -102,6 +104,7 @@ class TournamentController(
                     setNames = lobby.setNames,
                     boosterCount = lobby.boosterCount,
                     gamesPerMatch = lobby.gamesPerMatch,
+                    bestOf = lobby.bestOf,
                     deckFormat = lobby.deckFormat?.name,
                     hostName = host?.playerName,
                     hostAvatar = host?.avatar,

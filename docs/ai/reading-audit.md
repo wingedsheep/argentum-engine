@@ -45,8 +45,10 @@ Two label shapes need explaining:
 - An "if you do" gate (`you may pay {E}. If you do, …`, `you may discard a card. If you do, …`) is
   read through to its payoff, so a flag on one names the effect behind the gate, never
   `GatedEffect`. Only a gate an opponent decides (the punisher shape) is still a `GatedEffect` leaf,
-  read as what both of its branches do (Clash of Elements tucks the permanent either way); one
-  whose branches share nothing (Risk Factor) is flagged as `GatedEffect`.
+  read as what both of its branches do (Clash of Elements tucks the permanent either way). A true
+  punisher, whose decider's branch only damages or drains the decider (Risk Factor, Pia's
+  Revolution), reads as both payoffs and aims its slot at the player it punishes; any other gate
+  whose branches share nothing is flagged as `GatedEffect`.
 - "Do X N times" (`RepeatDynamicTimesEffect`) is read as `X`, so a flag on one names the effect it
   repeats.
 - `Pipeline(<from>→<to>)` is a lowered library, graveyard or hand pipeline (gather, select, move,

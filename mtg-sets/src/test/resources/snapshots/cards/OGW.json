@@ -530,6 +530,78 @@
     ]
 }
 
+// Expedition Raptor
+{
+    "name": "Expedition Raptor",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, support 2. (Put a +1/+1 counter on each of up to two other target creatures.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Expedition Raptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, support 2 — put a +1/+1 counter on each of up to two other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/819d11eb-960b-4116-ba09-f03bff88b4e7.jpg?1783937927",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Goblin Dark-Dwellers
 {
     "name": "Goblin Dark-Dwellers",
@@ -848,6 +920,77 @@
     ]
 }
 
+// Relief Captain
+{
+    "name": "Relief Captain",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Kor Knight Ally",
+    "oracleText": "When this creature enters, support 3. (Put a +1/+1 counter on each of up to three other target creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Relief Captain:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, support 3 — put a +1/+1 counter on each of up to three other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "Sometimes gestures of support are small. Sometimes not.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ecacff4-87b9-4cc1-bfbe-019cfda82d17.jpg?1783937924",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ruin in Their Wake
 {
     "name": "Ruin in Their Wake",
@@ -1029,6 +1172,75 @@
     ]
 }
 
+// Shoulder to Shoulder
+{
+    "name": "Shoulder to Shoulder",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Support 2. (Put a +1/+1 counter on each of up to two target creatures.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Chris Rallis",
+        "flavorText": "\"Sea Gate may have fallen, but we still stand. We still fight.\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49d11865-a1ea-4f2e-b7da-31630c6d0272.jpg?1783937924",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sifter of Skulls
 {
     "name": "Sifter of Skulls",
@@ -1179,6 +1391,85 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Stone Haven Outfitter
+{
+    "name": "Stone Haven Outfitter",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Artificer Ally",
+    "oracleText": "Equipped creatures you control get +1/+1.\nWhenever an equipped creature you control dies, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stone Haven Outfitter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "The makers and menders are the first called to battle and the last to leave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1b98e63-f23d-432a-86ae-f88bdad2f648.jpg?1783937922",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Equipped creatures will get just +1/+1 from Stone Haven Outfitter, no matter how many Equipment are attached to them. Similarly, the last ability will trigger just once per equipped creature."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "In this context, \"equipped creatures you control\" and \"equipped creature you control\" refer to any creatures you control with Equipment attached to them. In the highly unusual case that Stone Haven Outfitter becomes an Equipment, the meaning of its abilities doesn't change. The bonuses continue to refer to any equipped creature you control. They aren't bonuses applied solely to the creature Stone Haven Outfitter is attached to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

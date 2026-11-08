@@ -269,9 +269,7 @@ data class ForEachEffect(
  * "Deal X damage to that permanent all creatures an opponent controls".
  */
 private fun renderGroupDescription(innerText: String, filter: GroupFilter, noRegenerate: Boolean): String {
-    // Strip the leading "all " from the filter description so we can splice it in
-    // after "each".
-    val each = "each ${filter.description.removePrefix("all ").trimStart()}"
+    val each = filter.eachDescription
     val rewritten = if (innerText.contains(ITERATION_ENTITY_NOUN, ignoreCase = true)) {
         innerText.replace(ITERATION_ENTITY_NOUN, each, ignoreCase = true)
     } else {

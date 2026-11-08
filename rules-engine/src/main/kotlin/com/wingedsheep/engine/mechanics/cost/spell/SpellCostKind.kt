@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
@@ -143,6 +144,8 @@ class SpellCostOffer {
     val sacrificeTargets = mutableListOf<EntityId>()
     var reducingCost: AdditionalCost.AnyNumberForCostReduction? = null
     var reducingCandidates = emptyList<EntityId>()
+    /** The generic mana in the offer's total cost before [reducingCost]'s discount (CR 601.2f). */
+    var reducingGenericBefore: Int? = null
     var variablePermanentsCost: CostAtom.VariablePermanents? = null
     var variablePermanentsTargets = emptyList<EntityId>()
     var exileTargets = emptyList<EntityId>()
@@ -152,6 +155,8 @@ class SpellCostOffer {
     var discardCount = 0
     /** Set by a variable discard ("discard X cards"): [discardCount] is then its minimum. */
     var discardMaxCount: Int? = null
+    /** Set by "discard X cards": the picker takes exactly the announced X (`AdditionalCostData.countIsX`). */
+    var discardCountIsX: Boolean = false
     var discardDescription: String? = null
     var bounceTargets = emptyList<EntityId>()
     var bounceCount = 0
@@ -250,11 +255,11 @@ class SpellCostLedger(
      * Sacrifices [permId] as a cost: the sacrifice record (for "whenever you sacrifice"), the
      * sacrifice event, and the move to the graveyard with its leave-the-battlefield events.
      */
-    fun sacrifice(permId: EntityId) {
+    fun sacrifice(permId: EntityId, options: ZoneEntryOptions = ZoneEntryOptions()) {
         val permName = state.getEntity(permId)?.get<CardComponent>()?.name
         val tracked = ZoneTransitionService.trackPermanentSacrifice(state, listOf(permId), playerId)
         events.add(PermanentsSacrificedEvent(playerId, listOf(permId), listOfNotNull(permName)))
-        val transition = zones.moveToZone(tracked, permId, Zone.GRAVEYARD)
+        val transition = zones.moveToZone(tracked, permId, Zone.GRAVEYARD, options)
         events.addAll(transition.events)
         state = transition.state
     }

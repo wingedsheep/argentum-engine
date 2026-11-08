@@ -14,7 +14,6 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
-import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.PreparedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
@@ -699,7 +698,6 @@ internal class AffectsFilterResolver(
         // the identical answer to PredicateEvaluator's.
         is StatePredicate.HasDealtDamage ->
             hasDealtDamage(container, state.turnNumber, predicate)
-        StatePredicate.HasDealtCombatDamageToPlayer -> container.has<HasDealtCombatDamageToPlayerComponent>()
         StatePredicate.StartedTurnUntapped ->
             com.wingedsheep.engine.core.ControlHistory.startedTurnUntapped(state, entityId)
         is StatePredicate.ControlledContinuouslySince ->

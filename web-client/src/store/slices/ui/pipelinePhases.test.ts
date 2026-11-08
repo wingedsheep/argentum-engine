@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computePhases, dropSacrificeXPickerAtZero, enterPhase, mergeResult } from './pipelinePhases'
+import { computePhases, dropXCountPickerAtZero, enterPhase, mergeResult } from './pipelinePhases'
 import type { LegalActionInfo } from '@/types/messages'
 import type { PipelinePhase } from '../types'
 
@@ -543,6 +543,21 @@ describe('enterPhase — X-driven target counts', () => {
     expect(captureXTargeting({ xConstrainsTargetCountExactly: true }, 0)).toMatchObject({ minTargets: 0, maxTargets: 0 })
   })
 
+  it('names the chosen X in the banner', () => {
+    expect(captureXTargeting({ targetDescription: 'up to X target creatures' }, 2))
+      .toMatchObject({ targetDescription: 'up to 2 target creatures' })
+    const req = {
+      index: 0,
+      description: 'up to X target creatures or planeswalkers',
+      minTargets: 0,
+      maxTargets: 1,
+      validTargets: ['a'],
+      xConstrainsCount: true,
+    }
+    expect(captureXTargeting({ targetRequirements: [req] }, 3))
+      .toMatchObject({ targetDescription: 'up to 3 target creatures or planeswalkers' })
+  })
+
   it('per-requirement exactness applies to multi-requirement actions', () => {
     const req = (index: number, exact: boolean) => ({
       index,
@@ -645,7 +660,7 @@ describe('Sacrifice X creatures — exact-X sacrifice picker', () => {
         description: 'Sacrifice X creatures you control',
         validSacrificeTargets: ['a', 'b', 'c'],
         sacrificeCount: 0,
-        sacrificeCountIsX: true,
+        countIsX: true,
       },
     })
   }
@@ -686,7 +701,50 @@ describe('Sacrifice X creatures — exact-X sacrifice picker', () => {
   it('skips the sacrifice picker when X is 0', () => {
     const info = sacrificeXAction()
     const rest: PipelinePhase[] = [{ type: 'costPayment' }, { type: 'targeting' } as PipelinePhase]
-    expect(dropSacrificeXPickerAtZero(rest, info, 0)).toEqual([{ type: 'targeting' }])
-    expect(dropSacrificeXPickerAtZero(rest, info, 2)).toEqual(rest)
+    expect(dropXCountPickerAtZero(rest, info, 0)).toEqual([{ type: 'targeting' }])
+    expect(dropXCountPickerAtZero(rest, info, 2)).toEqual(rest)
+  })
+})
+
+describe('Discard X cards — exact-X discard picker', () => {
+  function discardXAction(): LegalActionInfo {
+    return castAction({
+      description: "Cast Nahiri's Wrath",
+      hasXCost: true,
+      maxAffordableX: 3,
+      additionalCostInfo: {
+        costType: 'DiscardCard',
+        description: 'Discard X cards',
+        validDiscardTargets: ['a', 'b', 'c'],
+        discardCount: 0,
+        discardMaxCount: 3,
+        countIsX: true,
+      },
+    })
+  }
+
+  it('announces X before the discard is picked', () => {
+    expect(computePhases(discardXAction(), { autoTapEnabled: true })[0]).toEqual({ type: 'xSelection' })
+  })
+
+  it('requires exactly the chosen X discards', () => {
+    const info = discardXAction()
+    let captured: Record<string, unknown> | null = null
+    const store = {
+      startTargeting: (arg: Record<string, unknown>) => { captured = arg },
+    } as unknown as Parameters<typeof enterPhase>[3]
+    enterPhase({ type: 'costPayment' }, info, { ...info.action, xValue: 2 } as never, store, undefined)
+    expect(captured).toMatchObject({
+      validTargets: ['a', 'b', 'c'],
+      minTargets: 2,
+      maxTargets: 2,
+      isDiscardSelection: true,
+    })
+  })
+
+  it('skips the discard picker when X is 0', () => {
+    const info = discardXAction()
+    const rest: PipelinePhase[] = [{ type: 'costPayment' }, { type: 'targeting' } as PipelinePhase]
+    expect(dropXCountPickerAtZero(rest, info, 0)).toEqual([{ type: 'targeting' }])
   })
 })

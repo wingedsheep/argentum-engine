@@ -151,18 +151,22 @@ object SpellCosts {
 
     /**
      * The X ceiling [costs] put on the cast's announcement when they themselves read X — "pay X
-     * energy", "remove X counters from among …", "sacrifice X creatures" — independent of any `{X}` in the mana cost; null
-     * when none does. The tighter of the player-counter and permanent-counter pools.
+     * energy", "remove X counters from among …", "sacrifice X creatures", "discard X cards" —
+     * independent of any `{X}` in the mana cost; null when none does. The tightest of the pools.
+     * [castCardId] is the card being cast, which is on the stack before its costs are paid
+     * (CR 601.2a) and so never pays its own discard.
      */
     fun additionalCostMaxX(
         state: GameState,
         payer: EntityId,
         costs: List<AdditionalCost>,
         predicateEvaluator: PredicateEvaluator,
+        castCardId: EntityId? = null,
     ): Int? = listOfNotNull(
         PlayerCounterPayment.spellMaxX(state, payer, costs),
         RemoveCountersCostKind.maxX(state, payer, costs, predicateEvaluator),
         VariablePermanentsCostKind.maxX(state, payer, costs, predicateEvaluator),
+        VariableCardsCostKind.maxX(state, payer, costs, predicateEvaluator, castCardId),
     ).minOrNull()
 
     /** Expand [AdditionalCost.Composite] wrappers so every cost in the list stands on its own. */

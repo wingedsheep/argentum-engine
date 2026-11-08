@@ -76,6 +76,13 @@ data class CardIntent(
      */
     val pumpToughness: Int = 0,
     /**
+     * The largest fixed base toughness an expiring base P/T change of this card sets ("has base
+     * power and toughness 4/5 until end of turn", Perfected Theory; Phantasmal Form's 3/3), or null.
+     * The [pumpToughness] of a trick that *replaces* toughness instead of adding to it: [HoldPolicy]
+     * asks whether it lifts a creature out of a burn spell's range against the creature's own base.
+     */
+    val setToughness: Int? = null,
+    /**
      * Whether this card **always** enters the battlefield tapped — the Shivan Oasis clause, not the
      * shock-land one.
      *
@@ -288,6 +295,21 @@ enum class IntentTag {
     /** Draws cards. */
     DRAW,
 
+    /**
+     * Exiles cards off a library top that its controller may play this turn only — "exile the top
+     * three cards of your library. Until end of turn, you may play those cards" (Act on Impulse),
+     * "{R}, sacrifice two artifacts: exile the top card of your library. You may play that card this
+     * turn" (Scion of Opulence). Card advantage only when spent before cleanup, so it is not [DRAW]:
+     * a DRAW reading earns the end-step and idle-mana windows and counts the cards as held, and
+     * these would evaporate cast into an end step. Its window is a main phase of ours with mana
+     * left over to play what it exiles (`HoldPolicy.idleImpulseWindow`); cast or activated, never an
+     * opponent's turn.
+     *
+     * An impulse that lasts past this turn ("until the end of your next turn"), or a this-turn one
+     * made at the start of our own turn, is [DRAW] instead (`CardIntentAnalyzer.isLastingImpulse`).
+     */
+    IMPULSE,
+
     /** Searches a library for a card, or fetches one from outside the game (a wish). */
     TUTOR,
 
@@ -465,6 +487,17 @@ enum class IntentTag {
     SPELL_TAX,
 
     /**
+     * Makes its controller's own spells cost more — Geist-Fueled Scarecrow's "creature spells you
+     * cast cost {1} more", the Invasion Leeches' "white spells you cast cost {W} more", Derelor's
+     * "black spells you cast cost {B} more". A drawback on the card, like [COMBAT_RESTRICTION]: the
+     * price of an oversized body, never a payoff. Tagged so the static reads as understood instead
+     * of "abilities not recognised", and kept apart from [SPELL_TAX] (which taxes the opponent and
+     * counts as disruption) and [COST_REDUCER] (a discount) — either would price the tax as a plus.
+     * It earns no prior-ladder rung and the draft heuristic scores it below zero.
+     */
+    OWN_SPELL_TAX,
+
+    /**
      * Makes an opponent's creatures attack this turn if able — Imaginary Threats' "creatures target
      * opponent controls attack this turn if able", Kardur's "each creature your
      * opponents control attacks … if able".
@@ -511,6 +544,15 @@ enum class IntentTag {
      * is not opponent-facing either.
      */
     TOKEN_THEFT,
+
+    /**
+     * Shields its controller's hand against effect discards — Library of Leng's "if an effect causes
+     * you to discard a card, … you may put it on top of your library instead", Nephalia Academy's
+     * opponent-caused, revealed form ([DiscardShields]). The card it saves comes back as the next
+     * draw, which no board simulation sees. Without the tag the replacement read as "abilities not
+     * recognised". A defensive rider worth little in Limited, where discard is rare.
+     */
+    DISCARD_SHIELD,
 
     /**
      * Ends the game in its controller's favour outright — an opponent loses (Phage the Untouchable's

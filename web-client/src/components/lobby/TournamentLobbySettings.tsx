@@ -38,7 +38,7 @@ import styles from '../ui/GameUI.module.css'
  * | Cards | cube · card pool · sets · booster mix · ban list · packs · pick timer · cards per pick |
  * | Rules | preset · min deck size · singleton · copy limit |
  * | Table | teams · attack |
- * | Event | games per matchup |
+ * | Event | match length (best of 1 / 3), times each pair meets |
  * | This lobby | AI assistance |
  *
  * There is no Seats row to place: the lobby already holds as many players as its shape allows and
@@ -525,16 +525,47 @@ export function TournamentLobbySettings({
 
       {/* Only a bracket has matchups. */}
       {group === 'EVENT' && view.axes.event === 'ROUND_ROBIN' && (
-        <div className={styles.settingsRow}>
-          <span className={styles.settingsLabel}>Games per matchup</span>
-          <select
-            value={s.gamesPerMatch ?? 1}
-            onChange={(e) => updateLobbySettings({ gamesPerMatch: Number(e.target.value) })}
-            className={styles.settingsSelect}
-          >
-            {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
-        </div>
+        <>
+          <div className={styles.settingsRow}>
+            <SettingsLabel topicId="best-of-three">Match</SettingsLabel>
+            <div className={styles.variantGroup}>
+              <div className={styles.settingsButtons}>
+                <button
+                  onClick={() => updateLobbySettings({ bestOf: 1 })}
+                  className={`${styles.settingsButton} ${(s.bestOf ?? 1) < 3 ? styles.settingsButtonActive : ''}`}
+                  title="Each match is a single game"
+                >
+                  Best of 1
+                </button>
+                <button
+                  onClick={() => updateLobbySettings({ bestOf: 3 })}
+                  className={`${styles.settingsButton} ${(s.bestOf ?? 1) >= 3 ? styles.settingsButtonActive : ''}`}
+                  title="First to two game wins takes the match"
+                  data-testid="lobby-best-of-3"
+                >
+                  Best of 3
+                </button>
+              </div>
+              <div className={styles.variantCaption}>
+                {(s.bestOf ?? 1) >= 3
+                  ? s.allowsSideboarding === false
+                    ? 'First to two game wins. Decks stay as registered between games.'
+                    : 'First to two game wins. Players can sideboard between games.'
+                  : 'Each match is one game.'}
+              </div>
+            </div>
+          </div>
+          <div className={styles.settingsRow}>
+            <span className={styles.settingsLabel} title="How many separate matches each pair of players plays">Each pair meets</span>
+            <select
+              value={s.gamesPerMatch ?? 1}
+              onChange={(e) => updateLobbySettings({ gamesPerMatch: Number(e.target.value) })}
+              className={styles.settingsSelect}
+            >
+              {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n === 1 ? 'Once' : n === 2 ? 'Twice' : `${n} times`}</option>)}
+            </select>
+          </div>
+        </>
       )}
 
       {group === 'LOBBY' && (

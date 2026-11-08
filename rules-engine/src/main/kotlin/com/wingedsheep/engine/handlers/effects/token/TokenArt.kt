@@ -97,6 +97,7 @@ object TokenArt {
             // printed (only the named Ragavan); this is the green Ape token art (C14).
             "Monkey" to "https://cards.scryfall.io/art_crop/front/8/3/8343e00c-5fc6-46a0-a238-3759338dced4.jpg?1562542388",
             "Ninja" to "https://cards.scryfall.io/art_crop/front/a/e/aeec04b1-475c-4e55-b72f-327ea5258146.jpg?1732302748",
+            "Nymph" to "https://cards.scryfall.io/art_crop/front/3/6/36c8c075-9597-412e-9fc4-9d73b4405d12.jpg?1783931603",
             "Octopus" to "https://cards.scryfall.io/art_crop/front/1/9/19ac0a35-fae7-49f9-ae96-4406df992dc9.jpg?1562639696",
             "Ogre" to "https://cards.scryfall.io/art_crop/front/3/c/3ca43425-d007-4181-9182-18dc01ad7e90.jpg?1674337914",
             "Ooze" to "https://cards.scryfall.io/art_crop/front/c/2/c2fc764f-d5fe-452a-8474-5ad380048faf.jpg?1771590231",
@@ -139,6 +140,7 @@ object TokenArt {
             "Warrior" to "https://cards.scryfall.io/art_crop/front/1/2/12856d0c-240f-42c6-80dd-715ccf314645.jpg?1561756680",
             "Wizard" to "https://cards.scryfall.io/art_crop/front/7/b/7b0b95ce-4821-4955-a27c-93471240f54b.jpg?1557575896",
             "Wolf" to "https://cards.scryfall.io/art_crop/front/8/9/89b89a55-3ea2-4186-b946-06831bc16169.jpg?1736468521",
+            "Worm" to "https://cards.scryfall.io/art_crop/front/b/3/b3c0ff23-6c20-4637-99d6-6cbca26d75ba.jpg?1783904324",
             "Wraith" to "https://cards.scryfall.io/art_crop/front/9/a/9afb58e8-f5a7-49f9-8287-77757bd3268c.jpg",
             "Wurm" to "https://cards.scryfall.io/art_crop/front/9/f/9fc04b19-e636-4868-8224-a5da75ea01c8.jpg?1561757701",
             "Zombie" to "https://cards.scryfall.io/art_crop/front/8/e/8e7b5995-ee8b-40d1-b157-8df96c02cc5b.jpg?1761614925",

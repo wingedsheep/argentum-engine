@@ -63,6 +63,8 @@ class SynergyPresenceAiTest : ScenarioTestBase() {
             axes("Soul Warden").rewards shouldContain SynergyAxis.CREATURES_ENTER
             axes("Monastery Swiftspear").rewards shouldContain SynergyAxis.SPELLS
             axes("Young Pyromancer").rewards shouldContain SynergyAxis.SPELLS
+            // "Whenever a spell or ability you control counters a spell" cashes in counterspells.
+            axes("Baral, Chief of Compliance").rewards shouldContain SynergyAxis.SPELLS
 
             // Feeders: an activated sacrifice outlet, a sacrifice as an additional cost, creature tokens,
             // lifelink, life gain on an effect, an instant.

@@ -76,7 +76,8 @@ enum class ZoneChangeCause {
      * The move is a discard caused by a spell or ability an **opponent** of the discarding player
      * controls (Wilt-Leaf Liege, Loxodon Smiter). Excludes discarding to hand size in the cleanup
      * step (a turn-based action, not a spell or ability) and discarding to pay a cost of your own
-     * spell or ability.
+     * spell or ability. Includes a discard you choose to pay an opponent's "unless" demand — ward's
+     * discard, Perplex's "unless its controller discards their hand" (Nephalia Academy's ruling).
      */
     DiscardedByOpponentEffect,
 
@@ -3561,7 +3562,8 @@ data class ExileCounteredSpellInstead(
     override val appliesTo: EventPattern = EventPattern.CounterSpellEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
-        append("If ${appliesTo.description}, instead exile that spell")
+        // The pattern reads in the trigger's tense ("… counters a spell"); a replacement is "would".
+        append("If ${appliesTo.description.replace(" counters a spell", " would counter a spell")}, instead exile that spell")
         then?.let { append(" and ${it.description.replaceFirstChar { c -> c.lowercase() }}") }
     }
 

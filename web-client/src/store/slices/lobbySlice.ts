@@ -21,6 +21,8 @@ import {
   createStopLobbyMessage,
   createUpdateLobbySettingsMessage,
   createReadyForNextRoundMessage,
+  createSubmitMatchDeckMessage,
+  createEditMatchDeckMessage,
   createAddExtraRoundMessage,
   createSubmitSealedDeckMessage,
   createUnsubmitDeckMessage,
@@ -65,6 +67,8 @@ export interface LobbySliceActions {
   /** Host picks what one AI seat plays (premade-decks lobbies — elsewhere it builds from its pool). */
   setLobbyAiDeck: (playerId: string, spec: AiDeckSpec) => void
   readyForNextRound: () => void
+  submitMatchDeck: (deck: Readonly<Record<string, number>>, playFirst?: boolean) => void
+  editMatchDeck: () => void
   addExtraRound: () => void
   spectateGame: (gameSessionId: string) => void
   stopSpectating: () => void
@@ -159,6 +163,14 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
 
   readyForNextRound: () => {
     getWebSocket()?.send(createReadyForNextRoundMessage())
+  },
+
+  submitMatchDeck: (deck, playFirst) => {
+    getWebSocket()?.send(createSubmitMatchDeckMessage(deck, playFirst))
+  },
+
+  editMatchDeck: () => {
+    getWebSocket()?.send(createEditMatchDeckMessage())
   },
 
   addExtraRound: () => {

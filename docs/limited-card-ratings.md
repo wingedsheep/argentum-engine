@@ -66,13 +66,17 @@ uses it only when it has at least 50 games behind it.
 
 For a card no table rates, a structural estimate from its `CardDefinition`:
 
-- **Base** — creatures by stat efficiency (power + toughness per mana), planeswalkers at 3.0, other
-  spells by type (instant 2.2, sorcery 2.0, …).
+- **Base** — creatures by stat efficiency (power + toughness per mana), Vehicles the same on their
+  printed body less 0.15 per point of crew (never below a blank artifact's 1.5), planeswalkers at
+  3.0, other spells by type (instant 2.2, sorcery 2.0, …).
 - **Keywords** — evasion and combat keywords add value.
 - **Effects** — `EffectWalker` walks the script and sums what each effect is worth: removal (exile
   above destroy above bounce), damage by amount, card draw, scry and surveil, tokens, pumps, control
   magic, counters. A composite is capped, a "may" is discounted; a modal spell is worth its best
-  mode(s) plus 0.2 for the choice, and a `ForEach` its body. Static abilities count too (an Aura's
+  mode(s) plus 0.2 for the choice, and a `ForEach` its body. A punisher — a gate an opponent
+  decides between two payoffs of ours (Risk Factor) — is worth its weaker branch, the one they
+  take; a tax they can pay off is worth nothing. Damage to a slot only a player fills ("target
+  opponent") prices as life loss, a clock rather than removal. Static abilities count too (an Aura's
   or Equipment's bonus by its size, an anthem, a granted keyword, a Pacifism lock; a keyword a
   creature grants itself like a printed one; a static gated on a condition at 0.6 of its worth),
   and a non-land
@@ -87,10 +91,13 @@ For a card no table rates, a structural estimate from its `CardDefinition`:
   analyzer's reading beats the leaf's own fields, the reading wins: a -N/-N it reads as removal
   scores like N damage (a dynamic -X/-X like unknown-X damage), a gather → move pipeline it reads
   as a wrath or a picked destroy scores like a destroy, and one it reads as card draw ("look at the
-  top, put one into your hand") like a card drawn.
+  top, put one into your hand") like a card drawn. A this-turn impulse ("exile the top three cards
+  of your library. Until end of turn, you may play those cards") scores a little under one: the
+  cards must be spent before cleanup.
 - **Activation costs and drawbacks** — activated payoffs costing more than four mana retain a
   `4 / mana value` share of their usual value. Self-only blocking restrictions and requirements
-  to attack or block alongside another creature reduce the static score.
+  to attack or block alongside another creature reduce the static score, as does a tax on its
+  controller's own spells (Geist-Fueled Scarecrow's "creature spells you cast cost {1} more").
 - **Rarity and curve** — small nudges (mythic +0.8, a 2-drop +0.3, a 6-drop −0.2).
 
 It reads what a card *does*, so it tells removal from a vanilla body, but it can't see synergy or

@@ -539,6 +539,7 @@ class CombatAdvisor(
                 mandatoryBlockerIds.add(blockerId)
             }
         }
+        swapForcedBlockersForBetterFits(state, projected, playerId, validBlockers, mandatory.keys, mandatoryMap, mandatoryBlockerIds)
 
         val sortedAttackers = attackers.sortedByDescending { CombatMath.effectiveDamage(projected, it) }
 
@@ -656,6 +657,48 @@ class CombatAdvisor(
     /** Saved proposals inform the plan but remain choices owned by the earlier teammate. */
     private fun blockDeclaration(state: GameState, playerId: EntityId, plan: Map<EntityId, List<EntityId>>): DeclareBlockers =
         DeclareBlockers(playerId, plan - SharedTeamBlockChoices.proposals(state, playerId).keys)
+
+    /**
+     * The engine's suggested declaration names one blocker per requirement, but a requirement any
+     * of several blockers can obey ("must be blocked by an Eldrazi if able") doesn't care which.
+     * Swap each such forced single block for the interchangeable blocker that fares best against
+     * its attacker — one that survives, then one that also kills it, then the cheapest — whenever
+     * the engine rejects the forced declaration without that block and accepts it with the swap.
+     */
+    private fun swapForcedBlockersForBetterFits(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        validBlockers: List<EntityId>,
+        suggested: Set<EntityId>,
+        mandatoryMap: MutableMap<EntityId, List<EntityId>>,
+        mandatoryBlockerIds: MutableSet<EntityId>,
+    ) {
+        for (blockerId in suggested) {
+            val attacker = mandatoryMap[blockerId]?.singleOrNull() ?: continue
+            val fit = compareBy<EntityId>(
+                { !CombatMath.duel(state, projected, attacker, it).second },
+                { CombatMath.duel(state, projected, attacker, it).first },
+                { -CombatMath.creatureValue(state, projected, it) },
+            )
+            val better = validBlockers
+                .filter { it != blockerId && it !in mandatoryBlockerIds && canBlock(state, projected, attacker, it) }
+                .filter { fit.compare(it, blockerId) > 0 }
+                .sortedWith(fit.reversed())
+            if (better.isEmpty()) continue
+            // Only a block a live requirement forces is open to a swap: the engine must reject the
+            // declaration without it, and then accepting the swapped one means the swap obeys it.
+            val without = mandatoryMap - blockerId
+            if (simulator.simulate(state, blockDeclaration(state, playerId, without)) !is SimulationResult.Illegal) continue
+            for (alternative in better) {
+                val swapped = mandatoryMap - blockerId + (alternative to listOf(attacker))
+                if (simulator.simulate(state, blockDeclaration(state, playerId, swapped)) is SimulationResult.Illegal) continue
+                mandatoryMap.remove(blockerId); mandatoryMap[alternative] = listOf(attacker)
+                mandatoryBlockerIds.remove(blockerId); mandatoryBlockerIds.add(alternative)
+                break
+            }
+        }
+    }
 
     /**
      * Pairwise combat checks cannot see assignment-wide restrictions such as "can't be blocked by

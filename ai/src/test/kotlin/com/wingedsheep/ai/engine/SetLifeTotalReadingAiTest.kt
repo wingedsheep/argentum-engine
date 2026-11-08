@@ -1,6 +1,10 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
+import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.SynergyAxes
+import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.core.ActivateAbility
@@ -10,12 +14,18 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
  * "Target player's life total becomes 1" (Vraska, Relic Seeker's −10): a total set low is a loss
  * for the player who holds it, so the slot is an opponent. Unread, the slot was a coin toss, and
  * the AI could set its own life to 1.
+ *
+ * "Your life total becomes 26" (Providence) is carried out as a gain of the difference (rule
+ * 119.5): a fixed total of our own above the starting 20 reads as life gain, and feeds the lifegain
+ * axis. One set lower (Form of the Dragon's 5, Form of the Dinosaur's 15) is no gain.
  */
 class SetLifeTotalReadingAiTest : ScenarioTestBase() {
 
@@ -25,6 +35,17 @@ class SetLifeTotalReadingAiTest : ScenarioTestBase() {
         test("a low fixed life total is harmful to its target player") {
             val ultimate = cardRegistry.getCard("Vraska, Relic Seeker")!!.script.activatedAbilities.last()
             intents.effectTargetPolarities(ultimate.effect, ultimate.targetRequirements) shouldBe listOf(TargetPolarity.HARMFUL)
+        }
+
+        test("our own life total set above the starting 20 reads as life gain; set lower it does not") {
+            val providence = cardRegistry.requireCard("Providence")
+            CardIntentAnalyzer.analyze(providence).tags shouldContain IntentTag.LIFEGAIN
+            SynergyAxes.of(providence).feeds shouldContain SynergyAxis.LIFEGAIN
+            for (name in listOf("Form of the Dragon", "Form of the Dinosaur")) {
+                withClue(name) {
+                    CardIntentAnalyzer.analyze(cardRegistry.requireCard(name)).tags shouldNotContain IntentTag.LIFEGAIN
+                }
+            }
         }
 
         test("Vraska's −10 sets the opponent's life to 1, not ours") {

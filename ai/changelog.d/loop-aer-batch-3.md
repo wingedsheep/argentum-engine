@@ -1,0 +1,1 @@
+- #4536 The AI reads "exile target card from your graveyard, then search your library for cards with the same name" (Secret Salvage) as a tutor for its own card, aiming it at its own graveyard instead of leaving the target unread

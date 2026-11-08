@@ -504,13 +504,15 @@ data class AdditionalCostData(
      */
     val sacrificeMinPowerIsX: Boolean = false,
     /**
-     * "Sacrifice X creatures" (Eliminate the Competition, `CostAtom.VariablePermanents.exactly`):
-     * the `SacrificeVariable` picker must take exactly the X announced with the cast — not
-     * [sacrificeCount]-or-more. The action carries `hasXCost` with `maxAffordableX` capped at the
+     * A cost whose count *is* the X announced with the cast (CR 601.2b): the picker must take
+     * exactly that X — not its floor-or-more. "Sacrifice X creatures" (Eliminate the Competition,
+     * `CostAtom.VariablePermanents.exactly`) on the `SacrificeVariable` picker, and "discard X
+     * cards" (Channeled Force, Nahiri's Wrath, `AdditionalCost.VariableCards`) on the `DiscardCard`
+     * picker, whose [discardCount]/[discardMaxCount] are then only the X range. The action carries `hasXCost` with `maxAffordableX` capped at the
      * candidates (and at the legal targets of an "X target …" requirement); the client asks X
      * first, then requires exactly that many picks, and skips the picker at X = 0.
      */
-    val sacrificeCountIsX: Boolean = false,
+    val countIsX: Boolean = false,
     /**
      * The spell's remaining mana cost after sacrificing each candidate in [validSacrificeTargets],
      * keyed by that candidate — emerge (CR 702.119), where the emerge cost is reduced by generic
@@ -548,6 +550,22 @@ data class AdditionalCostData(
     val validExileTargets: List<EntityId> = emptyList(),
     val exileMinCount: Int = 0,
     val exileMaxCount: Int = 0,
+    /**
+     * Generic mana each pick takes off the spell's total cost — set only on the zero-floor picker of
+     * "you may sacrifice / tap / exile any number of …; this spell costs {N} less for each"
+     * (`AdditionalCost.AnyNumberForCostReduction`), 0 everywhere else. The offer's
+     * `manaCostString` is priced at the largest effective discount (every candidate picked, a
+     * candidate that is also a counted mana source netted at N − 1); with
+     * [genericBeforeReduction] a payer prices any smaller pick exactly — the AI reads both to pick
+     * only as many as the cast needs.
+     */
+    val reductionPerPick: Int = 0,
+    /**
+     * The generic mana in the total cost before that discount — what `manaCostString`'s generic
+     * was before every candidate's [reductionPerPick] came off it, floored at zero (CR 601.2f).
+     * Null when the offer has no such discount.
+     */
+    val genericBeforeReduction: Int? = null,
     /**
      * The **floor on the combined measure** of the exiled cards, and what each offered card is
      * worth toward it — the sum gate shared by every graveyard exile cost whose constraint is a

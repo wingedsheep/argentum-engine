@@ -47,6 +47,20 @@ class LinkedExilePileReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a pile stocked off our own library top and handed back to us reads as card draw") {
+            // Bomat Courier: "whenever this attacks, exile the top card of your library face down …
+            // sacrifice this: put all cards exiled with this into their owners' hands" — our cards.
+            val bomat = card("Bomat Courier")
+            withClue("the attack exile banks a card and the sacrifice cashes the bank") { tags("Bomat Courier") shouldContain IntentTag.DRAW }
+            for (ability in bomat.script.triggeredAbilities.map { it.effect } + bomat.script.activatedAbilities.map { it.effect }) {
+                withClue("each half reads as the draw: $ability") {
+                    CardIntentAnalyzer.analyzeEffect(ability, pileCast = CardIntentAnalyzer.pileCastTags(listOf(bomat.script))).tags shouldContain IntentTag.DRAW
+                }
+            }
+            val reading = AiReadingAudit.read(bomat)
+            withClue("Bomat Courier: $reading") { reading.readFully shouldBe true }
+        }
+
         test("the draft heuristic pays for the exile the pile grant turns into a card") {
             val theater = card("Theater of Horrors")
             val withoutGrant = theater.copy(

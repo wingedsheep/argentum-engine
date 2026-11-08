@@ -62,5 +62,6 @@ val GuardianOfTheGreatConduit = card("Guardian of the Great Conduit") {
         collectorNumber = "271"
         artist = "Christine Choi"
         imageUri = "https://cards.scryfall.io/normal/front/7/2/72638ac5-84fd-4688-9b81-0eea3c05e53e.jpg?1783937136"
+        inBooster = false
     }
 }

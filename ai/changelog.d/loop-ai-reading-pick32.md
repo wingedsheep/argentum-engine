@@ -1,0 +1,1 @@
+- #4519 Reads exile-all wraths (Extinction Event, Ravnica at War, Urza's Ruinous Blast, Temporary Lockdown) as sweepers, so it keeps them over a filler card when discarding and times them like any wrath

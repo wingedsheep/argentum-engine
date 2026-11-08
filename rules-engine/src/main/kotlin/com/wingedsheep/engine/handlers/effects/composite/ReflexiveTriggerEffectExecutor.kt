@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -24,9 +25,11 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlin.reflect.KClass
 
@@ -73,6 +76,15 @@ class ReflexiveTriggerEffectExecutor(
         effect: ReflexiveTriggerEffect,
         context: EffectContext
     ): EffectResult {
+        val (restricted, restrictedContext) = restrictSacrificeChoices(state, effect, context)
+        return executeRestricted(state, restricted, restrictedContext)
+    }
+
+    private fun executeRestricted(
+        state: GameState,
+        effect: ReflexiveTriggerEffect,
+        context: EffectContext
+    ): EffectResult {
         // An action that can't be performed never happens, so CR 603.12's "when you do" never
         // triggers. Gating here rather than inside the optional branch covers both templates:
         // the "you may [action]" prompt is meaningless (saying yes would no-op the action while
@@ -93,6 +105,54 @@ class ReflexiveTriggerEffectExecutor(
             return EffectResult.success(state)
         }
         return executeActionThenEmit(state, effect, context)
+    }
+
+    /**
+     * "You may sacrifice another nonland permanent. When you do, …" is authored as a pipeline that
+     * *chooses* the permanent ([SelectTargetEffect]) and then sacrifices that choice
+     * ([SacrificeTargetEffect] over its `PipelineTarget`). The choice step is generic and can't tell
+     * it is picking sacrifice fodder, so on its own it would offer a permanent that can't be
+     * sacrificed (Quark, Humble Proprietor's Treasures) — the sacrifice then silently no-ops while
+     * the action still completes, arming the "when you do" for nothing.
+     *
+     * Every such choice is therefore narrowed to what [SacrificeCostLegality.canBeSacrificed]
+     * allows: the permanents that can't be sacrificed are published under
+     * [UNSACRIFICEABLE_COLLECTION] and added to the choice's [SelectTargetEffect.excluding]. The
+     * feasibility check and the real selection both honour `excluding`, so they agree — with only
+     * unsacrificeable candidates the may-question is never asked. Re-entering after the yes/no
+     * recomputes the collection, so it always reflects the board as the choice is made.
+     */
+    private fun restrictSacrificeChoices(
+        state: GameState,
+        effect: ReflexiveTriggerEffect,
+        context: EffectContext
+    ): Pair<ReflexiveTriggerEffect, EffectContext> {
+        val action = effect.action as? CompositeEffect ?: return effect to context
+        // Only a sacrifice the resolving player performs is a choice of fodder; "its controller
+        // sacrifices it" sacrifices a permanent named some other way.
+        val sacrificed = action.effects
+            .filterIsInstance<SacrificeTargetEffect>()
+            .filterNot { it.sacrificedByItsController }
+            .mapNotNullTo(HashSet()) { (it.target as? EffectTarget.PipelineTarget)?.collectionName }
+        if (sacrificed.isEmpty()) return effect to context
+
+        val restricted = action.effects.map { step ->
+            if (step is SelectTargetEffect && step.storeAs in sacrificed &&
+                UNSACRIFICEABLE_COLLECTION !in step.excluding
+            ) {
+                step.copy(excluding = step.excluding + UNSACRIFICEABLE_COLLECTION)
+            } else {
+                step
+            }
+        }
+        val unsacrificeable = state.getBattlefield()
+            .filterNot { SacrificeCostLegality.canBeSacrificed(state, it) }
+        return effect.copy(action = action.copy(effects = restricted)) to context.copy(
+            pipeline = context.pipeline.copy(
+                storedCollections = context.pipeline.storedCollections +
+                    (UNSACRIFICEABLE_COLLECTION to unsacrificeable)
+            )
+        )
     }
 
     private fun presentOptionalChoice(
@@ -489,6 +549,9 @@ class ReflexiveTriggerEffectExecutor(
     }
 
     companion object {
+        /** Engine-internal pipeline collection: the permanents on the battlefield that can't be sacrificed. */
+        private const val UNSACRIFICEABLE_COLLECTION = "\$unsacrificeable"
+
         /**
          * Build the [ReflexiveAbilityTriggeredEvent] for a completed action, carrying the reflexive
          * effect, its target requirements, and whatever pipeline state the action produced. Shared

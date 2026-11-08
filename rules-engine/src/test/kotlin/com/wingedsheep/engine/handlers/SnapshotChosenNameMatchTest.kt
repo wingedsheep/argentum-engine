@@ -50,7 +50,7 @@ class SnapshotChosenNameMatchTest : FunSpec({
         snap: EntitySnapshot,
         filter: GameObjectFilter,
         context: PredicateContext,
-    ) = evaluator.matchesSnapshot(state, snap, filter, context, onBattlefield = true)
+    ) = evaluator.matchesSnapshot(state, snap, filter, context, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
 
     val named = GameObjectFilter.Any.namedFromChosenComponent()
 

@@ -230,6 +230,76 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (mythics.toDouble() / packs) shouldBe (15.0 / 121 plusOrMinus 0.025)
     }
 
+    test("Kaladesh draft pack is 10 commons, 3 uncommons and a rare or mythic, never a Planeswalker Deck card") {
+        // Retail pack: 1 rare or mythic, 3 uncommons, 10 commons and a basic land (supplied at deck
+        // building). The rare sheet prints each rare twice and each mythic once: 15 mythics in 121.
+        val kld = boosterGenerator.availableSets["KLD"].shouldNotBeNull()
+        kld.fullyImplemented shouldBe true
+        kld.boosterStrategy shouldBe StandardBooster(commons = 10, mythicChance = 15.0 / 121)
+        val planeswalkerDeck = setOf(
+            "Chandra, Pyrogenius", "Flame Lash", "Liberating Combustion", "Renegade Firebrand",
+            "Stone Quarry", "Nissa, Nature's Artisan", "Guardian of the Great Conduit", "Terrain Elemental",
+            "Verdant Crescendo", "Woodland Stream",
+        )
+        val eligible = kld.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // The Planeswalker Deck cards (#265-274) are authored or reprinted but never reach the booster pool.
+        eligible.map { it.name }.toSet().intersect(planeswalkerDeck) shouldBe emptySet()
+        // Scryfall `set:kld is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("KLD")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (mythics.toDouble() / packs) shouldBe (15.0 / 121 plusOrMinus 0.025)
+    }
+
+    test("Aether Revolt draft pack is 10 commons, 3 uncommons and a rare or mythic, never a Planeswalker Deck card") {
+        // Retail pack: 1 rare or mythic, 3 uncommons, 10 commons and a token or basic land (supplied at
+        // deck building). The rare sheet prints each rare twice and each mythic once: 12 mythics in 96.
+        val aer = boosterGenerator.availableSets["AER"].shouldNotBeNull()
+        aer.fullyImplemented shouldBe true
+        aer.boosterStrategy shouldBe StandardBooster(commons = 10, mythicChance = 12.0 / 96)
+        val planeswalkerDeck = setOf(
+            "Ajani, Valiant Protector", "Inspiring Roar", "Ajani's Comrade", "Ajani's Aid", "Tranquil Expanse",
+            "Tezzeret, Master of Metal", "Tezzeret's Betrayal", "Pendulum of Patterns", "Tezzeret's Simulacrum",
+            "Submerged Boneyard",
+        )
+        val eligible = aer.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // The Planeswalker Deck cards (#185-194) are authored or reprinted but never reach the booster pool.
+        eligible.map { it.name }.toSet().intersect(planeswalkerDeck) shouldBe emptySet()
+        // Scryfall `set:aer is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 70, Rarity.UNCOMMON to 60, Rarity.RARE to 42, Rarity.MYTHIC to 12,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("AER")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (mythics.toDouble() / packs) shouldBe (12.0 / 96 plusOrMinus 0.025)
+    }
+
     test("Kaldheim draft pack opens 10 commons, 3 uncommons, a rare or mythic and one snow land") {
         // WotC "Kaldheim Product Overview": 1 rare/mythic, 3 uncommons, 10 commons, 1 snow land (basic
         // or dual). MTGJSON's land sheet weights each snow dual 5 and each snow-basic art 7 (50/120

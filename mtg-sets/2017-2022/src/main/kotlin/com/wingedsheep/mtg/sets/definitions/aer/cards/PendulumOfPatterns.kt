@@ -44,5 +44,6 @@ val PendulumOfPatterns = card("Pendulum of Patterns") {
         artist = "Raoul Vitale"
         flavorText = "Its elaborate designs reveal secrets of aether's flow."
         imageUri = "https://cards.scryfall.io/normal/front/d/1/d19751aa-823e-4a0f-a004-dee333b34327.jpg"
+        inBooster = false
     }
 }

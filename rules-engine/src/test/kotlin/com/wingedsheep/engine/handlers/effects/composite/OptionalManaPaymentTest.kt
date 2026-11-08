@@ -17,8 +17,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * Pins the recognition boundary of [asOptionalManaPayment] — the one piece of new logic introduced
  * when `Effects.MayPay` migrated from a bespoke wrapper+executor onto the [GatedEffect] frame.
- * The engine keys the optional-mana-payment UX (manual mana-source selection at resolution; the
- * pay-then-target order for targeted triggers) off this matcher, so its exactness is load-bearing.
+ * The engine keys the optional-mana-payment UX (manual mana-source selection at resolution) off
+ * this matcher, so its exactness is load-bearing.
  */
 class OptionalManaPaymentTest : FunSpec({
 

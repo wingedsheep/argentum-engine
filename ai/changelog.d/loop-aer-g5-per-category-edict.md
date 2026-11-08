@@ -1,0 +1,1 @@
+- #4537 Facing a per-category edict (Perilous Predicament), the AI is asked which creature of each category to sacrifice and gives up its least valuable one instead of reading the choice as a keep.

@@ -179,7 +179,7 @@ data class RawBoardFeatures(
 
         private val EVASION = setOf(
             Keyword.FLYING.name, Keyword.MENACE.name, Keyword.FEAR.name,
-            Keyword.INTIMIDATE.name, Keyword.SHADOW.name,
+            Keyword.INTIMIDATE.name, Keyword.SHADOW.name, Keyword.SKULK.name,
         )
         private val REMOVAL_TAGS = setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER)
         private val THREAT_TAGS = setOf(IntentTag.ANTHEM, IntentTag.TOKEN_MAKER, IntentTag.TAPPER)

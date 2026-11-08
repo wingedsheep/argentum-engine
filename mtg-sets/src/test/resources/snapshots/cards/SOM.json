@@ -4604,6 +4604,71 @@
     ]
 }
 
+// Sunspear Shikari
+{
+    "name": "Sunspear Shikari",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Soldier",
+    "oracleText": "As long as this creature is equipped, it has first strike and lifelink. (It deals combat damage before creatures without first strike. Damage dealt by it also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsEquipped"
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsEquipped"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Allen Williams",
+        "flavorText": "Left without their leader Raksha, the leonin split into two prides: one side supported the regent kha, while the other rebelled in fury.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20ac29ef-02e1-4500-bb83-5987beeaa849.jpg?1783941741"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sylvok Replica
 {
     "name": "Sylvok Replica",
@@ -5150,6 +5215,54 @@
         "rarity": "UNCOMMON",
         "artist": "Mike Bierek",
         "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8da37ba-52e3-417e-8d7b-6c3e060552a4.jpg?1783941692"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Turn Aside
+{
+    "name": "Turn Aside",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell that targets a permanent you control.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Shelly Wan",
+        "flavorText": "\"It's not my job to ask our leaders about their experiments at the Knowledge Pool. It's my job to make sure they can continue performing them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56226f57-6ff0-430e-aba6-6b3dd51f8d3c.jpg?1783941734",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Turn Aside can target a spell that has multiple targets, as long as at least one of those targets is a permanent you control."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"

@@ -9463,44 +9463,53 @@
                         }
                     },
                     "then": {
-                        "type": "DealDamage",
-                        "amount": {
-                            "type": "EntityProperty",
-                            "entity": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "damageSource": {
                                 "type": "BoundVariable",
                                 "name": "t0"
-                            },
-                            "numericProperty": "Power"
-                        },
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t1"
-                        },
-                        "damageSource": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        }
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature Dinosaur ctrl:you"
-                    },
-                    "id": "t0"
-                },
-                "additionalTargetRequirements": [
-                    {
-                        "type": "TargetOther",
-                        "baseRequirement": {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": "creature"
                             }
                         },
-                        "id": "t1"
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature Dinosaur ctrl:you"
+                                },
+                                "id": "t0"
+                            },
+                            {
+                                "type": "TargetOther",
+                                "baseRequirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    }
+                                },
+                                "id": "t1"
+                            }
+                        ],
+                        "descriptionOverride": "target Dinosaur you control deals damage equal to its power to another target creature."
                     }
-                ]
+                }
             }
         ]
     },

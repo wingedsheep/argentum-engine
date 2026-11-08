@@ -52,6 +52,7 @@ export type ServerMessage =
   | TournamentByeMessage
   | RoundCompleteMessage
   | MatchCompleteMessage
+  | BetweenGamesMessage
   | PlayerReadyForRoundMessage
   | TournamentCompleteMessage
   | TournamentResumedMessage
@@ -1424,11 +1425,12 @@ export interface AdditionalCostInfo {
    */
   readonly sacrificeMinPowerIsX?: boolean
   /**
-   * "Sacrifice X creatures" (Eliminate the Competition): the `SacrificeVariable` picker takes
-   * exactly the X announced in the xSelection phase, not `sacrificeCount`-or-more. At X = 0 there
-   * is nothing to pick and the phase is skipped. The server re-validates the count.
+   * The cost's count is the X announced in the xSelection phase: "sacrifice X creatures"
+   * (Eliminate the Competition, `SacrificeVariable`) or "discard X cards" (Nahiri's Wrath,
+   * `DiscardCard`). The picker takes exactly that X, not its floor-or-more. At X = 0 there is
+   * nothing to pick and the phase is skipped. The server re-validates the count.
    */
-  readonly sacrificeCountIsX?: boolean
+  readonly countIsX?: boolean
   /**
    * Emerge (CR 702.119): the mana cost that remains after sacrificing each candidate, keyed by
    * that candidate. Emerge is the only cost whose mana half depends on which permanent pays its
@@ -1830,7 +1832,12 @@ export interface LobbySettings {
   readonly maxPlayers: number
   readonly pickTimeSeconds: number
   readonly picksPerRound: number  // Draft only: 1 or 2 (Pick 2 mode)
+  /** How many times each pair meets in the round-robin — each meeting its own match. */
   readonly gamesPerMatch: number
+  /** Games per match: 1, or 3 for a best-of-three. Optional for a server that predates it. */
+  readonly bestOf?: number
+  /** Whether decks may change between the games of a best-of-three (false for Jumpstart / Commander). */
+  readonly allowsSideboarding?: boolean
   readonly isPublic: boolean
   /** Optional deck-construction format restriction (Standard/Modern/Commander/...). */
   readonly deckFormat?: DeckFormat | null
@@ -2112,6 +2119,9 @@ export interface MatchResultInfo {
   readonly isBye: boolean
   /** True when the server decided this AI-vs-AI match without playing it. No game, so no replay. */
   readonly isSimulated?: boolean
+  /** Game wins in the match — 1–0 for a single game, up to 2 in a best-of-three. */
+  readonly player1GameWins?: number
+  readonly player2GameWins?: number
 }
 
 export interface TournamentStartedMessage {
@@ -2131,6 +2141,51 @@ export interface TournamentMatchStartingMessage {
   readonly round: number
   readonly gameSessionId: string
   readonly opponentName: string
+  /** Which game of the match this is (1-based). */
+  readonly gameNumber?: number
+  /** Games per match — 1, or 3 for a best-of-three. */
+  readonly bestOf?: number
+  /** Match score going into this game, from our seat. */
+  readonly yourGameWins?: number
+  readonly opponentGameWins?: number
+}
+
+/**
+ * A best-of-three is between two of its games. Re-sent whole on every change (either seat readying,
+ * a reconnect), so the client replaces its copy rather than merging.
+ */
+export interface BetweenGamesMessage {
+  readonly type: 'betweenGames'
+  readonly lobbyId: string
+  readonly round: number
+  readonly opponentName: string
+  readonly bestOf: number
+  /** The game about to be played (2 or 3). */
+  readonly nextGameNumber: number
+  readonly yourGameWins: number
+  readonly opponentGameWins: number
+  readonly drawnGames: number
+  /** The game that just ended, from our seat. */
+  readonly lastGameResult: 'WIN' | 'LOSS' | 'DRAW'
+  /** False for formats whose decks are fixed (Jumpstart, Commander): a plain "next game" step. */
+  readonly canSideboard: boolean
+  /** The deck for the next game — the registered deck until we sideboard. */
+  readonly deck: Readonly<Record<string, number>>
+  /** What could come in: the unplayed pool in Limited, the brought sideboard otherwise. */
+  readonly sideboard: Readonly<Record<string, number>>
+  /** The deck registered for the tournament — what "Reset" returns to. */
+  readonly registeredDeck: Readonly<Record<string, number>>
+  /** Card details for every name above. */
+  readonly cards: readonly SealedCardInfo[]
+  /** Basic lands that may be added freely (Limited). Empty when basics come from the sideboard. */
+  readonly basicLands: readonly SealedCardInfo[]
+  readonly minDeckSize: number
+  /** We lost the last game, so we pick who takes the first turn (CR 103.1). */
+  readonly youChoosePlayDraw: boolean
+  /** Once the chooser has decided: who takes the first turn. */
+  readonly startingPlayer: 'YOU' | 'OPPONENT' | null
+  readonly youAreReady: boolean
+  readonly opponentReady: boolean
 }
 
 export interface TournamentByeMessage {
@@ -2473,6 +2528,8 @@ export type ClientMessage =
   | UpdateLobbySettingsMessage
   // Tournament Messages
   | ReadyForNextRoundMessage
+  | SubmitMatchDeckMessage
+  | EditMatchDeckMessage
   | AddExtraRoundMessage
   | SpectateGameMessage
   | StopSpectatingMessage
@@ -2948,6 +3005,7 @@ export interface UpdateLobbySettingsMessage {
   readonly boosterDistribution?: Readonly<Record<string, number>>
   readonly maxPlayers?: number
   readonly gamesPerMatch?: number
+  readonly bestOf?: number
   readonly pickTimeSeconds?: number
   readonly picksPerRound?: number
   readonly isPublic?: boolean
@@ -3003,6 +3061,19 @@ export interface UpdateLobbySettingsMessage {
 
 export interface ReadyForNextRoundMessage {
   readonly type: 'readyForNextRound'
+}
+
+/** Between games: play this deck for the rest of the match, and ready up for the next game. */
+export interface SubmitMatchDeckMessage {
+  readonly type: 'submitMatchDeck'
+  readonly deck: Readonly<Record<string, number>>
+  /** Read only from the seat choosing who goes first; omitted / true means "play". */
+  readonly playFirst?: boolean
+}
+
+/** Between games: take back a ready to keep sideboarding. */
+export interface EditMatchDeckMessage {
+  readonly type: 'editMatchDeck'
 }
 
 export interface AddExtraRoundMessage {
@@ -3255,6 +3326,7 @@ export function createUpdateLobbySettingsMessage(
     boosterDistribution?: Readonly<Record<string, number>>
     maxPlayers?: number
     gamesPerMatch?: number
+    bestOf?: number
     pickTimeSeconds?: number
     picksPerRound?: number
     isPublic?: boolean
@@ -3284,6 +3356,17 @@ export function createUpdateLobbySettingsMessage(
 
 export function createReadyForNextRoundMessage(): ReadyForNextRoundMessage {
   return { type: 'readyForNextRound' }
+}
+
+export function createSubmitMatchDeckMessage(
+  deck: Readonly<Record<string, number>>,
+  playFirst?: boolean,
+): SubmitMatchDeckMessage {
+  return playFirst === undefined ? { type: 'submitMatchDeck', deck } : { type: 'submitMatchDeck', deck, playFirst }
+}
+
+export function createEditMatchDeckMessage(): EditMatchDeckMessage {
+  return { type: 'editMatchDeck' }
 }
 
 export function createAddExtraRoundMessage(): AddExtraRoundMessage {

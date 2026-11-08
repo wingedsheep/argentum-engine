@@ -2858,6 +2858,77 @@
     "colorIdentityOverride": []
 }
 
+// Repel the Darkness
+{
+    "name": "Repel the Darkness",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Scott Chou",
+        "flavorText": "A boon to those who cannot see in the dark. A bane to those who live in it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90fa47c3-3209-4e01-920a-aed2184520c2.jpg?1783942003",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "You may target zero, one, or two creatures. The creatures don't need to be untapped."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If you target zero creatures, all that happens is you draw a card."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If you target one creature and that target is illegal as Repel the Darkness resolves, the spell doesn't resolve. You don't draw a card."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If you target two creatures and they're both illegal as Repel the Darkness resolves, the spell doesn't resolve; you don't draw a card. If just one target is illegal, the spell does resolve; the remaining legal target becomes tapped (if it's untapped at that time) and you draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Runed Servitor
 {
     "name": "Runed Servitor",

@@ -1,3 +1,47 @@
+// Ambassador Oak
+{
+    "name": "Ambassador Oak",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Treefolk Warrior",
+    "oracleText": "When this creature enters, create a 1/1 green Elf Warrior creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ambassador Oak:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Steve Prescott",
+        "flavorText": "Treefolk and elves share a common interest in the forests, but really the elves just feel at home with the view from above.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/904d3416-70bf-4043-8078-f5f033ecfb31.jpg?1783942781"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ballyrush Banneret
 {
     "name": "Ballyrush Banneret",

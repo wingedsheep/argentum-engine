@@ -281,7 +281,8 @@ object EffectWalker {
      * the payoff is the price, not what the ability is for, and reading it would call Pia's
      * "you may discard a card" a discard spell. A gate someone else decides ([GatedEffect.decisionMaker],
      * the punisher shape — "its owner may put it on top of their library") stays a leaf: which branch
-     * happens is the opponent's call, so neither branch is what the card does.
+     * happens is the opponent's call, so each reader opens it its own way — the intent reader as
+     * either branch (`CardIntentAnalyzer.punisherBranchLeaves`), the rater at its weaker one.
      *
      * "Proliferate X times" ([RepeatDynamicTimesEffect], Tam, the Possibility) opens onto its body:
      * doing a thing N times is for what the thing is for, and N is only how much.
@@ -306,7 +307,7 @@ object EffectWalker {
      * Whether the card's controller picks a [ChooseActionEffect]'s branch. Then every branch is
      * something the card can do, as a mode is: "add {R} or {G}", "protection from artifacts or from
      * the color of your choice". A branch someone else picks is the punisher shape — "that player
-     * chooses …" — and, as for a gate someone else decides, no branch is what the card does.
+     * chooses …" — and, unlike a gate someone else decides, no reader opens it yet.
      */
     fun choosesOwnBranch(effect: ChooseActionEffect): Boolean =
         effect.player == EffectTarget.Controller || effect.player == EffectTarget.PlayerRef(Player.You)

@@ -1,0 +1,1 @@
+- #4542 Reads a pipeline that returns its graveyard targets to our hand (Wildest Dreams) as recursion that names our best cards, a card put onto the battlefield under a target opponent's control (Dubious Challenge) as the spell's price rather than an unread slot, and "distribute +1/+1 counters" (Verdurous Gearhulk) as feeding the counters axis

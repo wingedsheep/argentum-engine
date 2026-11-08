@@ -852,10 +852,20 @@ data class ChangeTargetEffect(
      * Specimen) say so with `withSingleTarget()` on the targeting filter.
      */
     val newTarget: EffectTarget? = null,
+    /**
+     * The spell or ability whose target changes. The default, [EffectTarget.ContextTarget] `(0)`, is
+     * "target spell or ability" — the effect's own first target. [EffectTarget.TriggeringEntity]
+     * redirects the spell a cast trigger fired on, which is never targeted: "Whenever an opponent
+     * casts a spell, if it has a single target, change the target to enchanted creature if able"
+     * (Captured by the Consulate — pair it with `interveningIf = Conditions.TriggeringSpellHasSingleTarget`).
+     * Mirrors [ChangeTriggeringObjectTargetsEffect.spell], the all-targets sibling.
+     */
+    val spell: EffectTarget = EffectTarget.ContextTarget(0),
 ) : Effect {
     override val description: String = buildString {
-        if (newTarget != null) append("Change a target of target spell or ability")
-        else append("Change the target of target spell or ability with a single target")
+        val spellText = if (spell == EffectTarget.ContextTarget(0)) "target spell or ability" else spell.description
+        if (newTarget != null) append("Change a target of $spellText")
+        else append("Change the target of $spellText with a single target")
         if (onlyIfCurrentTargetIsController) append(" if that target is you")
         if (newTarget != null) append(" to ${newTarget.description}")
         if (newTargetMustBePlayer) append(". The new target must be a player")
@@ -1138,6 +1148,13 @@ enum class PossibleTargetCopies {
  * creatures. Copy that spell. The copy targets the chosen creature." — the copier picks one candidate
  * (no prompt when there is only one) and gets a single copy aimed at it.
  *
+ * [collection] narrows the candidates to the objects in a named pipeline collection — CR 707.10e, "copy a
+ * spell or ability and specify a new target for the copy". Frontline Heroism's "create a 1/1 red
+ * Soldier creature token with haste, then copy that spell. The copy targets that token." is
+ * `collection = CREATED_TOKENS` with `ONE_CHOSEN` after the `CreateToken`: no copy when the token isn't a
+ * legal target for every instance of "target", and when a doubler made two tokens the copier chooses
+ * one of them (the rule's own example — the copy never targets both).
+ *
  * An object flagged "can't be copied" yields no copies.
  *
  * @property target The spell or ability to copy — [EffectTarget.TriggeringEntity] for "copy that
@@ -1145,6 +1162,8 @@ enum class PossibleTargetCopies {
  * @property candidates Which objects the copies are aimed at, one copy each.
  * @property copier Who copies: controls the copies, and the reference player for [candidates].
  * @property selection Every candidate gets a copy, or only the one the copier chooses.
+ * @property collection When set, only objects in this pipeline collection are candidates (707.10e's
+ *   specified new target — e.g. `CREATED_TOKENS`); `null` is every object on the board.
  */
 @SerialName("CopyForOtherPossibleTargets")
 @Serializable
@@ -1154,9 +1173,19 @@ data class CopyForOtherPossibleTargetsEffect(
     val copier: Player = Player.You,
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val selection: PossibleTargetCopies = PossibleTargetCopies.EACH
+    val selection: PossibleTargetCopies = PossibleTargetCopies.EACH,
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val collection: String? = null
 ) : Effect {
     override val description: String = buildString {
+        if (collection != null) {
+            val copied = if (target == EffectTarget.TargetingSource) "that ability" else "that spell"
+            val chosen = if (collection == CREATED_TOKENS) "that token" else "one of those objects"
+            append(if (copier != Player.You) "${copier.description.replaceFirstChar { it.uppercase() }} copies " else "Copy ")
+            append("$copied. The copy targets $chosen")
+            return@buildString
+        }
         // [candidates] reads "you" as the copier, so another copier is "they".
         val phrase = TargetFilter(candidates).targetPhrase()
         val candidateText = if (copier == Player.You) phrase else phrase.replace("you control", "they control")

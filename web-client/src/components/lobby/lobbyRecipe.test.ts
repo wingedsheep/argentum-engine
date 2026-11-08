@@ -87,7 +87,7 @@ describe('recipeFromSelection', () => {
     // The whole point of Phase 0: the launch path used to invent `['ECL'], 6, 45`.
     for (const selection of everyReachableSelection()) {
       expect(recipeFromSelection(selection).settings).toEqual(selection.cards.kind === 'JUMP_IN'
-        ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1 } : {})
+        ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1, bestOf: 1 } : {})
     }
   })
 

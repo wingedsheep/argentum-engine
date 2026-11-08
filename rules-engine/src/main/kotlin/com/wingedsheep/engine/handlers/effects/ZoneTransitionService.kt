@@ -155,6 +155,13 @@ data class ZoneEntryOptions(
      */
     val craftMaterial: Boolean = false,
     /**
+     * True when this move is the sacrifice of the creature chosen to pay an emerge cost
+     * (CR 702.119a). Stamped onto the emitted [ZoneChangeEvent.emergeSacrifice] for "when you
+     * sacrifice this while casting a spell with emerge" (Foul Emissary). Set only by the emerge
+     * cast's cost payment.
+     */
+    val emergeSacrifice: Boolean = false,
+    /**
      * The player performing a move into a library — the one who chose the card and watched where
      * it landed, and so the one who may keep seeing it (CR 400.2). Only consulted for a
      * [Zone.LIBRARY] destination at a known position; see
@@ -1326,6 +1333,7 @@ class ZoneTransitionService(
                 // Only a battlefield exit can be a craft-material exile; the flag is carried on the
                 // ZoneEntryOptions by the Craft cost payment for each chosen material.
                 craftMaterial = leavingBattlefield && options.craftMaterial,
+                emergeSacrifice = leavingBattlefield && options.emergeSacrifice,
                 oldObject = oldObject,
                 newObject = newObject,
                 requestedDestination = destinationZone,
@@ -2103,6 +2111,26 @@ class ZoneTransitionService(
             discardingPlayerId: EntityId?
         ): Boolean = causeControllerId != null && discardingPlayerId != null &&
             state.isOpponentOf(causeControllerId, discardingPlayerId)
+
+        /**
+         * Whether a discard was caused the way a [ZoneChangeCause] qualifier asks — the one kernel
+         * behind the zone-change replacement (`RedirectZoneChange.requiredCause`), the discard
+         * trigger (`DiscardEvent.cause`) and the effect-discard destination replacement
+         * (`OptionalEffectDiscardDestination.appliesTo.cause`). [causeControllerId] is the controller
+         * of the spell or ability that caused the discard (null for costs and the cleanup discard).
+         */
+        fun discardCauseMatches(
+            state: GameState,
+            cause: com.wingedsheep.sdk.scripting.ZoneChangeCause,
+            causeControllerId: EntityId?,
+            discardingPlayerId: EntityId?,
+            asCyclingCost: Boolean,
+        ): Boolean = when (cause) {
+            com.wingedsheep.sdk.scripting.ZoneChangeCause.Any -> true
+            com.wingedsheep.sdk.scripting.ZoneChangeCause.DiscardedByOpponentEffect ->
+                isDiscardCausedByOpponent(state, causeControllerId, discardingPlayerId)
+            com.wingedsheep.sdk.scripting.ZoneChangeCause.NotCycled -> !asCyclingCost
+        }
 
         fun markDiscardCause(
             state: GameState,

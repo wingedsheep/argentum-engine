@@ -1144,6 +1144,40 @@
     ]
 }
 
+// Byway Courier
+{
+    "name": "Byway Courier",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "When this creature dies, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Byway Courier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "Investigate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Zoltan Boros",
+        "flavorText": "A good courier travels fast and asks no questions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f243a51-bbd3-4028-a469-469ab5591aae.jpg?1783937737"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Call the Bloodline
 {
     "name": "Call the Bloodline",
@@ -4274,6 +4308,47 @@
     ]
 }
 
+// Militant Inquisitor
+{
+    "name": "Militant Inquisitor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "This creature gets +1/+0 for each Equipment you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact Equipment"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"I am an instrument of the church wielded against Avacyn's enemies.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68d99f1f-80d6-4b5e-aeae-83fb8ae62cdc.jpg?1783937816"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Moonlight Hunt
 {
     "name": "Moonlight Hunt",
@@ -5075,6 +5150,32 @@
                                     "type": "Exists",
                                     "player": "You",
                                     "zone": "Battlefield",
+                                    "filter": "creature kw:skulk"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "SKULK",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
                                     "filter": "creature kw:trample"
                                 }
                             },
@@ -5137,7 +5238,7 @@
                             }
                         }
                     ],
-                    "descriptionOverride": "Creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, trample, and vigilance."
+                    "descriptionOverride": "Creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, skulk, trample, and vigilance."
                 }
             }
         ]
@@ -7083,6 +7184,62 @@
         "imageUri": "https://cards.scryfall.io/normal/front/b/4/b474378c-5fa8-418f-8d76-23e78003ed18.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Tenacity
+{
+    "name": "Tenacity",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+1 and gain lifelink until end of turn. Untap those creatures. (Damage dealt by those creatures also causes you to gain that much life.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK",
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "Thalia established the Order of Saint Traft in an effort to bring together cathars who would stand against the corruption of the Lunarch Council.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41fbe149-3e1f-495e-be1b-efc3a6dbcb08.jpg?1783937807"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // The Gitrog Monster

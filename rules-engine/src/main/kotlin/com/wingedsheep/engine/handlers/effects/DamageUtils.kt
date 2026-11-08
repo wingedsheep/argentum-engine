@@ -45,6 +45,8 @@ import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
 import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
+import com.wingedsheep.engine.state.components.battlefield.stamped
+import com.wingedsheep.sdk.scripting.predicates.DamageRecipientKind
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
@@ -301,7 +303,7 @@ object DamageUtils {
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
             if (sourceId != null) {
-                if (sourceSnapshot == null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
+                if (sourceSnapshot == null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount, isCombatDamage)
                 newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount, sourceSnapshot)
             }
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
@@ -433,7 +435,14 @@ object DamageUtils {
         }
 
         newState = newState.updateEntity(targetId) { WasDealtDamageThisTurnComponent.markedOn(it, isCombatDamage) }
-        if (sourceSnapshot == null) newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage)
+        if (sourceSnapshot == null) {
+            val recipientKind = when {
+                lifeComponent != null -> DamageRecipientKind.Player
+                projected.isCreature(targetId) -> DamageRecipientKind.Creature
+                else -> null
+            }
+            newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage, recipientKind)
+        }
         // Record the source on its controller's per-turn set of damage sources. Unlike the stamp
         // above this is not battlefield-only: a resolving burn spell is a source that dealt damage
         // just as much as a creature is (Case of the Burning Masks).
@@ -570,7 +579,7 @@ object DamageUtils {
         // here, so it is the one place to record the source's "has dealt damage to this player this
         // game" memory (The Fallen). Planeswalkers are recorded separately, at their own two
         // loyalty-removal sites.
-        val marked = sourceId?.takeIf { sourceSnapshot == null }?.let { markDealtDamageToThisGame(state, it, playerId, amount) } ?: state
+        val marked = sourceId?.takeIf { sourceSnapshot == null }?.let { markDealtDamageToThisGame(state, it, playerId, amount, isCombatDamage) } ?: state
         // Is the source an artifact at the moment it dealt the damage? For a source still on the
         // battlefield, its projected types are authoritative (a continuous effect may have added or
         // stripped artifact-ness). Only for a source that has already left do we fall back to its
@@ -1105,8 +1114,17 @@ object DamageUtils {
      *
      * [isCombatDamage] has no default: each caller must say whether this was combat damage, because
      * the lifetime marker keeps a separate combat stamp ("hasn't dealt combat damage yet").
+     * [recipient] has no default either: the kind of object the damage landed on — a creature, a
+     * player, or null for a planeswalker or battle that isn't a creature — which the marker records
+     * per kind ("dealt combat damage to a creature this turn").
      */
-    fun trackDamageDealt(state: GameState, sourceId: EntityId?, amount: Int, isCombatDamage: Boolean): GameState {
+    fun trackDamageDealt(
+        state: GameState,
+        sourceId: EntityId?,
+        amount: Int,
+        isCombatDamage: Boolean,
+        recipient: DamageRecipientKind?
+    ): GameState {
         if (sourceId == null || amount <= 0) return state
         // An ability can deal damage using a source that has already left. Do not stamp the
         // new card in its owner's graveyard with the old battlefield object's damage history.
@@ -1120,16 +1138,12 @@ object DamageUtils {
                 it.turnNumber == state.turnNumber && it.sourceObject == sourceObject
             }?.amount ?: 0
             val updated = container.with(DamageDealtThisTurnComponent(state.turnNumber, priorAmount + amount, sourceObject))
-            // Preserve the existing permanent-only lifetime marker's semantics. The combat stamp is
+            // Preserve the existing permanent-only lifetime marker's semantics. The combat stamps are
             // carried forward across a noncombat stamp, so a later ping can't erase "has dealt
             // combat damage".
             if (onBattlefield) {
-                val priorCombatTurn = container.get<HasDealtDamageComponent>()?.lastDealtCombatDamageTurn
                 updated.with(
-                    HasDealtDamageComponent(
-                        lastDealtDamageTurn = state.turnNumber,
-                        lastDealtCombatDamageTurn = if (isCombatDamage) state.turnNumber else priorCombatTurn
-                    )
+                    container.get<HasDealtDamageComponent>().stamped(state.turnNumber, isCombatDamage, recipient)
                 )
             } else {
                 updated
@@ -1198,19 +1212,26 @@ object DamageUtils {
      * memory behind The Fallen ("this game") and the per-turn "dealt damage to you / by this creature
      * this turn" readings, which compare the recorded turn stamp, plus the [amount] dealt to that
      * recipient this turn ("if it has dealt 10 or more damage to that player this turn" — Vessel of
-     * the All-Consuming). [recipientId] is a player or a planeswalker; the consumer decides which of
-     * them the printed line cares about.
+     * the All-Consuming). [isCombatDamage] also stamps the per-kind record (Hope of Ghirapur's
+     * "dealt combat damage by this creature this turn"). [recipientId] is a player or a
+     * planeswalker; the consumer decides which of them the printed line cares about.
      *
      * A no-op when the source entity is gone. Never cleared per turn; it outlives the source's move
      * off the battlefield as last-known information and is dropped on the card's next zone change
      * (see `DealtDamageToThisGameComponent`), so a permanent that leaves and returns starts over
      * (CR 400.7).
      */
-    fun markDealtDamageToThisGame(state: GameState, sourceId: EntityId, recipientId: EntityId, amount: Int): GameState {
+    fun markDealtDamageToThisGame(
+        state: GameState,
+        sourceId: EntityId,
+        recipientId: EntityId,
+        amount: Int,
+        isCombatDamage: Boolean
+    ): GameState {
         if (state.getEntity(sourceId) == null || amount <= 0) return state
         return state.updateEntity(sourceId) { c ->
             val current = c.get<DealtDamageToThisGameComponent>() ?: DealtDamageToThisGameComponent()
-            c.with(current.withDamageTo(recipientId, state.turnNumber, amount))
+            c.with(current.withDamageTo(recipientId, state.turnNumber, amount, isCombatDamage))
         }
     }
 
@@ -1753,17 +1774,6 @@ object DamageUtils {
     }
 
     /**
-     * Check if all damage from a specific source creature is prevented this turn.
-     * Used by Chain of Silence and similar "prevent all damage creature would deal" effects.
-     */
-    fun isAllDamageFromSourcePrevented(state: GameState, sourceId: EntityId): Boolean {
-        return state.floatingEffects.any { floatingEffect ->
-            floatingEffect.effect.modification is SerializableModification.PreventAllDamageDealtBy &&
-                sourceId in floatingEffect.effect.affectedEntities
-        }
-    }
-
-    /**
      * Check for damage redirection shields (Glarecaster, Zealous Inquisitor, Blood of the Martyr).
      *
      * Scans floating effects for RedirectNextDamage covering the entity.
@@ -2195,7 +2205,7 @@ object DamageUtils {
         if (filter == GameObjectFilter.Any) return true
         if (sourceId == null) return false
         val context = PredicateContext(controllerId = hostControllerId, sourceId = hostId, recipientId = recipientId)
-        return if (sourceSnapshot != null) predicateEvaluator.matchesSnapshot(state, sourceSnapshot, filter, context, onBattlefield = true)
+        return if (sourceSnapshot != null) predicateEvaluator.matchesSnapshot(state, sourceSnapshot, filter, context, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
         else predicateEvaluator.matches(state, projected, sourceId, filter, context)
     }
 

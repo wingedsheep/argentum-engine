@@ -43,5 +43,6 @@ val AjanisComrade = card("Ajani's Comrade") {
         artist = "James Ryman"
         flavorText = "\"I will go where the lion-man leads.\""
         imageUri = "https://cards.scryfall.io/normal/front/5/b/5bebef1c-2f03-4e0a-b3ba-861546ebf8a6.jpg?1783936714"
+        inBooster = false
     }
 }

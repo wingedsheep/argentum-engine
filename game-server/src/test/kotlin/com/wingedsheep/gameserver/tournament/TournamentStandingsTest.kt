@@ -58,43 +58,46 @@ class TournamentStandingsTest : FunSpec({
     }
 
     test("game-win % breaks a tie that match points and OMW% cannot") {
-        // A and B both finish 6 points over 4 matches (equal OMW%), but B drew three and never lost,
-        // so B's game-win % (1/1) tops A's (2/4). B must rank above A with reason GW.
+        // Best of three. A and B draw their match (a game each and a drawn game), then both beat C and
+        // D — A 2-0 each time, B 2-1. Same 7 points, and since A and B have the same match-win %, the
+        // same OMW% over a shared opponent pool. A dropped fewer games, so A ranks ahead with reason GW.
+        // (In best-of-one, GW% mirrors match-win %, so it can only break ties in longer matches.)
         val a = EntityId("A"); val b = EntityId("B")
-        val c = EntityId("C"); val d = EntityId("D"); val e = EntityId("E")
-        val manager = TournamentManager(
-            "lobby",
-            listOf(a to "A", b to "B", c to "C", d to "D", e to "E")
-        )
+        val c = EntityId("C"); val d = EntityId("D")
+        val manager = TournamentManager("lobby", listOf(a to "A", b to "B", c to "C", d to "D"), bestOf = 3)
 
-        manager.playOut { p1, p2 ->
-            when {
-                pair(p1, p2, b, a) -> b   // B beats A (B's only win)
-                pair(p1, p2, b, c) -> null // B draws C
-                pair(p1, p2, b, d) -> null // B draws D
-                pair(p1, p2, b, e) -> null // B draws E
-                pair(p1, p2, a, c) -> a   // A beats C
-                pair(p1, p2, a, d) -> a   // A beats D
-                pair(p1, p2, a, e) -> e   // A loses to E
-                pair(p1, p2, c, d) -> c
-                pair(p1, p2, c, e) -> c
-                pair(p1, p2, d, e) -> d
-                else -> null
+        // Each match's games in order, as the winner of each game (null = drawn game).
+        fun games(p1: EntityId, p2: EntityId): List<EntityId?> = when {
+            pair(p1, p2, a, b) -> listOf(a, b, null)
+            pair(p1, p2, a, c) || pair(p1, p2, a, d) -> listOf(a, a)
+            pair(p1, p2, b, c) -> listOf(b, c, b)
+            pair(p1, p2, b, d) -> listOf(b, d, b)
+            else -> listOf(c, c) // C beats D
+        }
+        var game = 0
+        while (true) {
+            val round = manager.startNextRound() ?: break
+            for (match in round.matches) {
+                val p2 = match.player2Id ?: continue
+                for (winner in games(match.player1Id, p2)) {
+                    val sessionId = "g${game++}"
+                    match.gameSessionId = sessionId
+                    manager.reportMatchResult(sessionId, winner)
+                }
+                match.isComplete shouldBe true
             }
         }
 
-        val info = manager.getStandingsInfo()
-        val byName = info.associateBy { it.playerName }
+        val byName = manager.getStandingsInfo().associateBy { it.playerName }
 
-        byName.getValue("A").points shouldBe 6
-        byName.getValue("B").points shouldBe 6
-        // Equal match points and equal OMW% (same 4-match record, shared opponent pool)…
+        byName.getValue("A").points shouldBe 7
+        byName.getValue("B").points shouldBe 7
         byName.getValue("A").omwPercent shouldBe (byName.getValue("B").omwPercent plusOrMinus 1e-9)
-        // …but B's game-win % is higher, so B is ranked ahead of A and the break is reported as GW.
-        byName.getValue("B").gwPercent shouldBe (1.0 plusOrMinus 1e-9)
-        byName.getValue("A").gwPercent shouldBe (0.5 plusOrMinus 1e-9)
-        byName.getValue("B").rank shouldBe (byName.getValue("A").rank - 1)
-        byName.getValue("A").tiebreakerReason shouldBe TiebreakerReason.GW.name
+        // A: 5 won, 1 lost, 1 drawn → 16/21. B: 5 won, 3 lost, 1 drawn → 16/27.
+        byName.getValue("A").gwPercent shouldBe (16.0 / 21.0 plusOrMinus 1e-9)
+        byName.getValue("B").gwPercent shouldBe (16.0 / 27.0 plusOrMinus 1e-9)
+        byName.getValue("A").rank shouldBe (byName.getValue("B").rank - 1)
+        byName.getValue("B").tiebreakerReason shouldBe TiebreakerReason.GW.name
     }
 
     test("OMW% floors each opponent's match-win % at 1/3 and excludes byes") {

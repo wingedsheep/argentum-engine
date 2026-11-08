@@ -645,6 +645,69 @@
     ]
 }
 
+// Recumbent Bliss
+{
+    "name": "Recumbent Bliss",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.\nAt the beginning of your upkeep, you may gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Recumbent Bliss:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may gain 1 life."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Todd Lockwood",
+        "flavorText": "Kithkin somnomancers enjoy the peaceful dreams wafting from their victims.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53c28634-337d-458a-bcf0-b7fbf65a41da.jpg?1783942693"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rugged Prairie
 {
     "name": "Rugged Prairie",

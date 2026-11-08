@@ -1,0 +1,1 @@
+- #4549 Reads cascade as card advantage (Enlisted Wurm, Bituminous Blast, Bloodbraid Elf), and draft/deck ratings now credit cycling and landcycling instead of rating such cards as their body alone

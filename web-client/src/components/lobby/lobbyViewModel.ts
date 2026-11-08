@@ -612,9 +612,12 @@ function tournamentSubtitle(lobbyState: LobbyState): string {
         : `Cube · ${s.cubeCardCount ?? 0} cards · ${s.packSize ?? 15}-card packs · ${base}`
     : base
 
-  const isMultiplayer = s.gameMode !== 'TOURNAMENT'
-  const games = s.gamesPerMatch ?? 1
-  return !isMultiplayer && games > 1 ? `${source} · ${games} games per matchup` : source
+  if (s.gameMode !== 'TOURNAMENT') return source
+  const meetings = s.gamesPerMatch ?? 1
+  const parts = [source]
+  if ((s.bestOf ?? 1) >= 3) parts.push('best of 3')
+  if (meetings > 1) parts.push(`each pair meets ${meetings}×`)
+  return parts.join(' · ')
 }
 
 function startLabel(lobbyState: LobbyState): string {

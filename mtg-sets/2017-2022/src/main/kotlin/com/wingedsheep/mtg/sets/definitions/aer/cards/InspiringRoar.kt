@@ -33,5 +33,6 @@ val InspiringRoar = card("Inspiring Roar") {
         artist = "Chris Rahn"
         flavorText = "\"This is about more than aether or inventions. Tezzeret's schemes must be stopped!\"\n—Ajani Goldmane"
         imageUri = "https://cards.scryfall.io/normal/front/4/e/4ef9708e-bfe4-4d24-8304-1618daa1c3ee.jpg?1783936715"
+        inBooster = false
     }
 }

@@ -80,8 +80,8 @@ Everything below this section is the original Phase 1 → Phase 4 plan, unchange
   evaluates `SpellCostReduction` static abilities — symmetric cost-*increase* path is needed for tax.
 - **Zone-change replacement precedent:** `ExileOnLeaveBattlefieldComponent`
   (`rules-engine/.../components/battlefield/BattlefieldComponents.kt:90-94`) shows the unconditional-redirect pattern.
-- **Combat damage tracking:** `HasDealtCombatDamageToPlayerComponent` (`:397-403`) is a lifetime flag,
-  not (source, target) pairs — needs a new tracker.
+- **Combat damage tracking:** `HasDealtDamageComponent`'s per-kind stamps (`toPlayer` / `toCreature`) record
+  *whether* a permanent damaged a player, not (source, target) pairs — needs a new tracker.
 - **Color identity:** `CardDefinition.colorIdentity` exists at `mtg-sdk/.../model/CardDefinition.kt:94-100` but is
   computed from mana cost only (does not yet scan rules text for hybrid/phyrexian/color-word symbols).
 - **Format concept:** does not exist yet. No `Format` enum, no game-mode config.

@@ -11,13 +11,21 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
+import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
+import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
@@ -39,6 +47,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.TurnTracker
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -167,12 +177,21 @@ object SynergyAxes {
         val rewards = buildSet {
             scripts.flatMap { it.triggeredAbilities }.forEach { ability ->
                 addAll(rewardsOf(ability.trigger, ability.binding))
+                // Revolt — "if a permanent you controlled left the battlefield this turn" (Call for
+                // Unity, Countless Gears Renegade): it pays off what the death axis feeds — a sac
+                // outlet, a Servo or Clue to cash in, a creature traded in combat.
+                if (ability.interveningIf == PermanentLeftBattlefieldThisTurn(Player.You)) add(SynergyAxis.DEATH)
+                // "If you gained life this turn" / "if you gained 3 or more life this turn" (Lone
+                // Rider, Angelic Accord, Restless Bloodseeker): the turn's life-gained tracker as the
+                // gate pays off what the lifegain axis feeds — a lifelinker, a gain-life spell.
+                if (readsLifeGainedThisTurn(ability.interveningIf)) add(SynergyAxis.LIFEGAIN)
             }
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
             // Carrying counters from one permanent to another — The Ozolith banking a leaving
             // creature's counters and moving them on, Essence Channeler's "put its counters on target
-            // creature you control" — cashes in the +1/+1 counters the deck puts down: with none
+            // creature you control", Aetherborn Marauder gathering them from your other permanents —
+            // cashes in the +1/+1 counters the deck puts down: with none
             // placed, the move carries nothing.
             if (scripts.any { script ->
                     (script.triggeredAbilities.map { it.effect } + script.activatedAbilities.map { it.effect })
@@ -211,6 +230,14 @@ object SynergyAxes {
         )
     }
 
+    /**
+     * Whether [condition] asks how much life we gained this turn, reaching some amount
+     * (`Conditions.YouGainedLifeThisTurn` / `YouGainedLifeThisTurnAtLeast(n)`).
+     */
+    private fun readsLifeGainedThisTurn(condition: Condition?): Boolean =
+        condition is Compare && condition.left == DynamicAmount.TurnTracking(Player.You, TurnTracker.LIFE_GAINED) &&
+            (condition.operator == ComparisonOperator.GTE || condition.operator == ComparisonOperator.GT)
+
     private val matchCache = ConcurrentHashMap<Pair<String, GameObjectFilter>, Boolean>()
 
     /** [PrintedFilter.matches], memoized per card name and filter; an unreadable answer is a no. */
@@ -248,9 +275,18 @@ object SynergyAxes {
             if (pattern.controller == Player.You) setOf(SynergyAxis.TOKENS) else emptySet()
         is EventPattern.LifeGainEvent ->
             if (pattern.player == Player.You) setOf(SynergyAxis.LIFEGAIN) else emptySet()
+        // "Whenever you cast a spell that targets …" (Frontline Heroism, Vesuvan Duplimancy, Legolas)
+        // watches spells that target — in practice instants, sorceries and Auras, the noncreature
+        // spells this axis is fed by — so it rewards it like an instant-or-sorcery trigger does.
         is EventPattern.SpellCastEvent ->
-            if (pattern.player == Player.You && rewardsSpells(pattern.spellFilter)) setOf(SynergyAxis.SPELLS)
+            if (pattern.player == Player.You &&
+                (rewardsSpells(pattern.spellFilter) || pattern.requires.any(::requiresTargeting))
+            ) setOf(SynergyAxis.SPELLS)
             else emptySet()
+        // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
+        // counterspells — instants, which is what feeds the spells axis.
+        is EventPattern.CounterSpellEvent ->
+            if (pattern.counterer == Player.You) setOf(SynergyAxis.SPELLS) else emptySet()
         else -> emptySet()
     }
 
@@ -304,6 +340,9 @@ object SynergyAxes {
             if (discards(ability.cost)) add(SynergyAxis.GRAVEYARD)
         }
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
+        // "As an additional cost, discard a card / X cards" bins our cards like a discard effect
+        // (Nahiri's Wrath, Channeled Force, Tormenting Voice).
+        if (script.additionalCosts.any(::discards)) add(SynergyAxis.GRAVEYARD)
     }
 
     private fun effectFeeds(
@@ -367,6 +406,8 @@ object SynergyAxes {
             setOf(SynergyAxis.TOKENS, SynergyAxis.CREATURES_ENTER, SynergyAxis.DEATH)
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
+        // "Distribute four +1/+1 counters among any number of target creatures you control" (Verdurous Gearhulk).
+        is com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect -> plusCounters(leaf.counterType)
         is SurveilEffect -> setOf(SynergyAxis.GRAVEYARD)
         // Explore puts a +1/+1 counter on the explorer for a nonland card, which it may bin like a
         // surveil — both stocks Jadelight Ranger and its kin keep filling.
@@ -394,7 +435,8 @@ object SynergyAxes {
     }
 
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
-        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect
+        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect || it is MoveCountersEffect ||
+            it is MoveChosenCountersToTargetEffect || it is MoveCountersEachKindMissingEffect
     }
 
     /**
@@ -437,6 +479,13 @@ object SynergyAxes {
         else -> false
     }
 
+    private fun discards(cost: AdditionalCost): Boolean = when (cost) {
+        is AdditionalCost.Atom -> cost.atom is CostAtom.Discard
+        is AdditionalCost.VariableCards -> cost.action == com.wingedsheep.sdk.scripting.CardCostAction.DISCARD
+        is AdditionalCost.Composite -> cost.steps.any(::discards)
+        else -> false
+    }
+
     private fun sacrifices(cost: AdditionalCost): Boolean = when (cost) {
         is AdditionalCost.Atom -> cost.atom is CostAtom.Sacrifice
         is AdditionalCost.Composite -> cost.steps.any(::sacrifices)
@@ -448,6 +497,24 @@ object SynergyAxes {
         IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER, IntentTag.NEUTRALIZE, IntentTag.FIGHT,
         IntentTag.COUNTERSPELL,
     )
+
+    /**
+     * The cast-trigger requirement holds only for a spell that targets something — only a
+     * noncreature spell, in practice. An `AnyOf` qualifies when every option does.
+     */
+    private fun requiresTargeting(predicate: SpellCastPredicate): Boolean = when (predicate) {
+        SpellCastPredicate.TargetsSource, SpellCastPredicate.TargetsOnlySource,
+        SpellCastPredicate.TargetsOpponent, is SpellCastPredicate.TargetsMatching,
+        is SpellCastPredicate.CouldTargetOther -> true
+        is SpellCastPredicate.AnyOf -> predicate.options.isNotEmpty() && predicate.options.all(::requiresTargeting)
+        is SpellCastPredicate.CastFromZone, is SpellCastPredicate.CastFromZoneOtherThan,
+        SpellCastPredicate.WasKicked, is SpellCastPredicate.PaidWithManaFromSubtype,
+        is SpellCastPredicate.PaidWithManaFromCardType, SpellCastPredicate.PaidWithSnowManaOfItsColors,
+        SpellCastPredicate.PaidWithManaFromSource, SpellCastPredicate.IsModal, SpellCastPredicate.HasXInCost,
+        SpellCastPredicate.NotOwnedByController,
+        SpellCastPredicate.CastAsAdventure, SpellCastPredicate.CastAsPrepareSpell, SpellCastPredicate.IsCard,
+        is SpellCastPredicate.SpellMatches -> false
+    }
 
     private val SPELL_PREDICATES: Set<CardPredicate> =
         setOf(CardPredicate.IsInstant, CardPredicate.IsSorcery, CardPredicate.IsNoncreature)

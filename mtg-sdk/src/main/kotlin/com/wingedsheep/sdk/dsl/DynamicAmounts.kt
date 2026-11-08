@@ -752,6 +752,14 @@ object DynamicAmounts {
         DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT)
 
     /**
+     * "The total mana value of the discarded cards" — the cards discarded to pay this spell's
+     * additional cost or this ability's activation cost, counted wherever they went
+     * ([ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE]; Nahiri's Wrath).
+     */
+    fun discardedAsCostTotalManaValue(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE)
+
+    /**
      * The number of [filter] counters the source had as it last existed on the battlefield
      * (CR 113.7a / 608.2h) — either wiped by its own self-exile / self-sacrifice cost ("for each
      * verse counter on this" / "if it had seven or more counters on it", Lost Isle Calling) or

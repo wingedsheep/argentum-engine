@@ -705,6 +705,18 @@ data class AdditionalUpkeepStepsAfterStepComponent(
 data object UpkeepStepEndedThisTurnComponent : Component
 
 /**
+ * Marker placed on the active player when a cleanup step's turn-based actions are done (CR 514.1,
+ * 514.2) — at once, after the hand-size discard's answer, or at the end of an "end the turn"
+ * process. Only the settle boundary turns events into triggers, so it is the
+ * [com.wingedsheep.engine.core.Settler] that finishes the step: if a state-based action was
+ * performed or a triggered ability was put on the stack, the active player receives priority in
+ * this cleanup step and another cleanup step follows once everyone passes (CR 514.3a); otherwise
+ * the turn passes. Lives only until that settle; one found outside a cleanup step is dropped.
+ */
+@Serializable
+data object CleanupCheckPendingComponent : Component
+
+/**
  * Informational marker placed on the active player while the game is inside an *inserted* beginning
  * phase ([ExtraPhaseKind.BEGINNING]). Nothing decides on it: the TurnManager's drain-and-resume
  * already keeps the inserted draw step from falling through into a precombat main phase. Cleared

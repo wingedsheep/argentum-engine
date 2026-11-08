@@ -1,0 +1,1 @@
+- #TBD The AI reads Role and other Aura tokens (Cursed Role as an answer on an opponent's creature, buff Roles as a pump on its own) and no longer counts the training/evolve event tail as an unread ability

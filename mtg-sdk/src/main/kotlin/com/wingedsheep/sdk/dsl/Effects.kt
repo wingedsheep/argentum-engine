@@ -2765,14 +2765,19 @@ object Effects {
      * Move a player-chosen set (one or more) of counters from [source] onto [destination]
      * (one prompt per counter kind on the source). When [drawCardOnMove] is true, the
      * controller draws a card if any counter was moved. Used by Goldberry, River-Daughter's
-     * second ability.
+     * second ability. [counterType] restricts the move to that one kind; a [EffectTarget.GroupRef]
+     * [source] gathers from every member of the group as one move ("move any number of +1/+1
+     * counters from other permanents you control onto this creature" — Aetherborn Marauder).
      */
     fun MoveChosenCountersToTarget(
         source: EffectTarget,
         destination: EffectTarget,
-        drawCardOnMove: Boolean = false
+        drawCardOnMove: Boolean = false,
+        counterType: CounterType? = null
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(source, destination, drawCardOnMove)
+        com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect(
+            source, destination, drawCardOnMove, counterType = counterType
+        )
 
     /**
      * "Move a counter from [source] onto [destination]" — the player picks *which kind* moves, but
@@ -4798,8 +4803,10 @@ object Effects {
 
     /**
      * "You may pay [cost]. If you do, [then]." — the mana form of [MayPay]. With no [otherwise] the
-     * engine gives it the optional-mana-payment UX (manual source selection; for a targeted trigger,
-     * pay → select mana → choose target).
+     * engine gives it the optional-mana-payment UX: manual source selection as it resolves. A
+     * targeted trigger of this shape chooses its targets on the stack and asks to pay on resolution;
+     * "When you do, … target …" passes a `ReflexiveTrigger` as [then], so the reflexive half targets
+     * after paying.
      */
     fun MayPay(cost: ManaCost, then: Effect, otherwise: Effect? = null): GatedEffect =
         MayPay(PayManaCostEffect(cost), then, otherwise)
@@ -5951,7 +5958,8 @@ object Effects {
         newTargetMustBePlayer: Boolean = false,
         onlyIfCurrentTargetIsController: Boolean = false,
         to: EffectTarget? = null,
-    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController, to)
+        spell: EffectTarget = EffectTarget.ContextTarget(0),
+    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController, to, spell)
 
     /**
      * Reselect the target of the triggering spell or ability at random.
@@ -6081,6 +6089,28 @@ object Effects {
             candidates = candidates,
             copier = copier,
             selection = com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies.ONE_CHOSEN
+        )
+
+    /**
+     * Copy [target] with a specified new target taken from the pipeline collection [among] (CR
+     * 707.10e): the copy's every target slot is that object, no copy is made when it isn't a legal
+     * target for each instance of "target", and when the collection holds several legal objects the
+     * copier chooses one. Pair it after the step that fills [among].
+     *
+     * Models Frontline Heroism: "create a 1/1 red Soldier creature token with haste, then copy that
+     * spell. The copy targets that token." — `CreateToken(...) then CopyTargetingOneOf(CollectionSlot.CreatedTokens)`.
+     */
+    fun CopyTargetingOneOf(
+        among: CollectionSlot,
+        target: EffectTarget = EffectTarget.TriggeringEntity,
+        copier: Player = Player.You
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.CopyForOtherPossibleTargetsEffect(
+            target = target,
+            candidates = GameObjectFilter.Any,
+            copier = copier,
+            selection = com.wingedsheep.sdk.scripting.effects.PossibleTargetCopies.ONE_CHOSEN,
+            collection = among.key
         )
 
     /**

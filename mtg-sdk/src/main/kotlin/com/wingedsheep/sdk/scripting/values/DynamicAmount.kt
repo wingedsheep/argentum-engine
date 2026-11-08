@@ -550,6 +550,19 @@ enum class ContextPropertyKey(val description: String) {
     TRIGGER_LIFE_LOST("the life lost"),
     /** Number of cards exiled as an additional cost (Chill Haunting). */
     ADDITIONAL_COST_EXILED_COUNT("the number of cards exiled"),
+    /**
+     * Combined mana value (CR 202.3) of the cards discarded to pay the resolving spell's additional
+     * cost or the resolving ability's activation cost — "deals damage equal to the total mana value
+     * of the discarded cards" (Nahiri's Wrath, after `Costs.additional.DiscardVariableCards()`).
+     *
+     * The summing reader of the same recorded discard that `EffectTarget.DiscardedAsCost(index)`
+     * names one card of. Each card counts **wherever the discard put it and wherever it is now** —
+     * a madness card in exile, or one that has since left the graveyard, still adds its mana value
+     * (Nahiri's Wrath ruling, 2016-07-13) — and a card with `{X}` in its cost counts X as 0
+     * (CR 202.3e). Fixed at cast, so a copy of the spell reads the original's discards (CR 707.10).
+     * 0 when nothing was discarded.
+     */
+    DISCARDED_AS_COST_TOTAL_MANA_VALUE("the total mana value of the discarded cards"),
     /** Number of (still-legal) targets in the current effect context. */
     TARGET_COUNT("the number of targets"),
     /**

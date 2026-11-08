@@ -2420,6 +2420,44 @@ class CombatAdvisorTest : FunSpec({
             driver.state, driver.state.projectedState, attacker, smallBlocker, registry
         ) shouldBe true
     }
+
+    // Skulk (CR 702.118b): can't be blocked by creatures with greater power. The AI's
+    // block-legality model must see it, or it proposes a block the engine rejects.
+    test("does not assign a greater-power blocker to a skulk attacker, but allows an equal one") {
+        val skulker = CardDefinition.creature(
+            name = "Skulk Test Rogue", manaCost = ManaCost.parse("{1}{B}"),
+            subtypes = setOf(Subtype("Rogue")), power = 2, toughness = 2, keywords = setOf(Keyword.SKULK)
+        )
+        val (driver, registry, advisor) = setup(listOf(skulker))
+        val p1 = driver.player1
+        val p2 = driver.player2
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val attacker = driver.putCreatureOnBattlefield(p1, "Skulk Test Rogue")
+        driver.removeSummoningSickness(attacker)
+        val bigBlocker = driver.putCreatureOnBattlefield(p2, "Hill Giant") // power 3 > 2
+        driver.removeSummoningSickness(bigBlocker)
+        val evenBlocker = driver.putCreatureOnBattlefield(p2, "Grizzly Bears") // power 2
+        driver.removeSummoningSickness(evenBlocker)
+
+        // Facing lethal, so blocking is wanted — the restriction must still hold.
+        driver.replaceState(driver.state.withLifeTotal(p2, 2))
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val projected = driver.state.projectedState
+        CombatMath.canBeBlockedBy(driver.state, projected, attacker, bigBlocker, registry) shouldBe false
+        CombatMath.canBeBlockedBy(driver.state, projected, attacker, evenBlocker, registry) shouldBe true
+
+        val result = advisor.chooseBlockers(
+            driver.state, buildBlockAction(p2, listOf(bigBlocker, evenBlocker)), p2
+        ) as DeclareBlockers
+        result.blockers.shouldNotContainKey(bigBlocker)
+    }
+
     test("block-legality model knows nonbasic, desert and legendary landwalk") {
         fun walker(name: String, keyword: Keyword) = CardDefinition.creature(
             name = name, manaCost = ManaCost.parse("{2}"),

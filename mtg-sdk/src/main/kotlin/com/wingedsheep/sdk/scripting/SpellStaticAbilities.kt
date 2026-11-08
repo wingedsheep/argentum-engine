@@ -1583,6 +1583,45 @@ data class RestrictVenturesPerTurn(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
+/**
+ * "As you cascade, you may put a land card from among the exiled cards onto the battlefield
+ * tapped." (Averna, the Chaos Bloom) — a rider on every cascade (CR 702.85b) its controller
+ * resolves, read where cascade resolves.
+ *
+ * After the last card is exiled and before the cast offer, the cascading player may put one card
+ * matching [filter] from among the cards that cascade exiled onto the battlefield under their
+ * control ([tapped] when the text says so). It happens whether or not a card to cast was found,
+ * and whether or not that card is then cast; the chosen card is no longer one of the exiled cards
+ * put on the bottom. It is not playing a land, so it ignores land plays and timing. Each instance
+ * the player controls is its own choice of one card.
+ *
+ * Its own type because nothing else changes how a keyword action resolves from a permanent:
+ * [PlayLandsAndCastFilteredFromTopOfLibrary] grants a play permission over a hidden zone, and
+ * [com.wingedsheep.sdk.scripting.effects.CascadeEffect] is the action itself, not a standing rider
+ * on it.
+ *
+ * @property filter Which exiled cards may be put onto the battlefield.
+ * @property tapped Whether the chosen card enters tapped.
+ */
+@SerialName("CascadeMayPutOntoBattlefield")
+@Serializable
+data class CascadeMayPutOntoBattlefield(
+    val filter: GameObjectFilter = GameObjectFilter.Land,
+    val tapped: Boolean = true
+) : StaticAbility {
+    override val description: String = buildString {
+        append("As you cascade, you may put a ")
+        append(filter.description)
+        append(" card from among the exiled cards onto the battlefield")
+        if (tapped) append(" tapped")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
 @SerialName("PlayersCantCastSpells")
 @Serializable
 data class PlayersCantCastSpells(
