@@ -2089,12 +2089,14 @@ class CastPermissionUtils(
 
     /**
      * [cost] with [ActivatedAbility.payOnlyWithManaOf] applied — "spend only mana of the chosen
-     * color to activate this ability" (Throne of Eldraine): the generic part of every mana
-     * component is rewritten to symbols of the resolved color(s) ([com.wingedsheep.sdk.core.ManaCost.withGenericPaidBy]).
+     * color to activate this ability" (Throne of Eldraine): every mana component is rewritten to
+     * symbols only the resolved color(s) pay ([com.wingedsheep.sdk.core.ManaCost.payableOnlyWith]).
+     * Null when no such mana can pay it — no color was chosen, or a pip only other mana pays — and
+     * callers refuse the activation, so the restriction fails closed.
      * The last step of the shared effective-cost pipeline, after every reduction and after
      * [relaxAbilityCostColorsIfAny] — a spend-as-though-any-color permission widens what a colored
      * pip accepts, but "spend only mana of the chosen color" restricts the mana itself, so the
-     * recolored pips must not be relaxed back. Shared by the enumerators and the activation handler's
+     * recolored pips must not be relaxed back. Shared by the enumerator and the activation handler's
      * totaller so the offered price and the charged price never disagree. Returns [cost] unchanged
      * for an ability with no such restriction.
      */
@@ -2104,12 +2106,16 @@ class CastPermissionUtils(
         state: GameState,
         sourceId: EntityId,
         controllerId: EntityId,
-    ): AbilityCost {
+    ): AbilityCost? {
         val colorSet = ability.payOnlyWithManaOf ?: return cost
         val colors = com.wingedsheep.engine.mechanics.mana.ManaColorSetResolver.resolve(
             colorSet, state, state.projectedState, sourceId, controllerId, cardRegistry, predicateEvaluator,
         )
-        return mapAbilityMana(cost) { it.withGenericPaidBy(colors) }
+        var payable = true
+        val restricted = mapAbilityMana(cost) { mana ->
+            mana.payableOnlyWith(colors) ?: mana.also { payable = false }
+        }
+        return restricted.takeIf { payable }
     }
 
     /** [cost] with its mana portion (a lone mana atom or each one in a composite) rewritten by [f]. */

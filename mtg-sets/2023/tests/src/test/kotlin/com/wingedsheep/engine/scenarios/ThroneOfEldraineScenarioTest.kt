@@ -205,6 +205,24 @@ class ThroneOfEldraineScenarioTest : FunSpec({
             d.pool(you).getAmount(Color.RED) shouldBe 3
         }
 
+        test("with no color chosen, no mana can pay it — not even colorless mana") {
+            // Put onto the battlefield directly, so its "as enters" choice never happened — like a
+            // permanent that becomes a copy of it after entering (copiable values don't include it).
+            val d = GameTestDriver().apply {
+                registerCards(TestCards.all + listOf(ThroneOfEldraine))
+                initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+            }
+            val you = d.activePlayer!!
+            d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            d.putPermanentOnBattlefield(you, "Throne of Eldraine")
+            d.giveColorlessMana(you, 3)
+            repeat(3) { d.putLandOnBattlefield(you, "Island") }
+
+            d.legalActions(you).none { (it.action as? ActivateAbility)?.abilityId == drawAbilityId } shouldBe true
+            d.activateDraw(you, PaymentStrategy.FromPool).error?.isNotEmpty() shouldBe true
+            d.activateDraw(you).error?.isNotEmpty() shouldBe true
+        }
+
         test("follows the chosen color: with red chosen, Mountains pay and Islands do not") {
             val (d, you) = driver(Color.RED)
             repeat(3) { d.putLandOnBattlefield(you, "Island") }

@@ -223,6 +223,9 @@ class ActivatedAbilityEnumerator(
                     ),
                     playerId
                 ), ability, state, entityId, playerId)
+                    // "Spend only mana of the chosen color" with no mana that qualifies (no color
+                    // chosen, or a pip only other mana pays): never a matter of affordability.
+                    ?: continue
 
                 // Description shown to the player. When the effective cost differs from the printed
                 // cost — a generic cost reduction (Starport Security "{3}{W}…" → "{1}{W}…"), or a

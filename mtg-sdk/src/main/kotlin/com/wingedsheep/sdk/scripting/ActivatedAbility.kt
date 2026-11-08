@@ -209,10 +209,10 @@ data class ActivatedAbility(
      * charged price all see the same cost; colored symbols already require their own color and
      * `{C}` stays colorless. The set resolves the way a mana ability's does ([ManaColorSet]) against
      * the source: one color recolors the generic part, two become hybrid symbols. A set that
-     * resolves to nothing (a color never chosen), or to more than two colors, which symbols can't
-     * express, turns the generic part into `{C}` symbols — no mana of a color pays those, so the
-     * ability fails closed instead of being relaxed to "any mana". `null` (the default) is every
-     * other ability: any mana may pay.
+     * resolves to nothing (a color never chosen), or a pip only other mana pays ([com.wingedsheep.sdk.core.ManaCost.payableOnlyWith]
+     * returns null), makes the ability unactivatable — it fails closed instead of being relaxed to
+     * "any mana". Not supported on mana abilities. `null` (the default) is every other ability: any
+     * mana may pay.
      */
     val payOnlyWithManaOf: ManaColorSet? = null,
     /**
@@ -258,6 +258,14 @@ data class ActivatedAbility(
      */
     val cantBeCopied: Boolean = false
 ) : TextReplaceable<ActivatedAbility> {
+    init {
+        // Only the non-mana activation pipeline applies payOnlyWithManaOf; a mana ability would
+        // silently ignore it, so refuse the combination when the card is built.
+        require(payOnlyWithManaOf == null || !isManaAbility) {
+            "payOnlyWithManaOf is not supported on mana abilities"
+        }
+    }
+
     /** Backward-compatible secondary constructor for single-target abilities. */
     constructor(
         id: AbilityId,

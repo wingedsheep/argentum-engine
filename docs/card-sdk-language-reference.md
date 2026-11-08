@@ -1105,8 +1105,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   payment-side twin of a `ManaRestriction` on mana a source produces (and the whole-cost form of
   `xManaRestriction`, which covers only `{X}`). The set resolves like a mana ability's `ManaColorSet`
   (`ActivatedAbility.payOnlyWithManaOf`); every **generic** symbol of the cost is then paid with mana of that
-  color — `{3}` becomes `{U}{U}{U}` for one color, `{R/G}` hybrids for two (`ManaCost.withGenericPaidBy`);
-  a set that resolves to nothing, or to more than two colors, becomes `{C}` and fails closed. Applied last in the
+  color — `{3}` becomes `{U}{U}{U}` for one color, `{R/G}` hybrids for two (`ManaCost.payableOnlyWith`); a pip
+  of an allowed color stays and a hybrid narrows to its allowed half. When no mana of the set can pay the cost —
+  no color chosen, or an off-color, `{C}`, `{S}`, `{X}` or twobrid pip — the ability can't be activated (fails
+  closed). Not supported on mana abilities (rejected when the card is built). Applied last in the
   shared effective-cost pipeline (`CastPermissionUtils.applyPayOnlyWithManaOf`, after reductions and after the
   spend-as-any-color relaxation, which must not widen it back), by both the activation handler's totaller and
   `ActivatedAbilityEnumerator`, so the menu price (`{U}{U}{U}, {T}: Draw two cards`), the affordability gate,
