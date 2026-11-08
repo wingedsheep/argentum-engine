@@ -1724,6 +1724,7 @@ Blech, Loafing Pest
 Bleed Dry
 Bleeding Edge
 Bleeding Woods
+Blessed Alliance
 Blessed Breath	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Blessed Defiance
 Blessed Ghoul
@@ -2077,6 +2078,7 @@ Boros Recruit
 Boros Signet
 Boros Swiftblade
 Borough Backup
+Borrowed Grace
 Borrowed Hostility
 Borrowed Knowledge	polarity: DrawCardsEffect; polarity: Pipeline(hand→graveyard)
 Borrowed Time
@@ -3234,6 +3236,7 @@ Collective Blessing
 Collective Brutality
 Collective Defiance
 Collective Drone
+Collective Effort
 Collective Inferno
 Collective Nightmare
 Collective Resistance
@@ -5745,6 +5748,7 @@ Extraordinary Journey
 Extraplanar Lens
 Extrapolate the Impossible
 Extravagant Replication
+Extricator of Sin
 Extus, Oriq Overlord
 Exuberant Fuseling
 Exuberant Wolfbear
@@ -6105,6 +6109,7 @@ Field of Ruin
 Field of the Dead
 Fields of Strife
 Fiend Artisan
+Fiend Binder
 Fiend Hunter
 Fiendish Panda
 Fierce Empath
@@ -6846,6 +6851,7 @@ Geist Snatch
 Geist of Saint Thalia
 Geist of Saint Traft
 Geist of the Archives
+Geist of the Lonely Vigil
 Geist of the Moors
 Geist-Fueled Scarecrow
 Geistcatcher's Rig
@@ -7077,6 +7083,7 @@ Gitaxian Anatomist
 Gitaxian Probe
 Gitaxian Raptor
 Give In to Violence
+Give No Ground
 Gix's Caress
 Gix's Command
 Gix, Yawgmoth Praetor	intent: GatedEffect
@@ -10321,6 +10328,7 @@ Loki Laufeyson
 Loki, God of Mischief
 Lolth, Spider Queen
 Lone Missionary
+Lone Rider
 Lone Wolf
 Lonely Arroyo
 Lonely Sandbar
@@ -10332,6 +10340,7 @@ Long List of the Ents
 Long Rest
 Long River Lurker
 Long River's Pull
+Long Road Home
 Long-Bodied Grey Dog
 Long-Finned Skywhale
 Long-Forgotten Gohei
@@ -13288,6 +13297,7 @@ Protomatter Powder
 Proud Pack-Rhino
 Proud Wildbonder
 Proven Combatant
+Providence
 Provisions Merchant
 Provoke the Trolls	polarity: mixed(DealDamageEffect+ModifyStatsEffect)
 Prowcatcher Specialist
@@ -14034,6 +14044,7 @@ Repeated Reverberation
 Repeating Barrage
 Repel
 Repel Calamity
+Repel the Abominable
 Repel the Darkness
 Repel the Vile
 Repentant Blacksmith
@@ -15721,6 +15732,7 @@ Sift
 Sift Through Sands
 Sifter Wurm
 Sifter of Skulls
+Sigarda's Aid
 Sigarda's Imprisonment
 Sigarda's Splendor
 Sigarda's Summons
@@ -17800,6 +17812,7 @@ Tezzeret, Master of the Bridge
 Thalakos Seer
 Thalakos Sentry
 Thalia and The Gitrog Monster
+Thalia's Lancers
 Thalia, Guardian of Thraben
 Thalia, Heretic Cathar
 Thalia, the Survivor
