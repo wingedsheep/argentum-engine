@@ -925,6 +925,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.UNITY,
   // Daredevil Dragster's tally: at two it is sacrificed and its controller draws two cards.
   CounterType.VELOCITY,
+  // Nazar's lifegain tally: three may be removed when it attacks to draw three and lose 3 life.
+  CounterType.FEEDING,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

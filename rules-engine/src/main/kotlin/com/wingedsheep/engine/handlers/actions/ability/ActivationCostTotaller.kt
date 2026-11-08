@@ -43,13 +43,16 @@ internal class ActivationCostTotaller(
      * ([AbilityCost.OwnManaCost]) — is lowered to a plain mana atom first, so validation, payment
      * and every reduction see one shape. An [AbilityCost.OwnManaCost] whose source has no mana
      * cost stays un-lowered, and `CostHandler` reports it unpayable.
+     *
+     * Null when the ability's `payOnlyWithManaOf` leaves no mana able to pay it (see
+     * [CastPermissionUtils.applyPayOnlyWithManaOf]); the activation is then refused.
      */
     fun total(
         state: GameState,
         action: ActivateAbility,
         ability: ActivatedAbility,
         textReplacement: TextReplacementComponent?,
-    ): AbilityCost {
+    ): AbilityCost? {
         // Apply text-changing effects to cost
         val rawCost = if (textReplacement != null) {
             ability.cost.applyTextReplacement(textReplacement)
@@ -86,8 +89,11 @@ internal class ActivationCostTotaller(
         val costAfterEquipDiscount = castPermissionUtils.applyFreeFirstEquipDiscount(
             costAfterEquipReduction, ability, state, action.playerId
         )
-        return castPermissionUtils.relaxAbilityCostColorsIfAny(
-            state, action.sourceId, costAfterEquipDiscount, action.playerId
+        return castPermissionUtils.applyPayOnlyWithManaOf(
+            castPermissionUtils.relaxAbilityCostColorsIfAny(
+                state, action.sourceId, costAfterEquipDiscount, action.playerId
+            ),
+            ability, state, action.sourceId, action.playerId
         )
     }
 

@@ -397,20 +397,17 @@ export function mergeResult(
 
     case 'counterDistribution': {
       if (action.type === 'ActivateAbility') {
-        // Activated abilities only use this for `RemoveXPlusOnePlusOneCounters`,
-        // which is single-type. Sum the typed entries per creature back into the
-        // legacy `counterRemovals: Map<EntityId, Int>` shape the engine still
-        // consumes for that path.
-        const counterRemovals: Record<string, number> = {}
-        for (const r of result.distributedCounterRemovals) {
-          counterRemovals[r.entityId] = (counterRemovals[r.entityId] ?? 0) + r.count
-        }
+        // Typed entries, so the engine knows which counter type came off each permanent —
+        // "Remove three counters from among creatures you control" (Lieutenant Commander Data)
+        // takes any mix. Only a "remove X counters" cost announces X by the total removed.
         return {
           ...action,
-          xValue: result.xValue,
+          ...(actionInfo.hasXCost && !actionInfo.additionalCostInfo?.distributedCounterRemovalTotal
+            ? { xValue: result.xValue }
+            : {}),
           costPayment: {
             ...action.costPayment,
-            counterRemovals,
+            distributedCounterRemovals: [...result.distributedCounterRemovals],
           },
         }
       }

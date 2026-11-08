@@ -72,6 +72,116 @@
     ]
 }
 
+// Boldwyr Intimidator
+{
+    "name": "Boldwyr Intimidator",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Giant Warrior",
+    "oracleText": "Cowards can't block Warriors.\n{R}: Target creature becomes a Coward until end of turn.\n{2}{R}: Target creature becomes a Warrior until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Boldwyr Intimidator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Coward"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{R}: Target creature becomes a Coward until end of turn."
+            },
+            {
+                "id": "Boldwyr Intimidator:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Warrior"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{2}{R}: Target creature becomes a Warrior until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Coward"
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature Warrior"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Esad Ribic",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/179bec14-2e22-43eb-8854-b70a97dd023b.jpg?1783943103",
+        "rulings": [
+            {
+                "date": "2007-05-01",
+                "text": "Each of the activated abilities replaces all creature types the affected creature may have had."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dakmor Salvage
 {
     "name": "Dakmor Salvage",
@@ -1030,5 +1140,66 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Venser, Shaper Savant
+{
+    "name": "Venser, Shaper Savant",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhen Venser enters, return target spell or permanent to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venser, Shaper Savant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReturnSpellOrPermanentToOwnersHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetSpellOrPermanent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "flavorText": "His marvels of artifice pale in comparison to the developing machinery of his mind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e84fc99-4045-4518-b588-512a675f2933.jpg?1783943119",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If Venser's triggered ability targets a spell cast with flashback, that spell will be exiled instead of returning to its owner's hand."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If a spell is returned to its owner's hand, it's removed from the stack and thus will not resolve. The spell isn't countered; it just no longer exists. This works even against a spell that can't be countered."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If a copy of a spell is returned to its owner's hand, it's moved there, then it will cease to exist as a state-based action. It can't be recast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

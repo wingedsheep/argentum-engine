@@ -411,6 +411,127 @@
     ]
 }
 
+// Entomber Exarch
+{
+    "name": "Entomber Exarch",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Phyrexian Cleric",
+    "oracleText": "When this creature enters, choose one —\n• Return target creature card from your graveyard to your hand.\n• Target opponent reveals their hand. You choose a noncreature card from it. That player discards that card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Entomber Exarch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return target creature card from your graveyard to your hand."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RevealHand",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t1"
+                                            }
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "noncreature",
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a noncreature card to discard",
+                                        "showAllCards": true,
+                                        "alwaysPrompt": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t1"
+                                            }
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetOpponent",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target opponent reveals their hand. You choose a noncreature card from it. That player discards that card."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, choose one — Return target creature card from your graveyard to your hand; or target opponent reveals their hand, you choose a noncreature card from it, and that player discards that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f58020e-6d4d-474d-8d4b-cfb7d5a5e9a8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Flameborn Viron
 {
     "name": "Flameborn Viron",

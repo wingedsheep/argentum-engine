@@ -992,6 +992,209 @@
     ]
 }
 
+// Garruk, Caller of Beasts
+{
+    "name": "Garruk, Caller of Beasts",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Reveal the top five cards of your library. Put all creature cards revealed this way into your hand and the rest on the bottom of your library in any order.\n−3: You may put a green creature card from your hand onto the battlefield.\n−7: You get an emblem with \"Whenever you cast a creature spell, you may search your library for a creature card, put it onto the battlefield, then shuffle.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Garruk, Caller of Beasts:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "looked"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "looked",
+                            "filter": "creature",
+                            "storeMatching": "kept",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Reveal the top five cards of your library. Put all creature cards revealed this way into your hand and the rest on the bottom of your library in any order."
+            },
+            {
+                "id": "Garruk, Caller of Beasts:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature green"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "You may put a green creature card from your hand onto the battlefield."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You may put a green creature card from your hand onto the battlefield."
+            },
+            {
+                "id": "Garruk, Caller of Beasts:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Garruk, Caller of Beasts:3",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a creature card to put onto the battlefield",
+                                        "selectedLabel": "Put onto the battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        "descriptionOverride": "Whenever you cast a creature spell, you may search your library for a creature card, put it onto the battlefield, then shuffle."
+                    },
+                    "descriptionOverride": "Whenever you cast a creature spell, you may search your library for a creature card, put it onto the battlefield, then shuffle.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever you cast a creature spell, you may search your library for a creature card, put it onto the battlefield, then shuffle.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "MYTHIC",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a96d0c67-e9f4-46d9-bd74-13a8606fdfe3.jpg?1783939906",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "You choose what green creature card to put onto the battlefield, if any, when the second ability resolves."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If you have Garruk's emblem, the creature card you search for will be put onto the battlefield before the creature spell you cast resolves. The creature card you put onto the battlefield isn't cast, so the ability of the emblem won't retrigger."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glimpse the Future
 {
     "name": "Glimpse the Future",

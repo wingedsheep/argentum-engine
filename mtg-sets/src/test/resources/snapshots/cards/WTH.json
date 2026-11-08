@@ -1,3 +1,44 @@
+// Abyssal Gatekeeper
+{
+    "name": "Abyssal Gatekeeper",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "When this creature dies, each player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Abyssal Gatekeeper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Mark Tedin",
+        "flavorText": "\"There are two ways for me to pass this gate. One involves you remaining conscious.\"\n—Gerrard of the *Weatherlight*",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/1734df5a-7d3a-46c7-a0ad-adbbd1be958f.jpg?1783946738"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Angelic Renewal
 {
     "name": "Angelic Renewal",

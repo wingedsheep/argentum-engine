@@ -77,6 +77,53 @@
     ]
 }
 
+// Blood Feud
+{
+    "name": "Blood Feud",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature fights another target creature. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0[0]"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t0[1]"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "Succession is a matter of blood, and by blood it is often decided.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/634d59b8-6046-4796-95c5-eec75a239986.jpg?1783940821",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Blood Feud can target two creatures with the same controller."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bone to Ash
 {
     "name": "Bone to Ash",

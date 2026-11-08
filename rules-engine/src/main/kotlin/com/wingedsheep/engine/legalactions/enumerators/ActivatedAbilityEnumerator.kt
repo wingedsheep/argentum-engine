@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.effects.*
 
@@ -202,7 +203,7 @@ class ActivatedAbilityEnumerator(
                     ),
                     ability, state, entityId, playerId
                 )
-                val effectiveCost = context.castPermissionUtils.relaxAbilityCostColorsIfAny(
+                val effectiveCost = context.castPermissionUtils.applyPayOnlyWithManaOf(context.castPermissionUtils.relaxAbilityCostColorsIfAny(
                     state, entityId,
                     context.castPermissionUtils.applyFreeFirstEquipDiscount(
                         context.castPermissionUtils.applyEquipCostReduction(
@@ -221,7 +222,10 @@ class ActivatedAbilityEnumerator(
                         ability, state, playerId
                     ),
                     playerId
-                )
+                ), ability, state, entityId, playerId)
+                    // "Spend only mana of the chosen color" with no mana that qualifies (no color
+                    // chosen, or a pip only other mana pays): never a matter of affordability.
+                    ?: continue
 
                 // Description shown to the player. When the effective cost differs from the printed
                 // cost — a generic cost reduction (Starport Security "{3}{W}…" → "{1}{W}…"), or a
@@ -1022,8 +1026,9 @@ class ActivatedAbilityEnumerator(
                     craftCost, craftMaterials,
                     exileCost, exileTargets,
                     prebuiltCostInfo,
-                    tapBatchMaxActivations
-                )
+                    tapBatchMaxActivations,
+                    removeCountersAtom
+                ).withFixedCounterRemovalTotal(removeCountersAtom)
 
                 // Forage offers a choice of sub-costs (exile three cards / sacrifice a Food).
                 // [costInfo] holds the primary mode; when both modes are available the emitted
@@ -1481,6 +1486,19 @@ class ActivatedAbilityEnumerator(
     }
 
     /**
+     * Stamp a fixed "remove N counters from among …" cost's N onto the payload, whichever cost
+     * kind owns it. The client opens its counter-distribution picker only for an X cost or a
+     * positive [AdditionalCostData.distributedCounterRemovalTotal]; without it Lieutenant
+     * Commander Data's "Remove three counters from among creatures you control" skipped the
+     * picker and was refused with "Counter removal total (0) does not match required count (3)".
+     */
+    private fun AdditionalCostData?.withFixedCounterRemovalTotal(atom: CostAtom.RemoveCounters?): AdditionalCostData? {
+        if (this == null || atom == null || atom.self || counterRemovalCreatures.isEmpty()) return this
+        val fixed = (atom.count as? DynamicAmount.Fixed)?.amount ?: return this
+        return if (fixed > 0) copy(distributedCounterRemovalTotal = fixed) else this
+    }
+
+    /**
      * Build additional cost info for sacrifice, tap, bounce, sacrifice-self, or counter removal costs.
      */
     private fun buildAdditionalCostInfo(
@@ -1505,7 +1523,8 @@ class ActivatedAbilityEnumerator(
         exileCost: CostAtom.ExileFrom? = null,
         exileTargets: List<EntityId>? = null,
         prebuiltCostInfo: AdditionalCostData? = null,
-        tapBatchMaxActivations: Int = 1
+        tapBatchMaxActivations: Int = 1,
+        removeCountersAtom: CostAtom.RemoveCounters? = null
     ): AdditionalCostData? {
         // A cost whose resolver builds its own complete payload owns the whole thing when present:
         // the sum-gated graveyard exiles (collect evidence, CR 701.59; and the filtered
@@ -1607,7 +1626,8 @@ class ActivatedAbilityEnumerator(
         }
         if (counterRemovalCreatures.isNotEmpty()) {
             return AdditionalCostData(
-                description = "Remove +1/+1 counters from creatures you control",
+                description = removeCountersAtom?.description?.replaceFirstChar { it.uppercase() }
+                    ?: "Remove counters from permanents you control",
                 costType = "RemoveCounters",
                 counterRemovalCreatures = counterRemovalCreatures
             )
