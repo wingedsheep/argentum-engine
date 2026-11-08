@@ -741,9 +741,36 @@ object CardIntentAnalyzer {
                     else listOf(leaf.copy(powerModifier = power, toughnessModifier = toughness))
                 }
                 is GatedEffect -> punisherBranchLeaves(leaf, requirements) ?: listOf(leaf)
+                is ChooseActionEffect -> punisherChoiceLeaves(leaf, requirements) ?: listOf(leaf)
                 else -> listOf(leaf)
             }
         }
+    }
+
+    /**
+     * The branches of a punisher written as a choice another player makes — "that source's
+     * controller loses that much life unless they sacrifice that many permanents" (Archfiend of
+     * Spite), as a [ChooseActionEffect] the damage source's controller answers. Like
+     * [punisherBranchLeaves], the card does whichever branch the decider picks, so it is for what
+     * either branch does; the decider takes the branch worse for us, which is the value readers'
+     * question. Life the decider loses is the clock it is, so a [LoseLifeEffect] aimed at the
+     * deciding player is read as one aimed at an opponent — for a choice only another player makes,
+     * the loser is that player, not our controller.
+     *
+     * Null — the choice stays an unread leaf — for a choice our controller makes (its branches are
+     * modes, opened by [EffectWalker.payoffLeaves]) and when any branch reads as nothing for us: a
+     * tax the decider can always buy their way out of.
+     */
+    private fun punisherChoiceLeaves(choice: ChooseActionEffect, requirements: List<TargetRequirement>): List<Effect>? {
+        if (EffectWalker.choosesOwnBranch(choice)) return null
+        val branches = choice.choices.map { option ->
+            readingLeaves(option.effect, requirements).map { leaf ->
+                if (leaf is LoseLifeEffect && leaf.target == choice.player)
+                    leaf.copy(target = EffectTarget.PlayerRef(Player.EachOpponent))
+                else leaf
+            }
+        }
+        return if (branches.size >= 2 && branches.all { leaves -> leaves.any { tagsOf(it).isNotEmpty() } }) branches.flatten() else null
     }
 
     /**

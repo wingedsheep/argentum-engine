@@ -158,10 +158,10 @@ class GatedEffectExecutor(
             // every choice out, the question is asked with "no" as its only answer.
             val then = effect.then
             if (then is ChooseActionEffect) {
-                if (then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly = true) }) {
+                if (then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly = true, context = context) }) {
                     return EffectResult.success(state)
                 }
-                if (then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver) }) {
+                if (then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver, context = context) }) {
                     yesAvailable = false
                 }
             }
@@ -216,12 +216,12 @@ class GatedEffectExecutor(
             // A check that only hidden cards fail ("a creature card in your hand") still asks, with
             // "no" as the only answer (#3340).
             gate.feasibility?.let { check ->
-                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator, manaSolver, publicOnly = true)) {
+                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator, manaSolver, publicOnly = true, context = context)) {
                     return effect.otherwise
                         ?.let { effectExecutor(state, it, context) }
                         ?: EffectResult.success(state)
                 }
-                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)) {
+                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver, context = context)) {
                     yesAvailable = false
                 }
             }

@@ -1306,7 +1306,7 @@ Families:
 ## FeasibilityCheck
 
 - `FeasibilityCheck.CanPayMana(cost: ManaCost)` — The player can pay cost right now — from floating mana or untapped mana sources.
-- `FeasibilityCheck.ControlsPermanentMatching(filter: GameObjectFilter, count: Int)` — The player controls at least count permanents matching filter.
+- `FeasibilityCheck.ControlsPermanentMatching(filter: GameObjectFilter, count: Int, dynamicCount: DynamicAmount?)` — The player controls at least count permanents matching filter — or, when dynamicCount is set, at least that many, evaluated when the question is asked.
 - `FeasibilityCheck.HasCardsInZone(zone: Zone, filter: GameObjectFilter, count: Int)` — The player has at least count cards in zone matching filter.
 
 ## Format
