@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.audit
 
 import com.wingedsheep.ai.engine.LimitedCardRater
+import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -37,6 +38,14 @@ class AiCardRatingTest : FunSpec({
         r.board.parts.map { it.label } shouldContain "Flying"
         r.board.parts.map { it.label } shouldContain "Vigilance"
         r.board.value.shouldNotBeNull() shouldBe (r.board.parts.sumOf { it.value } plusOrMinus 1e-9)
+    }
+
+    test("a 0/0 that enters with +1/+1 counters is valued as the body the counters make") {
+        val mob = AiCardRating.of(card("Noosegraf Mob"), listOf("EMN"))
+        mob.board.kind shouldBe AiCardRating.BoardKind.CREATURE
+        val power = mob.board.parts.single { it.label == "Power" }.value
+        power shouldBe (BoardPresence.creatureBodyValue(5, 0, emptySet(), diminishingReturns = true) plusOrMinus 1e-9)
+        mob.board.value.shouldNotBeNull() shouldBe (mob.board.parts.sumOf { it.value } plusOrMinus 1e-9)
     }
 
     test("repeatable removal is included in the reported creature value but spent entry damage is not") {

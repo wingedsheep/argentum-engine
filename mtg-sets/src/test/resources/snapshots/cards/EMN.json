@@ -967,6 +967,96 @@
     ]
 }
 
+// Borrowed Malevolence
+{
+    "name": "Borrowed Malevolence",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Escalate {2} (Pay this cost for each mode chosen beyond the first.)\nChoose one or both —\n• Target creature gets +1/+1 until end of turn.\n• Target creature gets -1/-1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature gets +1/+1 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target creature gets -1/-1 until end of turn."
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{2}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a71f123e-aad9-4f3e-9f43-1d1be359affb.jpg?1783937487",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If two of the chosen modes of an escalate spell target a creature, you may choose the same creature for each mode's target, or choose different creatures."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target of an escalate spell becomes illegal, the other targets will still be affected. If all of the targets become illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Brazen Wolves
 {
     "name": "Brazen Wolves",
@@ -1105,6 +1195,70 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Campaign of Vengeance
+{
+    "name": "Campaign of Vengeance",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control attacks, defending player loses 1 life and you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Campaign of Vengeance:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "DefendingPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"There is no saving this world, not anymore. But we shall be its bloody vengeance.\"\n—Sorin Markov",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c284997a-cfc3-4ffc-bc25-00c130fb1eb0.jpg?1783937432",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If a creature attacks a planeswalker, the defending player is the player who controls that planeswalker."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "In a multiplayer game, each instance of the ability affects only one defending player. For example, if you attack player A with two creatures and player B with two creatures, each of those players will lose 2 life, not 4."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -2734,6 +2888,107 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dark Salvation
+{
+    "name": "Dark Salvation",
+    "manaCost": "{X}{X}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player creates X 2/2 black Zombie creature tokens, then up to one target creature gets -1/-1 until end of turn for each Zombie that player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/5/15f1f43a-cbdb-4d1b-a254-dadcb2469784.jpg?1783937418",
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "permanent Zombie"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "permanent Zombie"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "Countless ghouls surged through Thraben's streets, and with them came the city's salvation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b5978bd-a696-430e-8c35-729d96eec53e.jpg?1783937485",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose up to one target creature total, not a separate target for each Zombie that player controls."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature becomes an illegal target, the targeted player will still get Zombie tokens."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You may cast Dark Salvation with X as 0 just to have a creature get -1/-1 for each Zombie a player controls, and you may cast it without targeting any creature just to have a player get Zombie tokens. If you really just want to cast a spell, you can even cast it with X as 0 without a target creature and have neither effect do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4814,6 +5069,54 @@
     ]
 }
 
+// Galvanic Bombardment
+{
+    "name": "Galvanic Bombardment",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Galvanic Bombardment deals X damage to target creature, where X is 2 plus the number of cards named Galvanic Bombardment in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "right": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "name:Galvanic Bombardment"
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Terese Nielsen",
+        "flavorText": "Geist-powered devices have no shortage of fuel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc6a4367-bbee-43b8-b5dd-28498f8e2ede.jpg?1783937459"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gavony Unhallowed
 {
     "name": "Gavony Unhallowed",
@@ -6432,6 +6735,55 @@
     ]
 }
 
+// Incendiary Flow
+{
+    "name": "Incendiary Flow",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Incendiary Flow deals 3 damage to any target. If a creature dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"What's your plan?\" Gideon asked.\n\"Are you serious?\" Chandra replied.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf464f61-8a7f-493b-a80f-2f2b0ebd8bf6.jpg?1783937459"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ingenious Skaab
 {
     "name": "Ingenious Skaab",
@@ -6854,6 +7206,200 @@
     ]
 }
 
+// Liliana, the Last Hope
+{
+    "name": "Liliana, the Last Hope",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+1: Up to one target creature gets -2/-1 until your next turn.\n−2: Mill two cards, then you may return a creature card from your graveyard to your hand.\n−7: You get an emblem with \"At the beginning of your end step, create X 2/2 black Zombie creature tokens, where X is two plus the number of Zombies you control.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liliana, the Last Hope:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Up to one target creature gets -2/-1 until your next turn."
+            },
+            {
+                "id": "Liliana, the Last Hope:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may return a creature card from your graveyard to your hand",
+                            "selectedLabel": "Return to hand",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Mill two cards, then you may return a creature card from your graveyard to your hand."
+            },
+            {
+                "id": "Liliana, the Last Hope:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Liliana, the Last Hope:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "right": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "permanent Zombie"
+                                }
+                            },
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/5/15f1f43a-cbdb-4d1b-a254-dadcb2469784.jpg?1783937418"
+                        },
+                        "descriptionOverride": "At the beginning of your end step, create X 2/2 black Zombie creature tokens, where X is two plus the number of Zombies you control."
+                    },
+                    "descriptionOverride": "At the beginning of your end step, create X 2/2 black Zombie creature tokens, where X is two plus the number of Zombies you control.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"At the beginning of your end step, create X 2/2 black Zombie creature tokens, where X is two plus the number of Zombies you control.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa6ac7d2-0127-49a8-b7d2-a38308d3c27b.jpg?1783937482",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You can activate Liliana's first ability without any targets just to add a loyalty counter to her."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Liliana's second ability doesn't target the card to return to your hand. After putting the top two cards of your library into your graveyard, you may choose from among any creature cards there."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "While resolving the triggered ability of Liliana's emblem, if you control zero Zombies, you'll get two Zombie tokens."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lone Rider
 {
     "name": "Lone Rider",
@@ -7214,6 +7760,59 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd8272ca-8e3d-4980-99f2-352a1db76d74.jpg?1783937424"
     },
     "colorIdentityOverride": []
+}
+
+// Markov Crusader
+{
+    "name": "Markov Crusader",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "Lifelink\nThis creature has haste as long as you control another Vampire.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Vampire",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "The surviving members of the Markov bloodline drove through a crush of horrors to reclaim their ancestral home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87d8354b-df56-4294-9f8a-b7c92e31b88e.jpg?1783937481",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If Markov Crusader loses haste before the declare attackers step on the turn it enters the battlefield, it won't be able to attack. Once you've attacked with Markov Crusader, causing it to lose haste won't remove it from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Mausoleum Wanderer
@@ -7667,6 +8266,69 @@
     ]
 }
 
+// Mournwillow
+{
+    "name": "Mournwillow",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Plant Skeleton",
+    "oracleText": "Haste\nDelirium — When this creature enters, if there are four or more card types among cards in your graveyard, creatures with power 2 or less can't block this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mournwillow:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature pow<=2"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "Delirium — When this creature enters, if there are four or more card types among cards in your graveyard, creatures with power 2 or less can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Jeff Simpson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45aa37d8-6765-443f-9b70-200fecf8fa1e.jpg?1783937428",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Because the last ability's effect doesn't change the characteristics of any permanents, the set of creatures affected is constantly updated. Any creature with power 2 or less at the moment blockers are chosen will be unable to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Nahiri's Wrath
 {
     "name": "Nahiri's Wrath",
@@ -8012,6 +8674,164 @@
     ]
 }
 
+// Noosegraf Mob
+{
+    "name": "Noosegraf Mob",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "This creature enters with five +1/+1 counters on it.\nWhenever a player casts a spell, remove a +1/+1 counter from this creature. If you do, create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Noosegraf Mob:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "RemoveCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        "successCriterion": "SuccessCriterion.CountersRemoved"
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15f1f43a-cbdb-4d1b-a254-dadcb2469784.jpg?1783937418"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 5,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de44166d-3db6-4ece-985d-b8977c25e29f.jpg?1783937478",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If Noosegraf Mob is no longer on the battlefield or no longer has +1/+1 counters on it as its triggered ability resolves, you can't remove a counter from it and won't get a Zombie token."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You can't remove more than one +1/+1 counter from Noosegraf Mob at once to get more Zombie tokens, and you can't choose not to remove a counter."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Noosegraf Mob's triggered ability resolves before the spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Oath of Liliana
+{
+    "name": "Oath of Liliana",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Liliana enters, each opponent sacrifices a creature of their choice.\nAt the beginning of each end step, if a planeswalker entered the battlefield under your control this turn, create a 2/2 black Zombie creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Liliana:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "id": "Oath of Liliana:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/5/15f1f43a-cbdb-4d1b-a254-dadcb2469784.jpg?1783937418"
+                },
+                "interveningIf": {
+                    "type": "PermanentTypeEnteredBattlefieldThisTurn",
+                    "cardType": "PLANESWALKER"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"I'll keep watch. Happy now?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2028f577-e0fb-48dd-89c6-f4a000b0a881.jpg?1783937481",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Oath of Liliana's last ability will trigger even if the planeswalker that entered the battlefield under your control is no longer on the battlefield, no longer under your control, or no longer a planeswalker. This is also true if Oath of Liliana wasn't on the battlefield when the planeswalker entered."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The last ability triggers only once per turn, even if more than one planeswalker entered the battlefield under your control."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Oath of Liliana is legendary, just like the previous Oaths from Oath of the Gatewatch. If you already control an Oath of Liliana, you can still cast a second Oath of Liliana to take advantage of its enters-the-battlefield ability. It will enter the battlefield, causing its first ability to trigger. You will then choose one to keep, and the other will be put into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Olivia's Dragoon
 {
     "name": "Olivia's Dragoon",
@@ -8175,6 +8995,98 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Prying Questions
+{
+    "name": "Prying Questions",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent loses 3 life and puts a card from their hand on top of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card to put on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "What remained of the Lunarch Inquisition found new ways to extract confessions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac9fcf7c-8785-4285-b583-7060edabc3c6.jpg?1783937475",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Prying Questions can target an opponent who has no cards in hand. That player just loses 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9634,6 +10546,59 @@
     "colorIdentityOverride": []
 }
 
+// Strange Augmentation
+{
+    "name": "Strange Augmentation",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1.\nDelirium — Enchanted creature gets an additional +2/+2 as long as there are four or more card types among cards in your graveyard.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d9b9847-7ef7-4fcc-ba16-8f2859d53fe6.jpg?1783937473"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Stromkirk Condemned
 {
     "name": "Stromkirk Condemned",
@@ -10868,6 +11833,119 @@
     ]
 }
 
+// Voldaren Pariah
+{
+    "name": "Voldaren Pariah",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire Horror",
+    "oracleText": "Flying\nSacrifice three other creatures: Transform this creature.\nMadness {B}{B}{B} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{B}{B}{B}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Voldaren Pariah:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsSource"
+                                }
+                            ]
+                        },
+                        "count": 3
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Sacrifice three other creatures: Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Abolisher of Bloodlines",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Vampire",
+        "oracleText": "Flying\nWhen this creature transforms into Abolisher of Bloodlines, target opponent sacrifices three creatures of their choice.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 5
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Abolisher of Bloodlines:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature",
+                        "count": 3,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "When this creature transforms into Abolisher of Bloodlines, target opponent sacrifices three creatures of their choice."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "111",
+            "rarity": "RARE",
+            "artist": "James Ryman",
+            "flavorText": "Even if the rain turned to blood, her thirst would not be slaked.",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/5/25baac6c-5bb4-4ecc-b1d5-fced52087bd9.jpg?1783937479",
+            "rulings": [
+                {
+                    "date": "2016-07-13",
+                    "text": "If the targeted opponent doesn't control three creatures as the triggered ability of Abolisher of Bloodlines resolves, that player sacrifices as many creatures as able."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25baac6c-5bb4-4ecc-b1d5-fced52087bd9.jpg?1783937479"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wailing Ghoul
 {
     "name": "Wailing Ghoul",
@@ -11146,6 +12224,136 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Whispers of Emrakul
+{
+    "name": "Whispers of Emrakul",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards a card at random.\nDelirium — If there are four or more card types among cards in your graveyard, that player discards two cards at random instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "storeAs": "hand"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "hand",
+                        "selection": {
+                            "type": "Random",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "storeSelected": "discarded"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "discarded",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "storeAs": "hand"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "hand",
+                        "selection": {
+                            "type": "Random",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "discarded"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "discarded",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "flavorText": "Your thoughts are no longer your own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b7ba428-5a35-4062-8e16-39eb927cb316.jpg?1783937472"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
