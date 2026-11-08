@@ -1,3 +1,2 @@
 - #<pr> The AI reads a wish that pools outside the game with exile (Coax from the Blind Eternities, Karn, the Great Creator's −2) as a tutor, instead of not knowing what it is for.
 - #<pr> The AI reads a pipeline blink of chosen targets (Displace, Ghostly Flicker) as protection — a save from removal and an ETB re-buy — as it already read Cloudshift, instead of not knowing what it is for.
-- #<pr> The AI aims "target opponent separates/chooses among your cards" spells (Fortune's Favor, Sauron's Ransom, Gifts Ungiven) at an opponent by reading the decider slot as opponent-side, instead of falling back to the removal ranking.

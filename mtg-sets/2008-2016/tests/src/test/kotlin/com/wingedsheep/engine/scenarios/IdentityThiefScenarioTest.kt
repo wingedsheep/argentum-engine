@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -151,5 +152,25 @@ class IdentityThiefScenarioTest : FunSpec({
         d.getExile(opp) shouldNotContain giant
         d.state.getBattlefield() shouldContain giant
         d.name(thief) shouldBe "Identity Thief"
+    }
+
+    test("only another nontoken creature can be targeted: not a token, not Identity Thief itself") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val opp = d.getOpponent(p)
+        val thief = d.putCreatureOnBattlefield(p, "Identity Thief")
+        d.removeSummoningSickness(thief)
+        val giant = d.putCreatureOnBattlefield(opp, "Hill Giant")
+        val token = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        d.replaceState(d.state.updateEntity(token) { it.with(TokenComponent) })
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p, listOf(thief), opp).error shouldBe null
+        var guard = 0
+        while (d.pendingDecision !is ChooseTargetsDecision && guard++ < 20) d.bothPass()
+        val offered = (d.pendingDecision as ChooseTargetsDecision).legalTargets[0].orEmpty()
+        offered shouldContain giant
+        offered shouldNotContain token
+        offered shouldNotContain thief
     }
 })

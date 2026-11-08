@@ -1925,6 +1925,8 @@ object CardIntentAnalyzer {
      * Eternities, Karn, the Great Creator's −2) is one pick across both, the outside-the-game half
      * the wish. [HoldPolicy]'s dead-wish check reads only the sideboard, so a pick that could only
      * come from exile is not counted live there — conservative, never a wish thrown away.
+     * A gather that also pools the library (Turtles Forever) is a library tutor, not a wish: the
+     * library half keeps it live, and [DeadSearch] owns library deadness.
      */
     private fun wishFilterOf(effect: Effect): GameObjectFilter? {
         if (effect !is GatherCardsEffect) return null
@@ -1932,7 +1934,9 @@ object CardIntentAnalyzer {
             is CardSource.FromZone ->
                 source.filter.takeIf { source.zone == Zone.SIDEBOARD && source.player == Player.You }
             is CardSource.FromMultipleZones ->
-                source.filter.takeIf { Zone.SIDEBOARD in source.zones && source.player == Player.You }
+                source.filter.takeIf {
+                    Zone.SIDEBOARD in source.zones && Zone.LIBRARY !in source.zones && source.player == Player.You
+                }
             else -> null
         }
     }

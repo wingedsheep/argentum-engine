@@ -4,9 +4,11 @@ import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.mtg.sets.definitions.emn.cards.CoaxFromTheBlindEternities
+import com.wingedsheep.mtg.sets.definitions.tmt.cards.TurtlesForever
 import com.wingedsheep.mtg.sets.definitions.war.cards.KarnTheGreatCreator
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
@@ -38,5 +40,11 @@ class MultiZoneWishTutorReadingAiTest : FunSpec({
         withClue("$reading") {
             reading.flags.none { it.check == AiReadingAudit.Check.INTENT } shouldBe true
         }
+    }
+
+    test("a gather that also pools the library is a library tutor, not a wish the dead-wish check reads") {
+        // Turtles Forever searches library + sideboard: the library half keeps it live, so HoldPolicy's
+        // sideboard-only dead-wish check must not withhold its idle-mana window.
+        CardIntentAnalyzer.analyze(TurtlesForever).wishFilters.shouldBeEmpty()
     }
 })
