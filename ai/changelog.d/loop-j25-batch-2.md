@@ -1,0 +1,3 @@
+- #TBD The AI holds an instant that sets creatures' base power and toughness until end of turn (Phantasmal Form) for combat as a trick, instead of casting it in the main phase
+- #TBD The AI reads "assigns combat damage equal to its toughness" grants (Plagon, Lord of the Beach) as a combat enhancement for its own creatures
+- #TBD The AI no longer reads a creature sacrificing itself (Phantasmal Shieldback) as removal, so it stops overrating such drawbacks in the draft

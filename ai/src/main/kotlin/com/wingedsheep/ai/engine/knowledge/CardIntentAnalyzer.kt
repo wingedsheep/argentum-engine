@@ -357,6 +357,9 @@ object CardIntentAnalyzer {
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
             if (isExpiringCopy(effect)) expiringPump = true
         }
+        // A replacing base P/T until end of turn is a body for this turn's fight, like a copy —
+        // unless it is the setup for removal (Square Up's fight), whose timing the removal owns.
+        if (IntentTag.REMOVAL !in tags && leaves.any(::isExpiringBaseStats)) expiringPump = true
 
         var anthemBonus = 0
         for (static in scripts.flatMap { it.staticAbilities }) {
@@ -1974,8 +1977,10 @@ object CardIntentAnalyzer {
             if (hitsAnotherPermanent(effect.target)) removalTags(effect.target) else emptySet()
         is PhaseOutUntilLeavesEffect -> setOf(IntentTag.REMOVAL)
         is ForceSacrificeEffect -> setOf(IntentTag.REMOVAL)
+        // "When this creature becomes the target of a spell or ability, sacrifice it" (Phantasmal
+        // Shieldback, the Illusions): the source sacrificing itself is its drawback, never an answer.
         is SacrificeTargetEffect ->
-            if (sacrificesOwnAttachedHost(effect)) emptySet() else setOf(IntentTag.REMOVAL)
+            if (effect.target == EffectTarget.Self || sacrificesOwnAttachedHost(effect)) emptySet() else setOf(IntentTag.REMOVAL)
         is GainControlEffect -> setOf(IntentTag.REMOVAL)
         // "Exchange control of target artifact you control and target artifact or creature you don't
         // control" (Shrewd Negotiation, Switcheroo, Chromeshell Crab): their permanent is taken as
@@ -2694,6 +2699,7 @@ object CardIntentAnalyzer {
         // A keyword string also carries an [AbilityFlag]'s name: "can't be blocked" is the purest
         // evasion there is, and "can't be blocked by more than one creature" is menace's cousin.
         if (keyword in EVASION_FLAGS) return setOf(IntentTag.EVASION_GRANT)
+        if (keyword in COMBAT_FLAGS) return setOf(IntentTag.COMBAT_ENHANCEMENT)
         // "Target creature gains protection from red" (Crimson Acolyte, Sygg's "protection from
         // each color"): `Effects.GrantProtectionFromColor` grants it as a `PROTECTION_FROM_<X>`
         // string, the keyword's scoped form — the same shield as [Keyword.PROTECTION].
@@ -2747,6 +2753,21 @@ object CardIntentAnalyzer {
     private fun isExpiringCopy(effect: Effect): Boolean =
         effect is EachPermanentBecomesCopyOfTargetEffect && effect.duration == Duration.EndOfTurn &&
             effect.affected != null
+
+    /**
+     * Another creature given a base power and toughness until end of turn that *replaces* its stats
+     * for a fight — "up to two target creatures each have base power and toughness 3/3 and gain
+     * flying until end of turn" (Phantasmal Form), alone or run once per target through a `ForEach`.
+     * The [IntentTag.COMBAT_ENHANCEMENT] reading of [tagsOf], with a duration: like [isExpiringCopy]
+     * it is spent in this turn's fight, so an instant carrying one is a combat trick. A base of 0
+     * toughness (removal) or one small enough to neutralize is not this shape.
+     */
+    private fun isExpiringBaseStats(effect: Effect): Boolean = when (effect) {
+        is SetBaseStatsEffect -> effect.duration == Duration.EndOfTurn && hitsAnotherPermanent(effect.target) &&
+            effect.toughness?.let(::fixed) != 0 && !setsSmallBase(effect)
+        is ForEachEffect -> effect.space == IterationSpace.Targets && readingLeaves(effect.body).any(::isExpiringBaseStats)
+        else -> false
+    }
 
     /**
      * A protective keyword granted until end of turn — "target creature gains indestructible until
@@ -3443,6 +3464,13 @@ object CardIntentAnalyzer {
     private val EVASION_FLAGS = setOf(
         AbilityFlag.CANT_BE_BLOCKED.name, AbilityFlag.CANT_BE_BLOCKED_BY_MORE_THAN_ONE.name,
     )
+
+    /**
+     * Flags that change how a creature fights rather than whether it can be blocked: "assigns combat
+     * damage equal to its toughness rather than its power" (Plagon, Bill the Pony) turns a wall into
+     * an attacker — a combat enhancement, like a granted first strike.
+     */
+    private val COMBAT_FLAGS = setOf(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS.name)
 
     /** The flags that keep a tapped permanent tapped through its controller's untap step. */
     private val LOCKED_TAPPED_FLAGS = setOf(AbilityFlag.DOESNT_UNTAP.name, AbilityFlag.CANT_BECOME_UNTAPPED.name)

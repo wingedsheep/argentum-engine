@@ -3272,6 +3272,114 @@
     ]
 }
 
+// Phantasmal Form
+{
+    "name": "Phantasmal Form",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, up to two target creatures each have base power and toughness 3/3, gain flying, and become blue Illusions in addition to their other colors and types.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetBaseStats",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "AddColor",
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "AddCreatureType",
+                                "subtype": "Illusion",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "EndOfTurn"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Steve Argyle",
+        "flavorText": "Within each of us lurks the fathomless.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f106e515-511a-48c7-b7a7-3ca820950122.jpg?1783933140",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Phantasmal Form overwrites all previous effects that set the target creatures' power and toughness to specific values. Other effects that set their power or toughness to specific values that start to apply after Phantasmal Form resolves will overwrite this effect."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Effects that modify the target creatures' power or toughness (such as the effects of Force of Virtue or Giant Growth) will apply no matter when they started to take effect. The same is true for counters that change the creatures' power or toughness (such as +1/+1 counters)."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "You may cast Phantasmal Form without choosing any target creatures. You'll just draw a card. However, if you choose any targets and all of those targets become illegal before the spell tries to resolve, the spell won't resolve and you won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Phantom Ninja
 {
     "name": "Phantom Ninja",

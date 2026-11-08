@@ -3569,6 +3569,74 @@
     ]
 }
 
+// Nykthos Paragon
+{
+    "name": "Nykthos Paragon",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Enchantment Creature — Human Soldier",
+    "oracleText": "Whenever you gain life, you may put that many +1/+1 counters on each creature you control. Do this only once each turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nykthos Paragon:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_LIFE_GAINED"
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                },
+                "effectOncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Martina Pilcerova",
+        "flavorText": "Though Heliod turned against humanity in his hunger for power, the ideals he once championed still stand strong.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2963205e-b181-44d1-809f-6577e29fa812.jpg?1783926889",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "\"Do this only once each turn\" refers to putting +1/+1 counters on your creatures using the triggered ability. As long as you haven't yet chosen to put +1/+1 counters on your creatures with it, all instances of gaining life will cause Nykthos Paragon's ability to trigger."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "\"Do this only once each turn\" refers only to the ability it is attached to, not other instances of the same ability. In other words, if you control multiple Nykthos Paragons, you will be able to do this once for each of them."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If multiple instances of the ability are on the stack, you will be able to put +1/+1 counters for only one of those instances. Once you do that, other instances will do nothing as they resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Orchard Strider
 {
     "name": "Orchard Strider",
