@@ -34,7 +34,7 @@ Abandoned Sarcophagus
 Abattoir Ghoul
 Abbey Griffin
 Abbot of Keral Keep
-Aberrant Manawurm	intent: ModifyStatsEffect
+Aberrant Manawurm
 Aberrant Mind Sorcerer
 Aberrant Researcher
 Abhorrent Oculus	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
@@ -2132,6 +2132,7 @@ Bountiful Landscape
 Bountiful Promenade
 Bounty Agent
 Bounty of Might
+Bounty of Skemfar
 Bounty of the Luxa
 Bovine Intervention
 Brackish Blunder
@@ -2177,6 +2178,7 @@ Brass Secretary
 Brass's Bounty
 Brass's Tunnel-Grinder
 Brassclaw Orcs
+Braulios of Pheres Band
 Brave Brawler
 Brave the Sands
 Brave the Wilds
@@ -2570,7 +2572,7 @@ Captain America, Living Legend	intent: TapUntapEffect
 Captain America, Super-Soldier
 Captain America, Wings of Freedom
 Captain Benjamin Sisko
-Captain Howler, Sea Scourge	polarity: ModifyStatsEffect
+Captain Howler, Sea Scourge
 Captain James T. Kirk
 Captain Jean-Luc Picard
 Captain Jonathan Archer
@@ -2743,7 +2745,7 @@ Caves of Koilos
 Cease // Desist	polarity: DrawCardsEffect; polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
 Ceaseless Searblades
 Cecil, Dark Knight
-Celeborn the Wise	intent: ModifyStatsEffect
+Celeborn the Wise
 Celebrate the Mountain-king
 Celebrity Fencer
 Celestial Armor
@@ -2964,7 +2966,7 @@ Child of the Pack
 Child of the Volcano
 Children of Korlis
 Chill
-Chill Haunting	intent: ModifyStatsEffect; polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Chill Haunting
 Chill of the Grave
 Chillbringer
 Chillerpillar	intent: BecomeMonstrousEffect
@@ -4213,6 +4215,7 @@ Deeproot Waters
 Deeproot Wayfinder
 Deeptread Merrow
 Deepway Navigator
+Deepwood Denizen
 Deepwood Drummer
 Deepwood Ghoul
 Deepwood Tantiv
@@ -5564,7 +5567,7 @@ Errant Ephemeron
 Errant and Giada
 Errant, Street Artist
 Erratic Apparition
-Erratic Cyclops	intent: ModifyStatsEffect
+Erratic Cyclops
 Erratic Explosion
 Erratic Visionary
 Erstwhile Trooper
@@ -6837,6 +6840,7 @@ Garruk's Harbinger
 Garruk's Packleader
 Garruk's Uprising
 Garruk's Warsteed
+Garruk, Caller of Beasts
 Garruk, Curse Breaker
 Garruk, Cursed Huntsman
 Garruk, Savage Herald	intent: ForEach>GrantStaticAbilityEffect
@@ -8577,6 +8581,7 @@ Hurloon Minotaur
 Hurly-Burly
 Hurr Jackal	intent: CantBeRegeneratedEffect
 Hurricane
+Hurska Sweet-Tooth
 Hush
 Hushbringer
 Hushwood Verge
@@ -10646,7 +10651,7 @@ Magma Rift
 Magma Sliver
 Magma Spray
 Magma Vein
-Magmablood Archaic	intent: ForEach>ModifyStatsEffect
+Magmablood Archaic
 Magmakin Artillerist
 Magmaroth
 Magmatic Channeler
@@ -12237,7 +12242,7 @@ Obosh, the Preypiercer
 Obscura Ascendancy
 Obscura Charm
 Obscura Initiate
-Obscura Interceptor	intent: ReturnSpellOrPermanentToOwnersHandEffect
+Obscura Interceptor
 Obscura Storefront
 Obsessive Astronomer
 Obsessive Pursuit
@@ -13885,6 +13890,7 @@ Razorfield Thresher
 Razorfin Hunter
 Razorfoot Griffin
 Razorgrass Ambush
+Razorgrass Invoker
 Razorkin Hordecaller
 Razorkin Needlehead
 Razorlash Transmogrant
@@ -13901,6 +13907,7 @@ Read the Tides
 Ready to Rumble
 Reality Heist
 Reality Shift
+Realm Seekers
 Realm of Koh
 Realm-Cloaked Giant
 Realm-Scorcher Hellkite
@@ -15773,6 +15780,7 @@ Shrill Howler
 Shrine Keeper
 Shrine Steward
 Shrivel
+Shroofus Sproutsire
 Shrouded Shepherd
 Shroudstomper
 Shu Cavalry
@@ -15937,7 +15945,7 @@ Sinister Hideout
 Sinister Monolith
 Sinister Sabotage
 Sinister Starfish
-Sink into Stupor	intent: ReturnSpellOrPermanentToOwnersHandEffect
+Sink into Stupor
 Sinkhole
 Sinkhole Surveyor
 Sins of the Past	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
@@ -16319,6 +16327,7 @@ Solve for Disappointment
 Solve the Equation
 Somber Hoverguard
 Somberwald Alpha
+Somberwald Beastmaster
 Somberwald Sage
 Something Worth Saving
 Somnomancer
@@ -16582,6 +16591,7 @@ Spined Basher
 Spined Fluke
 Spined Karok
 Spined Megalodon
+Spined Tyrranax
 Spined Wurm
 Spineless Thug
 Spinerock Knoll	intent: Pipeline(TopOfLibrary→exile|library)
@@ -17356,6 +17366,7 @@ Sustenance
 Susur Secundi, Void Altar
 Susurian Dirgecraft
 Susurian Voidborn
+Sutina, Speaker of the Tajuru
 Suture Priest
 Suurok-Class Science Vessel
 Suus Mahna Practitioner
@@ -18459,6 +18470,7 @@ Time Warp	polarity: TakeExtraTurnEffect
 Time Wipe
 Time of Ice
 Time of Need
+Time to Feed
 Time to Reflect
 Timeless Lotus
 Timeless Witness
@@ -19072,6 +19084,7 @@ Undead Servant
 Undead Sprinter
 Undead Warchief
 Under the Skin
+Undercellar Myconid
 Undercity Dire Rat
 Undercity Eliminator
 Undercity Necrolisk
@@ -19091,6 +19104,7 @@ Underfoot Underdogs
 Underground Mortuary
 Underground River
 Underground Sea
+Undergrowth Champion
 Undergrowth Leopard
 Undergrowth Recon
 Undergrowth Scavenger
@@ -19192,7 +19206,7 @@ Unstable Obelisk
 Unstoppable Ogre
 Unstoppable Plan
 Unstoppable Slasher
-Unsubstantiate	intent: ReturnSpellOrPermanentToOwnersHandEffect
+Unsubstantiate
 Unsubtle Mockery
 Unsummon
 Unswerving Sloth
@@ -19470,6 +19484,7 @@ Venomsac Lagac
 Venomspout Brackus
 Venser's Sliver
 Venser, Corpse Puppet
+Venser, Shaper Savant
 Venus, Torn Between Worlds
 Verazol, the Split Current
 Verdant Automaton
