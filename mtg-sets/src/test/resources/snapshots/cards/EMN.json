@@ -433,6 +433,110 @@
     ]
 }
 
+// Blessed Alliance
+{
+    "name": "Blessed Alliance",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Escalate {2} (Pay this cost for each mode chosen beyond the first.)\nChoose one or more —\n• Target player gains 4 life.\n• Untap up to two target creatures.\n• Target opponent sacrifices an attacking creature of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player gains 4 life."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.TargetsOf",
+                            "group": "t1"
+                        },
+                        "body": {
+                            "type": "TapUntap",
+                            "target": "IterationEntity",
+                            "tap": false
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Untap up to two target creatures."
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature attacking",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Target opponent sacrifices an attacking creature of their choice."
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{2}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5805eab-9a32-4c0c-9015-7bdb74ad7634.jpg?1783937526",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "The targeted opponent chooses which of their attacking creatures to sacrifice, not you."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Untapping an attacking creature doesn't cause it to be removed from combat."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target of an escalate spell becomes illegal, the other targets will still be affected. If all of the targets become illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blood Mist
 {
     "name": "Blood Mist",
@@ -689,6 +793,94 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Borrowed Grace
+{
+    "name": "Borrowed Grace",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Escalate {1}{W} (Pay this cost for each mode chosen beyond the first.)\nChoose one or both —\n• Creatures you control get +2/+0 until end of turn.\n• Creatures you control get +0/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Creatures you control get +2/+0 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Creatures you control get +0/+2 until end of turn."
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{1}{W}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0067567-3434-4c12-9d4d-04ffc98d012c.jpg?1783937525",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose all of your modes at once. You can't wait to perform one mode's actions and then decide to choose more modes."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Effects that reduce the cost of spells reduce the total cost, including any escalate costs added."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If an effect allows you to cast a spell that has escalate without paying its mana cost, you pay escalate costs for that spell if you choose more than one mode."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1617,6 +1809,143 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Collective Effort
+{
+    "name": "Collective Effort",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Escalate—Tap an untapped creature you control. (Pay this cost for each mode chosen beyond the first.)\nChoose one or more —\n• Destroy target creature with power 4 or greater.\n• Destroy target enchantment.\n• Put a +1/+1 counter on each creature target player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature pow>=4"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target creature with power 4 or greater."
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target enchantment."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControlledByReferencedPlayer",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t2"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Put a +1/+1 counter on each creature target player controls."
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "additionalCostPerExtraMode": {
+                "type": "AtomTapPermanents",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d85a6369-c07f-47d5-8448-72d8ec7e7898.jpg?1783937522",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose all of your modes at once. You can't wait to perform one mode's actions and then decide to choose more modes."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Effects that reduce the cost of spells reduce the total cost, including any escalate costs added."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You can tap any untapped creature you control to pay the escalate cost, including one you haven't controlled continuously since the beginning of the turn."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If an effect allows you to cast a spell that has escalate without paying its mana cost, you pay escalate costs for that spell if you choose more than one mode."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If two of the chosen modes of an escalate spell target a creature, you may choose the same creature for each mode's target, or choose different creatures. The same is true if the chosen modes target a player (or opponent)."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You can't choose any one mode multiple times."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target of an escalate spell becomes illegal, the other targets will still be affected. If all of the targets become illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3256,6 +3585,171 @@
     ]
 }
 
+// Extricator of Sin
+{
+    "name": "Extricator of Sin",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, you may sacrifice another permanent. If you do, create a 3/2 colorless Eldrazi Horror creature token.\nDelirium — At the beginning of your upkeep, if there are four or more card types among cards in your graveyard, transform this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Extricator of Sin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Sacrifice",
+                                "filter": "permanent",
+                                "excludeSource": true
+                            },
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 2,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Eldrazi",
+                                "Horror"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice another permanent. If you do, create a 3/2 colorless Eldrazi Horror creature token."
+            },
+            {
+                "id": "Extricator of Sin:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "Delirium — At the beginning of your upkeep, if there are four or more card types among cards in your graveyard, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Extricator of Flesh",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Horror",
+        "oracleText": "Eldrazi you control have vigilance.\n{2}, {T}, Sacrifice a non-Eldrazi creature: Create a 3/2 colorless Eldrazi Horror creature token.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 5
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Extricator of Flesh:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Eldrazi"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 2,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Eldrazi",
+                            "Horror"
+                        ]
+                    },
+                    "descriptionOverride": "{2}, {T}, Sacrifice a non-Eldrazi creature: Create a 3/2 colorless Eldrazi Horror creature token."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent Eldrazi ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "23",
+            "rarity": "UNCOMMON",
+            "artist": "Craig J Spearing",
+            "flavorText": "After the end, a new beginning.",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/6/b6867ddd-f953-41c6-ba36-86ae2c14c908.jpg?1783937524"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6867ddd-f953-41c6-ba36-86ae2c14c908.jpg?1783937524",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "While resolving Extricator of Sin's first ability, you can't sacrifice multiple permanents to get multiple Eldrazi Horror tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Exultant Cultist
 {
     "name": "Exultant Cultist",
@@ -3437,6 +3931,54 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b92b162-f51d-4138-8d9b-e5eb929ad87e.jpg?1783937424"
     },
     "colorIdentityOverride": []
+}
+
+// Fiend Binder
+{
+    "name": "Fiend Binder",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, tap target creature defending player controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fiend Binder:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "David Gaillet",
+        "flavorText": "She had not believed any shred of humanity remained in these writhing monsters until the twisted form of her partner appeared before her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0870d21-603f-4d36-8054-943adba06301.jpg?1783937518"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Fogwalker
@@ -3876,6 +4418,59 @@
     ]
 }
 
+// Geist of the Lonely Vigil
+{
+    "name": "Geist of the Lonely Vigil",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "Defender, flying\nDelirium — This creature can attack as though it didn't have defender as long as there are four or more card types among cards in your graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "The flicker of candlelight and the echo of hymns told the villagers that the monastery wasn't truly abandoned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13118343-e026-4970-bf03-ba2d8fc58bac.jpg?1783937518",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Once you've attacked with Geist of the Lonely Vigil, lowering the number of card types in your graveyard won't remove it from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Geist-Fueled Scarecrow
 {
     "name": "Geist-Fueled Scarecrow",
@@ -4072,6 +4667,63 @@
         "artist": "Clint Cearley",
         "flavorText": "She now hears only Emrakul's murmurs.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c75c035a-7da9-4b36-982d-fca8220b1797.jpg?1783937515"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Give No Ground
+{
+    "name": "Give No Ground",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+6 until end of turn and can block any number of creatures this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantStaticAbility",
+                    "ability": "CanBlockAnyNumber",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"Get behind me!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cb3347a-9b32-46a4-a621-4ae5244ba2f5.jpg?1783937516"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5140,7 +5792,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": {},
+                        "baseFilter": "Aura|Equipment own:you",
                         "zone": "Graveyard"
                     },
                     "id": "t0"
@@ -5413,6 +6065,185 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Lone Rider
+{
+    "name": "Lone Rider",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike, lifelink\nAt the beginning of the end step, if you gained 3 or more life this turn, transform this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lone Rider:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of the end step, if you gained 3 or more life this turn, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "It That Rides as One",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Horror",
+        "oracleText": "First strike, trample, lifelink",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "FIRST_STRIKE",
+            "TRAMPLE",
+            "LIFELINK"
+        ],
+        "metadata": {
+            "collectorNumber": "33",
+            "rarity": "UNCOMMON",
+            "artist": "Daarken",
+            "flavorText": "\". . . but until this morning, I'd never seen them be of one body.\"\n—Ulda, Gavony Rider",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/a/9a55b60a-5d90-4f73-984e-53fdcc0366e4.jpg?1783937519"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"Horse and rider are often of one mind.\"\n—Ulda, Gavony Rider",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a55b60a-5d90-4f73-984e-53fdcc0366e4.jpg?1783937519",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Lone Rider's last ability triggers even if it wasn't on the battlefield when you gained the life this turn."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Lone Rider's ability checks how much life you've gained during the turn, not what your life total is compared to what it was when the turn began. For example, if you gained 4 life and then lost 7 life this turn, it still triggers."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You must have gained life before your end step begins. Lone Rider's last ability won't trigger if you haven't, even if an ability triggering at the same time will cause you to gain life."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "In a Two-Headed Giant game, events that cause a player to gain life affect each player separately, even though the result affects the team's life total. For example, if your teammate's creatures with lifelink dealt 5 damage, your teammate gained life, not you, and Lone Rider's last ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Long Road Home
+{
+    "name": "Long Road Home",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner's control with a +1/+1 counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "entryCounters": [
+                            {
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "The person who finishes a journey is rarely the same as the one who starts it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d568323c-b631-48b6-b6da-4dc29d330a12.jpg?1783937513",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If a double-faced card is exiled this way, it'll return with its front face up. It gets a +1/+1 counter even if it isn't a creature."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If that creature is exiled during an end step, it won't come back until the next turn's end step."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If a creature token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "At the time the creature is exiled, Auras attached to it will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on it at that time will cease to exist."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If a melded permanent is exiled this way, the two cards will both return with their front faces up. Each gets a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6241,6 +7072,103 @@
     ]
 }
 
+// Providence
+{
+    "name": "Providence",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may reveal this card from your opening hand. If you do, at the beginning of the first upkeep, your life total becomes 26.\nYour life total becomes 26.",
+    "script": {
+        "spellEffect": {
+            "type": "SetLifeTotal",
+            "amount": {
+                "type": "Fixed",
+                "amount": 26
+            }
+        },
+        "openingHandReveal": {
+            "type": "CreateDelayedTrigger",
+            "step": "UPKEEP",
+            "effect": {
+                "type": "SetLifeTotal",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 26
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "flavorText": "There is power in prayer, regardless of who is listening.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e5edd8d-8e10-4414-a326-95a672dfcff7.jpg?1783937512",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "A player's \"opening hand\" is the hand of cards the player has after all players have taken mulligans. If players have any cards in hand that allow actions to be taken with them from a player's opening hand, the starting player takes all such actions first in any order, followed by each other player in turn order. Then the first turn begins."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Revealing multiples of Providence from your opening hand won't cause your life total to become 32 or any number other than 26."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "For a player's life total to become 26, the player gains or loses the appropriate amount of life. For example, if your life total is 4 when Providence resolves, it will cause you to gain 22 life; alternatively, if your life total is 40 when it resolves, it will cause you to lose 14 life. Other cards that interact with life gain or life loss will interact with this effect accordingly."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Repel the Abominable
+{
+    "name": "Repel the Abominable",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all damage that would be dealt this turn by non-Human sources.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "direction": "FromTarget",
+            "sourceFilter": {
+                "type": "PreventFromMatching",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Human"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"Fight for a better future, even if you may not live to see it.\"\n—Grete, Order of Saint Traft",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf153f4d-0d37-41a9-80d8-7f2adaad79c7.jpg?1783937511",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Sources that have no creature type at all are non-Human sources, as are sources with creature types that don't include Human. A creature that is Human and has other types, such as a Human Werewolf, is still a Human source."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If a spell or ability causes damage to be dealt, it will indicate what object deals the damage. The object dealing damage might not be the spell itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ruthless Disposal
 {
     "name": "Ruthless Disposal",
@@ -6723,6 +7651,64 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sigarda's Aid
+{
+    "name": "Sigarda's Aid",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may cast Aura and Equipment spells as though they had flash.\nWhenever an Equipment you control enters, you may attach it to target creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigarda's Aid:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact Equipment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AttachTargetEquipmentToCreature",
+                        "equipmentTarget": "TriggeringEntity",
+                        "creatureTarget": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever an Equipment you control enters, you may attach it to target creature you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": "Aura|Equipment",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "The Order of Saint Traft found new strength with Sigarda's support.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fc32f1d-dee7-4f71-a652-26a006e6020a.jpg?1783937510"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -8098,6 +9084,90 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Thalia's Lancers
+{
+    "name": "Thalia's Lancers",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike\nWhen this creature enters, you may search your library for a legendary card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thalia's Lancers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsLegendary"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a legendary card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "flavorText": "\"Let the points of our lances lead the way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9930d08d-5965-4c16-a84d-43c8ccf2ad0b.jpg?1783937507"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

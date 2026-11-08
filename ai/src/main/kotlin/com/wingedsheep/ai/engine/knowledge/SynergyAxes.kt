@@ -11,6 +11,9 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
@@ -44,6 +47,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.TurnTracker
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -176,6 +181,10 @@ object SynergyAxes {
                 // Unity, Countless Gears Renegade): it pays off what the death axis feeds — a sac
                 // outlet, a Servo or Clue to cash in, a creature traded in combat.
                 if (ability.interveningIf == PermanentLeftBattlefieldThisTurn(Player.You)) add(SynergyAxis.DEATH)
+                // "If you gained life this turn" / "if you gained 3 or more life this turn" (Lone
+                // Rider, Angelic Accord, Restless Bloodseeker): the turn's life-gained tracker as the
+                // gate pays off what the lifegain axis feeds — a lifelinker, a gain-life spell.
+                if (readsLifeGainedThisTurn(ability.interveningIf)) add(SynergyAxis.LIFEGAIN)
             }
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
@@ -220,6 +229,14 @@ object SynergyAxes {
             punishes = SynergyStrength.punished(card),
         )
     }
+
+    /**
+     * Whether [condition] asks how much life we gained this turn, reaching some amount
+     * (`Conditions.YouGainedLifeThisTurn` / `YouGainedLifeThisTurnAtLeast(n)`).
+     */
+    private fun readsLifeGainedThisTurn(condition: Condition?): Boolean =
+        condition is Compare && condition.left == DynamicAmount.TurnTracking(Player.You, TurnTracker.LIFE_GAINED) &&
+            (condition.operator == ComparisonOperator.GTE || condition.operator == ComparisonOperator.GT)
 
     private val matchCache = ConcurrentHashMap<Pair<String, GameObjectFilter>, Boolean>()
 
