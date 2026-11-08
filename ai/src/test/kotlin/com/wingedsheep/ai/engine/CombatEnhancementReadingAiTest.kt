@@ -78,7 +78,7 @@ class CombatEnhancementReadingAiTest : ScenarioTestBase() {
             }
         }
 
-        test("a base power and toughness until end of turn on an instant is a combat trick, held for the fight") {
+        test("a base power and toughness until end of turn on an instant is a combat trick, not cast in the main phase") {
             // Square Up's single target, Phantasmal Form's two run through a ForEach over the targets.
             for (card in listOf("Square Up", "Phantasmal Form")) {
                 withClue("$card: ${tags(card)}") { tags(card) shouldContain IntentTag.COMBAT_TRICK }
@@ -93,6 +93,26 @@ class CombatEnhancementReadingAiTest : ScenarioTestBase() {
                 .build()
             HoldPolicy(intents).verdictFor(game.state, game.player1Id, "Phantasmal Form")
                 .shouldBeInstanceOf<TimingVerdict.NoWindow>()
+        }
+
+        // Phantasmal Form's 3/3 replaces a 2/2's base toughness: it carries Grizzly Bears out of
+        // Shock's two damage but not out of Lightning Bolt's three. It adds no toughness, so only
+        // the base reset ([CardIntent.setToughness]) earns the response window.
+        for ((burn, saves) in listOf("Shock" to true, "Lightning Bolt" to false)) {
+            test("a base 3/3 until end of turn ${if (saves) "answers" else "does not answer"} $burn on our 2/2") {
+                val game = scenario().withPlayers()
+                    .withActivePlayer(2)
+                    .withLandsOnBattlefield(2, "Mountain", 1)
+                    .withCardInHand(2, burn)
+                    .withLandsOnBattlefield(1, "Island", 3)
+                    .withCardInHand(1, "Phantasmal Form")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .build()
+                game.castSpell(2, burn, game.findPermanent("Grizzly Bears"))
+                val verdict = HoldPolicy(intents).verdictFor(game.state, game.player1Id, "Phantasmal Form")
+                if (saves) verdict.shouldBeInstanceOf<TimingVerdict.Adjust>()
+                else verdict.shouldBeInstanceOf<TimingVerdict.NoWindow>()
+            }
         }
 
         test("assigning combat damage by toughness is a combat enhancement for our own creature") {
