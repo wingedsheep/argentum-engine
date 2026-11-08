@@ -12,6 +12,8 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
+import com.wingedsheep.sdk.scripting.DistributedCounterRemoval
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -75,7 +77,45 @@ internal object SelectionCostPayment {
         existing: AdditionalCostPayment,
         cheapestFirst: CandidateOrder,
         xValue: Int,
+    ): AdditionalCostPayment? = selection(info, existing, cheapestFirst, xValue)
+        ?.let { withFixedCounterRemovals(info, it, cheapestFirst) }
+
+    /**
+     * "Remove three counters from among creatures you control" (Lieutenant Commander Data): the
+     * fixed total, riding on whichever payload carries it. -1/-1 counters go first — shedding one
+     * is a gain — then the rest come off the least valuable permanents first, so the counters
+     * that are given up are the cheapest ones. An X total is left to the caller that chose X.
+     */
+    private fun withFixedCounterRemovals(
+        info: AdditionalCostData,
+        payment: AdditionalCostPayment,
+        cheapestFirst: CandidateOrder,
+    ): AdditionalCostPayment {
+        val total = info.distributedCounterRemovalTotal
+        if (total <= 0 || payment.distributedCounterRemovals.isNotEmpty()) return payment
+        val byId = info.counterRemovalCreatures.associateBy { it.entityId }
+        val order = cheapestFirst.permanents(byId.keys.toList())
+        val pool = order.flatMap { id ->
+            byId.getValue(id).availableCountersByType.entries.map { (type, count) -> Triple(id, type, count) }
+        }.sortedBy { (_, type, _) -> if (type == CounterType.MINUS_ONE_MINUS_ONE.printed) 0 else 1 }
+        var remaining = total
+        val removals = mutableListOf<DistributedCounterRemoval>()
+        for ((id, type, available) in pool) {
+            if (remaining == 0) break
+            val take = minOf(remaining, available)
+            removals += DistributedCounterRemoval(id, type, take)
+            remaining -= take
+        }
+        return if (remaining == 0) payment.copy(distributedCounterRemovals = removals) else payment
+    }
+
+    private fun selection(
+        info: AdditionalCostData,
+        existing: AdditionalCostPayment,
+        cheapestFirst: CandidateOrder,
+        xValue: Int,
     ): AdditionalCostPayment? = when (info.costType) {
+        "RemoveCounters" -> existing
         "Blight" -> existing.copy(blightTargets = info.validBlightTargets.take(1))
         // "Put a -1/-1 counter on a creature you control" (Lethal Sting): the cheapest creature takes it.
         "PutCounters" -> existing.copy(
