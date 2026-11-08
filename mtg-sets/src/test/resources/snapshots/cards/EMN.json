@@ -1300,6 +1300,70 @@
     ]
 }
 
+// Chilling Grasp
+{
+    "name": "Chilling Grasp",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.\nMadness {3}{U} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "DOESNT_UNTAP",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilAfterAffectedControllersNextUntap"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60d85d58-eae3-4f9d-8f54-440fa6ded95b.jpg?1783937505"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Chittering Host
 {
     "name": "Chittering Host",
@@ -1509,6 +1573,89 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Coax from the Blind Eternities
+{
+    "name": "Coax from the Blind Eternities",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may reveal an Eldrazi card you own from outside the game or choose a face-up Eldrazi card you own in exile. Put that card into your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Sideboard",
+                            "Exile"
+                        ],
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Eldrazi"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsFaceUp"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "You may choose an Eldrazi card from outside the game or a face-up one in exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "flavorText": "At Nahiri's call, Emrakul traversed the vast emptiness between the planes and arrived on Innistrad.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/740ad768-2be0-4e5a-9d60-6c7ec4bdc107.jpg?1783937505",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "In a casual game, a card you choose from outside the game comes from your personal collection. In a tournament event, a card you choose from outside the game must come from your sideboard."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "A card that is exiled face down has no characteristics. You can't choose it, even if you're allowed to look at it."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "An Eldrazi card is one with the subtype Eldrazi. Noncreature cards with devoid from the Battle for Zendikar block are Eldrazi-themed, but they are not Eldrazi cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2436,6 +2583,160 @@
     "colorIdentityOverride": []
 }
 
+// Curious Homunculus
+{
+    "name": "Curious Homunculus",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "{T}: Add {C}. Spend this mana only to cast an instant or sorcery spell.\nAt the beginning of your upkeep, if there are three or more instant and/or sorcery cards in your graveyard, transform this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curious Homunculus:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if there are three or more instant and/or sorcery cards in your graveyard, transform this creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Curious Homunculus:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "restriction": "InstantOrSorceryOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Voracious Reader",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Homunculus",
+        "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nInstant and sorcery spells you cast cost {1} less to cast.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "PROWESS"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Voracious Reader:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "YouCast",
+                        "filter": "instant|sorcery"
+                    },
+                    "modification": {
+                        "type": "ReduceGeneric",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "54",
+            "rarity": "UNCOMMON",
+            "artist": "Filip Burburan",
+            "flavorText": "Good books make you savor each word.",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/2/22e816af-df55-4a3f-a6e7-0ff3bb1b45b5.jpg?1783937507",
+            "rulings": [
+                {
+                    "date": "2016-07-13",
+                    "text": "Abilities that reduce the cost of a spell apply after abilities that raise them. For example, Borrowed Malevolence with both modes chosen costs {1}{B} to cast if you control Voracious Reader."
+                },
+                {
+                    "date": "2016-07-13",
+                    "text": "If an instant or sorcery spell has {X} in its mana cost, choose the value for X first, and then reduce the cost by {1}. For example, Dark Salvation with X chosen as 2 costs {3}{B} to cast if you control Voracious Reader."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22e816af-df55-4a3f-a6e7-0ff3bb1b45b5.jpg?1783937507",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If you don't have enough instant and/or sorcery cards in your graveyard as your upkeep begins, Curious Homunculus's last ability doesn't trigger. If you don't have enough as the ability resolves, the ability has no effect."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Mana from Curious Homunculus's first ability can be spent to cast a spell that has generic mana in its additional cost, such as Borrowed Malevolence with both modes chosen. It can't be spent to pay costs during a spell's resolution, such as the cost Convolute prompts a player to pay."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you activate Curious Homunculus's mana ability in response to its triggered ability, you can spend that mana to cast an instant spell during your upkeep after it has transformed into Voracious Reader. If you don't spend the mana, it will be lost before your draw step begins; you can't use it to cast the card you draw or to cast a sorcery."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dawn Gryff
 {
     "name": "Dawn Gryff",
@@ -2694,6 +2995,80 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Displace
+{
+    "name": "Displace",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile up to two target creatures you control, then return those cards to the battlefield under their owner's control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "linkToSource": true
+                },
+                {
+                    "type": "GatherCards",
+                    "source": "FromLinkedExile",
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "underOwnersControl": true
+                }
+            ],
+            "descriptionOverride": "Exile up to two target creatures you control, then return those cards to the battlefield under their owner's control"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Clint Cearley",
+        "flavorText": "\"I'll see you soon, Subjects 25 and 26. I've got a good feeling this time!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8ab850c5-6f5e-41b7-ab52-094579caca12.jpg?1783937502",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If a creature token is exiled this way, it will cease to exist and will not return to the battlefield."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "After each creature returns to the battlefield, it will be a new object with no connection to the creature that was exiled. It won't be in combat or have any additional abilities it may have had when it was exiled. Any counters on it cease to exist; Auras attached to it are put into their owner's graveyards; and any Equipment will become unattached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3173,6 +3548,61 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Drownyard Behemoth
+{
+    "name": "Drownyard Behemoth",
+    "manaCost": "{9}",
+    "typeLine": "Creature — Eldrazi Crab",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nEmerge {7}{U} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nThis creature has hexproof as long as it entered this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLASH",
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{7}{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "EnteredThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/082690e8-07b9-4a91-b779-e0123a69ee12.jpg?1783937527"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4026,6 +4456,110 @@
         "artist": "Seb McKinnon",
         "imageUri": "https://cards.scryfall.io/normal/front/0/8/0894d76b-801a-4e3b-8378-bfa81fe24d59.jpg?1783937499"
     }
+}
+
+// Fortune's Favor
+{
+    "name": "Fortune's Favor",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent looks at the top four cards of your library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "lookAudience": "None"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Separate the top four cards of your opponent's library into a face-up pile and a face-down pile. The cards you select are placed face up; the rest stay face down.",
+                    "selectedLabel": "Face-up pile",
+                    "remainderLabel": "Face-down pile",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromVariable",
+                        "variableName": "selected1"
+                    },
+                    "storeAs": "gathered2",
+                    "revealed": true
+                },
+                {
+                    "type": "ChoosePile",
+                    "pileA": "gathered2",
+                    "pileB": "remainder1",
+                    "pileALabel": "Face-up pile",
+                    "pileBLabel": "Face-down pile",
+                    "storeChosenAs": "chosenPile3",
+                    "storeOtherAs": "otherPile3",
+                    "prompt": "Choose which pile goes to your hand; the other goes to your graveyard."
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenPile3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "otherPile3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Yohann Schepacz",
+        "flavorText": "Uncertainty has its own allure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a67dd08-0064-4750-adf5-07bacb0296eb.jpg?1783937499",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose which pile to put into your hand and which to put into your graveyard. You can't look at the face-down pile until after it's moving to its new zone."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "A pile can have no cards in it. In this case, you'll choose whether to put all the cards into your hand or into your graveyard."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "In a multiplayer game, the targeted opponent may choose what information to share with others if that player wants advice on how to split the cards, but that player doesn't have to share any information at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Foul Emissary
@@ -5653,6 +6187,124 @@
     ]
 }
 
+// Identity Thief
+{
+    "name": "Identity Thief",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Whenever this creature attacks, you may exile another target nontoken creature. If you do, this creature becomes a copy of that creature until end of turn. Return the exiled card to the battlefield under its owner's control at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Identity Thief:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Exile the target creature and have Identity Thief become a copy of it until end of turn?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "destination": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "EachPermanentBecomesCopyOfTarget",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn",
+                                "affected": "Self",
+                                "sourceFromAnyZone": true
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature nontoken",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may exile another target nontoken creature. If you do, this creature becomes a copy of that creature until end of turn. Return the exiled card to the battlefield under its owner's control at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9865100f-dddc-407e-a379-2c285475ec89.jpg?1783937499",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature has an ability that triggers when it attacks, it'll be too late for it to trigger once Identity Thief has that ability. The same is true if another object has an ability that triggers when a creature with certain characteristics attacks and Identity Thief doesn't have those characteristics until after it becomes a copy."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Identity Thief copies the printed values of the targeted creature, plus any copy effects that have been applied to that creature. It won't copy other effects that have changed the targeted creature's power, toughness, types, color, or so on. It also won't copy counters on the targeted creature."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature is a double-faced or melded permanent, Identity Thief copies the face shown. Because Identity Thief is not a double-faced card or meld card, it won't be able to transform or meld. If it copies a melded permanent or the back face of a double-faced card, its mana value will be 0. Exiled double-faced cards and exiled meld cards will return with their front faces up."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature is itself copying a permanent, Identity Thief will become whatever it's copying, as modified by that copy effect. For example, if you target a Hamlet Captain that has become a copy of Permeating Mass, Identity Thief will become a Permeating Mass."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "This effect can cause Identity Thief to stop being a creature. For example, if you target an animated Gideon Jura (a planeswalker with a loyalty ability that turns him into a creature), only the printed wording will be copied; the \"becomes a creature\" effect won't. Identity Thief will become a noncreature Gideon with no loyalty, be removed from combat, and then be put into its owner's graveyard."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "This effect can cause Identity Thief to become a copy of a creature that can't normally attack, such as Lupine Prototype or a creature with defender. In these cases, it remains attacking."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Noncopy effects that have already applied to Identity Thief will continue to apply to it. For example, if Woodcutter's Grit gave Identity Thief +3/+3 and hexproof earlier in the turn, Identity Thief will still have those bonuses after copying a creature."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Identity Thief will still be a copy of the creature during the next end step when the exiled card returns. If it has an ability that triggers at the beginning of the end step, that ability will trigger for Identity Thief and not for the returned creature."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Auras attached to the exiled creature will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled permanent will cease to exist."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Imprisoned in the Moon
 {
     "name": "Imprisoned in the Moon",
@@ -5717,6 +6369,83 @@
                 "text": "If you remove Imprisoned in the Moon from a planeswalker after tapping it for mana, you can still activate a loyalty ability of that planeswalker even though it's tapped."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ingenious Skaab
+{
+    "name": "Ingenious Skaab",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\n{U}: This creature gets +1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ingenious Skaab:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ingenious Skaab:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{U}: This creature gets +1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Heads and shoulders above the rest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19d6ed0b-40ba-407d-94de-05a705e79b95.jpg?1783937497"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -6247,6 +6976,61 @@
     ]
 }
 
+// Lunar Force
+{
+    "name": "Lunar Force",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When an opponent casts a spell, sacrifice this enchantment and counter that spell.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lunar Force:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "SacrificeSelf",
+                        {
+                            "type": "Counter",
+                            "targetSource": "CounterTargetSource.TriggeringEntity"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When an opponent casts a spell, sacrifice Lunar Force and counter that spell."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Moonlight offers sublime warmth that brings me a comfort sunlight cannot provide.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76614db3-480f-41f6-91ad-66301fc8e394.jpg?1783937495",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You can't choose not to sacrifice Lunar Force."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You sacrifice Lunar Force even if the spell's already been countered, perhaps by the ability of another Lunar Force, or if the spell can't be countered."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The spell will be countered even if Lunar Force can't be sacrificed, most likely because it has already left the battlefield. Casting a spell in response to an opponent's Lunar Force's triggered ability is generally a bad idea."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lunarch Mantle
 {
     "name": "Lunarch Mantle",
@@ -6561,6 +7345,114 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mind's Dilation
+{
+    "name": "Mind's Dilation",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent casts their first spell each turn, that player exiles the top card of their library. If it's a nonland card, you may cast it without paying its mana cost.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mind's Dilation:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "nonland",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "You may cast it without paying its mana cost",
+                            "selectedLabel": "Cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected3"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an opponent casts their first spell each turn, that player exiles the top card of their library. If it's a nonland card, you may cast it without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "MYTHIC",
+        "artist": "Iain McCaig",
+        "flavorText": "Infinite wisdom cannot be contained within a single mind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3d6522a-b9a0-4185-b5ba-c20fa1b772eb.jpg?1783937494",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If you cast the exiled card, you do so as part of the resolution of Mind's Dilation's ability. You can't wait to cast it later in the turn. Timing permissions based on the card's type are ignored, but other restrictions (such as \"Cast [this card] only during combat\") are not."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as emerge costs. You can, however, pay additional costs, such as escalate costs. If the card has any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you cast the card this way, it will resolve before the spell that caused Mind's Dilation's ability to trigger."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you cast an instant or sorcery card this way, it goes to its owner's graveyard as normal. It doesn't return to exile."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you don't cast the card, perhaps because you choose not to or because it's a land card, it remains exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6908,6 +7800,111 @@
             }
         ]
     }
+}
+
+// Niblis of Frost
+{
+    "name": "Niblis of Frost",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever you cast an instant or sorcery spell, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Niblis of Frost:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Niblis of Frost:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da2301c8-0ca8-4b26-a232-1df90effcb42.jpg?1783937500",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If multiple effects say that a creature doesn't untap during its controller's next untap step, those effects all apply during one untap step. For example, if you cast two instants in one turn and target the same creature twice with Niblis of Frost's ability, that creature will only spend one untap step without untapping."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Noose Constrictor
@@ -8875,6 +9872,52 @@
     ]
 }
 
+// Take Inventory
+{
+    "name": "Take Inventory",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card, then draw cards equal to the number of cards named Take Inventory in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "name:Take Inventory"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Greg Staples",
+        "flavorText": "A place for everything, and everything in its place.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3584150-4f09-4c15-b13e-707bd91b3004.jpg?1783937491",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Because Take Inventory is still on the stack as it's resolving, that spell card isn't in your graveyard and won't affect the number of cards you draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tamiyo, Field Researcher
 {
     "name": "Tamiyo, Field Researcher",
@@ -9918,6 +10961,134 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wharf Infiltrator
+{
+    "name": "Wharf Infiltrator",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Horror",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nWhenever this creature deals combat damage to a player, you may draw a card. If you do, discard a card.\nWhenever you discard a creature card, you may pay {2}. If you do, create a 3/2 colorless Eldrazi Horror creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "SKULK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wharf Infiltrator:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Wharf Infiltrator:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 2,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Eldrazi",
+                            "Horror"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/264baa9a-67fc-4903-9ed8-a4ce6912a184.jpg?1783937488",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Wharf Infiltrator's last ability triggers anytime you discard a creature card, not just when you discard a card because of Wharf Infiltrator's other triggered ability."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "While resolving Wharf Infiltrator's last ability, you can't pay {2} multiple times to get multiple Eldrazi Horror tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

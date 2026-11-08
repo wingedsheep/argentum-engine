@@ -1084,6 +1084,10 @@ object CardIntentAnalyzer {
         addAll(handToBattlefieldTags(root))
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
+        // "Exile up to two target creatures you control, then return those cards to the battlefield"
+        // (Displace, Ghostly Flicker, Illusionist's Stratagem) as a gather → exile → return pipeline:
+        // the blink [EffectWalker.blinkMoves] reads in its single-move spelling, a save and an ETB re-buy.
+        if (TargetPolarityAnalyzer.blinksChosenTargets(root)) add(IntentTag.PROTECTION)
         // Exile it, its owner may cast it again (Airbend, Release to the Wind): a bounce that skips
         // the hand, so it reads as a bounce's MoveToZone does in [tagsOf] — tempo removal.
         if (TargetPolarityAnalyzer.ownerRecastsChosenTargets(root)) add(IntentTag.REMOVAL)
@@ -1914,12 +1918,23 @@ object CardIntentAnalyzer {
         else -> emptyList()
     }
 
-    /** The filter of a gather from its controller's own sideboard — "from outside the game". */
+    /**
+     * The filter of a gather from its controller's own sideboard — "from outside the game". A gather
+     * pooling the sideboard with other zones of ours is a wish too: "reveal an Eldrazi card you own
+     * from outside the game or choose a face-up Eldrazi card you own in exile" (Coax from the Blind
+     * Eternities, Karn, the Great Creator's −2) is one pick across both, the outside-the-game half
+     * the wish. [HoldPolicy]'s dead-wish check reads only the sideboard, so a pick that could only
+     * come from exile is not counted live there — conservative, never a wish thrown away.
+     */
     private fun wishFilterOf(effect: Effect): GameObjectFilter? {
         if (effect !is GatherCardsEffect) return null
-        val source = effect.source as? CardSource.FromZone ?: return null
-        if (source.zone != Zone.SIDEBOARD || source.player != Player.You) return null
-        return source.filter
+        return when (val source = effect.source) {
+            is CardSource.FromZone ->
+                source.filter.takeIf { source.zone == Zone.SIDEBOARD && source.player == Player.You }
+            is CardSource.FromMultipleZones ->
+                source.filter.takeIf { Zone.SIDEBOARD in source.zones && source.player == Player.You }
+            else -> null
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
