@@ -4639,6 +4639,71 @@
     "colorIdentityOverride": []
 }
 
+// Undergrowth Champion
+{
+    "name": "Undergrowth Champion",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "If damage would be dealt to this creature while it has a +1/+1 counter on it, prevent that damage and remove a +1/+1 counter from this creature.\nLandfall — Whenever a land you control enters, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Undergrowth Champion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, put a +1/+1 counter on this creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamageByRemovingCounter",
+                "requiresCounter": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d53104d8-5b9a-45b6-a2f9-b2c5d231a03d.jpg?1783938183",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If Undergrowth Champion is dealt damage from multiple sources at the same time (for example, if it's blocked by multiple creatures), its prevention effect will apply once to all that damage. You'll remove only one +1/+1 counter."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If damage that can't be prevented is dealt to Undergrowth Champion while it has a +1/+1 counter on it, you'll still remove a +1/+1 counter on it."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability triggers whenever a land you control enters for any reason. It triggers whenever you play a land, as well as whenever a spell or ability puts a land onto the battlefield under your control."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability doesn't trigger if a permanent already on the battlefield becomes a land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Unnatural Aggression
 {
     "name": "Unnatural Aggression",

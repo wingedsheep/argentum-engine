@@ -190,6 +190,102 @@
     ]
 }
 
+// Braulios of Pheres Band
+{
+    "name": "Braulios of Pheres Band",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Centaur Scout",
+    "oracleText": "Braulios's power and toughness are each equal to the number of lands you control.\nWhenever Braulios attacks, draw a card, then you may put a land card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Braulios of Pheres Band:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "put_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "put_candidates",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "putting"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "putting",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Takeuchi Moto",
+        "flavorText": "\"Your claim to this land is as tenuous as my tolerance of your presence on it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01789cb2-a93d-4197-a40a-612423635125.jpg?1783908856",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "The ability that defines Braulios's power and toughness works in all zones, not just the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Brigone, Soldier of Meletis
 {
     "name": "Brigone, Soldier of Meletis",
@@ -1549,6 +1645,87 @@
     ]
 }
 
+// Hurska Sweet-Tooth
+{
+    "name": "Hurska Sweet-Tooth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Bear",
+    "oracleText": "Whenever Hurska attacks, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nWhenever you gain life, you may pay {G/W}. When you do, target creature gets +X/+X until end of turn, where X is the amount of life you gained.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hurska Sweet-Tooth:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            },
+            {
+                "id": "Hurska Sweet-Tooth:2",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{G/W}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_LIFE_GAINED"
+                        },
+                        "toughnessModifier": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_LIFE_GAINED"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {G/W}. When you do, target creature gets +X/+X until end of turn, where X is the amount of life you gained."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "MYTHIC",
+        "artist": "GOSSAN",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00841818-d46a-4865-a41c-daf627d10d1b.jpg?1783908854",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "You don't choose a target for Hurska's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay {G/W} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The value of X is calculated only once, as the reflexive triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Ivora, Insatiable Heir
 {
     "name": "Ivora, Insatiable Heir",
@@ -2131,6 +2308,94 @@
     ]
 }
 
+// Razorgrass Invoker
+{
+    "name": "Razorgrass Invoker",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\n{8}: This creature and up to one other target creature each get +3/+3 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Razorgrass Invoker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{8}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "This creature and up to one other target creature each get +3/+3 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Jason Rainville",
+        "flavorText": "\"Let the beauty of our land lull them so that they may stumble upon its hidden thorns.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41a76981-b792-49da-8c1c-34991adf3ff4.jpg?1783908863",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "You don't have to choose a target for Razorgrass Invoker's last ability. However, if you do and the target creature is an illegal target as the ability tries to resolve, it won't resolve and none of its effects will happen. Razorgrass Invoker won't get +3/+3. (Razorgrass cuts both ways, apparently.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rev, Tithe Extractor
 {
     "name": "Rev, Tithe Extractor",
@@ -2697,6 +2962,64 @@
     "colorIdentityOverride": []
 }
 
+// Shroofus Sproutsire
+{
+    "name": "Shroofus Sproutsire",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Saproling",
+    "oracleText": "Trample\nWhenever a Saproling you control deals combat damage to a player, create that many 1/1 green Saproling creature tokens.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shroofus Sproutsire:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature Saproling ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ]
+                },
+                "descriptionOverride": "Whenever a Saproling you control deals combat damage to a player, create that many 1/1 green Saproling creature tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Yukihiro Maruo",
+        "flavorText": "His laughter—and everything else about him—was infectious.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d29839f0-afe0-4caa-9628-655738aecce4.jpg?1783908855"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Slimy Piper
 {
     "name": "Slimy Piper",
@@ -2903,6 +3226,84 @@
     ]
 }
 
+// Spined Tyrranax
+{
+    "name": "Spined Tyrranax",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Dinosaur Beast",
+    "oracleText": "At the beginning of combat on your turn, you may pay {2}{G}. When you do, put a +1/+1 counter on target creature. That creature gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spined Tyrranax:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{2}{G}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Brent Hollowell",
+        "flavorText": "\"Drive the beasts into the enemy ranks, then stay back and let them do the work.\"\n—Koth",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb589caa-bba4-4d23-bdfe-7fc37f19bfd6.jpg?1783908862",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "You don't choose a target for Spined Tyrranax's ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you pay {2}{G} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Starnheim Memento
 {
     "name": "Starnheim Memento",
@@ -2986,6 +3387,146 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sutina, Speaker of the Tajuru
+{
+    "name": "Sutina, Speaker of the Tajuru",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Scout",
+    "oracleText": "When Sutina enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nWhenever Sutina attacks, you may return a land you control to its owner's hand. When you do, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sutina, Speaker of the Tajuru:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            },
+            {
+                "id": "Sutina, Speaker of the Tajuru:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "land",
+                                    "player": "You"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Return a land you control to its owner's hand",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may return a land you control to its owner's hand. When you do, put a +1/+1 counter on target creature."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Canata Katana",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b794170-4ffd-4628-ba5a-b9293bb364dc.jpg?1783908852",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "You don't choose a target for Sutina's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you return a land you control to its owner's hand this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

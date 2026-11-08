@@ -2225,6 +2225,11 @@ object CardIntentAnalyzer {
         // "Return target spell to its owner's hand" (Failure, Reprieve) answers a spell on the stack
         // the way a counter does — its caster gets the card back, not the tempo or the mana.
         ReturnSpellToOwnersHandEffect -> setOf(IntentTag.COUNTERSPELL)
+        // "Return target spell or permanent to its owner's hand" (Venser, Shaper Savant,
+        // Unsubstantiate) reaches the battlefield too, so it is a bounce first: removal, the way a
+        // single-target return of a permanent to hand reads above. Not [IntentTag.COUNTERSPELL] —
+        // that would brand the card dead on an empty stack, where its permanent half is live.
+        is ReturnSpellOrPermanentToOwnersHandEffect -> removalTags(effect.target)
         // "End the turn" as a card's whole payoff (Time Stop, Discontinuity, Glorious End) exiles
         // every spell and ability on the stack — a counter-everything that can't be stopped — and
         // takes the attackers out of combat with it. What it answers is already on the stack or in

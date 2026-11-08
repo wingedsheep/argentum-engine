@@ -3231,6 +3231,81 @@
     ]
 }
 
+// Undercellar Myconid
+{
+    "name": "Undercellar Myconid",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "Whenever this creature enters or dies, create a 1/1 green Saproling creature token.\n{T}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Undercellar Myconid:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7cbc9fc-42d2-4d1a-b6c0-29a35cfd1588.jpg?1783922319"
+                },
+                "descriptionOverride": "Whenever this creature enters, create a 1/1 green Saproling creature token."
+            },
+            {
+                "id": "Undercellar Myconid:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7cbc9fc-42d2-4d1a-b6c0-29a35cfd1588.jpg?1783922319"
+                },
+                "descriptionOverride": "Whenever this creature dies, create a 1/1 green Saproling creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Undercellar Myconid:3",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "artist": "David Szabo",
+        "flavorText": "Water, barley, yeast, darkness—the tavern cellar had everything a growing mold could need.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/786c5b3e-737f-4794-b482-af5f0ee901e5.jpg?1783922702"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // White Plume Adventurer
 {
     "name": "White Plume Adventurer",

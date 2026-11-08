@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import io.kotest.core.spec.style.FunSpec
@@ -38,6 +39,12 @@ class AmountSignTest : FunSpec({
     test("a life total or a pipeline variable is not assumed non-negative") {
         AmountSign.of(DynamicAmount.YourLifeTotal) shouldBe AmountSign.UNKNOWN
         AmountSign.of(DynamicAmount.VariableReference("x")) shouldBe AmountSign.UNKNOWN
+    }
+
+    test("a trigger-context amount is a magnitude, so +X/+X off it is a gain") {
+        // Hurska Sweet-Tooth: "target creature gets +X/+X …, where X is the amount of life you gained".
+        AmountSign.of(DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_LIFE_GAINED)) shouldBe AmountSign.GAIN
+        AmountSign.of(DynamicAmount.Multiply(DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT), -1)) shouldBe AmountSign.LOSS
     }
 
     test("a modifier pair is a gain only when neither side can lower a stat") {
