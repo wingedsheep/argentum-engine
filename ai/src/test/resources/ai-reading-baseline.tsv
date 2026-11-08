@@ -2081,6 +2081,7 @@ Borough Backup
 Borrowed Grace
 Borrowed Hostility
 Borrowed Knowledge	polarity: DrawCardsEffect; polarity: Pipeline(hand→graveyard)
+Borrowed Malevolence
 Borrowed Time
 Borrowing 100,000 Arrows	polarity: DrawCardsEffect
 Borrowing the East Wind
@@ -2501,6 +2502,7 @@ Camel
 Camellia, the Seedmiser
 Camera Launcher
 Camouflage	intent: RandomizedBlockerPilesEffect; timing: RandomizedBlockerPilesEffect
+Campaign of Vengeance
 Campus Composer
 Campus Crier
 Campus Guide
@@ -3941,6 +3943,7 @@ Dark Petition
 Dark Remedy
 Dark Revenant
 Dark Ritual
+Dark Salvation
 Dark Sphere
 Dark Supplicant
 Dark Withering
@@ -6765,6 +6768,7 @@ Galloping Lizrog
 Gallows Warden
 Galuf's Final Act
 Galvanic Arc
+Galvanic Bombardment
 Galvanic Discharge
 Galvanic Giant
 Galvanic Iteration
@@ -8741,6 +8745,7 @@ Iname, Life Aspect	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(Ch
 Incandescent Aria
 Incandescent Soulstoke
 Incendiary Command
+Incendiary Flow
 Incendiary Oracle
 Incendiary Sabotage
 Incinerating Blast
@@ -10242,6 +10247,7 @@ Liliana, Death's Majesty
 Liliana, Dreadhorde General
 Liliana, Untouched by Death	intent: GrantStaticAbilityEffect
 Liliana, Waker of the Dead	intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
+Liliana, the Last Hope
 Liliana, the Necromancer
 Lily Bowen, Raging Grandma
 Lilypad Village
@@ -10802,6 +10808,7 @@ Marketback Walker
 Marketwatch Phantom
 Markov Baron
 Markov Blademaster
+Markov Crusader
 Markov Dreadknight
 Markov Patrician
 Markov Purifier
@@ -11559,6 +11566,7 @@ Mournful Zombie
 Mourning
 Mourning Patrol
 Mournwhelk
+Mournwillow
 Mouse Trapper
 Mouser Attack!
 Mouser Foundry
@@ -12055,6 +12063,7 @@ Nomad Outpost
 Nomadic Elf
 Nomads' Assembly
 Noose Constrictor
+Noosegraf Mob
 Nori, Teller of Tales
 Norika Yamazaki, the Poet	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Norin, Swift Survivalist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
@@ -12157,6 +12166,7 @@ Oasis Gardener
 Oasis Ritualist
 Oath of Ajani
 Oath of Kaya
+Oath of Liliana
 Oath of Teferi
 Oath of the Ancient Wood
 Oath of the Grey Host
@@ -13341,6 +13351,7 @@ Prowling Serpopard
 Prudent Fateseer
 Prying Blade
 Prying Eyes
+Prying Questions
 Psemilla, Meletian Poet
 Pseudodragon Familiar
 Psionic Blast
@@ -16985,6 +16996,7 @@ Storyteller Pixie
 Storyweave	polarity: AddCountersEffect
 Strafe
 Strands of Undeath
+Strange Augmentation
 Strange Inversion	intent: SwitchPowerToughnessEffect; polarity: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
 Strangle
 Strangled Cemetery
@@ -19693,6 +19705,7 @@ Voldaren Bloodcaster	polarity: BecomeCreatureEffect
 Voldaren Duelist
 Voldaren Epicure
 Voldaren Estate
+Voldaren Pariah
 Voldaren Stinger
 Voldaren Thrillseeker
 Volley Veteran
@@ -20161,6 +20174,7 @@ Whispering Madness
 Whispering Shade
 Whispering Snitch
 Whispering Wizard
+Whispers of Emrakul
 Whispersilk Cloak
 White Auracite
 White Dragon
