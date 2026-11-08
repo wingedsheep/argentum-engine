@@ -2471,6 +2471,115 @@
     ]
 }
 
+// Ojutai Exemplars
+{
+    "name": "Ojutai Exemplars",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Whenever you cast a noncreature spell, choose one —\n• Tap target creature.\n• This creature gains first strike and lifelink until end of turn.\n• Exile this creature, then return it to the battlefield tapped under its owner's control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ojutai Exemplars:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Tap target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "LIFELINK",
+                                        "target": "Self"
+                                    }
+                                ]
+                            },
+                            "description": "Ojutai Exemplars gains first strike and lifelink until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Exile"
+                                    },
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                ]
+                            },
+                            "description": "Exile Ojutai Exemplars, then return it to the battlefield tapped"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, choose one — tap target creature; or Ojutai Exemplars gains first strike and lifelink until end of turn; or exile Ojutai Exemplars, then return it to the battlefield tapped under its owner's control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "MYTHIC",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1205482-2f9d-463e-893f-18998aaf09c6.jpg?1783938615",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If Ojutai Exemplars leaves the battlefield in response to its ability with the third mode chosen, that ability won't return Ojutai Exemplars to the battlefield. It will stay wherever it is."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "After the ability returns Ojutai Exemplars to the battlefield, it will be a new object with no connection to the Ojutai Exemplars that left the battlefield. It won't be in combat or have any additional abilities it may have had when it left the battlefield. Any +1/+1 counters on it or Auras attached to it are removed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ojutai's Breath
 {
     "name": "Ojutai's Breath",

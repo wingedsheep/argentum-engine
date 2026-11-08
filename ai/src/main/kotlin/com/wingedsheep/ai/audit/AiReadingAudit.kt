@@ -926,6 +926,10 @@ object AiReadingAudit {
         // response to removal too, is the simulation's call; no intent tag would change it.
         // Sacrificing another stays flagged.
         if (leaf == SacrificeSelfEffect) return true
+        // The same self-sacrifice spelled as "sacrifice it" aimed at the source (Phantasmal
+        // Shieldback, Skulking Ghost's "when this becomes the target of a spell or ability"): its
+        // drawback, which CardIntentAnalyzer reads as no answer.
+        if (leaf is SacrificeTargetEffect && leaf.target == EffectTarget.Self) return true
         // Its controller sacrificing permanents of its own choosing — Lotus Field's two lands, Korvold's
         // "sacrifice another permanent", forage's Food — is the same price with the pick left to
         // resolution: no target, nothing to time, and what is lost is the board the simulation sees.

@@ -1,3 +1,82 @@
+// Brigone, Soldier of Meletis
+{
+    "name": "Brigone, Soldier of Meletis",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Vigilance\nHeroic — Whenever you cast a spell that targets Brigone, put a +1/+1 counter on Brigone.\n{T}, Remove a +1/+1 counter from Brigone: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brigone, Soldier of Meletis:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets Brigone, put a +1/+1 counter on Brigone."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Brigone, Soldier of Meletis:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{T}, Remove a +1/+1 counter from Brigone: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Daisuke Tatsuma",
+        "flavorText": "\"Gods, guide my hand!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20ecadef-8aa3-4bca-8744-adbc809083c3.jpg?1783908862",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Brigone's second ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cynette, Jelly Drover
 {
     "name": "Cynette, Jelly Drover",
@@ -77,6 +156,68 @@
     ]
 }
 
+// Delightful Discovery
+{
+    "name": "Delightful Discovery",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast for each spell your opponents have cast this turn.\nScry 2, then draw two cards. (To scry 2, look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Scry",
+                    "count": 2
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "SpellsCastThisTurn",
+                            "player": "EachOpponent"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "flavorText": "\"What do you think? New class pet?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/dee342ec-f546-41b7-add5-0a85f5c8bc57.jpg?1783908870",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Delightful Discovery's first ability can't reduce its cost below {U}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dionus, Elvish Archdruid
 {
     "name": "Dionus, Elvish Archdruid",
@@ -150,6 +291,90 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Eidolon of Astral Winds
+{
+    "name": "Eidolon of Astral Winds",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Vigilance\nConstellation — Whenever this creature or another enchantment you control enters, choose target creature you control. Until end of turn, that creature has base power and toughness 4/4 and gains flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eidolon of Astral Winds:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, target creature you control has base power and toughness 4/4 and gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd62f1de-853e-4fc3-9137-8f419c5972f6.jpg?1783908870",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "If Eidolon of Astral Winds enters at the same time as one or more other enchantments you control, its last ability will trigger for each of those enchantments, including itself."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The effect of Eidolon of Astral Winds's last ability will overwrite any previous effects that set the creature's power and toughness to specific values. Effects that otherwise modify the target creature's power and toughness will still apply no matter when they took effect. The same is true for +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -416,6 +641,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Generous Pup
+{
+    "name": "Generous Pup",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Vigilance\nWhenever one or more +1/+1 counters are put on this creature, put a +1/+1 counter on each other creature you control. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Generous Pup:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "oncePerTurn": true,
+                "descriptionOverride": "Whenever one or more +1/+1 counters are put on this creature, put a +1/+1 counter on each other creature you control. This ability triggers only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Julia Metzger",
+        "flavorText": "They communicate via the universal language of treats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/730f6a8c-7119-4226-bf37-442cf5ec90c4.jpg?1783908869",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Generous Pup's last ability puts only one +1/+1 counter on each other creature you control, no matter how many +1/+1 counters were put on Generous Pup."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -748,6 +1033,208 @@
     ]
 }
 
+// Phantasmal Shieldback
+{
+    "name": "Phantasmal Shieldback",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Turtle Illusion",
+    "oracleText": "When this creature becomes the target of a spell or ability, sacrifice it.\nWhen this creature dies, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phantasmal Shieldback:1",
+                "trigger": "BecomesTargetEvent",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Phantasmal Shieldback:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "It materialized in the mist, and the invading horde broke like waves against solid rock.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c28ae5c-e773-43bd-a328-c3d6046d24be.jpg?1783908869"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Plagon, Lord of the Beach
+{
+    "name": "Plagon, Lord of the Beach",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Starfish Wizard",
+    "oracleText": "When Plagon enters, draw a card for each creature you control with toughness greater than its power.\n{W/U}: Target creature you control assigns combat damage equal to its toughness rather than its power this turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plagon, Lord of the Beach:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "ToughnessGreaterThanPower"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "When Plagon enters, draw a card for each creature you control with toughness greater than its power."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Plagon, Lord of the Beach:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W/U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature you control assigns combat damage equal to its toughness rather than its power this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "GOSSAN",
+        "flavorText": "\"No more lurking in the shallows. We ride!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f8a6bfe-6033-4f6b-ab45-6b553f8b51a1.jpg?1783908858",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Plagon's last ability doesn't actually change the target creature's power. It changes only the amount of combat damage the creature assigns. All other rules and effects that check power or toughness use the real values, even if they cause damage \"equal to a creature's power\" to be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Pol Jamaar, Illusionist
+{
+    "name": "Pol Jamaar, Illusionist",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Human Illusion Wizard",
+    "oracleText": "Flying\nWhen Pol Jamaar enters, choose a creature type. Draw a card for each creature you control of that type.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pol Jamaar, Illusionist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CREATURE_TYPE",
+                            "storeAs": "chosen0"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasSubtypeFromVariable",
+                                            "variableName": "chosen0"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Pol Jamaar enters, choose a creature type. Draw a card for each creature you control of that type."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "MYTHIC",
+        "artist": "Kuregure",
+        "flavorText": "\"'Real' is a more flexible concept than you might think.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63e806ee-3c32-48bf-97a1-160a74765e76.jpg?1783908859",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "The choice of creature type is made as Pol Jamaar's last ability resolves. Players can't take any actions between the time the choice is made and the time you draw cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Psemilla, Meletian Poet
 {
     "name": "Psemilla, Meletian Poet",
@@ -837,6 +1324,105 @@
         "rarity": "UNCOMMON",
         "artist": "KiKi",
         "imageUri": "https://cards.scryfall.io/normal/front/4/3/431258f5-705e-411d-b396-6992bc84d816.jpg?1783908861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Qala, Ajani's Pridemate
+{
+    "name": "Qala, Ajani's Pridemate",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "Whenever Qala attacks, other attacking creatures you control get +X/+0 until end of turn, where X is the number of counters on Qala.\nWhenever you gain life, put a +1/+1 counter on Qala.\n{3}{W}: You gain 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Qala, Ajani's Pridemate:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": null
+                            }
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Qala, Ajani's Pridemate:2",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Qala, Ajani's Pridemate:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Yoshiya",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3cf1e9ab-343d-462c-a71e-e12b101aa0b4.jpg?1783908864",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "The value of X is calculated only once, as Qala's first ability resolves."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Qala's second ability triggers just once for each life-gaining event, whether it's 1 life from Dazzling Angel or 4 life from Apothecary Stomper."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If Qala is dealt lethal damage at the same time that you gain life, it won't receive a counter from its second ability in time to save it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -1071,6 +1657,220 @@
         "artist": "Steve Ellis",
         "flavorText": "Made from a feather from Firja's wing, it marks a worthy hero with the blessing of the valkyries.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16fe39b7-0dbe-4826-aa0a-59e93c6aaa01.jpg?1783908861"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thurid, Mare of Destiny
+{
+    "name": "Thurid, Mare of Destiny",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Pegasus",
+    "oracleText": "Flying, lifelink\nWhenever you cast a Pegasus, Unicorn, or Horse creature spell, copy it. (The copy becomes a token.)\nOther Pegasi, Unicorns, and Horses you control get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thurid, Mare of Destiny:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Pegasus"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Unicorn"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Horse"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity",
+                    "mayChooseNewTargets": false
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Pegasus",
+                                    "Unicorn",
+                                    "Horse"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "MYTHIC",
+        "artist": "Ishikawa Kenta",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aad65c60-b9e8-4a8f-92e8-3dff63232102.jpg?1783908860",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Thurid's triggered ability and the copy it creates will resolve before the spell that caused it to trigger. They resolve even if that spell is countered or otherwise leaves the stack without resolving."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The token that a resolving copy of a permanent spell becomes isn't \"created.\" Abilities that refer to a token being created won't interact with the copy resolving."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Thurid's triggered ability will copy only creature spells, not noncreature kindred spells, even if those spells have the Pegasus, Unicorn, or Horse types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Urdnan, Dromoka Warrior
+{
+    "name": "Urdnan, Dromoka Warrior",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "When Urdnan enters, put a +1/+1 counter on target creature.\nWhenever you attack, target attacking creature with a +1/+1 counter on it gains first strike until end of turn. If that creature has two or more +1/+1 counters on it, it gains double strike until end of turn instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urdnan, Dromoka Warrior:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Urdnan, Dromoka Warrior:2",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "minCount": 2
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "DOUBLE_STRIKE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsAttacking",
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Whenever you attack, target attacking creature with a +1/+1 counter on it gains first strike until end of turn. If it has two or more +1/+1 counters on it, it gains double strike instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Yakotakos",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f239682a-2b81-4f62-a474-60e8db343200.jpg?1783908860"
     },
     "colorIdentityOverride": [
         "WHITE"

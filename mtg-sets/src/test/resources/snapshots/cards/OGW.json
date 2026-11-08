@@ -1304,6 +1304,85 @@
     ]
 }
 
+// Stone Haven Outfitter
+{
+    "name": "Stone Haven Outfitter",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Artificer Ally",
+    "oracleText": "Equipped creatures you control get +1/+1.\nWhenever an equipped creature you control dies, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stone Haven Outfitter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "The makers and menders are the first called to battle and the last to leave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1b98e63-f23d-432a-86ae-f88bdad2f648.jpg?1783937922",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Equipped creatures will get just +1/+1 from Stone Haven Outfitter, no matter how many Equipment are attached to them. Similarly, the last ability will trigger just once per equipped creature."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "In this context, \"equipped creatures you control\" and \"equipped creature you control\" refer to any creatures you control with Equipment attached to them. In the highly unusual case that Stone Haven Outfitter becomes an Equipment, the meaning of its abilities doesn't change. The bonuses continue to refer to any equipped creature you control. They aren't bonuses applied solely to the creature Stone Haven Outfitter is attached to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Submerged Boneyard
 {
     "name": "Submerged Boneyard",

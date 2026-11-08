@@ -1920,6 +1920,9 @@ object TargetPolarityAnalyzer {
         }
         return when (runCatching { AbilityFlag.valueOf(name.uppercase()) }.getOrNull()) {
             AbilityFlag.CANT_BE_BLOCKED -> TargetPolarity.BENEFICIAL
+            // "Assigns combat damage equal to its toughness rather than its power" (Plagon, Bill the
+            // Pony): granted to our own high-toughness creatures to turn them into attackers.
+            AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS -> TargetPolarity.BENEFICIAL
             AbilityFlag.DOESNT_UNTAP, AbilityFlag.CANT_BECOME_UNTAPPED,
             AbilityFlag.ASSIGNS_NO_COMBAT_DAMAGE -> TargetPolarity.HARMFUL
             else -> null
