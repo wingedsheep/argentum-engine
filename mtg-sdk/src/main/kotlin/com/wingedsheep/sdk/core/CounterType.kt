@@ -975,6 +975,13 @@ value class CounterType(val name: String) {
          */
         val VELOCITY = CounterType("VELOCITY")
 
+        /**
+         * Feeding counter (J25 — Nazar, the Velvet Fang). A tally with no inherent rule: a
+         * lifegain trigger puts one on the creature, and its attack trigger may remove three
+         * to draw three cards and lose 3 life.
+         */
+        val FEEDING = CounterType("FEEDING")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1145,6 +1152,7 @@ value class CounterType(val name: String) {
             PREY,
             UNITY,
             VELOCITY,
+            FEEDING,
         )
 
         /**

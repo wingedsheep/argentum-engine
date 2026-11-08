@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-j25',
+    date: '2026-11-08',
+    kind: 'set',
+    setCode: 'J25',
+    title: 'Foundations Jumpstart is complete',
+    body:
+      'All 768 cards of the half-deck set released alongside Foundations are playable: Vampires, Elves, Wizards, Goblins, Cats, Angels and dozens more themes, mixing new cards with favourites reprinted from across Magic. A deep pool for building around a creature type or a single mechanic.',
+    tryIf: 'tribal synergies and building a deck around one theme',
+  },
+  {
     id: 'feature-best-of-three',
     date: '2026-11-07',
     kind: 'feature',

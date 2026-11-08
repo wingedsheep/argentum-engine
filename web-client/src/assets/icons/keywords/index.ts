@@ -246,4 +246,5 @@ export const counterManaClass: Record<string, string> = {
   PREY: 'counter-skull',
   UNITY: 'counter-shield',
   VELOCITY: 'counter-arrow',
+  FEEDING: 'counter-blood',
 }
