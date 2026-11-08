@@ -16,7 +16,12 @@ import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
@@ -241,7 +246,7 @@ object EffectWalker {
     fun slots(script: CardScript): List<Slot> = buildList {
         script.spellEffect?.let { add(Slot(it, Origin.SPELL, script.targetRequirements)) }
         script.triggeredAbilities.forEach {
-            add(Slot(it.effect, Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements, turnAhead = firesWithItsTurnAhead(it)))
+            add(Slot(readableEffect(it), Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements, turnAhead = firesWithItsTurnAhead(it)))
         }
         script.sagaChapters.sortedBy { it.chapter }.forEach {
             add(Slot(it.effect, Origin.TRIGGERED, chapterTargets(it), turnAhead = true))
@@ -249,6 +254,46 @@ object EffectWalker {
         script.activatedAbilities
             .filterNot { it.isManaAbility }
             .forEach { add(Slot(it.effect, Origin.ACTIVATED, it.targetRequirements, activationManaValue(it.cost))) }
+    }
+
+    /**
+     * [trigger]'s effect as its readers should see it: when the payoff draws from the trigger's
+     * captured collection ([IterationSpace.TRIGGER_CAPTURED_COLLECTION]) and the trigger's event
+     * says what that collection holds, the effect with a stand-in gather of those objects in front.
+     *
+     * The captured set is filled by the engine when the trigger fires, so the effect alone names no
+     * source — "you may exile one of those creatures" reads as an exile of nothing in particular,
+     * `Pipeline(?→exile)`, with no intent and no rating. The event knows: a once-per-combat
+     * "blocks or becomes blocked by one or more creatures" (Godsend) captures its combat partners,
+     * and a creature only ever blocks, or is blocked by, an opposing player's creature. Spelled as
+     * the battlefield gather of opposing creatures it stands for, every pipeline reader already
+     * knows the rest — exiling one of them is spot removal, the reading an "exile target creature
+     * an opponent controls" gets.
+     *
+     * Events whose captured set the stand-in can't name are left as they were.
+     */
+    fun readableEffect(trigger: TriggeredAbility): Effect {
+        val standIn = capturedStandIn(trigger.trigger) ?: return trigger.effect
+        if (leaves(trigger.effect).none(::readsCaptured)) return trigger.effect
+        return CompositeEffect(
+            listOf(GatherCardsEffect(standIn, IterationSpace.TRIGGER_CAPTURED_COLLECTION), trigger.effect),
+            // The stand-in is the readers' spelling, not the card's: describe what the card says.
+            descriptionOverride = trigger.effect.description,
+        )
+    }
+
+    /** What [pattern]'s captured collection holds, as a gather source; null when it can't say. */
+    private fun capturedStandIn(pattern: EventPattern): CardSource? = when (pattern) {
+        is EventPattern.BlocksOrBecomesBlockedByEvent -> if (!pattern.oncePerCombat) null else
+            CardSource.BattlefieldMatching((pattern.partnerFilter ?: GameObjectFilter.Creature).opponentControls())
+        else -> null
+    }
+
+    private fun readsCaptured(leaf: Effect): Boolean = IterationSpace.TRIGGER_CAPTURED_COLLECTION == when (leaf) {
+        is FilterCollectionEffect -> leaf.from
+        is SelectFromCollectionEffect -> leaf.from
+        is MoveCollectionEffect -> leaf.from
+        else -> null
     }
 
     /** The target requirements a Saga chapter declares, in slot order. */

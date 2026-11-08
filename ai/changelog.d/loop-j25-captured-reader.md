@@ -1,0 +1,1 @@
+- #TBD Reads "exile one of those creatures" off a blocks-or-becomes-blocked trigger's captured combat partners (Godsend) as removal, and answers a choice among opponents' permanents on resolution by simulating each pick, so it exiles the biggest threat instead of the cheapest card or nothing
