@@ -695,6 +695,10 @@ class DecisionResponder(
             selectionByFate(state, decision, playerId)?.let { return it }
         }
 
+        if (!isSearch && !isDiscard && !isSacrifice) {
+            opponentPermanentPick(state, decision, playerId)?.let { return it }
+        }
+
         return when {
             isDiscard || isScryBottom -> {
                 // Pick cards we want LEAST (to discard / put on bottom)
@@ -853,6 +857,34 @@ class DecisionResponder(
             else -> worst.take(decision.minSelections.coerceAtMost(decision.maxSelections))
         }
         return CardsSelectedResponse(decision.id, selected)
+    }
+
+    /**
+     * One of an opponent's permanents chosen on resolution — "you may exile one of those creatures"
+     * (Godsend, among the creatures its equipped creature was paired with in combat). What the pick
+     * does to the board is the whole question, and the card-in-hand ranking the generic branches
+     * use can't answer it: it took the cheaper blocker, and a lone option under "up to one" was
+     * declined outright. Each pick (and, when optional, picking none) is simulated and the best
+     * board wins, so an exile takes the biggest threat and a pick that would help the opponent is
+     * left alone.
+     *
+     * Only single picks among at most [OPPONENT_PICK_SIMULATION_CAP] permanents, every one controlled
+     * by an opponent; anything else stays with the routing below.
+     */
+    private fun opponentPermanentPick(state: GameState, decision: SelectCardsDecision, playerId: EntityId): CardsSelectedResponse? {
+        val options = decision.options
+        if (decision.maxSelections != 1 || decision.minSelections > 1 || options.isEmpty() ||
+            options.size > OPPONENT_PICK_SIMULATION_CAP
+        ) return null
+        val projected = state.projectedState
+        val battlefield = state.getBattlefield().toSet()
+        if (options.any { id ->
+                id !in battlefield || projected.getController(id)?.let { state.isOpponentTo(it, playerId) } != true
+            }
+        ) return null
+        val picks = options.map { listOf(it) } + if (decision.minSelections == 0) listOf(emptyList()) else emptyList()
+        return picks.map { CardsSelectedResponse(decision.id, it) }
+            .maxByOrNull { evaluateChoice(state, simulator.simulateDecision(state, it), playerId) }
     }
 
     /**
@@ -1986,6 +2018,9 @@ class DecisionResponder(
     private companion object {
         /** Score movement below this is the evaluation not seeing a proliferate recipient. */
         const val PROLIFERATE_EPSILON = 1e-6
+
+        /** The most opponent permanents [opponentPermanentPick] simulates one pick each for. */
+        const val OPPONENT_PICK_SIMULATION_CAP = 8
 
         /**
          * The most budget-modal spends simulated one by one. A five-pawprint Season with {P},

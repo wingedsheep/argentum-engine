@@ -306,13 +306,16 @@ object CardIntentAnalyzer {
         // Every effect the card can produce, flattened. A tag answers "does this card do X
         // anywhere?", so where in the script the effect sat does not change the answer — the
         // origin discounts [EffectWalker.slots] carries are the rater's concern, not this one's.
+        // One walk per script: a slot's effect can be built fresh by each [EffectWalker.slots] call
+        // ([EffectWalker.readableEffect]), so the turn-ahead roots must come from the same list.
+        val slots = scripts.associateWith { EffectWalker.slots(it) }
         val roots = scripts.flatMap { script ->
-            EffectWalker.slots(script).map { it.effect } +
+            slots.getValue(script).map { it.effect } +
                 script.stateTriggeredAbilities.map { it.effect }
         }
-        val turnAheadRoots = scripts.flatMap { script -> EffectWalker.slots(script).filter { it.turnAhead }.map { it.effect } }
+        val turnAheadRoots = scripts.flatMap { script -> slots.getValue(script).filter { it.turnAhead }.map { it.effect } }
         val leaves = scripts.flatMap { script ->
-            EffectWalker.slots(script).flatMap { readingLeaves(it.effect, it.targets) } +
+            slots.getValue(script).flatMap { readingLeaves(it.effect, it.targets) } +
                 script.stateTriggeredAbilities.flatMap { readingLeaves(it.effect) }
         }
 

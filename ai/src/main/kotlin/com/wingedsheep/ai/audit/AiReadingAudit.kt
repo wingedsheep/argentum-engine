@@ -483,7 +483,8 @@ object AiReadingAudit {
             ) {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
-                intent(trigger.effect, sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast)
+                // Read as the slots readers see it: a captured collection spelled as what it holds.
+                intent(EffectWalker.readableEffect(trigger), sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast)
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
