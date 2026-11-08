@@ -129,6 +129,10 @@ class TaekoThePatientAvalancheScenarioTest : ScenarioTestBase() {
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
 
+                withClue("{U/B} was paid with the Island") {
+                    val island = game.findPermanent("Island")!!
+                    game.state.getEntity(island)!!.get<TappedComponent>().shouldNotBeNull()
+                }
                 withClue("the Bears can't be blocked; Taeko itself wasn't chosen") {
                     game.state.projectedState.hasKeyword(bears, "CANT_BE_BLOCKED") shouldBe true
                     game.state.projectedState.hasKeyword(taeko, "CANT_BE_BLOCKED") shouldBe false
