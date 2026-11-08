@@ -2720,6 +2720,7 @@ Cavern Stomper	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffec
 Cavern Thoctar
 Cavern Whisperer
 Cavern of Souls
+Cavern-Hoard Dragon
 Cavernous Maw
 Caverns of Despair
 Caves of Koilos
@@ -7294,6 +7295,7 @@ Goblin Chirurgeon
 Goblin Clearcutter
 Goblin Commando
 Goblin Cratermaker
+Goblin Dark-Dwellers
 Goblin Deathraiders
 Goblin Digging Team
 Goblin Dirigible
@@ -7736,6 +7738,7 @@ Gryff Vanguard
 Gryff's Boon	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
 Gryffwing Cavalry
 Gríma Wormtongue
+Gríma, Saruman's Footman
 Guac & Marshmallow Pizza
 Guadosalam, Farplane Gateway
 Guan Yu's 1,000-Li March
@@ -9732,6 +9735,7 @@ Knights of Thorn
 Knights' Charge
 Knockout Blow
 Knockout Maneuver
+Knollspine Dragon
 Knowledge Seeker
 Knowledge Vault	intent: Pipeline(FromLinkedExile|hand→graveyard|hand); intent: Pipeline(TopOfLibrary→exile)
 Knucklebone Witch
@@ -12075,6 +12079,7 @@ Not Dead After All	polarity: GrantTriggeredAbilityEffect
 Not Forgotten
 Not on My Watch
 Notion Rain
+Notion Thief
 Notorious Assassin
 Nourish
 Nova Chaser	intent: EmitChampionedEventEffect
@@ -15632,6 +15637,7 @@ Shining Aerosaur
 Shining Armor
 Shinka, the Bloodsoaked Keep
 Shinra Reinforcements
+Shiny Impetus
 Shipwreck Dowser
 Shipwreck Looter
 Shipwreck Marsh
@@ -18677,6 +18683,7 @@ Treasure Dredger
 Treasure Hunter
 Treasure Keeper
 Treasure Map
+Treasure Nabber
 Treasure Trove
 Treasure Vault
 Treasured Find
@@ -19772,6 +19779,7 @@ Wailing Ghoul
 Wakandan Drone Flock
 Wakandan Royal Guard
 Wake Thrasher
+Wake the Dragon
 Wake the Past
 Wake to Slaughter	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield|hand)
 Wakedancer
