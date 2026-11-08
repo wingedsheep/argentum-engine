@@ -1588,7 +1588,7 @@ Bilbo, Thief in the Night	intent: GrantStaticAbilityEffect
 Bile-Vial Boggart
 Bilious Skulldweller
 Bill Ferny, Bree Swindler	polarity: GiveControlToTargetPlayerEffect
-Bill the Pony	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
+Bill the Pony
 Billowing Shriekmass
 Bind
 Bind the Monster
@@ -2232,6 +2232,7 @@ Brightwood Tracker
 Brigid's Command
 Brigid, Clachan's Heart
 Brigid, Hero of Kinsbaile
+Brigone, Soldier of Meletis
 Brilliance Unleashed
 Brilliant Plan
 Brilliant Restoration
@@ -4237,6 +4238,7 @@ Deliberate
 Delif's Cone
 Delif's Cube	intent: GrantKeywordEffect
 Delighted Halfling
+Delightful Discovery
 Delina, Wild Mage	intent: RepeatWhileEffect; polarity: RepeatWhileEffect
 Deliver Unto Evil
 Delivery Moogle
@@ -5157,6 +5159,7 @@ Efreet Weaponmaster
 Ego Drain
 Ego Erasure	timing: ForEach>ModifyStatsEffect
 Egon, God of Death
+Eidolon of Astral Winds
 Eidolon of Blossoms
 Eidolon of Inspiration
 Eidolon of Obstruction
@@ -6888,6 +6891,7 @@ Generous Ent
 Generous Gift
 Generous Patron
 Generous Plunderer
+Generous Pup
 Generous Revival
 Generous Stray
 Generous Visitor
@@ -11488,7 +11492,7 @@ Morbius the Living Vampire
 Morcant's Eyes
 Morcant's Loyalist
 Mordenkainen
-Mordenkainen's Polymorph	timing: GrantKeywordEffect; timing: SetCreatureSubtypesEffect
+Mordenkainen's Polymorph
 Mordor Muster
 Mordor Trebuchet
 Morgue Theft
@@ -12111,6 +12115,7 @@ Nurturing Peatland
 Nurturing Pixie
 Nurturing Presence
 Nutrient Block
+Nykthos Paragon
 Nykthos, Shrine to Nyx
 Nylea's Forerunner
 Nylea's Huntmaster
@@ -12229,6 +12234,7 @@ Ojer Axonil, Deepest Might	intent: ReturnSelfFromZoneTransformedEffect
 Ojer Kaslem, Deepest Growth	intent: ReturnSelfFromZoneTransformedEffect
 Ojer Pakpatiq, Deepest Epoch	intent: GrantKeywordToSpellEffect; intent: ReturnSelfFromZoneTransformedEffect
 Ojer Taq, Deepest Foundation	intent: ReturnSelfFromZoneTransformedEffect
+Ojutai Exemplars
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
@@ -12794,6 +12800,8 @@ Phage the Untouchable
 Phalanx Tactics
 Phalanx Vanguard
 Phantasmal Forces
+Phantasmal Form
+Phantasmal Shieldback
 Phantasmal Terrain	polarity: Aura>SetEnchantedLandTypeFromChosen
 Phantatog
 Phantom Carriage
@@ -12959,6 +12967,7 @@ Pixie Illusionist	intent: ChooseOptionEffect; intent: SetLandTypeEffect; polarit
 Pixie Queen
 Pizza Face, Gastromancer
 Placid Rottentail
+Plagon, Lord of the Beach
 Plague Beetle
 Plague Belcher
 Plague Boiler
@@ -13043,6 +13052,7 @@ Poison the Cup
 Poison the Waters
 Poison-Tip Archer
 Poisoner's Apprentice
+Pol Jamaar, Illusionist
 Political Triumph
 Pollen Lullaby
 Pollen-Shield Hare
@@ -13435,6 +13445,7 @@ Pyrrhic Strike
 Python
 Q Continuum
 Q, Stacking the Deck	intent: GatherUntilMatchEffect; intent: GrantActivatedAbilityEffect; intent: Pipeline(?→exile)
+Qala, Ajani's Pridemate
 Qarsi Revenant
 Qasali Slingers
 Qiqirn Merchant
@@ -16883,6 +16894,7 @@ Stone Docent
 Stone Giant
 Stone Golem
 Stone Haven Medic
+Stone Haven Outfitter
 Stone Haven Pilgrim
 Stone Kavu
 Stone Quarry
@@ -16981,7 +16993,7 @@ Stream of Life
 Streambed Aquitects	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Street Riot
 Streetbreaker Wurm
-Streetwise Negotiator	polarity: GrantKeywordEffect
+Streetwise Negotiator
 Strength Bobblehead
 Strength of Arms
 Strength of Cedars
@@ -18315,6 +18327,7 @@ Thunderscape Master
 Thundersong Trumpeter
 Thundersteel Colossus
 Thundertrap Trainer
+Thurid, Mare of Destiny
 Thwart the Enemy
 Thwart the Grave
 Thwip!
@@ -19151,6 +19164,7 @@ Urborg Shambler
 Urborg Skeleton
 Urborg Volcano
 Urborg, Tomb of Yawgmoth
+Urdnan, Dromoka Warrior
 Ureni of the Unwritten
 Ureni's Rebuff
 Ureni, the Song Unending
@@ -19770,7 +19784,7 @@ Walk with the Ancestors
 Walk-In Closet // Forgotten Cellar	intent: GrantReplacementEffectEffect; intent: GrantStaticAbilityEffect
 Walker of the Grove
 Walking Ballista
-Walking Bulwark	polarity: CanAttackDespiteDefenderThisTurnEffect; polarity: GrantKeywordEffect
+Walking Bulwark
 Walking Corpse
 Walking Dead
 Walking Desecration	intent: ChooseOptionEffect; intent: ForEach>MarkMustAttackEffect
