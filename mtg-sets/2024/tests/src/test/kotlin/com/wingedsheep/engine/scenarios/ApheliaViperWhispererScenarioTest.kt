@@ -62,6 +62,33 @@ class ApheliaViperWhispererScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("the floating trigger keeps working after Aphelia leaves the battlefield") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Aphelia, Viper Whisperer")
+                    .withCardOnBattlefield(1, "Python")
+                    .withCardInHand(1, "Murder")
+                    .withLandsOnBattlefield(1, "Swamp", 8)
+                    .withLifeTotal(2, 12)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.activateHalving()
+                val aphelia = game.findPermanent("Aphelia, Viper Whisperer")!!
+                game.castSpell(1, "Murder", aphelia).error shouldBe null
+                game.resolveStack()
+                game.findPermanent("Aphelia, Viper Whisperer") shouldBe null
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Python" to 2)).error shouldBe null
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                withClue("12 - 3 combat damage from the Snake = 9, then loses ceil(9 / 2) = 5") {
+                    game.getLifeTotal(2) shouldBe 4
+                }
+            }
+
             test("damage from creatures that are neither Gorgons nor Snakes doesn't trigger it") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

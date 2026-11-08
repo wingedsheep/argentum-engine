@@ -60,6 +60,10 @@ class RevealUntilMillReadingTest : ScenarioTestBase() {
             withClue("Polymorph's controller shuffles the revealed cards back") {
                 CardIntentAnalyzer.analyze(card("Polymorph")).tags shouldNotContain IntentTag.MILL
             }
+            withClue("Chaos Wand reveals the target opponent's library into exile, not their graveyard") {
+                val ability = card("Chaos Wand").script.activatedAbilities.single()
+                CardIntentAnalyzer.analyzeEffect(ability.effect).tags shouldNotContain IntentTag.MILL
+            }
         }
 
         test("Balustrade Spy targets the opponent, not its own controller") {

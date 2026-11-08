@@ -3371,21 +3371,10 @@ class TriggerDetector(
                 // the self-sacrifice pass below (the source has left the battlefield by then).
                 if (ability.binding != TriggerBinding.ANY && ability.binding != TriggerBinding.OTHER) continue
 
-                // Whose sacrifices this trigger watches. Player.You (default) is the source
-                // controller's own ("Whenever you sacrifice…"); Player.Each is every player's
-                // ("Whenever a player sacrifices…", Zodiark); Player.EachOpponent is the source
-                // controller's opponents' ("Whenever an opponent sacrifices…", Vengeful Tracker).
-                // The multi-player scopes fire once per sacrificing player.
+                // Whose sacrifices this trigger watches (see sacrificersWatchedBy).
                 val controllerId = entry.controllerId
-                val watchedPlayers = when (trigger.sacrificedBy) {
-                    Player.Each -> sacrificeByController.keys.toList()
-                    // CR 102.3 — teammates are not opponents, so go through getOpponents rather
-                    // than "everyone but me".
-                    Player.EachOpponent ->
-                        state.getOpponents(controllerId).filter { sacrificeByController.containsKey(it) }
-                    else ->
-                        if (sacrificeByController.containsKey(controllerId)) listOf(controllerId) else emptyList()
-                }
+                val watchedPlayers =
+                    sacrificersWatchedBy(state, controllerId, trigger.sacrificedBy, sacrificeByController)
 
                 for (sacrificingPlayerId in watchedPlayers) {
                     val playerEvents = sacrificeByController[sacrificingPlayerId] ?: continue
@@ -3441,7 +3430,6 @@ class TriggerDetector(
         // ("another") excludes it but a source sacrificed *alongside* other permanents still reacts
         // to those others (Mazirek/Zhao sacrificed in the same batch as its fodder).
         for ((controllerId, controllerEvents) in sacrificeByController) {
-            val batchPermanentIds = controllerEvents.flatMap { it.permanentIds }
             for (event in controllerEvents) {
                 for (permanentId in event.permanentIds) {
                     val container = state.getEntity(permanentId) ?: continue
@@ -3455,45 +3443,76 @@ class TriggerDetector(
                         val trigger = ability.trigger
                         if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
                         if (Zone.BATTLEFIELD !in ability.activeZones) continue
-                        // This pass only ever sees a permanent sacrificed by its own controller, so
-                        // an opponent-scoped trigger ("Whenever an opponent sacrifices…") can never
-                        // be satisfied here.
-                        if (trigger.sacrificedBy == Player.EachOpponent) continue
 
-                        // The source is itself among the simultaneously-sacrificed permanents, so
-                        // it looks back at the whole batch (CR 603.10a): ANY counts itself, OTHER
-                        // excludes it ("one or more other creatures" — Forge Boss sacrificed with
-                        // its fodder still sees the fodder), SELF only itself.
-                        val eligible = batchPermanentIds.filter { pid ->
-                            sacrificedPermanentMatchesFilter(state, pid, trigger.filter, departed[pid], PredicateContext(controllerId = controllerId, sourceId = permanentId)) &&
-                                when (ability.binding) {
-                                    TriggerBinding.SELF -> pid == permanentId
-                                    TriggerBinding.OTHER -> pid != permanentId
-                                    else -> true
-                                }
-                        }
-                        // Per-permanent template ("a/another permanent") fires once per matching
-                        // batch member (CR 603.2c); batch template ("one or more") fires once,
-                        // binding the source itself when it qualifies (Esoteric Duplicator's "that
-                        // artifact"), else the first matching batch-mate.
-                        val triggeringPermanents =
-                            if (trigger.perPermanent) eligible
-                            else listOfNotNull(eligible.firstOrNull { it == permanentId } ?: eligible.firstOrNull())
-                        for (triggeringPermanentId in triggeringPermanents) {
-                            triggers.add(
-                                PendingTrigger(
-                                    ability = ability,
-                                    sourceId = permanentId,
-                                    sourceName = cardComponent.name,
-                                    controllerId = controllerId,
-                                    triggerContext = TriggerContext(triggeringEntityId = triggeringPermanentId)
+                        // Sacrifice triggers look back in time (CR 603.10a): the source sees every
+                        // permanent sacrificed simultaneously with it, not only its own controller's.
+                        // An each-player edict that takes the source alongside an opponent's
+                        // creature still lets "whenever a player / an opponent sacrifices…"
+                        // (Fumulus, the Infestation) see that creature. Same player scoping as the
+                        // battlefield pass, one pass per watched sacrificer.
+                        val watchedPlayers =
+                            sacrificersWatchedBy(state, controllerId, trigger.sacrificedBy, sacrificeByController)
+                        for (sacrificingPlayerId in watchedPlayers) {
+                            val batchPermanentIds =
+                                sacrificeByController[sacrificingPlayerId]?.flatMap { it.permanentIds } ?: continue
+
+                            // ANY counts itself, OTHER excludes it ("one or more other creatures" —
+                            // Forge Boss sacrificed with its fodder still sees the fodder), SELF only
+                            // itself.
+                            val eligible = batchPermanentIds.filter { pid ->
+                                sacrificedPermanentMatchesFilter(state, pid, trigger.filter, departed[pid], PredicateContext(controllerId = controllerId, sourceId = permanentId)) &&
+                                    when (ability.binding) {
+                                        TriggerBinding.SELF -> pid == permanentId
+                                        TriggerBinding.OTHER -> pid != permanentId
+                                        else -> true
+                                    }
+                            }
+                            // Per-permanent template ("a/another permanent") fires once per matching
+                            // batch member (CR 603.2c); batch template ("one or more") fires once,
+                            // binding the source itself when it qualifies (Esoteric Duplicator's "that
+                            // artifact"), else the first matching batch-mate.
+                            val triggeringPermanents =
+                                if (trigger.perPermanent) eligible
+                                else listOfNotNull(eligible.firstOrNull { it == permanentId } ?: eligible.firstOrNull())
+                            for (triggeringPermanentId in triggeringPermanents) {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = permanentId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = controllerId,
+                                        triggerContext = TriggerContext(
+                                            triggeringEntityId = triggeringPermanentId,
+                                            triggeringPlayerId = sacrificingPlayerId
+                                        )
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * The players whose sacrifices a [EventPattern.PermanentsSacrificedEvent] trigger controlled by
+     * [controllerId] watches, among those who sacrificed in this batch. [Player.You] (default) is the
+     * controller's own ("Whenever you sacrifice…"); [Player.Each] is every player's ("Whenever a
+     * player sacrifices…", Zodiark); [Player.EachOpponent] is the controller's opponents' ("Whenever
+     * an opponent sacrifices…", Vengeful Tracker). Multi-player scopes fire once per sacrificing player.
+     */
+    private fun sacrificersWatchedBy(
+        state: GameState,
+        controllerId: EntityId,
+        sacrificedBy: Player,
+        sacrificeByController: Map<EntityId, List<PermanentsSacrificedEvent>>
+    ): List<EntityId> = when (sacrificedBy) {
+        Player.Each -> sacrificeByController.keys.toList()
+        // CR 102.3 — teammates are not opponents, so go through getOpponents rather than
+        // "everyone but me".
+        Player.EachOpponent -> state.getOpponents(controllerId).filter { sacrificeByController.containsKey(it) }
+        else -> if (sacrificeByController.containsKey(controllerId)) listOf(controllerId) else emptyList()
     }
 
     /**

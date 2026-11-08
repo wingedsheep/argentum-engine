@@ -179,7 +179,11 @@ internal object ExpiringGrantWindow {
             return true
         }
 
-        if ((refuseUnspendable || readShrinks || readBorrows) && activation != null &&
+        // A loyalty ability's trigger is not all it buys: the loyalty it adds is permanent value the
+        // leaf prices, so Jace, Cunning Castaway's +1 is never "nothing" with no attacker to connect.
+        val loyaltyConnect = ability.isPlaneswalkerAbility &&
+            expiringPayoffs(ability.effect)?.any { it.kind == PayoffKind.CONNECT } == true
+        if ((refuseUnspendable || readShrinks || readBorrows) && activation != null && !loyaltyConnect &&
             nothingCanSpend(
                 state, playerId, ability.effect,
                 sourceId = activation.sourceId,
@@ -1110,7 +1114,8 @@ internal object ExpiringGrantWindow {
          * deal combat damage to a player — "until end of turn, whenever one or more Gorgons and/or
          * Snakes you control deal combat damage to a player, that player loses half their life"
          * (Aphelia, Viper Whisperer), the shape of The Raven's Warning's chapter II, Jace, Cunning
-         * Castaway's +1 and Mistway Spy's turned-face-up trigger. Whatever its trigger does, it is
+         * Castaway's +1 and Mistway Spy's turned-face-up trigger. A loyalty ability carrying it is
+         * never refused on it ([holds]): the loyalty is permanent. Whatever its trigger does, it is
          * spent only by one of those creatures connecting in this turn's combat, so it is
          * [PayoffKind.CREATURE]'s fight read from the attacker's side alone ([canStillFight] with
          * `connects`): on our turn, a matching creature that can still attack, or an attacker not
