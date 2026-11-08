@@ -1,0 +1,1 @@
+- #4573 The AI now reads a draw sized by a targeted player's damage taken (Knollspine Dragon's "draw cards equal to the damage dealt to target opponent") as an aimed-at-opponent ability instead of an unread one
