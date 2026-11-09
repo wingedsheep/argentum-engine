@@ -215,6 +215,16 @@ enum class ChoiceSlot {
      */
     FORETOLD,
 
+    /**
+     * Whether the spell's **madness cost was paid** (CR 702.35) — it was cast from exile, by the
+     * madness trigger, for its madness cost rather than its mana cost. Stamped by the engine as the
+     * spell is cast, never declared by the player. Read back through
+     * [com.wingedsheep.sdk.dsl.Conditions.MadnessCostWasPaid] for the Shadows over Innistrad
+     * "If this spell's madness cost was paid, …" riders (From Under the Floorboards, Welcome to the
+     * Fold), from the spell while it resolves and from the permanent a permanent spell becomes.
+     */
+    MADNESS_CAST,
+
     /** The X declared for a `blight X` additional cost when cast (e.g. Soul Immolation). */
     BLIGHT_AMOUNT,
 

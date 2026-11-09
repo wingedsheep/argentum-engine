@@ -1185,6 +1185,19 @@ object Conditions {
         CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.FORETOLD)
 
     /**
+     * "If this spell's madness cost was paid" (CR 702.35, Shadows over Innistrad) — the spell was
+     * cast from exile by its madness trigger, paying its madness cost rather than its mana cost.
+     * False for any other cast, including a free cast of the same exiled card.
+     *
+     * A facade over the durable choice-slot read ([com.wingedsheep.sdk.scripting.ChoiceSlot.MADNESS_CAST]),
+     * stamped by the engine as the spell is cast: read from the spell while it resolves (From Under
+     * the Floorboards' "instead create X of those tokens" — the X coming from an `{X}` in the
+     * madness cost) and from the permanent a permanent spell becomes.
+     */
+    val MadnessCostWasPaid: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.MADNESS_CAST)
+
+    /**
      * If **evidence was collected** for this spell (CR 701.59c, Murders at Karlov Manor) — its
      * optional "you may collect evidence N" additional cost was declared as it was cast.
      *

@@ -3093,6 +3093,94 @@
     ]
 }
 
+// From Under the Floorboards
+{
+    "name": "From Under the Floorboards",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create three tapped 2/2 black Zombie creature tokens and you gain 3 life. If this spell's madness cost was paid, instead create X of those tokens and you gain X life.\nMadness {X}{B}{B} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{X}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "MADNESS_CAST"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "CreateToken",
+                        "count": "XValue",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "tapped": true
+                    },
+                    {
+                        "type": "GainLife",
+                        "amount": "XValue"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "tapped": true
+                    },
+                    {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e644706-223d-4e56-9614-b224e281be2f.jpg?1783937776"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Game Trail
 {
     "name": "Game Trail",
@@ -10297,6 +10385,108 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16793435-8eb3-4d57-8683-de1120eb46b6.jpg?1783937697"
     },
     "colorIdentityOverride": []
+}
+
+// Welcome to the Fold
+{
+    "name": "Welcome to the Fold",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature if its toughness is 2 or less. If this spell's madness cost was paid, instead gain control of that creature if its toughness is X or less.\nMadness {X}{U}{U} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{X}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "MADNESS_CAST"
+                }
+            },
+            "then": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "numericProperty": "Toughness"
+                        },
+                        "operator": "LTE",
+                        "right": "XValue"
+                    }
+                },
+                "then": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            },
+            "otherwise": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "numericProperty": "Toughness"
+                        },
+                        "operator": "LTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "then": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d07fbe1-e66a-4893-86ee-7752ad77b120.jpg?1783937783"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Westvale Abbey

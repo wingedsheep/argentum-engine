@@ -1,0 +1,1 @@
+- #4605 Chooses X for an {X} madness cost (From Under the Floorboards, Welcome to the Fold) by weighing each value, where the madness cast used to go ahead with X = 0
