@@ -1077,7 +1077,14 @@ sealed interface DelayedTriggerExpiry {
  * carried into whichever consequence fires, so a consequence can reference a collection built
  * earlier in the same resolution (e.g. "return the discarded card this way").
  *
- * Supported costs: [PayCost.Sacrifice] (card selection) and [PayCost.PayLife] (yes/no).
+ * Supported costs: [PayCost.Sacrifice] / tap (card selection) and [PayCost.PayLife] (yes/no).
+ * A null [cost] is a **free choice** — "any opponent may have you put that card into your
+ * graveyard" (Sin Prodder): nothing is paid, each asked player simply answers [prompt] yes or
+ * no, and the first yes runs [consequence] exactly as a payment would.
+ *
+ * [payerAs] names the player who paid (or said yes) for [consequence], as
+ * [Player.BoundVariable] — "if a player does, this deals damage to *that player*". It is bound
+ * only in [consequence]; [consequenceIfNonePaid] has no such player.
  *
  * [eligiblePlayers] scopes *which* players are offered the choice, relative to the source's
  * controller: [Player.Each] (default) asks every player, [Player.EachOpponent] asks only the
@@ -1085,26 +1092,37 @@ sealed interface DelayedTriggerExpiry {
  * multi-player group references are meaningful here; single-player refs fall back to that one
  * player.
  *
- * @property cost The cost any player may choose to pay
+ * @property cost The cost any player may choose to pay; null for a free choice (see above)
  * @property consequence The effect that happens if a player pays (null = nothing)
  * @property consequenceIfNonePaid The effect that happens if no player pays (null = nothing)
  * @property eligiblePlayers Which players are offered the choice, relative to the controller
+ * @property prompt The yes/no question put to each asked player, in their words. Required for a
+ *   free choice (null [cost]); a payment's prompt is built from the cost itself.
+ * @property payerAs Binding name under which [consequence] reads the paying player
+ *   (`Player.BoundVariable(payerAs)`); null when the consequence never names them.
  */
 @SerialName("AnyPlayerMayPay")
 @Serializable
 data class AnyPlayerMayPayEffect(
-    val cost: PayCost,
+    val cost: PayCost?,
     val consequence: Effect? = null,
     val consequenceIfNonePaid: Effect? = null,
-    val eligiblePlayers: Player = Player.Each
+    val eligiblePlayers: Player = Player.Each,
+    val prompt: String? = null,
+    val payerAs: String? = null,
 ) : Effect {
+    init {
+        require(cost != null || prompt != null) { "A free-choice AnyPlayerMayPay (null cost) needs a prompt" }
+    }
+
     override val description: String = buildString {
         val who = if (eligiblePlayers == Player.EachOpponent) "opponent" else "player"
+        val offer = cost?.description ?: "accept"
         when {
             consequenceIfNonePaid != null && consequence == null ->
-                append("${consequenceIfNonePaid.description} unless any $who ${cost.description}")
+                append("${consequenceIfNonePaid.description} unless any $who ${if (cost == null) "accepts" else offer}")
             else -> {
-                append("Any $who may ${cost.description}.")
+                append("Any $who may $offer.")
                 if (consequence != null) append(" If a player does, ${consequence.description}.")
                 if (consequenceIfNonePaid != null) append(" If no player does, ${consequenceIfNonePaid.description}.")
             }
@@ -1112,7 +1130,7 @@ data class AnyPlayerMayPayEffect(
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
-        val newCost = cost.applyTextReplacement(replacer)
+        val newCost = cost?.applyTextReplacement(replacer)
         val newConsequence = consequence?.applyTextReplacement(replacer)
         val newConsequenceIfNonePaid = consequenceIfNonePaid?.applyTextReplacement(replacer)
         return if (newCost !== cost || newConsequence !== consequence || newConsequenceIfNonePaid !== consequenceIfNonePaid)

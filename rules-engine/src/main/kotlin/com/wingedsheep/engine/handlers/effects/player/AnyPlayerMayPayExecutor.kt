@@ -34,7 +34,8 @@ import kotlin.reflect.KClass
  *
  * Players are asked in APNAP order; players who can't pay are skipped. Supported costs are
  * [CostAtom.Sacrifice] and [CostAtom.TapPermanents] (card selection — "any opponent may tap an
- * untapped creature they control", Reservoir Kraken) and [CostAtom.PayLife] (yes/no). The surrounding pipeline's
+ * untapped creature they control", Reservoir Kraken) and [CostAtom.PayLife] (yes/no); a null cost is a free
+ * choice, a plain yes/no on the effect's prompt (Sin Prodder). The surrounding pipeline's
  * stored collections are threaded into whichever consequence fires so it can reference cards
  * gathered earlier in the same resolution.
  */
@@ -110,6 +111,9 @@ class AnyPlayerMayPayExecutor(
         }
 
         val playerId = playerOrder[index]
+        if (effect.cost == null) {
+            return askPlayerToChoose(state, effect, context, sourceId, sourceName, playerId, playerOrder, index)
+        }
         return when (val atom = (effect.cost as? PayCost.Atom)?.atom) {
             is CostAtom.Sacrifice -> askPlayerToSelect(
                 state, effect, context, atom, atom.count, atom.filter,
@@ -125,16 +129,18 @@ class AnyPlayerMayPayExecutor(
                 state, effect, context, atom, sourceId, sourceName,
                 playerId, playerOrder, index
             )
-            else -> EffectResult.error(state, "Unsupported cost type for AnyPlayerMayPay: ${effect.cost::class.simpleName}")
+            else -> EffectResult.error(state, "Unsupported cost type for AnyPlayerMayPay: ${effect.cost?.let { it::class.simpleName }}")
         }
     }
 
     private fun canPlayerPay(
         state: GameState,
         playerId: EntityId,
-        cost: PayCost,
+        cost: PayCost?,
         sourceId: EntityId
     ): Boolean {
+        // A free choice costs nothing, so every eligible player can accept it.
+        if (cost == null) return true
         return when (val atom = (cost as? PayCost.Atom)?.atom) {
             is CostAtom.Sacrifice -> {
                 val validPermanents = findValidPermanentsOnBattlefield(state, playerId, atom, sourceId)
@@ -241,6 +247,30 @@ class AnyPlayerMayPayExecutor(
         return EffectResult.from(state.suspendForDecision(decision, continuation, emptyList()))
     }
 
+    /** Offer a free choice (null cost) to [playerId]: a plain yes/no on the effect's prompt. */
+    private fun askPlayerToChoose(
+        state: GameState,
+        effect: AnyPlayerMayPayEffect,
+        context: EffectContext,
+        sourceId: EntityId,
+        sourceName: String,
+        playerId: EntityId,
+        playerOrder: List<EntityId>,
+        currentIndex: Int
+    ): EffectResult {
+        val continuation = anyPlayerMayPayContinuation(
+            effect, context,
+            currentPlayerId = playerId,
+            remainingPlayers = playerOrder.drop(currentIndex + 1),
+            sourceId = sourceId,
+            sourceName = sourceName,
+            requiredCount = 0,
+            filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any
+        )
+        val decision = AnyPlayerMayPayPrompt.freeChoice(effect.prompt.orEmpty(), playerId, sourceId, sourceName)
+        return EffectResult.from(state.suspendForDecision(decision, continuation, emptyList()))
+    }
+
     private fun anyPlayerMayPayContinuation(
         effect: AnyPlayerMayPayEffect,
         context: EffectContext,
@@ -261,6 +291,8 @@ class AnyPlayerMayPayExecutor(
         cost = effect.cost,
         consequence = effect.consequence,
         consequenceIfNonePaid = effect.consequenceIfNonePaid,
+        prompt = effect.prompt,
+        payerAs = effect.payerAs,
         requiredCount = requiredCount,
         filter = filter,
         storedCollections = context.pipeline.storedCollections,
@@ -304,6 +336,6 @@ class AnyPlayerMayPayExecutor(
      * pool the cost-payment service uses everywhere else, so the resumer's next-player prompt and
      * this first prompt can't disagree.
      */
-    private fun tapCandidates(state: GameState, playerId: EntityId, cost: PayCost, sourceId: EntityId): List<EntityId> =
-        CostPaymentService.selectionCandidates(state, playerId, cost, sourceId, predicateEvaluator).orEmpty()
+    private fun tapCandidates(state: GameState, playerId: EntityId, cost: PayCost?, sourceId: EntityId): List<EntityId> =
+        cost?.let { CostPaymentService.selectionCandidates(state, playerId, it, sourceId, predicateEvaluator) }.orEmpty()
 }

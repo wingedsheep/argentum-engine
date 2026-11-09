@@ -7999,6 +7999,124 @@
     ]
 }
 
+// Sin Prodder
+{
+    "name": "Sin Prodder",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Menace\nAt the beginning of your upkeep, reveal the top card of your library. Any opponent may have you put that card into your graveyard. If a player does, this creature deals damage to that player equal to that card's mana value. Otherwise, put that card into your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sin Prodder:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0"
+                                }
+                            },
+                            "then": {
+                                "type": "AnyPlayerMayPay",
+                                "cost": null,
+                                "consequence": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            }
+                                        },
+                                        {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "StoredCardManaValue",
+                                                "collectionName": "gathered0"
+                                            },
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": {
+                                                    "type": "BoundVariable",
+                                                    "name": "prodded"
+                                                }
+                                            },
+                                            "damageSource": "Self"
+                                        }
+                                    ]
+                                },
+                                "consequenceIfNonePaid": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "eligiblePlayers": "EachOpponent",
+                                "prompt": "Put the revealed card into its owner's graveyard? If you do, Sin Prodder deals you damage equal to its mana value. If no one does, it goes to their hand.",
+                                "payerAs": "prodded"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, reveal the top card of your library. Any opponent may have you put that card into your graveyard. If a player does, this creature deals damage to that player equal to that card's mana value. Otherwise, put that card into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cefeb031-9dda-4717-a8d1-e2c21551e43a.jpg?1783937742",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Each opponent in turn order, starting with the one after you in turn order, may choose to have you put that card into your graveyard. Once a player does so, Sin Prodder deals damage equal to that card's mana value to that player immediately and Sin Prodder's trigger has no further action."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sinister Concoction
 {
     "name": "Sinister Concoction",

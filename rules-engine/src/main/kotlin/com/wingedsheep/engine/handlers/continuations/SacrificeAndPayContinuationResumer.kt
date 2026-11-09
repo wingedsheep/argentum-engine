@@ -908,6 +908,15 @@ class SacrificeAndPayContinuationResumer(
     ): ExecutionResult {
         val playerId = continuation.currentPlayerId
 
+        // A free choice (null cost): yes runs the consequence with nothing paid, no asks the next player.
+        if (continuation.cost == null) {
+            if (response !is YesNoResponse) {
+                return ExecutionResult.error(state, "Expected yes/no response for any player may choose")
+            }
+            if (!response.choice) return askNextPlayerForAnyPlayerMayPay(state, continuation, checkForMore)
+            return runAnyPlayerMayPayConsequence(state, continuation, continuation.consequence, emptyList(), checkForMore, payer = playerId)
+        }
+
         when (val atom = (continuation.cost as? PayCost.Atom)?.atom) {
             is CostAtom.Sacrifice -> {
                 if (response !is CardsSelectedResponse) {
@@ -930,7 +939,7 @@ class SacrificeAndPayContinuationResumer(
                     newState = transitionResult.state
                     events.addAll(transitionResult.events)
                 }
-                return runAnyPlayerMayPayConsequence(newState, continuation, continuation.consequence, events, checkForMore)
+                return runAnyPlayerMayPayConsequence(newState, continuation, continuation.consequence, events, checkForMore, payer = playerId)
             }
 
             is CostAtom.TapPermanents -> {
@@ -949,7 +958,7 @@ class SacrificeAndPayContinuationResumer(
                     response.selectedCards.associateWith { 1 }
                 )
                 if (!payment.success) return askNextPlayerForAnyPlayerMayPay(state, continuation, checkForMore)
-                return runAnyPlayerMayPayConsequence(payment.state, continuation, continuation.consequence, payment.events, checkForMore)
+                return runAnyPlayerMayPayConsequence(payment.state, continuation, continuation.consequence, payment.events, checkForMore, payer = playerId)
             }
 
             is CostAtom.PayLife -> {
@@ -964,12 +973,12 @@ class SacrificeAndPayContinuationResumer(
                     .pay(services.zones, state, playerId, continuation.requiredCount)
                     ?: return ExecutionResult.error(state, "Player has no life total")
                 val events = paymentEvents.toMutableList()
-                return runAnyPlayerMayPayConsequence(newState, continuation, continuation.consequence, events, checkForMore)
+                return runAnyPlayerMayPayConsequence(newState, continuation, continuation.consequence, events, checkForMore, payer = playerId)
             }
 
             else -> return ExecutionResult.error(
                 state,
-                "Unsupported cost type for AnyPlayerMayPay resume: ${continuation.cost::class.simpleName}"
+                "Unsupported cost type for AnyPlayerMayPay resume: ${continuation.cost?.let { it::class.simpleName }}"
             )
         }
     }
@@ -983,16 +992,21 @@ class SacrificeAndPayContinuationResumer(
         continuation: AnyPlayerMayPayContinuation,
         consequence: com.wingedsheep.sdk.scripting.effects.Effect?,
         priorEvents: List<GameEvent>,
-        checkForMore: CheckForMore
+        checkForMore: CheckForMore,
+        payer: EntityId? = null
     ): ExecutionResult {
         if (consequence == null) return checkForMore(state, priorEvents)
+        // "That player" — the one who paid (or said yes) — bound for the consequence to name.
+        val namedTargets = if (payer != null && continuation.payerAs != null) {
+            mapOf(continuation.payerAs to com.wingedsheep.engine.state.components.stack.ChosenTarget.Player(payer))
+        } else emptyMap()
         val context = EffectContext(
             programOrigin = continuation.programOrigin ?: com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect::class),
             resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences.authorize(priorEvents),
             controllerId = continuation.controllerId,
-            pipeline = PipelineState(storedCollections = continuation.storedCollections),
+            pipeline = PipelineState(storedCollections = continuation.storedCollections, namedTargets = namedTargets),
             triggeringEntityId = continuation.triggeringEntityId,
             triggeringPlayerId = continuation.triggeringPlayerId
         )
@@ -1041,6 +1055,16 @@ class SacrificeAndPayContinuationResumer(
 
         for ((index, nextPlayerId) in continuation.remainingPlayers.withIndex()) {
             val remainingAfter = continuation.remainingPlayers.drop(index + 1)
+            if (cost == null) {
+                // A free choice: every remaining player may accept, so the next one is asked.
+                return state.suspendForDecision(
+                    question = AnyPlayerMayPayPrompt.freeChoice(
+                        continuation.prompt.orEmpty(), nextPlayerId, continuation.sourceId, continuation.sourceName
+                    ),
+                    answer = continuation.copy(currentPlayerId = nextPlayerId, remainingPlayers = remainingAfter),
+                    events = emptyList(),
+                )
+            }
             when (val atom = (cost as? PayCost.Atom)?.atom) {
                 is CostAtom.Sacrifice, is CostAtom.TapPermanents -> {
                     val validPermanents = if (atom is CostAtom.Sacrifice) {

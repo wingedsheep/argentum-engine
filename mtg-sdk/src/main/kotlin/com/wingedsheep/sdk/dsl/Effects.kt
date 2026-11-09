@@ -895,6 +895,24 @@ object Effects {
         AnyPlayerMayPayEffect(cost = cost, consequence = consequence, eligiblePlayers = eligiblePlayers)
 
     /**
+     * "Any opponent may have [consequence]. If a player does, … Otherwise, [otherwise]." — the free
+     * choice form of [AnyPlayerMayPay]: nothing is paid, each eligible player in turn order answers
+     * [prompt] (written to the player being asked), and the first yes runs [consequence], which can
+     * name that player as `Player.BoundVariable(chooserAs)` (Sin Prodder: "deals damage to that
+     * player"). If nobody says yes, [otherwise] runs.
+     */
+    fun AnyPlayerMayChoose(
+        prompt: String,
+        consequence: Effect,
+        otherwise: Effect? = null,
+        eligiblePlayers: Player = Player.Each,
+        chooserAs: String? = null,
+    ): Effect = AnyPlayerMayPayEffect(
+        cost = null, consequence = consequence, consequenceIfNonePaid = otherwise,
+        eligiblePlayers = eligiblePlayers, prompt = prompt, payerAs = chooserAs,
+    )
+
+    /**
      * "[effect] unless any player pays [cost]." — the inverse reading of [AnyPlayerMayPay].
      * Each player in APNAP order may pay; if any does, nothing happens. If none pays, [effect] runs.
      * (Aether Rift: "return it from your graveyard to the battlefield unless any player pays 5 life.")
