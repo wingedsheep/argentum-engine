@@ -1,0 +1,1 @@
+- #4599 The AI decides whether to entwine the Mirrodin entwine cards and Gravedig by weighing the plain cast against the declared "(Entwined)" cast, like Kaya's Guile, instead of picking a mode count on an escalate-priced modal.

@@ -3250,7 +3250,11 @@ class CastFromZoneEnumerator(
 
                     val kickLabel = when {
                         declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
-                        declaredSlot == ChoiceSlot.ENTWINED -> "Entwined"
+                        // A non-mana entwine cost isn't in the price chip, so the label names it:
+                        // "Entwined — Sacrifice three lands" (Betrayal of Flesh).
+                        declaredSlot == ChoiceSlot.ENTWINED ->
+                            additionalCostKicker?.additionalCost?.description
+                                ?.let { "Entwined — ${it.replaceFirstChar { c -> c.uppercase() }}" } ?: "Entwined"
                         declaredSlot == ChoiceSlot.BOUGHT_BACK -> "Buyback"
                         // An unnamed optional additional cost names what it pays ("Sacrifice an artifact").
                         declaredSlot == ChoiceSlot.ADDITIONAL_COST_PAID ->

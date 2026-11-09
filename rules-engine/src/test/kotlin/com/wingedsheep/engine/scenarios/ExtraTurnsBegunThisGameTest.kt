@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.OptionalSkipTurnWith
-import com.wingedsheep.sdk.scripting.PreventExtraTurns
+import com.wingedsheep.sdk.scripting.SkipExtraTurns
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
@@ -32,7 +32,7 @@ class ExtraTurnsBegunThisGameTest : ScenarioTestBase() {
     init {
         val nexus = card("Extra Turn Preventer") {
             typeLine = "Artifact"
-            replacementEffect(PreventExtraTurns())
+            replacementEffect(SkipExtraTurns())
         }
         val skipper = card("Extra Turn Skip Source") {
             typeLine = "Artifact"

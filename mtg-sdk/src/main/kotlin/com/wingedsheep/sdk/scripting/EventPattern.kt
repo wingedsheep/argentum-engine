@@ -1044,7 +1044,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
     /**
      * When a player would begin an extra turn (a turn created by a spell or ability, CR 500.7).
-     * Replacement-only, read by [com.wingedsheep.sdk.scripting.PreventExtraTurns]; [player] is
+     * Replacement-only, read by [com.wingedsheep.sdk.scripting.SkipExtraTurns]; [player] is
      * relative to the replacement's controller ([Player.Each] for Ugin's Nexus,
      * [Player.EachOpponent] for Trouble in Pairs).
      */

@@ -1630,7 +1630,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.RedirectZoneChangeWith,
             is com.wingedsheep.sdk.scripting.ReplaceDestructionWith,
             is com.wingedsheep.sdk.scripting.RegenerateInsteadOfDestruction,
-            is com.wingedsheep.sdk.scripting.PreventExtraTurns,
+            is com.wingedsheep.sdk.scripting.SkipExtraTurns,
             // Keyword-action modification, consulted from the battlefield when the action happens:
             // explore (Twists and Turns), connive (Leader, Super-Genius), proliferate (Tekuthal),
             // learn (Retriever Phoenix — from the graveyard, swept by KeywordActionReplacements).

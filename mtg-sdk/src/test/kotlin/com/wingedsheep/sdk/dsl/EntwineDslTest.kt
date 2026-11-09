@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -34,6 +35,27 @@ class EntwineDslTest : FunSpec({
         cost.multi shouldBe false
         cost.isKicker shouldBe false
         cost.description shouldBe "Entwine {3}"
+    }
+
+    test("a non-mana entwine cost rides the same slot and prints as Entwine—cost") {
+        val sacrificeLands = card("Test Sacrifice Entwine") {
+            manaCost = "{5}{B}"
+            typeLine = "Instant"
+            entwine(Costs.additional.SacrificePermanent(GameObjectFilter.Land, count = 3))
+            spell {
+                entwineModal {
+                    mode("Gain 1", Effects.GainLife(1))
+                    mode("Gain 2", Effects.GainLife(2))
+                }
+            }
+        }
+        val cost = sacrificeLands.keywordAbilities.single().shouldBeInstanceOf<KeywordAbility.OptionalAdditionalCost>()
+
+        cost.manaCost shouldBe null
+        cost.additionalCost shouldBe Costs.additional.SacrificePermanent(GameObjectFilter.Land, count = 3)
+        cost.declaredSlot shouldBe ChoiceSlot.ENTWINED
+        cost.keyword shouldBe Keyword.ENTWINE
+        cost.description shouldBe "Entwine—${cost.additionalCost!!.description}"
     }
 
     test("choose two, or all four when entwined — both bounds ride the same conditional") {

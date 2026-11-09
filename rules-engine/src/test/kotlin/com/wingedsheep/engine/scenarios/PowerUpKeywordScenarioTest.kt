@@ -48,7 +48,7 @@ import io.kotest.matchers.string.shouldStartWith
  * it does not bind the rest of the turn that created it, it binds *both* players during the extra
  * turn (enumerator and handler alike), it reaches a power-up activated from outside the battlefield
  * (the command zone, whose enumerator is separate), it lifts when that turn ends, and it never
- * applies at all when a `PreventExtraTurns` source means there is no extra turn to bind.
+ * applies at all when a `SkipExtraTurns` source means there is no extra turn to bind.
  */
 class PowerUpKeywordScenarioTest : ScenarioTestBase() {
 

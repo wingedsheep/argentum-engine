@@ -8603,6 +8603,18 @@
     "manaCost": "{1}{B}",
     "typeLine": "Sorcery",
     "oracleText": "Choose one —\n• Target player creates a 2/2 black Zombie creature token.\n• Return target creature card from your graveyard to your hand.\nEntwine {2} (Choose both if you pay the entwine cost.)",
+    "keywords": [
+        "ENTWINE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}",
+            "displayPrefix": "Entwine",
+            "keyword": "ENTWINE",
+            "declaredSlot": "ENTWINED"
+        }
+    ],
     "script": {
         "spellEffect": {
             "type": "Modal",
@@ -8656,7 +8668,36 @@
             ],
             "chooseCount": 2,
             "minChooseCount": 1,
-            "additionalManaCostPerExtraMode": "{2}"
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "ENTWINED"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            },
+            "dynamicMinChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "ENTWINED"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
         }
     },
     "metadata": {

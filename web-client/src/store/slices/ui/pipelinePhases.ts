@@ -96,6 +96,32 @@ export interface ComputePhasesOptions {
   autoTapEnabled?: boolean
 }
 
+/** Additional costs the player pays by picking objects (sacrifice, discard, tap, exile …). */
+const SELECTION_COST_TYPES: readonly string[] = [
+  'SacrificePermanent',
+  'SacrificeSelf',
+  'SacrificeForCostReduction',
+  'SacrificeVariable',
+  'TapPermanents',
+  'TapForCostReduction',
+  'BouncePermanent',
+  'DiscardCard',
+  'ExileFromGraveyard',
+  'ExileFromHand',
+  'CollectEvidence',
+  'ExileForTotal',
+  'ExileFromZone',
+  'RevealCard',
+  'Behold',
+  'ChooseEntity',
+  'Blight',
+  'PutCounters',
+  'Conspire',
+  'Casualty',
+  'Craft',
+  'TapForTotalPower',
+]
+
 export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhasesOptions): PipelinePhase[] {
   const phases: PipelinePhase[] = []
 
@@ -123,9 +149,15 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     actionInfo.modalEnumeration.chooseCount > 1
   ) {
     const modalPhases: PipelinePhase[] = [{ type: 'modalModes' }]
+    //    Entwine paid by sacrifice (Betrayal of Flesh's "Entwine—Sacrifice three lands") and any
+    //    other selection cost on the cast variant take the same exception: the engine rejects the
+    //    action unless it carries the paid permanents.
     const modalCostType = actionInfo.additionalCostInfo?.costType
-    if (modalCostType === 'Blight' || modalCostType === 'TapForTotalPower') {
+    if (modalCostType && SELECTION_COST_TYPES.includes(modalCostType)) {
       modalPhases.push({ type: 'costPayment' })
+      actionInfo.additionalCostInfo?.alsoRequired?.forEach((_, i) => {
+        modalPhases.push({ type: 'costPayment', costIndex: i + 1 })
+      })
     }
     //    An {X} in the cost still has to be announced, and the early return above would drop the
     //    prompt entirely — Profane Command ({X}{B}{B}, "choose two") then cast at X = 0 with every
@@ -274,32 +306,8 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
   // 5. Cost payment (sacrifice/discard/tap/bounce/exile) — emerge already pushed its own above.
   if (actionInfo.additionalCostInfo?.costType && !isEmergeCast && !costAfterTargeting) {
     const costType = actionInfo.additionalCostInfo.costType
-    const costTypesNeedingSelection = [
-      'SacrificePermanent',
-      'SacrificeSelf',
-      'SacrificeForCostReduction',
-      'SacrificeVariable',
-      'TapPermanents',
-      'TapForCostReduction',
-      'BouncePermanent',
-      'DiscardCard',
-      'ExileFromGraveyard',
-      'ExileFromHand',
-      'CollectEvidence',
-      'ExileForTotal',
-      'ExileFromZone',
-      'RevealCard',
-      'Behold',
-      'ChooseEntity',
-      'Blight',
-      'PutCounters',
-      'Conspire',
-      'Casualty',
-      'Craft',
-      'TapForTotalPower',
-    ]
 
-    if (costTypesNeedingSelection.includes(costType)) {
+    if (SELECTION_COST_TYPES.includes(costType)) {
       // SacrificeSelf with exact count is auto-selected (no UI needed)
       const isAutoSelectable =
         costType === 'SacrificeSelf' &&

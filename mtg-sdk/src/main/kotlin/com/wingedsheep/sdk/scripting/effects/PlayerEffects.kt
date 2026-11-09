@@ -374,7 +374,7 @@ data class AddAdditionalEndStepsEffect(
  *
  * The riders live on this effect rather than as separate composable effects because "that turn" is
  * the extra turn *this* effect creates, and the engine applies it when that turn begins: if the
- * extra turn is skipped as it would begin (a `PreventExtraTurns` source such as Ugin's Nexus or
+ * extra turn is skipped as it would begin (a `SkipExtraTurns` source such as Ugin's Nexus or
  * Trouble in Pairs is out), the rider must not apply either. A sibling effect in a `Composite`
  * couldn't know whether the turn it names ever began. Keeping the rider on the pending turn is the
  * reason.
@@ -387,16 +387,24 @@ data class AddAdditionalEndStepsEffect(
  *   During that turn, power-up abilities can't be activated." The prohibition is global (it is not
  *   scoped to the turn's controller) and outlasts the source leaving the battlefield, so the engine
  *   records it against the turn rather than against a permanent or a player.
+ * @param damageCantBePrevented If true, damage can't be prevented during the extra turn —
+ *   Alchemist's Gambit's "Take an extra turn after this one. During that turn, damage can't be
+ *   prevented." Like the lockout it is global and bound to the turn, so it is set as that turn
+ *   begins and never reaches a later turn if this one is skipped.
  */
 @SerialName("TakeExtraTurn")
 @Serializable
 data class TakeExtraTurnEffect(
     val loseAtEndStep: Boolean = false,
     val target: EffectTarget = EffectTarget.Controller,
-    val powerUpAbilitiesCantBeActivated: Boolean = false
+    val powerUpAbilitiesCantBeActivated: Boolean = false,
+    val damageCantBePrevented: Boolean = false,
 ) : Effect {
     override val description: String = buildString {
         append("Take an extra turn after this one")
+        if (damageCantBePrevented) {
+            append(". During that turn, damage can't be prevented")
+        }
         if (loseAtEndStep) {
             append(". At the beginning of that turn's end step, you lose the game")
         }

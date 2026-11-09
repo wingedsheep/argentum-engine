@@ -860,7 +860,7 @@ Also (1–2 cards each): `CardTypeEnteredUnderControlThisTurn`, `CountersRemoved
 | `DoubleCounterPlacement` | 4 | Innkeeper's Talent; Loading Zone; The Earth Crystal; Doubling Season |
 | `RedirectZoneChangeWithEffect` | 4 | Darigaaz Reincarnated; The Darkness Crystal; Head of the Hunt; Ugin's Nexus |
 
-Also (1–2 cards each): `CapCounterPlacementThisTurn`, `CapDamage`, `EntersUntapped`, `EntersWithExileCounters`, `ExileCounteredSpellInstead`, `HalveDamage`, `HealOtherDamage`, `LifeLossFloor`, `ModifyDrawAmount`, `ModifyKeywordAction`, `ModifyLifeLoss`, `ModifyMillAmount`, `PreventDamageByRemovingCounter`, `PreventDraw`, `PreventExtraTurns`, `RepeatKeywordAction`, `ReplaceDamageWithMill`, `ReplaceLifePaymentWithLibraryExile`, `ReplaceTokenCreationWithAttachedCopy`, `ReplaceTokenCreationWithToken`, `SetMinimumDamage`
+Also (1–2 cards each): `CapCounterPlacementThisTurn`, `CapDamage`, `EntersUntapped`, `EntersWithExileCounters`, `ExileCounteredSpellInstead`, `HalveDamage`, `HealOtherDamage`, `LifeLossFloor`, `ModifyDrawAmount`, `ModifyKeywordAction`, `ModifyLifeLoss`, `ModifyMillAmount`, `PreventDamageByRemovingCounter`, `PreventDraw`, `SkipExtraTurns`, `RepeatKeywordAction`, `ReplaceDamageWithMill`, `ReplaceLifePaymentWithLibraryExile`, `ReplaceTokenCreationWithAttachedCopy`, `ReplaceTokenCreationWithToken`, `SetMinimumDamage`
 
 ### `AbilityCost` — 20 gap subtypes
 

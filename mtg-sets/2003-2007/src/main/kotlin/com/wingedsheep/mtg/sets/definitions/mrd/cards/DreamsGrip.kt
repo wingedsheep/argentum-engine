@@ -2,6 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
@@ -23,12 +25,10 @@ val DreamsGrip = card("Dream's Grip") {
         "• Untap target permanent.\n" +
         "Entwine {1} (Choose both if you pay the entwine cost.)"
 
+    entwine("{1}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{1}"
-        ) {
+        entwineModal {
             mode("Tap target permanent") {
                 val permanent = target(TargetFilter.Permanent)
                 effect = Effects.Tap(permanent)

@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.sdk.scripting.OptionalSkipTurnWith
-import com.wingedsheep.sdk.scripting.PreventExtraTurns
+import com.wingedsheep.sdk.scripting.SkipExtraTurns
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.engine.state.components.player.PendingExtraTurn
@@ -1234,12 +1234,12 @@ class TurnManager(
     private fun extraTurnSkip(state: GameState, team: List<EntityId>): TurnStartFollowUp? {
         val takers = team.filter { state.getEntity(it)?.get<ExtraTurnsComponent>()?.pending?.isNotEmpty() == true }
         if (takers.isEmpty()) return null
-        for (active in ActiveReplacements.all(state) { it is PreventExtraTurns }) {
+        for (active in ActiveReplacements.all(state) { it is SkipExtraTurns }) {
             if (!active.granted && (state.projectedState.hasLostAllAbilities(active.sourceId) ||
                     state.projectedState.isFaceDown(active.sourceId))) continue
-            val printed = active.effect as PreventExtraTurns
+            val printed = active.effect as SkipExtraTurns
             val text = if (active.granted) null else TextChanges.of(state, active.sourceId)
-            val replacement = text?.let { printed.applyTextReplacement(it) as PreventExtraTurns } ?: printed
+            val replacement = text?.let { printed.applyTextReplacement(it) as SkipExtraTurns } ?: printed
             val event = replacement.appliesTo as? EventPattern.ExtraTurnEvent ?: continue
             val context = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId,
                 objectReferences = ObjectReferenceEnvironment(
@@ -1329,6 +1329,8 @@ class TurnManager(
             if (rider.powerUpAbilitiesCantBeActivated) {
                 current = current.copy(powerUpRestrictedTurns = current.powerUpRestrictedTurns + current.turnNumber)
             }
+            // Set after the turn boundary has cleared last turn's flag, so it holds for this turn only.
+            if (rider.damageCantBePrevented) current = current.copy(damageCantBePreventedThisTurn = true)
         }
         return current
     }

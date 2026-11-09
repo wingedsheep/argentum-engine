@@ -3593,11 +3593,12 @@ data class ExileCounteredSpellInstead(
  * (CR 614.10). If the source has left the battlefield by then, the extra turn happens. A skipped
  * extra turn takes its riders with it (Last Chance's "lose the game" and Kang's power-up lockout
  * are bound to the turn, not to the effect that made it). Consulted by `TurnManager` when the turn
- * would begin; the name predates that and is kept for the one primitive.
+ * would begin. The wire name is the type's former name (`PreventExtraTurns`), from when it blocked
+ * extra turns at creation, so persisted games and card JSON keep decoding.
  */
 @SerialName("PreventExtraTurns")
 @Serializable
-data class PreventExtraTurns(
+data class SkipExtraTurns(
     override val appliesTo: EventPattern = EventPattern.ExtraTurnEvent()
 ) : ReplacementEffect {
     override val description: String =

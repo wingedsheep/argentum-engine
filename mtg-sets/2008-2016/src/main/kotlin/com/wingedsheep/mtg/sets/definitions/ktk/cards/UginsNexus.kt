@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.PreventExtraTurns
+import com.wingedsheep.sdk.scripting.SkipExtraTurns
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 
 /**
@@ -26,7 +26,7 @@ val UginsNexus = card("Ugin's Nexus") {
             "If Ugin's Nexus would be put into a graveyard from the battlefield, instead exile it and take an extra turn after this one."
 
     // Ability 1: Prevent extra turns
-    replacementEffect(PreventExtraTurns())
+    replacementEffect(SkipExtraTurns())
 
     // Ability 2: Self-exile replacement + extra turn
     replacementEffect(

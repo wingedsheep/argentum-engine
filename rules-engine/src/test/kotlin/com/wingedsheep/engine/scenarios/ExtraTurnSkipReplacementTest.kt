@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.OptionalSkipTurnWith
-import com.wingedsheep.sdk.scripting.PreventExtraTurns
+import com.wingedsheep.sdk.scripting.SkipExtraTurns
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
@@ -27,7 +27,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * `PreventExtraTurns` — "If a player would begin an extra turn, that player skips that turn
+ * `SkipExtraTurns` — "If a player would begin an extra turn, that player skips that turn
  * instead" (Ugin's Nexus) and its opponent-scoped form (Trouble in Pairs).
  *
  * The rulings of both cards are the spec: the extra turn is created normally and skipped only when
@@ -39,11 +39,11 @@ class ExtraTurnSkipReplacementTest : FunSpec({
 
     val eachPlayer = card("Skip Extra Turns (Each)") {
         typeLine = "Artifact"
-        replacementEffect(PreventExtraTurns())
+        replacementEffect(SkipExtraTurns())
     }
     val opponentsOnly = card("Skip Extra Turns (Opponents)") {
         typeLine = "Artifact"
-        replacementEffect(PreventExtraTurns(EventPattern.ExtraTurnEvent(Player.EachOpponent)))
+        replacementEffect(SkipExtraTurns(EventPattern.ExtraTurnEvent(Player.EachOpponent)))
     }
     val vault = card("Optional Turn Skipper") {
         typeLine = "Artifact"

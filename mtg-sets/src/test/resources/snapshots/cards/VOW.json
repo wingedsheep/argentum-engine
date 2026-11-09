@@ -117,39 +117,13 @@
     ],
     "script": {
         "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "TakeExtraTurn",
-                    "loseAtEndStep": true
-                },
-                {
-                    "type": "CreateDelayedTrigger",
-                    "step": "UPKEEP",
-                    "effect": "DamageCantBePreventedThisTurn",
-                    "timing": "NextTurn",
-                    "fireOnPlayer": {
-                        "type": "PlayerRef",
-                        "player": "You"
-                    }
-                }
-            ]
+            "type": "TakeExtraTurn",
+            "loseAtEndStep": true,
+            "damageCantBePrevented": true
         },
         "cleaveSpellEffect": {
-            "type": "Composite",
-            "effects": [
-                "TakeExtraTurn",
-                {
-                    "type": "CreateDelayedTrigger",
-                    "step": "UPKEEP",
-                    "effect": "DamageCantBePreventedThisTurn",
-                    "timing": "NextTurn",
-                    "fireOnPlayer": {
-                        "type": "PlayerRef",
-                        "player": "You"
-                    }
-                }
-            ]
+            "type": "TakeExtraTurn",
+            "damageCantBePrevented": true
         },
         "selfExileOnResolve": true
     },

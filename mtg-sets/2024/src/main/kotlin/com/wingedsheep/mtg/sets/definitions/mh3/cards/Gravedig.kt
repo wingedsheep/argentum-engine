@@ -4,6 +4,8 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
@@ -16,10 +18,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * • Return target creature card from your graveyard to your hand.
  * Entwine {2} (Choose both if you pay the entwine cost.)
  *
- * Entwine is the two-mode `modal(chooseCount = 2, minChooseCount = 1,
- * additionalManaCostPerExtraMode = …)` shape shared with Mirrodin's entwine cards: choosing the
- * second mode costs exactly the entwine cost. Each mode declares its own target, so a target is
- * only chosen for the modes picked.
+ * Each mode declares its own target, so a target is only chosen for the modes picked: the plain
+ * cast targets for its one mode, the entwined cast for both.
  */
 val Gravedig = card("Gravedig") {
     manaCost = "{1}{B}"
@@ -30,12 +30,10 @@ val Gravedig = card("Gravedig") {
         "• Return target creature card from your graveyard to your hand.\n" +
         "Entwine {2} (Choose both if you pay the entwine cost.)"
 
+    entwine("{2}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{2}",
-        ) {
+        entwineModal {
             mode("Target player creates a 2/2 black Zombie creature token") {
                 val player = target(Targets.Player)
                 effect = Effects.CreateToken(

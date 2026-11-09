@@ -129,4 +129,25 @@ class PreventDamageRecipientReactionTest : FunSpec({
         (result.error != null) shouldBe true
         result.state.floatingEffects.size shouldBe driver.state.floatingEffects.size
     }
+
+    test("a reacting recipient shield rejects the shapes it would silently ignore") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
+        val player = driver.activePlayer!!
+        val executor = PreventDamageExecutor(driver.services.predicateEvaluator.amounts)
+        val reaction = Effects.GainLife(DynamicAmounts.preventedDamage())
+
+        listOf(
+            // "Instead it still deals that damage" (Eye for an Eye's shape) on a "to you" shield.
+            PreventDamageEffect(recipientGroupIncludesController = true, preventDamage = false, onPrevented = reaction),
+            // A capped amount, which the group shield would widen to "prevent all".
+            PreventDamageEffect(recipientGroupIncludesController = true, amount = DynamicAmounts.fixed(2), onPrevented = reaction),
+            PreventDamageEffect(recipientGroupIncludesController = true, nextInstanceOnly = true, onPrevented = reaction),
+        ).forEach { shape ->
+            val result = executor.execute(driver.state, shape, EffectContext(sourceId = null, controllerId = player))
+            (result.error != null) shouldBe true
+            result.state.floatingEffects.size shouldBe driver.state.floatingEffects.size
+        }
+    }
 })
