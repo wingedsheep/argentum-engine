@@ -438,6 +438,11 @@ export interface SelectCardsDecision extends PendingDecisionBase {
    */
   readonly onePerPower?: boolean
   /**
+   * When true, at most one card of each mana value may be selected (Seasons Past). The server
+   * enforces this; the UI disables cards sharing an already-claimed mana value.
+   */
+  readonly onePerManaValue?: boolean
+  /**
    * The colour budget for [onePerColor] when restricted to the chooser's permanent colours
    * (e.g., Sanar's Vivid trigger). One pip per colour name (e.g., ["WHITE","BLUE"]). When
    * undefined or empty, the UI shows the generic five-colour list.

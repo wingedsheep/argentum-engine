@@ -747,6 +747,23 @@ sealed interface SelectionRestriction {
     }
 
     /**
+     * At most one card of each mana value may be selected — "any number of cards with
+     * different mana values" (Seasons Past). The non-targeting sibling of
+     * `TargetObject.differentNumericProperty = MANA_VALUE` (Long Rest), and it reads a
+     * card's mana value the same way (a face-down card is 0; {X} counts 0 off the stack,
+     * CR 202.3e), so every card has one and can be kept unless its value is claimed.
+     *
+     * The executor enforces this server-side: if the player's response names multiple
+     * cards sharing a mana value, only the first such card (in response order) is kept;
+     * the rest fall through into the remainder collection.
+     */
+    @SerialName("OnePerManaValue")
+    @Serializable
+    data object OnePerManaValue : SelectionRestriction {
+        override val description: String = "at most one card of each mana value"
+    }
+
+    /**
      * The sum of selected cards' mana values must not exceed the cap. {X} contributes 0
      * (per CR 202.3e for cards not on the stack). Used for "with total mana value N or
      * less" wording like Scout for Survivors.

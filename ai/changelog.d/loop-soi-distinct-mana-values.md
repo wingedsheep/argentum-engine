@@ -1,0 +1,1 @@
+- #TBD When a pick must keep mana values, printed powers or names distinct (Seasons Past, Rip, Spawn Hunter), the AI skips a second card sharing a value it already took and spends the slot on the next-best distinct card.

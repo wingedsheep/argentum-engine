@@ -15,6 +15,8 @@ import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
+import com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -726,19 +728,19 @@ class DecisionResponder(
             }
             isChooseToKeep -> {
                 // Keep best cards
-                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                val ranked = distinctPicks(state, decision, rankCardsContextual(state, options, playerId, wantToKeep = true))
                 CardsSelectedResponse(decision.id, ranked.take(max.coerceAtMost(options.size)))
             }
             max > 0 && max < options.size -> {
                 // Generic "select up to N" — pick best
-                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                val ranked = distinctPicks(state, decision, rankCardsContextual(state, options, playerId, wantToKeep = true))
                 CardsSelectedResponse(decision.id, ranked.take(max))
             }
             selectionCountsByValue && (isSearch || decision.selectedLabel == null) && max > 0 -> {
                 // A library search is a gain (a Landscape's [Plains]), as is any other unlabelled
                 // "choose up to N". The branch above already takes N when the options outnumber
                 // it; taking `min` (zero) here declined every search with ≤ N candidates.
-                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                val ranked = distinctPicks(state, decision, rankCardsContextual(state, options, playerId, wantToKeep = true))
                 CardsSelectedResponse(decision.id, ranked.take(max.coerceAtMost(options.size)))
             }
             else -> {
@@ -854,9 +856,9 @@ class DecisionResponder(
             // Our discard / exile: the cards we can best spare, as few as the decision allows.
             ours && !fate.gains -> minimumLegalSelection(decision, worst)
             // Cards coming to us: the best of them, as many as we may take.
-            ours -> best.take(decision.maxSelections)
+            ours -> distinctPicks(state, decision, best).take(decision.maxSelections)
             // An opponent loses what we pick: what they would most want to keep, as many as allowed.
-            !fate.gains -> best.take(decision.maxSelections)
+            !fate.gains -> distinctPicks(state, decision, best).take(decision.maxSelections)
             // An opponent gets what we pick: the least useful to them, as few as allowed.
             else -> worst.take(decision.minSelections.coerceAtMost(decision.maxSelections))
         }
@@ -921,6 +923,29 @@ class DecisionResponder(
      */
     private fun manaValueOf(state: GameState, cardId: EntityId): Int =
         state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
+
+    /**
+     * [ranked] with every card after the first of its mana value, printed power or name dropped,
+     * per the decision's `onePerManaValue` / `onePerPower` / `onePerCardName` flags. The server
+     * keeps only the first card of each value a response names, so a "keep the best N" answer
+     * that named two cards sharing one (Seasons Past returning two mana-value-2 cards) gave up a
+     * pick it could have spent on the next-best distinct card.
+     */
+    private fun distinctPicks(state: GameState, decision: SelectCardsDecision, ranked: List<EntityId>): List<EntityId> {
+        if (!decision.onePerManaValue && !decision.onePerPower && !decision.onePerCardName) return ranked
+        val claimed = mutableSetOf<Any>()
+        return ranked.filter { id ->
+            val card = state.getEntity(id)?.get<CardComponent>()
+            val keys = buildList {
+                if (decision.onePerManaValue) add("mv" to NumericTargetEquality.value(state, id, CardNumericProperty.MANA_VALUE))
+                if (decision.onePerPower) add("power" to card?.baseStats?.basePower)
+                if (decision.onePerCardName) add("name" to card?.name)
+            }
+            // A card with no fixed power can't be kept under onePerPower; the server drops it too.
+            if (decision.onePerPower && card?.baseStats?.basePower == null) return@filter false
+            if (keys.any { it in claimed }) false else { claimed.addAll(keys); true }
+        }
+    }
 
     /** Prefer the smallest legal selection, honoring reductions such as “discard two unless one is a creature.” */
     private fun minimumLegalSelection(

@@ -1269,6 +1269,7 @@ SelectionRestriction.OnePerBasicLandType — SelectionRestriction
 SelectionRestriction.OnePerCardName — SelectionRestriction
 SelectionRestriction.OnePerCardType — SelectionRestriction
 SelectionRestriction.OnePerColor — SelectionRestriction
+SelectionRestriction.OnePerManaValue — SelectionRestriction
 SelectionRestriction.OnePerPower — SelectionRestriction
 SelectionRestriction.ReducedMinimumIfMatches — SelectionRestriction
 SelectionRestriction.TotalManaValueAtMost — SelectionRestriction

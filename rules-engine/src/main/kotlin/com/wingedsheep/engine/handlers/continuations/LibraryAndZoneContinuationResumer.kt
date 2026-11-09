@@ -476,6 +476,11 @@ class LibraryAndZoneContinuationResumer(
             val claimedNames = mutableSetOf<String>()
             val claimedLandTypes = mutableSetOf<com.wingedsheep.sdk.core.Subtype>()
             val claimedPowers = mutableSetOf<Int>()
+            val claimedManaValues = mutableSetOf<Int>()
+            fun manaValueOf(cardId: EntityId): Int? =
+                com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.value(
+                    state, cardId, com.wingedsheep.sdk.scripting.values.CardNumericProperty.MANA_VALUE
+                )
             var runningManaValue = 0
             var runningPower = 0
             // A card's projected power (after continuous effects), or 0 if undefined. Used by
@@ -533,6 +538,10 @@ class LibraryAndZoneContinuationResumer(
                             val power = fixedPowerOf(cardId)
                             power != null && power !in claimedPowers
                         }
+                        is SelectionRestriction.OnePerManaValue -> {
+                            val mv = manaValueOf(cardId)
+                            mv != null && mv !in claimedManaValues
+                        }
                         is SelectionRestriction.ReducedMinimumIfMatches -> true
                         is SelectionRestriction.MaxAffordablePayment ->
                             // A pure count cap, already folded into the decision's maxSelections
@@ -572,6 +581,9 @@ class LibraryAndZoneContinuationResumer(
                             }
                             is SelectionRestriction.OnePerPower -> {
                                 fixedPowerOf(cardId)?.let { claimedPowers += it }
+                            }
+                            is SelectionRestriction.OnePerManaValue -> {
+                                manaValueOf(cardId)?.let { claimedManaValues += it }
                             }
                             is SelectionRestriction.ReducedMinimumIfMatches -> {
                                 // Response validation enforces the conditional minimum.
