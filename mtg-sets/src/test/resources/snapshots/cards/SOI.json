@@ -8066,11 +8066,8 @@
                                                 "collectionName": "gathered0"
                                             },
                                             "target": {
-                                                "type": "PlayerRef",
-                                                "player": {
-                                                    "type": "BoundVariable",
-                                                    "name": "prodded"
-                                                }
+                                                "type": "PipelineTarget",
+                                                "collectionName": "prodded"
                                             },
                                             "damageSource": "Self"
                                         }
@@ -8091,7 +8088,7 @@
                                 },
                                 "eligiblePlayers": "EachOpponent",
                                 "prompt": "Put the revealed card into its owner's graveyard? If you do, Sin Prodder deals you damage equal to its mana value. If no one does, it goes to their hand.",
-                                "payerAs": "prodded"
+                                "storePayerAs": "prodded"
                             }
                         }
                     ]

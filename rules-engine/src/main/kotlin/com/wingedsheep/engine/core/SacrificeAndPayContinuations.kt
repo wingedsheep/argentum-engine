@@ -264,8 +264,8 @@ data class AnyPlayerMayPayContinuation(
     val consequenceIfNonePaid: Effect? = null,
     /** The free choice's yes/no question (null [cost]); unused for a payment. */
     val prompt: String? = null,
-    /** Binding name the consequence reads the paying player under (`Player.BoundVariable`). */
-    val payerAs: String? = null,
+    /** Pipeline collection the consequence reads the paying player from (`PipelineTarget`). */
+    val storePayerAs: String? = null,
     val requiredCount: Int,
     val filter: GameObjectFilter,
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),

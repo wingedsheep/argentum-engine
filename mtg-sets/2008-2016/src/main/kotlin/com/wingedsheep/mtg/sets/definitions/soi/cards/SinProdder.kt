@@ -49,13 +49,13 @@ val SinProdder = card("Sin Prodder") {
                     toGraveyard(revealed)
                     run(Effects.DealDamage(
                         amount = DynamicAmounts.manaValueOf(revealed),
-                        target = EffectTarget.PlayerRef(Player.BoundVariable("prodded")),
+                        target = EffectTarget.PipelineTarget("prodded"),
                         damageSource = EffectTarget.Self,
                     ))
                 },
                 otherwise = Effects.Pipeline { toHand(revealed) },
                 eligiblePlayers = Player.EachOpponent,
-                chooserAs = "prodded",
+                storePayerAs = "prodded",
             )))
         }
         description = "At the beginning of your upkeep, reveal the top card of your library. Any opponent " +

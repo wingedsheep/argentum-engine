@@ -292,7 +292,7 @@ class AnyPlayerMayPayExecutor(
         consequence = effect.consequence,
         consequenceIfNonePaid = effect.consequenceIfNonePaid,
         prompt = effect.prompt,
-        payerAs = effect.payerAs,
+        storePayerAs = effect.storePayerAs,
         requiredCount = requiredCount,
         filter = filter,
         storedCollections = context.pipeline.storedCollections,

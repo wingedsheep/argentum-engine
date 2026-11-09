@@ -1566,7 +1566,7 @@ serialized shape; the facade for each is:
 | `AddManaOfChoiceEffect` | `Effects.AddManaOfChoice` |
 | `AddSubtypeEffect` | `Effects.AddSubtype` |
 | `AllowLoyaltyActivationsThisTurnEffect` | `Effects.AllowLoyaltyActivationsThisTurn` |
-| `AnyPlayerMayPayEffect` | `Effects.AnyPlayerMayPay(cost, consequence, eligiblePlayers)` / `UnlessAnyPlayerPays(cost, effect, eligiblePlayers)` / `AnyPlayerMayChoose(prompt, consequence, otherwise, eligiblePlayers, chooserAs)` |
+| `AnyPlayerMayPayEffect` | `Effects.AnyPlayerMayPay(cost, consequence, eligiblePlayers)` / `UnlessAnyPlayerPays(cost, effect, eligiblePlayers)` / `AnyPlayerMayChoose(prompt, consequence, otherwise, eligiblePlayers, storePayerAs)` |
 | `AttachEquipmentEffect` | `Effects.AttachEquipment` |
 | `AttachToChosenHostEffect` | `Effects.AttachToChosenHost` |
 | `BecomeArtifactEffect` | `Effects.BecomeArtifact` |
@@ -4952,17 +4952,18 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   *which* players are offered the choice, relative to the source's controller: `Player.Each`
   (default) asks everyone; `Player.EachOpponent` asks only the controller's opponents — "any
   opponent may sacrifice a creature… if a player does, tap this and put a +1/+1 counter on it"
-  (Desecration Demon). APNAP order is preserved within the scoped subset. `payerAs` binds the
-  player who paid for `consequence` as `Player.BoundVariable(payerAs)` — "if a player does, *that
-  player* …".
-- `Effects.AnyPlayerMayChoose(prompt, consequence, otherwise?, eligiblePlayers, chooserAs?)` — the
+  (Desecration Demon). APNAP order is preserved within the scoped subset. `storePayerAs` stores
+  the player who paid in a pipeline collection `consequence` reads as
+  `EffectTarget.PipelineTarget(storePayerAs)` — "if a player does, *that player* …" (also on the
+  `AnyPlayerMayPay` facade).
+- `Effects.AnyPlayerMayChoose(prompt, consequence, otherwise?, eligiblePlayers, storePayerAs?)` — the
   free-choice form of the same effect (`cost = null`): nothing is paid, each eligible player in turn
   order answers `prompt` (a yes/no written to the player asked), the first yes runs `consequence`
-  and nobody after them is asked, and if every player declines `otherwise` runs. `chooserAs` names
-  the player who said yes for the consequence (`Player.BoundVariable`). Sin Prodder: "any opponent
+  and nobody after them is asked, and if every player declines `otherwise` runs. `storePayerAs` names
+  the player who said yes for the consequence (`EffectTarget.PipelineTarget`). Sin Prodder: "any opponent
   may have you put that card into your graveyard. If a player does, this creature deals damage to
   that player equal to that card's mana value. Otherwise, put that card into your hand" —
-  `AnyPlayerMayChoose(…, consequence = Pipeline { toGraveyard(revealed); run(DealDamage(manaValueOf(revealed), PlayerRef(BoundVariable("prodded")), damageSource = Self)) }, otherwise = Pipeline { toHand(revealed) }, eligiblePlayers = EachOpponent, chooserAs = "prodded")`.
+  `AnyPlayerMayChoose(…, consequence = Pipeline { toGraveyard(revealed); run(DealDamage(manaValueOf(revealed), PipelineTarget("prodded"), damageSource = Self)) }, otherwise = Pipeline { toHand(revealed) }, eligiblePlayers = EachOpponent, storePayerAs = "prodded")`.
   Distinct from `ForEachPlayer(EachOpponent, May(…))` (Vexing Devil), where every opponent who
   accepts gets the effect.
 - `RepeatWhileEffect(body, repeatCondition, collectCollections = emptyMap())` (facade `Effects.RepeatWhile(body, repeatCondition)`; with `collectCollections`, the `repeatCollecting { }` pipeline verb) — do-while loop: run `body` once, then repeat while `repeatCondition` holds. `repeatCondition` is `RepeatCondition.PlayerChooses(decider, prompt)` (a yes/no each iteration) or `RepeatCondition.WhileCondition(condition)` (a game-state `Condition`). A `WhileCondition` is evaluated against the **body's own pipeline outputs from that iteration** (the collections/values it just stored), then the next iteration's body runs from the pristine pre-loop context — so a loop can branch on what it just produced without stale state leaking forward. This holds **whether the body resolves synchronously or pauses for a decision mid-loop**: a body that stops for a player choice (e.g. a `SelectFromCollection` "you may" prompt) has its outputs captured when it resumes and still fed to the condition. Models "do X. Repeat this process [if …]" — e.g. **The Tale of Tamiyo** I–III (synchronous body): `RepeatWhile(body = Composite(Patterns.Library.mill(2), Effects.If(CollectionSharesCardType("milled"), DrawCards(1))), repeatCondition = WhileCondition(CollectionSharesCardType("milled")))` mills two, and while the two milled cards share a card type both draws and repeats. **Cultivator Colossus** (pausing body): `RepeatWhile(body = Composite(Patterns.Hand.putFromHand(Land, count = 1, entersTapped = true), Effects.If(CollectionContainsMatch("putting", Land), DrawCards(1))), repeatCondition = WhileCondition(CollectionContainsMatch("putting", Land)))` — each pass prompts to put up to one land (choosing zero declines), draws only if one was put, and repeats while a land was put this pass. Because every pass starts pristine, nothing a pass stores reaches the effects after the loop — except through `collectCollections` (body collection → aggregate, the loop's twin of `ForEachEffect.collectCollections`): each pass's output is appended to the aggregate, and once the loop stops every aggregate is published to the following effects (empty if no pass wrote to it), whether the last pass paused or not. The repeat condition still reads only the pass just run, never the aggregate. **Struggle for Sanity** ("repeat this process until all cards in that hand have been exiled. That player returns the cards they exiled this way…") collects both players' picks across passes. `PlayerChooses(…, onlyIf = condition)` makes the yes/no a **gated offer**: it is asked only after a pass where `onlyIf` holds — read like a `WhileCondition`, against that pass's outputs (numbers included, paused or not) — and a pass where it fails ends the loop without a prompt. **Delina, Wild Mage** ("roll a d20. 1—14 | create a token … 15—20 | Create one of those tokens. You may roll again.") gates the offer on the pass's roll; the `repeatProcess { }` pipeline verb lets the condition name the body's slots.

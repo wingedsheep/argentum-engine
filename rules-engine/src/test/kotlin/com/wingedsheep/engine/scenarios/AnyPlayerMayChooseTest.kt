@@ -18,8 +18,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * The free-choice form of `AnyPlayerMayPayEffect` (null cost, `Effects.AnyPlayerMayChoose`) and its
- * `payerAs` binding: each eligible player in turn order answers a yes/no, the first yes runs the
- * consequence with that player bound as `Player.BoundVariable`, nobody after them is asked, and if
+ * `storePayerAs` binding: each eligible player in turn order answers a yes/no, the first yes runs the
+ * consequence with that player stored for `EffectTarget.PipelineTarget`, nobody after them is asked, and if
  * everyone declines the otherwise branch runs (Sin Prodder's "any opponent may have you … If a
  * player does, this deals damage to that player … Otherwise, …").
  */
@@ -35,12 +35,12 @@ class AnyPlayerMayChooseTest : FunSpec({
                 prompt = "Take 3 damage?",
                 consequence = Effects.DealDamage(
                     amount = 3,
-                    target = EffectTarget.PlayerRef(Player.BoundVariable("taker")),
+                    target = EffectTarget.PipelineTarget("taker"),
                     damageSource = EffectTarget.Self,
                 ),
                 otherwise = Effects.GainLife(2),
                 eligiblePlayers = Player.EachOpponent,
-                chooserAs = "taker",
+                storePayerAs = "taker",
             )
         }
     }
@@ -51,10 +51,10 @@ class AnyPlayerMayChooseTest : FunSpec({
         typeLine = "Artifact"
         triggeredAbility {
             trigger = Triggers.self.enters()
-            effect = com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect(
+            effect = Effects.AnyPlayerMayPay(
                 cost = Costs.pay.PayLife(2),
-                consequence = Effects.DrawCards(1, EffectTarget.PlayerRef(Player.BoundVariable("payer"))),
-                payerAs = "payer",
+                consequence = Effects.DrawCards(1, EffectTarget.PipelineTarget("payer")),
+                storePayerAs = "payer",
             )
         }
     }
@@ -132,7 +132,7 @@ class AnyPlayerMayChooseTest : FunSpec({
         d.getLifeTotal(me) shouldBe 20
     }
 
-    test("payerAs binds the paying player on a paid cost too") {
+    test("storePayerAs records the paying player on a paid cost too") {
         val (d, order) = driver(2)
         val (me, opp) = order
         val oppHand = d.getHandSize(opp)

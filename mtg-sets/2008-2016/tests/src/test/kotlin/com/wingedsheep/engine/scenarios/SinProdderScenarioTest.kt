@@ -4,7 +4,9 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.soi.cards.SinProdder
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
@@ -20,10 +22,13 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class SinProdderScenarioTest : FunSpec({
 
-    data class Setup(val driver: GameTestDriver, val me: EntityId, val opp: EntityId, val top: EntityId)
+    data class Setup(val driver: GameTestDriver, val me: EntityId, val opp: EntityId, val top: EntityId?)
 
-    /** Sin Prodder in play; on my next upkeep [topCard] is on top of my library and the trigger is about to resolve. */
-    fun atMyUpkeep(topCard: String): Setup {
+    /**
+     * Sin Prodder in play; on my next upkeep [topCard] is on top of my library (null: the library is
+     * empty) and the trigger resolves.
+     */
+    fun atMyUpkeep(topCard: String?): Setup {
         val d = GameTestDriver()
         d.registerCards(TestCards.all)
         d.registerCard(SinProdder)
@@ -33,7 +38,10 @@ class SinProdderScenarioTest : FunSpec({
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         d.putCreatureOnBattlefield(me, "Sin Prodder")
         d.passPriorityUntil(Step.UPKEEP, activePlayer = me)
-        val top = d.putCardOnTopOfLibrary(me, topCard)
+        if (topCard == null) {
+            d.replaceState(d.state.copy(zones = d.state.zones + (ZoneKey(me, Zone.LIBRARY) to emptyList())))
+        }
+        val top = topCard?.let { d.putCardOnTopOfLibrary(me, it) }
         d.stackSize shouldBe 1
         d.bothPass()
         return Setup(d, me, opp, top)
@@ -71,5 +79,14 @@ class SinProdderScenarioTest : FunSpec({
 
         d.getGraveyard(me) shouldContain top
         d.getLifeTotal(opp) shouldBe 20
+    }
+
+    test("an empty library reveals nothing: no opponent is asked and nothing happens") {
+        val (d, me, opp) = atMyUpkeep(null)
+
+        d.pendingDecision shouldBe null
+        d.stackSize shouldBe 0
+        d.getLifeTotal(opp) shouldBe 20
+        d.getLifeTotal(me) shouldBe 20
     }
 })

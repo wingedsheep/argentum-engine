@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
@@ -34,7 +35,9 @@ class OpponentOfferAiTest : FunSpec({
     }
 
     test("the Troll tapping itself when an opponent sacrifices is not a tapper") {
-        CardIntentAnalyzer.analyze(ClackbridgeTroll).tags shouldNotContain IntentTag.TAPPER
+        val tags = CardIntentAnalyzer.analyze(ClackbridgeTroll).tags
+        tags shouldContain IntentTag.DRAW
+        tags shouldNotContain IntentTag.TAPPER
     }
 
     data class Setup(val driver: GameTestDriver, val opp: EntityId)

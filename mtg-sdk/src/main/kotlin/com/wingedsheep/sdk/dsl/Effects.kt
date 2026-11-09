@@ -891,14 +891,20 @@ object Effects {
      * Each player in APNAP order is offered the cost; the first to pay triggers [consequence].
      * (Prowling Pangolin: "any player may sacrifice two creatures. If a player does, sacrifice this.")
      */
-    fun AnyPlayerMayPay(cost: PayCost, consequence: Effect, eligiblePlayers: Player = Player.Each): Effect =
-        AnyPlayerMayPayEffect(cost = cost, consequence = consequence, eligiblePlayers = eligiblePlayers)
+    fun AnyPlayerMayPay(
+        cost: PayCost,
+        consequence: Effect,
+        eligiblePlayers: Player = Player.Each,
+        storePayerAs: String? = null,
+    ): Effect = AnyPlayerMayPayEffect(
+        cost = cost, consequence = consequence, eligiblePlayers = eligiblePlayers, storePayerAs = storePayerAs,
+    )
 
     /**
      * "Any opponent may have [consequence]. If a player does, … Otherwise, [otherwise]." — the free
      * choice form of [AnyPlayerMayPay]: nothing is paid, each eligible player in turn order answers
      * [prompt] (written to the player being asked), and the first yes runs [consequence], which can
-     * name that player as `Player.BoundVariable(chooserAs)` (Sin Prodder: "deals damage to that
+     * name that player as `EffectTarget.PipelineTarget(storePayerAs)` (Sin Prodder: "deals damage to that
      * player"). If nobody says yes, [otherwise] runs.
      */
     fun AnyPlayerMayChoose(
@@ -906,10 +912,10 @@ object Effects {
         consequence: Effect,
         otherwise: Effect? = null,
         eligiblePlayers: Player = Player.Each,
-        chooserAs: String? = null,
+        storePayerAs: String? = null,
     ): Effect = AnyPlayerMayPayEffect(
         cost = null, consequence = consequence, consequenceIfNonePaid = otherwise,
-        eligiblePlayers = eligiblePlayers, prompt = prompt, payerAs = chooserAs,
+        eligiblePlayers = eligiblePlayers, prompt = prompt, storePayerAs = storePayerAs,
     )
 
     /**

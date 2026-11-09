@@ -773,18 +773,21 @@ object CardIntentAnalyzer {
      * card into your hand" (Sin Prodder), "any opponent may sacrifice a creature. If a player does,
      * tap this creature, you gain 3 life, and you draw a card" (Clackbridge Troll). Like
      * [punisherBranchLeaves], whichever branch the opponents pick is ours, so the card is for what
-     * either does. The player who accepted ([AnyPlayerMayPayEffect.payerAs]) is an opponent, so a
+     * either does. The player who accepted ([AnyPlayerMayPayEffect.storePayerAs]) is an opponent, so a
      * step aimed at them is read as one aimed at an opponent. Tapping the source itself is the
      * price of the deal (the Troll and Desecration Demon tap), not a tapper, and is dropped.
      *
-     * The branches are returned whether or not each reads alone: a branch that moves the gathered
-     * cards into our hand reads as card draw only beside the gather ([digTags]). Null — the offer
+     * The branches are returned whether or not each reads alone — unlike [punisherBranchLeaves],
+     * which wants every branch to pay off: an offer only opponents answer costs us nothing either
+     * way, so an offer with one payoff branch (Clackbridge Troll's "if a player does, … draw a card")
+     * is for that payoff, and a branch that moves the gathered cards into our hand reads as card draw
+     * only beside the gather ([digTags]), never on its own. Null — the offer
      * stays an unread leaf — for an offer our controller may answer too (Aether Rift's "unless any
      * player pays", Prowling Pangolin's), and when no branch holds a step.
      */
     private fun opponentOfferLeaves(offer: AnyPlayerMayPayEffect, requirements: List<TargetRequirement>): List<Effect>? {
         if (offer.eligiblePlayers != Player.EachOpponent) return null
-        val payer = offer.payerAs?.let { EffectTarget.PlayerRef(Player.BoundVariable(it)) }
+        val payer = offer.storePayerAs?.let { EffectTarget.PipelineTarget(it) }
         val branches = listOfNotNull(offer.consequence, offer.consequenceIfNonePaid).map { branch ->
             readingLeaves(branch, requirements).map { leaf ->
                 when {

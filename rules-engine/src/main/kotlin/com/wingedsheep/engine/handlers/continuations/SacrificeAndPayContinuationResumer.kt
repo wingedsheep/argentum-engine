@@ -996,17 +996,17 @@ class SacrificeAndPayContinuationResumer(
         payer: EntityId? = null
     ): ExecutionResult {
         if (consequence == null) return checkForMore(state, priorEvents)
-        // "That player" — the one who paid (or said yes) — bound for the consequence to name.
-        val namedTargets = if (payer != null && continuation.payerAs != null) {
-            mapOf(continuation.payerAs to com.wingedsheep.engine.state.components.stack.ChosenTarget.Player(payer))
-        } else emptyMap()
+        // "That player" — the one who paid (or said yes) — stored for the consequence to name.
+        val storedCollections = if (payer != null && continuation.storePayerAs != null) {
+            continuation.storedCollections + (continuation.storePayerAs to listOf(payer))
+        } else continuation.storedCollections
         val context = EffectContext(
             programOrigin = continuation.programOrigin ?: com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect::class),
             resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences.authorize(priorEvents),
             controllerId = continuation.controllerId,
-            pipeline = PipelineState(storedCollections = continuation.storedCollections, namedTargets = namedTargets),
+            pipeline = PipelineState(storedCollections = storedCollections),
             triggeringEntityId = continuation.triggeringEntityId,
             triggeringPlayerId = continuation.triggeringPlayerId
         )

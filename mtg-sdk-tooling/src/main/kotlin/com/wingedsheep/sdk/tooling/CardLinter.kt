@@ -692,6 +692,7 @@ object CardLinter {
         put("GatherCards" to "storeAs", write(Space.COLLECTION))
         put("CaptureControllers" to "storeAs", write(Space.COLLECTION))
         put("StorePlayer" to "storeAs", write(Space.COLLECTION))
+        put("AnyPlayerMayPay" to "storePayerAs", write(Space.COLLECTION))
         put("GatherSubtypes" to "storeAs", write(Space.SUBTYPE_GROUPS))
         put("GatherUntilMatch" to "storeMatch", write(Space.COLLECTION))
         put("GatherUntilMatch" to "storeRevealed", write(Space.COLLECTION))
@@ -1345,16 +1346,6 @@ object CardLinter {
                         reqFields = listOf("targetRequirement", "additionalTargetRequirements"),
                         label = "delayed trigger of ${scope.label}",
                     )
-                    // "If a player does, … that player": `payerAs` binds the player who paid as a
-                    // `BoundVariable` inside `consequence` only (never in `consequenceIfNonePaid`).
-                    "AnyPlayerMayPay" -> (element["payerAs"] as? JsonPrimitive)?.contentOrNull?.let { payer ->
-                        visitNode(element, scope, state)
-                        val bound = state.newScope(
-                            scope.label, scope.targetCount, scope.targetIds + payer, scope.multiSlotTargetIds, scope,
-                        )
-                        for ((field, value) in element) walk(value, if (field == "consequence") bound else scope, state)
-                        return
-                    }
                 }
                 visitNode(element, scope, state)
                 element.values.forEach { walk(it, scope, state) }

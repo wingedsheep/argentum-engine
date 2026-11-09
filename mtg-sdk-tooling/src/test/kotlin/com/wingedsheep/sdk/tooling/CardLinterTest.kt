@@ -266,31 +266,19 @@ class CardLinterTest : DescribeSpec({
             CardLinter.lint(card).shouldBeEmpty()
         }
 
-        it("binds AnyPlayerMayPay's payerAs inside the consequence only") {
-            fun offer(otherwiseTarget: String?) = instant(
-                "Payer Bound",
+        it("reads AnyPlayerMayPay's storePayerAs as a written collection") {
+            val card = instant(
+                "Payer Stored",
                 CardScript(
                     spellEffect = com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect(
                         cost = null,
                         prompt = "Take 1 damage?",
-                        consequence = DealDamageEffect(
-                            DynamicAmount.Fixed(1),
-                            EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.BoundVariable("taker")),
-                        ),
-                        consequenceIfNonePaid = otherwiseTarget?.let {
-                            DealDamageEffect(
-                                DynamicAmount.Fixed(1),
-                                EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.BoundVariable(it)),
-                            )
-                        },
-                        payerAs = "taker",
+                        consequence = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.PipelineTarget("taker")),
+                        storePayerAs = "taker",
                     ),
                 ),
             )
-            CardLinter.lint(offer(null)).shouldBeEmpty()
-            // Nobody paid on the other branch, so the name is unbound there.
-            CardLinter.lint(offer("taker")).single()
-                .shouldBeInstanceOf<CardValidationError.UnknownTargetBinding>()
+            CardLinter.lint(card).shouldBeEmpty()
         }
 
         it("flags a bare BoundVariable on a multi-slot requirement") {

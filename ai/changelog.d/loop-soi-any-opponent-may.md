@@ -1,1 +1,1 @@
-- #TBD The AI reads an offer only its opponents answer ("any opponent may …", Sin Prodder, Clackbridge Troll) by both branches, and no longer reads a creature tapping itself as part of such a deal as a tapper.
+- #TBD The AI reads an offer only its opponents answer ("any opponent may …") as the payoffs it holds — Sin Prodder is card draw and burn, Clackbridge Troll card draw and life gain — and no longer reads the creature tapping itself as part of the deal as a tapper.

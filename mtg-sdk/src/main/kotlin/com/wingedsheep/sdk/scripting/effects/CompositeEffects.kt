@@ -1082,9 +1082,10 @@ sealed interface DelayedTriggerExpiry {
  * graveyard" (Sin Prodder): nothing is paid, each asked player simply answers [prompt] yes or
  * no, and the first yes runs [consequence] exactly as a payment would.
  *
- * [payerAs] names the player who paid (or said yes) for [consequence], as
- * [Player.BoundVariable] — "if a player does, this deals damage to *that player*". It is bound
- * only in [consequence]; [consequenceIfNonePaid] has no such player.
+ * [storePayerAs] stores the player who paid (or said yes) in a pipeline collection that
+ * [consequence] reads with `EffectTarget.PipelineTarget(storePayerAs)` — "if a player does, this
+ * deals damage to *that player*". Only [consequence] sees it; [consequenceIfNonePaid] has no such
+ * player.
  *
  * [eligiblePlayers] scopes *which* players are offered the choice, relative to the source's
  * controller: [Player.Each] (default) asks every player, [Player.EachOpponent] asks only the
@@ -1098,8 +1099,8 @@ sealed interface DelayedTriggerExpiry {
  * @property eligiblePlayers Which players are offered the choice, relative to the controller
  * @property prompt The yes/no question put to each asked player, in their words. Required for a
  *   free choice (null [cost]); a payment's prompt is built from the cost itself.
- * @property payerAs Binding name under which [consequence] reads the paying player
- *   (`Player.BoundVariable(payerAs)`); null when the consequence never names them.
+ * @property storePayerAs Pipeline collection [consequence] reads the paying player from
+ *   (`EffectTarget.PipelineTarget(storePayerAs)`); null when the consequence never names them.
  */
 @SerialName("AnyPlayerMayPay")
 @Serializable
@@ -1109,7 +1110,7 @@ data class AnyPlayerMayPayEffect(
     val consequenceIfNonePaid: Effect? = null,
     val eligiblePlayers: Player = Player.Each,
     val prompt: String? = null,
-    val payerAs: String? = null,
+    val storePayerAs: String? = null,
 ) : Effect {
     init {
         require(cost != null || prompt != null) { "A free-choice AnyPlayerMayPay (null cost) needs a prompt" }
