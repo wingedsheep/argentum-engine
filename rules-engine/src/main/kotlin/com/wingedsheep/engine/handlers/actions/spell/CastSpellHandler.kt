@@ -278,14 +278,6 @@ class CastSpellHandler(
         )
     }
 
-    /**
-     * Ask for X (CR 601.2b) when a keyword cast made while its trigger resolves reaches the handler
-     * without one: a miracle cast (Entreat the Angels' {X}{W}{W}) or a madness cast (From Under the
-     * Floorboards' madness {X}{B}{B}, CR 702.35b — madness follows the alternative-cost rules of
-     * 601.2b). No client announced X, so the spell would otherwise be cast with X = 0. Bounded by the
-     * mana the caster can make after the cost's fixed part, like a cycling {X}; the payment still
-     * charges the total authoritatively.
-     */
     /** The `{X}` alternative cost a resolution-time miracle or madness cast is about to pay, or null. */
     private fun unannouncedXCost(state: GameState, action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition): ManaCost? {
         if (action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.MIRACLE) {
@@ -297,6 +289,14 @@ class CastSpellHandler(
             ?.fixedCost?.takeIf { it.hasX }
     }
 
+    /**
+     * Ask for X (CR 601.2b) when a keyword cast made while its trigger resolves reaches the handler
+     * without one: a miracle cast (Entreat the Angels' {X}{W}{W}) or a madness cast (From Under the
+     * Floorboards' madness {X}{B}{B}, CR 702.35b — madness follows the alternative-cost rules of
+     * 601.2b). No client announced X, so the spell would otherwise be cast with X = 0. Bounded by the
+     * mana the caster can make after the cost's fixed part, like a cycling {X}; the payment still
+     * charges the total authoritatively.
+     */
     private fun surfaceUnannouncedX(state: GameState, action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition?): ExecutionResult? {
         if (action.xValue != null || cardDef == null) return null
         val cost = unannouncedXCost(state, action, cardDef) ?: return null
