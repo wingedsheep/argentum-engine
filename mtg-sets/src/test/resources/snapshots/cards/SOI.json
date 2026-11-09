@@ -1837,6 +1837,55 @@
     ]
 }
 
+// Confirm Suspicions
+{
+    "name": "Confirm Suspicions",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.\nInvestigate three times. (To investigate, create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Investigate",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "David Gaillet",
+        "flavorText": "Everyone has something to hide.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf7fcbc2-1034-442d-9f2a-7d79ea40ac3d.jpg?1783937803",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Crawling Sensation
 {
     "name": "Crawling Sensation",
@@ -2109,6 +2158,120 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Daring Sleuth
+{
+    "name": "Daring Sleuth",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When you sacrifice a Clue, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daring Sleuth:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "descriptionOverride": "When you sacrifice a Clue, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Bearer of Overwhelming Truths",
+        "manaCost": "",
+        "typeLine": "Creature — Human Wizard",
+        "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever this creature deals combat damage to a player, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 2
+        },
+        "keywords": [
+            "PROWESS"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Bearer of Overwhelming Truths:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                },
+                {
+                    "id": "Bearer of Overwhelming Truths:2",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": "Investigate",
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, investigate."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "54",
+            "rarity": "UNCOMMON",
+            "artist": "Seb McKinnon",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/4/440f9f10-6999-4cff-ab98-8aed77813b07.jpg?1783937809"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"No matter the cost, I must discover the source of these strange happenings.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/440f9f10-6999-4cff-ab98-8aed77813b07.jpg?1783937809",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Daring Sleuth's ability triggers multiple times before any of those abilities resolves, only the first one to resolve will cause it to transform."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2433,6 +2596,39 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Deny Existence
+{
+    "name": "Deny Existence",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Christopher Moeller",
+        "flavorText": "When all logical solutions fail, try an illogical one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16a14eeb-1c85-4029-a047-39a4efef3f74.jpg?1783937802"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3162,6 +3358,144 @@
     ]
 }
 
+// Engulf the Shore
+{
+    "name": "Engulf the Shore",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return to their owners' hands all creatures with toughness less than or equal to the number of Islands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "TOUGHNESS",
+                                    "operator": "LTE",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land Island"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "flavorText": "\"The tides have begun to ignore the moon.\"\n—Tamiyo's journal",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22909767-a088-49ff-83be-37f967d1da3d.jpg?1783937799"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Epiphany at the Drownyard
+{
+    "name": "Epiphany at the Drownyard",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Reveal the top X plus one cards of your library and separate them into two piles. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Add",
+                            "left": "XValue",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                    "selectedLabel": "Pile 1",
+                    "remainderLabel": "Pile 2",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ChoosePile",
+                    "pileA": "selected1",
+                    "pileB": "remainder1",
+                    "chooser": "Opponent",
+                    "storeChosenAs": "chosenPile2",
+                    "storeOtherAs": "otherPile2",
+                    "prompt": "Choose which pile goes to your opponent's hand; the other goes to their graveyard."
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenPile2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "otherPile2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "\"Is this what you found, Tamiyo?\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64b44364-8f83-4dcf-8458-0fd54a698524.jpg?1783937800",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "X can be 0, and piles can be empty. If X is 0, you'll reveal one card and one pile will be empty. Your opponent may choose the empty pile to put into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Epitaph Golem
 {
     "name": "Epitaph Golem",
@@ -3610,6 +3944,93 @@
     ]
 }
 
+// Fleeting Memories
+{
+    "name": "Fleeting Memories",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nWhenever you sacrifice a Clue, target player mills three cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fleeting Memories:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Investigate",
+                "descriptionOverride": "When this enchantment enters, investigate."
+            },
+            {
+                "id": "Fleeting Memories:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you sacrifice a Clue, target player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b9eaf90-2a9e-44a7-bdae-03c26f9d21e7.jpg?1783937799",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If you sacrifice a Clue to pay the cost of a spell or ability, Fleeting Memories's second ability will resolve before that spell or ability."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Foreboding Ruins
 {
     "name": "Foreboding Ruins",
@@ -3678,6 +4099,98 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Forgotten Creation
+{
+    "name": "Forgotten Creation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nAt the beginning of your upkeep, you may discard all the cards in your hand. If you do, draw that many cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "SKULK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forgotten Creation:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            },
+                            "successCriterion": "SuccessCriterion.Always"
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "discardedHand_count"
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may discard all the cards in your hand. If you do, draw that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"My earliest work escapes me.\"\n—Stitcher Geralf",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27f82ee6-b8cd-4dce-b213-3910302f30e9.jpg?1783937798",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "The upkeep step is before the draw step, after the untap step. If you have no cards in hand, you can't draw for the turn and then discard that card to draw a new one because Forgotten Creation's last ability will already have triggered and resolved."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3858,6 +4371,40 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Furtive Homunculus
+{
+    "name": "Furtive Homunculus",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "SKULK"
+    ],
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"In terms of intelligence, homunculi are somewhere between humans and skaabs—clever enough to follow more complex orders, but dim enough to not question them.\"\n—Stitcher Geralf",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f376ec9b-48ac-4ed7-bfa2-60e9dca32dd7.jpg?1783937798",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4046,6 +4593,101 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Geralf's Masterpiece
+{
+    "name": "Geralf's Masterpiece",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "Flying\nThis creature gets -1/-1 for each card in your hand.\n{3}{U}, Discard three cards: Return this card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Geralf's Masterpiece:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "count": 3
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "multiplier": -1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f00d28b8-2ed8-4266-a870-d308f9ebd5da.jpg?1783937797",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Geralf's Masterpiece's last ability can only be activated while it's in your graveyard."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a spell or ability causes you to draw cards and then discard cards, Geralf's Masterpiece may have a toughness of 0 while you choose which cards to discard. As long as it has toughness 1 or greater again after the spell or ability resolves, it will survive."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4277,6 +4919,55 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Gone Missing
+{
+    "name": "Gone Missing",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target permanent on top of its owner's library.\nInvestigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "Investigate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "James Paick",
+        "flavorText": "\"Sometimes it's best for the lost to stay lost.\"\n—Herzag, mayor of Havengul",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e88ae6bf-9c58-4543-ba66-19ea41d01e9b.jpg?1783937796",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5430,6 +6121,141 @@
     ]
 }
 
+// Invasive Surgery
+{
+    "name": "Invasive Surgery",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target sorcery spell.\nDelirium — If there are four or more card types among cards in your graveyard, search the graveyard, hand, and library of that spell's controller for any number of cards with the same name as that spell, exile those cards, then that player shuffles.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "gathered0",
+                    "storeAs": "cardName1"
+                },
+                {
+                    "type": "StorePlayer",
+                    "storeAs": "players2",
+                    "player": {
+                        "type": "ControllerOf",
+                        "targetDescription": "target spell"
+                    }
+                },
+                "Counter",
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": {
+                                "type": "InCollection",
+                                "collection": "players2"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromMultipleZones",
+                                        "zones": [
+                                            "Graveyard",
+                                            "Hand",
+                                            "Library"
+                                        ],
+                                        "filter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "NameEqualsChosen",
+                                                    "variableName": "cardName1"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered5",
+                                    "lookAudience": "None",
+                                    "search": true,
+                                    "searcher": "ControllerOfSource"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered5",
+                                    "selection": "ChooseAnyNumber",
+                                    "chooser": "SourceController",
+                                    "storeSelected": "selected6",
+                                    "prompt": "Choose any number of cards with that name to exile",
+                                    "selectedLabel": "Exile"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected6",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                "ShuffleLibrary"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e644e38-39bf-40bd-9be1-5eb80f472e81.jpg?1783937797",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Invasive Surgery's delirium ability isn't checked until after the sorcery spell has been countered. If that spell is put into your graveyard, it will be counted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Invocation of Saint Traft
 {
     "name": "Invocation of Saint Traft",
@@ -5776,6 +6602,96 @@
     ]
 }
 
+// Lamplighter of Selhoff
+{
+    "name": "Lamplighter of Selhoff",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "When this creature enters, if you control another Zombie, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lamplighter of Selhoff:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Zombie",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Clint Cearley",
+        "flavorText": "For stitchers and necro-alchemists, it's important that work can continue at all hours.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80dadecc-f1f1-44a2-8829-6c94aade73a0.jpg?1783937795"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Loam Dryad
 {
     "name": "Loam Dryad",
@@ -5878,6 +6794,126 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Manic Scribe
+{
+    "name": "Manic Scribe",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, each opponent mills three cards.\nDelirium — At the beginning of each opponent's upkeep, if there are four or more card types among cards in your graveyard, that player mills three cards.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Manic Scribe:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Manic Scribe:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TriggeringPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "Delirium — At the beginning of each opponent's upkeep, if there are four or more card types among cards in your graveyard, that player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb0fadba-4205-47ce-b4cf-e0ff7308749b.jpg?1783937793",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Manic Scribe's delirium ability mills an opponent's library before that player draws a card during their draw step."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "There must be four or more card types among cards in your graveyard for the delirium ability to trigger. The number of card types is checked again as it resolves, and if it has become too low, the ability does nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Markov Dreadknight

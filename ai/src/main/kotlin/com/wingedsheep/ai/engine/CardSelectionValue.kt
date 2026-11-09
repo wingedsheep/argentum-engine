@@ -131,7 +131,11 @@ internal class CardSelectionValue private constructor(
         if (card.typeLine.isSorcery) score += 2.0
 
         intents.forName(card.name)?.let { intent ->
-            if (REMOVAL_TAGS.any { it in intent }) score += REMOVAL_BONUS
+            // An answer is worth what it answers when it arrives: the bonus fades with the wait,
+            // as the first-creature bonus above does, down to nothing for a card that never can
+            // be cast. A seven-drop that sweeps (Toxrill, the Corrosive) at one land is not the
+            // removal spell a one-land hand holds on to.
+            if (REMOVAL_TAGS.any { it in intent }) score += REMOVAL_BONUS * (1.0 - turns / NEVER_TURNS).coerceAtLeast(0.0)
             else if (IntentTag.DRAW in intent) score += 0.5
         }
 

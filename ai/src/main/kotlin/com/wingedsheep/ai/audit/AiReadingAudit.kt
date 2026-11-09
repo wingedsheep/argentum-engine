@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.LegendRuleDoesNotApplyTo
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -272,6 +273,8 @@ object AiReadingAudit {
         // A creature's own printed penalty ("this creature gets -2/-2 as long as …") is part of its
         // body, read by the evaluator through projected P/T — not an ability a reader missed.
         is ModifyStats -> static.filter.scope == Scope.Self && static.powerBonus <= 0 && static.toughnessBonus <= 0
+        // Its dynamic form, "this creature gets -1/-1 for each card in your hand" (Grim Strider).
+        is GrantDynamicStats -> static.filter.scope == Scope.Self && CardIntentAnalyzer.isStatPenalty(static)
         // "This spell costs {2} less to cast for each card you've cycled or discarded this turn"
         // (Hollow One, affinity's Tangle Golem): a change to the card's own cost, which the legal
         // actions the AI is offered already price — part of the card, like its mana cost.
