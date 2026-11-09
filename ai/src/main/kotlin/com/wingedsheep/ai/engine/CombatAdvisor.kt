@@ -1126,10 +1126,12 @@ class CombatAdvisor(
         }
 
         // ── Pass 4: Gang blocks for remaining unblocked attackers ──
+        // A gang block pays creatures for the kill, so an attacker combat damage can't destroy
+        // (indestructible) is never worth one: the blockers would die for nothing.
         for (attacker in sortedAttackers) {
             if (attacker in blockedAttackers) continue
             val aKeywords = projected.getKeywords(attacker)
-            if (Keyword.DEATHTOUCH.name in aKeywords) continue
+            if (Keyword.DEATHTOUCH.name in aKeywords || Keyword.INDESTRUCTIBLE.name in aKeywords) continue
 
             val aPower = projected.getPower(attacker) ?: 0
             val aToughness = projected.getToughness(attacker) ?: 0
@@ -1183,7 +1185,7 @@ class CombatAdvisor(
         for (attacker in sortedAttackers) {
             if (attacker in blockedAttackers) continue
             val aKeywords = projected.getKeywords(attacker)
-            if (Keyword.DEATHTOUCH.name in aKeywords) continue
+            if (Keyword.DEATHTOUCH.name in aKeywords || Keyword.INDESTRUCTIBLE.name in aKeywords) continue
 
             val aPower = projected.getPower(attacker) ?: 0
             val aToughness = projected.getToughness(attacker) ?: 0
@@ -1386,6 +1388,7 @@ class CombatAdvisor(
         val aKeywords = projected.getKeywords(attacker)
         val aHasDeathtouch = Keyword.DEATHTOUCH.name in aKeywords
         val aHasFirstStrike = Keyword.FIRST_STRIKE.name in aKeywords || Keyword.DOUBLE_STRIKE.name in aKeywords
+        val aIsIndestructible = Keyword.INDESTRUCTIBLE.name in aKeywords
 
         return availableBlockersFor(state, projected, attacker, validBlockers, assignedBlockers)
             .mapNotNull { blockerId ->
@@ -1401,7 +1404,8 @@ class CombatAdvisor(
                 val blockTrigger = blockTriggerPredicates?.let { predicates ->
                     BlockTriggerRemoval.against(state, projected, cardRegistry!!, predicates, blockerId, attacker)
                 }
-                val weKillThem = bPower >= aToughness || bHasDeathtouch
+                // Combat damage never destroys an indestructible attacker, deathtouch included.
+                val weKillThem = !aIsIndestructible && (bPower >= aToughness || bHasDeathtouch)
                 val bIsIndestructible = Keyword.INDESTRUCTIBLE.name in bKeywords
                 val blockerDealsDamage = CombatMath.blockerDealsDamage(state, projected, attacker, blockerId)
                 // The fight played out step by step: a first striker that kills a deathtouch

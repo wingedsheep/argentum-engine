@@ -1,0 +1,1 @@
+- #4609 The AI no longer gang-blocks or trades into indestructible attackers; it takes the hit or chumps only when the life is needed.
