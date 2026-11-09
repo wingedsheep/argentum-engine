@@ -2166,6 +2166,16 @@ object TargetPolarityAnalyzer {
         grantedEffectPolarity(ability.effect, listOfNotNull(ability.targetRequirement))
 
     /**
+     * Whether an attachment's own statics curse its host — a harmful static beside any ability it
+     * grants (Imprisoned in the Moon's lost abilities, Compulsory Rest's "can't attack or block").
+     * What the curse hands its host is then the opponent's consolation, never the Aura's payoff.
+     */
+    internal fun cursesHost(statics: List<StaticAbility>): Boolean = statics.any { static ->
+        static !is GrantActivatedAbility && static !is GrantTriggeredAbility &&
+            staticPolarity(static) == TargetPolarity.HARMFUL
+    }
+
+    /**
      * How a granted activated ability reads for the permanent holding it: a mana ability is the
      * holder's controller's mana; any other does what its effect does for the player activating it.
      */

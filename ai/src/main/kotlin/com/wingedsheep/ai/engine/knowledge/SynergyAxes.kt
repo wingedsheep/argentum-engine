@@ -349,9 +349,12 @@ object SynergyAxes {
         // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
         // Equipment's "equipped creature has '…'": the ability handed to the host is ours to
         // activate, so its cost and effect feed what the same ability printed on the host would.
+        // A curse Aura's grant (Compulsory Rest's "{2}, Sacrifice this creature: You gain 2 life")
+        // is the opponent's to activate, so it feeds nothing of ours.
+        val curse = TargetPolarityAnalyzer.cursesHost(script.staticAbilities)
         for (static in script.staticAbilities) {
             val grant = static as? GrantActivatedAbility ?: continue
-            if (grant.filter.scope != Scope.AttachedTo || grant.ability.isManaAbility) continue
+            if (curse || grant.filter.scope != Scope.AttachedTo || grant.ability.isManaAbility) continue
             val creatureHost = couldBeCreature(grant.filter.baseFilter)
             addAll(effectFeeds(grant.ability.effect, creatureHost, grant.ability.targetRequirements))
             if (sacrifices(grant.ability.cost, creatureHost)) add(SynergyAxis.DEATH)

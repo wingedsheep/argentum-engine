@@ -7,7 +7,9 @@ import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
+import com.wingedsheep.mtg.sets.definitions.akh.cards.CompulsoryRest
 import com.wingedsheep.mtg.sets.definitions.emn.cards.ImpetuousDevils
+import com.wingedsheep.mtg.sets.definitions.emn.cards.ImprisonedInTheMoon
 import com.wingedsheep.mtg.sets.definitions.emn.cards.KessigProwler
 import com.wingedsheep.mtg.sets.definitions.emn.cards.PropheticRavings
 import com.wingedsheep.mtg.sets.definitions.emn.cards.WaxingMoon
@@ -15,6 +17,7 @@ import com.wingedsheep.mtg.sets.definitions.ktk.cards.AvalancheTusker
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -26,8 +29,9 @@ import io.kotest.matchers.shouldBe
  *
  * Alongside: a team trample grant until end of turn is the untargeted team trick
  * (`expiringGroupPump`) a team pump is; "can't be blocked by more than one creature" is evasion;
- * an Aura's granted "{T}, Discard a card: Draw a card" is the host's own loot, read for intent and
- * for the graveyard it feeds.
+ * an Aura's granted "{T}, Discard a card: Draw a card" is the host's own rummage, read for intent
+ * (card selection, as when printed) and for the graveyard it feeds — unless the Aura is a curse,
+ * whose grant is only the opponent's consolation.
  */
 class ForcedBlockAndTargetTransformReadingAiTest : FunSpec({
 
@@ -56,8 +60,18 @@ class ForcedBlockAndTargetTransformReadingAiTest : FunSpec({
         CardIntentAnalyzer.analyze(checkNotNull(KessigProwler.backFace)).tags shouldContain IntentTag.EVASION_GRANT
     }
 
-    test("an Aura's granted loot reads as draw and feeds the graveyard") {
-        CardIntentAnalyzer.analyze(PropheticRavings).tags shouldContain IntentTag.DRAW
+    test("an Aura's granted rummage reads as card selection and feeds the graveyard") {
+        val tags = CardIntentAnalyzer.analyze(PropheticRavings).tags
+        tags shouldContain IntentTag.CARD_SELECTION
+        tags shouldNotContain IntentTag.DRAW
         SynergyAxes.of(PropheticRavings).feeds shouldContain SynergyAxis.GRAVEYARD
+    }
+
+    test("a curse Aura's granted ability is the opponent's consolation, not our payoff") {
+        CardIntentAnalyzer.analyze(ImprisonedInTheMoon).tags shouldNotContain IntentTag.RAMP
+        CardIntentAnalyzer.analyze(CompulsoryRest).tags shouldNotContain IntentTag.LIFEGAIN
+        val feeds = SynergyAxes.of(CompulsoryRest).feeds
+        feeds shouldNotContain SynergyAxis.DEATH
+        feeds shouldNotContain SynergyAxis.LIFEGAIN
     }
 })

@@ -383,7 +383,9 @@ object CardIntentAnalyzer {
         if (IntentTag.REMOVAL !in tags && leaves.any(::isExpiringBaseStats)) expiringPump = true
 
         var anthemBonus = 0
-        for (static in scripts.flatMap { it.staticAbilities }) {
+        for (script in scripts) for (static in script.staticAbilities) {
+            // A curse Aura's granted ability is the opponent's consolation, not our payoff.
+            if (static is GrantActivatedAbility && TargetPolarityAnalyzer.cursesHost(script.staticAbilities)) continue
             tags += tagsOf(static)
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
@@ -3050,12 +3052,14 @@ object CardIntentAnalyzer {
         // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
         // Equipment's granted activation: the static form of [GrantActivatedAbilityEffect] — a mana
         // ability is a mana source, any other helpful ability is the host's own from then on, read
-        // as if printed. A harmful grant is the Aura's polarity's to read, and tags nothing here.
+        // as if printed (a rummage stays card selection). A harmful grant, or any grant beside a curse
+        // (skipped by the caller), is the Aura's polarity's to read, and tags nothing here.
         is GrantActivatedAbility -> when {
             static.filter.scope != Scope.AttachedTo -> emptySet()
             static.ability.isManaAbility -> setOf(IntentTag.RAMP)
             TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(static.ability.effect, static.ability.targetRequirements).tags
+                    .let { if (isRummage(static.ability)) asRummage(it) else it }
             else -> emptySet()
         }
         is CantAttack -> neutralizeTags(static.filter)
