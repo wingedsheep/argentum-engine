@@ -1172,6 +1172,7 @@ object CardIntentAnalyzer {
         addAll(regrowthTags(root, ownPile))
         addAll(wishTags(root))
         addAll(graveyardExileTags(root))
+        addAll(libraryExileTags(root))
         addAll(revealUntilMillTags(root))
         addAll(handToBattlefieldTags(root))
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
@@ -1500,6 +1501,35 @@ object CardIntentAnalyzer {
      * `MoveToZoneEffect` spelling does in [readingLeaves]. Our own graveyard exiled is a cost or
      * fuel (delve, escape-likes), never an answer.
      */
+    /**
+     * "Search target player's library for up to five cards and exile them" (Supreme Inquisitor):
+     * cards taken out of another player's library for good, by us — the exile form of milling them
+     * toward an empty library, [IntentTag.MILL]. Not our tutor ([searchesOwnZones]); a search we
+     * hand to its owner (Settle the Wreckage), or cards exiled to be played (a theft, see
+     * [usesTheExiledCard]), are not this.
+     */
+    private fun libraryExileTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        if (usesTheExiledCard(leaves)) return emptySet()
+        val seed = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val gather = leaf as? GatherCardsEffect ?: return@mapNotNullTo null
+            val source = gather.source as? CardSource.FromZone ?: return@mapNotNullTo null
+            gather.storeAs.takeIf {
+                source.zone == Zone.LIBRARY && gather.searcher == Player.You && canMillOpponent(source.player)
+            }
+        }
+        if (seed.isEmpty()) return emptySet()
+        do {
+            val before = seed.size
+            for (leaf in leaves) seed += derivedCollections(leaf, seed)
+        } while (seed.size != before)
+        val exiles = leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in seed &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+        }
+        return if (exiles) setOf(IntentTag.MILL) else emptySet()
+    }
+
     private fun graveyardExileTags(root: Effect, eachPlayer: Player? = null): Set<IntentTag> {
         val leaves = readingLeaves(root)
         // Exiled to be cast from exile (Mnemonic Betrayal, Shadow of the Enemy): a theft, not hate.
@@ -2405,13 +2435,18 @@ object CardIntentAnalyzer {
             else -> emptySet()
         }
 
+        // A tutor is a search of our own library by us ([searchesOwnZones]). Searching another
+        // player's (Cranial Extraction, Supreme Inquisitor, Invasive Surgery's delirium exile) is
+        // disruption; a search we hand to someone else (Settle the Wreckage's basic lands for the
+        // attacker's controller) is their gain, not ours.
         is GatherCardsEffect -> when (val source = effect.source) {
-            is CardSource.FromZone -> if (source.zone == Zone.LIBRARY) setOf(IntentTag.TUTOR) else emptySet()
+            is CardSource.FromZone ->
+                if (source.zone == Zone.LIBRARY && searchesOwnZones(effect, source.player)) setOf(IntentTag.TUTOR) else emptySet()
             // "Search your library and/or graveyard for a card named …" (Vraska's Scorn, the
             // planeswalker-deck tutors): a search of our own zones that reaches the library is a
             // tutor. Searching an opponent's (Cranial Extraction, Lobotomy) is disruption, not this.
             is CardSource.FromMultipleZones ->
-                if (Zone.LIBRARY in source.zones && source.player == Player.You) setOf(IntentTag.TUTOR) else emptySet()
+                if (Zone.LIBRARY in source.zones && searchesOwnZones(effect, source.player)) setOf(IntentTag.TUTOR) else emptySet()
             is CardSource.TopOfLibrary -> if (source.isMill && canMillOpponent(source.player) &&
                 ((source.count as? DynamicAmount.Fixed)?.amount ?: 1) > 0
             ) setOf(IntentTag.MILL) else emptySet()
@@ -2979,6 +3014,28 @@ object CardIntentAnalyzer {
     private fun raises(amount: DynamicAmount): Boolean = AmountSign.of(amount) == AmountSign.GAIN
 
     /**
+     * A dynamic stat grant that can only take away: neither amount can raise, and one lowers
+     * ("gets -1/-1 for each card in your hand", "-X/-0"). On [Scope.Self] it is the creature's own
+     * printed drawback, read by the evaluator through projected P/T — shared with the reading audit.
+     */
+    internal fun isStatPenalty(static: GrantDynamicStats): Boolean {
+        val power = AmountSign.of(static.powerBonus)
+        val toughness = AmountSign.of(static.toughnessBonus)
+        return power != AmountSign.GAIN && toughness != AmountSign.GAIN &&
+            (power == AmountSign.LOSS || toughness == AmountSign.LOSS)
+    }
+
+    /**
+     * Whether [gather] searches zones of [owner]'s that belong to the player doing the searching,
+     * and that player is us. A searcher other than [Player.You] means the zones are not the
+     * searcher's own: inside a `ForEachPlayer` body [Player.You] is the iterated player, and
+     * Invasive Surgery's `searcher = ControllerOfSource` is its caster rummaging through the
+     * countered spell's controller's zones — disruption, whoever's spell it was.
+     */
+    private fun searchesOwnZones(gather: GatherCardsEffect, owner: Player): Boolean =
+        owner == Player.You && gather.searcher == Player.You
+
+    /**
      * A group `ForEach` whose body pumps each member until end of turn — the lowered form of
      * "creatures you control get +2/+1 until end of turn". Only the group's own members are
      * pumped ([EffectTarget.IterationEntity]); a body aimed anywhere else is not this shape.
@@ -3084,8 +3141,25 @@ object CardIntentAnalyzer {
             else -> emptySet()
         }
 
-        is GrantDynamicStats ->
-            if (static.filter.scope == Scope.Battlefield) setOf(IntentTag.ANTHEM) else setOf(IntentTag.PUMP)
+        // The dynamic "+X/+X" reads as [ModifyStats] does, by the sign of each amount ([AmountSign]):
+        // only a grant that cannot take anything away is a pump or an anthem. "This creature gets
+        // -1/-1 for each card in your hand" (Grim Strider, Geralf's Masterpiece) is its drawback; an
+        // Aura's "-X/-X for each …" (Exotic Curse) answers what it enchants, its "-X/-0" blunts it;
+        // "creatures your opponents control get -1/-1 for each …" (Toxrill) is a sweeper.
+        is GrantDynamicStats -> {
+            val toughness = AmountSign.of(static.toughnessBonus)
+            val penalty = isStatPenalty(static)
+            when {
+                penalty && static.filter.scope == Scope.Self -> emptySet()
+                penalty -> when {
+                    toughness == AmountSign.LOSS -> setOf(IntentTag.REMOVAL)
+                    static.filter.scope == Scope.AttachedTo -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+                    else -> emptySet()
+                }
+                static.filter.scope == Scope.Battlefield -> setOf(IntentTag.ANTHEM)
+                else -> setOf(IntentTag.PUMP)
+            }
+        }
 
         is GrantKeyword -> keywordTags(static.keyword)
         // "Enchanted creature has 'Whenever this creature deals combat damage to a player, you may
