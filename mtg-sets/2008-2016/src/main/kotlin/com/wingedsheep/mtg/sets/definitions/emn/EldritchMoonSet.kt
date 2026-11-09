@@ -10,8 +10,8 @@ import com.wingedsheep.sdk.model.TokenPrinting
 /**
  * Eldritch Moon (2016)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card is implemented (canonicals here, reprints as `Printing` rows). Not yet draftable:
+ * archetypes and the booster strategy land with the set's finishing PR.
  *
  * Set Code: EMN
  * Release Date: 2016-07-22
@@ -23,7 +23,6 @@ object EldritchMoonSet : MtgSet {
     override val releaseDate = "2016-07-22"
     override val block = "Shadows over Innistrad"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

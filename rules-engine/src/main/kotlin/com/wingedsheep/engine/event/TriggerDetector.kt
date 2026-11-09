@@ -282,6 +282,11 @@ class TriggerDetector(
         // Slot in [triggers] of each "is dealt damage" trigger already raised by this batch's
         // combat damage, keyed by ability instance and recipient — see [foldSimultaneousDamage].
         val combatDamageSlots = mutableMapOf<List<Any?>, Int>()
+        // Permanents this batch took off the battlefield, by entity: a damage source killed by the
+        // same combat damage it dealt (the turn manager applies that step's state-based actions
+        // before triggers are detected) is read as it last existed there (CR 603.10, 608.2h).
+        val battlefieldDepartures = events.asSequence().filterIsInstance<ZoneChangeEvent>()
+            .filter { it.isBattlefieldDeparture }.associateBy { it.entityId }
 
         for ((eventIndex, event) in events.withIndex()) {
             // DrawEvent firing counts are derived from CardsDrawnThisTurnComponent, which `state`
@@ -295,7 +300,7 @@ class TriggerDetector(
                     .filter { it.playerId == event.playerId }
                     .sumOf { it.count }
             } else 0
-            val detected = detectTriggersForEvent(state, event, index, samePlayerDrawsLaterInBatch)
+            val detected = detectTriggersForEvent(state, event, index, samePlayerDrawsLaterInBatch, battlefieldDepartures)
                 .let { foldSimultaneousDamage(it, event, triggers, combatDamageSlots) }
             triggers.addAll(detected.mapNotNull { pending ->
                 val selfZoneEvent = event is ZoneChangeEvent && event.entityId == pending.sourceId
@@ -1643,7 +1648,8 @@ class TriggerDetector(
         state: GameState,
         event: EngineGameEvent,
         index: TriggerIndex,
-        samePlayerDrawsLaterInBatch: Int = 0
+        samePlayerDrawsLaterInBatch: Int = 0,
+        battlefieldDepartures: Map<EntityId, ZoneChangeEvent> = emptyMap(),
     ): List<PendingTrigger> {
         val triggers = mutableListOf<PendingTrigger>()
         val projected = state.projectedState
@@ -2375,7 +2381,9 @@ class TriggerDetector(
 
         // Handle damage-source triggers
         if (event is DamageDealtEvent && event.sourceId != null) {
-            damageDetector.detectDamageSourceTriggers(state, index.statics, event, triggers, projected)
+            damageDetector.detectDamageSourceTriggers(
+                state, index.statics, event, triggers, projected, battlefieldDepartures[event.sourceId]
+            )
         }
 
         // Handle "whenever a creature/spell deals damage to this" triggers (e.g., Tephraderm)

@@ -29,6 +29,9 @@ data class TriggeredAbilityContinuation(
     val sourceId: EntityId,
     val sourceName: String,
     val sourceBattlefieldTimestamp: Long? = null,
+    /** The departed source's last-known snapshot, carried from
+     *  [com.wingedsheep.engine.event.PendingTrigger.lastKnownSourceSnapshot] across this pause. */
+    val lastKnownSourceSnapshot: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
         com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val controllerId: EntityId,
@@ -83,6 +86,9 @@ data class TriggerDamageDistributionContinuation(
     val sourceId: EntityId,
     val sourceName: String,
     val sourceBattlefieldTimestamp: Long? = null,
+    /** The departed source's last-known snapshot, carried from
+     *  [com.wingedsheep.engine.event.PendingTrigger.lastKnownSourceSnapshot] across this pause. */
+    val lastKnownSourceSnapshot: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
         com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val controllerId: EntityId,

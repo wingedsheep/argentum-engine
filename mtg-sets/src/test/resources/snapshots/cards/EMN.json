@@ -9631,6 +9631,45 @@
     ]
 }
 
+// Permeating Mass
+{
+    "name": "Permeating Mass",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Whenever this creature deals combat damage to a creature, that creature becomes a copy of this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Permeating Mass:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": "Self",
+                    "affected": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "flavorText": "Woodland geists concluded that Emrakul would be unable to warp the denizens of the forest if the geists got there first.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b71290eb-b529-4fc3-ab94-fee0ab9e2169.jpg?1783937441"
+    }
+}
+
 // Primal Druid
 {
     "name": "Primal Druid",
