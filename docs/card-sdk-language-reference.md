@@ -18950,7 +18950,7 @@ this turn").
   under, and whether or not it stayed; tokens don't count. In multiplayer "their last turn" can lie
   several turns back; activity during other players' turns never counts, and a player who hasn't
   finished a turn reads 0. Snapshotted into `LastTurnActivityComponent` by `TurnManager.startTurn` as
-  the player's turn ends. Not `SpellsCastLastTurn` (the previous *game* turn, side-wide). Arboria.
+  the player's turn ends. Not `SpellsCastLastTurn(player)` (the previous *game* turn, whoever's turn it was). Arboria.
 - `COUNTERS_PUT_ON_CREATURE` — counters placed.
 - `LANDS_PLAYED` — lands the player explicitly played this turn (from-hand land drops only,
   derived from `LandDropsComponent`).

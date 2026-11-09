@@ -102,7 +102,7 @@ private val UlrichUncontestedAlpha = card("Ulrich, Uncontested Alpha") {
         val theirs = target(
             TargetFilter(
                 GameObjectFilter.Creature
-                    .notSubtype(Subtype("Werewolf"))
+                    .notSubtype(Subtype.WEREWOLF)
                     .withControllerPredicate(ControllerPredicate.Not(ControllerPredicate.ControlledByYou))
             )
         )
