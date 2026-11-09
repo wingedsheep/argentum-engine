@@ -78,7 +78,10 @@ class ForgottenCreationScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
                 game.resolveStack()
 
-                if (game.hasPendingDecision()) game.answerYesNo(true)
+                withClue("the upkeep trigger still offers the (empty) discard") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
                 game.resolveStack()
 
                 withClue("zero cards discarded means zero cards drawn") {

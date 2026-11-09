@@ -50,6 +50,8 @@ class InvasiveSurgeryScenarioTest : FunSpec({
         val inHand = d.putCardInHand(caster, "Divination")
         val inLibrary = d.putCardOnTopOfLibrary(caster, "Divination")
         val otherInHand = d.putCardInHand(caster, "Opt")
+        // A namesake in the surgeon's own hand: only the spell's controller's zones are searched.
+        val surgeonsOwn = d.putCardInHand(surgeon, "Divination")
 
         val divination = d.putCardInHand(caster, "Divination")
         d.giveMana(caster, Color.BLUE, 3)
@@ -75,6 +77,7 @@ class InvasiveSurgeryScenarioTest : FunSpec({
         withClue("only cards with that name are touched") { d.getHand(caster) shouldContain otherInHand }
         d.state.getZone(ZoneKey(caster, Zone.LIBRARY)) shouldNotContain inLibrary
         withClue("nothing of the surgeon's is searched") { d.getExile(surgeon).size shouldBe 0 }
+        d.getHand(surgeon) shouldContain surgeonsOwn
         d.getGraveyardCardNames(surgeon) shouldContain "Invasive Surgery"
     }
 

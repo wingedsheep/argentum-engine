@@ -7,6 +7,8 @@ import com.wingedsheep.mtg.sets.definitions.chk.cards.CranialExtraction
 import com.wingedsheep.mtg.sets.definitions.inv.cards.CrusadingKnight
 import com.wingedsheep.mtg.sets.definitions.inv.cards.ExoticCurse
 import com.wingedsheep.mtg.sets.definitions.lea.cards.DemonicTutor
+import com.wingedsheep.mtg.sets.definitions.mom.cards.FertilidsFavor
+import com.wingedsheep.mtg.sets.definitions.msh.cards.RestorativeTechnique
 import com.wingedsheep.mtg.sets.definitions.ons.cards.SupremeInquisitor
 import com.wingedsheep.mtg.sets.definitions.soi.cards.GeralfsMasterpiece
 import com.wingedsheep.mtg.sets.definitions.soi.cards.InvasiveSurgery
@@ -63,5 +65,11 @@ class NegativeSelfStatGrantAndExileSearchIntentAiTest : FunSpec({
 
     test("searching our own library is still a tutor") {
         CardIntentAnalyzer.analyze(DemonicTutor).tags shouldContain IntentTag.TUTOR
+    }
+
+    test("a target player searching their own library is a tutor, however the search is spelled") {
+        // Same Oracle search: a pipeline with searcher = TargetPlayer, and a ForEachPlayer over the target.
+        CardIntentAnalyzer.analyze(RestorativeTechnique).tags shouldContain IntentTag.TUTOR
+        CardIntentAnalyzer.analyze(FertilidsFavor).tags shouldContain IntentTag.TUTOR
     }
 })

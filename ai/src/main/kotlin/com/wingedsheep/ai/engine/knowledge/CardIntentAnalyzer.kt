@@ -278,7 +278,7 @@ object CardIntentAnalyzer {
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
-        val refunds = handRefundDraws(effect)
+        val refunds = handRefundDraws(effect) + refundSearches(effect)
         for (leaf in readingLeaves(effect, requirements)) {
             tags += refundedTagsOf(leaf, refunds)
             // "Target creature becomes a Coward" beside "Cowards can't block Warriors" is the
@@ -366,7 +366,7 @@ object CardIntentAnalyzer {
         // hand, it gains none. Its draw reads as the card selection it is.
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
             .flatMap { readingLeaves(it.effect, it.targetRequirements) }
-        val refunds = roots.flatMapTo(HashSet(), ::handRefundDraws)
+        val refunds = roots.flatMapTo(HashSet<Effect>()) { handRefundDraws(it) + refundSearches(it) }
         for (effect in leaves) {
             tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -1075,13 +1075,19 @@ object CardIntentAnalyzer {
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
     ): Set<IntentTag> =
-        handRefundDraws(root).let { refunds ->
+        (handRefundDraws(root) + refundSearches(root)).let { refunds ->
             readingLeaves(root, requirements).flatMapTo(HashSet()) { refundedTagsOf(it, refunds) }
         } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
 
-    /** [tagsOf], except that a draw in [refunds] (see [handRefundDraws]) is not the card's own card draw. */
-    private fun refundedTagsOf(leaf: Effect, refunds: Collection<DrawCardsEffect>): Set<IntentTag> =
-        if (leaf is DrawCardsEffect && leaf in refunds) tagsOf(leaf) - IntentTag.DRAW else tagsOf(leaf)
+    /**
+     * [tagsOf], except that a draw or search in [refunds] ([handRefundDraws], [refundSearches]) is
+     * not the card's own card draw or tutor.
+     */
+    private fun refundedTagsOf(leaf: Effect, refunds: Collection<Effect>): Set<IntentTag> = when {
+        leaf is DrawCardsEffect && leaf in refunds -> tagsOf(leaf) - IntentTag.DRAW
+        leaf is GatherCardsEffect && leaf in refunds -> tagsOf(leaf) - IntentTag.TUTOR
+        else -> tagsOf(leaf)
+    }
 
     /**
      * "That player shuffles, then draws a card for each card exiled from their hand this way" (Lost
@@ -3026,14 +3032,47 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * Whether [gather] searches zones of [owner]'s that belong to the player doing the searching,
-     * and that player is us. A searcher other than [Player.You] means the zones are not the
-     * searcher's own: inside a `ForEachPlayer` body [Player.You] is the iterated player, and
-     * Invasive Surgery's `searcher = ControllerOfSource` is its caster rummaging through the
-     * countered spell's controller's zones — disruption, whoever's spell it was.
+     * Whether [gather] is a player searching their own zones for themselves: the searcher owns
+     * the zones searched, and is us or a player the card names — "target player searches their
+     * library for a basic land" (Restorative Technique, the same tutor Fertilid's Favor spells as
+     * a `ForEachPlayer`), "that player searches their library for a card" (Mornsong Aria).
+     * A searcher other than the zones' owner is rummaging through someone else's: inside a
+     * `ForEachPlayer` body [Player.You] is the iterated player, and Invasive Surgery's
+     * `searcher = ControllerOfSource` is its caster searching the countered spell's controller's
+     * zones — disruption, whoever's spell it was. A search handed back as the price of what the
+     * card took from that player (Settle the Wreckage) is read in [refundSearches].
      */
     private fun searchesOwnZones(gather: GatherCardsEffect, owner: Player): Boolean =
-        owner == Player.You && gather.searcher == Player.You
+        gather.searcher == owner && owner in SELF_SEARCHERS
+
+    private val SELF_SEARCHERS = setOf(Player.You, Player.TargetPlayer, Player.TriggeringPlayer)
+
+    /**
+     * "Exile all attacking creatures target player controls. That player may search their library
+     * for that many basic land cards" (Settle the Wreckage): a search for another player whose
+     * size is the count of cards the same effect exiled or destroyed is that player's refund —
+     * the answer's price, as [handRefundDraws] reads Lost Legacy's draws — not our tutor.
+     */
+    internal fun refundSearches(root: Effect): List<GatherCardsEffect> {
+        val leaves = readingLeaves(root)
+        val removed = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? MoveCollectionEffect)?.from?.takeIf {
+                (leaf.destination as? CardDestination.ToZone)?.zone.let { it == Zone.EXILE || it == Zone.GRAVEYARD }
+            }
+        }
+        if (removed.isEmpty()) return emptyList()
+        fun sizedByRemoved(amount: DynamicAmount): Boolean = when (amount) {
+            is DynamicAmount.DistinctEntitiesInCollections -> amount.collections.any { it in removed }
+            is DynamicAmount.VariableReference -> amount.variableName.removeSuffix("_count") in removed
+            else -> false
+        }
+        return leaves.filterIsInstance<GatherCardsEffect>().filter { gather ->
+            gather.searcher != Player.You && leaves.any { leaf ->
+                leaf is SelectFromCollectionEffect && leaf.from == gather.storeAs &&
+                    (leaf.selection as? SelectionMode.ChooseUpTo)?.count?.let(::sizedByRemoved) == true
+            }
+        }
+    }
 
     /**
      * A group `ForEach` whose body pumps each member until end of turn — the lowered form of
