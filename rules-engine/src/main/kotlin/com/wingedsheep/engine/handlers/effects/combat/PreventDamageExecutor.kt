@@ -313,7 +313,9 @@ class PreventDamageExecutor(
                     includesController = effect.recipientGroupIncludesController,
                     // "… by creatures" — a Matching source filter narrows the shield to matching
                     // damage sources.
-                    sourceFilter = sourceFilter
+                    sourceFilter = sourceFilter,
+                    // "For each 1 damage prevented this way, …" (Inkshield).
+                    onPrevented = effect.onPrevented
                 )
             }
 
@@ -435,6 +437,15 @@ class PreventDamageExecutor(
             else -> {
                 return EffectResult.error(state, "Unsupported PreventDamageEffect configuration")
             }
+        }
+
+        // A reaction only runs where the lowering keeps it; any other shape would drop it silently
+        // and the card would read as a plain prevention.
+        if (effect.onPrevented != null && (modification as? SerializableModification.PreventAllDamageToGroup)?.onPrevented == null) {
+            return EffectResult.error(
+                state,
+                "PreventDamageEffect.onPrevented needs a Chosen source, FromTarget, or a recipient-side shield (to you / to a group)"
+            )
         }
 
         val newState = state.addFloatingEffect(

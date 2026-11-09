@@ -733,13 +733,20 @@ sealed interface SerializableModification {
      * [sourceFilter], when non-null, additionally
      * restricts the shield to damage whose *source* matches it ("… by creatures"), evaluated against
      * projected state at damage time just like [filter].
+     *
+     * [onPrevented] is the rest of the shield's printed text — "for each 1 damage prevented this
+     * way, create a 2/1 … Inkling" (Inkshield). Each application that actually prevents damage
+     * queues it as a [com.wingedsheep.engine.replacement.PendingReplacementRider] carrying that
+     * application's prevented amount. Where the damage can't be prevented (CR 615.12) the shield
+     * is still applied, prevents nothing, and queues it with amount 0.
      */
     @Serializable
     data class PreventAllDamageToGroup(
         val filter: GameObjectFilter? = null,
         val combatOnly: Boolean = false,
         val includesController: Boolean = false,
-        val sourceFilter: GameObjectFilter? = null
+        val sourceFilter: GameObjectFilter? = null,
+        val onPrevented: com.wingedsheep.sdk.scripting.effects.Effect? = null
     ) : SerializableModification
 
     /**

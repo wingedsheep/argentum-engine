@@ -142,7 +142,13 @@ sealed interface PreventionSourceFilter {
  * @property direction Whether to prevent damage TO the target, FROM the target, or BOTH
  * @property sourceFilter Filter on which damage sources are affected
  * @property onPrevented An arbitrary follow-up effect run when a single-instance chosen-source shield
- *   ([PreventionSourceFilter.Chosen]) prevents an instance of damage. It runs with the prevented
+ *   ([PreventionSourceFilter.Chosen]), a [PreventionDirection.FromTarget] source shield, or a
+ *   recipient-side shield ([recipientGroup] / [recipientGroupIncludesController]) prevents an
+ *   instance of damage. On a recipient-side shield it runs once per damage instance prevented, as
+ *   the rest of the replacement (no stack), with that instance's amount and the shield's own card
+ *   as the effect source — "for each 1 damage prevented this way, create a 2/1 … Inkling"
+ *   (Inkshield: `PreventDamage(combatOnly = true, alsoToYou = true, onPrevented = CreateToken(count =
+ *   preventedDamage(), …))`). Any other shape with an [onPrevented] fails at resolution. It runs with the prevented
  *   amount bound as `DynamicAmount.ContextProperty(PREVENTED_DAMAGE_AMOUNT)` and the prevented source's
  *   controller reachable as `EffectTarget.ControllerOfTriggeringEntity`, with the shield's own card as
  *   the effect source. This is plain effect composition — Deflecting Palm reflects

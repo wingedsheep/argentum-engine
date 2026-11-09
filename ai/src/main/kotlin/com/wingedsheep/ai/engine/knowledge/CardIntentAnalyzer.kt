@@ -147,6 +147,9 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object CardIntentAnalyzer {
 
+    /** What a prevention shield's reaction is read as making (see the [PreventDamageEffect] branch of [tagsOf]). */
+    private val SHIELD_REACTION_PAYOFFS = setOf(IntentTag.TOKEN_MAKER, IntentTag.LIFEGAIN)
+
     private val cardCache = ConcurrentHashMap<String, CardIntent>()
     private val selfCache = ConcurrentHashMap<String, CardIntent>()
     private val inPlayCache = ConcurrentHashMap<String, CardIntent>()
@@ -2262,7 +2265,16 @@ object CardIntentAnalyzer {
         is AddManaEffect, is AddColorlessManaEffect, is AddDynamicManaEffect,
         is AddManaOfChoiceEffect, is PlayAdditionalLandsEffect -> setOf(IntentTag.RAMP)
 
-        is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect -> setOf(IntentTag.PROTECTION)
+        is RegenerateEffect, is HealDamageEffect -> setOf(IntentTag.PROTECTION)
+        // A shield is protection; the reaction it carries ("for each 1 damage prevented this way,
+        // create a 2/1 Inkling", Inkshield; "you gain that much life", Awe Strike) is a payoff the
+        // card makes on top of it. Only the board payoffs are read off it: everything else in a
+        // reaction happens only if the shield fires, so reading Deflecting Palm's reflected damage as
+        // burn, or New Way Forward's draw as a cantrip, would aim the card at a face or at the
+        // opponent's end step, where it does nothing.
+        is PreventDamageEffect -> setOf(IntentTag.PROTECTION) +
+            (effect.onPrevented?.let { reaction -> EffectWalker.leaves(reaction).flatMapTo(mutableSetOf()) { tagsOf(it) } }
+                ?.intersect(SHIELD_REACTION_PAYOFFS) ?: emptySet())
         // "All damage that would be dealt this turn to you and permanents you control is dealt to
         // enchanted creature instead" (Saving Grace, Gideon's Sacrifice, Glarecaster): a shield over
         // what it protects, the damage soaked by a body chosen for it — a prevention that lands elsewhere.

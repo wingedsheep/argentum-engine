@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import kotlinx.serialization.Serializable
 
@@ -544,11 +545,25 @@ object DamageReplacementChain {
             fun amount(label: String, next: Int, commute: String? = null) {
                 out += Candidate(key, "$hostName — $label", floating.sourceId, commute) { Step(state, listOf(d.copy(amount = next.coerceAtLeast(0)))) }
             }
-            fun preventAll(label: String = "prevent all damage", gainTo: EntityId? = null, consume: Boolean = false) {
-                if (disabled) return
+            fun preventAll(label: String = "prevent all damage", gainTo: EntityId? = null, consume: Boolean = false, onPrevented: Effect? = null) {
+                if (disabled) {
+                    // CR 615.12: the prevention is still applied to unpreventable damage — it prevents
+                    // nothing, but its additional effects take place ("for each 1 damage prevented").
+                    if (onPrevented != null) out += Candidate(key, "$hostName — damage can't be prevented", floating.sourceId) {
+                        Step(state.copy(pendingReplacementRiders = state.pendingReplacementRiders +
+                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0)),
+                            listOf(d))
+                    }
+                    return
+                }
                 out += Candidate(key, "$hostName — $label", floating.sourceId,
-                    commute = if (gainTo == null && !consume) "prevent-all" else null) {
-                    Step(if (consume) replace(floating, null) else state, emptyList(), gains = if (gainTo == null) emptyMap() else mapOf(gainTo to d.amount))
+                    commute = if (gainTo == null && !consume && onPrevented == null) "prevent-all" else null) {
+                    val base = if (consume) replace(floating, null) else state
+                    // The rest of the shield ("for each 1 damage prevented this way …") is owed once
+                    // per application, with what that application prevented.
+                    val next = if (onPrevented == null || d.amount <= 0) base else base.copy(pendingReplacementRiders = base.pendingReplacementRiders +
+                        PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = d.amount))
+                    Step(next, emptyList(), gains = if (gainTo == null) emptyMap() else mapOf(gainTo to d.amount))
                 }
             }
             when (mod) {
@@ -583,7 +598,7 @@ object DamageReplacementChain {
                 is SerializableModification.PreventAllDamageToGroup -> if ((!mod.combatOnly || d.isCombatDamage) &&
                     (mod.includesController && d.targetId == floating.controllerId || mod.filter != null && d.targetId in state.getBattlefield() &&
                         evaluator.matches(viewState, projected, d.targetId, mod.filter!!, PredicateContext(controllerId = floating.controllerId))) &&
-                    (mod.sourceFilter == null || sourceMatches(floating, mod.sourceFilter!!))) preventAll()
+                    (mod.sourceFilter == null || sourceMatches(floating, mod.sourceFilter!!))) preventAll(onPrevented = mod.onPrevented)
                 is SerializableModification.PreventNextDamageFromMatching -> if (targetMatches && sourceMatches(floating, mod.filter)) preventAll(consume = true)
                 is SerializableModification.PreventAllDamageFromSource -> if (targetMatches && d.sourceId == mod.damageSourceId) {
                     val gains = d.sourceId != null && (d.sourceSnapshot?.colors ?: if (d.sourceSnapshot == null) projected.colorsOf(d.sourceId) else emptySet()).any { it in mod.gainLifeFromColors }

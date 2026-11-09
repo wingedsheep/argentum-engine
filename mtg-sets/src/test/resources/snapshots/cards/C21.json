@@ -554,6 +554,51 @@
     ]
 }
 
+// Inkshield
+{
+    "name": "Inkshield",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt to you this turn. For each 1 damage prevented this way, create a 2/1 white and black Inkling creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "recipientGroupIncludesController": true,
+            "scope": "CombatOnly",
+            "onPrevented": {
+                "type": "CreateToken",
+                "count": {
+                    "type": "ContextProperty",
+                    "key": "PREVENTED_DAMAGE_AMOUNT"
+                },
+                "power": 2,
+                "toughness": 1,
+                "colors": [
+                    "WHITE",
+                    "BLACK"
+                ],
+                "creatureTypes": [
+                    "Inkling"
+                ],
+                "keywords": [
+                    "FLYING"
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Jarel Threat",
+        "flavorText": "Silverquill's elite know how to offer a scathing rebuttal without uttering a word.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e1c14a0-cd68-45fc-a127-422ca6113048.jpg?1783927586"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
 // Laelia, the Blade Reforged
 {
     "name": "Laelia, the Blade Reforged",
