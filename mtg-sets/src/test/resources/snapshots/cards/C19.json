@@ -68,6 +68,119 @@
     ]
 }
 
+// Archfiend of Spite
+{
+    "name": "Archfiend of Spite",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhenever a source an opponent controls deals damage to this creature, that source's controller loses that much life unless they sacrifice that many permanents of their choice.\nMadness {3}{B}{B} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{3}{B}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archfiend of Spite:1",
+                "trigger": {
+                    "type": "DamageReceivedEvent",
+                    "source": {
+                        "controllerPredicate": "ControlledByOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Sacrifice that many permanents",
+                            "effect": {
+                                "type": "ForceSacrifice",
+                                "filter": {},
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "ControllerOfTriggeringEntity"
+                                },
+                                "dynamicCount": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "feasibilityCheck": {
+                                "type": "ControlsPermanentMatching",
+                                "filter": {},
+                                "dynamicCount": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Lose that much life",
+                            "effect": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "ControllerOfTriggeringEntity"
+                                }
+                            }
+                        }
+                    ],
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfTriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever a source an opponent controls deals damage to this creature, that source's controller loses that much life unless they sacrifice that many permanents of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1df2ca13-4062-4827-ae2f-c61cf88ba3b3.jpg?1783932810",
+        "rulings": [
+            {
+                "date": "2019-08-23",
+                "text": "The source's controller must either sacrifice permanents or lose life. They can't choose to sacrifice some permanents and lose some life."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "If the player doesn't control enough permanents that they can sacrifice, they must lose life."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "The player may always choose not to sacrifice permanents, even if they will end up losing more life than they have or if an effect (such as that of Platinum Emperion) says that they can't lose life."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "The player who loses life or permanents is the player who controls the source as Archfiend of Spite's triggered ability resolves. In some rare cases, this may not be the same player who controlled the source as it dealt damage. If the source is no longer in the zone it was in as it dealt damage, the source's last known information is used to determine who controlled it."
+            },
+            {
+                "date": "2019-08-23",
+                "text": "Archfiend of Spite's triggered ability will trigger even if it is dealt lethal damage. For example, if Archfiend of Spite blocks a 7/7 creature, its ability will trigger when combat damage is dealt and the attacking player will sacrifice seven permanents or lose 7 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bone Miser
 {
     "name": "Bone Miser",
@@ -513,6 +626,34 @@
         "RED",
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Mire in Misery
+{
+    "name": "Mire in Misery",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent sacrifices a creature or enchantment of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature|enchantment",
+            "target": {
+                "type": "PlayerRef",
+                "player": "EachOpponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Podedworna",
+        "flavorText": "Misery loves company.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37b2cc43-307c-429f-a4f7-ac339a97e0bb.jpg?1783932810"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

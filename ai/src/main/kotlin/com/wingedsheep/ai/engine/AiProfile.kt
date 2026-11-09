@@ -1599,6 +1599,19 @@ data class AiProfile(
      */
     val blockSearchTriesSwaps: Boolean = false,
     /**
+     * Combat reads a creature a pending delayed trigger takes off the battlefield later this turn
+     * ([LeavesThisTurn]) as already gone once its fight is over: the token copy "sacrifice it at
+     * the beginning of the next end step", a Mobilize warrior, a Sneak Attack creature. Killing
+     * one is worth nothing, losing one costs nothing, and it is no blocker for the crack-back.
+     *
+     * 2026-11 AI-vs-humans report: a human attacked with a 5/6 token copy from Gray and Adira,
+     * Forever Joined, due to be sacrificed at the end step. The block heuristic priced the token
+     * at its full trade value and the search scored its death as a creature removed, so the AI
+     * quadruple-blocked it with a 3/1, 2/1, 2/4 and 2/3 and lost creatures to kill a token that
+     * was leaving anyway. Now it takes the damage, or chumps when the life is needed.
+     */
+    val departuresAreGone: Boolean = false,
+    /**
      * Raise [holdRemovalForBetterTargets]' bar for the creatures the opponent has **not drawn yet**,
      * read off their decklist ([com.wingedsheep.ai.engine.knowledge.UnseenThreats]). Live games
      * hand the engine AI every opponent's registered decklist — a deliberate decision — through
@@ -2585,6 +2598,7 @@ data class AiProfile(
             crackBackAfterCleanup = true,
             soundBlockMath = true,
             blockSearchTriesSwaps = true,
+            departuresAreGone = true,
             holdRemovalForUnseenThreats = true,
             threatAwareDefender = true,
             borrowedCreaturesGoHome = true,

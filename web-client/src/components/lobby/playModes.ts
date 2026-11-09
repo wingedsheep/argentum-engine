@@ -17,6 +17,7 @@ import type { DeckFormat } from '@/types'
 import type { CardsAxis } from './axes'
 import { lobbyKindFor, type Roster, type Selection, type ShapeId } from './modeMatrix'
 import { recipeFromSelection, type LobbyRecipe, type RecipeSettings } from './lobbyRecipe'
+import { DEFAULT_JUMPSTART_SET, isJumpstartSet } from './jumpstartSets'
 
 /* ── Vocabulary ─────────────────────────────────────────────────────────── */
 
@@ -157,6 +158,8 @@ export interface PlayOptions {
    * `RANDOM_SET_CODE` = a deferred Random Set the server rolls when the event starts.
    */
   setCode: string | null
+  /** The Jumpstart set Jump In deals packs from. Null = the newest ({@link DEFAULT_JUMPSTART_SET}). */
+  jumpstartSetCode: string | null
   /**
    * The set a rolled deck is built from, when the panel rolls one. Null = any set — the server picks
    * one (and the AI opponent, on its default, plays the same set either way).
@@ -178,6 +181,7 @@ export function defaultOptions(mode: ModeId, aiEnabled: boolean): PlayOptions {
     sealedStyle: 'STANDARD',
     tableCards: 'DECKS',
     setCode: null,
+    jumpstartSetCode: null,
     randomSetCode: null,
     deck: null,
     aiAssist: false,
@@ -253,6 +257,11 @@ export function canRollDeck(options: PlayOptions): boolean {
 export function rollsDeck(options: PlayOptions): boolean {
   if (cardsFor(options).kind === 'RANDOM') return true
   return options.deck?.kind === 'RANDOM' && canRollDeck(options)
+}
+
+/** Whether the decks are two Jumpstart packs each, so the panel asks which Jumpstart set. */
+export function isJumpIn(options: PlayOptions): boolean {
+  return cardsFor(options).kind === 'JUMP_IN'
 }
 
 /** Whether the cards come out of packs from a set the player should choose. */
@@ -355,6 +364,7 @@ export function recipeForOptions(options: PlayOptions): LobbyRecipe {
 
   const settings: { -readonly [K in keyof RecipeSettings]: RecipeSettings[K] } = { ...base.settings }
   if (options.setCode && needsSet(options)) settings.setCodes = [options.setCode]
+  if (selection.cards.kind === 'JUMP_IN') settings.setCodes = [jumpstartSetFor(options)]
   if (options.playWith === 'PUBLIC') settings.isPublic = true
   if (offersAiAssist(options) && options.aiAssist) settings.aiAssistEnabled = true
   if (options.mode === 'COMMANDER') {
@@ -387,6 +397,11 @@ function recipeDeckFor(options: PlayOptions, fallback: LobbyRecipe['deck']): Lob
     case 'RANDOM': return canRollDeck(options) ? { kind: 'RANDOM' } : fallback
     default: return fallback
   }
+}
+
+/** The Jumpstart set these options deal from: the chosen one while it is still a Jumpstart set. */
+export function jumpstartSetFor(options: PlayOptions): string {
+  return isJumpstartSet(options.jumpstartSetCode) ? options.jumpstartSetCode! : DEFAULT_JUMPSTART_SET
 }
 
 /** Whether these options name a deck, so nothing is left to choose in the lobby. */

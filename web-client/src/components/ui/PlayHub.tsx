@@ -32,6 +32,8 @@ import {
   modeInfo,
   needsDeck,
   needsSet,
+  isJumpIn,
+  jumpstartSetFor,
   opponentRange,
   recipeForOptions,
   rollsDeck,
@@ -50,6 +52,7 @@ import {
 import type { LobbyRecipe } from '../lobby/lobbyRecipe'
 import { AI_DISABLED_ON_SERVER } from '../lobby/modeMatrix'
 import { defaultSetCode } from '../lobby/useApplyRecipe'
+import { JUMPSTART_SETS } from '../lobby/jumpstartSets'
 import { SetPickerModal } from './SetPickerModal'
 import { RANDOM_SET_CODE, isRandomSetCode } from './SetSelector'
 import { setProfile } from '@/components/setGuide/setProfiles'
@@ -227,6 +230,11 @@ function LaunchPanel({
     : setCode ? setProfile(setCode)?.tagline : undefined
   const randomSet = availableSets.find((s) => s.code === randomSetCode)
   const isAi = effective.playWith === 'AI'
+  // Only the Jumpstart sets this server offers; before the set list arrives, all of them.
+  const jumpstartChoices = JUMPSTART_SETS.filter((j) =>
+    availableSets.length === 0 || availableSets.some((s) => s.code === j.code))
+  const jumpstartSetCode = jumpstartSetFor(effective)
+  const jumpstartSet = availableSets.find((s) => s.code === jumpstartSetCode)
 
   return (
     <section className={styles.panel} aria-labelledby="launch-heading" data-testid="launch-panel">
@@ -323,6 +331,24 @@ function LaunchPanel({
                 { value: 'DRAFT', label: 'Draft' },
               ]}
             />
+          </Field>
+        )}
+
+        {isJumpIn(effective) && jumpstartChoices.length > 1 && (
+          <Field label="Packs from">
+            <Segmented<string>
+              name="jumpstart-set"
+              value={jumpstartSetCode}
+              onChange={(jumpstartSetCode) => setOptions({ jumpstartSetCode })}
+              options={jumpstartChoices.map((j) => {
+                // Jump In only deals packs whose every card is implemented, so a partial set has fewer.
+                const partial = availableSets.find((s) => s.code === j.code)?.partial
+                return { value: j.code, label: j.label, sub: partial ? `${j.year} · some packs` : j.year }
+              })}
+            />
+            <p className={styles.setTagline}>
+              {[jumpstartSet?.name, setProfile(jumpstartSetCode)?.tagline].filter(Boolean).join(' — ')}
+            </p>
           </Field>
         )}
 
@@ -667,6 +693,7 @@ function loadOptions(mode: ModeId, aiEnabled: boolean): PlayOptions {
     sealedStyle: pick('sealedStyle', ['STANDARD', 'COMMANDER']),
     tableCards: pick('tableCards', ['DECKS', 'JUMP_IN', 'SEALED', 'DRAFT']),
     setCode: typeof stored.setCode === 'string' ? stored.setCode : null,
+    jumpstartSetCode: typeof stored.jumpstartSetCode === 'string' ? stored.jumpstartSetCode : null,
     randomSetCode: typeof stored.randomSetCode === 'string' ? stored.randomSetCode : null,
     deck: storedDeck(stored),
     aiAssist: stored.aiAssist === true,

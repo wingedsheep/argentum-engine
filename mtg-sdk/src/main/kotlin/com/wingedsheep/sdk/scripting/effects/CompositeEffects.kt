@@ -1493,13 +1493,21 @@ data class RepeatDynamicTimesEffect(
 sealed interface FeasibilityCheck {
 
     /**
-     * The player controls at least [count] permanents matching [filter].
+     * The player controls at least [count] permanents matching [filter] — or, when [dynamicCount]
+     * is set, at least that many, evaluated when the question is asked.
+     *
+     * [dynamicCount] is what lets a punisher offer "sacrifice that many permanents" as a payment
+     * whose size is only known at resolution (Archfiend of Spite: "that source's controller loses
+     * that much life unless they sacrifice that many permanents"). It mirrors
+     * [ForceSacrificeEffect.dynamicCount], so a choice pairing the two agrees about how many are
+     * needed; [count] stays the fallback, which keeps every fixed-count card unchanged.
      */
     @SerialName("ControlsPermanentMatching")
     @Serializable
     data class ControlsPermanentMatching(
         val filter: GameObjectFilter,
-        val count: Int = 1
+        val count: Int = 1,
+        val dynamicCount: DynamicAmount? = null
     ) : FeasibilityCheck
 
     /**

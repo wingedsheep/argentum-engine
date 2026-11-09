@@ -1,0 +1,4 @@
+- #4579 The AI reads "reveal cards until a land, put them into the graveyard" (Balustrade Spy, Tunnel Vision, Consuming Aberration, Sméagol) as a mill and aims it at an opponent instead of its own library
+- #4579 The AI activates until-end-of-turn "whenever creatures you control deal combat damage to a player" abilities (Aphelia, Viper Whisperer) only in its own combat once blocks show a matching attacker gets through, holding them on the opponent's turn, after combat, or when every matching attacker is blocked
+- #4579 The AI counts "whenever a player sacrifices a creature" payoffs (Fumulus, the Infestation) as rewarding its sacrifice outlets when building decks
+- #4579 The AI counts "put a +1/+1 counter on each of those creatures" over a chosen group (Urge to Feed) as feeding its +1/+1-counter payoffs when building decks

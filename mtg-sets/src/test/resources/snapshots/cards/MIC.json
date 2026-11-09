@@ -469,6 +469,88 @@
     ]
 }
 
+// Somberwald Beastmaster
+{
+    "name": "Somberwald Beastmaster",
+    "manaCost": "{6}{G}",
+    "typeLine": "Creature — Human Ranger",
+    "oracleText": "When this creature enters, create a 2/2 green Wolf creature token, a 3/3 green Beast creature token, and a 4/4 green Beast creature token.\nCreature tokens you control have deathtouch. (Any amount of damage they deal to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Somberwald Beastmaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenBatch",
+                    "groups": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Wolf"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/3/6/364e04d9-9a8a-49df-921c-7a9bf62dc731.jpg?1783925220"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Beast"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/a/6/a605be96-abae-4c11-8e7c-6fb87b4d8795.jpg?1783925228"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 4,
+                            "toughness": 4,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Beast"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/f/5/f55c70b8-0fa5-4d08-9061-f53d6f949908.jpg?1783925222"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a4ba28b-a6c6-4268-8dc2-542d203f91a6.jpg?1783925373"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tomb Tyrant
 {
     "name": "Tomb Tyrant",

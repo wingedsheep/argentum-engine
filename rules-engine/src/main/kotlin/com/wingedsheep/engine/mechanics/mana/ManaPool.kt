@@ -50,6 +50,13 @@ data class SpellPaymentContext(
      * [isColorless].
      */
     val colorCount: Int? = null,
+    /**
+     * The colors of the spell being cast (CR 105.2) — the set [colorCount] counts. Read by
+     * [ManaRestriction.SpellsWithExactColorCount]'s `includingColor`. Empty by default, so a cast
+     * path that forgets to set it refuses color-bound mana rather than letting it pay for a spell
+     * of another color.
+     */
+    val colors: Set<Color> = emptySet(),
     val subtypes: Set<String> = emptySet(),
     val isFromExile: Boolean = false,
     /** True when the spell being cast is legendary (has the Legendary supertype). */
@@ -171,6 +178,7 @@ data class SpellPaymentContext(
             manaValue = 0,
             isColorless = true,
             colorCount = 0,
+            colors = emptySet(),
             cardTypes = setOf(com.wingedsheep.sdk.core.CardType.CREATURE),
             isFromHand = isFromHand,
             isFaceDownCast = true,
@@ -225,7 +233,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.ColorlessSpellsOnly -> context.isSpellCast && context.isColorless
     is ManaRestriction.ColoredSpellsOnly ->
         context.isSpellCast && (context.colorCount ?: 0) >= 1 && !(withoutXInCost && context.hasXInCost)
-    is ManaRestriction.SpellsWithExactColorCount -> context.isSpellCast && context.colorCount == count
+    is ManaRestriction.SpellsWithExactColorCount ->
+        context.isSpellCast && context.colorCount == count && (includingColor == null || includingColor in context.colors)
     is ManaRestriction.CostsContainingXOnly -> (context.isSpellCast || context.isAbilityActivation) && context.hasXInCost
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
@@ -233,6 +242,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     // Bound to SubtypeSpellsOrAbilitiesOnly when the mana is made (ChosenTypeManaRestriction);
     // still unbound means the source never chose a type, so nothing can spend it.
     is ManaRestriction.OfChosenType -> false
+    // Bound to SpellsWithExactColorCount when the mana is made, like OfChosenType above.
+    is ManaRestriction.SpellsOfChosenColor -> false
     is ManaRestriction.CastFromExileOnly -> !context.isAbilityActivation && context.isFromExile
     is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation && context.isFromGraveyard
     is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast

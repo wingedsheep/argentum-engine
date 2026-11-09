@@ -580,6 +580,89 @@
     ]
 }
 
+// Blood Money
+{
+    "name": "Blood Money",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures. For each nontoken creature destroyed this way, you create a tapped Treasure token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature nontoken"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored1"
+                        }
+                    ]
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "stored1"
+                    },
+                    "storeMatching": "matching2"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "matching2"
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "tapped": true,
+                    "dynamicCount": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "MYTHIC",
+        "artist": "Inka Schulz",
+        "flavorText": "For the patriar class, wealth is in the blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d45c18c-b8eb-465c-8dfc-fd6da73e25b5.jpg?1783922766"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bonecaller Cleric
 {
     "name": "Bonecaller Cleric",
@@ -3144,6 +3227,81 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Undercellar Myconid
+{
+    "name": "Undercellar Myconid",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "Whenever this creature enters or dies, create a 1/1 green Saproling creature token.\n{T}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Undercellar Myconid:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7cbc9fc-42d2-4d1a-b6c0-29a35cfd1588.jpg?1783922319"
+                },
+                "descriptionOverride": "Whenever this creature enters, create a 1/1 green Saproling creature token."
+            },
+            {
+                "id": "Undercellar Myconid:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7cbc9fc-42d2-4d1a-b6c0-29a35cfd1588.jpg?1783922319"
+                },
+                "descriptionOverride": "Whenever this creature dies, create a 1/1 green Saproling creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Undercellar Myconid:3",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "artist": "David Szabo",
+        "flavorText": "Water, barley, yeast, darkness—the tavern cellar had everything a growing mold could need.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/786c5b3e-737f-4794-b482-af5f0ee901e5.jpg?1783922702"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }

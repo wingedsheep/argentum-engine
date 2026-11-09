@@ -8,7 +8,8 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Foundations Jumpstart (2024)
  *
- * Jumpstart half-deck boosters released alongside Foundations.
+ * Jumpstart half-deck boosters released alongside Foundations. Played as Jump In: pick two of the
+ * 121 published 20-card packs (`game-server/src/main/resources/jumpstart/j25.txt`), like J22.
  *
  * Set Code: J25
  * Release Date: November 15, 2024
@@ -18,8 +19,6 @@ object FoundationsJumpstartSet : MtgSet {
     override val code = "J25"
     override val displayName = "Foundations Jumpstart"
     override val releaseDate = "2024-11-15"
-    override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

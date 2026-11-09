@@ -9,8 +9,8 @@ import com.wingedsheep.sdk.model.Printing
  * Murders at Karlov Manor Commander (2024)
  *
  * Commander preconstructed decks. Scaffolded to hold the canonical [CardDefinition] for cards
- * first printed here (e.g. Trouble in Pairs); reprint rows for the already-implemented cards it
- * reprints are added as cards need them.
+ * first printed here (e.g. Fiendish Duo) and the [Printing] rows of the already-implemented
+ * cards it reprints.
  *
  * [sealedSupported] stays false: Commander precons are fixed 100-card decks, not a draftable product.
  *

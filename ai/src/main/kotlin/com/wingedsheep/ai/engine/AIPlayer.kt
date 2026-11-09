@@ -338,6 +338,7 @@ class AIPlayer(
                 crackBackAfterCleanup = profile.crackBackAfterCleanup,
                 soundBlockMath = profile.soundBlockMath,
                 blockSearchTriesSwaps = profile.blockSearchTriesSwaps,
+                departuresAreGone = profile.departuresAreGone,
             )
             val responder = DecisionResponder(
                 simulator, evaluator,

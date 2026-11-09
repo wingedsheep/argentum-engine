@@ -7,6 +7,9 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
@@ -22,6 +25,7 @@ import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.RecordChosenLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -31,7 +35,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * generalisation of [DeadSearch] from "a search that finds nothing" to any activation whose whole
  * payoff provably lands on nothing.
  *
- * Three shapes, each from the 2026-10-10 `live`-profile AI-vs-AI logs:
+ * The shapes, the first four from the 2026-10-10 `live`-profile AI-vs-AI logs:
  *
  *  - **A group effect over an empty group.** Oakhollow Village's "{G}, {T}: put a +1/+1 counter on
  *    each Frog, Rabbit, Raccoon, or Squirrel you control that entered this turn" activated on turns
@@ -57,6 +61,18 @@ import com.wingedsheep.sdk.scripting.references.Player
  *    evasive in a way the current holder is not. Any blocking payoff is still on offer in the
  *    postcombat main phase, where the leaf score keeps pricing it. Equipping an unattached
  *    Equipment is never touched here.
+ *  - **Choosing again from a pile with nothing new to choose.** Koh, the Face Stealer's "Pay 1 life:
+ *    Choose a creature card exiled with Koh" paid 38 times in the 2026-11-08 six-player game
+ *    (turns 30–32, down from 40 life to 2), 36 of them in one declare-blockers step with its own
+ *    ability stacked on itself. The pile held one creature and it was already the last chosen card,
+ *    so every payment re-chose it. The leaf cannot read the choice, and the only thing a payment
+ *    changes in it is the clock: passing lets the rollout run on through a combat the controller is
+ *    losing, while the activation's leaf is judged before it, so paying scored +0.79 *above*
+ *    passing (and +1.9 in its own main phase) and nothing but the simulation running out of
+ *    transitions ended it. Read as: a choose-from-linked-exile activation is floored when no
+ *    creature card in the pile other than the one already chosen is left to pick, or when the
+ *    source has already activated an ability this turn (the pick is not modelled, so a second
+ *    swap in a turn is the same clock artefact again).
  *
  * Like [DeadSearch], every shape declines unless the cost is plain resources (mana, tap, life), so
  * a cost that is a payoff of its own (a sacrifice, a discard) is never second-guessed here.
@@ -74,12 +90,28 @@ object EmptyPayoff {
         if (!costsOnlyResources(ability.cost)) return false
         val leaves = EffectWalker.leaves(ability.effect)
         if (leaves.isEmpty()) return false
+        if (leaves.any { it is RecordChosenLinkedExileEffect }) return choosesNothingNew(state, activation)
         if (leaves.all { it is AttachEquipmentEffect }) {
             return attachesToCurrentHost(state, activation) ||
                 movesAgainAfterCombat(state, playerId, ability, activation) ||
                 movesBeforeCombatOntoNoBetterAttacker(state, playerId, ability, activation)
         }
         return predicates != null && gathersNothing(state, playerId, leaves, activation, predicates)
+    }
+
+    /**
+     * "Choose a card exiled with this permanent" that cannot change which card is chosen: no
+     * creature card in the pile besides the one already chosen, or the source already activated an
+     * ability this turn. See the class doc for the Koh log this comes from.
+     */
+    private fun choosesNothingNew(state: GameState, activation: ActivateAbility): Boolean {
+        val source = state.getEntity(activation.sourceId) ?: return false
+        if (source.get<AbilityActivatedThisTurnComponent>()?.anyActivated == true) return true
+        val chosen = source.get<ChosenLinkedExileComponent>()?.chosenId
+        val pile = source.get<LinkedExileComponent>()?.exiledIds.orEmpty()
+        return pile.none { id ->
+            id != chosen && state.getEntity(id)?.get<CardComponent>()?.typeLine?.isCreature == true
+        }
     }
 
     /** An attach whose one target is the permanent the source is already attached to. */

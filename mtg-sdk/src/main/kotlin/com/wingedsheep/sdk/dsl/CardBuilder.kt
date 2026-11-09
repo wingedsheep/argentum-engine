@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
@@ -1892,6 +1893,11 @@ class ActivatedAbilityBuilder(private val declaredTargets: TargetList = TargetLi
     }
     /** Colors that may be spent on the `{X}` portion of this ability's cost (empty = any). */
     var xManaRestriction: Set<Color> = emptySet()
+    /**
+     * "Spend only mana of the chosen color to activate this ability" — every generic symbol of the
+     * cost must be paid with mana of this color set. See [ActivatedAbility.payOnlyWithManaOf].
+     */
+    var payOnlyWithManaOf: ManaColorSet? = null
     /** Minimum legal value for `{X}` in this ability's cost (set to 1 for "X can't be 0"). */
     var minimumXValue: Int = 0
     /**
@@ -1959,6 +1965,7 @@ class ActivatedAbilityBuilder(private val declaredTargets: TargetList = TargetLi
             genericCostReduction = genericCostReduction,
             conditionalCostReduction = conditionalCostReduction,
             xManaRestriction = xManaRestriction,
+            payOnlyWithManaOf = payOnlyWithManaOf,
             minimumXValue = minimumXValue,
             xDefinedAs = xDefinedAs,
             cantBeCopied = cantBeCopied

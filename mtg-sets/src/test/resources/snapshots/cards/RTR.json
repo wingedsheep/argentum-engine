@@ -2870,6 +2870,63 @@
     ]
 }
 
+// Necropolis Regent
+{
+    "name": "Necropolis Regent",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nWhenever a creature you control deals combat damage to a player, put that many +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necropolis Regent:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "MYTHIC",
+        "artist": "Winona Nelson",
+        "flavorText": "\"Jarad fancies himself king of the undercity, but he's merely king of rot.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b421dcc9-0299-416d-86bc-c70ef49bcf98.jpg?1783940361",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If that creature deals combat damage to a player at the same time it's dealt lethal damage (perhaps because it has trample and was blocked), it will die before the triggered ability resolves and puts +1/+1 counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Perilous Shadow
 {
     "name": "Perilous Shadow",

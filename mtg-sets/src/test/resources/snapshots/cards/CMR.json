@@ -2612,6 +2612,144 @@
     ]
 }
 
+// Szat's Will
+{
+    "name": "Szat's Will",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n• Each opponent sacrifices a creature they control with the greatest power.\n• Exile all opponents' graveyards, then create X 0/1 black Thrull creature tokens, where X is the greatest power among creature cards exiled this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "EachOpponent"
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": "creature"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "collectionFilter": "GreatestPower",
+                                    "storeMatching": "matching1"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching1",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected2",
+                                    "prompt": "Choose a creature with the greatest power to sacrifice"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected2",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Sacrifice"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Each opponent sacrifices a creature they control with the greatest power"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StoreNumber",
+                                "name": "number0",
+                                "amount": {
+                                    "type": "AggregateZone",
+                                    "player": "EachOpponent",
+                                    "zone": "Graveyard",
+                                    "filter": "creature",
+                                    "aggregation": "MAX",
+                                    "property": "POWER"
+                                }
+                            },
+                            "ExileOpponentsGraveyards",
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "number0"
+                                },
+                                "power": 0,
+                                "toughness": 1,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Thrull"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9f3042b-784c-4006-9bf1-60a323e60c5c.jpg?1783928591"
+                            }
+                        ]
+                    },
+                    "description": "Exile all opponents' graveyards, then create X 0/1 black Thrull creature tokens, where X is the greatest power among creature cards exiled this way"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ]
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9828be7b-1eae-4718-9e71-2f625121b00b.jpg?1783928826"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thalisse, Reverent Medium
 {
     "name": "Thalisse, Reverent Medium",

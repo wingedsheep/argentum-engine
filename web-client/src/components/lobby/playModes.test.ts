@@ -120,6 +120,16 @@ describe('playModes', () => {
     expect(recipe.settings.setCodes).toEqual(['BLB'])
   })
 
+  it('deals Jump In from the chosen Jumpstart set, falling back to the newest', () => {
+    expect(recipeForOptions(defaultOptions('JUMP_IN', true)).settings.setCodes).toEqual(['J25'])
+    expect(recipeForOptions({ ...defaultOptions('JUMP_IN', true), jumpstartSetCode: 'J22' }).settings.setCodes).toEqual(['J22'])
+    // A remembered code that is not a Jumpstart set never reaches the lobby.
+    expect(recipeForOptions({ ...defaultOptions('JUMP_IN', true), jumpstartSetCode: 'BLB' }).settings.setCodes).toEqual(['J25'])
+    // A table playing Jump In asks the same question; its sealed set stays out of it.
+    const ffa = { ...defaultOptions('FREE_FOR_ALL', true), tableCards: 'JUMP_IN' as const, setCode: 'BLB', jumpstartSetCode: 'JMP' }
+    expect(recipeForOptions(ffa).settings.setCodes).toEqual(['JMP'])
+  })
+
   it('passes a deferred Random Set through for the server to roll at start', () => {
     expect(recipeForOptions({ ...defaultOptions('SEALED', true), setCode: 'RANDOM' }).settings.setCodes).toEqual(['RANDOM'])
     expect(recipeForOptions({ ...defaultOptions('DRAFT', true), setCode: 'RANDOM' }).settings.setCodes).toEqual(['RANDOM'])

@@ -1,3 +1,57 @@
+// Aggressive Instinct
+{
+    "name": "Aggressive Instinct",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Wolk Sheep",
+        "flavorText": "\"Mowu was wary that day, as though he sensed the danger ahead.\"\n—Jiang Yanggu's travelogue",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40ab4bcf-e6b9-4368-97d5-56862713a66a.jpg?1783934625"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ancestor Dragon
 {
     "name": "Ancestor Dragon",
