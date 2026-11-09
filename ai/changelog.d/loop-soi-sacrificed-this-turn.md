@@ -1,0 +1,1 @@
+- #4607 The AI reads "you may play cards exiled with this" over a pile its own trigger fills as card draw (Evendo Brushrazer), pricing and drafting such cards as card advantage
