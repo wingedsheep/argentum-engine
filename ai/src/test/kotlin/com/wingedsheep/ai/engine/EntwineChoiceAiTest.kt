@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -61,5 +62,13 @@ class EntwineChoiceAiTest : FunSpec({
         cast.chosenModes.size shouldBe (if (entwined) 4 else 2)
         cast.chosenModes.toSet().size shouldBe cast.chosenModes.size
         d.submit(cast).error shouldBe null
+    }
+
+    test("the draft rating prices the two modes every cast gets, not all four") {
+        // The static chooseCount of an entwine modal is the entwined ceiling; the plain cast is the
+        // one the card's mana cost buys.
+        val modal = KayasGuile.script.spellEffect.shouldBeInstanceOf<ModalEffect>()
+        val chooseTwo = modal.copy(chooseCount = 2, minChooseCount = 2, dynamicChooseCount = null, dynamicMinChooseCount = null)
+        LimitedCardRater.effectValue(modal) shouldBe LimitedCardRater.effectValue(chooseTwo)
     }
 })
