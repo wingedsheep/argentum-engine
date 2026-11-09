@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
+import com.wingedsheep.engine.state.components.player.ExtraTurnsComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -26,7 +26,7 @@ import io.kotest.matchers.shouldBe
  * The three moving parts are asserted separately:
  *  - **Extra turn** — in a 2-player game an extra turn is modelled by the opponent skipping their
  *    next turn ([SkipNextTurnComponent]).
- *  - **Lose clause** — [LoseAtEndStepComponent] is present on the printed cast and *absent* on the
+ *  - **Lose clause** — the pending extra turn ([ExtraTurnsComponent]) carries it on the printed cast and *not* on the
  *    cleaved cast (the whole point of the bracket removal).
  *  - **Damage can't be prevented** — scoped to the extra turn, so it's scheduled as a delayed
  *    trigger ([DamageCantBePreventedThisTurnEffect], timing NEXT_TURN); a behavioural test crosses
@@ -57,7 +57,7 @@ class AlchemistsGambitScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(game.player2Id)?.has<SkipNextTurnComponent>() shouldBe true
                 }
                 withClue("The printed cast keeps the drawback: the caster loses at the extra turn's end step") {
-                    game.state.getEntity(game.player1Id)?.has<LoseAtEndStepComponent>() shouldBe true
+                    game.state.getEntity(game.player1Id)?.get<ExtraTurnsComponent>()?.pending?.single()?.loseAtEndStep shouldBe true
                 }
                 withClue("A delayed trigger is scheduled to make damage unpreventable on the extra turn") {
                     game.state.delayedTriggers.any {
@@ -93,7 +93,7 @@ class AlchemistsGambitScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(game.player2Id)?.has<SkipNextTurnComponent>() shouldBe true
                 }
                 withClue("The cleaved cast drops the drawback: NO lose-at-end-step is scheduled") {
-                    game.state.getEntity(game.player1Id)?.has<LoseAtEndStepComponent>() shouldBe false
+                    game.state.getEntity(game.player1Id)?.get<ExtraTurnsComponent>()?.pending?.single()?.loseAtEndStep shouldBe false
                 }
                 withClue("The damage-can't-be-prevented clause survives (it's outside the brackets)") {
                     game.state.delayedTriggers.any {

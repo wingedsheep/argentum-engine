@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.player.ExtraTurnsComponent
+import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -39,7 +41,7 @@ class UginsNexusTest : FunSpec({
         return driver
     }
 
-    test("Ugin's Nexus prevents extra turns from Last Chance") {
+    test("Ugin's Nexus skips the extra turn from Last Chance when it would begin, so the caster doesn't lose") {
         val driver = createDriver()
         val caster = driver.activePlayer!!
         val opponent = driver.getOpponent(caster)
@@ -55,8 +57,49 @@ class UginsNexusTest : FunSpec({
         driver.castSpell(caster, lastChance, emptyList())
         driver.bothPass()
 
-        // Opponent should NOT have SkipNextTurnComponent — extra turns are prevented
-        driver.state.getEntity(opponent)?.has<SkipNextTurnComponent>() shouldBe false
+        // The extra turn is created normally (rulings: not prevented, skipped as it would begin)
+        driver.state.getEntity(caster)?.get<ExtraTurnsComponent>()?.pending?.size shouldBe 1
+
+        // End the turn: the extra turn would begin, is skipped, and the opponent's turn follows.
+        driver.passPriorityUntil(Step.END, maxPasses = 200)
+        driver.bothPass()
+        driver.activePlayer shouldBe opponent
+        driver.state.getEntity(caster)?.has<LoseAtEndStepComponent>() shouldBe false
+        driver.state.getEntity(caster)?.get<ExtraTurnsComponent>()?.begun shouldBe 0
+    }
+
+    test("an extra turn created while Ugin's Nexus is out happens if it has left before the turn would begin") {
+        val driver = createDriver()
+        val caster = driver.activePlayer!!
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val nexusId = driver.putPermanentOnBattlefield(caster, "Ugin's Nexus")
+        val lastChance = driver.putCardInHand(caster, "Last Chance")
+        driver.giveMana(caster, Color.RED, 2)
+        driver.castSpell(caster, lastChance, emptyList())
+        driver.bothPass()
+
+        // Shatter the Nexus: it is exiled and its own extra turn is created; both turns now happen.
+        val shatter = driver.putCardInHand(caster, "Shatter")
+        driver.giveMana(caster, Color.RED, 2)
+        driver.castSpell(caster, shatter, listOf(nexusId))
+        driver.bothPass()
+        driver.state.getEntity(caster)?.get<ExtraTurnsComponent>()?.pending?.size shouldBe 2
+
+        fun endTurn() {
+            val result = driver.services.turnManager.endTurn(driver.state)
+            result.error shouldBe null
+            driver.replaceState(result.state)
+        }
+        endTurn()
+        // The extra turn created last (the Nexus's own) goes first, then Last Chance's.
+        driver.activePlayer shouldBe caster
+        driver.state.getEntity(caster)?.has<LoseAtEndStepComponent>() shouldBe false
+        endTurn()
+        driver.activePlayer shouldBe caster
+        driver.state.getEntity(caster)?.has<LoseAtEndStepComponent>() shouldBe true
+        driver.state.getEntity(caster)?.get<ExtraTurnsComponent>()?.begun shouldBe 2
     }
 
     test("destroying Ugin's Nexus exiles it and grants extra turn") {

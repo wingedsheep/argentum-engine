@@ -1043,15 +1043,25 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     // =========================================================================
 
     /**
-     * When a player would take an extra turn.
-     * Used by PreventExtraTurns replacement effect (Ugin's Nexus).
+     * When a player would begin an extra turn (a turn created by a spell or ability, CR 500.7).
+     * Replacement-only, read by [com.wingedsheep.sdk.scripting.PreventExtraTurns]; [player] is
+     * relative to the replacement's controller ([Player.Each] for Ugin's Nexus,
+     * [Player.EachOpponent] for Trouble in Pairs).
      */
     @SerialName("ExtraTurnEvent")
     @Serializable
     data class ExtraTurnEvent(
         val player: Player = Player.Each
     ) : EventPattern {
-        override val description: String = "${player.description} would take an extra turn"
+        override val description: String = "${player.description} would begin an extra turn"
+
+        /** The player in "if <subject> would begin an extra turn". */
+        val subjectDescription: String
+            get() = when (player) {
+                Player.Each -> "a player"
+                Player.EachOpponent, Player.AnOpponent -> "an opponent"
+                else -> player.description
+            }
     }
 
     // =========================================================================

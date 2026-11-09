@@ -597,8 +597,8 @@ object Effects {
      * is true, the player loses the game at the beginning of that turn's end step (Last Chance,
      * Final Fortune). When [powerUpAbilitiesCantBeActivated] is true, no player may activate a
      * power-up ability during that turn (Kang the Conqueror). Both riders are scoped to the extra
-     * turn this effect creates, so neither applies when `PreventExtraTurns` (Ugin's Nexus) stops
-     * the extra turn from happening at all.
+     * turn this effect creates and apply when it begins, so neither applies when `PreventExtraTurns`
+     * (Ugin's Nexus, Trouble in Pairs) skips the extra turn as it would begin.
      */
     fun TakeExtraTurn(
         target: EffectTarget = EffectTarget.Controller,

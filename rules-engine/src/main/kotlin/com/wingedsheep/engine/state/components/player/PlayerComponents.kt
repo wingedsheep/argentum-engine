@@ -1846,18 +1846,39 @@ data class SpellsCastThisGameComponent(
 }
 
 /**
- * A player's extra turns (CR 500.7). [pending] counts extra turns created for them that haven't
- * begun yet — incremented by `TakeExtraTurnExecutor.insertExtraTurn` (behind the extra-turn
- * prevention check) and spent by `TurnManager` when their next turn begins or is skipped. [begun]
- * is never cleared: it backs [com.wingedsheep.sdk.scripting.values.DynamicAmount.ExtraTurnsBegunThisGame]
- * — "if you haven't begun an extra turn this game" (H.M.S. Bounty, Unlikely Timeship).
+ * One extra turn (CR 500.7) that has been created but has not begun, with the riders that apply
+ * *during that turn*. They live on the turn, not on the effect that made it, so a turn that is
+ * skipped as it would begin (Ugin's Nexus, Trouble in Pairs) never applies them.
+ *
+ * @property loseAtEndStep "At the beginning of that turn's end step, you lose the game" (Last
+ *   Chance, Final Fortune).
+ * @property powerUpAbilitiesCantBeActivated "During that turn, power-up abilities can't be
+ *   activated" (Kang the Conqueror) — global, not scoped to the turn's taker.
+ */
+@Serializable
+data class PendingExtraTurn(
+    val loseAtEndStep: Boolean = false,
+    val powerUpAbilitiesCantBeActivated: Boolean = false,
+)
+
+/**
+ * A player's extra turns (CR 500.7). [pending] holds the extra turns created for them that haven't
+ * begun yet, the one that begins next first: each is pushed on by `TakeExtraTurnExecutor.insertExtraTurn`
+ * ("if a player is given multiple extra turns, the extra turn created last takes place first"), and
+ * one is spent by `TurnManager` when their next turn begins or is skipped. [begun] is never cleared:
+ * it backs [com.wingedsheep.sdk.scripting.values.DynamicAmount.ExtraTurnsBegunThisGame] — "if you
+ * haven't begun an extra turn this game" (H.M.S. Bounty, Unlikely Timeship).
  *
  * The scheduling itself still runs through the opponents' `SkipNextTurnComponent.extraTurnBypasses`;
  * this component only gives the taker's turn its extra-turn identity, which the bypass walk can't:
  * when the taker isn't the active player, the bypass on the active player is spent a turn later.
+ * Skipping a pending extra turn needs no repair of those bypasses: the walk simply carries on to the
+ * next seat, and the bypassed seats' regular turns come round exactly as if the extra turn never
+ * existed.
  */
 @Serializable
-data class ExtraTurnsComponent(val pending: Int = 0, val begun: Int = 0) : Component
+data class ExtraTurnsComponent(val pending: List<PendingExtraTurn> = emptyList(), val begun: Int = 0) : Component
+
 
 /**
  * Tracks the number of permanents (tokens included) put into this player's hand from the

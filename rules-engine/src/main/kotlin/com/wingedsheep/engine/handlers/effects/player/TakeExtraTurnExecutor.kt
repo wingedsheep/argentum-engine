@@ -3,12 +3,11 @@ package com.wingedsheep.engine.handlers.effects.player
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ExtraTurnsComponent
-import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
-import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.components.player.PendingExtraTurn
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect
 import kotlin.reflect.KClass
 
@@ -22,21 +21,12 @@ import kotlin.reflect.KClass
  * scheduling identity. Synthetic bypasses are distinguished from real skips so turn replacements
  * cannot apply to an opponent while the inserted turn is being scheduled.
  *
- * If loseAtEndStep is true (e.g., Last Chance), the caster will also lose the game
- * at the beginning of their next end step.
- *
- * If powerUpAbilitiesCantBeActivated is true (Kang the Conqueror), `turnNumber + 1` is recorded in
- * [GameState.powerUpRestrictedTurns], locking every player out of power-up abilities for that turn.
- * The turn-number stamp has no extra-turn identity: when a second extra-turn effect resolves later
- * in the same turn, the most recently created turn goes first (CR 500.7), but this rider remains on
- * the next turn to begin, rather than following the particular turn this effect created.
- *
- * Checks for PreventExtraTurns replacement effects (e.g., Ugin's Nexus) before applying. Both riders
- * sit behind that check: the engine models Ugin's Nexus as preventing the extra turn outright, so
- * there is no "that turn" for them to apply to. Keeping the riders here rather than as sibling
- * effects in a `Composite` is what keeps "did a turn actually get created" in a single owner — a
- * sibling would have to re-derive this executor's preconditions, and would silently drift the moment
- * `TakeExtraTurn` gains another way to fail.
+ * The extra turn is always created. A replacement such as Ugin's Nexus or Trouble in Pairs
+ * (`PreventExtraTurns`) skips it only when it would *begin* — `TurnManager` applies that — so if the
+ * source has left the battlefield by then the turn happens. The riders ([TakeExtraTurnEffect.loseAtEndStep],
+ * [TakeExtraTurnEffect.powerUpAbilitiesCantBeActivated]) are recorded on the pending extra turn
+ * ([PendingExtraTurn]) and applied by `TurnManager` when that turn begins, so a skipped turn never
+ * applies them and the lockout lands on exactly the turn this effect created.
  */
 class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
 
@@ -51,50 +41,28 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
         val turnTakerId = context.resolveTarget(effect.target, state)
             ?: context.controllerId
 
-        // Check if extra turns are prevented (e.g., Ugin's Nexus on the battlefield)
-        if (ReplacementEffectUtils.isExtraTurnPrevented(state)) {
-            return EffectResult.success(state)
-        }
-
         if (state.getOpponents(turnTakerId).isEmpty()) {
             return EffectResult.error(state, "No opponent found")
         }
-        var newState = insertExtraTurn(state, turnTakerId)
-
-        // "During that turn, power-up abilities can't be activated" (Kang the Conqueror). Stamp the
-        // next turn to actually begin: skipped turns never call `TurnManager.startTurn`, so they
-        // consume no turn numbers. A later extra-turn effect can move this stamp onto the wrong
-        // inserted turn; see the scheduling limitation in the KDoc.
-        if (effect.powerUpAbilitiesCantBeActivated) {
-            newState = newState.copy(
-                powerUpRestrictedTurns = newState.powerUpRestrictedTurns + (newState.turnNumber + 1)
-            )
-        }
-
-        // If loseAtEndStep is true, mark the turn-taker to lose at their next end step
-        // turnsUntilLoss=1 means skip this turn's end step, trigger on the next turn's end step
-        if (effect.loseAtEndStep) {
-            newState = newState.updateEntity(turnTakerId) { container ->
-                container.with(
-                    LoseAtEndStepComponent(
-                        turnsUntilLoss = 1,
-                        message = "You lose the game (Last Chance)"
-                    )
+        return EffectResult.success(
+            insertExtraTurn(
+                state, turnTakerId,
+                PendingExtraTurn(
+                    loseAtEndStep = effect.loseAtEndStep,
+                    powerUpAbilitiesCantBeActivated = effect.powerUpAbilitiesCantBeActivated,
                 )
-            }
-        }
-
-        return EffectResult.success(newState)
+            )
+        )
     }
 
     companion object {
         /**
-         * Insert one extra turn for [takerId], already past the prevention check. "Take an extra
-         * turn" is modeled as every other player skipping their next turn, which inserts one extra
-         * turn for the taker regardless of player count; the taker's [ExtraTurnsComponent.pending]
-         * marks their next turn to begin as that extra turn.
+         * Insert one extra turn for [takerId]. "Take an extra turn" is modeled as every other player
+         * skipping their next turn, which inserts one extra turn for the taker regardless of player
+         * count; the taker's [ExtraTurnsComponent.pending] marks their next turn to begin as that
+         * extra turn. The most recently created extra turn goes first (CR 500.7).
          */
-        fun insertExtraTurn(state: GameState, takerId: EntityId): GameState {
+        fun insertExtraTurn(state: GameState, takerId: EntityId, turn: PendingExtraTurn = PendingExtraTurn()): GameState {
             val bypassed = state.getOpponents(takerId).fold(state) { acc, otherPlayerId ->
                 acc.updateEntity(otherPlayerId) { container ->
                     val existing = container.get<SkipNextTurnComponent>() ?: SkipNextTurnComponent(0)
@@ -104,7 +72,7 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
             }
             return bypassed.updateEntity(takerId) { container ->
                 val extra = container.get<ExtraTurnsComponent>() ?: ExtraTurnsComponent()
-                container.with(extra.copy(pending = extra.pending + 1))
+                container.with(extra.copy(pending = listOf(turn) + extra.pending))
             }
         }
     }

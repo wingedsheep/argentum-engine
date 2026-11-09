@@ -576,20 +576,23 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("no extra turn (Ugin's Nexus) means no lockout either") {
+            test("an extra turn skipped by Ugin's Nexus as it would begin means no lockout either") {
                 val game = lockoutScenario()
                     .withCardOnBattlefield(1, "Ugin's Nexus")
                     .build()
                 game.takeLockedExtraTurn()
 
-                withClue("PreventExtraTurns stops the extra turn — no skip is handed out") {
-                    game.state.getEntity(game.player2Id)?.has<SkipNextTurnComponent>() shouldBe false
+                withClue("the extra turn is created normally — it is skipped only when it would begin") {
+                    game.state.getEntity(game.player2Id)?.get<SkipNextTurnComponent>()?.extraTurnBypasses shouldBe 1
                 }
-                withClue("and with no 'that turn' to bind, nothing is stamped") {
+                withClue("and its lockout is applied when that turn begins, so nothing is stamped yet") {
                     game.state.powerUpRestrictedTurns shouldBe emptySet<Int>()
                 }
 
                 game.crossIntoNextTurn()
+                withClue("with the extra turn skipped, no lockout was ever stamped") {
+                    game.state.powerUpRestrictedTurns shouldBe emptySet<Int>()
+                }
                 withClue("the opponent's turn comes as normal") {
                     game.state.activePlayerId shouldBe game.player2Id
                 }

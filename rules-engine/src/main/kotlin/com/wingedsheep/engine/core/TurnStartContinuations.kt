@@ -14,6 +14,8 @@ data class TurnStartReplacementContinuation(
     val nextPlayerId: EntityId,
     val options: List<TurnStartFollowUp>,
     val followUps: List<TurnStartFollowUp>,
+    /** A mandatory skip applies as well (an extra turn under Ugin's Nexus): the turn can't simply begin. */
+    val mustSkip: Boolean = false,
 ) : AnswerContinuation
 
 /** Remaining first actions in the next actual turn, followed by that turn's untap step. */

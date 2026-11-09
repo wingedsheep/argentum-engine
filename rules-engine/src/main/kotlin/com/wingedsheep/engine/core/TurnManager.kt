@@ -5,6 +5,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.sdk.scripting.OptionalSkipTurnWith
+import com.wingedsheep.sdk.scripting.PreventExtraTurns
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.engine.state.components.player.PendingExtraTurn
 import com.wingedsheep.engine.replacement.ActiveReplacements
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
@@ -1141,9 +1145,12 @@ class TurnManager(
             bypassedOrdinarySeats = false
             val choices = turnStartChoices(current, team)
             val skips = team.any { current.getEntity(it)?.has<SkipNextTurnComponent>() == true }
+            // "If a player would begin an extra turn, that player skips that turn instead" is
+            // mandatory, so it replaces the turn's beginning unless a pending skip already does.
+            val extraSkip = if (skips) null else extraTurnSkip(current, team)
             if (choices.isNotEmpty()) {
                 // Shared-turn teammates collectively choose the replacement for their side's turn.
-                val alternatives = choices.map { it.second }
+                val alternatives = choices.map { it.second } + listOfNotNull(extraSkip)
                 val choiceState = current
                 val result = choiceState.suspendForDecision(
                     question = { id -> ChooseOptionDecision(id, choices.first().first,
@@ -1155,14 +1162,25 @@ class TurnManager(
                                 else choiceState.getEntity(it)?.get<CardComponent>()?.name
                             }
                             "Skip this turn — ${name ?: "replacement"}: ${option.effect.description}"
-                        } + if (skips) "Skip this turn using the pending skip effect" else "Begin this turn",
-                        defaultSearch = if (skips) "Skip this turn using the pending skip effect" else "Begin this turn",
+                        } + listOfNotNull(
+                            if (extraSkip != null) null
+                            else if (skips) "Skip this turn using the pending skip effect" else "Begin this turn"),
+                        defaultSearch = if (extraSkip != null) null
+                            else if (skips) "Skip this turn using the pending skip effect" else "Begin this turn",
                         optionCardIds = alternatives.mapIndexedNotNull { index, option ->
                             option.context.sourceId?.takeIf { it in choiceState.getBattlefield() }?.let { index to listOf(it) }
                         }.toMap()) },
-                    answer = TurnStartReplacementContinuation(candidate, alternatives, followUps)
+                    answer = TurnStartReplacementContinuation(candidate, alternatives, followUps,
+                        mustSkip = extraSkip != null)
                 )
                 return result.copy(events = events + result.events)
+            }
+            if (extraSkip != null) {
+                current = spendPendingExtraTurn(current, team, began = false)
+                events.add(TurnSkippedEvent(candidate, extraSkip.context.sourceId))
+                previous = candidate
+                candidate = current.getNextTeam(candidate)
+                continue
             }
             if (!skips) {
                 val result = finishTurnSelection(current, candidate, followUps)
@@ -1203,6 +1221,32 @@ class TurnManager(
         return choices
     }
 
+    /**
+     * The mandatory replacement that skips this turn because it is an extra turn (Ugin's Nexus,
+     * Trouble in Pairs), or null. It applies when a member of [team] has an extra turn pending —
+     * the turn about to begin is that extra turn — and the replacement's player scope, read from
+     * its controller, names that member. Read as the turn would begin, not when it was created.
+     */
+    private fun extraTurnSkip(state: GameState, team: List<EntityId>): TurnStartFollowUp? {
+        val takers = team.filter { state.getEntity(it)?.get<ExtraTurnsComponent>()?.pending?.isNotEmpty() == true }
+        if (takers.isEmpty()) return null
+        for (active in ActiveReplacements.all(state) { it is PreventExtraTurns }) {
+            if (!active.granted && (state.projectedState.hasLostAllAbilities(active.sourceId) ||
+                    state.projectedState.isFaceDown(active.sourceId))) continue
+            val printed = active.effect as PreventExtraTurns
+            val text = if (active.granted) null else TextChanges.of(state, active.sourceId)
+            val replacement = text?.let { printed.applyTextReplacement(it) as PreventExtraTurns } ?: printed
+            val event = replacement.appliesTo as? EventPattern.ExtraTurnEvent ?: continue
+            val context = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId,
+                objectReferences = ObjectReferenceEnvironment(
+                    captured = true, origin = state.objectRef(active.sourceId), source = state.objectRef(active.sourceId)))
+            val players = context.resolvePlayerTargets(EffectTarget.PlayerRef(event.player), state)
+            if (takers.none { it in players }) continue
+            return TurnStartFollowUp(CompositeEffect(emptyList(), descriptionOverride = "that extra turn is skipped"), context)
+        }
+        return null
+    }
+
     private fun consumePendingTurnSkip(state: GameState, team: List<EntityId>): GameState =
         team.fold(spendPendingExtraTurn(state, team, began = false)) { current, member ->
             current.updateEntity(member) { container ->
@@ -1214,7 +1258,9 @@ class TurnManager(
 
     fun resumeTurnStartReplacement(state: GameState, frame: TurnStartReplacementContinuation,
         response: DecisionResponse): ExecutionResult {
-        if (response !is OptionChosenResponse || response.optionIndex !in 0..frame.options.size)
+        // A mandatory skip leaves no "begin this turn" answer (the slot one past the options).
+        val lastValid = if (frame.mustSkip) frame.options.size - 1 else frame.options.size
+        if (response !is OptionChosenResponse || response.optionIndex !in 0..lastValid)
             return ExecutionResult.error(state, "Expected a valid turn replacement choice")
         if (response.optionIndex == frame.options.size)
             return finishTurnSelection(state, frame.nextPlayerId, frame.followUps)
@@ -1234,9 +1280,12 @@ class TurnManager(
                 previousPlayerId = nextPlayer)
             return result.copy(events = listOf(TurnSkippedEvent(nextPlayer)) + result.events)
         }
+        val riders = nextTeam.mapNotNull { member ->
+            state.getEntity(member)?.get<ExtraTurnsComponent>()?.pending?.firstOrNull()?.let { member to it }
+        }
         val turnResult = startTurn(spendPendingExtraTurn(state, nextTeam, began = true), nextPlayer)
         if (turnResult.outcome !is Outcome.Done) return turnResult
-        val result = finishTurnStart(turnResult.state, nextPlayer, followUps)
+        val result = finishTurnStart(applyExtraTurnRiders(turnResult.state, riders), nextPlayer, followUps)
         return result.copy(events = turnResult.events + result.events)
     }
 
@@ -1250,12 +1299,35 @@ class TurnManager(
     private fun spendPendingExtraTurn(state: GameState, team: List<EntityId>, began: Boolean): GameState =
         team.fold(state) { current, member ->
             val extra = current.getEntity(member)?.get<ExtraTurnsComponent>()
-            if (extra == null || extra.pending == 0) current
+            if (extra == null || extra.pending.isEmpty()) current
             else current.updateEntity(member) { container ->
-                container.with(extra.copy(pending = extra.pending - 1,
+                container.with(extra.copy(pending = extra.pending.drop(1),
                     begun = if (began) extra.begun + 1 else extra.begun))
             }
         }
+
+    /**
+     * The riders of an extra turn that has just begun ("during that turn" / "at the beginning of
+     * that turn's end step"), applied to the new turn. [state] is already in that turn, so its turn
+     * number is the one the lockout is stamped against. A skipped extra turn never gets here.
+     */
+    private fun applyExtraTurnRiders(
+        state: GameState, riders: List<Pair<EntityId, PendingExtraTurn>>
+    ): GameState {
+        var current = state
+        for ((member, rider) in riders) {
+            if (rider.loseAtEndStep) {
+                // Already in the extra turn, so its own end step is the very next one: lose there.
+                current = current.updateEntity(member) {
+                    it.with(LoseAtEndStepComponent(turnsUntilLoss = 0, message = "You lose the game (Last Chance)"))
+                }
+            }
+            if (rider.powerUpAbilitiesCantBeActivated) {
+                current = current.copy(powerUpRestrictedTurns = current.powerUpRestrictedTurns + current.turnNumber)
+            }
+        }
+        return current
+    }
 
     /** Skip-then actions are the first work in the next actual turn (CR 614.10b). */
     fun finishTurnStart(state: GameState, playerId: EntityId,
