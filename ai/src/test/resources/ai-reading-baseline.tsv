@@ -3388,6 +3388,7 @@ Conduit Pylons
 Conduit of Storms
 Conduit of Worlds	intent: Pipeline(ChosenTargets→?)
 Cone of Flame
+Confirm Suspicions
 Confiscate
 Confiscation Coup
 Confounding Conundrum
@@ -3949,6 +3950,7 @@ Daring Leap
 Daring Mechanic
 Daring Piracy
 Daring Saboteur
+Daring Sleuth
 Daring Thunder-Thief
 Daring Waverider
 Dark Banishing
@@ -4324,6 +4326,7 @@ Den of the Bugbear	intent: GrantTriggeredAbilityEffect
 Denethor, Ruling Steward
 Denizen of the Deep
 Dennick, Pious Apprentice
+Deny Existence
 Deny the Divine
 Denzilore Fatehold
 Depala, Pilot Exemplar
@@ -5496,6 +5499,7 @@ Enforcer Griffin
 Engine Rat
 Engineered Explosives
 Engineered Might
+Engulf the Shore
 Engulfing Eruption
 Engulfing Slagwurm
 Enhanced Surveillance	intent: Pipeline(graveyard→library)
@@ -5553,6 +5557,7 @@ Epic Downfall
 Epic Fight
 Epic Proportions
 Epicure of Blood
+Epiphany at the Drownyard
 Epitaph Golem
 Equilibrium Adept
 Equinox
@@ -6372,6 +6377,7 @@ Fleeting Distraction
 Fleeting Effigy
 Fleeting Flight	timing: GrantKeywordEffect
 Fleeting Image
+Fleeting Memories
 Fleeting Reflection
 Fleeting Spirit
 Fleetwheel Cruiser
@@ -6545,6 +6551,7 @@ Forging the Anchor
 Forging the Tyrite Sword
 Forgotten Ancient	intent: DistributeCountersFromSelfEffect
 Forgotten Cave
+Forgotten Creation
 Forgotten Monument
 Forgotten Sentinel
 Fork
@@ -6740,6 +6747,7 @@ Furnace Whelp
 Furor of the Bitten
 Furtive Analyst
 Furtive Courier
+Furtive Homunculus
 Fury Sliver
 Furyblade Vampire
 Furycalm Snarl
@@ -6960,6 +6968,7 @@ Georgiou, Terran Emperor
 Geothermal Bog
 Geothermal Crevice
 Geothermal Kami
+Geralf's Masterpiece
 Geralf, Visionary Stitcher
 Geralf, the Fleshwright
 Germinate Recruits
@@ -7517,6 +7526,7 @@ Gollum, Scheming Guide	intent: OpponentGuessesTopCardKindEffect
 Gollum, Silent Slinker
 Golos, Tireless Pilgrim
 Goma Fada Vanguard
+Gone Missing
 Gongaga, Reactor Town
 Gonti's Aether Heart
 Gonti's Machinations
@@ -9053,6 +9063,7 @@ Invasion of Xerex
 Invasion of Zendikar
 Invasion of the Giants	intent: ModifySpellCostsEffect
 Invasive Maneuvers
+Invasive Surgery
 Inventive Iteration
 Inventive Wingsmith
 Inventor's Apprentice
@@ -10011,6 +10022,7 @@ Lambholt Raconteur
 Lammastide Weave
 Lampad of Death's Vigil
 Lamplight Phoenix
+Lamplighter of Selhoff
 Lance
 Lancer Sliver
 Land Equilibrium
@@ -10796,6 +10808,7 @@ Mangara, the Diplomat
 Manglehorn
 Manhole Missile
 Maniacal Rage	polarity: Aura>CantBlock; polarity: Aura>ModifyStats
+Manic Scribe
 Manic Vandal
 Manifest Dread	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Manifestation Sage
