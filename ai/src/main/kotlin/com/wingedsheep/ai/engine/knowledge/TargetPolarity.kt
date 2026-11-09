@@ -110,6 +110,8 @@ import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.ForceBlockEffect
+import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -1623,6 +1625,15 @@ object TargetPolarityAnalyzer {
             // takes the block choice away from its controller, dragging the creature into a block
             // it would not have made — the opponent's creature, like "can't block" above.
             is MarkMustBlockThisTurnEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Up to one target creature defending player controls blocks it this combat if able"
+            // (Impetuous Devils, Avalanche Tusker): the same forced block, pinned to the attacker
+            // that names it — a blocker dragged off the rest of the defence or into a bad trade.
+            is ForceBlockEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Transform target Werewolf you control" (Waxing Moon), "transform target Incubator
+            // token you control" (Elvish Vatkeeper, Seedpod Caretaker): the cards that aim a
+            // transform aim it at their controller's own double-faced permanent, whose other face
+            // is the one they want — a gift. A permanent transforming itself names no slot.
+            is TransformEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is CantBeRegeneratedEffect -> leaf.target to TargetPolarity.HARMFUL
             // "Target creature loses all abilities" strips its holder — the static LoseAllAbilities
             // an Aura grants reads the same. A drawback-only creature gains from it, but that is a
@@ -2153,6 +2164,16 @@ object TargetPolarityAnalyzer {
      */
     internal fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity =
         grantedEffectPolarity(ability.effect, listOfNotNull(ability.targetRequirement))
+
+    /**
+     * Whether an attachment's own statics curse its host — a harmful static beside any ability it
+     * grants (Imprisoned in the Moon's lost abilities, Compulsory Rest's "can't attack or block").
+     * What the curse hands its host is then the opponent's consolation, never the Aura's payoff.
+     */
+    internal fun cursesHost(statics: List<StaticAbility>): Boolean = statics.any { static ->
+        static !is GrantActivatedAbility && static !is GrantTriggeredAbility &&
+            staticPolarity(static) == TargetPolarity.HARMFUL
+    }
 
     /**
      * How a granted activated ability reads for the permanent holding it: a mana ability is the

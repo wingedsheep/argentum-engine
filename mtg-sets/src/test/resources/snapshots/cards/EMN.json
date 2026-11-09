@@ -241,6 +241,75 @@
     ]
 }
 
+// Assembled Alphas
+{
+    "name": "Assembled Alphas",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Whenever this creature blocks or becomes blocked by a creature, this creature deals 3 damage to that creature and 3 damage to that creature's controller.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Assembled Alphas:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "ControllerOfTriggeringEntity"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked by a creature, this creature deals 3 damage to that creature and 3 damage to that creature's controller."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "There is always a toll to pay for passage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/8603c493-afb0-47a1-b4e3-9848b3824840.jpg?1783937466",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "The triggered ability deals damage to the creature's controller even if the creature isn't dealt damage, perhaps because it has left the battlefield or because the damage was prevented."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The triggered ability triggers once for each creature blocking or blocked by Assembled Alphas. The ability resolves and deals damage to that creature before combat damage is dealt. If that damage destroys all creatures blocking Assembled Alphas, Assembled Alphas doesn't become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Backwoods Survivalists
 {
     "name": "Backwoods Survivalists",
@@ -6665,6 +6734,75 @@
     ]
 }
 
+// Impetuous Devils
+{
+    "name": "Impetuous Devils",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Trample, haste\nWhen this creature attacks, up to one target creature defending player controls blocks it this combat if able.\nAt the beginning of the end step, sacrifice this creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Impetuous Devils:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Impetuous Devils:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1ba7acc0-6ef0-4c34-be23-118e1872271f.jpg?1783937460",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If a creature affected by the first triggered ability of Impetuous Devils is tapped or is affected by a spell or ability that says it can't block, then it doesn't block. If there's a cost associated with having that creature block, its controller isn't forced to pay that cost, so it doesn't have to block in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Imprisoned in the Moon
 {
     "name": "Imprisoned in the Moon",
@@ -7032,6 +7170,79 @@
         "collectorNumber": "8",
         "artist": "Jason Felix",
         "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e9160cb-d3de-49ca-a97d-2cd259cd5447.jpg?1783937526"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kessig Prowler
+{
+    "name": "Kessig Prowler",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "{4}{G}: Transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kessig Prowler:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Sinuous Predator",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "This creature can't be blocked by more than one creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "CantBeBlockedByMoreThan",
+                    "maxBlockers": 1
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "163",
+            "rarity": "UNCOMMON",
+            "artist": "Slawomir Maniak",
+            "flavorText": "A different kind of transformation has taken place.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/8/f89f116a-1e8e-4ae7-be39-552e4954f229.jpg?1783937448",
+            "rulings": [
+                {
+                    "date": "2016-07-13",
+                    "text": "If Sinuous Predator gains menace, it can't be blocked by only one creature and it can't be blocked by more than one creature, so it simply can't be blocked."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "In the wake of Emrakul, some werewolves' human forms were lost forever.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f89f116a-1e8e-4ae7-be39-552e4954f229.jpg?1783937448"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -7760,6 +7971,85 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd8272ca-8e3d-4980-99f2-352a1db76d74.jpg?1783937424"
     },
     "colorIdentityOverride": []
+}
+
+// Make Mischief
+{
+    "name": "Make Mischief",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Make Mischief deals 1 damage to any target. Create a 1/1 red Devil creature token. It has \"When this token dies, it deals 1 damage to any target.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e78c4b8-371b-43d7-a315-fb299704aa60.jpg?1783937682",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Make Mischief:1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t1"
+                            },
+                            "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Ben Maier",
+        "flavorText": "A tidy desk is as good as an invitation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2049072-5901-4edd-8305-ce55f256bca5.jpg?1783937459"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Markov Crusader
@@ -8869,6 +9159,89 @@
     ]
 }
 
+// Otherworldly Outburst
+{
+    "name": "Otherworldly Outburst",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+0 until end of turn. When that creature dies this turn, create a 3/2 colorless Eldrazi Horror creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 2,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Eldrazi",
+                            "Horror"
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "fireOnce": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Kieran Yanner",
+        "flavorText": "A tiny crack is enough to open the mind to Emrakul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34409e34-04e9-4279-8d21-6ef362b20b72.jpg?1783937462",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature dies before Otherworldly Outburst resolves, the spell doesn't resolve. You won't get an Eldrazi Horror token."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature doesn't die this turn, the delayed triggered ability simply won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Primal Druid
 {
     "name": "Primal Druid",
@@ -8943,6 +9316,60 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Prophetic Ravings
+{
+    "name": "Prophetic Ravings",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has haste and \"{T}, Discard a card: Draw a card.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Prophetic Ravings:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": "AtomDiscard"
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Keep your herons and shrews! You will find nothing in the moon, for the moon is a lie! It has told me so!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9e58861-a548-4344-a37b-1c5764b144d9.jpg?1783937459"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9520,6 +9947,117 @@
     ]
 }
 
+// Shreds of Sanity
+{
+    "name": "Shreds of Sanity",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to one target instant card and up to one target sorcery card from your graveyard to your hand, then discard a card. Exile Shreds of Sanity.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "instant own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "A few gnawing thoughts can eat at the mind until nothing else remains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/782e5600-ac63-4f90-acbe-49c04d2840ee.jpg?1783937454",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You may discard one of the cards you return to your hand. If you have no other cards in hand, you must discard one of the cards you return to your hand."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You may cast Shreds of Sanity with just one target. You may also cast it without any targets if you just want to discard a card."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you target two cards and one of the targeted cards becomes illegal, you'll still return the other one, discard a card, and exile Shreds of Sanity. If each targeted card becomes illegal, Shreds of Sanity doesn't resolve and you won't discard a card or exile Shreds of Sanity."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shrill Howler
 {
     "name": "Shrill Howler",
@@ -10008,6 +10546,76 @@
     ]
 }
 
+// Somberwald Stag
+{
+    "name": "Somberwald Stag",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elk",
+    "oracleText": "When this creature enters, you may have it fight target creature you don't control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Somberwald Stag:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Fight",
+                        "target1": "Self",
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Lake Hurwitz",
+        "flavorText": "Despite the reemergence of werewolves and the proliferation of Eldrazi, elk numbers in the Somberwald have remained steady.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/651428a8-27af-4137-84f0-f71274a8b4a6.jpg?1783937438",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose the target of the triggered ability as it goes on the stack, but you choose whether or not to fight as that ability resolves."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the targeted creature is an illegal target when Somberwald Stag’s ability tries to resolve, the ability doesn’t resolve. If Somberwald Stag is no longer on the battlefield, the targeted creature won’t deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Soul Separator
 {
     "name": "Soul Separator",
@@ -10364,6 +10972,51 @@
     ]
 }
 
+// Spreading Flames
+{
+    "name": "Spreading Flames",
+    "manaCost": "{6}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Spreading Flames deals 6 damage divided as you choose among any number of target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 6,
+            "maxTargets": 6
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 6,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "\"Hang on. I'm just tidying up.\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c655b1dc-8df1-44c8-a963-bd0a671ec7e5.jpg?1783937452",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You announce how the damage will be divided as part of casting Spreading Flames. Each chosen target must receive at least 1 damage."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If Spreading Flames has multiple targets, and some, but not all, are illegal targets when Spreading Flames tries to resolve, Spreading Flames will still deal damage to the remaining legal targets according to the original damage division. If all the targets are illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Springsage Ritual
 {
     "name": "Springsage Ritual",
@@ -10451,6 +11104,126 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Stensia Banquet
+{
+    "name": "Stensia Banquet",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Stensia Banquet deals damage to target opponent or planeswalker equal to the number of Vampires you control.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Vampire"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponentOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"We can't win a war on an empty stomach, can we?\"\n—Olivia Voldaren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/828db19a-ca0d-4b82-a4b6-451125865093.jpg?1783937452",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You may cast Stensia Banquet targeting an opponent even if you control no Vampires. You'll still draw a card."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The number of Vampires you control is counted only as Stensia Banquet resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Stensia Innkeeper
+{
+    "name": "Stensia Innkeeper",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "When this creature enters, tap target land an opponent controls. That land doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stensia Innkeeper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "tap target land an opponent controls. That land doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Winona Nelson",
+        "flavorText": "\"The perils of the road, you say? Don't worry. You won't have to face those again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee40c471-70c8-4171-a214-ce932c4c7e2e.jpg?1783937454"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -11109,6 +11882,99 @@
         "GREEN",
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Tangleclaw Werewolf
+{
+    "name": "Tangleclaw Werewolf",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "This creature can block an additional creature each combat.\n{6}{G}: Transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tangleclaw Werewolf:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{G}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Fibrous Entangler",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "Vigilance\nThis creature must be blocked if able.\nThis creature can block an additional creature each combat.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 6
+        },
+        "keywords": [
+            "VIGILANCE"
+        ],
+        "script": {
+            "staticAbilities": [
+                "MustBeBlockedStatic",
+                {
+                    "type": "CanBlockAdditionalForCreatureGroup",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "174",
+            "rarity": "UNCOMMON",
+            "artist": "Steven Belledin",
+            "flavorText": "\". . . because to be honest, I couldn't tell you.\"\n—Halana, Kessig ranger",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/e/ee648500-a213-4aa4-a97c-b7223c11bebd.jpg?1783937443",
+            "rulings": [
+                {
+                    "date": "2016-07-13",
+                    "text": "Only one creature is required to block Fibrous Entangler. Other creatures may also block it, and are free to block other creatures or not block at all."
+                },
+                {
+                    "date": "2016-07-13",
+                    "text": "If Tangleclaw Werewolf transforms into Fibrous Entangler while it's attacking, having vigilance won't cause it to become untapped."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "Steven Belledin",
+        "flavorText": "\"What has long, flesh-rending claws and enormous, bone-crushing teeth?\"\n—Halana, Kessig ranger",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee648500-a213-4aa4-a97c-b7223c11bebd.jpg?1783937443"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11887,6 +12753,93 @@
     ]
 }
 
+// Ulvenwald Captive
+{
+    "name": "Ulvenwald Captive",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "Defender\n{T}: Add {G}.\n{5}{G}{G}: Transform this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ulvenwald Captive:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ulvenwald Captive:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}{G}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ulvenwald Abomination",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "{T}: Add {C}{C}.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 6
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Ulvenwald Abomination:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "175",
+            "artist": "Chris Rahn",
+            "flavorText": "\"The Eldrazi are all too practiced at twisting natural into unnatural.\"\n—Nissa Revane",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/d/0dbaef61-fa39-4ea7-bc21-445401c373e7.jpg?1783937442"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Chris Rahn",
+        "flavorText": "\"Even on a plane as dark as this one, nature will organize a defense against the unnatural.\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dbaef61-fa39-4ea7-bc21-445401c373e7.jpg?1783937442"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ulvenwald Observer
 {
     "name": "Ulvenwald Observer",
@@ -12053,6 +13006,118 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Vildin-Pack Outcast
+{
+    "name": "Vildin-Pack Outcast",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "Trample\n{R}: This creature gets +1/-1 until end of turn.\n{5}{R}{R}: Transform this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vildin-Pack Outcast:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature gets +1/-1 until end of turn."
+            },
+            {
+                "id": "Vildin-Pack Outcast:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}{R}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Dronepack Kindred",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "Trample\n{1}: This creature gets +1/+0 until end of turn.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 7
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Dronepack Kindred:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "This creature gets +1/+0 until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "148",
+            "artist": "Jose Cabrera",
+            "flavorText": "These new terrors will not recede with the setting of the moon.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/6/460f7733-c0a6-4439-a313-7b26ae6ee15b.jpg?1783937455"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Jose Cabrera",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/460f7733-c0a6-4439-a313-7b26ae6ee15b.jpg?1783937455"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12223,6 +13288,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Waxing Moon
+{
+    "name": "Waxing Moon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Transform up to one target Werewolf you control. Creatures you control gain trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Transform",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "permanent Werewolf ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Show them what it means to be the source of nightmares!\"\n—Ulrich, Krallenhorde alpha",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/617f9f3a-61a1-4c73-8efe-3d74fe362901.jpg?1783937438",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You may cast Waxing Moon without targeting a Werewolf. If you do choose a target, and that target becomes illegal, Waxing Moon doesn't resolve, and your creatures won't gain trample."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

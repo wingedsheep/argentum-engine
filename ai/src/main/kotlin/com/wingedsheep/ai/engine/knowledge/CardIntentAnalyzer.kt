@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
@@ -61,6 +62,7 @@ import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -381,7 +383,9 @@ object CardIntentAnalyzer {
         if (IntentTag.REMOVAL !in tags && leaves.any(::isExpiringBaseStats)) expiringPump = true
 
         var anthemBonus = 0
-        for (static in scripts.flatMap { it.staticAbilities }) {
+        for (script in scripts) for (static in script.staticAbilities) {
+            // A curse Aura's granted ability is the opponent's consolation, not our payoff.
+            if (static is GrantActivatedAbility && TargetPolarityAnalyzer.cursesHost(script.staticAbilities)) continue
             tags += tagsOf(static)
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
@@ -2298,6 +2302,9 @@ object CardIntentAnalyzer {
         // other half of a lure — the attacker drags an opposing creature into a block it would not
         // choose, onto a deathtoucher or a bigger attacker. Read for our attack, like the lure.
         is MarkMustBlockThisTurnEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        // "Target creature defending player controls blocks it this combat if able" (Impetuous
+        // Devils, Avalanche Tusker): the same lure, pinned to the attacker that names it.
+        is ForceBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
         // "This creature can attack this turn as though it didn't have defender" (Hightide Hermit,
         // Roving Keep): the one-turn form of the static [CanAttackDespiteDefender] — a wall turned
         // attacker for the fight, to be activated before attacks.
@@ -2926,12 +2933,27 @@ object CardIntentAnalyzer {
      * A group `ForEach` whose body pumps each member until end of turn — the lowered form of
      * "creatures you control get +2/+1 until end of turn". Only the group's own members are
      * pumped ([EffectTarget.IterationEntity]); a body aimed anywhere else is not this shape.
+     *
+     * A team grant of a keyword that only changes a fight — "creatures you control gain trample
+     * until end of turn" (Waxing Moon), first strike, double strike, deathtouch — is the same trick
+     * without the stats (`Patterns.Group.grantKeywordToAll` lowers it the same way): spent in this
+     * turn's combat, or not at all.
      */
     private fun isExpiringGroupPump(effect: Effect): Boolean =
         effect is ForEachEffect && effect.space is IterationSpace.Group &&
-            readingLeaves(effect.body).any {
-                isExpiringPump(it) && (it as ModifyStatsEffect).target == EffectTarget.IterationEntity
+            readingLeaves(effect.body).any { leaf ->
+                when (leaf) {
+                    is ModifyStatsEffect -> isExpiringPump(leaf) && leaf.target == EffectTarget.IterationEntity
+                    is GrantKeywordEffect -> leaf.duration == Duration.EndOfTurn &&
+                        leaf.target == EffectTarget.IterationEntity && leaf.keyword in FIGHT_ONLY_KEYWORDS
+                    else -> false
+                }
             }
+
+    /** Keywords whose whole payoff is a combat they change — see [isExpiringGroupPump]. */
+    private val FIGHT_ONLY_KEYWORDS = setOf(
+        Keyword.TRAMPLE, Keyword.FIRST_STRIKE, Keyword.DOUBLE_STRIKE, Keyword.DEATHTOUCH,
+    ).map { it.name }.toSet()
 
     /**
      * An activated ability that pays for its draw with as many discarded cards ("{2}, {T}, Discard a
@@ -2992,6 +3014,9 @@ object CardIntentAnalyzer {
         // "Can't be blocked by artifact creatures" (Audacious Infiltrator, Fen Hauler): partial
         // evasion is still evasion — the creature gets through whatever the filter shuts out.
         is CantBeBlockedBy -> setOf(IntentTag.EVASION_GRANT)
+        // "Can't be blocked by more than one creature" (Sinuous Predator, Norwood Riders): no gang
+        // block can bring it down, so it gets through at its own size — partial evasion too.
+        is CantBeBlockedByMoreThan -> setOf(IntentTag.EVASION_GRANT)
         is ModifyStats -> when {
             // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
             // of Invasion) is its drawback, never a pump or an answer.
@@ -3024,6 +3049,19 @@ object CardIntentAnalyzer {
                 TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.BENEFICIAL
             ) analyzeEffect(static.ability.effect, static.ability.allTargetRequirements).tags
             else emptySet()
+        // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
+        // Equipment's granted activation: the static form of [GrantActivatedAbilityEffect] — a mana
+        // ability is a mana source, any other helpful ability is the host's own from then on, read
+        // as if printed (a rummage stays card selection). A harmful grant, or any grant beside a curse
+        // (skipped by the caller), is the Aura's polarity's to read, and tags nothing here.
+        is GrantActivatedAbility -> when {
+            static.filter.scope != Scope.AttachedTo -> emptySet()
+            static.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
+                analyzeEffect(static.ability.effect, static.ability.targetRequirements).tags
+                    .let { if (isRummage(static.ability)) asRummage(it) else it }
+            else -> emptySet()
+        }
         is CantAttack -> neutralizeTags(static.filter)
         is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
             else neutralizeTags(static.filter)
