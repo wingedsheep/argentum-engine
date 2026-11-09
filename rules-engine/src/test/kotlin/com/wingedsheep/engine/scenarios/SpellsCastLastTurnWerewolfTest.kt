@@ -27,7 +27,7 @@ import io.kotest.matchers.shouldBe
  * | same | a turn with no spells at all transforms it | "no spells last turn transforms the front face" |
  * | "if a player cast two or more spells last turn" | one player's count, not the table's sum | "one spell from each player doesn't transform the back face" |
  * | same | two spells by the non-active player count | "two spells by the non-active player transform the back face" |
- * | day/night (CR 731.2a) | still reads only the previous turn's active player | "day/night ignores the opponent's spells" |
+ * | day/night (CR 732.2a) | still reads only the previous turn's active player | "day/night ignores the opponent's spells" |
  */
 class SpellsCastLastTurnWerewolfTest : ScenarioTestBase() {
 
@@ -145,7 +145,7 @@ class SpellsCastLastTurnWerewolfTest : ScenarioTestBase() {
 
         context("day/night is unchanged") {
 
-            test("day/night ignores the opponent's spells (CR 731.2a reads the active player)") {
+            test("day/night ignores the opponent's spells (CR 732.2a reads the active player)") {
                 val g = game()
                 g.state = g.state.copy(
                     dayNight = DayNight.DAY,

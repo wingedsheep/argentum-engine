@@ -17944,7 +17944,7 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   spells `player` cast during the immediately preceding turn, on anyone's turn (an opponent's instant
   on your turn counts for that opponent); a multi-player scope sums. Reads the every-player snapshot
   `TurnManager.startTurn` takes before the current-turn counters reset (`previousTurnSpellCountsByPlayer`;
-  the day/night check keeps its own active-side snapshot, CR 731.2). The original Innistrad werewolves:
+  the day/night check keeps its own active-side snapshot, CR 732.2). The original Innistrad werewolves:
   front face "if no spells were cast last turn" is `CompareAmounts(spellsCastLastTurn(), EQ, 0)`; back
   face "if a player cast two or more spells last turn" is one player's count, not the table's sum —
   `CompareAmounts(DynamicAmounts.mostSpellsCastLastTurnByAPlayer(), GTE, 2)`, i.e.
