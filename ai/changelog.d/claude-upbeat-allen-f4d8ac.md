@@ -1,0 +1,1 @@
+- #4595 The AI rates a modal spell whose mode count moves with the cast (entwine, teamwork, "if you control a commander, choose both") by the modes every cast gets, instead of pricing the ceiling as if it came free.

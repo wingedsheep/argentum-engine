@@ -2209,6 +2209,137 @@
     ]
 }
 
+// Kaya's Guile
+{
+    "name": "Kaya's Guile",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose two —\n• Each opponent sacrifices a creature of their choice.\n• Exile all opponents' graveyards.\n• Create a 1/1 white and black Spirit creature token with flying.\n• You gain 4 life.\nEntwine {3} (Choose all if you pay the entwine cost.)",
+    "keywords": [
+        "ENTWINE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}",
+            "displayPrefix": "Entwine",
+            "keyword": "ENTWINE",
+            "declaredSlot": "ENTWINED"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "description": "Each opponent sacrifices a creature of their choice"
+                },
+                {
+                    "effect": "ExileOpponentsGraveyards",
+                    "description": "Exile all opponents' graveyards"
+                },
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE",
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf24e9fa-7d7f-4693-a9ed-b8e725d0ad5c.jpg?1783933222"
+                    },
+                    "description": "Create a 1/1 white and black Spirit creature token with flying"
+                },
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "description": "You gain 4 life"
+                }
+            ],
+            "chooseCount": 4,
+            "minChooseCount": 2,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "ENTWINED"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            },
+            "dynamicMinChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "ENTWINED"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/179bd74b-c458-49d6-90ac-6075454e43dd.jpg?1783933081",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If Kaya's Guile isn't entwined, you must choose two different modes."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Each chosen mode is performed in the order specified. Abilities that trigger while one mode is being performed won't be put onto the stack until Kaya's Guile has finished resolving."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "A creature sacrificed for the first mode of Kaya's Guile will be exiled if it ends up in an opponent's graveyard and the second mode was also chosen."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "As the first mode is performed, first the opponent whose turn it is (or, if it's not an opponent's turn, the next opponent in turn order) chooses a creature they control, then each other opponent in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // King of the Pride
 {
     "name": "King of the Pride",

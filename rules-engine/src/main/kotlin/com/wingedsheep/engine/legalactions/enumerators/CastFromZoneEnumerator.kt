@@ -3250,6 +3250,7 @@ class CastFromZoneEnumerator(
 
                     val kickLabel = when {
                         declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
+                        declaredSlot == ChoiceSlot.ENTWINED -> "Entwined"
                         declaredSlot == ChoiceSlot.BOUGHT_BACK -> "Buyback"
                         // An unnamed optional additional cost names what it pays ("Sacrifice an artifact").
                         declaredSlot == ChoiceSlot.ADDITIONAL_COST_PAID ->

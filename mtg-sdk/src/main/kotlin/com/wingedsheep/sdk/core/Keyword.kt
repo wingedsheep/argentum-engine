@@ -1082,7 +1082,23 @@ enum class Keyword(val displayName: String) {
      * Tapping creatures this way is a *cost*, not the `{T}` symbol, so summoning sickness
      * (CR 302.6) never applies — only CR 701.26a's "only untapped permanents can be tapped".
      */
-    TEAMWORK("Teamwork");
+    TEAMWORK("Teamwork"),
+
+    /**
+     * Entwine [cost] (CR 702.42, Mirrodin). A static ability of modal spells that functions while
+     * the spell is on the stack: "You may choose all modes of this spell instead of just the
+     * number specified. If you do, you pay an additional [cost]" (CR 702.42a).
+     *
+     * Modelled as an optional additional cost on the shared cast-time rail:
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost] with
+     * `declaredSlot = `[com.wingedsheep.sdk.scripting.ChoiceSlot.ENTWINED], so "entwined" is a
+     * *different* fact from "kicked". The cost is paid **once** however many modes the spell
+     * has, which is what separates it from escalate's per-extra-mode cost. Wired by the
+     * `entwine(cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder], paired with
+     * `entwineModal { }` on the spell; the mode count branches on
+     * [com.wingedsheep.sdk.dsl.Conditions.WasEntwined].
+     */
+    ENTWINE("Entwine");
 
     companion object {
         /** The landwalk family (CR 702.14): every keyword that makes a creature unblockable

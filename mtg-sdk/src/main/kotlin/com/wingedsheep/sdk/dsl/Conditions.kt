@@ -1249,6 +1249,19 @@ object Conditions {
         CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.TEAMWORK)
 
     /**
+     * If this spell was **entwined** (CR 702.42a, Mirrodin) — its optional entwine cost was declared
+     * as it was cast, so it takes all of its modes.
+     *
+     * A facade over the durable choice-slot read ([com.wingedsheep.sdk.scripting.ChoiceSlot.ENTWINED]),
+     * so entwine needs no condition type of its own. `entwineModal { }` reads it to move the mode
+     * count at cast time (the declaration this very cast made is in context, CR 601.2b); a card can
+     * also use it as a plain rider. Never true for a merely *kicked* or *bargained* spell. Pairs with
+     * the `entwine(cost)` DSL helper on [CardBuilder].
+     */
+    val WasEntwined: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.ENTWINED)
+
+    /**
      * If this spell's sneak cost was paid (CR 702.190 — [com.wingedsheep.sdk.scripting.KeywordAbility.Sneak]).
      * Used for riders like Leonardo, Leader in Blue and The Last Ronin's Technique whose
      * effect changes when the spell was cast for its sneak cost.

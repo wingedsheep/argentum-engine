@@ -793,11 +793,15 @@ object LimitedCardRater {
                 // slot for the object visited by the loop.
                 else EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
 
-            // "Choose one —" is worth its best mode(s), plus a little for the choice.
+            // "Choose one —" is worth its best mode(s), plus a little for the choice. A count that
+            // moves with the cast ("choose two; entwine to choose all", teamwork, "if you control a
+            // commander, choose both") prices the modes every cast gets: the static [chooseCount]
+            // there is only the ceiling, reached by paying more or meeting a condition.
             is ModalEffect -> {
                 val modes = effect.modes.map { EffectWalker.fold(it.effect, LimitedScoreFold(it.targetRequirements, source)) }.sortedDescending()
-                val chosen = modes.take(effect.chooseCount.coerceAtLeast(1)).sum()
-                val flexibility = if (modes.size > effect.chooseCount) MODAL_FLEXIBILITY else 0.0
+                val priced = (if (effect.dynamicChooseCount != null) effect.minChooseCount else effect.chooseCount).coerceAtLeast(1)
+                val chosen = modes.take(priced).sum()
+                val flexibility = if (modes.size > priced) MODAL_FLEXIBILITY else 0.0
                 (chosen + flexibility).coerceAtMost(COMPOSITE_CAP)
             }
 
