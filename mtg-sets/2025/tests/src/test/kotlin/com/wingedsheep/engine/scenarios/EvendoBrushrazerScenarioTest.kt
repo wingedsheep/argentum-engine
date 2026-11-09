@@ -30,7 +30,7 @@ import io.kotest.matchers.shouldBe
  *  {T}, Sacrifice a land: Add {R}{R}."
  *
  * Pins the nontoken sacrifice trigger, the linked exile, and the play permission gated on the
- * per-turn `NONTOKEN_PERMANENTS_SACRIFICED` record: a token sacrifice neither exiles nor unlocks,
+ * per-turn sacrifice record filtered to nontoken permanents: a token sacrifice neither exiles nor unlocks,
  * and the permission lapses with the record at the turn boundary.
  */
 class EvendoBrushrazerScenarioTest : FunSpec({

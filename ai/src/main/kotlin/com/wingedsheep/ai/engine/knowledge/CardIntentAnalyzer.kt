@@ -50,6 +50,7 @@ import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
+import com.wingedsheep.sdk.scripting.MayPlayCardsFromExile
 import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -1174,8 +1175,20 @@ object CardIntentAnalyzer {
             if (!grant.exiledThisTurnOnly) add(IntentTag.DRAW)
             if (grant.withoutPayingManaCost) add(IntentTag.FREE_SPELL)
         }
+        // "You may play cards exiled with this creature" (Evendo Brushrazer): the play-permission
+        // spelling of the same grant, its pile named by `exiledWithSource()` in the filter. A
+        // condition on it ("during your turn, as long as …") is still the grant, as above.
+        val playsThePile = scripts.flatMap { it.staticAbilities }
+            .map { (it as? ConditionalStaticAbility)?.ability ?: it }
+            .filterIsInstance<MayPlayCardsFromExile>()
+            .any { Zone.EXILE in it.zones && namesLinkedPile(it.filter) }
+        if (playsThePile) add(IntentTag.DRAW)
         if (banksOwnLibraryForHand(scripts)) add(IntentTag.DRAW)
     }
+
+    /** Whether [filter] (or one of its `or` branches) is "cards exiled with this" ([StatePredicate.ExiledWithSource]). */
+    private fun namesLinkedPile(filter: GameObjectFilter): Boolean =
+        StatePredicate.ExiledWithSource in filter.statePredicates || filter.anyOf.any(::namesLinkedPile)
 
     /**
      * Whether [scripts] stock their linked-exile pile only off **their controller's own library

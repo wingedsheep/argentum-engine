@@ -184,8 +184,6 @@ enum class TurnTracker {
      * `Conditions.CreatedTokenThisTurn` — and `DynamicAmounts.tokensCreatedThisTurn` (Thalisse).
      */
     TOKENS_CREATED,
-    /** Indicator (0 or 1) that the player sacrificed at least one Food this turn. */
-    FOOD_SACRIFICED,
     /**
      * Indicator (0 or 1) that the player scried or surveilled this turn — "if you've scried or
      * surveilled this turn" (Surveillance Phantasm, Desperate Futurescribe, Proctor of Potential).
@@ -201,18 +199,6 @@ enum class TurnTracker {
      * into an empty library still does; a scry never does.
      */
     SURVEILED,
-    /**
-     * Indicator (0 or 1) that the player sacrificed at least one artifact this turn — the
-     * card-type sibling of [FOOD_SACRIFICED], recorded by the same central sacrifice hook and
-     * read off the projected type line, so a permanent that was only an artifact through a
-     * continuous effect still counts.
-     *
-     * Backs Murders at Karlov Manor's "if you've sacrificed an artifact this turn" wording
-     * (Suspicious Detonation's cost reduction, Furtive Courier's evasion). Turn history, not a
-     * board scan: it stays set for the rest of the turn even once the artifact has left the
-     * graveyard.
-     */
-    ARTIFACT_SACRIFICED,
     /** Total cards that left the player's graveyard this turn (Bonecache Overseer). */
     CARDS_LEFT_GRAVEYARD,
     /**
@@ -287,22 +273,6 @@ enum class TurnTracker {
      * "if one or more cards were put into exile this turn" (Ennis, Debate Moderator).
      */
     CARDS_PUT_INTO_EXILE,
-    /**
-     * Number of permanents the player has sacrificed this turn (any permanent type,
-     * controller-scoped). Backed by `PermanentsSacrificedThisTurnComponent`, reset to 0 for
-     * every player at the start of each turn. Distinct from the game-wide
-     * `GameState.permanentsSacrificedThisTurn` cost-reduction counter. Powers "if you sacrificed
-     * one or more permanents this turn, ... deals that much damage" (Sawblade Skinripper).
-     */
-    PERMANENTS_SACRIFICED,
-    /**
-     * Number of **nontoken** permanents the player has sacrificed this turn — the nontoken slice
-     * of [PERMANENTS_SACRIFICED], recorded by the same central sacrifice hook into the same
-     * `PermanentsSacrificedThisTurnComponent`. Whether the permanent was a token is read as it was
-     * sacrificed. Backs "as long as you've sacrificed a nontoken permanent this turn" (Evendo
-     * Brushrazer) via `Conditions.YouSacrificedNontokenPermanentsThisTurn`.
-     */
-    NONTOKEN_PERMANENTS_SACRIFICED,
     /**
      * Total noncombat damage red sources this player controlled have dealt this turn
      * (controller-scoped). Backed by `RedNoncombatDamageDealtThisTurnComponent`, reset to 0 for
@@ -463,10 +433,8 @@ enum class TurnTracker {
         CREATURES_ENTERED_UNDER_CONTROL -> "the number of creatures that entered the battlefield under ${player.possessive} control this turn"
         NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL -> "the number of nontoken creatures that entered the battlefield under ${player.possessive} control this turn"
         TOKENS_CREATED -> "the number of tokens ${player.description} created this turn"
-        FOOD_SACRIFICED -> "whether ${player.description} sacrificed a Food this turn"
         SCRIED_OR_SURVEILED -> "whether ${player.description} scried or surveilled this turn"
         SURVEILED -> "whether ${player.description} surveilled this turn"
-        ARTIFACT_SACRIFICED -> "whether ${player.description} sacrificed an artifact this turn"
         CARDS_LEFT_GRAVEYARD -> "the number of cards that left ${player.possessive} graveyard this turn"
         PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD ->
             "the number of permanents put into ${player.possessive} hand from the battlefield this turn"
@@ -482,8 +450,6 @@ enum class TurnTracker {
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
         CARDS_DISCARDED -> "the number of cards ${player.description} have discarded this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
-        PERMANENTS_SACRIFICED -> "the number of permanents ${player.description} sacrificed this turn"
-        NONTOKEN_PERMANENTS_SACRIFICED -> "the number of nontoken permanents ${player.description} sacrificed this turn"
         RED_NONCOMBAT_DAMAGE_DEALT -> "the noncombat damage red sources ${player.description} controlled dealt this turn"
         DAMAGE_SOURCES -> "the number of sources ${player.description} controlled that dealt damage this turn"
         DISTINCT_BENDS -> "the number of different ways ${player.description} bent this turn"
@@ -2141,6 +2107,40 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         }
         override val description: String =
             "the number of ${sourceFilter.description}s that dealt combat damage to ${player.description} this turn"
+    }
+
+    /**
+     * How many permanents matching [filter] [player] sacrificed this turn, each judged as it stood
+     * **when it was sacrificed** — "if you sacrificed three or more Clues this turn" (Briarbridge
+     * Patrol). Turn history, not a board scan: a sacrificed token that has ceased to exist still
+     * counts, and a permanent that matched only through a continuous effect (an animated land's
+     * Creature type, a granted subtype) counts as it was. "You" in the filter is the evaluating
+     * context's controller. Summed when [player] resolves to several players.
+     *
+     * Unfiltered (the default) it is "the number of permanents you sacrificed this turn" (Sawblade
+     * Skinripper); `Artifact`, `withSubtype(FOOD)` and `nontoken()` filters read "if you've sacrificed
+     * an artifact / a Food / a nontoken permanent this turn".
+     *
+     * Closest types: [TurnTracking] reads fixed per-player counters with no filter axis (a filter field
+     * would mean something for one tracker only — this type subsumed its four sacrifice trackers);
+     * [CombatDamageSourcesThisTurn] is the same "frozen per-turn record, counted by filter" shape over
+     * a different event.
+     */
+    @SerialName("PermanentsSacrificedThisTurn")
+    @Serializable
+    data class PermanentsSacrificedThisTurn(
+        val player: Player = Player.You,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+    ) : DynamicAmount {
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+        override val description: String = buildString {
+            append("the number of ")
+            append(if (filter == GameObjectFilter.Any) "permanents" else "${filter.description}s")
+            append(" ${player.description} sacrificed this turn")
+        }
     }
 
     /**

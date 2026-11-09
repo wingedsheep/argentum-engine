@@ -75,5 +75,14 @@ class LinkedExilePileReadingAiTest : ScenarioTestBase() {
                     LimitedCardRater.explain(withoutGrant).heuristicRating
             }
         }
+
+        test("the play-permission spelling of the pile grant reads the same: Evendo Brushrazer's exile is card draw") {
+            // "Whenever you sacrifice a nontoken permanent, exile the top card of your library. During
+            // your turn, as long as you've sacrificed a nontoken permanent this turn, you may play cards
+            // exiled with this creature."
+            withClue("the sacrifice trigger banks a card the creature lets us play") { tags("Evendo Brushrazer") shouldContain IntentTag.DRAW }
+            val reading = AiReadingAudit.read(card("Evendo Brushrazer"))
+            withClue("Evendo Brushrazer: $reading") { reading.readFully shouldBe true }
+        }
     }
 }

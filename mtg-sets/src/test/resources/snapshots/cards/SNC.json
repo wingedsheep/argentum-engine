@@ -13058,11 +13058,7 @@
                 },
                 "effect": {
                     "type": "DealDamage",
-                    "amount": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "PERMANENTS_SACRIFICED"
-                    },
+                    "amount": "PermanentsSacrificedThisTurn",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"

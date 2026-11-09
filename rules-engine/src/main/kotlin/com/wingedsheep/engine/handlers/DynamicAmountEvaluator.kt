@@ -239,6 +239,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.DungeonsCompleted,
         is DynamicAmount.SpellsCastLastTurn,
         is DynamicAmount.CombatDamageSourcesThisTurn,
+        is DynamicAmount.PermanentsSacrificedThisTurn,
         is DynamicAmount.SpellsCastThisTurn,
         is DynamicAmount.StartingLifeTotal,
         DynamicAmount.StationCharge,
@@ -990,10 +991,6 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
                             ?.countTokens() ?: 0
                     }
-                    TurnTracker.FOOD_SACRIFICED -> playerIds.count { playerId ->
-                        state.getEntity(playerId)
-                            ?.has<com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent>() == true
-                    }
                     TurnTracker.SCRIED_OR_SURVEILED -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent>() == true
@@ -1001,10 +998,6 @@ class DynamicAmountEvaluator(
                     TurnTracker.SURVEILED -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.SurveiledThisTurnComponent>() == true
-                    }
-                    TurnTracker.ARTIFACT_SACRIFICED -> playerIds.count { playerId ->
-                        state.getEntity(playerId)
-                            ?.has<com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent>() == true
                     }
                     TurnTracker.CARDS_LEFT_GRAVEYARD -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
@@ -1078,16 +1071,6 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent>()
                             ?.count ?: 0
                     }
-                    TurnTracker.PERMANENTS_SACRIFICED -> playerIds.sumOf { playerId ->
-                        state.getEntity(playerId)
-                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
-                            ?.count ?: 0
-                    }
-                    TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED -> playerIds.sumOf { playerId ->
-                        state.getEntity(playerId)
-                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
-                            ?.nontokenCount ?: 0
-                    }
                     TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.RedNoncombatDamageDealtThisTurnComponent>()
@@ -1137,6 +1120,16 @@ class DynamicAmountEvaluator(
                     state.getEntity(playerId)
                         ?.get<com.wingedsheep.engine.state.components.player.CombatDamageSourcesThisTurnComponent>()
                         ?.countMatching(amount.sourceFilter, you) ?: 0
+                }
+            }
+            is DynamicAmount.PermanentsSacrificedThisTurn -> {
+                val predicateContext = PredicateContext.fromEffectContext(context)
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
+                    state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
+                        ?.sacrificed
+                        ?.count { predicateEvaluator.matchesSnapshot(state, it, amount.filter, predicateContext) }
+                        ?: 0
                 }
             }
             is DynamicAmount.SpellsCastThisTurn -> {

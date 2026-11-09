@@ -2304,7 +2304,7 @@ object Conditions {
      * If you've sacrificed a Food this turn.
      */
     val SacrificedFoodThisTurn: ConditionInterface =
-        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.FOOD_SACRIFICED)
+        YouSacrificedThisTurn(GameObjectFilter.Any.withSubtype(com.wingedsheep.sdk.core.Subtype.FOOD))
 
     /**
      * If you've sacrificed an artifact this turn — Murders at Karlov Manor's artifact-sacrifice
@@ -2315,7 +2315,7 @@ object Conditions {
      * The card-type sibling of [SacrificedFoodThisTurn].
      */
     val SacrificedArtifactThisTurn: ConditionInterface =
-        trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.ARTIFACT_SACRIFICED)
+        YouSacrificedThisTurn(GameObjectFilter.Artifact)
 
     /**
      * If you descended this turn (CR 700.11) — i.e. at least one nontoken permanent
@@ -2382,26 +2382,35 @@ object Conditions {
 
     /**
      * If you've sacrificed [atLeast] or more permanents this turn (controller-scoped, any
-     * permanent type). Backed by the per-player `PermanentsSacrificedThisTurnComponent` —
-     * distinct from the game-wide cost-reduction counter. Used by Sawblade Skinripper's
-     * intervening-if ("if you sacrificed one or more permanents this turn").
+     * permanent type) — [YouSacrificedThisTurn] unfiltered. Distinct from the game-wide
+     * cost-reduction counter. Used by Sawblade Skinripper's intervening-if ("if you sacrificed one
+     * or more permanents this turn").
      */
     fun YouSacrificedPermanentsThisTurn(atLeast: Int = 1): ConditionInterface =
-        trackerAtLeast(
-            com.wingedsheep.sdk.scripting.values.TurnTracker.PERMANENTS_SACRIFICED,
-            atLeast = atLeast,
+        YouSacrificedThisTurn(GameObjectFilter.Any, atLeast)
+
+    /**
+     * If you've sacrificed [atLeast] or more permanents matching [filter] this turn, each judged as
+     * it was when sacrificed — a [Compare] over [DynamicAmount.PermanentsSacrificedThisTurn].
+     * "If you sacrificed three or more Clues this turn" (Briarbridge Patrol); the narrower facades
+     * [YouSacrificedPermanentsThisTurn], [YouSacrificedNontokenPermanentsThisTurn],
+     * [SacrificedFoodThisTurn] and [SacrificedArtifactThisTurn] are this with a fixed filter.
+     */
+    fun YouSacrificedThisTurn(filter: GameObjectFilter, atLeast: Int = 1): ConditionInterface =
+        Compare(
+            DynamicAmount.PermanentsSacrificedThisTurn(Player.You, filter),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(atLeast)
         )
 
     /**
      * If you've sacrificed [atLeast] or more **nontoken** permanents this turn — the nontoken slice
-     * of [YouSacrificedPermanentsThisTurn], read off the same per-player sacrifice record. Evendo
-     * Brushrazer's "as long as you've sacrificed a nontoken permanent this turn".
+     * of [YouSacrificedPermanentsThisTurn], read off the same per-player sacrifice record (token-ness
+     * as it was when sacrificed). Evendo Brushrazer's "as long as you've sacrificed a nontoken
+     * permanent this turn".
      */
     fun YouSacrificedNontokenPermanentsThisTurn(atLeast: Int = 1): ConditionInterface =
-        trackerAtLeast(
-            com.wingedsheep.sdk.scripting.values.TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED,
-            atLeast = atLeast,
-        )
+        YouSacrificedThisTurn(GameObjectFilter.Any.nontoken(), atLeast)
 
     /**
      * If red sources you controlled dealt [atLeast] or more noncombat damage this turn

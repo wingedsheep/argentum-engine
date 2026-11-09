@@ -3929,7 +3929,9 @@ class TriggerDetector(
      * creature deals combat damage to several recipients at once — trample, or several blockers
      * (Vessel of the All-Consuming's and Umezawa's Jitte's rulings) — with "that much" the total.
      * A recipient-restricted form ("deals damage to a player / to a creature") stays per recipient,
-     * since its effect may name the damaged one.
+     * since its effect may name the damaged one — unless it is the batch spelling
+     * ([EventPattern.DealsDamageEvent.batch], "deals damage to one or more creatures"), which folds
+     * every matching damage event of the batch, combat or noncombat, into one trigger.
      */
     private fun foldSimultaneousDamage(
         detected: List<PendingTrigger>,
@@ -3937,16 +3939,25 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>,
         slots: MutableMap<List<Any?>, Int>
     ): List<PendingTrigger> {
-        if (event !is DamageDealtEvent || !event.isCombatDamage) return detected
+        if (event !is DamageDealtEvent) return detected
         val kept = mutableListOf<PendingTrigger>()
         for (pending in detected) {
             val key = when (val trigger = pending.ability.trigger) {
-                is EventPattern.DamageReceivedEvent -> if (trigger.source == null)
+                is EventPattern.DamageReceivedEvent -> if (event.isCombatDamage && trigger.source == null)
                     listOf(pending.sourceId, pending.ability.id, pending.granterId, event.targetId) else null
-                // Only the unrestricted spelling folds; "a permanent or player" (Recipient.PermanentOrPlayer)
-                // reaches the same recipients but stays one trigger per recipient (Ghyrson Starn).
-                is EventPattern.DealsDamageEvent -> if (!trigger.batch && trigger.recipient == Recipient.Any)
-                    listOf(pending.sourceId, pending.ability.id, pending.granterId, "dealt-by", event.sourceId) else null
+                is EventPattern.DealsDamageEvent -> when {
+                    // "Whenever this deals damage to one or more creatures" (Briarbridge Patrol): the
+                    // source-side batch fires once for the whole batch, combat or not, however many
+                    // matching recipients it hit (CR 603.2c). The observer (ANY) batch never comes
+                    // through here — the per-event path skips it for detectDamageObserverBatchTriggers.
+                    trigger.batch ->
+                        listOf(pending.sourceId, pending.ability.id, pending.granterId, "batch-dealt-by", event.sourceId)
+                    // Only the unrestricted spelling folds; "a permanent or player" (Recipient.PermanentOrPlayer)
+                    // reaches the same recipients but stays one trigger per recipient (Ghyrson Starn).
+                    event.isCombatDamage && trigger.recipient == Recipient.Any ->
+                        listOf(pending.sourceId, pending.ability.id, pending.granterId, "dealt-by", event.sourceId)
+                    else -> null
+                }
                 else -> null
             }
             if (key == null) {

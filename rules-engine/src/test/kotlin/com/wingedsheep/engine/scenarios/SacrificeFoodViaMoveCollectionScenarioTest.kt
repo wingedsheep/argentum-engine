@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -19,11 +20,11 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Guards that a Food sacrificed through the MoveCollection pipeline (gather → MoveCollectionEffect
- * with MoveType.Sacrifice) records the controller's SacrificedFoodThisTurnComponent — the tag that
- * "if/whenever you sacrifice a Food this turn" payoffs read. trackPermanentSacrifice sets both the
- * per-turn count and this tag; the MoveCollection executor has to carry the tag (which lives on the
- * controller entity, not the moved card) onto the result, or Foods sacrificed this way go unseen by
- * Food payoffs while the cost-sacrifice path (SacrificeExecutor) registers them.
+ * with MoveType.Sacrifice) lands in the controller's per-turn sacrifice record — what "if you've
+ * sacrificed a Food this turn" payoffs (`Conditions.SacrificedFoodThisTurn`) read.
+ * trackPermanentSacrifice appends to that record on the controller entity, not the moved card, so
+ * the MoveCollection executor has to carry it onto its result, or Foods sacrificed this way go unseen
+ * by Food payoffs while the cost-sacrifice path (SacrificeExecutor) registers them.
  *
  * Inline card, no set dependency.
  */
@@ -78,7 +79,11 @@ class SacrificeFoodViaMoveCollectionScenarioTest : ScenarioTestBase() {
                     game.findPermanents("Food").size shouldBe 0
                 }
                 withClue("sacrificing a Food this way tags the controller for 'you sacrificed a Food this turn' payoffs") {
-                    (game.state.getEntity(game.player1Id)?.has<SacrificedFoodThisTurnComponent>() == true) shouldBe true
+                    services.predicateEvaluator.conditions.evaluate(
+                        game.state,
+                        Conditions.SacrificedFoodThisTurn,
+                        EffectContext(sourceId = null, controllerId = game.player1Id),
+                    ) shouldBe true
                 }
             }
         }

@@ -66,12 +66,8 @@ import com.wingedsheep.engine.state.components.player.CreatureCardsPutIntoGravey
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardByOriginThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent
-import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent
-import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
-import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -2322,55 +2318,31 @@ class ZoneTransitionService(
          * Central per-turn sacrifice bookkeeping. Call this at every sacrifice site (alongside
          * emitting [PermanentsSacrificedEvent], before moving the permanents to the graveyard).
          *
-         * Two effects:
          *  - Increments the turn-scoped [GameState.permanentsSacrificedThisTurn] counter by the
          *    number of permanents sacrificed (feeds [CostReductionSource.PermanentsSacrificedThisTurn]
          *    on The Balrog, Durin's Bane). Not controller-scoped: it counts every sacrifice this turn.
-         *  - Increments the controller's per-player [PermanentsSacrificedThisTurnComponent] by the
-         *    same count, and its nontoken slice by the nontoken ones (controller-scoped, backs
-         *    `TurnTracker.PERMANENTS_SACRIFICED` / `NONTOKEN_PERMANENTS_SACRIFICED` —
-         *    Sawblade Skinripper).
-         *  - Marks the controller with [SacrificedFoodThisTurnComponent] if any sacrificed permanent
-         *    was a Food (Food-sacrifice triggers, e.g. Ygra).
-         *  - Marks the controller with [SacrificedArtifactThisTurnComponent] if any sacrificed
-         *    permanent was an artifact (backs `TurnTracker.ARTIFACT_SACRIFICED` — Suspicious
-         *    Detonation, Furtive Courier).
-         *
-         * Both markers read the *projected* characteristics, so a permanent that was only a Food or
-         * only an artifact through a continuous effect still counts, and both are checked
-         * independently — one sacrifice can set both.
+         *  - Appends each permanent, frozen as it stands now, to the controller's
+         *    [PermanentsSacrificedThisTurnComponent] — the record behind the filtered
+         *    `DynamicAmount.PermanentsSacrificedThisTurn` (Sawblade Skinripper's "one or more
+         *    permanents", Suspicious Detonation's "an artifact", Briarbridge Patrol's "three or more
+         *    Clues"). The snapshot reads the *projected* characteristics, so a permanent that was a
+         *    Food or an artifact only through a continuous effect still counts as one.
          */
         fun trackPermanentSacrifice(state: GameState, permanentIds: List<EntityId>, controllerId: EntityId): GameState {
             if (permanentIds.isEmpty()) return state
-            var newState = state.copy(
+            // Frozen before the zone change: a token that ceases to exist, an animated land's
+            // Creature type and a granted subtype are all read as they were.
+            val snapshots = com.wingedsheep.engine.state.components.stack.captureEntitySnapshots(permanentIds, state.projectedState, state)
+                .map { it.copy(wasToken = state.getEntity(it.entityId)?.has<TokenComponent>() == true) }
+            return state.copy(
                 permanentsSacrificedThisTurn = state.permanentsSacrificedThisTurn + permanentIds.size,
                 // Mark these as being sacrificed so the imminent moveToZone stamps wasSacrificed
                 // on each ZoneChangeEvent (CR 701.21 — read by Urza's Miter et al.).
                 pendingSacrificeIds = state.pendingSacrificeIds + permanentIds,
-            )
-            val nontoken = permanentIds.count { newState.getEntity(it)?.has<TokenComponent>() == false }
-            newState = newState.updateEntity(controllerId) { container ->
+            ).updateEntity(controllerId) { container ->
                 val prior = container.get<PermanentsSacrificedThisTurnComponent>() ?: PermanentsSacrificedThisTurnComponent()
-                container.with(
-                    PermanentsSacrificedThisTurnComponent(
-                        count = prior.count + permanentIds.size,
-                        nontokenCount = prior.nontokenCount + nontoken,
-                    )
-                )
+                container.with(prior.copy(sacrificed = prior.sacrificed + snapshots))
             }
-            val projected = state.projectedState
-            val sacrificedCards = permanentIds.filter { newState.getEntity(it)?.has<CardComponent>() == true }
-            if (sacrificedCards.any { projected.hasSubtype(it, Subtype.FOOD.value) }) {
-                newState = newState.updateEntity(controllerId) { container ->
-                    container.with(SacrificedFoodThisTurnComponent)
-                }
-            }
-            if (sacrificedCards.any { projected.hasType(it, CardType.ARTIFACT.name) }) {
-                newState = newState.updateEntity(controllerId) { container ->
-                    container.with(SacrificedArtifactThisTurnComponent)
-                }
-            }
-            return newState
         }
     }
 }

@@ -147,7 +147,7 @@ internal object RetiredSdkTypeLift {
             .let { withRetiredFieldsLifted(it, type) }
 
     private fun withRetiredFieldsLifted(element: JsonObject, type: String?): JsonObject =
-        withDynamicLandCount(withoutSkipUntapFlags(withoutLandEntersTapped(
+        withoutSacrificeTrackers(element, type).takeIf { it !== element } ?: withDynamicLandCount(withoutSkipUntapFlags(withoutLandEntersTapped(
             withoutCreaturesOnly(
                 withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
             )
@@ -174,6 +174,32 @@ internal object RetiredSdkTypeLift {
             )
             else -> JsonObject(rest)
         }
+    }
+
+    /** The four retired sacrifice trackers, each the filter it is over the per-turn sacrifice record. */
+    private val sacrificeTrackerFilters = mapOf(
+        "PERMANENTS_SACRIFICED" to GameObjectFilter.Any,
+        "NONTOKEN_PERMANENTS_SACRIFICED" to GameObjectFilter.Any.nontoken(),
+        "ARTIFACT_SACRIFICED" to GameObjectFilter.Artifact,
+        "FOOD_SACRIFICED" to GameObjectFilter.Any.withSubtype(Subtype.FOOD),
+    )
+
+    /**
+     * `TurnTracking(player, PERMANENTS_SACRIFICED / NONTOKEN_PERMANENTS_SACRIFICED /
+     * ARTIFACT_SACRIFICED / FOOD_SACRIFICED)` became `PermanentsSacrificedThisTurn(player, filter)`.
+     * The two indicators (0 or 1) become counts; every card read them as "at least one", which a
+     * count answers the same.
+     */
+    private fun withoutSacrificeTrackers(element: JsonObject, type: String?): JsonObject {
+        if (type != "TurnTracking") return element
+        val filter = sacrificeTrackerFilters[(element["tracker"] as? JsonPrimitive)?.content] ?: return element
+        return JsonObject(
+            buildMap {
+                put("type", JsonPrimitive("PermanentsSacrificedThisTurn"))
+                element["player"]?.let { put("player", it) }
+                put("filter", encode(GameObjectFilter.serializer(), filter))
+            }
+        )
     }
 
     /**

@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  *  At the beginning of your end step, if you sacrificed one or more permanents this turn,
  *  this creature deals that much damage to any target."
  *
- * Exercises the new per-player `PERMANENTS_SACRIFICED` turn tracker: the end-step trigger reads
+ * Exercises the per-player sacrifice record (`DynamicAmounts.permanentsSacrificedThisTurn()`): the end-step trigger reads
  * the controller-scoped count of permanents sacrificed this turn for both the intervening-if gate
  * and the "that much" damage amount.
  */

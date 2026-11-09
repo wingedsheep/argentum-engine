@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldNotBe
  * Suspicious Detonation (MKM) — {4}{R} sorcery, "costs {3} less to cast if you've sacrificed an
  * artifact this turn", can't be countered, 4 damage to target creature.
  *
- * Covers the new `TurnTracker.ARTIFACT_SACRIFICED` end to end. The tracker is only worth anything
+ * Covers `Conditions.SacrificedArtifactThisTurn` end to end. The tracker is only worth anything
  * if it survives the artifact leaving the battlefield *and* the round trip through the cost
  * reduction rail, so these tests pin the mana actually required rather than reading the component:
  * five lands cast it cold, two lands cast it after a sacrifice, and two lands alone can't.

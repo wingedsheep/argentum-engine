@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.TurnTracker
@@ -29,7 +30,7 @@ import kotlinx.serialization.json.Json
  *    had enter the battlefield under your control this turn" (Gyome, Master Chef). Counted per entry
  *    and kept after the creature leaves (Gyome's 2021-04-16 ruling); tokens and noncreatures don't
  *    count.
- *  - `TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED` / `Conditions.YouSacrificedNontokenPermanentsThisTurn`
+ *  - `DynamicAmounts.permanentsSacrificedThisTurn(nontoken)` / `Conditions.YouSacrificedNontokenPermanentsThisTurn`
  *    — "as long as you've sacrificed a nontoken permanent this turn" (Evendo Brushrazer). Recorded by
  *    the central sacrifice hook, controller-scoped, reset at end of turn.
  */
@@ -80,8 +81,8 @@ class NontokenTurnTrackersTest : FunSpec({
     }
 
     val nontokenEntered = DynamicAmounts.nonTokenCreaturesEnteredThisTurn()
-    val nontokenSacrificed = DynamicAmount.TurnTracking(Player.You, TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED)
-    val allSacrificed = DynamicAmount.TurnTracking(Player.You, TurnTracker.PERMANENTS_SACRIFICED)
+    val nontokenSacrificed = DynamicAmounts.permanentsSacrificedThisTurn(GameObjectFilter.Any.nontoken())
+    val allSacrificed = DynamicAmounts.permanentsSacrificedThisTurn()
 
     context("nontoken creatures entered") {
         test("counts nontoken creatures only — tokens and noncreature permanents don't count") {
@@ -145,7 +146,7 @@ class NontokenTurnTrackersTest : FunSpec({
             val theirs = d.enter(d.player2, "Centaur Courser")
             d.sacrifice(d.player2, listOf(theirs))
             d.sacrificedNontoken() shouldBe false
-            d.amount(DynamicAmount.TurnTracking(Player.EachOpponent, TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED)) shouldBe 1
+            d.amount(DynamicAmounts.permanentsSacrificedThisTurn(GameObjectFilter.Any.nontoken(), Player.EachOpponent)) shouldBe 1
             val mine = d.enter(d.player1, "Centaur Courser")
             d.sacrifice(d.player1, listOf(mine))
             d.sacrificedNontoken() shouldBe true
@@ -155,8 +156,10 @@ class NontokenTurnTrackersTest : FunSpec({
     }
 
     test("round-trips through serialization") {
-        for (tracker in listOf(TurnTracker.NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL, TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED)) {
-            val amount: DynamicAmount = DynamicAmount.TurnTracking(Player.You, tracker)
+        for (amount in listOf(
+            DynamicAmount.TurnTracking(Player.You, TurnTracker.NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL),
+            DynamicAmounts.permanentsSacrificedThisTurn(GameObjectFilter.Any.nontoken()),
+        )) {
             Json.decodeFromString(DynamicAmount.serializer(), Json.encodeToString(DynamicAmount.serializer(), amount)) shouldBe amount
         }
     }
