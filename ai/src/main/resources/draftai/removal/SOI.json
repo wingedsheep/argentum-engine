@@ -1,0 +1,192 @@
+{
+  "Angel of Deliverance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Angelic Purge": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Anguished Unmaking": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Archangel Avacyn // Avacyn, the Purifier": [
+    "removal",
+    "creature-removal"
+  ],
+  "Arlinn Kord // Arlinn, Embraced by the Moon": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Avacyn's Judgment": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Avacynian Missionaries // Lunarch Inquisitors": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bound by Moonsilver": [
+    "removal",
+    "creature-removal"
+  ],
+  "Burn from Within": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Clip Wings": [
+    "removal",
+    "creature-removal"
+  ],
+  "Compelling Deterrence": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Dead Weight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Declaration in Stone": [
+    "removal",
+    "creature-removal"
+  ],
+  "Descend upon the Sinful": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dissension in the Ranks": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dual Shot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiery Temper": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Geistblast": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Gone Missing": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Inner Struggle": [
+    "removal",
+    "creature-removal"
+  ],
+  "Jace, Unraveler of Secrets": [
+    "removal",
+    "creature-removal"
+  ],
+  "Just the Wind": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lightning Axe": [
+    "removal",
+    "creature-removal"
+  ],
+  "Moonlight Hunt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Murderous Compulsion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nahiri's Machinations": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nahiri, the Harbinger": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Puncturing Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rabid Bite": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reduce to Ashes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Root Out": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Silverstrike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sinister Concoction": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sleep Paralysis": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sorin, Grim Nemesis": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Structural Distortion": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Thing in the Ice // Awoken Horror": [
+    "removal",
+    "creature-removal"
+  ],
+  "Throttle": [
+    "removal",
+    "creature-removal"
+  ],
+  "To the Slaughter": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Tooth Collector": [
+    "removal",
+    "creature-removal"
+  ],
+  "Welcome to the Fold": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wolf of Devil's Breach": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ]
+}
