@@ -865,13 +865,18 @@ class ZoneTransitionService(
             val departedTimestamp = lastKnownSnapshot?.battlefieldEntryTimestamp
             if (lastKnownSnapshot != null) {
                 val withDeparture = { pending: com.wingedsheep.engine.event.PendingTrigger ->
-                    if (lastKnownSnapshot.objectRef != null && pending.objectReferences.triggering == lastKnownSnapshot.objectRef) {
+                    val withTriggering = if (lastKnownSnapshot.objectRef != null && pending.objectReferences.triggering == lastKnownSnapshot.objectRef) {
                         pending.copy(triggerContext = pending.triggerContext.copy(
                             triggeringLastKnownSnapshot = lastKnownSnapshot,
                             lastKnownPower = lastKnownSnapshot.power,
                             lastKnownToughness = lastKnownSnapshot.toughness,
                         ))
                     } else pending
+                    // The source left before its trigger reached the stack: freeze the visit that
+                    // triggered it, the same stamp an ability already on the stack gets below.
+                    if (withTriggering.sourceId == entityId && withTriggering.lastKnownSourceSnapshot == null &&
+                        withTriggering.sourceBattlefieldTimestamp == departedTimestamp
+                    ) withTriggering.copy(lastKnownSourceSnapshot = lastKnownSnapshot) else withTriggering
                 }
                 newState = newState.copy(
                     pendingTriggers = newState.pendingTriggers.map(withDeparture),

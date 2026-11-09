@@ -14,6 +14,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.LkiPolicy
 import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
 import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -68,8 +69,14 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         effect: EachPermanentBecomesCopyOfTargetEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target, state)
+        // The copy source is *read*, not acted on (CR 707.2): resolve it as a value read so a
+        // source that has left the battlefield — Permeating Mass dying to the same combat damage
+        // its trigger saw — still names the object whose last-known copiable values it copies.
+        val sourceReference = effect.target as? EffectTarget.SingleEntity
+        val targetId = (sourceReference?.let { TargetResolutionUtils.resolveEntity(it, context, state) }
+            ?: context.resolveTarget(effect.target, state))
             ?: return EffectResult.success(state)
+        val sourceLost = TargetResolutionUtils.isLostObject(effect.target, context, state)
 
         // "Becomes a copy of the exiled creature" (Curie, Emergent Intelligence) names a permanent
         // a cost already moved off the battlefield, and "become copies of that creature" (Absorb
@@ -78,9 +85,11 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         // exile or hand — from the snapshot the departure captured, which also outlives a token
         // that ceased to exist.
         val departedCopiable = (effect.target as? EffectTarget.SingleEntity)
-            ?.takeIf { targetId !in state.getBattlefield() && lkiPolicyFor(it) != LkiPolicy.LIVE_ONLY }
+            ?.takeIf { (sourceLost || targetId !in state.getBattlefield()) && lkiPolicyFor(it) != LkiPolicy.LIVE_ONLY }
             ?.let { context.lkiSnapshotFor(it, targetId)?.copiableCard }
 
+        // A source that became a new object with no last-known record to read has nothing to copy.
+        if (departedCopiable == null && sourceLost) return EffectResult.success(state)
         val targetCard = departedCopiable
             ?: state.getEntity(targetId)?.copiableCardComponent()
             ?: return EffectResult.success(state)

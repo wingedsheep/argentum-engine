@@ -436,6 +436,7 @@ class TriggerProcessor(
                 sourceId = trigger.sourceId,
                 sourceName = trigger.sourceName,
                 sourceBattlefieldTimestamp = trigger.sourceBattlefieldTimestamp,
+                lastKnownSourceSnapshot = trigger.lastKnownSourceSnapshot,
                 objectReferences = trigger.objectReferences,
                 controllerId = trigger.controllerId,
                 effect = ability.effect,
@@ -477,6 +478,9 @@ class TriggerProcessor(
             resolvingTriggeredAbility = trigger.rulesText,
             sourceId = trigger.sourceId,
             sourceBattlefieldTimestamp = trigger.sourceBattlefieldTimestamp,
+            // A source that left between detection and placement (CR 603.3) — dying to the same
+            // combat damage its trigger saw — still resolves against its last-known information.
+            lastKnownSourceSnapshot = trigger.lastKnownSourceSnapshot,
             objectReferences = trigger.objectReferences,
             sourceName = trigger.sourceName,
             controllerId = trigger.controllerId,
