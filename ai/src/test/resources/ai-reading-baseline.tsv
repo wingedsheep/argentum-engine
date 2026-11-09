@@ -8881,6 +8881,7 @@ Inkling Mascot
 Inkling Summoning
 Inkrise Infiltrator
 Inkshape Demonstrator
+Inkshield
 Inkwell Leviathan
 Inner Demon
 Inner Demons Gangsters
@@ -9530,6 +9531,7 @@ Kavu Scout
 Kavu Titan
 Kaya the Inexorable	polarity: AddCountersEffect
 Kaya's Ghostform	intent: MoveToZoneEffect; polarity: Aura>MoveToZoneEffect
+Kaya's Guile
 Kaya's Onslaught
 Kaya's Wrath
 Kaya, Bane of the Dead
@@ -18857,6 +18859,7 @@ Trophy Mage
 Tropical Island
 Trostani Discordant	intent: ForEach>GiveControlToTargetPlayerEffect
 Trostani, Three Whispers
+Trouble in Pairs
 Troubled Healer
 Troublemaker Ouphe
 Troublesome Spirit
