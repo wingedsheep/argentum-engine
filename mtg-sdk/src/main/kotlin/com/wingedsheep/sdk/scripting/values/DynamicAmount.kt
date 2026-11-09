@@ -2144,17 +2144,28 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
-     * The total number of spells cast during the immediately preceding turn.
+     * How many spells [player] cast during the immediately preceding turn — every spell they cast
+     * during that turn, whoever's turn it was (an instant an opponent cast on your turn counts for
+     * that opponent). Reads the per-player snapshot `TurnManager.startTurn` takes before the
+     * current-turn counters reset; a multi-player scope sums those players.
      *
-     * This reads the snapshot captured at the turn boundary before the current-turn spell
-     * counters are cleared. It deliberately totals the previous active player's shared-turn team,
-     * matching old Innistrad werewolf wording such as "if no spells were cast last turn" and
-     * "if a player cast two or more spells last turn."
+     * The original Innistrad werewolves read it both ways: "if no spells were cast last turn" is the
+     * table-wide total, `Compare(SpellsCastLastTurn(Player.Each), EQ, 0)`; "if a player cast two or
+     * more spells last turn" is a single player's count, so it is
+     * `GreatestAmongPlayers(Player.Each, SpellsCastLastTurn(Player.You))` `GTE 2` — one spell each
+     * from two players does not transform the back face.
+     *
+     * Neighbours: [TurnTracking] with `SPELLS_CAST_DURING_THEIR_LAST_TURN` counts a player's spells
+     * during *their own* last turn (Arboria) rather than the previous game turn; [SpellsCastThisTurn]
+     * keeps a filterable cast history that is cleared at the turn boundary, which this count outlives.
      */
     @SerialName("SpellsCastLastTurn")
     @Serializable
-    data object SpellsCastLastTurn : DynamicAmount {
-        override val description: String = "the number of spells cast last turn"
+    data class SpellsCastLastTurn(val player: Player = Player.Each) : DynamicAmount {
+        override val description: String = when (player) {
+            Player.Each -> "the number of spells cast last turn"
+            else -> "the number of spells ${player.description} cast last turn"
+        }
     }
 
     /**

@@ -38,7 +38,7 @@ import com.wingedsheep.sdk.core.Step
  *    reads "in any order" — the printed SOI wording was "in a random order" — so the remainder
  *    uses [CardOrder.ControllerChooses].
  *  - Both upkeep flips are the standard Werewolf pair: `Triggers.anyPlayer.beginningOf(Step.UPKEEP)` with an
- *    intervening-if on [DynamicAmounts.spellsCastLastTurn] (== 0 front, >= 2 back).
+ *    intervening-if: [DynamicAmounts.spellsCastLastTurn] == 0 (front), [DynamicAmounts.mostSpellsCastLastTurnByAPlayer] >= 2 (back).
  *  - The back's cost reduction is [ModifySpellCost] over [SpellCostTarget.YouCast]; it applies to
  *    every creature spell its controller casts, not just Werewolves.
  */
@@ -104,7 +104,7 @@ private val KrallenhordeHowler = card("Krallenhorde Howler") {
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.UPKEEP)
         interveningIf = Conditions.CompareAmounts(
-            DynamicAmounts.spellsCastLastTurn(), ComparisonOperator.GTE, 2
+            DynamicAmounts.mostSpellsCastLastTurnByAPlayer(), ComparisonOperator.GTE, 2
         )
         effect = Effects.Transform(EffectTarget.Self)
     }

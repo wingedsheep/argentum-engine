@@ -20,11 +20,13 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.LegendRuleDoesNotApplyTo
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SpellCostTarget
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -490,7 +492,11 @@ object AiReadingAudit {
                 sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only hands back what this permanent exiled, when it leaves")
             } else {
                 // Read as the slots readers see it: a captured collection spelled as what it holds.
-                intent(EffectWalker.readableEffect(trigger), sink, reqs, ownPile = ownPile, turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast, source = card)
+                intent(
+                    EffectWalker.readableEffect(trigger), sink, reqs, ownPile = ownPile,
+                    turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast,
+                    source = card, ownTriggeringEntity = triggeringEntityIsOurs(trigger),
+                )
             }
             modal(trigger.effect, sink)
             out += AbilityReading(AbilityRef(AbilityKind.TRIGGERED, i + 1, faceName, describe { trigger.description }), sink.findings)
@@ -605,11 +611,16 @@ object AiReadingAudit {
         turnAhead: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
         source: CardDefinition? = null,
+        ownTriggeringEntity: Boolean = false,
     ) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
         val noIntent = { leaf: Effect ->
             needsNoIntent(leaf) || countsOnAPlayerSlot(leaf, playerSlots) ||
+                // "Whenever a Werewolf you control enters, you may transform it" (Vildin-Pack Alpha):
+                // flipping one of our own permanents is the self-transform below spelled through the
+                // trigger — no target, nothing to time, its payoff the face the simulation then sees.
+                (ownTriggeringEntity && leaf is TransformEffect && leaf.target == EffectTarget.TriggeringEntity) ||
                 // Damage confined to our creatures is a drawback, not offensive removal.
                 // Polarity still reads the harm; simulation prices the damaged board.
                 (leaf is DealDamageEffect && TargetPolarityAnalyzer.targetsOwnSide(leaf.target, reqs)) ||
@@ -894,6 +905,10 @@ object AiReadingAudit {
             else -> listOf(leaf)
         }
     }
+
+    /** The trigger's event object is one of our own permanents ("whenever a creature you control enters"). */
+    private fun triggeringEntityIsOurs(trigger: TriggeredAbility): Boolean =
+        (trigger.trigger as? EventPattern.ZoneChangeEvent)?.filter?.controllerPredicate == ControllerPredicate.ControlledByYou
 
     private fun needsNoIntent(leaf: Effect): Boolean {
         // Equip / fortify / reconfigure moves the source onto a host and does nothing of its own:

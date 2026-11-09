@@ -90,7 +90,7 @@ private val RavagerOfTheFells = card("Ravager of the Fells") {
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.UPKEEP)
         interveningIf = Conditions.CompareAmounts(
-            DynamicAmounts.spellsCastLastTurn(),
+            DynamicAmounts.mostSpellsCastLastTurnByAPlayer(),
             ComparisonOperator.GTE,
             2,
         )

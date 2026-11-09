@@ -1120,8 +1120,19 @@ object DynamicAmounts {
             player, filter, excludeSelf, fromZone, countDistinctCardTypes, beforeTriggeringSpell
         )
 
-    /** The total number of spells cast during the immediately preceding turn. */
-    fun spellsCastLastTurn(): DynamicAmount = DynamicAmount.SpellsCastLastTurn
+    /**
+     * Spells [player] cast during the immediately preceding turn, on anyone's turn. The default
+     * [Player.Each] is the table-wide total: "if no spells were cast last turn" is `EQ 0`.
+     */
+    fun spellsCastLastTurn(player: Player = Player.Each): DynamicAmount =
+        DynamicAmount.SpellsCastLastTurn(player)
+
+    /**
+     * The most spells any single player cast last turn — "if a player cast two or more spells last
+     * turn" is `GTE 2` (the original Innistrad werewolves' back faces).
+     */
+    fun mostSpellsCastLastTurnByAPlayer(): DynamicAmount =
+        DynamicAmount.GreatestAmongPlayers(Player.Each, DynamicAmount.SpellsCastLastTurn(Player.You))
 
     /**
      * Spells [player] has cast this game, from any zone, countered or not. Zero while a spell is

@@ -2195,7 +2195,13 @@
                     "effect": "Transform",
                     "interveningIf": {
                         "type": "Compare",
-                        "left": "SpellsCastLastTurn",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
                         "operator": "GTE",
                         "right": {
                             "type": "Fixed",
@@ -2993,7 +2999,13 @@
                     "effect": "Transform",
                     "interveningIf": {
                         "type": "Compare",
-                        "left": "SpellsCastLastTurn",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
                         "operator": "GTE",
                         "right": {
                             "type": "Fixed",
@@ -3526,7 +3538,13 @@
                     "effect": "Transform",
                     "interveningIf": {
                         "type": "Compare",
-                        "left": "SpellsCastLastTurn",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
                         "operator": "GTE",
                         "right": {
                             "type": "Fixed",
@@ -8645,7 +8663,13 @@
                     "effect": "Transform",
                     "interveningIf": {
                         "type": "Compare",
-                        "left": "SpellsCastLastTurn",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
                         "operator": "GTE",
                         "right": {
                             "type": "Fixed",

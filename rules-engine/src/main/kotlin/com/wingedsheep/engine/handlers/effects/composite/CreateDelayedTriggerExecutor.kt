@@ -451,7 +451,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.ExtraTurnsBegunThisGame,
         is DynamicAmount.Speed,
         is DynamicAmount.DungeonsCompleted,
-        DynamicAmount.SpellsCastLastTurn,
+        is DynamicAmount.SpellsCastLastTurn,
         is DynamicAmount.CombatDamageSourcesThisTurn,
         is DynamicAmount.SpellsCastThisTurn,
         is DynamicAmount.StartingLifeTotal,

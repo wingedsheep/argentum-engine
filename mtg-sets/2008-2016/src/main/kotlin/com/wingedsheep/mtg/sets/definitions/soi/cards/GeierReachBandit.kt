@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.core.Step
  *
  * Implementation:
  *  - Both upkeep flips are the standard Werewolf pair: `Triggers.anyPlayer.beginningOf(Step.UPKEEP)` with an
- *    intervening-if on [DynamicAmounts.spellsCastLastTurn] (== 0 front, >= 2 back).
+ *    intervening-if: [DynamicAmounts.spellsCastLastTurn] == 0 (front), [DynamicAmounts.mostSpellsCastLastTurnByAPlayer] >= 2 (back).
  *  - The back's ETB watcher is `Triggers.a(filter).enters()` with [TriggerBinding.ANY] over
  *    "Werewolf you control" — Oracle says *a* Werewolf, not *another*, so Vildin-Pack Alpha
  *    entering (e.g. put onto the battlefield transformed) triggers it on itself too. The
@@ -85,7 +85,7 @@ private val VildinPackAlpha = card("Vildin-Pack Alpha") {
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.UPKEEP)
         interveningIf = Conditions.CompareAmounts(
-            DynamicAmounts.spellsCastLastTurn(), ComparisonOperator.GTE, 2
+            DynamicAmounts.mostSpellsCastLastTurnByAPlayer(), ComparisonOperator.GTE, 2
         )
         effect = Effects.Transform(EffectTarget.Self)
     }
