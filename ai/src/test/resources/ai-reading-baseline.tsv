@@ -995,6 +995,7 @@ Assault on Osgiliath
 Assaultron Dominator
 Assemble the Legion
 Assemble the Players
+Assembled Alphas
 Assembly Specialist
 Assembly-Worker
 Assert Authority
@@ -1037,7 +1038,7 @@ Attack-in-the-Box
 Attendant of Vraska
 Attended Healer
 Attended Socialite
-Attentive Skywarden	intent: TransformEffect; polarity: TransformEffect
+Attentive Skywarden	intent: TransformEffect
 Attentive Sunscribe
 Attercop
 Attrition
@@ -1102,7 +1103,7 @@ Avacyn, Angel of Hope
 Avacyn, Angel of Horror
 Avacynian Priest
 Avalanche Caller	polarity: BecomeCreatureEffect
-Avalanche Tusker	intent: ForceBlockEffect; polarity: ForceBlockEffect
+Avalanche Tusker
 Avarax
 Avatar Aang
 Avatar Destiny
@@ -6439,7 +6440,7 @@ Flux Channeler
 Fly	polarity: Aura>GrantKeyword; polarity: Aura>GrantTriggeredAbility
 Flycatcher Giraffid
 Flying Carpet
-Flying Crane Technique	timing: ForEach>GrantKeywordEffect
+Flying Crane Technique
 Flying Men
 Flying Octobot
 Flywheel Racer
@@ -8546,7 +8547,7 @@ Hungry Megasloth
 Hungry Ridgewolf
 Hungry Spriggan
 Hungry for More
-Hunt Down	intent: ForceBlockEffect; polarity: ForceBlockEffect
+Hunt Down	polarity: ForceBlockEffect
 Hunt for Specimens
 Hunt the Weak
 Hunted Bonebrute
@@ -8739,6 +8740,7 @@ Imperious Inkmage
 Imperious Oligarch
 Imperious Perfect
 Impervious Greatwurm
+Impetuous Devils
 Implement of Combustion
 Implement of Examination
 Implement of Ferocity
@@ -9607,6 +9609,7 @@ Kessig Cagebreakers
 Kessig Flamebreather
 Kessig Malcontents
 Kessig Naturalist
+Kessig Prowler
 Kessig Wolf
 Kessig Wolf Run
 Kessig Wolfrider
@@ -10687,6 +10690,7 @@ Majestic Metamorphosis	polarity: BecomeCreatureEffect; timing: BecomeCreatureEff
 Majestic Myriarch
 Make Disappear
 Make It So
+Make Mischief
 Make Obsolete
 Make Your Mark
 Make Your Move
@@ -10786,7 +10790,7 @@ Mantle of the Wolf
 Many Partings
 Map the Frontier
 Maraleaf Pixie
-Maraleaf Rider	combat: ForceBlockEffect; intent: ForceBlockEffect; polarity: ForceBlockEffect
+Maraleaf Rider
 Maralen, Fae Ascendant
 Marang River Regent	intent: Pipeline(ChosenTargets→hand)
 Marauder's Axe
@@ -10942,7 +10946,7 @@ Masticore
 Matca Rioters
 Mathemagics
 Matoya, Archon Elder
-Matsu-Tribe Decoy	combat: ForceBlockEffect; intent: ForceBlockEffect; polarity: ForceBlockEffect
+Matsu-Tribe Decoy
 Matterbending Mage
 Matzalantli, the Great Door
 Mauhúr, Uruk-hai Captain
@@ -11497,7 +11501,7 @@ Monstrous Emergence
 Monstrous Growth
 Monstrous Onslaught
 Monstrous Rage
-Monstrous Step	polarity: ForceBlockEffect
+Monstrous Step
 Monstrous Vortex
 Monstrous War-Leech
 Monument to Endurance
@@ -12532,6 +12536,7 @@ Otepec Huntmaster
 Otharri, Suns' Glory
 Otherworldly Gaze
 Otherworldly Journey
+Otherworldly Outburst
 Otter-Penguin
 Otterball Antics
 Oubliette	intent: PhaseInLinkedToSourceEffect; polarity: PhaseOutUntilLeavesEffect
@@ -13340,7 +13345,7 @@ Profound Journey
 Proft's Eidetic Memory
 Proft, Consulting Detective
 Proft, Sinister Mastermind
-Progenitor Exarch	intent: TransformEffect; polarity: TransformEffect
+Progenitor Exarch	intent: TransformEffect
 Progenitus
 Prohibit
 Project Deathlok Soldier
@@ -13358,6 +13363,7 @@ Prophesied End
 Prophet of the Peak
 Prophetic Bolt
 Prophetic Prism
+Prophetic Ravings
 Prosperity
 Prosperity Tycoon
 Prosperous Bandit
@@ -13769,7 +13775,7 @@ Rampaging Rendhorn
 Rampaging Soulrager
 Rampaging Spiketail
 Rampaging Yao Guai
-Rampant Elephant	combat: ForceBlockEffect; intent: ForceBlockEffect; polarity: ForceBlockEffect
+Rampant Elephant
 Rampant Growth
 Rampart Crawler
 Rampart Hunter
@@ -15343,7 +15349,7 @@ Seedborn Muse
 Seedcradle Witch
 Seedglaive Mentor
 Seedguide Ash
-Seedpod Caretaker	polarity: TransformEffect
+Seedpod Caretaker
 Seedpod Squire
 Seeds of Strength
 Seedship Agrarian
@@ -15771,6 +15777,7 @@ Shredder's Revenge
 Shredder's Technique
 Shredder, Unrelenting
 Shredding Winds
+Shreds of Sanity
 Shrewd Negotiation
 Shrewd Storyteller
 Shriek of Dread
@@ -15969,7 +15976,7 @@ Siren's Call
 Siren's Ruse
 Sisay's Ring
 Sisay, Weatherlight Captain
-Sisters of Stone Death	combat: ForceBlockEffect; intent: ForceBlockEffect; polarity: ForceBlockEffect
+Sisters of Stone Death
 Sisters of the Flame
 Sita Varma, Masked Racer	timing: ForEach>SetBaseStatsEffect
 Sivitri Scarzam
@@ -16334,6 +16341,7 @@ Somber Hoverguard
 Somberwald Alpha
 Somberwald Beastmaster
 Somberwald Sage
+Somberwald Stag
 Something Worth Saving
 Somnomancer
 Sonar Strike
@@ -16695,6 +16703,7 @@ Sporogenic Infection
 Spotcycle Scouter
 Spotted Griffin
 Spotter Thopter	intent: EmitScriedEventEffect
+Spreading Flames
 Spreading Plague
 Spreading Rot
 Spring // Mind
@@ -16898,7 +16907,9 @@ Steeple Creeper
 Steer Clear
 Stegron the Dinosaur Man	timing: AddCreatureTypeEffect
 Stenn, Paranoid Partisan
+Stensia Banquet
 Stensia Bloodhall
+Stensia Innkeeper
 Stensia Masquerade
 Stensia Uprising
 Step Between Worlds
@@ -17622,6 +17633,7 @@ Tangle Kelp
 Tangle Spider
 Tangle Tumbler
 Tanglebloom
+Tangleclaw Werewolf
 Tangled Colony
 Tangled Florahedron
 Tangled Islet
@@ -18551,7 +18563,7 @@ Toll of the Invasion
 Tolls of War
 Tolsimir Wolfblood
 Tolsimir, Friend to Wolves
-Tolsimir, Midnight's Light	intent: ForceBlockEffect; polarity: ForceBlockEffect
+Tolsimir, Midnight's Light
 Toluz, Clever Conductor	intent: Pipeline(?→exile); intent: Pipeline(FromLinkedExile→hand)
 Tom Bombadil
 Tom, Bert, and William
@@ -18924,7 +18936,7 @@ Turn to Dust
 Turn to Slag
 Turncoat Kunoichi
 Turntimber Ascetic
-Turntimber Basilisk	intent: ForceBlockEffect; polarity: ForceBlockEffect
+Turntimber Basilisk
 Turntimber Grove
 Turntimber Symbiosis	intent: MoveToZoneEffect
 Turret Ogre
@@ -19044,6 +19056,7 @@ Ultimecia, Time Sorceress
 Ultron Drone
 Ultron, Artificial Malevolence
 Ultros, Obnoxious Octopus
+Ulvenwald Captive
 Ulvenwald Mysteries
 Ulvenwald Observer
 Ulvenwald Oddity
@@ -19593,6 +19606,7 @@ Vigorbloom Charm
 Vigorbloom Vanguard
 Vigorous Charge	timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
 Vigorspore Wurm
+Vildin-Pack Outcast
 Vile Consumption
 Vile Deacon
 Vile Entomber
@@ -20105,6 +20119,7 @@ Wavebreak Hippocamp
 Wax // Wane
 Wax-Wane Witness
 Waxen Shapethief
+Waxing Moon
 Way of the Cryomancer
 Way of the Deathbringer
 Way of the Healer
