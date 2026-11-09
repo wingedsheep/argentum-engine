@@ -1154,7 +1154,8 @@ class TurnManager(
                 val choiceState = current
                 val result = choiceState.suspendForDecision(
                     question = { id -> ChooseOptionDecision(id, choices.first().first,
-                        "Your turn would begin. Choose whether to skip it.", DecisionContext(),
+                        if (extraSkip != null) "Your extra turn would begin and must be skipped. Choose which effect skips it."
+                        else "Your turn would begin. Choose whether to skip it.", DecisionContext(),
                         alternatives.map { option ->
                             val source = option.context.sourceId?.takeIf { it in choiceState.getBattlefield() }
                             val name = source?.let {

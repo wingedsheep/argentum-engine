@@ -403,6 +403,17 @@ internal class PlayerActiveEffectsProjector(
                     icon = "skull"
                 )
             )
+        } else if (container.get<ExtraTurnsComponent>()?.pending?.any { it.loseAtEndStep } == true) {
+            // Last Chance / Final Fortune before their extra turn begins: the clause rides that
+            // turn, and drops with it if the turn is skipped.
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "lose_at_end_step",
+                    name = "Last Chance",
+                    description = "You will lose the game at the beginning of your extra turn's end step",
+                    icon = "skull"
+                )
+            )
         }
 
         val turnSkips = container.get<SkipNextTurnComponent>()
