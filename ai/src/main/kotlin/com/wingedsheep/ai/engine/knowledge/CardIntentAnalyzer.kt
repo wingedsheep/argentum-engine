@@ -1495,13 +1495,6 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * "Exile target player's graveyard" (Tormod's Crypt, Bojuka Bog), "exile each opponent's
-     * graveyard" — a gather from a graveyard that is not only ours whose cards, or the ones picked
-     * from among them, go to exile — reads as [IntentTag.GRAVEYARD_HATE], as the single-card
-     * `MoveToZoneEffect` spelling does in [readingLeaves]. Our own graveyard exiled is a cost or
-     * fuel (delve, escape-likes), never an answer.
-     */
-    /**
      * "Search target player's library for up to five cards and exile them" (Supreme Inquisitor):
      * cards taken out of another player's library for good, by us — the exile form of milling them
      * toward an empty library, [IntentTag.MILL]. Not our tutor ([searchesOwnZones]); a search we
@@ -1530,6 +1523,13 @@ object CardIntentAnalyzer {
         return if (exiles) setOf(IntentTag.MILL) else emptySet()
     }
 
+    /**
+     * "Exile target player's graveyard" (Tormod's Crypt, Bojuka Bog), "exile each opponent's
+     * graveyard" — a gather from a graveyard that is not only ours whose cards, or the ones picked
+     * from among them, go to exile — reads as [IntentTag.GRAVEYARD_HATE], as the single-card
+     * `MoveToZoneEffect` spelling does in [readingLeaves]. Our own graveyard exiled is a cost or
+     * fuel (delve, escape-likes), never an answer.
+     */
     private fun graveyardExileTags(root: Effect, eachPlayer: Player? = null): Set<IntentTag> {
         val leaves = readingLeaves(root)
         // Exiled to be cast from exile (Mnemonic Betrayal, Shadow of the Enemy): a theft, not hate.

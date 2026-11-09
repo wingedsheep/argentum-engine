@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  *   Back:  Prowess. Whenever this creature deals combat damage to a player, investigate.
  *
  * The interaction worth proving is the 2016-04-08 ruling: with several of the front face's triggers
- * on the stack at once, only the first to resolve transforms it (CR 701.28f) — the rest must not flip
+ * on the stack at once, only the first to resolve transforms it (CR 701.27g) — the rest must not flip
  * it back.
  */
 class DaringSleuthScenarioTest : ScenarioTestBase() {

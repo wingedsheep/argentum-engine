@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Clue artifact subtype, so any Clue sacrificed for any reason counts. When several of these triggers
  * are on the stack at once, only the first to resolve transforms the Sleuth: the engine freezes the
  * source's face-change tally as each trigger goes on the stack and `Effects.Transform` does nothing once
- * the permanent has transformed since (CR 701.28f).
+ * the permanent has transformed since (CR 701.27g).
  */
 private val DaringSleuthFront = card("Daring Sleuth") {
     manaCost = "{1}{U}"
