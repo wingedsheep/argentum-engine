@@ -246,7 +246,7 @@ export function SetPickerModal({
   // (and its preview pane) to their own width.
   return createPortal(
     <div className={styles.deckViewerBackdrop} onClick={onClose}>
-      <div className={styles.deckViewerPanel} style={{ maxWidth: 940 }} onClick={(e) => e.stopPropagation()}>
+      <div className={`${styles.deckViewerPanel} ${guide.pickerPanel}`} style={{ maxWidth: 940 }} onClick={(e) => e.stopPropagation()}>
         <div className={styles.deckViewerHeader}>
           <h3 className={styles.deckViewerTitle}>{title}</h3>
           {!isSingle && (

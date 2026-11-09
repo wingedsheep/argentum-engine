@@ -578,6 +578,10 @@
 
 /* ── Lobby set picker layout ───────────────────────────────────────────── */
 
+/* A fixed height, not just the panel's 80vh cap: sized by its content, the modal shrank and
+   re-centred whenever a search left few rows and the hovered set's preview was short — moving the
+   rows out from under the pointer. The list and preview scroll inside it instead. */
+.pickerPanel { height: 80vh; }
 .pickerLayout { flex: 1; min-height: 0; display: flex; container-type: inline-size; }
 .pickerMain { flex: 1 1 auto; min-width: 0; }
 .pickerPreview {
