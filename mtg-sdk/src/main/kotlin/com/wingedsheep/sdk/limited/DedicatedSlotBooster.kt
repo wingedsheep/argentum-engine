@@ -60,9 +60,8 @@ interface SheetSelector {
  * @param sharedRarities rarities whose sheet cards also stay on the ordinary sheets. By default a
  *   card on this sheet appears nowhere else in the pack.
  * @param ordinaryRarities rolled rarities this slot opens from the ordinary sheets rather than its
- *   own — a slot that is usually an ordinary common and only sometimes a sheet card, like the
- *   Shadows over Innistrad block's rare or mythic double-faced card that replaced a common in one
- *   pack in eight. The sheet holds only the slot's other rarities.
+ *   own — a slot that is usually an ordinary common and only sometimes a sheet card, like Eldritch
+ *   Moon's rare or mythic double-faced card that replaced a common in one pack in eight. The sheet holds only the slot's other rarities.
  */
 data class DedicatedSlot(
     val sheet: SheetSelector,
@@ -102,15 +101,16 @@ data class DedicatedSlot(
  * A [base] booster plus [slots] that each draw from a dedicated print sheet — the double-faced
  * slots of Innistrad: Midnight Hunt, Crimson Vow, Kamigawa: Neon Dynasty and The Lost Caverns of
  * Ixalan; March of the Machine's double-faced and battle slots; the legendary slot of Dominaria
- * and Dominaria United; War of the Spark's planeswalker slot; Modern Horizons 3's new-to-Modern reprint slot.
+ * and Dominaria United; War of the Spark's planeswalker slot; Modern Horizons 3's new-to-Modern reprint slot;
+ * Eldritch Moon's double-faced-and-meld slots.
  *
  * Cards on a dedicated sheet leave the base's pool (unless their rarity is shared), so the base
  * opens only ordinary cards. At most one slot holds the pack's rare: the slots' [DedicatedSlot.rareChance]s
  * are rolled together, and the winner opens a rare or mythic from its sheet while the base trades
  * its rare slot for an uncommon. A slot whose sheet has run dry (host bans, an unimplemented card)
  * opens the rolled rarity from the ordinary sheets instead, so the pack keeps its shape. A slot's
- * [DedicatedSlot.ordinaryRarities] always open from the ordinary sheets — Shadows over Innistrad
- * and Eldritch Moon's common-or-rare-double-faced slot.
+ * [DedicatedSlot.ordinaryRarities] always open from the ordinary sheets — Eldritch Moon's slot that
+ * is a common or a rare double-faced card.
  *
  * [LandSlotBooster] reserves named lands for the land slot and [PlayBooster] varies wildcard odds;
  * neither moves the rare, which is the axis this type adds.
