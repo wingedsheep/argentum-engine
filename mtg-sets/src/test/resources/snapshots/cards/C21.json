@@ -898,6 +898,111 @@
     ]
 }
 
+// Rionya, Fire Dancer
+{
+    "name": "Rionya, Fire Dancer",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "At the beginning of combat on your turn, create X tokens that are copies of another target creature you control, where X is one plus the number of instant and sorcery spells you've cast this turn. They gain haste. Exile them at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rionya, Fire Dancer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "count": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "right": {
+                                    "type": "SpellsCastThisTurn",
+                                    "filter": "instant|sorcery"
+                                }
+                            },
+                            "exileAtStep": "END"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity",
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, create X tokens that are copies of another target creature you control, where X is one plus the number of instant and sorcery spells you've cast this turn. They gain haste. Exile them at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1e92b9c-4234-436d-a741-37c5e45859e5.jpg?1783927591",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The triggered ability counts all instants and sorceries that were cast before it resolves. If you cast instant spells in response to the ability, those spells will count."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The tokens copy exactly what is printed on the creature and nothing else (unless that creature is a token or is copying something else; see below). They don't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the copied creature is copying something else, the tokens enter the battlefield as whatever that creature is copying."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the copied creature is itself a token, the tokens created by Rionya copy the original characteristics of that token as stated by the effect that created it."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the tokens enter the battlefield. Any \"As [this creature] enters the battlefield\" or \"[This creature] enters the battlefield with\" abilities of the copied creature will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Stinging Study
 {
     "name": "Stinging Study",

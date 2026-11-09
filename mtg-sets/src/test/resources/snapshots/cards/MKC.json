@@ -1,0 +1,35 @@
+// Fiendish Duo
+{
+    "name": "Fiendish Duo",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)\nIf a source would deal damage to an opponent, it deals double that damage to that player instead.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "flavorText": "Half the size, double the mayhem.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebb44595-56f6-4be5-80bb-618ddd320f4a.jpg?1783912997"
+    }
+}

@@ -1427,6 +1427,54 @@
     ]
 }
 
+// Howling Banshee
+{
+    "name": "Howling Banshee",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhen this creature enters, each player loses 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Howling Banshee:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, each player loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Robinson",
+        "flavorText": "Villagers cloaked the town in magical silence, but their ears still bled.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7e38e91-696e-4bf9-b46c-c9ed85c82b19.jpg?1783942382"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Magma Phoenix
 {
     "name": "Magma Phoenix",

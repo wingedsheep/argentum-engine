@@ -603,16 +603,32 @@ object LimitedCardRater {
     private fun tagValue(tags: Set<IntentTag>): Double = tags.maxOfOrNull { TAG_VALUE[it] ?: 0.0 } ?: 0.0
 
     /**
+     * "Exile up to one target instant or sorcery card from your graveyard. You may cast that card
+     * until the end of your next turn" (Scholar of Combustion, Practiced Scrollsmith): the chosen
+     * graveyard card exiled and granted a cast is the return to hand it stands for — recursion, as
+     * [CardIntentAnalyzer] reads it. A token copy of the exiled card (Hour of Eternity) is priced at
+     * its own token leaf instead, so only a cast or play grant counts here.
+     */
+    private fun recastsChosenGraveyardTargets(root: Effect, targets: List<TargetRequirement>): Boolean =
+        CardIntentAnalyzer.exilesChosenGraveyardTargetsToUse(root, targets) &&
+            EffectWalker.leaves(root).any {
+                it is GrantMayPlayFromExileEffect || it is GrantFreeCastTargetFromExileEffect ||
+                    it is GrantPlayWithoutPayingCostEffect
+            }
+
+    /**
      * What the gather → move pipelines in a slot are worth. [EffectWalker] stops at pipeline stages,
      * and a gather or a move is worth nothing alone, so "destroy all creatures" and "look at the top
      * three, put one into your hand" scored zero. [CardIntentAnalyzer.pipelineTags] reads what the
      * stages add up to; this prices that reading like the leaf it stands for — a wrath or a picked
      * destroy like a destroy, a dig like one card drawn, a wish like a tutor — and graveyard targets the pipeline brings
-     * onto our battlefield, however it splits them first (Boneyard Parley's piles), like the
-     * recursion they are.
+     * onto our battlefield, however it splits them first (Boneyard Parley's piles), or exiles to
+     * cast again ([recastsChosenGraveyardTargets]), like the recursion they are.
      */
     private fun pipelineScore(root: Effect, targets: List<TargetRequirement>, turnAhead: Boolean = false, card: CardDefinition? = null): Double {
-        val reanimation = if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(root, targets)) {
+        val reanimation = if (CardIntentAnalyzer.reanimatesChosenGraveyardTargets(root, targets) ||
+            recastsChosenGraveyardTargets(root, targets)
+        ) {
             TAG_VALUE.getValue(IntentTag.RECURSION)
         } else 0.0
         // An exile into a pile the card may cast from (Maralen, Rona) is the dig it splits into two abilities.

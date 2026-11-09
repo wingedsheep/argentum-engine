@@ -6,6 +6,7 @@ import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ActivationModalTargetContinuation
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
@@ -362,7 +363,10 @@ object TargetSelection {
      * asked it, when that continuation carries the effect the targets are for: a triggered ability
      * being put on the stack ([TriggeredAbilityContinuation]), or one mode of a modal triggered
      * ability ([TriggerModalTargetSelectionContinuation] — Proud Pack-Rhino's "put a shield counter
-     * on target permanent"), or a copy's new targets ([StormCopyTargetContinuation] — Fork, a
+     * on target permanent"), or one mode of a modal activated ability
+     * ([ActivationModalTargetContinuation] — Kargan Intimidator's "target creature becomes a Coward",
+     * read against the source card so its own "Cowards can't block Warriors" names the side), or a
+     * copy's new targets ([StormCopyTargetContinuation] — Fork, a
      * storm copy; the ability-copy continuations — Lithoform Engine, Echo). Empty — UNKNOWN everywhere — for any other question, and for a
      * trigger whose dependent targets are asked one slot at a time.
      */
@@ -383,6 +387,12 @@ object TargetSelection {
                     ?.let(answer.modes::getOrNull)
                 if (mode == null) emptyList()
                 else intents.effectTargetPolarities(mode.effect, mode.targetRequirements)
+            }
+            is ActivationModalTargetContinuation -> {
+                val mode = answer.selectedIndices.getOrNull(answer.ordinal)?.let(answer.modal.modes::getOrNull)
+                val name = state.getEntity(answer.action.sourceId)?.get<CardComponent>()?.name
+                if (mode == null) emptyList()
+                else intents.effectTargetPolarities(mode.effect, mode.targetRequirements, name)
             }
             // "Choose new targets for the copy" (Fork, Double Major, a storm copy; Lithoform Engine,
             // Echo copying an ability): the copy is ours, so each slot wants what the copied effect

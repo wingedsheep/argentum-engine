@@ -196,6 +196,13 @@ class CombatAdvisor(
      * [AiProfile.blockSearchTriesSwaps] carries the argument.
      */
     private val blockSearchTriesSwaps: Boolean = false,
+    /**
+     * Read a creature leaving the battlefield later this turn ([LeavesThisTurn]) as gone once its
+     * fight is done: the block heuristic gives such an attacker no trade value, and every block
+     * and attack plan is scored on the board those departures leave.
+     * [AiProfile.departuresAreGone] carries the argument.
+     */
+    private val departuresAreGone: Boolean = false,
 ) {
     /** See [anticipateCombatResponses]; null when off. */
     private val responses: CombatResponses? =
@@ -651,7 +658,66 @@ class CombatAdvisor(
         // Removing an unaffordable partner can invalidate a co-blocker restriction.
         val finalPlan = if (affordable == legal) legal
             else legalizeBlockerPlan(state, playerId, affordable, mandatoryBlockerIds)
-        return blockDeclaration(state, playerId, finalPlan)
+        return blockDeclaration(
+            state, playerId,
+            satisfyUnnamedRequirements(state, projected, playerId, attackers, validBlockers, finalPlan),
+        )
+    }
+
+    /**
+     * Peeling optional blocks can't satisfy a requirement that names no blocker — "must be blocked
+     * if able" (King Harald's Revenge, Lure-style statics) is obeyed by *any* able blocker, so the
+     * engine suggests none and a plan that blocks nothing is rejected. Resubmitting that plan is all
+     * the AI could do, until its clock ran out and it conceded. Add the best-fitting block the engine
+     * accepts instead: one that survives, then one that also kills, then the cheapest. When a single
+     * block isn't enough (several such attackers), give every unblocked attacker its best fit until
+     * the declaration is legal, then drop the additions it didn't need.
+     */
+    private fun satisfyUnnamedRequirements(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        attackers: List<EntityId>,
+        validBlockers: List<EntityId>,
+        plan: Map<EntityId, List<EntityId>>,
+    ): Map<EntityId, List<EntityId>> {
+        fun legal(candidate: Map<EntityId, List<EntityId>>) =
+            simulator.simulate(state, blockDeclaration(state, playerId, candidate)) !is SimulationResult.Illegal
+        if (legal(plan)) return plan
+
+        fun bestFits(attacker: EntityId, taken: Set<EntityId>): List<EntityId> = validBlockers
+            .filter { it !in taken && canBlock(state, projected, attacker, it) }
+            .sortedWith(compareBy(
+                // duel = (attacker dies, blocker dies); false sorts first.
+                { CombatMath.duel(state, projected, attacker, it).second },
+                { !CombatMath.duel(state, projected, attacker, it).first },
+                { CombatMath.creatureValue(state, projected, it) },
+            ))
+        val unblocked = attackers
+            .filter { attacker -> plan.values.none { attacker in it } }
+            .sortedByDescending { CombatMath.effectiveDamage(projected, it) }
+
+        // One added block — the common case of a single must-be-blocked attacker.
+        val single = unblocked.asSequence()
+            .flatMap { attacker -> bestFits(attacker, plan.keys).asSequence().map { plan + (it to listOf(attacker)) } }
+            .firstOrNull(::legal)
+        if (single != null) return single
+
+        // Several: block everything we can, then shed the blocks the declaration doesn't need.
+        var current = plan
+        val added = mutableListOf<EntityId>()
+        for (attacker in unblocked) {
+            if (legal(current)) break
+            val blocker = bestFits(attacker, current.keys).firstOrNull() ?: continue
+            current = current + (blocker to listOf(attacker))
+            added += blocker
+        }
+        if (!legal(current)) return plan
+        for (blocker in added.sortedByDescending { CombatMath.creatureValue(state, projected, it) }) {
+            val without = current - blocker
+            if (legal(without)) current = without
+        }
+        return current
     }
 
     /** Saved proposals inform the plan but remain choices owned by the earlier teammate. */
@@ -1028,7 +1094,7 @@ class CombatAdvisor(
         // ── Pass 2: Profitable trades — blocker kills attacker but dies ──
         for (attacker in sortedAttackers) {
             if (attacker in blockedAttackers) continue
-            val attackerValue = CombatMath.combatTradeValue(projected, attacker)
+            val attackerValue = tradeValue(state, projected, attacker)
 
             val blocker = findSingleBlocker(state, projected, attacker, validBlockers, assignedBlockers,
                 allowSingleMenace = attacker in supportedMenace) { info ->
@@ -1068,7 +1134,7 @@ class CombatAdvisor(
             val aPower = projected.getPower(attacker) ?: 0
             val aToughness = projected.getToughness(attacker) ?: 0
             val aHasFirstStrike = Keyword.FIRST_STRIKE.name in aKeywords || Keyword.DOUBLE_STRIKE.name in aKeywords
-            val attackerValue = CombatMath.combatTradeValue(projected, attacker)
+            val attackerValue = tradeValue(state, projected, attacker)
 
             val available = availableBlockersFor(state, projected, attacker, validBlockers, assignedBlockers)
             if (available.size < 2) continue
@@ -1122,14 +1188,14 @@ class CombatAdvisor(
             val aPower = projected.getPower(attacker) ?: 0
             val aToughness = projected.getToughness(attacker) ?: 0
             val aHasFirstStrike = Keyword.FIRST_STRIKE.name in aKeywords || Keyword.DOUBLE_STRIKE.name in aKeywords
-            val attackerValue = CombatMath.combatTradeValue(projected, attacker)
+            val attackerValue = tradeValue(state, projected, attacker)
 
             val available = availableBlockersFor(state, projected, attacker, validBlockers, assignedBlockers)
             if (available.size < 3) continue
 
             // Cap candidates to keep combinatorics reasonable (C(8,3) = 56)
             val sorted = available
-                .sortedBy { CombatMath.combatTradeValue(projected, it) }
+                .sortedBy { tradeValue(state, projected, it) }
                 .take(8)
 
             var found = false
@@ -1173,6 +1239,19 @@ class CombatAdvisor(
     }
 
     /**
+     * [CombatMath.combatTradeValue], except that a creature leaving the battlefield later this turn
+     * ([LeavesThisTurn], under [departuresAreGone]) is worth nothing to trade for or trade away:
+     * killing it gains nothing the end step would not, and losing it loses nothing.
+     */
+    private fun tradeValue(state: GameState, projected: ProjectedState, entityId: EntityId): Double =
+        if (departuresAreGone && entityId in LeavesThisTurn.permanents(state)) 0.0
+        else CombatMath.combatTradeValue(projected, entityId)
+
+    /** [state] with the creatures leaving later this turn already gone, under [departuresAreGone]. */
+    private fun settledDepartures(state: GameState): GameState =
+        if (departuresAreGone) LeavesThisTurn.settled(state) else state
+
+    /**
      * What a gang block of [blockers] on [attacker] costs in creatures, in
      * [CombatMath.combatTradeValue] units.
      *
@@ -1193,7 +1272,7 @@ class CombatAdvisor(
         for (b in blockers.sortedBy { projected.getToughness(it) ?: 0 }) {
             val bToughness = projected.getToughness(b) ?: 0
             if (damageLeft >= bToughness) {
-                dyingValue += CombatMath.combatTradeValue(projected, b)
+                dyingValue += tradeValue(state, projected, b)
                 damageLeft -= bToughness
             }
         }
@@ -1220,7 +1299,7 @@ class CombatAdvisor(
             if (deathtouch) 1
             else ((projected.getToughness(b) ?: 0) - (state.getEntity(b)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(1)
         }
-        val values = killable.map { CombatMath.combatTradeValue(projected, it) }
+        val values = killable.map { tradeValue(state, projected, it) }
         var best = 0.0
         for (mask in 1 until (1 shl killable.size)) {
             var cost = 0
@@ -1315,7 +1394,7 @@ class CombatAdvisor(
                 val bKeywords = projected.getKeywords(blockerId)
                 val bHasDeathtouch = Keyword.DEATHTOUCH.name in bKeywords
                 val bHasFirstStrike = Keyword.FIRST_STRIKE.name in bKeywords || Keyword.DOUBLE_STRIKE.name in bKeywords
-                val blockerValue = CombatMath.combatTradeValue(projected, blockerId)
+                val blockerValue = tradeValue(state, projected, blockerId)
 
                 // A block trigger that destroys the attacker resolves before any combat damage, so
                 // first strike cannot stop it; when it also destroys the blocker, the blocker dies.
@@ -1398,20 +1477,24 @@ class CombatAdvisor(
             }
         }
 
-        val postProjected = current.projectedState
-        val baseScore = evaluator.evaluate(current, postProjected, playerId)
+        // A creature leaving at the end step is scored as gone: killing one bought nothing the
+        // end step would not have, and a blocker of ours that will leave anyway cost nothing.
+        val departing = if (departuresAreGone) LeavesThisTurn.permanents(current) else emptySet()
+        val scored = if (departing.isEmpty()) current else LeavesThisTurn.without(current, departing)
+        val postProjected = scored.projectedState
+        val baseScore = evaluator.evaluate(scored, postProjected, playerId)
 
         // Estimate our next-turn attack potential: what damage can we push through?
         // Scored against the opponent it pays off best against — in a pod we get to choose who to
         // swing at, so the counter-attack is worth what its *best* target is worth. In 1v1 there is
         // one opponent and this is the original single calculation.
-        val myAttackers = CombatMath.getCreaturesThatCanAttack(current, postProjected, playerId)
-        val counterAttackBonus = current.getOpponents(playerId).maxOfOrNull { opponentId ->
-            val opponentBlockers = CombatMath.getOpponentUntappedCreatures(current, postProjected, opponentId)
+        val myAttackers = CombatMath.getCreaturesThatCanAttack(scored, postProjected, playerId)
+        val counterAttackBonus = scored.getOpponents(playerId).maxOfOrNull { opponentId ->
+            val opponentBlockers = CombatMath.getOpponentUntappedCreatures(scored, postProjected, opponentId)
             val ourDamageThrough = if (myAttackers.isNotEmpty()) {
-                CombatMath.calculateDamageThroughOptimalBlocking(current, postProjected, myAttackers, opponentBlockers)
+                CombatMath.calculateDamageThroughOptimalBlocking(scored, postProjected, myAttackers, opponentBlockers)
             } else 0
-            val opponentLife = current.lifeTotal(opponentId)
+            val opponentLife = scored.lifeTotal(opponentId)
 
             // Small bonus for blocking plans that preserve our attack potential.
             // Nudges the AI toward blocks that keep our counter-attack alive.
@@ -1426,7 +1509,8 @@ class CombatAdvisor(
 
         val survivors = current.getBattlefield().toSet()
         val losingBlockers = blockerMap.filter { (blocker, blocked) ->
-            blocked.isNotEmpty() && blocker !in survivors && blocked.all { it in survivors }
+            blocked.isNotEmpty() && blocker !in survivors && blocked.all { it in survivors } &&
+                (!departuresAreGone || blocker !in LeavesThisTurn.permanents(state))
         }.keys
 
         // Life is one way to lose this combat; commander damage (CR 903.10a) is another.
@@ -1512,6 +1596,15 @@ class CombatAdvisor(
         life: Int = state.lifeTotal(playerId),
         commanderDamageThisCombat: (EntityId) -> Int = { 0 },
     ): Int {
+        // Next turn's board: a creature leaving at this turn's end step attacks and blocks nobody.
+        val settled = settledDepartures(state)
+        if (settled !== state) {
+            val stillHere = settled.getBattlefield().toSet()
+            return incomingNextTurnDamage(
+                settled, settled.projectedState, playerId, myBlockers.filter { it in stillHere },
+                chumpBlocks, stackOnTramplers, life, commanderDamageThisCombat,
+            )
+        }
         val sides = state.sidesFor(playerId) ?: return 0
         // A creature that can't block is no defence, however untapped it is. Counting it made
         // attacking with one (Aesthir Glider) look like it opened the crack-back it never closed.
@@ -1613,9 +1706,13 @@ class CombatAdvisor(
     ): Double {
         val lifeAfter = myLife - calculateIncomingDamage(state, projected, attackers, plan)
         if (lifeAfter <= 0) return Double.POSITIVE_INFINITY
-        val (deadBlockers, deadAttackers) = combatCasualties(state, projected, plan)
+        val (deadBlockers, combatDeaths) = combatCasualties(state, projected, plan)
+        // Leaving at the end step is as gone by the next attack as dying in this combat.
+        val departing = if (departuresAreGone) LeavesThisTurn.permanents(state) else emptySet()
+        val deadAttackers = combatDeaths + departing
         val ourBlockers = projected.getBattlefieldControlledBy(playerId).filter {
-            projected.isCreature(it) && it !in deadBlockers && !projected.cantBlock(it) && untapsInTime(state, projected, it)
+            projected.isCreature(it) && it !in deadBlockers && it !in departing && !projected.cantBlock(it) &&
+                untapsInTime(state, projected, it)
         }
         val sides = state.sidesFor(playerId) ?: return 0.0
         return sides.opponents.maxOfOrNull { team ->
@@ -2036,6 +2133,8 @@ class CombatAdvisor(
                 },
             )
         }.let { if (crackBackAfterCleanup) withoutMarkedDamage(it) else it }
+            // A creature leaving at the end step neither blocks the crack-back nor swings again.
+            .let(::settledDepartures)
         val postProjected = postCombat.projectedState
         // Under [attacksReadTheRace] the board is read as it stands at our next untap: the
         // crack-back below is what a tapped attacker costs, and the evaluator's tapped discount and

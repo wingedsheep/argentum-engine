@@ -8,9 +8,12 @@ import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent
+import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -50,6 +53,32 @@ class EmptyPayoffTest : ScenarioTestBase() {
             targets = listOf(ChosenTarget.Permanent(findPermanent(onto)!!)),
         )
         return policy.verdictFor(state, player1Id, equipment, activation = activation)
+    }
+
+    private val koh = "Koh, the Face Stealer"
+
+    private fun TestGame.kohVerdict(policy: HoldPolicy): TimingVerdict {
+        val activation = ActivateAbility(player1Id, findPermanent(koh)!!, nonManaAbility(koh).id)
+        return policy.verdictFor(state, player1Id, koh, activation = activation)
+    }
+
+    /**
+     * Builds Koh with [pile] exiled with it (in order), the card at [chosenIndex] already stamped as
+     * the last chosen card, and the opponent holding a board that is winning the race.
+     */
+    private fun kohGame(pile: List<String>, chosenIndex: Int?, step: Step = Step.PRECOMBAT_MAIN, theirTurn: Boolean = false): TestGame {
+        var builder = scenario().withPlayers().withCardOnBattlefield(1, koh)
+        for (card in pile) builder = builder.withCardInExile(1, card)
+        if (theirTurn) builder = builder.withActivePlayer(2)
+        val game = builder
+            .withCardOnBattlefield(2, "Hill Giant")
+            .build().advanceToPriority(1, step)
+        val exiled = game.state.getZone(game.player1Id, Zone.EXILE)
+        game.state = game.state.updateEntity(game.findPermanent(koh)!!) { koh ->
+            val piled = koh.with(LinkedExileComponent(exiled))
+            if (chosenIndex == null) piled else piled.with(ChosenLinkedExileComponent(exiled[chosenIndex]))
+        }
+        return game
     }
 
     /** Marks [name] as having had an ability activated this turn, as an earlier equip would have. */
@@ -267,6 +296,65 @@ class EmptyPayoffTest : ScenarioTestBase() {
                     val activation = action as? ActivateAbility
                     activation?.sourceId shouldBe game.findPermanent("Dúnedain Blade")
                     activation?.targets shouldBe listOf(ChosenTarget.Permanent(game.findPermanent("Hill Giant")!!))
+                }
+            }
+        }
+
+        // --- Choosing again from a pile with nothing new to choose (Koh, the Face Stealer) -------
+
+        test("Koh with a creature in the pile and nothing chosen yet: the first choice is live") {
+            val game = kohGame(listOf("Grizzly Bears"), chosenIndex = null)
+
+            game.kohVerdict(off) shouldBe TimingVerdict.Neutral
+            game.kohVerdict(on) shouldBe TimingVerdict.Neutral
+        }
+
+        test("Koh with an empty pile: nothing to choose, no window") {
+            val game = kohGame(emptyList(), chosenIndex = null)
+
+            game.kohVerdict(off) shouldBe TimingVerdict.Neutral
+            game.kohVerdict(on) shouldBe TimingVerdict.NoWindow
+        }
+
+        test("Koh whose only creature is already the chosen card: choosing again is a no-op") {
+            val game = kohGame(listOf("Grizzly Bears"), chosenIndex = 0)
+
+            game.kohVerdict(off) shouldBe TimingVerdict.Neutral
+            game.kohVerdict(on) shouldBe TimingVerdict.NoWindow
+        }
+
+        test("Koh with another creature to swap to keeps the choice live") {
+            val game = kohGame(listOf("Grizzly Bears", "Hill Giant"), chosenIndex = 0)
+
+            game.kohVerdict(on) shouldBe TimingVerdict.Neutral
+        }
+
+        test("a pile of noncreature cards offers nothing to choose") {
+            val game = kohGame(listOf("Forest"), chosenIndex = null)
+
+            game.kohVerdict(on) shouldBe TimingVerdict.NoWindow
+        }
+
+        test("Koh that already activated this turn does not swap faces a second time") {
+            val game = kohGame(listOf("Grizzly Bears", "Hill Giant"), chosenIndex = 0)
+            game.markActivatedThisTurn(koh)
+
+            game.kohVerdict(off) shouldBe TimingVerdict.Neutral
+            game.kohVerdict(on) shouldBe TimingVerdict.NoWindow
+        }
+
+        test("2026-11-08 game, turn 31: the agent no longer pays life to re-choose the one creature it has") {
+            // The recorded position scored the payment +0.79 above passing in the opponent's
+            // declare-blockers step of another player's turn, and the AI paid 38 times, from 40 life
+            // down to 2. The toy board here is not that losing position, so this pins the verdict
+            // the agent acts on; the unit tests above pin the shape.
+            val game = kohGame(listOf("Draconautics Engineer"), chosenIndex = 0, step = Step.END, theirTurn = true)
+
+            for (profile in listOf(AiProfile.PRODUCTION_CANDIDATE_EMPTYPAYOFF, AiProfile.LIVE)) {
+                val (action, option) = scoredOption(game, profile, koh) { true }
+                withClue("${profile.id} chose $action") {
+                    option.note shouldBe "hold policy: wrong window — floored below passing"
+                    ((action as? ActivateAbility)?.abilityId == nonManaAbility(koh).id) shouldBe false
                 }
             }
         }

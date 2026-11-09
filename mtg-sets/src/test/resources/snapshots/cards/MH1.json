@@ -1554,6 +1554,68 @@
     ]
 }
 
+// Force of Despair
+{
+    "name": "Force of Despair",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "If it's not your turn, you may exile a black card from your hand rather than pay this spell's mana cost.\nDestroy all creatures that entered this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "EnteredThisTurn"
+                            ]
+                        }
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Hand",
+                        "filter": "black"
+                    }
+                }
+            ],
+            "condition": "IsNotYourTurn"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f497b0d-4448-4201-bd55-c147da1a216d.jpg?1783933128"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Force of Negation
 {
     "name": "Force of Negation",
@@ -3706,6 +3768,66 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Pyrophobia
+{
+    "name": "Pyrophobia",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Pyrophobia deals 3 damage to target creature. Cowards can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature Coward"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Izzy",
+        "flavorText": "\"I hate this! I hate fire! I hate you for taking me on this route!\"\n—Norin the Wary",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff02b3f1-d70f-4e44-bc1c-7fc90ec611dc.jpg?1783933106",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If the target creature is an illegal target by the time Pyrophobia tries to resolve, the spell doesn't resolve. Cowards can block if they're otherwise allowed to."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Because it doesn't modify the characteristics of creatures, Pyrophobia can affect Cowards that enter the battlefield or creatures that become Cowards after the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

@@ -54,6 +54,87 @@
     ]
 }
 
+// Goblin Goliath
+{
+    "name": "Goblin Goliath",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Goblin Mutant",
+    "oracleText": "When this creature enters, create a number of 1/1 red Goblin creature tokens equal to the number of opponents you have.\n{3}{R}, {T}: If a source you control would deal damage to an opponent this turn, it deals double that damage to that player instead.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Goliath:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "PlayerCount",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/0/70f8a1de-cd4c-4afa-bf03-0245d375d42e.jpg?1783908589"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Goblin Goliath:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AmplifyDamageThisTurn",
+                    "bonus": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "appliesTo": {
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "EachOpponent"
+                        },
+                        "source": {
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "multiplier": 2
+                },
+                "descriptionOverride": "Double the damage sources you control deal to opponents this turn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70783",
+        "rarity": "MYTHIC",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcaf7d1e-9ebf-497e-9d0e-bd23d3bf2b12.jpg?1783933914"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Immortal Phoenix
 {
     "name": "Immortal Phoenix",

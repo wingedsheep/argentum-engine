@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -116,7 +117,7 @@ class JumpstartLobbyTest : FunSpec({
     }
 
     test("every published pack makes a submittable deck, including seven Snow-Covered Islands") {
-        for (set in listOf("JMP", "J22")) {
+        for (set in JumpstartPacks.SUPPORTED_SETS) {
             val packs = JumpstartPacks(generator, set).packs
             for (pack in packs) {
                 val l = lobby().apply { updateSets(listOf(set)) }
@@ -162,7 +163,7 @@ class JumpstartLobbyTest : FunSpec({
     test("the two rows share no theme when six are playable, and are drawn independently when not") {
         // How many themes are playable depends on which cards are implemented, so the assertion
         // follows the corpus rather than assuming a count.
-        for (set in listOf("JMP", "J22")) {
+        for (set in JumpstartPacks.SUPPORTED_SETS) {
             val packs = JumpstartPacks(generator, set)
             val available = packs.available(emptySet()).map { it.theme }.distinct().size
             repeat(20) {
@@ -183,6 +184,16 @@ class JumpstartLobbyTest : FunSpec({
         JumpstartPacks.listsFor("J22").values.all { it.size == 20 } shouldBe true
         JumpstartPacks.listsFor("J22").keys.map { it.substringBefore(" (") }.distinct().size shouldBe 46
         JumpstartPacks(generator, "J22").packs.map { it.theme }.distinct().size.let { it >= 3 } shouldBe true
+    }
+
+    test("J25 has 121 exact published variants spanning 46 themes, and every one is playable") {
+        JumpstartPacks.listsFor("J25").size shouldBe 121
+        JumpstartPacks.listsFor("J25").values.all { it.size == 20 } shouldBe true
+        JumpstartPacks.listsFor("J25").keys.map { it.substringBefore(" (") }.distinct().size shouldBe 46
+        // Foundations Jumpstart is fully implemented, so no variant may drop out for a missing card.
+        val resolved = JumpstartPacks(generator, "J25").packs.map { it.id }.toSet()
+        JumpstartPacks.listsFor("J25").keys.filterNot { it in resolved }.shouldBeEmpty()
+        lobby().apply { updateSets(listOf("J25")) }.isJumpstart shouldBe true
     }
 
     test("switching from JMP to J22 uses J22 offers and restores an exact deck") {

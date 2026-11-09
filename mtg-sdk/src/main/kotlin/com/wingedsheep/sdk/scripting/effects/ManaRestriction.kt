@@ -131,16 +131,62 @@ sealed interface ManaRestriction {
      * colors (CR 105.2) number exactly [count], read off the spell being cast — a hybrid pip
      * counts both its colors. Meeting of the Five (`count = 3`). A colorless spell has zero
      * colors, but "spend this mana only to cast colorless spells" is [ColorlessSpellsOnly].
+     *
+     * [includingColor] adds the axis "… and one of them is that color": `SpellsWithExactColorCount(1,
+     * Color.RED)` is "monocolored red spells" (a spell that is red and nothing else), and a
+     * multicolored spell that merely includes red does not satisfy it. `null` (the default) is the
+     * unconstrained shape Meeting of the Five prints. A color that isn't known when the card is
+     * written — Throne of Eldraine's "monocolored spells of the chosen color" — is
+     * [SpellsOfChosenColor], which the engine binds to this form as the mana is made.
      */
     @SerialName("SpellsWithExactColorCount")
     @Serializable
-    data class SpellsWithExactColorCount(val count: Int) : ManaRestriction {
+    data class SpellsWithExactColorCount(
+        val count: Int,
+        val includingColor: com.wingedsheep.sdk.core.Color? = null,
+    ) : ManaRestriction {
         init {
             require(count in 1..5) { "a spell has 1 to 5 colors; use ColorlessSpellsOnly for none" }
         }
+        override val description: String = run {
+            val colors = if (count == 1) "color" else "colors"
+            val number = listOf("one", "two", "three", "four", "five")[count - 1]
+            if (includingColor == null) {
+                "Spend this mana only to cast spells with exactly $number $colors"
+            } else if (count == 1) {
+                "Spend this mana only to cast monocolored ${includingColor.displayName.lowercase()} spells"
+            } else {
+                "Spend this mana only to cast ${includingColor.displayName.lowercase()} spells with exactly $number $colors"
+            }
+        }
+    }
+
+    /**
+     * "Spend this mana only to cast spells of the chosen color with exactly [exactColorCount]
+     * colors" — Throne of Eldraine's "Spend this mana only to cast monocolored spells of that
+     * color" is `SpellsOfChosenColor(1)`. The *unbound* form of [SpellsWithExactColorCount]'s
+     * `includingColor` axis, for a card that chose a color as it entered (CR 614.12 "as enters"
+     * choice): the engine binds it the moment the mana is made, replacing it — also inside an
+     * [AnyOf] / [AllOf] — with `SpellsWithExactColorCount(exactColorCount, <the producing source's
+     * chosen color>)`, so the pool only ever holds the self-contained bound form. Left unbound (the
+     * source never chose a color) it is satisfied by nothing.
+     *
+     * Closest types: [SpellsWithExactColorCount] (a color fixed when the card is written, so it
+     * can't name a choice made later) and [OfChosenType] (the same "bind to the source's choice"
+     * shape, but over creature types, not colors). A separate type rather than a sentinel color on
+     * [SpellsWithExactColorCount] for the reason [OfChosenType] gives: a sentinel would let a
+     * printed color and "the chosen one" collide.
+     */
+    @SerialName("SpellsOfChosenColor")
+    @Serializable
+    data class SpellsOfChosenColor(val exactColorCount: Int) : ManaRestriction {
+        init {
+            require(exactColorCount in 1..5) { "a spell has 1 to 5 colors" }
+        }
         override val description: String =
-            "Spend this mana only to cast spells with exactly ${listOf("one", "two", "three", "four", "five")[count - 1]} " +
-                if (count == 1) "color" else "colors"
+            if (exactColorCount == 1) "Spend this mana only to cast monocolored spells of the chosen color"
+            else "Spend this mana only to cast spells of the chosen color with exactly " +
+                "${listOf("one", "two", "three", "four", "five")[exactColorCount - 1]} colors"
     }
 
     /**
