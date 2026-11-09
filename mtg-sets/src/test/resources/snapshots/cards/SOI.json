@@ -1110,6 +1110,127 @@
     ]
 }
 
+// Avacynian Missionaries
+{
+    "name": "Avacynian Missionaries",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "At the beginning of your end step, if this creature is equipped, transform it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Avacynian Missionaries:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsEquipped"
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if this creature is equipped, transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lunarch Inquisitors",
+        "manaCost": "",
+        "typeLine": "Creature — Human Cleric",
+        "oracleText": "When this creature transforms into Lunarch Inquisitors, you may exile another target creature until this creature leaves the battlefield.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Lunarch Inquisitors:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "MoveUntilSourceLeaves",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "When this creature transforms into Lunarch Inquisitors, you may exile another target creature until this creature leaves the battlefield."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "6",
+            "rarity": "UNCOMMON",
+            "artist": "Wayne Reynolds",
+            "flavorText": "\"We come bearing the tools of confession and absolution.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/0/1001e708-e4f9-456a-8b9d-3421a2a3833d.jpg?1783937831",
+            "rulings": [
+                {
+                    "date": "2016-04-08",
+                    "text": "If Lunarch Inquisitors leaves the battlefield before its triggered ability resolves, the target creature won't be exiled."
+                },
+                {
+                    "date": "2016-04-08",
+                    "text": "If Lunarch Inquisitors somehow transforms into Avacynian Missionaries, the creature will remain exiled. If Avacynian Missionaries later leaves the battlefield, the creature will return to the battlefield."
+                },
+                {
+                    "date": "2016-04-08",
+                    "text": "If a creature token is exiled, it ceases to exist. It won't be returned to the battlefield."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"We come bearing the word of Avacyn and the Lunarch Council.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/1001e708-e4f9-456a-8b9d-3421a2a3833d.jpg?1783937831",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "The Equipment attached to Avacynian Missionaries remains attached after it transforms into Lunarch Inquisitors."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Biting Rain
 {
     "name": "Biting Rain",
@@ -1429,6 +1550,58 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Bygone Bishop
+{
+    "name": "Bygone Bishop",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "Flying\nWhenever you cast a creature spell with mana value 3 or less, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bygone Bishop:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ManaValueAtMost",
+                                "max": 3
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": "Investigate",
+                "descriptionOverride": "Whenever you cast a creature spell with mana value 3 or less, investigate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c45198f-fb2b-4c83-abdc-8b1a0071cfed.jpg?1783937823",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Casting a spell for an alternative cost, such as a madness cost, doesn't change its mana value. For example, casting Twins of Maurer Estate (a card with mana cost {4}{B} and madness cost {2}{B}) for its madness cost will not cause Bygone Bishop's ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2067,6 +2240,285 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Declaration in Stone
+{
+    "name": "Declaration in Stone",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature and all other creatures its controller controls with the same name as that creature. That player investigates for each nontoken creature exiled this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "Entity",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "entities0"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "SharesNameWith",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsFaceUp"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "entities0",
+                    "ifNotEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered1",
+                                "filter": "creature nontoken",
+                                "storeMatching": "matching3"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "moved4"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "matching3",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "moved4"
+                                },
+                                "storeMatching": "matching5"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "matching3",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "matching5"
+                                },
+                                "storeMatching": "matching6"
+                            },
+                            {
+                                "type": "Investigate",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "matching6_count"
+                                },
+                                "controller": "TargetController"
+                            }
+                        ]
+                    },
+                    "ifEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "FilterCollection",
+                                "from": "entities0",
+                                "filter": "creature nontoken",
+                                "storeMatching": "matching8"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "entities0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "moved9"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "matching8",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "moved9"
+                                },
+                                "storeMatching": "matching10"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "matching8",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "matching10"
+                                },
+                                "storeMatching": "matching11"
+                            },
+                            {
+                                "type": "Investigate",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "matching11_count"
+                                },
+                                "controller": "TargetController"
+                            }
+                        ]
+                    },
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "The message was clear to Sorin—Nahiri had paid Markov Manor a visit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f685445d-e2af-455f-b3b2-97cf15362f3c.jpg?1783937822",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If the target creature is an illegal target when Declaration in Stone tries to resolve, it won't resolve and none of its effects will happen. No creatures will be exiled, including those with the same name as the target."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "It's possible to have a creature and a noncreature permanent with the same name, such as two copies of the same land, one of which has become a land creature. Only creatures with that name are exiled by Declaration in Stone."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "A face-down creature, such as one cast with a megamorph ability from the Dragons of Tarkir set, has no name and can't share a name with any other creatures."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Declaration in Stone has only one target. The other creatures with that name aren't targeted. For example, a creature with hexproof will be exiled if it has the same name as the target creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Descend upon the Sinful
+{
+    "name": "Descend upon the Sinful",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all creatures.\nDelirium — Create a 4/4 white Angel creature token with flying if there are four or more card types among cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Angel"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdb975fe-ac30-4249-bb55-7efb64645e4d.jpg?1783937685"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "flavorText": "Above the cries, a phrase rang out: \"You will all be saved.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9ff2cbf-a1dc-4cc5-9a5d-8439899d4e87.jpg?1783937822",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If you have three non-sorcery card types among cards in your graveyard at the time Descend upon the Sinful resolves, you won't get an Angel token. Descend upon the Sinful isn't put into your graveyard until after it's finished resolving."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If one of those creatures was enchanted, its Aura won't be put into a player's graveyard until after Descend upon the Sinful has finished resolving. If the controller of Descend upon the Sinful owned the Aura, it won't be in the graveyard in time to be counted for the delirium ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2966,6 +3418,63 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7329a19-2f68-4d2c-a725-e0d862cd234e.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Expose Evil
+{
+    "name": "Expose Evil",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures.\nInvestigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "Investigate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Jama Jurabaev",
+        "flavorText": "\"Only the pure stand tall in the light.\"\n—Sigarda",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9de0341a-cd45-439c-adc2-8d24c47c4bd5.jpg?1783937818",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can cast Expose Evil with no targets if you only want to investigate."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If Expose Evil has at least one target and all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Falkenrath Gorger
@@ -3899,6 +4408,139 @@
     ]
 }
 
+// Hanweir Militia Captain
+{
+    "name": "Hanweir Militia Captain",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "At the beginning of your upkeep, if you control four or more creatures, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hanweir Militia Captain:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you control four or more creatures, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Westvale Cult Leader",
+        "manaCost": "",
+        "typeLine": "Creature — Human Cleric",
+        "oracleText": "Westvale Cult Leader's power and toughness are each equal to the number of creatures you control.\nAt the beginning of your end step, create a 1/1 white and black Human Cleric creature token.",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                }
+            },
+            "toughness": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                }
+            }
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Westvale Cult Leader:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE",
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Human",
+                            "Cleric"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94ed2eca-1579-411d-af6f-c7359c65de30.jpg?1783937680"
+                    },
+                    "descriptionOverride": "At the beginning of your end step, create a 1/1 white and black Human Cleric creature token."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "21",
+            "rarity": "RARE",
+            "artist": "David Palumbo",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/e/7e137566-5033-48e8-88ba-65e3821b3cec.jpg?1783937824",
+            "rulings": [
+                {
+                    "date": "2016-04-08",
+                    "text": "Westvale Cult Leader's first ability counts itself, so it will normally be at least 1/1."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "flavorText": "Her reputation inspires both loyalty and adoration.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e137566-5033-48e8-88ba-65e3821b3cec.jpg?1783937824",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If you don't control four or more creatures (including Hanweir Militia Captain itself) at the moment your upkeep begins, its ability doesn't trigger. You can't wait for other effects in your upkeep to provide creatures."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you don't control four or more creatures as Hanweir Militia Captain's ability resolves, it won't transform."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Once Hanweir Militia Captain has transformed into Westvale Cult Leader, controlling fewer than four creatures won't cause it to transform back."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Harvest Hand
 {
     "name": "Harvest Hand",
@@ -4209,6 +4851,68 @@
     ]
 }
 
+// Hope Against Hope
+{
+    "name": "Hope Against Hope",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each creature you control.\nAs long as enchanted creature is a Human, it has first strike.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": {
+                    "type": "EnchantedCreatureHasSubtype",
+                    "subtype": "Human"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "David Seguin",
+        "flavorText": "\"I have given my life to the church, my soul to Avacyn, and my heart to the people.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6f7c6f5-159a-40ed-823a-8740a1ce373e.jpg?1783937817",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Hope Against Hope's second ability counts the enchanted creature, so that creature will normally get at least +1/+1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hound of the Farbogs
 {
     "name": "Hound of the Farbogs",
@@ -4340,6 +5044,56 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Humble the Brute
+{
+    "name": "Humble the Brute",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with power 4 or greater.\nInvestigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "Investigate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature pow>=4"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"The element of surprise only works when it's backed up by a bolt between the eyes.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c105686-8b45-494a-b9ef-8aa267bb1b5a.jpg?1783937817",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4673,6 +5427,89 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Invocation of Saint Traft
+{
+    "name": "Invocation of Saint Traft",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"Whenever this creature attacks, create a 4/4 white Angel creature token with flying that's tapped and attacking. Exile that token at end of combat.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Invocation of Saint Traft:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 4,
+                                "toughness": 4,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Angel"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdb975fe-ac30-4249-bb55-7efb64645e4d.jpg?1783937685",
+                                "tapped": true,
+                                "attacking": true
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END_COMBAT",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "createdTokens"
+                                    },
+                                    "destination": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c64077da-9e55-4ced-91f7-db478383172f.jpg?1783937714",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You declare which player or planeswalker the token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker the enchanted creature is attacking."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Although the token is attacking, it was never declared as an attacking creature (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Removing Invocation of Saint Traft or the enchanted creature from the battlefield won't stop the delayed triggered ability from exiling the Angel token at end of combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -6843,6 +7680,156 @@
     ]
 }
 
+// Pious Evangel
+{
+    "name": "Pious Evangel",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever this creature or another creature you control enters, you gain 1 life.\n{2}, {T}, Sacrifice another permanent: Transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pious Evangel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever this creature or another creature you control enters, you gain 1 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pious Evangel:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": "Transform",
+                "descriptionOverride": "{2}, {T}, Sacrifice another permanent: Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Wayward Disciple",
+        "manaCost": "",
+        "typeLine": "Creature — Human Cleric",
+        "oracleText": "Whenever this creature or another creature you control dies, target opponent loses 1 life and you gain 1 life.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Wayward Disciple:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature ctrl:you",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirement": {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "Whenever this creature or another creature you control dies, target opponent loses 1 life and you gain 1 life."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "34",
+            "rarity": "UNCOMMON",
+            "artist": "Kev Walker",
+            "flavorText": "\". . . and I will prove my devotion.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/a/7ac2a5aa-71c3-482b-9431-5f0b228cf64d.jpg?1783937819",
+            "rulings": [
+                {
+                    "date": "2016-04-08",
+                    "text": "If Wayward Disciple dies at the same time as another creature you control, Wayward Disciple's ability triggers once for the other creature as well as once for itself."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"My faith guides my hand . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7ac2a5aa-71c3-482b-9431-5f0b228cf64d.jpg?1783937819",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Pious Evangel enters the battlefield at the same time as another creature you control, Pious Evangel's ability triggers once for the other creature as well as once for itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Port Town
 {
     "name": "Port Town",
@@ -7925,6 +8912,170 @@
     ]
 }
 
+// Shard of Broken Glass
+{
+    "name": "Shard of Broken Glass",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0.\nWhenever equipped creature attacks, you may mill two cards.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shard of Broken Glass:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shard of Broken Glass:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "262",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a4924d7-f787-474b-beca-3b369903485c.jpg?1783937706"
+    },
+    "colorIdentityOverride": []
+}
+
+// Sigarda, Heron's Grace
+{
+    "name": "Sigarda, Heron's Grace",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nYou and Humans you control have hexproof.\n{2}, Exile a card from your graveyard: Create a 1/1 white Human Soldier creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sigarda, Heron's Grace:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9cbf36e-4044-4f08-9bae-f0dcb2455716.jpg?1783937683"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantHexproofToController",
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "permanent Human ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db953cb9-52b4-4bf0-86ab-2c3af2faeccf.jpg?1783937711"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Silent Observer
 {
     "name": "Silent Observer",
@@ -8943,6 +10094,69 @@
     ]
 }
 
+// Survive the Night
+{
+    "name": "Survive the Night",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+0 and gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)\nInvestigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "Investigate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The longest nights are measured not in hours, but in heartbeats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cb4a0bc-196a-466b-a704-377f5c7eb5b7.jpg?1783937807",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Tamiyo's Journal
 {
     "name": "Tamiyo's Journal",
@@ -9079,6 +10293,77 @@
         "artist": "Zoltan Boros",
         "flavorText": "Thalia established the Order of Saint Traft in an effort to bring together cathars who would stand against the corruption of the Lunarch Council.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/1/41fbe149-3e1f-495e-be1b-efc3a6dbcb08.jpg?1783937807"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thalia's Lieutenant
+{
+    "name": "Thalia's Lieutenant",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, put a +1/+1 counter on each other Human you control.\nWhenever another Human you control enters, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thalia's Lieutenant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Human ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, put a +1/+1 counter on each other Human you control."
+            },
+            {
+                "id": "Thalia's Lieutenant:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Human ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever another Human you control enters, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe162594-2332-4816-a9e1-57eb19b12651.jpg?1783937806",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Thalia's Lieutenant enters the battlefield at the same time as another Human, each of Thalia's Lieutenant's abilities will trigger. You'll put a +1/+1 counter on both cards."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -9850,6 +11135,77 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// True-Faith Censer
+{
+    "name": "True-Faith Censer",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 and has vigilance.\nAs long as equipped creature is a Human, it gets an additional +1/+0.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "True-Faith Censer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "creature Human"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "267",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/815eb91c-06fa-4362-803e-e9bf7d374856.jpg?1783937701"
+    },
+    "colorIdentityOverride": []
 }
 
 // Twins of Maurer Estate
