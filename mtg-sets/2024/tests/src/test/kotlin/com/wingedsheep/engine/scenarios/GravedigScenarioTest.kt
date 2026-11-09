@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -96,12 +97,28 @@ class GravedigScenarioTest : FunSpec({
                     listOf(ChosenTarget.Player(you)),
                     listOf(ChosenTarget.Card(bears, you, Zone.GRAVEYARD))
                 ),
+                declaredCostSlot = ChoiceSlot.ENTWINED,
                 paymentStrategy = PaymentStrategy.FromPool
             )
         )
         withClue("entwine needs the extra {2}") { cheap.outcome shouldNotBe Outcome.Done }
 
-        d.giveColorlessMana(you, 2)
+        withClue("both modes without declaring entwine are rejected") {
+            d.giveColorlessMana(you, 2)
+            d.submit(
+                CastSpell(
+                    playerId = you, cardId = spell,
+                    chosenModes = listOf(0, 1),
+                    targets = listOf(ChosenTarget.Player(you), ChosenTarget.Card(bears, you, Zone.GRAVEYARD)),
+                    modeTargetsOrdered = listOf(
+                        listOf(ChosenTarget.Player(you)),
+                        listOf(ChosenTarget.Card(bears, you, Zone.GRAVEYARD))
+                    ),
+                    paymentStrategy = PaymentStrategy.FromPool
+                )
+            ).outcome shouldNotBe Outcome.Done
+        }
+
         d.submit(
             CastSpell(
                 playerId = you, cardId = spell,
@@ -111,6 +128,7 @@ class GravedigScenarioTest : FunSpec({
                     listOf(ChosenTarget.Player(you)),
                     listOf(ChosenTarget.Card(bears, you, Zone.GRAVEYARD))
                 ),
+                declaredCostSlot = ChoiceSlot.ENTWINED,
                 paymentStrategy = PaymentStrategy.FromPool
             )
         ).outcome shouldBe Outcome.Done

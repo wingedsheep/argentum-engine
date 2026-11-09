@@ -1995,13 +1995,14 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
 - `WinGame(target, message?)` — target wins the game.
 - `GameIsDraw()` — "the game is a draw" (CR 104.4c, Divine Intervention). Ends the game at once with
   no winner; nobody loses, so "can't lose the game" / "can't win the game" grants don't stop it.
-- `TakeExtraTurn(target, loseAtEndStep?, powerUpAbilitiesCantBeActivated?)` — target takes an extra turn after this
+- `TakeExtraTurn(target, loseAtEndStep?, powerUpAbilitiesCantBeActivated?, damageCantBePrevented?)` — target takes an extra turn after this
   one (Time Walk, Lost Isle Calling). Set `loseAtEndStep = true` for "...you lose the game at the beginning of that
   turn's end step" (Last Chance, Final Fortune). Set `powerUpAbilitiesCantBeActivated = true` for "During that turn,
   power-up abilities can't be activated" (Kang the Conqueror) — a global lockout on every player's power-up abilities
-  (§ Power-up, CR 702.193) for the extra turn only, on every permanent, that outlives its source. Both riders are
-  scoped to the extra turn *this* effect creates: they ride on the pending extra turn (`PendingExtraTurn`) and apply
-  when that turn **begins**, so neither applies when the `PreventExtraTurns` replacement (Ugin's Nexus, Trouble in
+  (§ Power-up, CR 702.193) for the extra turn only, on every permanent, that outlives its source. Set
+  `damageCantBePrevented = true` for "During that turn, damage can't be prevented" (Alchemist's Gambit). All three
+  riders are scoped to the extra turn *this* effect creates: they ride on the pending extra turn (`PendingExtraTurn`)
+  and apply when that turn **begins**, so none applies when the `SkipExtraTurns` replacement (Ugin's Nexus, Trouble in
   Pairs) skips the turn as it would begin; that is why they are parameters here rather than separate effects
   sequenced after it in a `Composite`. The extra turn is always created — a skip replacement is read only when it
   would begin.
@@ -3866,7 +3867,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   The blocker is checked using projected creature types, including animated lands and artifacts.
   The end-of-turn requirement is removed when either permanent leaves the battlefield; returning
   that card does not restore the old requirement.
-- `PreventExtraTurns(appliesTo = EventPattern.ExtraTurnEvent(Player.Each))` — "If a player would begin an extra turn,
+- `SkipExtraTurns(appliesTo = EventPattern.ExtraTurnEvent(Player.Each))` — "If a player would begin an extra turn,
   that player skips that turn instead" (Ugin's Nexus); `ExtraTurnEvent(Player.EachOpponent)` is "if an **opponent**
   would begin an extra turn …" (Trouble in Pairs), scoped relative to the source's controller. Mandatory, and read when
   the turn would **begin**, not when it is created (CR 614.10): the effect that grants the extra turn still creates it,
@@ -14682,7 +14683,9 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > declaredSlot = ChoiceSlot.ENTWINED)`, so entwine rides the **same rail as kicker, bargain and teamwork**: the
 > enumerator offers a `CastSpellModal` variant labelled "(Entwined)" beside the plain cast, the cost calculator
 > folds the mana into that variant's price, and the engine stamps `ChoiceSlot.ENTWINED` on the spell. "Entwined",
-> "kicked", "bargained" and "cast using teamwork" never read as each other.
+> "kicked", "bargained" and "cast using teamwork" never read as each other. A non-mana entwine cost takes the
+> `AdditionalCost` overload — "Entwine—Sacrifice three lands" (Betrayal of Flesh) is
+> `entwine(Costs.additional.SacrificePermanent(GameObjectFilter.Land, count = 3))`.
 >
 > `entwineModal(chooseCount)` — default `1` for the classic "Choose one — … Entwine {2}"; `2` for "Choose two —
 > … Entwine {3}" (Kaya's Guile). It is the modal sibling of `teamworkModal { }` and shares its body
@@ -14695,9 +14698,8 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 >
 > **Not escalate.** `additionalManaCostPerExtraMode` charges for every mode beyond the first, which equals
 > entwine only for a two-mode "choose one" (Incite War, Tooth and Nail) and overcharges everything else —
-> entwined Kaya's Guile takes two *more* modes for a single {3}, where escalate would ask for {6}. New entwine
-> cards use `entwine` + `entwineModal`; the older two-mode Mirrodin cards still spell it as escalate, which is
-> price- and count-equivalent for them.
+> entwined Kaya's Guile takes two *more* modes for a single {3}, where escalate would ask for {6}. Every entwine
+> card, the two-mode Mirrodin ones included, uses `entwine` + `entwineModal`.
 >
 > `Conditions.WasEntwined` is a facade over `CastChoiceMade(ChoiceSlot.ENTWINED)`, so entwine needs no
 > condition type of its own; it also works as a plain rider.
@@ -15313,11 +15315,9 @@ MacCready, Lamplight Mayor (granted).
     `[reveal it,]`): base tutors a basic land to hand revealed, `cleaveEffect` tutors any card to hand
     without revealing.
   - **Alchemist's Gambit** ({1}{R}{R}, Cleave {4}{U}{U}{R}) — effect only, one bracket span is the
-    drawback: base `TakeExtraTurnEffect(loseAtEndStep = true) then …`, `cleaveEffect`
-    the same with `loseAtEndStep = false` — the shared "extra turn / damage can't be prevented on it /
-    self-exile" clauses sit outside the brackets. (The "damage can't be prevented during that turn"
-    clause is scoped to the extra turn, so it's scheduled as a `CreateDelayedTriggerEffect` firing
-    `Effects.DamageCantBePreventedThisTurn()` at the next turn's upkeep, in both modes.)
+    drawback: base `TakeExtraTurn(loseAtEndStep = true, damageCantBePrevented = true)`, `cleaveEffect`
+    the same without `loseAtEndStep` — the shared "extra turn / damage can't be prevented on it /
+    self-exile" clauses sit outside the brackets.
 
   - **Lantern Flare** ({1}{W}, Cleave {X}{R}{W}) — effect identical in both modes, but the **cleave
     cost itself carries {X}**, so the two modes read X from different sources. The printed cast has no
@@ -18012,7 +18012,7 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   `SpellsCastThisGameComponent`.
 - `ExtraTurnsBegunThisGame(player = Player.You)` (facade `DynamicAmounts.extraTurnsBegunThisGame(player)`)
   — how many extra turns `player` has **begun** this game. Counted as the inserted turn starts, so an
-  extra turn that was created but never began (skipped by a `PreventExtraTurns` permanent, or skipped
+  extra turn that was created but never began (skipped by a `SkipExtraTurns` permanent, or skipped
   through a turn-start replacement) doesn't count, and ordinary turns never do. H.M.S. Bounty, Unlikely
   Timeship ("If you control a Whale and haven't begun an extra turn this game, take an extra turn after
   this one"): `Effects.If(Conditions.All(Conditions.YouControl(Permanent.withSubtype("Whale")),

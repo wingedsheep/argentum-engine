@@ -596,17 +596,19 @@ object Effects {
      * Take an extra turn after this one (Time Walk, Lost Isle Calling). When [loseAtEndStep]
      * is true, the player loses the game at the beginning of that turn's end step (Last Chance,
      * Final Fortune). When [powerUpAbilitiesCantBeActivated] is true, no player may activate a
-     * power-up ability during that turn (Kang the Conqueror). Both riders are scoped to the extra
-     * turn this effect creates and apply when it begins, so neither applies when `PreventExtraTurns`
-     * (Ugin's Nexus, Trouble in Pairs) skips the extra turn as it would begin.
+     * power-up ability during that turn (Kang the Conqueror). When [damageCantBePrevented] is
+     * true, damage can't be prevented during that turn (Alchemist's Gambit). All three riders are
+     * scoped to the extra turn this effect creates and apply when it begins, so none applies when
+     * `SkipExtraTurns` (Ugin's Nexus, Trouble in Pairs) skips the extra turn as it would begin.
      */
     fun TakeExtraTurn(
         target: EffectTarget = EffectTarget.Controller,
         loseAtEndStep: Boolean = false,
-        powerUpAbilitiesCantBeActivated: Boolean = false
+        powerUpAbilitiesCantBeActivated: Boolean = false,
+        damageCantBePrevented: Boolean = false,
     ): Effect =
         com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect(
-            loseAtEndStep, target, powerUpAbilitiesCantBeActivated
+            loseAtEndStep, target, powerUpAbilitiesCantBeActivated, damageCantBePrevented
         )
 
     /**

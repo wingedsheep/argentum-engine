@@ -3,6 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
@@ -25,12 +27,10 @@ val JourneyOfDiscovery = card("Journey of Discovery") {
         "• You may play up to two additional lands this turn.\n" +
         "Entwine {2}{G} (Choose both if you pay the entwine cost.)"
 
+    entwine("{2}{G}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{2}{G}"
-        ) {
+        entwineModal {
             mode("Search your library for up to two basic land cards") {
                 effect = Patterns.Library.searchLibrary(
                     filter = GameObjectFilter.BasicLand,

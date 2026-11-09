@@ -5,7 +5,6 @@ import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
@@ -23,14 +22,14 @@ import io.kotest.matchers.shouldBe
  * else (the extra turn, "during that turn damage can't be prevented", and "Exile Alchemist's
  * Gambit") is outside the brackets and applies to both modes.
  *
- * The three moving parts are asserted separately:
+ * The moving parts are asserted separately:
  *  - **Extra turn** — in a 2-player game an extra turn is modelled by the opponent skipping their
  *    next turn ([SkipNextTurnComponent]).
  *  - **Lose clause** — the pending extra turn ([ExtraTurnsComponent]) carries it on the printed cast and *not* on the
  *    cleaved cast (the whole point of the bracket removal).
- *  - **Damage can't be prevented** — scoped to the extra turn, so it's scheduled as a delayed
- *    trigger ([DamageCantBePreventedThisTurnEffect], timing NEXT_TURN); a behavioural test crosses
- *    into the extra turn's upkeep and confirms the flag is set once the trigger fires.
+ *  - **Damage can't be prevented** — another rider on the pending extra turn, set as that turn
+ *    begins; behavioural tests cross into the extra turn, and check that a skipped extra turn
+ *    (Ugin's Nexus) takes the clause with it rather than leaking it onto the caster's next turn.
  *  - **Self-exile** — Alchemist's Gambit goes to exile, not the graveyard, on resolution.
  */
 class AlchemistsGambitScenarioTest : ScenarioTestBase() {
@@ -59,10 +58,8 @@ class AlchemistsGambitScenarioTest : ScenarioTestBase() {
                 withClue("The printed cast keeps the drawback: the caster loses at the extra turn's end step") {
                     game.state.getEntity(game.player1Id)?.get<ExtraTurnsComponent>()?.pending?.single()?.loseAtEndStep shouldBe true
                 }
-                withClue("A delayed trigger is scheduled to make damage unpreventable on the extra turn") {
-                    game.state.delayedTriggers.any {
-                        it.effect == DamageCantBePreventedThisTurnEffect
-                    } shouldBe true
+                withClue("The extra turn carries the damage-can't-be-prevented clause") {
+                    game.state.getEntity(game.player1Id)?.get<ExtraTurnsComponent>()?.pending?.single()?.damageCantBePrevented shouldBe true
                 }
                 withClue("Alchemist's Gambit exiles itself instead of going to the graveyard") {
                     game.isInExile(1, "Alchemist's Gambit") shouldBe true
@@ -96,9 +93,7 @@ class AlchemistsGambitScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(game.player1Id)?.get<ExtraTurnsComponent>()?.pending?.single()?.loseAtEndStep shouldBe false
                 }
                 withClue("The damage-can't-be-prevented clause survives (it's outside the brackets)") {
-                    game.state.delayedTriggers.any {
-                        it.effect == DamageCantBePreventedThisTurnEffect
-                    } shouldBe true
+                    game.state.getEntity(game.player1Id)?.get<ExtraTurnsComponent>()?.pending?.single()?.damageCantBePrevented shouldBe true
                 }
                 withClue("Alchemist's Gambit still exiles itself in the cleaved mode") {
                     game.isInExile(1, "Alchemist's Gambit") shouldBe true
@@ -112,6 +107,8 @@ class AlchemistsGambitScenarioTest : ScenarioTestBase() {
                     .withCardInHand(1, "Alchemist's Gambit")
                     .withLandsOnBattlefield(1, "Island", 4) // Cleave {4}{U}{U}{R} — no lose clause
                     .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardInLibrary(1, "Island").withCardInLibrary(1, "Island").withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island").withCardInLibrary(2, "Island")
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -124,16 +121,53 @@ class AlchemistsGambitScenarioTest : ScenarioTestBase() {
                 }
 
                 // Cross into the extra turn: end this turn, Player 2's turn is skipped, so Player 1's
-                // upkeep is the extra turn. The delayed trigger fires at that upkeep.
+                // next main phase is in the extra turn.
                 game.passUntilPhase(Phase.ENDING, Step.END)
-                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
-                game.resolveStack()
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
 
                 withClue("Player 1 is active again — the extra turn (Player 2 was skipped)") {
                     game.state.activePlayerId shouldBe game.player1Id
                 }
-                withClue("The delayed trigger fired: damage can't be prevented during the extra turn") {
+                withClue("Damage can't be prevented during the extra turn") {
                     game.state.damageCantBePreventedThisTurn shouldBe true
+                }
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                withClue("Player 2's following turn is an ordinary one again") {
+                    game.state.activePlayerId shouldBe game.player2Id
+                    game.state.damageCantBePreventedThisTurn shouldBe false
+                }
+            }
+
+            test("an extra turn skipped by Ugin's Nexus takes the clause with it") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Alchemist's Gambit")
+                    .withCardOnBattlefield(2, "Ugin's Nexus")
+                    .withLandsOnBattlefield(1, "Island", 4)
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardInLibrary(1, "Island").withCardInLibrary(1, "Island").withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island").withCardInLibrary(2, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpellWithCleave(1, "Alchemist's Gambit").error shouldBe null
+                game.resolveStack()
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                withClue("The extra turn was skipped as it would begin, so Player 2's turn is next") {
+                    game.state.activePlayerId shouldBe game.player2Id
+                    game.state.damageCantBePreventedThisTurn shouldBe false
+                }
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                withClue("Player 1's next ordinary turn doesn't inherit the skipped turn's clause") {
+                    game.state.activePlayerId shouldBe game.player1Id
+                    game.state.damageCantBePreventedThisTurn shouldBe false
                 }
             }
         }

@@ -4,6 +4,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -29,12 +31,10 @@ val ToothAndNail = card("Tooth and Nail") {
         "• Put up to two creature cards from your hand onto the battlefield.\n" +
         "Entwine {2} (Choose both if you pay the entwine cost.)"
 
+    entwine("{2}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{2}",
-        ) {
+        entwineModal {
             mode("Search your library for up to two creature cards") {
                 effect = Patterns.Library.searchLibrary(
                     filter = GameObjectFilter.Creature,

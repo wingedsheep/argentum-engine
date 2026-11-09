@@ -3,6 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -27,12 +29,10 @@ val BlindingBeam = card("Blinding Beam") {
         "• Creatures don't untap during target player's next untap step.\n" +
         "Entwine {1} (Choose both if you pay the entwine cost.)"
 
+    entwine("{1}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{1}"
-        ) {
+        entwineModal {
             mode("Tap two target creatures") {
                 target = TargetObject(filter = TargetFilter.Creature, count = 2)
                 effect = Effects.ForEachTarget(Effects.Tap(EffectTarget.ContextTarget(0)))

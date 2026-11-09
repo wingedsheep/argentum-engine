@@ -22,9 +22,9 @@ import kotlin.reflect.KClass
  * cannot apply to an opponent while the inserted turn is being scheduled.
  *
  * The extra turn is always created. A replacement such as Ugin's Nexus or Trouble in Pairs
- * (`PreventExtraTurns`) skips it only when it would *begin* — `TurnManager` applies that — so if the
+ * (`SkipExtraTurns`) skips it only when it would *begin* — `TurnManager` applies that — so if the
  * source has left the battlefield by then the turn happens. The riders ([TakeExtraTurnEffect.loseAtEndStep],
- * [TakeExtraTurnEffect.powerUpAbilitiesCantBeActivated]) are recorded on the pending extra turn
+ * [TakeExtraTurnEffect.powerUpAbilitiesCantBeActivated], [TakeExtraTurnEffect.damageCantBePrevented]) are recorded on the pending extra turn
  * ([PendingExtraTurn]) and applied by `TurnManager` when that turn begins, so a skipped turn never
  * applies them and the lockout lands on exactly the turn this effect created.
  */
@@ -50,6 +50,7 @@ class TakeExtraTurnExecutor : EffectExecutor<TakeExtraTurnEffect> {
                 PendingExtraTurn(
                     loseAtEndStep = effect.loseAtEndStep,
                     powerUpAbilitiesCantBeActivated = effect.powerUpAbilitiesCantBeActivated,
+                    damageCantBePrevented = effect.damageCantBePrevented,
                 )
             )
         )

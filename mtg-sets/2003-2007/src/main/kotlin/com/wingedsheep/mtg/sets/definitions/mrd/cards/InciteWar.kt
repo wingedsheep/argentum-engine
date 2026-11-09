@@ -4,6 +4,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -28,12 +30,10 @@ val InciteWar = card("Incite War") {
         "• Creatures you control gain first strike until end of turn.\n" +
         "Entwine {2} (Choose both if you pay the entwine cost.)"
 
+    entwine("{2}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{2}",
-        ) {
+        entwineModal {
             mode("Creatures target player controls attack this turn if able") {
                 target(Targets.Player)
                 effect = Effects.ForEachInGroup(

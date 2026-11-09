@@ -2,6 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -25,12 +27,10 @@ val RoarOfTheKha = card("Roar of the Kha") {
         "• Untap all creatures you control.\n" +
         "Entwine {1}{W} (Choose both if you pay the entwine cost.)"
 
+    entwine("{1}{W}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{1}{W}"
-        ) {
+        entwineModal {
             mode("Creatures you control get +1/+1 until end of turn") {
                 effect = Effects.ForEachInGroup(
                     GroupFilter(GameObjectFilter.Creature.youControl()),

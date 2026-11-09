@@ -2,9 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.costs.CostAtom
 
 /**
  * Solar Tide
@@ -24,12 +26,10 @@ val SolarTide = card("Solar Tide") {
         "• Destroy all creatures with power 3 or greater.\n" +
         "Entwine—Sacrifice two lands. (Choose both if you pay the entwine cost.)"
 
+    entwine(Costs.additional.SacrificePermanent(GameObjectFilter.Land, count = 2))
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalCostPerExtraMode = CostAtom.Sacrifice(GameObjectFilter.Land, count = 2),
-        ) {
+        entwineModal {
             mode(
                 "Destroy all creatures with power 2 or less",
                 Effects.DestroyAll(GameObjectFilter.Creature.powerAtMost(2)),

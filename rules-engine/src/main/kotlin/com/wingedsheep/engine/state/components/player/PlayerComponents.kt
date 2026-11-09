@@ -1854,11 +1854,14 @@ data class SpellsCastThisGameComponent(
  *   Chance, Final Fortune).
  * @property powerUpAbilitiesCantBeActivated "During that turn, power-up abilities can't be
  *   activated" (Kang the Conqueror) — global, not scoped to the turn's taker.
+ * @property damageCantBePrevented "During that turn, damage can't be prevented" (Alchemist's
+ *   Gambit) — global too.
  */
 @Serializable
 data class PendingExtraTurn(
     val loseAtEndStep: Boolean = false,
     val powerUpAbilitiesCantBeActivated: Boolean = false,
+    val damageCantBePrevented: Boolean = false,
 )
 
 /**

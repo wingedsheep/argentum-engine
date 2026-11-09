@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.conditions.Condition
@@ -36,6 +37,22 @@ fun CardBuilder.entwine(cost: String) {
     keywordAbilityList.add(
         KeywordAbility.OptionalAdditionalCost(
             manaCost = com.wingedsheep.sdk.core.ManaCost.parse(cost),
+            displayPrefix = "Entwine",
+            keyword = Keyword.ENTWINE,
+            declaredSlot = ChoiceSlot.ENTWINED,
+        )
+    )
+}
+
+/**
+ * Entwine with a non-mana cost — "Entwine—Sacrifice three lands" (Betrayal of Flesh, Solar Tide):
+ * `entwine(Costs.additional.SacrificePermanent(GameObjectFilter.Land, count = 3))`. Otherwise
+ * identical to the mana form above, and paired with [entwineModal] the same way.
+ */
+fun CardBuilder.entwine(cost: AdditionalCost) {
+    keywordAbilityList.add(
+        KeywordAbility.OptionalAdditionalCost(
+            additionalCost = cost,
             displayPrefix = "Entwine",
             keyword = Keyword.ENTWINE,
             declaredSlot = ChoiceSlot.ENTWINED,

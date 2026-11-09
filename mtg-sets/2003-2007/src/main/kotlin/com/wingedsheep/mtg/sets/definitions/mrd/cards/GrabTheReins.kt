@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -28,12 +30,10 @@ val GrabTheReins = card("Grab the Reins") {
         "• Sacrifice a creature. Grab the Reins deals damage equal to that creature's power to any target.\n" +
         "Entwine {2}{R} (Choose both if you pay the entwine cost.)"
 
+    entwine("{2}{R}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{2}{R}",
-        ) {
+        entwineModal {
             mode("Gain control of target creature until end of turn; it gains haste") {
                 val creature = target(TargetFilter.Creature)
                 effect = Effects.GainControl(creature, Duration.EndOfTurn) then

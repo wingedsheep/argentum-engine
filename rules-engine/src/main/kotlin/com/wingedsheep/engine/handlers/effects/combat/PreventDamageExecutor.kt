@@ -306,6 +306,18 @@ class PreventDamageExecutor(
             // affected entity is stored; the recipient filter is evaluated against projected state at
             // damage time with the shield controller as "you".
             effect.recipientGroup != null || effect.recipientGroupIncludesController -> {
+                // The group shield prevents all covered damage and nothing else; a reaction riding
+                // it must not hide a shape it would silently ignore (Eye for an Eye's "still
+                // deals that damage", a capped amount, a next-instance or halving shield).
+                if (effect.onPrevented != null && (!effect.preventDamage || effect.amount != null ||
+                        effect.nextInstanceOnly || effect.halvePreventedDamage || effect.gainLifeFromPrevented)
+                ) {
+                    return EffectResult.error(
+                        state,
+                        "A recipient-side shield with onPrevented prevents all covered damage; " +
+                            "preventDamage = false, amount, nextInstanceOnly, halvePreventedDamage and gainLifeFromPrevented aren't supported"
+                    )
+                }
                 affectedEntities = emptySet()
                 modification = SerializableModification.PreventAllDamageToGroup(
                     filter = effect.recipientGroup,

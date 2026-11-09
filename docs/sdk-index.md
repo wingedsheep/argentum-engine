@@ -1101,7 +1101,7 @@ Families:
 - `SwapBlockingAssignmentsEffect` — Swap what two blocking creatures are blocking — Sorrow's Path's "if each of those creatures could block all creatures that the other is blocking, remove both of them from combat.
 - `SwitchPowerToughnessEffect(target: EffectTarget, duration: Duration)` — Switch power and toughness after all other stat changes, for the chosen duration.
 - `TakeDesignationEffect(designation: PlayerDesignation, target: EffectTarget)` — "target becomes the monarch" (Conspiracy: Take the Crown, CR 725) / "target takes the initiative" (CR 726) — hand a single-holder PlayerDesignation to a player.
-- `TakeExtraTurnEffect(loseAtEndStep: Boolean, target: EffectTarget, powerUpAbilitiesCantBeActivated: Boolean)` — Take an extra turn after this one, optionally with a rider that applies **during that turn**.
+- `TakeExtraTurnEffect(loseAtEndStep: Boolean, target: EffectTarget, powerUpAbilitiesCantBeActivated: Boolean, damageCantBePrevented: Boolean)` — Take an extra turn after this one, optionally with a rider that applies **during that turn**.
 - `TapForManaPermanentsYouDontControlEffect(target: EffectTarget, permanentFilter: GameObjectFilter, restriction: ManaRestriction?, duration: Duration)` — target may tap permanents they don't control that match permanentFilter for mana, for duration; mana made that way carries restriction.
 - `TapUntapCollectionEffect(collectionName: String, tap: Boolean)` — Tap or untap all entities in a named collection.
 - `TapUntapEffect(target: EffectTarget, tap: Boolean)` — Tap/Untap target effect.
@@ -1625,7 +1625,6 @@ Families:
 - `PreventDamageByRemovingCounter(counterType: CounterType, removalAmount: CounterRemovalAmount, requiresCounter: Boolean, appliesTo: EventPattern, onRemoved: Effect?)` — Prevent damage that would be dealt to this permanent and remove one counter of counterType from it — the printed twin of the shield counter's prevention half (CR 122.1c).
 - `PreventDamagePerCounter(counterType: CounterType, appliesTo: EventPattern.DamageEvent)` — Remove a counter from the damaged permanent for each point of matching damage and prevent that point.
 - `PreventDraw(appliesTo: EventPattern)` — Prevent drawing (with optional replacement).
-- `PreventExtraTurns(appliesTo: EventPattern)` — Skip extra turns as they would begin.
 - `PreventLifeGain(appliesTo: EventPattern, replacesOnly: Boolean)` — Prevent life gain — "players can't gain life" (Erebos, Gríma Wormtongue) or "if a player would gain life, that player gains no life instead" (Sulfuric Vortex).
 - `PutOntoBattlefieldThen(effect: Effect, putter: Player, condition: Condition?, appliesTo: EventPattern)` — "If putter would put a permanent matching appliesTo onto the battlefield, that player instead puts it onto the battlefield, then effect" — an entry replacement whose rest *does* something once the…
 - `RedirectDamage(redirectTo: EffectTarget, appliesTo: EventPattern, condition: Condition?)` — Redirect damage to another target.
@@ -1647,6 +1646,7 @@ Families:
 - `ReplaceTokenCreationWithToken(tokens: List<Effect>, appliesTo: EventPattern, optional: Boolean)` — "If one or more filtered tokens would be created under your control, that many token are created instead." Substitutes a *different* token for every token of the creation event the appliesTo filter…
 - `ScaleCounterPlacement(scale: CounterPlacementScale, placer: Player, appliesTo: EventPattern, effectsOnly: Boolean)` — Scale the number of counters placed — "twice that many" (CounterPlacementScale.DOUBLE) or "half that many … rounded down" (CounterPlacementScale.HALF_ROUNDED_DOWN).
 - `SetMinimumDamage(minAmount: Int, dynamicMinimum: DynamicAmount?, appliesTo: EventPattern)` — Raise damage to a minimum amount — the floor mirror of CapDamage.
+- `SkipExtraTurns(appliesTo: EventPattern)` — Skip extra turns as they would begin.
 
 ## RetargetChooser
 

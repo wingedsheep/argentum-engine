@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -10,6 +12,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Inkshield (C21 #71) — {3}{W}{B} Instant.
@@ -130,6 +133,41 @@ class InkshieldScenarioTest : ScenarioTestBase() {
             withClue("the combat damage is still prevented afterwards") {
                 game.getLifeTotal(1) shouldBe 17
                 game.inklings().size shouldBe 3
+            }
+        }
+
+        // CR 616.1: when Fog and Inkshield both apply to the same combat damage, the player being
+        // dealt it picks which applies first. The one that applies prevents it all, so only picking
+        // Inkshield makes Inklings.
+        for ((pick, inklings) in listOf("Inkshield" to 3, "Fog" to 0)) {
+            test("with Fog also out, the defender chooses $pick to apply and gets $inklings Inklings") {
+                val game = defenderGame("Hill Giant") {
+                    withCardInHand(1, "Fog")
+                    withLandsOnBattlefield(1, "Forest", 1)
+                }
+                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Hill Giant" to 1)).error shouldBe null
+                game.passPriority()
+                game.castSpell(1, "Fog").error shouldBe null
+                game.castSpell(1, "Inkshield").error shouldBe null // holding priority over Fog
+                game.resolveStack()
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareNoBlockers().error shouldBe null
+
+                var guard = 0
+                while (game.getPendingDecision() == null && game.state.step != Step.POSTCOMBAT_MAIN && guard++ < 20) {
+                    game.passPriority()
+                }
+                val decision = game.getPendingDecision().shouldBeInstanceOf<ChooseOptionDecision>()
+                decision.playerId shouldBe game.player1Id
+                val index = decision.options.indexOfFirst { it.startsWith(pick) }
+                withClue("options: ${decision.options}") { (index >= 0) shouldBe true }
+                game.submitDecision(OptionChosenResponse(decision.id, index)).error shouldBe null
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+                game.resolveStack()
+
+                game.getLifeTotal(1) shouldBe 20
+                game.inklings().size shouldBe inklings
             }
         }
 

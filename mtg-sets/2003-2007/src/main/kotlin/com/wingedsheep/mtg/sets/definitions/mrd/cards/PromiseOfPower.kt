@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 
 /**
@@ -25,12 +27,10 @@ val PromiseOfPower = card("Promise of Power") {
         "• Create an X/X black Demon creature token with flying, where X is the number of cards in your hand.\n" +
         "Entwine {4} (Choose both if you pay the entwine cost.)"
 
+    entwine("{4}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{4}",
-        ) {
+        entwineModal {
             mode("Draw five cards and lose 5 life") {
                 effect = Effects.DrawCards(5) then Effects.LoseLife(5)
             }

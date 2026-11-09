@@ -3,6 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 
 /**
@@ -23,12 +25,10 @@ val OneDozenEyes = card("One Dozen Eyes") {
         "• Create five 1/1 green Insect creature tokens.\n" +
         "Entwine {G}{G}{G} (Choose both if you pay the entwine cost.)"
 
+    entwine("{G}{G}{G}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{G}{G}{G}"
-        ) {
+        entwineModal {
             mode("Create a 5/5 green Beast creature token") {
                 effect = Effects.CreateToken(
                     power = 5,

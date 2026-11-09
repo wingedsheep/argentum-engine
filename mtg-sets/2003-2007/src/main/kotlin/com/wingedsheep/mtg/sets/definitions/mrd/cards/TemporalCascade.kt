@@ -3,6 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.entwineModal
+import com.wingedsheep.sdk.dsl.entwine
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -27,12 +29,10 @@ val TemporalCascade = card("Temporal Cascade") {
         "• Each player draws seven cards.\n" +
         "Entwine {2} (Choose both if you pay the entwine cost.)"
 
+    entwine("{2}")
+
     spell {
-        modal(
-            chooseCount = 2,
-            minChooseCount = 1,
-            additionalManaCostPerExtraMode = "{2}",
-        ) {
+        entwineModal {
             mode("Each player shuffles their hand and graveyard into their library") {
                 effect = Effects.ForEachPlayer(
                     players = Player.Each,

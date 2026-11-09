@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
-import com.wingedsheep.sdk.scripting.PreventExtraTurns
+import com.wingedsheep.sdk.scripting.SkipExtraTurns
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Whenever an opponent attacks you with two or more creatures, draws their second card each turn,
  * or casts their second spell each turn, you draw a card.
  *
- * The first ability is [PreventExtraTurns] scoped to opponents: the extra turn is created normally
+ * The first ability is [SkipExtraTurns] scoped to opponents: the extra turn is created normally
  * and skipped only as it would begin, so it happens if Trouble in Pairs has left by then.
  *
  * The second is one triggered ability over three events, each of which triggers it on its own — a
@@ -33,7 +33,7 @@ val TroubleInPairs = card("Trouble in Pairs") {
         "Whenever an opponent attacks you with two or more creatures, draws their second card each turn, " +
         "or casts their second spell each turn, you draw a card."
 
-    replacementEffect(PreventExtraTurns(EventPattern.ExtraTurnEvent(Player.EachOpponent)))
+    replacementEffect(SkipExtraTurns(EventPattern.ExtraTurnEvent(Player.EachOpponent)))
 
     triggeredAbility {
         trigger = Triggers.or(

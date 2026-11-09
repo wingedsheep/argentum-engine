@@ -1237,7 +1237,6 @@ PreventDamage — ReplacementEffect
 PreventDamageByRemovingCounter — ReplacementEffect
 PreventDamagePerCounter — ReplacementEffect
 PreventDraw — ReplacementEffect
-PreventExtraTurns — ReplacementEffect
 PreventLifeGain — ReplacementEffect
 RedirectDamage — ReplacementEffect
 RedirectZoneChange — ReplacementEffect
@@ -1251,6 +1250,7 @@ ReplaceLifePaymentWithLibraryExile — ReplacementEffect
 ReplaceTokenCreationWithAttachedCopy — ReplacementEffect
 ReplaceTokenCreationWithToken — ReplacementEffect
 SetMinimumDamage — ReplacementEffect
+SkipExtraTurns — ReplacementEffect
 RetargetChooser.Controller — RetargetChooser
 RetargetChooser.OwnerOfStored — RetargetChooser
 Scope.AttachedTo — Scope
