@@ -692,6 +692,7 @@ object CardLinter {
         put("GatherCards" to "storeAs", write(Space.COLLECTION))
         put("CaptureControllers" to "storeAs", write(Space.COLLECTION))
         put("StorePlayer" to "storeAs", write(Space.COLLECTION))
+        put("AnyPlayerMayPay" to "storePayerAs", write(Space.COLLECTION))
         put("GatherSubtypes" to "storeAs", write(Space.SUBTYPE_GROUPS))
         put("GatherUntilMatch" to "storeMatch", write(Space.COLLECTION))
         put("GatherUntilMatch" to "storeRevealed", write(Space.COLLECTION))

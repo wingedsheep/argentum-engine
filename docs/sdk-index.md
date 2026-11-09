@@ -738,7 +738,7 @@ Families:
 - `AmassEffect(amount: DynamicAmount, subtype: String)` — "Amass subtype N" (CR 701.47).
 - `AmplifyDamageThisTurnEffect(bonus: DynamicAmount, appliesTo: EventPattern.DamageEvent, multiplier: Int)` — Install a turn-duration (until end of turn) replacement effect that adds bonus to every damage instance matching appliesTo for the rest of the turn (CR 616 — a damage-amount replacement: "it deals…
 - `AnimateLandEffect(target: EffectTarget, power: Int, toughness: Int, duration: Duration)` — Target land becomes an X/Y creature until end of turn.
-- `AnyPlayerMayPayEffect(cost: PayCost, consequence: Effect?, consequenceIfNonePaid: Effect?, eligiblePlayers: Player)` — "Any player may cost." with branching outcomes based on whether anyone paid.
+- `AnyPlayerMayPayEffect(cost: PayCost?, consequence: Effect?, consequenceIfNonePaid: Effect?, eligiblePlayers: Player, prompt: String?, storePayerAs: String?)` — "Any player may cost." with branching outcomes based on whether anyone paid.
 - `AttachEquipmentEffect(target: EffectTarget)` — Attach this equipment to a target creature.
 - `AttachTargetEquipmentToCreatureEffect(equipmentTarget: EffectTarget, creatureTarget: EffectTarget)` — Attach a targeted Equipment to a targeted creature.
 - `AttachToChosenHostEffect(attachment: EffectTarget, hostFilter: GameObjectFilter)` — Attach an Aura or Equipment that is already on the battlefield to **another** permanent that the effect's controller chooses at resolution — the new host is not a target.

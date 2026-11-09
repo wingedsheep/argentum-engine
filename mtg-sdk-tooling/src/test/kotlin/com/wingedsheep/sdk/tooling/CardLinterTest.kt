@@ -266,6 +266,21 @@ class CardLinterTest : DescribeSpec({
             CardLinter.lint(card).shouldBeEmpty()
         }
 
+        it("reads AnyPlayerMayPay's storePayerAs as a written collection") {
+            val card = instant(
+                "Payer Stored",
+                CardScript(
+                    spellEffect = com.wingedsheep.sdk.scripting.effects.AnyPlayerMayPayEffect(
+                        cost = null,
+                        prompt = "Take 1 damage?",
+                        consequence = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.PipelineTarget("taker")),
+                        storePayerAs = "taker",
+                    ),
+                ),
+            )
+            CardLinter.lint(card).shouldBeEmpty()
+        }
+
         it("flags a bare BoundVariable on a multi-slot requirement") {
             // "Return one or two target creature cards ... to your hand" handed straight to a
             // single-target effect: the two chosen targets are keyed `cards[0]` / `cards[1]`, so

@@ -258,9 +258,14 @@ data class AnyPlayerMayPayContinuation(
     val sourceId: EntityId,
     val sourceName: String,
     val controllerId: EntityId,
-    val cost: PayCost,
+    /** Null for a free choice — the asked player answers [prompt] yes or no. */
+    val cost: PayCost?,
     val consequence: Effect? = null,
     val consequenceIfNonePaid: Effect? = null,
+    /** The free choice's yes/no question (null [cost]); unused for a payment. */
+    val prompt: String? = null,
+    /** Pipeline collection the consequence reads the paying player from (`PipelineTarget`). */
+    val storePayerAs: String? = null,
     val requiredCount: Int,
     val filter: GameObjectFilter,
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),

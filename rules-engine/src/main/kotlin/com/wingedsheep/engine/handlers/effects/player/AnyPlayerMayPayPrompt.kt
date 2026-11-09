@@ -1,6 +1,10 @@
 package com.wingedsheep.engine.handlers.effects.player
 
+import com.wingedsheep.engine.core.DecisionContext
+import com.wingedsheep.engine.core.DecisionPhase
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.handlers.effects.SourceReferenceText
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -27,6 +31,30 @@ object AnyPlayerMayPayPrompt {
         append("You may ${cost.description}.")
         if (consequence != null) append(" If you do, ${consequenceText(consequence, sourceName)}.")
         if (consequenceIfNonePaid != null) append(" If no one does, ${consequenceText(consequenceIfNonePaid, sourceName)}.")
+    }
+
+    /**
+     * The yes/no a free choice (null cost) puts to [playerId] — the effect's own [prompt], answered
+     * "Yes" / "No". Built here so the first player and every later one see the same question.
+     */
+    fun freeChoice(
+        prompt: String,
+        playerId: EntityId,
+        sourceId: EntityId,
+        sourceName: String
+    ): (String) -> YesNoDecision = { decisionId ->
+        YesNoDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = prompt,
+            context = DecisionContext(
+                sourceId = sourceId,
+                sourceName = sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            yesText = "Yes",
+            noText = "No"
+        )
     }
 
     /** [effect]'s text as a clause, the source permanent named — see [SourceReferenceText.clause]. */

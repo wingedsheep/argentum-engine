@@ -761,9 +761,45 @@ object CardIntentAnalyzer {
                 }
                 is GatedEffect -> punisherBranchLeaves(leaf, requirements) ?: listOf(leaf)
                 is ChooseActionEffect -> punisherChoiceLeaves(leaf, requirements) ?: listOf(leaf)
+                is AnyPlayerMayPayEffect -> opponentOfferLeaves(leaf, requirements) ?: listOf(leaf)
                 else -> listOf(leaf)
             }
         }
+    }
+
+    /**
+     * The branches of an offer only our opponents answer — "any opponent may have you put that card
+     * into your graveyard. If a player does, this deals damage to that player … Otherwise, put that
+     * card into your hand" (Sin Prodder), "any opponent may sacrifice a creature. If a player does,
+     * tap this creature, you gain 3 life, and you draw a card" (Clackbridge Troll). Like
+     * [punisherBranchLeaves], whichever branch the opponents pick is ours, so the card is for what
+     * either does. The player who accepted ([AnyPlayerMayPayEffect.storePayerAs]) is an opponent, so a
+     * step aimed at them is read as one aimed at an opponent. Tapping the source itself is the
+     * price of the deal (the Troll and Desecration Demon tap), not a tapper, and is dropped.
+     *
+     * The branches are returned whether or not each reads alone — unlike [punisherBranchLeaves],
+     * which wants every branch to pay off: an offer only opponents answer costs us nothing either
+     * way, so an offer with one payoff branch (Clackbridge Troll's "if a player does, … draw a card")
+     * is for that payoff, and a branch that moves the gathered cards into our hand reads as card draw
+     * only beside the gather ([digTags]), never on its own. Null — the offer
+     * stays an unread leaf — for an offer our controller may answer too (Aether Rift's "unless any
+     * player pays", Prowling Pangolin's), and when no branch holds a step.
+     */
+    private fun opponentOfferLeaves(offer: AnyPlayerMayPayEffect, requirements: List<TargetRequirement>): List<Effect>? {
+        if (offer.eligiblePlayers != Player.EachOpponent) return null
+        val payer = offer.storePayerAs?.let { EffectTarget.PipelineTarget(it) }
+        val branches = listOfNotNull(offer.consequence, offer.consequenceIfNonePaid).map { branch ->
+            readingLeaves(branch, requirements).map { leaf ->
+                when {
+                    leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> null
+                    payer == null -> leaf
+                    leaf is DealDamageEffect && leaf.target == payer -> leaf.copy(target = EffectTarget.PlayerRef(Player.EachOpponent))
+                    leaf is LoseLifeEffect && leaf.target == payer -> leaf.copy(target = EffectTarget.PlayerRef(Player.EachOpponent))
+                    else -> leaf
+                }
+            }.filterNotNull()
+        }
+        return branches.flatten().takeIf { it.isNotEmpty() }
     }
 
     /**
