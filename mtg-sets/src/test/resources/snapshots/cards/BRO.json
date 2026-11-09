@@ -6303,11 +6303,7 @@
                 },
                 "condition": {
                     "type": "Compare",
-                    "left": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "PERMANENTS_SACRIFICED"
-                    },
+                    "left": "PermanentsSacrificedThisTurn",
                     "operator": "GTE",
                     "right": {
                         "type": "Fixed",

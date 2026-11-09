@@ -7380,9 +7380,8 @@
                         "condition": {
                             "type": "Compare",
                             "left": {
-                                "type": "TurnTracking",
-                                "player": "You",
-                                "tracker": "ARTIFACT_SACRIFICED"
+                                "type": "PermanentsSacrificedThisTurn",
+                                "filter": "artifact"
                             },
                             "operator": "GTE",
                             "right": {
@@ -10032,9 +10031,8 @@
                 "condition": {
                     "type": "Compare",
                     "left": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "ARTIFACT_SACRIFICED"
+                        "type": "PermanentsSacrificedThisTurn",
+                        "filter": "artifact"
                     },
                     "operator": "GTE",
                     "right": {
@@ -20022,9 +20020,8 @@
                     "condition": {
                         "type": "Compare",
                         "left": {
-                            "type": "TurnTracking",
-                            "player": "You",
-                            "tracker": "ARTIFACT_SACRIFICED"
+                            "type": "PermanentsSacrificedThisTurn",
+                            "filter": "artifact"
                         },
                         "operator": "GTE",
                         "right": {

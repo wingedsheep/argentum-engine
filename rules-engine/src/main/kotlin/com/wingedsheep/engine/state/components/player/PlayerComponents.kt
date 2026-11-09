@@ -1906,15 +1906,6 @@ data class PermanentsPutIntoHandFromBattlefieldThisTurnComponent(val count: Int 
 data class CardsPutIntoExileThisTurnComponent(val count: Int = 0) : Component
 
 /**
- * Marker component indicating that this player has sacrificed a Food artifact this turn.
- * Cleared at end of turn by CleanupPhaseManager.
- *
- * Used for conditions like "if you've sacrificed a Food this turn" (Bonecache Overseer).
- */
-@Serializable
-data object SacrificedFoodThisTurnComponent : Component
-
-/**
  * Marker: this player scried or surveilled this turn. Set by `EmitScriedEventExecutor` and
  * `EmitSurveiledEventExecutor` — the two places a scry / surveil event is emitted — and cleared at
  * end of turn by CleanupPhaseManager. Read through `TurnTracker.SCRIED_OR_SURVEILED`.
@@ -1933,34 +1924,24 @@ data object ScriedOrSurveiledThisTurnComponent : Component
 data object SurveiledThisTurnComponent : Component
 
 /**
- * Marker component indicating that this player has sacrificed an artifact this turn.
- * Cleared at end of turn by CleanupPhaseManager.
- *
- * The card-type sibling of [SacrificedFoodThisTurnComponent], set by the same
- * `ZoneTransitionService.trackPermanentSacrifice` hook off the *projected* type line, so an
- * animated or type-changed permanent that was an artifact when sacrificed counts. Backs
- * `TurnTracker.ARTIFACT_SACRIFICED` — "if you've sacrificed an artifact this turn"
- * (Suspicious Detonation, Furtive Courier).
- */
-@Serializable
-data object SacrificedArtifactThisTurnComponent : Component
-
-/**
- * Tracks the number of permanents this player has sacrificed this turn (controller-scoped,
- * any permanent type). Incremented by `ZoneTransitionService.trackPermanentSacrifice` on the
+ * Every permanent this player has sacrificed this turn (controller-scoped), each frozen as it stood
+ * just before it was sacrificed — projected type line, subtypes, colors, controller, name, mana
+ * value and token-ness. Appended by `ZoneTransitionService.trackPermanentSacrifice` on the
  * sacrificing player and cleared at end of turn by `CleanupPhaseManager`.
  *
- * Distinct from the game-wide turn-scoped `GameState.permanentsSacrificedThisTurn` counter
- * (which sums every player's sacrifices for "for each permanent sacrificed this turn" cost
- * reductions): this is per-player, so it backs "if you sacrificed one or more permanents this
- * turn, ... deals that much damage" (Sawblade Skinripper) via
- * `TurnTracker.PERMANENTS_SACRIFICED`.
+ * Backs `DynamicAmount.PermanentsSacrificedThisTurn(player, filter)`: "if you sacrificed one or more
+ * permanents this turn, ... deals that much damage" (Sawblade Skinripper, unfiltered), "if you've
+ * sacrificed an artifact / a Food this turn" (Suspicious Detonation, Bonecache Overseer), "a nontoken
+ * permanent" (Evendo Brushrazer) and "three or more Clues" (Briarbridge Patrol). Because each entry
+ * is a snapshot, a sacrificed token that has ceased to exist still counts, and so does a permanent
+ * that matched only through a continuous effect.
+ *
+ * Distinct from the game-wide turn-scoped `GameState.permanentsSacrificedThisTurn` counter (which sums
+ * every player's sacrifices for "for each permanent sacrificed this turn" cost reductions).
  */
 @Serializable
 data class PermanentsSacrificedThisTurnComponent(
-    val count: Int = 0,
-    /** How many of [count] were nontoken permanents — backs `TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED`. */
-    val nontokenCount: Int = 0
+    val sacrificed: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList(),
 ) : Component
 
 /**

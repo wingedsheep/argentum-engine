@@ -15770,11 +15770,7 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "DealDamage",
-                    "amount": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "PERMANENTS_SACRIFICED"
-                    },
+                    "amount": "PermanentsSacrificedThisTurn",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -15786,11 +15782,7 @@
                 },
                 "interveningIf": {
                     "type": "Compare",
-                    "left": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "PERMANENTS_SACRIFICED"
-                    },
+                    "left": "PermanentsSacrificedThisTurn",
                     "operator": "GTE",
                     "right": {
                         "type": "Fixed",

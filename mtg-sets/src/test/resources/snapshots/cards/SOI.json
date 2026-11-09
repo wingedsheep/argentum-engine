@@ -1298,6 +1298,100 @@
     ]
 }
 
+// Briarbridge Patrol
+{
+    "name": "Briarbridge Patrol",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature deals damage to one or more creatures, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nAt the beginning of each end step, if you sacrificed three or more Clues this turn, you may put a creature card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Briarbridge Patrol:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    },
+                    "batch": true
+                },
+                "effect": "Investigate",
+                "descriptionOverride": "Whenever this creature deals damage to one or more creatures, investigate."
+            },
+            {
+                "id": "Briarbridge Patrol:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "Put a creature card from your hand onto the battlefield?"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "PermanentsSacrificedThisTurn",
+                        "filter": "artifact Clue"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f44a017b-40cb-4c15-b9ea-a3ed904e4e49.jpg?1783937736"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Broken Concentration
 {
     "name": "Broken Concentration",

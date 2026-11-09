@@ -1633,8 +1633,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * event batch instead of once per damaged recipient — "Whenever one or more creatures
          * your opponents control are dealt excess noncombat damage" (Magmatic Galleon) vs the
          * per-recipient "Whenever a creature is dealt excess noncombat damage" (Fall of Cair
-         * Andros). Only honored for `TriggerBinding.ANY` observer triggers; SELF/ATTACHED
-         * damage triggers are inherently per-source-event.
+         * Andros). On a `TriggerBinding.SELF` trigger it is the source-side "whenever this deals
+         * damage to one or more creatures" (Briarbridge Patrol): once per batch however many
+         * matching recipients the source hit, where the unbatched form fires per recipient.
          */
         val batch: Boolean = false
     ) : EventPattern {

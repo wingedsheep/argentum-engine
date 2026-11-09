@@ -301,9 +301,10 @@ class ObjectTriggerSubject internal constructor(
     // ---- Damage ------------------------------------------------------------------------------
 
     /**
-     * "deals damage [to [to]]". [batch] is the "one or more … are dealt damage" template (CR
-     * 603.2c, [TriggerBinding.ANY] only); [requireExcess] is "excess damage". Combat damage is
-     * [dealsCombatDamage].
+     * "deals damage [to [to]]". [batch] is the "one or more" template (CR 603.2c): on an observer
+     * ([TriggerBinding.ANY]) "one or more … are dealt damage", on [self] "this deals damage to one
+     * or more creatures" (Briarbridge Patrol) — once per batch, not per recipient; [requireExcess]
+     * is "excess damage". Combat damage is [dealsCombatDamage].
      */
     fun dealsDamage(
         to: Recipient = Recipient.Any,

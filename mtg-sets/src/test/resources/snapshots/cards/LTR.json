@@ -3689,9 +3689,8 @@
                 "interveningIf": {
                     "type": "Compare",
                     "left": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "FOOD_SACRIFICED"
+                        "type": "PermanentsSacrificedThisTurn",
+                        "filter": "Food"
                     },
                     "operator": "GTE",
                     "right": {

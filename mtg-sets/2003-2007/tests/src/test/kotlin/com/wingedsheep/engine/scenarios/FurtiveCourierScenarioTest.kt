@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldNotBe
  * Furtive Courier (MKM) — {2}{U} 3/2, "can't be blocked as long as you've sacrificed an artifact
  * this turn", plus an attack-trigger loot.
  *
- * The evasion half is the `TurnTracker.ARTIFACT_SACRIFICED` consumer that reads through the
+ * The evasion half is the `Conditions.SacrificedArtifactThisTurn` consumer that reads through the
  * *projection* rather than the cost rail, so it's the other side of the tracker from
  * [SuspiciousDetonationScenarioTest]: here the condition has to reach `ConditionalStaticAbility`
  * and land in `ProjectedState` before `BlockPhaseManager` validates a declaration.

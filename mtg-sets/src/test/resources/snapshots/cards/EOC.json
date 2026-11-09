@@ -281,9 +281,8 @@
                         {
                             "type": "Compare",
                             "left": {
-                                "type": "TurnTracking",
-                                "player": "You",
-                                "tracker": "NONTOKEN_PERMANENTS_SACRIFICED"
+                                "type": "PermanentsSacrificedThisTurn",
+                                "filter": "nontoken"
                             },
                             "operator": "GTE",
                             "right": {

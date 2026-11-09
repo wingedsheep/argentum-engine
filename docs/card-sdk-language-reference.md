@@ -9269,7 +9269,7 @@ The shapes in this family, with their engine notes.
 
 **Factories** (axes: `damageType` × `recipient` × `sourceFilter` × `binding` for outgoing; `source` × `binding` for incoming):
 
-- `Triggers.<subject>.dealsDamage(to, damageType, requireExcess, batch, requires)` / `.dealsCombatDamage(to, …)` — outgoing-damage trigger. Pick `DamageType.{Any,Combat,NonCombat}`, `Recipient.{Any,AnyPlayer,AnyPlayerOrPlaneswalker,AnyPlayerOrBattle,AnyCreature,…}`, an optional source `GameObjectFilter`, and `TriggerBinding.{SELF,ANY,ATTACHED}`. Covers "deals combat damage to a player or planeswalker", "creature you control deals combat damage to a player" (`binding = ANY` + `sourceFilter = Creature.youControl()`), "nontoken creature you control deals…" (`.nontoken()`), and "enchanted creature deals damage" (`binding = ATTACHED`). The conjunctive `requires` set adds damage-event facts: `DamagePredicate.SourceSoleTargetIsRecipient` requires the source to have exactly one chosen target and that target to be this damage recipient, so "a spell that targets only a single creature deals damage to that creature" does not fire for the same spell's collateral damage (Imodane, the Pyrohammer). Pass `requireExcess = true` to fire only when the recipient was dealt damage past lethal (CR 120.4a) — Fall of Cair Andros' "is dealt excess noncombat damage". Pass `batch = true` for recipient-side **"one or more" batch wording** (CR 603.2c) — "whenever one or more creatures your opponents control are dealt excess noncombat damage" (Magmatic Galleon): simultaneous damage to several matching recipients (a sweeper, combat damage to multiple blockers) fires the trigger once per event batch instead of once per damaged recipient. Batch is only honored on the `binding = ANY` observer path. **Unrestricted outgoing damage folds:** with `to = Recipient.Any` ("whenever this deals [combat] damage"), combat damage the source deals to several recipients at once — trample over a blocker, several blockers — is one trigger whose `TRIGGER_DAMAGE_AMOUNT` is the total (Vessel of the All-Consuming's and Umezawa's Jitte's rulings), via the same `TriggerDetector.foldSimultaneousDamage` as `isDealtDamage()`, for SELF, ATTACHED and observer bindings and event-based delayed triggers (Tamiyo, Field Researcher's +1) alike. A recipient-restricted form (`AnyPlayer`, `AnyCreature`, …) stays once per damaged recipient, since its effect may name that recipient. Read the excess via `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT)`. For a creature recipient, read its toughness *as it last existed at damage time* (CR 603.10 LKI — survives a lethal hit) via `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS)`; pair it with a `triggerRestriction` such as `Conditions.CompareAmounts(ContextProperty(TRIGGER_DAMAGE_AMOUNT), ComparisonOperator.EQ, ContextProperty(TRIGGER_RECIPIENT_TOUGHNESS))` for "deals noncombat damage to a creature equal to that creature's toughness" (Taii Wakeen, Perfect Shot). On the observer path (`binding = ANY` + `sourceFilter`), `EffectTarget.TriggeringEntity` is the damage SOURCE, but the recipient toughness is still carried in this context key. **Dead recipients:** combat-damage state-based actions run *before* trigger detection, so a recipient killed by the same damage has already left the battlefield (a token has ceased to exist). The recipient is then read from `DamageDealtEvent.targetLastKnown`, the snapshot taken as the damage was dealt (CR 603.10), so "a creature an opponent controls is dealt damage" still fires for the killing blow. That snapshot answers types, subtypes, keywords, token-ness and controller; a filter asking anything else of a departed recipient (colour, P/T) fails closed.
+- `Triggers.<subject>.dealsDamage(to, damageType, requireExcess, batch, requires)` / `.dealsCombatDamage(to, …)` — outgoing-damage trigger. Pick `DamageType.{Any,Combat,NonCombat}`, `Recipient.{Any,AnyPlayer,AnyPlayerOrPlaneswalker,AnyPlayerOrBattle,AnyCreature,…}`, an optional source `GameObjectFilter`, and `TriggerBinding.{SELF,ANY,ATTACHED}`. Covers "deals combat damage to a player or planeswalker", "creature you control deals combat damage to a player" (`binding = ANY` + `sourceFilter = Creature.youControl()`), "nontoken creature you control deals…" (`.nontoken()`), and "enchanted creature deals damage" (`binding = ATTACHED`). The conjunctive `requires` set adds damage-event facts: `DamagePredicate.SourceSoleTargetIsRecipient` requires the source to have exactly one chosen target and that target to be this damage recipient, so "a spell that targets only a single creature deals damage to that creature" does not fire for the same spell's collateral damage (Imodane, the Pyrohammer). Pass `requireExcess = true` to fire only when the recipient was dealt damage past lethal (CR 120.4a) — Fall of Cair Andros' "is dealt excess noncombat damage". Pass `batch = true` for recipient-side **"one or more" batch wording** (CR 603.2c) — "whenever one or more creatures your opponents control are dealt excess noncombat damage" (Magmatic Galleon): simultaneous damage to several matching recipients (a sweeper, combat damage to multiple blockers) fires the trigger once per event batch instead of once per damaged recipient. On `Triggers.self` it is the source-side **"whenever this deals damage to one or more creatures"** (Briarbridge Patrol: `Triggers.self.dealsDamage(Recipient.AnyCreature, batch = true)`): every matching damage event the source deals in one batch — combat damage to several blockers, or a noncombat "deals 1 damage to each creature" — folds into one trigger (`TriggerDetector.foldSimultaneousDamage`), where the unbatched `AnyCreature` form fires once per creature. **Unrestricted outgoing damage folds:** with `to = Recipient.Any` ("whenever this deals [combat] damage"), combat damage the source deals to several recipients at once — trample over a blocker, several blockers — is one trigger whose `TRIGGER_DAMAGE_AMOUNT` is the total (Vessel of the All-Consuming's and Umezawa's Jitte's rulings), via the same `TriggerDetector.foldSimultaneousDamage` as `isDealtDamage()`, for SELF, ATTACHED and observer bindings and event-based delayed triggers (Tamiyo, Field Researcher's +1) alike. A recipient-restricted form (`AnyPlayer`, `AnyCreature`, …) stays once per damaged recipient, since its effect may name that recipient. Read the excess via `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT)`. For a creature recipient, read its toughness *as it last existed at damage time* (CR 603.10 LKI — survives a lethal hit) via `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS)`; pair it with a `triggerRestriction` such as `Conditions.CompareAmounts(ContextProperty(TRIGGER_DAMAGE_AMOUNT), ComparisonOperator.EQ, ContextProperty(TRIGGER_RECIPIENT_TOUGHNESS))` for "deals noncombat damage to a creature equal to that creature's toughness" (Taii Wakeen, Perfect Shot). On the observer path (`binding = ANY` + `sourceFilter`), `EffectTarget.TriggeringEntity` is the damage SOURCE, but the recipient toughness is still carried in this context key. **Dead recipients:** combat-damage state-based actions run *before* trigger detection, so a recipient killed by the same damage has already left the battlefield (a token has ceased to exist). The recipient is then read from `DamageDealtEvent.targetLastKnown`, the snapshot taken as the damage was dealt (CR 603.10), so "a creature an opponent controls is dealt damage" still fires for the killing blow. That snapshot answers types, subtypes, keywords, token-ness and controller; a filter asking anything else of a departed recipient (colour, P/T) fails closed.
 - `Triggers.<subject>.isDealtDamage(by)` — incoming-damage trigger, lowered to `DamageReceivedEvent(source = by)`. The two Oracle wordings trigger differently, and `by` picks between them. **"Whenever this is dealt damage"** is the bare `isDealtDamage()` (`source = null`): simultaneous damage to it is one event (CR 603.2c), so two blockers' combat damage (dealt simultaneously, CR 510.2) triggers it **once**, with `TRIGGER_DAMAGE_AMOUNT` the **total** — Fungusaur gets one counter, Boros Reckoner deals the sum, Innocent Bystander's "3 or more" sees 4 from two 2/2s. First-strike and regular damage are separate steps and so separate events, as are two pings. The damaged permanent is the triggering entity. `TriggerDetector.foldSimultaneousDamage` does the fold, for SELF and ATTACHED ("enchanted creature is dealt damage", Pain for All) alike, alive or killed by that damage. **"Whenever a [source] deals damage to this"** passes `by` — `GameObjectFilter.Any` for "a source" (Nested Ghoul, Phyrexian Obliterator, Belltower Sphinx), `Creature` for "a creature" (Tephraderm), `InstantOrSorcery` for "a spell": it triggers **once per source** and binds the damage source as the triggering entity, so `Player.ControllerOfTriggeringEntity` is "that source's controller". The filter is evaluated against the source as it is when the trigger is detected — its card's own characteristics if it has already left the battlefield, which is why Tephraderm's "a spell" is `GameObjectFilter.InstantOrSorcery` rather than an on-the-stack test; `Any` asks nothing of the source, so it fires even when the source has ceased to exist. `by` is SELF-only (rejected on `Triggers.attached`). For "*you* are dealt damage" use `Triggers.you.isDealtDamage()` / `Triggers.you.isDealtDamage(by, damageType)` above — the recipient is a player, not this permanent.
 - `Triggers.a(filter).isDealtDamage()` / `Triggers.another(filter).isDealtDamage()` — the **observer** form (ANY / OTHER binding): "whenever a [filter] permanent is dealt damage". The subject filter is matched (projected) against the damaged permanent as the damage is dealt — never against a damaged player — and that permanent is the triggering entity, so "destroy it" is `Effects.Destroy(EffectTarget.TriggeringEntity)`. Lowered to `DamageReceivedEvent(recipient = filter)`. Fires once per damaged permanent per damage event — simultaneous combat damage to one permanent folds as above. Takes no `by` damage-source filter (rejected at build time). **Termination Facilitator**: `Triggers.a(GameObjectFilter.CreatureOrPlaneswalker.opponentControls().withCounter(CounterType.BOUNTY)).isDealtDamage()`.
 - `Triggers.<subject>.becomesTapped(reason, firstTimeEachTurn)` — "becomes tapped" trigger. `Triggers.self.becomesTapped()` is the SELF constant; pass `binding = TriggerBinding.ANY` with an optional `filter: GameObjectFilter` for "whenever a [filter] becomes tapped" (e.g. `GameObjectFilter.CreatureOrLand` — Temporal Distortion). The filter is matched against the tapped permanent via projected state. Fires once **per** tapped permanent. `reason: TapReason?` restricts *why* it became tapped — see `Triggers.self.becomesTapped(TapReason.TEAMWORK)` below; the default `null` is cause-agnostic and matches every tap. Use `null` for "any cause", **never `TapReason.UNSPECIFIED`** — that would match only the taps the engine has not classified, a predicate whose meaning shrinks the day a new cause is named, and it renders as no clause at all.
@@ -17358,24 +17358,24 @@ default to "you" so card authors don't need to pass it explicitly.
   descend counter and cleared by `CleanupPhaseManager`. Gates Macabre Reconstruction's cost reduction
   ("This spell costs {2} less to cast if a creature card was put into your graveyard from anywhere this
   turn") via `ModifySpellCost(SelfCast, ReduceGeneric(2), CostGating.OnlyIf(...))`.
+- `YouSacrificedThisTurn(filter, atLeast = 1)` — at least `atLeast` permanents matching `filter` were sacrificed
+  by you this turn, each judged as it was when sacrificed: `Compare(DynamicAmount.PermanentsSacrificedThisTurn(You,
+  filter), GTE, Fixed(atLeast))`. "If you sacrificed three or more Clues this turn" (Briarbridge Patrol).
 - `YouSacrificedPermanentsThisTurn(atLeast = 1)` — at least `atLeast` permanents (any type) were
-  sacrificed by you this turn. Composes through `Compare(DynamicAmount.TurnTracking(Player.You,
-  TurnTracker.PERMANENTS_SACRIFICED), GTE, Fixed(atLeast))`. Backed by the per-player
-  `PermanentsSacrificedThisTurnComponent` (controller-scoped; distinct from the game-wide
-  `GameState.permanentsSacrificedThisTurn` cost-reduction counter), incremented in
-  `ZoneTransitionService.trackPermanentSacrifice` and cleared by `CleanupPhaseManager`. Pair with the
+  sacrificed by you this turn — `YouSacrificedThisTurn(GameObjectFilter.Any, atLeast)`, over the per-player
+  sacrifice record (controller-scoped; distinct from the game-wide `GameState.permanentsSacrificedThisTurn`
+  cost-reduction counter). Pair with the
   `DynamicAmounts.permanentsSacrificedThisTurn()` amount for "that much" damage (Sawblade Skinripper:
   "At the beginning of your end step, if you sacrificed one or more permanents this turn, this creature
   deals that much damage to any target").
-- `YouSacrificedNontokenPermanentsThisTurn(atLeast = 1)` — the nontoken slice of the above, over
-  `TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED` (token-ness read as the permanent was sacrificed). Evendo
+- `YouSacrificedNontokenPermanentsThisTurn(atLeast = 1)` — the nontoken slice of the above,
+  `YouSacrificedThisTurn(GameObjectFilter.Any.nontoken(), atLeast)` (token-ness read as the permanent was sacrificed). Evendo
   Brushrazer: "During your turn, as long as you've sacrificed a nontoken permanent this turn, you may play
   cards exiled with this creature."
-- `SacrificedArtifactThisTurn` — you sacrificed at least one artifact this turn. Composes through
-  `Compare(DynamicAmount.TurnTracking(Player.You, TurnTracker.ARTIFACT_SACRIFICED), GTE, Fixed(1))`,
-  the card-type sibling of `SacrificedFoodThisTurn`. Backed by the per-player marker
-  `SacrificedArtifactThisTurnComponent`, set in `ZoneTransitionService.trackPermanentSacrifice` off
-  the *projected* type line (an animated artifact counts) and cleared by `CleanupPhaseManager`. Turn
+- `SacrificedArtifactThisTurn` — you sacrificed at least one artifact this turn:
+  `YouSacrificedThisTurn(GameObjectFilter.Artifact)`, the card-type sibling of `SacrificedFoodThisTurn`
+  (`YouSacrificedThisTurn(Any.withSubtype(FOOD))`). Each sacrifice is frozen off the *projected* type
+  line (an animated artifact counts). Turn
   history, not a graveyard scan — the artifact having since left the graveyard doesn't clear it, and
   it's controller-scoped, so an opponent cracking their own Clue never sets yours. Both MKM readings
   of "if you've sacrificed an artifact this turn" ride it: the cost reduction via
@@ -17961,6 +17961,15 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   named dungeon you've completed" (Ellywick Tumblestrum's emblem).
 - `TurnCount(player)` — turn number for that player.
 - `TurnTracking(player, TurnTracker)` — value of a per-turn counter (see below).
+- `PermanentsSacrificedThisTurn(player = You, filter = Any)` — how many permanents matching `filter` that player
+  sacrificed this turn, each judged as it stood **just before it was sacrificed** (a frozen `EntitySnapshot` appended by the
+  central sacrifice hook `ZoneTransitionService.trackPermanentSacrifice` to `PermanentsSacrificedThisTurnComponent.sacrificed`,
+  reset at the next turn). A sacrificed token that has ceased to exist still counts, as does a permanent that matched only
+  through a continuous effect. Summed over several players. Facades `DynamicAmounts.permanentsSacrificedThisTurn(filter, player)`
+  and `Conditions.YouSacrificedThisTurn(filter, atLeast)` — "if you sacrificed three or more Clues this turn" (Briarbridge
+  Patrol: `YouSacrificedThisTurn(GameObjectFilter.Artifact.withSubtype("Clue"), atLeast = 3)`). Unfiltered it is Sawblade
+  Skinripper's "that much damage" (`DynamicAmounts.permanentsSacrificedThisTurn()`); `SacrificedArtifactThisTurn`,
+  `SacrificedFoodThisTurn`, `YouSacrificedPermanentsThisTurn` and `YouSacrificedNontokenPermanentsThisTurn` are fixed filters over it.
 - `CombatDamageSourcesThisTurn(player, sourceFilter)` — how many **distinct sources** matching
   `sourceFilter` dealt *combat* damage to `player` this turn, each judged as it stood **when it dealt the
   damage** (recorded per player in `DamageUtils.trackDamageReceivedByPlayer`, cleared at cleanup). A
@@ -19049,7 +19058,6 @@ this turn").
   `Conditions.CreatedTokenThisTurn` and `DynamicAmounts.tokensCreatedThisTurn(player)` — Thalisse,
   Reverent Medium's "create X 1/1 white Spirit tokens with flying, where X is the number of tokens
   you created this turn."
-- `FOOD_SACRIFICED` — Food tokens sacrificed.
 - `SCRIED_OR_SURVEILED` — indicator (0 or 1) that the player scried or surveilled this turn. Marked by
   the executors that emit `ScriedEvent` / `SurveiledEvent`, so it is set exactly when a "whenever you
   scry or surveil" trigger would fire: scry 0 / surveil 0 never marks it (CR 701.22b / 701.25c); a
@@ -19057,9 +19065,6 @@ this turn").
 - `SURVEILED` — the surveil-only half of `SCRIED_OR_SURVEILED`: indicator (0 or 1) that the player
   surveilled this turn, marked by the executor that emits `SurveiledEvent` (surveil 0 never marks it).
   Backs `Conditions.SurveiledThisTurn`.
-- `ARTIFACT_SACRIFICED` — indicator (0 or 1) that the player sacrificed an artifact this turn, read
-  off the projected type line at sacrifice time. Backs `Conditions.SacrificedArtifactThisTurn`
-  (Suspicious Detonation, Furtive Courier).
 - `CARDS_LEFT_GRAVEYARD` — cards leaving your graveyard.
 - `PERMANENTS_PUT_INTO_HAND_FROM_BATTLEFIELD` — permanents (tokens included) put into the player's hand
   from the battlefield this turn, keyed on the owner. Backs
@@ -19090,15 +19095,8 @@ this turn").
   Summed across all players (via `Player.Each`) it gives the game-wide count of cards put into
   exile this turn. Powers Ennis, Debate Moderator's "if one or more cards were put into exile this
   turn" — see the `Conditions.CardsPutIntoExileThisTurn(atLeast)` wrapper.
-- `PERMANENTS_SACRIFICED` — number of permanents a player has sacrificed this turn (controller-scoped,
-  any permanent type). Backed by the per-player `PermanentsSacrificedThisTurnComponent`, incremented at
-  the central sacrifice hook (`ZoneTransitionService.trackPermanentSacrifice`) and reset to 0 for every
-  player at turn start. Distinct from the game-wide `GameState.permanentsSacrificedThisTurn` cost-reduction
-  counter (which sums every player's sacrifices). Backs `Conditions.YouSacrificedPermanentsThisTurn(atLeast)`
-  and `DynamicAmounts.permanentsSacrificedThisTurn(player)` — e.g. Sawblade Skinripper's "if you sacrificed
-  one or more permanents this turn, ... deals that much damage".
-- `NONTOKEN_PERMANENTS_SACRIFICED` — the nontoken slice of `PERMANENTS_SACRIFICED`, kept on the same
-  component (`nontokenCount`) by the same hook. Backs `Conditions.YouSacrificedNontokenPermanentsThisTurn`.
+- Sacrifices this turn are not a tracker: `DynamicAmount.PermanentsSacrificedThisTurn(player, filter)` counts
+  them by filter, each frozen as it was sacrificed (see the dynamic-amount list).
 - `DAMAGE_SOURCES` — the number of distinct sources a player controlled that dealt damage this turn.
   Backed by the per-player `DamageSourcesThisTurnComponent`, a set of
   `DamageSourceIdentity(entityId, incarnation)` recorded on the source's controller *at damage time*

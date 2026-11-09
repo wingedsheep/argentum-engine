@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.ActivationRestriction
  *
  * The Satchel is its own enabler: the two Clues it makes on entry are artifacts, and sacrificing
  * one to draw sets the gate for the Thopter. That gate is
- * [Conditions.SacrificedArtifactThisTurn] — MKM's `ARTIFACT_SACRIFICED` turn tracker, the same one
+ * [Conditions.SacrificedArtifactThisTurn] — the per-turn sacrifice record filtered to artifacts, the same one
  * behind Suspicious Detonation and Furtive Courier — wrapped in
  * [ActivationRestriction.OnlyIfCondition] so the tap ability simply isn't offered until it holds.
  *

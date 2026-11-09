@@ -91,8 +91,6 @@ import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPer
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardTypesReturnedToHandFromBattlefieldThisTurnComponent
-import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent
-import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SurveiledThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTurnComponent
@@ -1074,17 +1072,11 @@ class CleanupPhaseManager(
                 if (result.has<PermanentsPutIntoHandFromBattlefieldThisTurnComponent>()) {
                     result = result.without<PermanentsPutIntoHandFromBattlefieldThisTurnComponent>()
                 }
-                if (result.has<SacrificedFoodThisTurnComponent>()) {
-                    result = result.without<SacrificedFoodThisTurnComponent>()
-                }
                 if (result.has<ScriedOrSurveiledThisTurnComponent>()) {
                     result = result.without<ScriedOrSurveiledThisTurnComponent>()
                 }
                 if (result.has<SurveiledThisTurnComponent>()) {
                     result = result.without<SurveiledThisTurnComponent>()
-                }
-                if (result.has<SacrificedArtifactThisTurnComponent>()) {
-                    result = result.without<SacrificedArtifactThisTurnComponent>()
                 }
                 if (result.has<PermanentsEnteredUnderControlThisTurnComponent>()) {
                     result = result.without<PermanentsEnteredUnderControlThisTurnComponent>()

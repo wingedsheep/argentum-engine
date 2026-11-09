@@ -1076,12 +1076,20 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_PUT_INTO_GRAVEYARD)
 
     /**
-     * "The number of permanents [player] sacrificed this turn" (controller-scoped, any permanent
-     * type). Reads the per-player `PermanentsSacrificedThisTurnComponent`, distinct from the
-     * game-wide cost-reduction counter. Used by Sawblade Skinripper ("deals that much damage").
+     * "The number of [filter] permanents [player] sacrificed this turn" (controller-scoped), each
+     * judged as it was when sacrificed — see [DynamicAmount.PermanentsSacrificedThisTurn]. Distinct
+     * from the game-wide cost-reduction counter. Unfiltered: Sawblade Skinripper's "deals that much
+     * damage".
+     *
+     * ```kotlin
+     * // "if you sacrificed three or more Clues this turn" (Briarbridge Patrol)
+     * Conditions.YouSacrificedThisTurn(GameObjectFilter.Artifact.withSubtype("Clue"), atLeast = 3)
+     * ```
      */
-    fun permanentsSacrificedThisTurn(player: Player = Player.You): DynamicAmount =
-        DynamicAmount.TurnTracking(player, TurnTracker.PERMANENTS_SACRIFICED)
+    fun permanentsSacrificedThisTurn(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        player: Player = Player.You,
+    ): DynamicAmount = DynamicAmount.PermanentsSacrificedThisTurn(player, filter)
 
     /**
      * "The number of [filter] spells [player] has cast this turn", optionally excluding the

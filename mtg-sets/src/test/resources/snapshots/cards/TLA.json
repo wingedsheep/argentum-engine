@@ -13823,11 +13823,7 @@
                         {
                             "type": "AddDynamicCounters",
                             "counterType": "PLUS_ONE_PLUS_ONE",
-                            "amount": {
-                                "type": "TurnTracking",
-                                "player": "You",
-                                "tracker": "PERMANENTS_SACRIFICED"
-                            },
+                            "amount": "PermanentsSacrificedThisTurn",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "t0"
@@ -13839,11 +13835,7 @@
                                 "type": "Gate.WhenCondition",
                                 "condition": {
                                     "type": "Compare",
-                                    "left": {
-                                        "type": "TurnTracking",
-                                        "player": "You",
-                                        "tracker": "PERMANENTS_SACRIFICED"
-                                    },
+                                    "left": "PermanentsSacrificedThisTurn",
                                     "operator": "GTE",
                                     "right": {
                                         "type": "Fixed",
@@ -14559,11 +14551,7 @@
                 "effect": "CreateTokenCopyOfSource",
                 "interveningIf": {
                     "type": "Compare",
-                    "left": {
-                        "type": "TurnTracking",
-                        "player": "You",
-                        "tracker": "PERMANENTS_SACRIFICED"
-                    },
+                    "left": "PermanentsSacrificedThisTurn",
                     "operator": "GTE",
                     "right": {
                         "type": "Fixed",

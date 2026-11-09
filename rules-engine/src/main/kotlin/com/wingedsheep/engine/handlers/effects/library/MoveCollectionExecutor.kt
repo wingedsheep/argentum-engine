@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
-import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -1351,12 +1351,12 @@ class MoveCollectionExecutor(
                 }
                 tracked = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                     .trackPermanentSacrifice(tracked, sacrificed, sacrificerId)
-                // trackPermanentSacrifice also tags the controller with SacrificedFoodThisTurnComponent
-                // when a sacrificed permanent was a Food. That tag lives on the controller entity (which
-                // the move above leaves untouched), so carry it over too — otherwise "whenever you
-                // sacrifice a Food" triggers never fire for Foods sacrificed through this path.
-                if (tracked.getEntity(sacrificerId)?.has<SacrificedFoodThisTurnComponent>() == true) {
-                    newState = newState.updateEntity(sacrificerId) { it.with(SacrificedFoodThisTurnComponent) }
+                // trackPermanentSacrifice records each sacrificed permanent on the controller's
+                // PermanentsSacrificedThisTurnComponent. That record lives on the controller entity
+                // (which the move above leaves untouched), so carry it over — otherwise "if you
+                // sacrificed a Food / three Clues this turn" never sees a sacrifice made through this path.
+                tracked.getEntity(sacrificerId)?.get<PermanentsSacrificedThisTurnComponent>()?.let { record ->
+                    newState = newState.updateEntity(sacrificerId) { it.with(record) }
                 }
                 sacrificeEvents.add(PermanentsSacrificedEvent(sacrificerId, sacrificed, sacrificeNames))
             }

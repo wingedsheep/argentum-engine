@@ -255,4 +255,24 @@ class RetiredSdkTypeLiftTest : FunSpec({
         lifted(Effect.serializer(), old("PlayAdditionalLands", "count" to JsonPrimitive(2))) shouldBe
             com.wingedsheep.sdk.scripting.effects.PlayAdditionalLandsEffect(DynamicAmount.Fixed(2))
     }
+
+    test("the retired sacrifice trackers become a filtered PermanentsSacrificedThisTurn, keeping the player") {
+        val opponents = json.encodeToJsonElement(
+            com.wingedsheep.sdk.scripting.references.Player.serializer(),
+            com.wingedsheep.sdk.scripting.references.Player.EachOpponent,
+        )
+        fun tracker(name: String) = old("TurnTracking", "player" to opponents, "tracker" to JsonPrimitive(name))
+        val each = com.wingedsheep.sdk.scripting.references.Player.EachOpponent
+        lifted(DynamicAmount.serializer(), tracker("PERMANENTS_SACRIFICED")) shouldBe
+            DynamicAmount.PermanentsSacrificedThisTurn(each, GameObjectFilter.Any)
+        lifted(DynamicAmount.serializer(), tracker("NONTOKEN_PERMANENTS_SACRIFICED")) shouldBe
+            DynamicAmount.PermanentsSacrificedThisTurn(each, GameObjectFilter.Any.nontoken())
+        lifted(DynamicAmount.serializer(), tracker("ARTIFACT_SACRIFICED")) shouldBe
+            DynamicAmount.PermanentsSacrificedThisTurn(each, GameObjectFilter.Artifact)
+        lifted(DynamicAmount.serializer(), tracker("FOOD_SACRIFICED")) shouldBe
+            DynamicAmount.PermanentsSacrificedThisTurn(each, GameObjectFilter.Any.withSubtype(com.wingedsheep.sdk.core.Subtype.FOOD))
+        // A current tracker passes through untouched.
+        val current = tracker("CARDS_DRAWN")
+        RetiredSdkTypeLift.lift(current) shouldBe current
+    }
 })
