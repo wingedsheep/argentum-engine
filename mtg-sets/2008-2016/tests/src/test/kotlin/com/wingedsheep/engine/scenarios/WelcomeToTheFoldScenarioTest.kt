@@ -81,10 +81,10 @@ class WelcomeToTheFoldScenarioTest : FunSpec({
 
         d.giveMana(p, Color.BLUE, 5) // {X}{U}{U} with X = 3
         d.submitYesNo(p, true)
-        // The madness cast picks its target, then announces X.
-        if (d.pendingDecision !is ChooseNumberDecision) d.submitTargetSelection(p, listOf(giant))
+        // The madness cast announces X, then picks its target (CR 601.2b–c).
         val ask = d.pendingDecision.shouldBeInstanceOf<ChooseNumberDecision>()
         d.submitDecision(p, NumberChosenResponse(ask.id, 3)).error shouldBe null
+        d.submitTargetSelection(p, listOf(giant)).error shouldBe null
         d.resolveStack()
 
         d.state.projectedState.getController(giant) shouldBe p
@@ -106,9 +106,9 @@ class WelcomeToTheFoldScenarioTest : FunSpec({
 
         d.giveMana(p, Color.BLUE, 3) // {X}{U}{U} with X = 1
         d.submitYesNo(p, true)
-        if (d.pendingDecision !is ChooseNumberDecision) d.submitTargetSelection(p, listOf(bears))
         val ask = d.pendingDecision.shouldBeInstanceOf<ChooseNumberDecision>()
         d.submitDecision(p, NumberChosenResponse(ask.id, 1)).error shouldBe null
+        d.submitTargetSelection(p, listOf(bears)).error shouldBe null
         d.resolveStack()
 
         d.state.projectedState.getController(bears) shouldBe opp

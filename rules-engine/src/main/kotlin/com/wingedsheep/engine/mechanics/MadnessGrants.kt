@@ -4,10 +4,15 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.GrantsMadnessToOwnedCardsComponent
 import com.wingedsheep.engine.state.components.identity.MadnessComponent
+import com.wingedsheep.engine.state.components.identity.MadnessExiledComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -30,6 +35,26 @@ import com.wingedsheep.sdk.model.EntityId
  * prompt mid-replacement is the only faithful fix and no card in the pool needs it yet.
  */
 object MadnessGrants {
+
+    /**
+     * True when a cast of [cardId] from where it sits now pays its madness cost (CR 702.35): it is
+     * in exile because the madness replacement discarded it there, carries the madness cost as its
+     * fixed alternative cost, and no "without paying its mana cost" permission (itself an
+     * alternative cost, CR 118.9) has replaced that. A cast that announces some other alternative
+     * cost is the caller's to rule out.
+     *
+     * This is the cast-time answer to `Conditions.MadnessCostWasPaid`: the spell's choice rail
+     * only exists once it is on the stack, but X, the target count and a damage division are all
+     * announced before that (CR 601.2b–d) — Avacyn's Judgment divides X damage among up to X
+     * targets only when cast for madness.
+     */
+    fun castPaysMadnessCost(state: GameState, cardId: EntityId): Boolean {
+        val card = state.getEntity(cardId) ?: return false
+        return card.has<MadnessExiledComponent>() &&
+            card.has<PlayWithFixedAlternativeManaCostComponent>() &&
+            !card.has<PlayWithoutPayingCostComponent>() &&
+            state.turnOrder.any { cardId in state.getZone(ZoneKey(it, Zone.EXILE)) }
+    }
 
     /**
      * The madness cost [cardId] effectively has, or null if it has none. Printed madness on the

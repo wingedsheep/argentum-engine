@@ -1033,6 +1033,83 @@
     ]
 }
 
+// Avacyn's Judgment
+{
+    "name": "Avacyn's Judgment",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Madness {X}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)\nAvacyn's Judgment deals 2 damage divided as you choose among any number of targets. If this spell's madness cost was paid, it deals X damage divided as you choose among those permanents and/or players instead.",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{X}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 0,
+            "minTargets": 0,
+            "maxTargets": 2,
+            "dynamicTotal": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "MADNESS_CAST"
+                },
+                "ifTrue": "XValue",
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 2,
+                "minCount": 0,
+                "optional": true,
+                "descriptionOverride": "any number of targets",
+                "dynamicMaxCount": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "CastChoiceMade",
+                        "slot": "MADNESS_CAST"
+                    },
+                    "ifTrue": "XValue",
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c5f44ce-1464-4282-9afa-20e9ea44c613.jpg?1783937759",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Avacyn's Judgment has multiple targets, and some but not all of them are illegal targets when Avacyn's Judgment resolves, Avacyn's Judgment will still deal damage to the remaining legal targets according to the original damage division."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You announce how the damage will be divided as part of casting Avacyn's Judgment. Each chosen target must receive at least 1 damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Biting Rain
 {
     "name": "Biting Rain",

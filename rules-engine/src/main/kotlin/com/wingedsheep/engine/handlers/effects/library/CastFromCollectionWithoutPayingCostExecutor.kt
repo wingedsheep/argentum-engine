@@ -4,6 +4,7 @@ import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.CastFromCollectionAnnounceXContinuation
 import com.wingedsheep.engine.core.CastFromCollectionTargetsContinuation
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.DecisionContext
@@ -174,13 +175,26 @@ class CastFromCollectionWithoutPayingCostExecutor(
         )
 
         if (prep is TargetPrep.NeedsTargets) {
-            return EffectResult.from(newState.withPriority(controllerId).suspendForDecision(
-                prep.question,
-                prep.continuation.copy(
-                    grantedPermissionId = permId, alternativeCostType = castUsing,
-                    stampedAlternativeManaCost = effect.alternativeManaCost != null,
-                )
-            ))
+            val pending = prep.continuation.copy(
+                grantedPermissionId = permId, alternativeCostType = castUsing,
+                stampedAlternativeManaCost = effect.alternativeManaCost != null,
+            )
+            // An `{X}` in a madness or miracle cost is announced before the targets (CR 601.2b–c):
+            // a target count that reads X (Avacyn's Judgment) can't be offered without it.
+            val announceX = castSpellHandlerProvider().unannouncedXQuestion(
+                newState,
+                CastSpell(
+                    controllerId, cardId, faceIndex = faceIndex, castFused = castFused,
+                    useAlternativeCost = castUsing != null, alternativeCostType = castUsing,
+                ),
+            )
+            if (announceX != null) {
+                return EffectResult.from(newState.withPriority(controllerId).suspendForDecision(
+                    announceX,
+                    CastFromCollectionAnnounceXContinuation(pending, castTransformed = castTransformed),
+                ))
+            }
+            return EffectResult.from(newState.withPriority(controllerId).suspendForDecision(prep.question, pending))
         }
 
         // No targets needed (or modal — CastSpellHandler will handle per-mode targets).
@@ -423,6 +437,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             castTransformed: Boolean = false,
             faceIndex: Int? = null,
             castFused: Boolean = false,
+            xValue: Int? = null,
         ): TargetPrep {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
             val printedDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
@@ -449,19 +464,35 @@ class CastFromCollectionWithoutPayingCostExecutor(
                 )
                 val compatible = com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(state, legal, requirement)
                 legalTargetsMap[index] = compatible
+                // A dynamic count ("up to X targets", Avacyn's Judgment's madness cap) reads the
+                // announced X and the card being cast, as cast validation does.
+                val bounds = com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount.bounds(requirement, xValue) { amount ->
+                    targetFinder.predicateEvaluator.amounts.evaluate(
+                        state, amount,
+                        com.wingedsheep.engine.handlers.EffectContext(sourceId = cardId, controllerId = casterId, xValue = xValue),
+                    )
+                }
                 TargetRequirementInfo(
                     index = index,
                     description = requirement.description,
                     mustDifferFromEarlier = requirement is com.wingedsheep.sdk.scripting.targets.TargetOther,
-                    minTargets = requirement.effectiveMinCount,
-                    maxTargets = if (requirement.unlimited) compatible.size else requirement.count,
+                    minTargets = bounds.min,
+                    maxTargets = bounds.max?.let { minOf(it, compatible.size) }
+                        ?: if (requirement.unlimited) compatible.size else requirement.count,
                 ).withTargetConstraints(state, requirement, compatible)
             }
+            // Fewer legal targets than a requirement's minimum — none for a mandatory one, or fewer
+            // than an announced X for "X target …" — and the cast can't be made (CR 601.2c).
             val mandatoryRequirementHasNoTargets = requirementInfos.any { info ->
-                info.minTargets > 0 && legalTargetsMap[info.index].isNullOrEmpty()
+                info.minTargets > legalTargetsMap[info.index].orEmpty().size
             }
             if (mandatoryRequirementHasNoTargets) {
                 return TargetPrep.NoLegalTargets
+            }
+            // Nothing can be chosen (an announced X of 0 capped every requirement): cast untargeted.
+            // Only once X is known — before that an X-read cap is a placeholder.
+            if (xValue != null && requirementInfos.all { it.maxTargets == 0 && it.minTargets == 0 }) {
+                return TargetPrep.NotNeeded
             }
 
             // Name the face being cast — a transformed cast prompts for "Deluge of the Dead",

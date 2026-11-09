@@ -914,6 +914,12 @@ class ConditionEvaluator(
                     selfCastChoice
                 } else if (declaredThisCast == condition.slot) {
                     true
+                } else if (condition.slot == ChoiceSlot.MADNESS_CAST && sourceId != null &&
+                    com.wingedsheep.engine.mechanics.MadnessGrants.castPaysMadnessCost(state, sourceId)) {
+                    // Still being cast: X, the target count and a division are announced before
+                    // the spell's choice rail exists (CR 601.2b–d) — Avacyn's Judgment's madness
+                    // total and target cap are read here.
+                    true
                 } else {
                     sourceId != null &&
                         state.getEntity(sourceId)?.get<CastChoicesComponent>()

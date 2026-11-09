@@ -58,6 +58,7 @@ class LibraryAndZoneContinuationResumer(
         resumer(CascadePutOntoBattlefieldContinuation::class, ::resumeCascadePutOntoBattlefield),
         resumer(DiscoverMayCastContinuation::class, ::resumeDiscoverMayCast),
         resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
+        resumer(com.wingedsheep.engine.core.CastFromCollectionAnnounceXContinuation::class, ::resumeCastFromCollectionAnnounceX),
         resumer(CastAnyNumberFromCollectionContinuation::class, ::resumeCastAnyNumberFromCollection)
     )
 
@@ -1284,7 +1285,59 @@ class LibraryAndZoneContinuationResumer(
         val chosenTargets = response.selectedTargets.entries
             .sortedBy { it.key }
             .flatMap { (_, ids) -> ids.map { entityIdToChosenTarget(state, it) } }
+        // The response is keyed by requirement, so it knows each group's size; inference
+        // can't always recover it (two optional groups with overlapping filters).
+        val groupCounts = response.selectedTargets.keys.maxOrNull()
+            ?.let { last -> (0..last).map { response.selectedTargets[it]?.size ?: 0 } }
+        return castFromCollectionWithTargets(state, continuation, chosenTargets, groupCounts, checkForMore)
+    }
 
+    /**
+     * Resume after the caster announces X (CR 601.2b) for a madness or miracle cast whose targets
+     * come next (601.2c): the target question is built with that X — a count that reads it
+     * (Avacyn's Judgment's madness cap) is only knowable now — and the cast carries it, so the cast
+     * handler doesn't ask again. An X that leaves nothing to choose casts untargeted.
+     */
+    fun resumeCastFromCollectionAnnounceX(
+        state: GameState,
+        continuation: com.wingedsheep.engine.core.CastFromCollectionAnnounceXContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val x = (response as? com.wingedsheep.engine.core.NumberChosenResponse)?.number?.coerceAtLeast(0)
+            ?: return ExecutionResult.error(state, "Expected a number for X")
+        val pending = continuation.pending.copy(xValue = x)
+        val prep = CastFromCollectionWithoutPayingCostExecutor.prepareTargetSelection(
+            state = state,
+            cardId = pending.cardId,
+            casterId = pending.casterId,
+            cardRegistry = services.cardRegistry,
+            targetFinder = targetFinder,
+            storeCastTo = pending.storeCastTo,
+            castTransformed = continuation.castTransformed,
+            faceIndex = pending.faceIndex,
+            castFused = pending.castFused,
+            xValue = x,
+        )
+        return when (prep) {
+            is CastFromCollectionWithoutPayingCostExecutor.TargetPrep.NeedsTargets ->
+                state.withPriority(pending.casterId).suspendForDecision(prep.question, pending)
+            // X asks for more targets than there are (CR 601.2c): the cast can't be made.
+            CastFromCollectionWithoutPayingCostExecutor.TargetPrep.NoLegalTargets ->
+                failCastFromCollection(state, pending, checkForMore)
+            CastFromCollectionWithoutPayingCostExecutor.TargetPrep.NotNeeded ->
+                castFromCollectionWithTargets(state, pending, emptyList(), null, checkForMore)
+        }
+    }
+
+    /** Cast [continuation]'s card with [chosenTargets], or fall it back to its owning flow's zone if the cast can't initiate. */
+    private fun castFromCollectionWithTargets(
+        state: GameState,
+        continuation: CastFromCollectionTargetsContinuation,
+        chosenTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        groupCounts: List<Int>?,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
         // Publish the cast card to the frame beneath *before* casting: a cast that pauses again
         // (X, kicker, a mode) pushes its own frame on top, so it can't be published afterwards.
         // A cast that fails to initiate falls back to `state`, which never saw the record.
@@ -1299,46 +1352,12 @@ class LibraryAndZoneContinuationResumer(
                 castFused = continuation.castFused,
                 useAlternativeCost = continuation.alternativeCostType != null,
                 alternativeCostType = continuation.alternativeCostType,
-                // The response is keyed by requirement, so it knows each group's size; inference
-                // can't always recover it (two optional groups with overlapping filters).
-                targetGroupCounts = response.selectedTargets.keys.maxOrNull()
-                    ?.let { last -> (0..last).map { response.selectedTargets[it]?.size ?: 0 } },
+                xValue = continuation.xValue,
+                targetGroupCounts = groupCounts,
             ),
         )
 
-        if (castResult.error != null) {
-            // Cast still couldn't initiate (e.g., targets became illegal between selection
-            // and resolution). Revoke the unused free-cast grant and send the card to the
-            // owning flow's fallback zone (discover → hand, cascade → bottom of library) so
-            // it isn't stranded in exile; checkForMore keeps the rest of the trigger's
-            // resolution (e.g. a discover follow-up frame) alive.
-            var cleaned = CastFromCollectionWithoutPayingCostExecutor.revokeFreeCast(
-                state, continuation.cardId, continuation.grantedPermissionId,
-                stampedAlternativeManaCost = continuation.stampedAlternativeManaCost,
-            )
-            val fallbackEvents = mutableListOf<GameEvent>()
-            when (continuation.onCastFailure) {
-                FreeCastFallback.LEAVE -> {}
-                FreeCastFallback.HAND -> {
-                    val moveResult = ZoneMovementUtils.moveCardToZone(services.zones, cleaned, continuation.cardId, Zone.HAND)
-                    if (moveResult.outcome is Outcome.Done) {
-                        cleaned = moveResult.state
-                        fallbackEvents.addAll(moveResult.events)
-                    }
-                }
-                FreeCastFallback.BOTTOM_OF_LIBRARY -> {
-                    fallbackEvents.addAll(
-                        CascadeExecutor.bottomRandomize(
-                            services.zones,
-                            state = cleaned,
-                            playerId = continuation.casterId,
-                            cards = listOf(continuation.cardId)
-                        ) { cleaned = it }
-                    )
-                }
-            }
-            return checkForMore(cleaned, fallbackEvents)
-        }
+        if (castResult.error != null) return failCastFromCollection(state, continuation, checkForMore)
 
         // The cast initiated, and the frame beneath already holds the cast card, so an enclosing
         // Effects.IfYouDo (Kaervek's "If you do, you lose 2 life") sees a non-empty collection.
@@ -1346,6 +1365,46 @@ class LibraryAndZoneContinuationResumer(
             return ExecutionResult.propagatePause(castResult.state, castResult.events)
         }
         return checkForMore(castResult.state, castResult.events)
+    }
+
+    /**
+     * The cast couldn't initiate (targets became illegal between selection and resolution, or an
+     * announced X asks for more targets than exist). Revoke the unused free-cast grant and send
+     * the card to the owning flow's fallback zone (discover → hand, cascade → bottom of library)
+     * so it isn't stranded in exile; checkForMore keeps the rest of the trigger's resolution (e.g.
+     * a discover follow-up frame) alive.
+     */
+    private fun failCastFromCollection(
+        state: GameState,
+        continuation: CastFromCollectionTargetsContinuation,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        var cleaned = CastFromCollectionWithoutPayingCostExecutor.revokeFreeCast(
+            state, continuation.cardId, continuation.grantedPermissionId,
+            stampedAlternativeManaCost = continuation.stampedAlternativeManaCost,
+        )
+        val fallbackEvents = mutableListOf<GameEvent>()
+        when (continuation.onCastFailure) {
+            FreeCastFallback.LEAVE -> {}
+            FreeCastFallback.HAND -> {
+                val moveResult = ZoneMovementUtils.moveCardToZone(services.zones, cleaned, continuation.cardId, Zone.HAND)
+                if (moveResult.outcome is Outcome.Done) {
+                    cleaned = moveResult.state
+                    fallbackEvents.addAll(moveResult.events)
+                }
+            }
+            FreeCastFallback.BOTTOM_OF_LIBRARY -> {
+                fallbackEvents.addAll(
+                    CascadeExecutor.bottomRandomize(
+                        services.zones,
+                        state = cleaned,
+                        playerId = continuation.casterId,
+                        cards = listOf(continuation.cardId)
+                    ) { cleaned = it }
+                )
+            }
+        }
+        return checkForMore(cleaned, fallbackEvents)
     }
 
     /**

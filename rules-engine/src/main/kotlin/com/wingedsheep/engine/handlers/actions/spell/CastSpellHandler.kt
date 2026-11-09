@@ -82,12 +82,10 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.ForetoldComponent
-import com.wingedsheep.engine.state.components.identity.MadnessExiledComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
-import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
 import com.wingedsheep.engine.state.components.player.CantCastFromNonHandZonesComponent
@@ -290,29 +288,88 @@ class CastSpellHandler(
     }
 
     /**
-     * Ask for X (CR 601.2b) when a keyword cast made while its trigger resolves reaches the handler
-     * without one: a miracle cast (Entreat the Angels' {X}{W}{W}) or a madness cast (From Under the
+     * The X announcement (CR 601.2b) a keyword cast made while its trigger resolves still owes,
+     * or null: a miracle cast (Entreat the Angels' {X}{W}{W}) or a madness cast (From Under the
      * Floorboards' madness {X}{B}{B}, CR 702.35b — madness follows the alternative-cost rules of
-     * 601.2b). No client announced X, so the spell would otherwise be cast with X = 0. Bounded by the
-     * mana the caster can make after the cost's fixed part, like a cycling {X}; the payment still
-     * charges the total authoritatively.
+     * 601.2b) that no client announced X for, so the spell would otherwise be cast with X = 0.
+     * Bounded by the mana the caster can make after the cost's fixed part, like a cycling {X}; the
+     * payment still charges the total authoritatively.
+     *
+     * Public so the synthesized cast that picks targets for such a spell can ask X *first*: a
+     * target count or division that reads X (Avacyn's Judgment) is announced after it (601.2c–d).
      */
-    private fun surfaceUnannouncedX(state: GameState, action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition?): ExecutionResult? {
+    fun unannouncedXQuestion(
+        state: GameState,
+        action: CastSpell,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition? = state.getEntity(action.cardId)
+            ?.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) },
+    ): ((String) -> com.wingedsheep.engine.core.ChooseNumberDecision)? {
         if (action.xValue != null || cardDef == null) return null
         val cost = unannouncedXCost(state, action, cardDef) ?: return null
         val maxX = ((manaSolver.getAvailableManaCount(state, action.playerId) - cost.withXAs(0).cmc) /
             cost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
         val cardName = state.getEntity(action.cardId)?.get<CardComponent>()?.name ?: "the spell"
+        return { id -> com.wingedsheep.engine.core.ChooseNumberDecision(
+            id = id,
+            playerId = action.playerId,
+            prompt = "Choose X for $cardName (0-$maxX)",
+            context = DecisionContext(sourceId = action.cardId, sourceName = cardName, phase = DecisionPhase.CASTING),
+            minValue = 0,
+            maxValue = maxX,
+        ) }
+    }
+
+    /** Ask for the X [unannouncedXQuestion] finds still owed, then re-enter the cast with it. */
+    private fun surfaceUnannouncedX(state: GameState, action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition?): ExecutionResult? {
+        val question = unannouncedXQuestion(state, action, cardDef) ?: return null
         return state.withPriority(action.playerId).suspendForDecision(
-            question = { id -> com.wingedsheep.engine.core.ChooseNumberDecision(
+            question = question,
+            answer = com.wingedsheep.engine.core.CastChooseXContinuation(action),
+        )
+    }
+
+    /**
+     * Ask for the division of damage (CR 601.2d) a spell cast while an effect resolves reaches the
+     * handler without — Avacyn's Judgment cast for its madness cost, a cascaded Arc Lightning. A
+     * cast a player submits can't get here undivided (the validator demands the split), but a
+     * synthesized one has no client to announce it; left alone, the damage would only be divided
+     * as the spell resolves, after a target may have become illegal — and the ruling is that the
+     * original division still applies to the survivors. The total reads the announced X and, for a
+     * madness cast, `Conditions.MadnessCostWasPaid`, exactly as the validator and the executor do.
+     */
+    private fun surfaceUnannouncedDivision(
+        state: GameState,
+        action: CastSpell,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+        transformedFace: com.wingedsheep.sdk.model.CardDefinition?,
+    ): ExecutionResult? {
+        if (action.damageDistribution != null || cardDef == null) return null
+        val division = castValidator.castDivision(action, cardDef) as? DividedDamageEffect ?: return null
+        val targets = castValidator.dividedTargets(state, action, cardDef, division, transformedFace)
+            .map { it.toEntityId() }.distinct()
+        if (targets.size < 2) return null
+        val total = com.wingedsheep.engine.handlers.effects.AnnouncedDivision.total(
+            state, division,
+            EffectContext(sourceId = action.cardId, controllerId = action.playerId, xValue = action.xValue),
+            predicateEvaluator.amounts, cardDef.script.castTimeCaptures,
+        )
+        val minPerTarget = com.wingedsheep.engine.handlers.effects.AnnouncedDivision.minPerTarget(division)
+        // Each target must be assigned at least 1 (CR 601.2d). A free cast whose target prompt
+        // couldn't see the total (a cascaded X spell divides X = 0) can't be divided now; it keeps
+        // the resolution-time division rather than failing a cast the player already made.
+        if (total < targets.size * minPerTarget) return null
+        val cardName = state.getEntity(action.cardId)?.get<CardComponent>()?.name ?: "the spell"
+        return state.withPriority(action.playerId).suspendForDecision(
+            question = { id -> com.wingedsheep.engine.core.DistributeDecision(
                 id = id,
                 playerId = action.playerId,
-                prompt = "Choose X for $cardName (0-$maxX)",
+                prompt = "Divide $total damage among ${targets.size} targets",
                 context = DecisionContext(sourceId = action.cardId, sourceName = cardName, phase = DecisionPhase.CASTING),
-                minValue = 0,
-                maxValue = maxX,
+                totalAmount = total,
+                targets = targets,
+                minPerTarget = minPerTarget,
             ) },
-            answer = com.wingedsheep.engine.core.CastChooseXContinuation(action),
+            answer = com.wingedsheep.engine.core.CastDivideDamageContinuation(action),
         )
     }
 
@@ -346,6 +403,7 @@ class CastSpellHandler(
         surfaceAdditionalCostChoice(announcedState, action, rawCosts)?.let { return it }
         surfaceUnannouncedX(announcedState, action, cardDef)?.let { return it }
         pauseForUnannouncedModesOrTargets(announcedState, action, cardDef, cardComponent)?.let { return it }
+        surfaceUnannouncedDivision(announcedState, action, cardDef, transformedFace)?.let { return it }
         val authorization = castRecords.captureAuthorization(announcedState, action, cardComponent)
 
         // --- 2. Determine the total cost (CR 601.2f) ---------------------------------------------
@@ -707,12 +765,8 @@ class CastSpellHandler(
      * becomes.
      */
     private fun madnessChoice(originState: GameState, action: CastSpell): Map<ChoiceSlot, Int> {
-        val card = originState.getEntity(action.cardId) ?: return emptyMap()
-        val paidMadness = card.has<MadnessExiledComponent>() &&
-            card.has<PlayWithFixedAlternativeManaCostComponent>() &&
-            !card.has<PlayWithoutPayingCostComponent>() &&
-            !action.useAlternativeCost &&
-            castCostTotaller.castSourceZone(originState, action.cardId) == Zone.EXILE
+        val paidMadness = !action.useAlternativeCost &&
+            com.wingedsheep.engine.mechanics.MadnessGrants.castPaysMadnessCost(originState, action.cardId)
         return if (paidMadness) mapOf(ChoiceSlot.MADNESS_CAST to 1) else emptyMap()
     }
 

@@ -41,7 +41,8 @@ class CastModalContinuationResumer(
         resumer(CastModalTargetSelectionContinuation::class, ::resumeCastModalTargetSelection),
         resumer(CastSpellAdditionalCostContinuation::class, ::resumeCastSpellAdditionalCost),
         resumer(com.wingedsheep.engine.core.CastCostChoiceContinuation::class, ::resumeCostChoice),
-        resumer(com.wingedsheep.engine.core.CastChooseXContinuation::class, ::resumeChooseX)
+        resumer(com.wingedsheep.engine.core.CastChooseXContinuation::class, ::resumeChooseX),
+        resumer(com.wingedsheep.engine.core.CastDivideDamageContinuation::class, ::resumeDivideDamage)
     )
 
     /**
@@ -66,6 +67,20 @@ class CastModalContinuationResumer(
         val x = (response as? com.wingedsheep.engine.core.NumberChosenResponse)?.number?.coerceAtLeast(0)
             ?: return ExecutionResult.error(state, "Expected a number for X")
         return finishCast(checkForMore) { castSpellHandler.execute(state.withPriority(action.playerId), action.copy(xValue = x)) }
+    }
+
+    private fun resumeDivideDamage(
+        state: GameState,
+        continuation: com.wingedsheep.engine.core.CastDivideDamageContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        val action = continuation.baseCastAction
+        val split = (response as? com.wingedsheep.engine.core.DistributionResponse)?.distribution
+            ?: return ExecutionResult.error(state, "Expected a damage division")
+        return finishCast(checkForMore) {
+            castSpellHandler.execute(state.withPriority(action.playerId), action.copy(damageDistribution = split))
+        }
     }
 
     private fun resumeCostChoice(

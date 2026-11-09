@@ -94,6 +94,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
@@ -992,6 +993,44 @@ internal class CastValidator(
     }
 
     /**
+     * What [action]'s cast divides among its targets as it is announced (CR 601.2d) — the kicked,
+     * cleaved or overloaded effect when that variant is cast — or null when it divides nothing.
+     */
+    internal fun castDivision(action: CastSpell, cardDef: CardDefinition): Effect? {
+        val spellEffect = if (action.declaredCostSlot != null && cardDef.script.kickerSpellEffect != null) {
+            cardDef.script.kickerSpellEffect
+        } else if (isCleaveCast(action, cardDef) && cardDef.script.cleaveSpellEffect != null) {
+            cardDef.script.cleaveSpellEffect
+        } else if (isOverloadCast(action, cardDef) && cardDef.script.overloadSpellEffect != null) {
+            cardDef.script.overloadSpellEffect
+        } else {
+            cardDef.script.spellEffect
+        }
+        return AnnouncedDivision.ofSpell(spellEffect)
+    }
+
+    /**
+     * The targets [division] is announced among. A division scoped to one target requirement
+     * (Magma Opus) is announced among that requirement's targets only — the slice of the flat list
+     * its validated binding gives it. The bound requirements open with the cast variant's own
+     * (kicked or not), so the requirement's index there is its index in the binding.
+     */
+    internal fun dividedTargets(
+        state: GameState,
+        action: CastSpell,
+        cardDef: CardDefinition,
+        division: Effect,
+        transformedFace: CardDefinition?,
+    ): List<ChosenTarget> {
+        val requirements = if (action.declaredCostSlot != null && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+            cardDef.script.kickerTargetRequirements
+        } else cardDef.script.targetRequirements
+        if (AnnouncedDivision.groupIndex(division, requirements) == null) return action.targets
+        val counts = targetBinding(state, action, cardDef, transformedFace)?.counts.orEmpty()
+        return AnnouncedDivision.dividedTargets(division, requirements, counts, action.targets)
+    }
+
+    /**
      * A spell that divides among its targets announces the division as it is cast (CR 601.2d) —
      * required for divided damage among two or more targets: the distribution names exactly the chosen targets, sums to the amount divided, and
      * gives each at least the division's floor (1 for damage, the effect's `minPerTarget` for
@@ -1004,17 +1043,8 @@ internal class CastValidator(
      * resolution through a `DistributeDecision`, like an activated ability's.
      */
     private fun validateDamageDistribution(state: GameState, action: CastSpell, cardDef: CardDefinition?, source: CastSource): String? {
-        val spellEffect = if (action.declaredCostSlot != null && cardDef?.script?.kickerSpellEffect != null) {
-            cardDef.script.kickerSpellEffect
-        } else if (cardDef != null && isCleaveCast(action, cardDef) && cardDef.script.cleaveSpellEffect != null) {
-            cardDef.script.cleaveSpellEffect
-        } else if (cardDef != null && isOverloadCast(action, cardDef) && cardDef.script.overloadSpellEffect != null) {
-            cardDef.script.overloadSpellEffect
-        } else {
-            cardDef?.script?.spellEffect
-        }
         if (cardDef == null) return null
-        val division = AnnouncedDivision.ofSpell(spellEffect)
+        val division = castDivision(action, cardDef)
         // Whatever split arrives is checked — even for a single target, since the executors honor
         // an announced split verbatim — and a spell that divides nothing at cast takes none.
         val distribution = action.damageDistribution
@@ -1023,19 +1053,7 @@ internal class CastValidator(
         }
         val isDamage = division is DividedDamageEffect
         val unit = if (isDamage) "damage" else "counters"
-        // A division scoped to one target requirement (Magma Opus) is announced among that
-        // requirement's targets only — the slice of the flat list its validated binding gives it.
-        // The bound requirements open with the cast variant's own (kicked or not), so the
-        // requirement's index there is its index in the binding.
-        val requirements = if (action.declaredCostSlot != null && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
-            cardDef.script.kickerTargetRequirements
-        } else cardDef.script.targetRequirements
-        val dividedTargets = if (AnnouncedDivision.groupIndex(division, requirements) == null) {
-            action.targets
-        } else {
-            val counts = targetBinding(state, action, cardDef, source.transformedFace)?.counts.orEmpty()
-            AnnouncedDivision.dividedTargets(division, requirements, counts, action.targets)
-        }
+        val dividedTargets = dividedTargets(state, action, cardDef, division, source.transformedFace)
         if (distribution == null) {
             // A counter division submitted without a split divides at resolution, as an activation's does.
             return if (isDamage && dividedTargets.size > 1) {

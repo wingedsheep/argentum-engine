@@ -16080,6 +16080,16 @@ MacCready, Lamplight Mayor (granted).
     the permanent a permanent spell becomes. An `{X}` in the madness cost is announced and paid like a printed `{X}`
     and the resolving spell reads it as `DynamicAmounts.xValue()` (*From Under the Floorboards*: "instead create X of
     those tokens"; *Welcome to the Fold*: "instead … if its toughness is X or less").
+  - **A madness amount that also shapes the announcement** (*Avacyn's Judgment*: "deals 2 damage divided as you choose
+    among any number of targets. If this spell's madness cost was paid, it deals X damage divided … instead") is one
+    `DynamicAmounts.conditional(Conditions.MadnessCostWasPaid, ifTrue = xValue(), ifFalse = fixed(2))` used both as the
+    `DividedDamage` `dynamicTotal` and as the target cap (`AnyTarget(count = 2, minCount = 0, optional = true,
+    dynamicMaxCount = damage)`) — every target needs at least 1 damage, so the total bounds "any number". The condition
+    reads true while the madness-exiled card is still being cast (`MadnessGrants.castPaysMadnessCost`), so the cast-time
+    reads — the target cap, the division total — see the madness branch before the spell's choice rail exists. The madness
+    trigger's cast follows CR 601.2's order: X first (601.2b), then targets offered with that X (601.2c), then the
+    division (601.2d) — a synthesized cast of any divided-damage spell (madness, cascade, …) asks for its division as it
+    is cast, so a target that later becomes illegal keeps the original split.
   - **Granting madness** — `GrantMadnessToOwnedCards(filter)` is the static half of Falkenrath Gorger:
     *"Each Vampire creature card you own that isn't on the battlefield has madness. The madness cost is equal to its
     mana cost."* It carries no cost field — "equal to its mana cost" is the only printed shape, so the cost is derived
