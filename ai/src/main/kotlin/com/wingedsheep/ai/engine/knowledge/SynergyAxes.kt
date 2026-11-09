@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.conditions.Compare
@@ -359,6 +360,16 @@ object SynergyAxes {
             addAll(effectFeeds(grant.ability.effect, creatureHost, grant.ability.targetRequirements))
             if (sacrifices(grant.ability.cost, creatureHost)) add(SynergyAxis.DEATH)
             if (discards(grant.ability.cost)) add(SynergyAxis.GRAVEYARD)
+        }
+        // "Enchanted creature has 'whenever this creature attacks, create a 4/4 Angel …'"
+        // (Invocation of Saint Traft): a helpful trigger handed to our host makes what the same
+        // trigger printed on it would. A harmful one (Consuming Fervor's upkeep -1/-1 counter) is
+        // the gift's price and feeds nothing.
+        for (static in script.staticAbilities) {
+            val grant = static as? GrantTriggeredAbility ?: continue
+            if (curse || grant.filter.scope != Scope.AttachedTo) continue
+            if (TargetPolarityAnalyzer.grantedTriggerPolarity(grant.ability) != TargetPolarity.BENEFICIAL) continue
+            addAll(effectFeeds(grant.ability.effect, couldBeCreature(grant.filter.baseFilter), grant.ability.allTargetRequirements))
         }
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
         // "As an additional cost, discard a card / X cards" bins our cards like a discard effect

@@ -1,0 +1,1 @@
+- #4612 The AI now aims a pipelined "exile target creature and its namesakes" (Declaration in Stone) at an opponent's creature, and puts an Aura granting a token-making attack trigger whose delayed exile only takes the token back (Invocation of Saint Traft) on its own creature, counting that token toward a tokens deck

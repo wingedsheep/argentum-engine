@@ -1124,6 +1124,20 @@ object TargetPolarityAnalyzer {
         val graveyards = HashSet<String>()
         for (leaf in leaves) {
             if (leaf !is GatherCardsEffect) continue
+            // "Exile target creature and all other creatures its controller controls with the same
+            // name" (Declaration in Stone) as a pipeline: the stored target permanent, and the
+            // permanents its controller controls, are that player's to lose. `ControllerOf` names the
+            // controller of the effect's first chosen target.
+            fun permanentSlot(slot: Int?) = slot?.takeIf { requirements.getOrNull(it)?.let(::objectFilter)?.zone == Zone.BATTLEFIELD }
+            val entitySlot = when (val source = leaf.source) {
+                is CardSource.Entity -> permanentSlot(slotOf(source.entity, requirements))
+                is CardSource.ControlledPermanents -> permanentSlot(0.takeIf { source.player is Player.ControllerOf })
+                else -> null
+            }
+            if (entitySlot != null) {
+                slotOfHand[leaf.storeAs] = entitySlot
+                continue
+            }
             val player = when (val source = leaf.source) {
                 is CardSource.FromZone -> source.player.takeIf {
                     source.zone == Zone.HAND || source.zone == Zone.GRAVEYARD || source.zone == Zone.BATTLEFIELD
@@ -2185,7 +2199,15 @@ object TargetPolarityAnalyzer {
 
     private fun grantedEffectPolarity(effect: Effect, requirements: List<TargetRequirement>): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()
-        for (leaf in EffectWalker.payoffLeaves(effect)) {
+        val payoff = EffectWalker.payoffLeaves(effect)
+        for (leaf in payoff) {
+            // "Create a 4/4 Angel that's tapped and attacking. Exile that token at end of combat"
+            // (Invocation of Saint Traft): a delayed step that only takes back what the trigger made
+            // is its price; what else it does when it fires reads like any other step.
+            if (leaf is CreateDelayedTriggerEffect) {
+                readings += EffectWalker.firedLeaves(leaf, payoff).map { grantedEffectPolarity(it, requirements) }
+                continue
+            }
             // "You may sacrifice Spare Dagger. When you do, it deals 1 damage to any target": the
             // optional action is a price the controller opts into, the reflexive effect the payoff.
             if (leaf is ReflexiveTriggerEffect && leaf.optional) {
