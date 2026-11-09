@@ -481,8 +481,10 @@ class CastFromCollectionWithoutPayingCostExecutor(
                         ?: if (requirement.unlimited) compatible.size else requirement.count,
                 ).withTargetConstraints(state, requirement, compatible)
             }
+            // Fewer legal targets than a requirement's minimum — none for a mandatory one, or fewer
+            // than an announced X for "X target …" — and the cast can't be made (CR 601.2c).
             val mandatoryRequirementHasNoTargets = requirementInfos.any { info ->
-                info.minTargets > 0 && legalTargetsMap[info.index].isNullOrEmpty()
+                info.minTargets > legalTargetsMap[info.index].orEmpty().size
             }
             if (mandatoryRequirementHasNoTargets) {
                 return TargetPrep.NoLegalTargets

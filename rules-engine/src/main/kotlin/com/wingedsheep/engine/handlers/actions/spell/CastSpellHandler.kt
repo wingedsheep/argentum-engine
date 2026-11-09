@@ -354,10 +354,10 @@ class CastSpellHandler(
             predicateEvaluator.amounts, cardDef.script.castTimeCaptures,
         )
         val minPerTarget = com.wingedsheep.engine.handlers.effects.AnnouncedDivision.minPerTarget(division)
-        // Each target must be assigned at least 1 (CR 601.2d): more targets than damage can't be announced.
-        if (total < targets.size * minPerTarget) {
-            return ExecutionResult.error(state, "Cannot divide $total damage among ${targets.size} targets")
-        }
+        // Each target must be assigned at least 1 (CR 601.2d). A free cast whose target prompt
+        // couldn't see the total (a cascaded X spell divides X = 0) can't be divided now; it keeps
+        // the resolution-time division rather than failing a cast the player already made.
+        if (total < targets.size * minPerTarget) return null
         val cardName = state.getEntity(action.cardId)?.get<CardComponent>()?.name ?: "the spell"
         return state.withPriority(action.playerId).suspendForDecision(
             question = { id -> com.wingedsheep.engine.core.DistributeDecision(
