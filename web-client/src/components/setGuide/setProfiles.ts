@@ -492,6 +492,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Transform', inPlay: 'Legendary enchantments and artifacts flip into lands once you meet their condition, turning a slow card into a lasting engine.' },
     ],
   },
+  EMN: {
+    tagline: 'Emrakul arrives on Innistrad: sacrifice creatures to emerge Eldrazi early, fill your graveyard for delirium and meld pairs into giants.',
+    setting: 'Innistrad as Emrakul descends on it, twisting humans, werewolves and spirits into Eldrazi horrors.',
+    gameplay: 'Games are midrange and creature-driven, with a strong graveyard theme. Emerge lets you sacrifice a creature to cast an Eldrazi for less, so cheap creatures with enter or death value double as mana. Delirium rewards having four card types in your graveyard, and escalate spells let you pay more for extra modes. Madness, Human Werewolves that transform on quiet turns, and double-faced Eldrazi-touched creatures keep boards shifting, so tempo plays and well-timed removal matter.',
+    tips: [
+      'Value creatures that leave something behind: they are the best bodies to sacrifice for emerge.',
+      'Count card types in your graveyard before relying on delirium: lands, artifacts and spells all help.',
+      'Cast at least one spell each turn against Werewolves, or they transform into their bigger night faces.',
+    ],
+    tryIf: 'graveyard value, sacrifice-to-cast tricks and tribal Innistrad horror',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['graveyard', 'sacrifice', 'tribal'],
+    mechanics: [
+      { name: 'Emerge', inPlay: 'Sacrifice a creature as you cast the spell to pay its emerge cost reduced by that creature\'s mana value, so small bodies become early Eldrazi.' },
+      { name: 'Delirium', inPlay: 'Cards get stronger once your graveyard holds four or more card types, so what you lose and discard matters.' },
+      { name: 'Escalate', inPlay: 'Pay the escalate cost for each mode beyond the first, so one flexible spell can scale with your mana.' },
+      { name: 'Meld', inPlay: 'Once you own and control both halves of a meld pair, one of them exiles the two and returns them as a single huge creature or land.' },
+      { name: 'Madness', inPlay: 'Discard the card to cast it for its madness cost, so rummaging and discard outlets turn into cheap spells.' },
+    ],
+  },
   KLD: {
     tagline: 'A fast, artifact-rich format of energy, Vehicles and fabricate: bank resources early, then cash them in for bigger attacks.',
     setting: 'Kaladesh, a plane of aether-powered invention, during the Inventors\' Fair under the watch of the Consulate.',

@@ -641,6 +641,31 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
+    "Eldritch Moon exposes its ten colour-pair archetypes, four of them tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("emn"))
+
+        synergies.setName shouldBe "Eldritch Moon"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Spirit Fliers",
+            "Zombie Self-Mill",
+            "Vampire Madness",
+            "Werewolves",
+            "Humans",
+            "Go-Wide Attackers",
+            "Spells",
+            "Delirium",
+            "Aggro",
+            "Emerge",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Spirit Fliers" to listOf("Spirit"),
+            "Zombie Self-Mill" to listOf("Zombie"),
+            "Vampire Madness" to listOf("Vampire"),
+            "Werewolves" to listOf("Werewolf"),
+            "Humans" to listOf("Human"),
+        )
+    }
     "Star Trek exposes its ten signpost color-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("trk"))
 
