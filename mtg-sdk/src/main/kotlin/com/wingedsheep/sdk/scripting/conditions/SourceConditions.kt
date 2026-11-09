@@ -534,6 +534,7 @@ data class CastChoiceMade(val slot: com.wingedsheep.sdk.scripting.ChoiceSlot) : 
         com.wingedsheep.sdk.scripting.ChoiceSlot.FIRST_KICKER -> "if it was kicked with its first kicker"
         com.wingedsheep.sdk.scripting.ChoiceSlot.SECOND_KICKER -> "if it was kicked with its second kicker"
         com.wingedsheep.sdk.scripting.ChoiceSlot.BARGAINED -> "if it was bargained"
+        com.wingedsheep.sdk.scripting.ChoiceSlot.ENTWINED -> "if this spell was entwined"
         com.wingedsheep.sdk.scripting.ChoiceSlot.EVIDENCE_COLLECTED -> "if evidence was collected"
         com.wingedsheep.sdk.scripting.ChoiceSlot.ADDITIONAL_COST_PAID -> "if this spell's additional cost was paid"
         com.wingedsheep.sdk.scripting.ChoiceSlot.SNEAK -> "if its sneak cost was paid"

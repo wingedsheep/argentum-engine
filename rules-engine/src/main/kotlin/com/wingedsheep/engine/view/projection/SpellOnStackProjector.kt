@@ -143,6 +143,7 @@ internal class SpellOnStackProjector(
                 }
                 declared?.keyword == Keyword.OFFSPRING -> "Offspring"
                 slot == ChoiceSlot.BARGAINED -> "Bargained"
+                slot == ChoiceSlot.ENTWINED -> "Entwined"
                 slot == ChoiceSlot.BOUGHT_BACK -> "Buyback paid"
                 slot == ChoiceSlot.ADDITIONAL_COST_PAID -> "Additional cost paid"
                 slot == ChoiceSlot.KICKED -> {

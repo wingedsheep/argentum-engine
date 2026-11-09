@@ -14646,6 +14646,37 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > answers "was *this spell* cast using teamwork", and the trigger's subject is a creature on the
 > battlefield that may or may not have been among the payers.
 
+> **Entwine [cost]** (CR 702.42, Mirrodin). "Choose two — … Entwine {3} *(Choose all if you pay the entwine
+> cost.)*" — a static ability of modal spells functioning on the stack (702.42a): *"You may choose all modes
+> of this spell instead of just the number specified. If you do, you pay an additional [cost]."* The cost is
+> paid **once**, however many modes that adds, and the modes then resolve in the order written (702.42b).
+>
+> `card { entwine("{3}") }` + `spell { entwineModal(chooseCount = 2) { … } }` (import
+> `com.wingedsheep.sdk.dsl.entwine` / `entwineModal`) is the whole wiring. `entwine(cost)` adds
+> `KeywordAbility.OptionalAdditionalCost(manaCost = cost, displayPrefix = "Entwine", keyword = Keyword.ENTWINE,
+> declaredSlot = ChoiceSlot.ENTWINED)`, so entwine rides the **same rail as kicker, bargain and teamwork**: the
+> enumerator offers a `CastSpellModal` variant labelled "(Entwined)" beside the plain cast, the cost calculator
+> folds the mana into that variant's price, and the engine stamps `ChoiceSlot.ENTWINED` on the spell. "Entwined",
+> "kicked", "bargained" and "cast using teamwork" never read as each other.
+>
+> `entwineModal(chooseCount)` — default `1` for the classic "Choose one — … Entwine {2}"; `2` for "Choose two —
+> … Entwine {3}" (Kaya's Guile). It is the modal sibling of `teamworkModal { }` and shares its body
+> (`modalChoosingAllIf`): both bounds of the mode count ride one `DynamicAmount.Conditional(
+> Conditions.WasEntwined, all modes, chooseCount)`, because "instead" is mandatory. The legal counts are
+> therefore exactly `{chooseCount, modes.size}` — **not** a range, so `chooseCount = 4, minChooseCount = 2`
+> (which also admits three modes) is the wrong spelling, and the builder rejects a card whose `chooseCount`
+> already equals its mode count. The declared variant advertises `4..4` and the plain one `2..2` through
+> `ModalChooseCounts`, the same authority the cast handler validates against.
+>
+> **Not escalate.** `additionalManaCostPerExtraMode` charges for every mode beyond the first, which equals
+> entwine only for a two-mode "choose one" (Incite War, Tooth and Nail) and overcharges everything else —
+> entwined Kaya's Guile takes two *more* modes for a single {3}, where escalate would ask for {6}. New entwine
+> cards use `entwine` + `entwineModal`; the older two-mode Mirrodin cards still spell it as escalate, which is
+> price- and count-equivalent for them.
+>
+> `Conditions.WasEntwined` is a facade over `CastChoiceMade(ChoiceSlot.ENTWINED)`, so entwine needs no
+> condition type of its own; it also works as a plain rider.
+
 > **Gift** (CR 702.174, Bloomburrow). "Gift a \[something\]" is two abilities: an **additional cost**
 > — "as an additional cost to cast this spell, you may choose an opponent" — and, on a permanent, the
 > triggered ability "when this permanent enters, if its gift cost was paid, \[effect\]" whose effect the
@@ -16804,6 +16835,7 @@ answer it and would silently return `false`.
 - `Conditions.WasKickedWithFirstKicker` / `Conditions.WasKickedWithSecondKicker` — "if it was kicked with its [A] / [B] kicker" on a card with two kicker costs (CR 702.33f). Facades over `CastChoiceMade(ChoiceSlot.FIRST_KICKER)` / `CastChoiceMade(ChoiceSlot.SECOND_KICKER)`; paying only the other kicker leaves it false even though the spell is kicked. Readable from a self-cast trigger, the spell's own effect, and the resulting permanent (see Kicker [A] and/or [B] under `OptionalAdditionalCost`).
 - `Conditions.WasForetold` — "if this spell was foretold" (CR 702.143c): the spell was a foretold card in exile before it was cast, even if it was cast for a cost other than its foretell cost. Facade over `CastChoiceMade(ChoiceSlot.FORETOLD)`, which the engine stamps as the spell is cast; readable from the spell's own effect and from the resulting permanent (Poison the Cup, Starnheim Unleashed).
 - `WasBargained` — the spell's **bargain** additional cost was declared as it was cast (CR 702.166b, Wilds of Eldraine). A facade over `CastChoiceMade(ChoiceSlot.BARGAINED)`, so bargain needs no condition type of its own. Reads the durable flag on a resolved permanent (an "if it was bargained" enters trigger) *and* the declaration carried on a still-on-the-stack spell (an "if this spell was bargained" rider), and is also the condition a `CostGating.OnlyIf` cost reduction gates on. Never true for a merely kicked spell.
+- `WasEntwined` — the spell's **entwine** cost was declared as it was cast (CR 702.42a, Mirrodin), so it takes all of its modes. A facade over `CastChoiceMade(ChoiceSlot.ENTWINED)`, so entwine needs no condition type of its own. `entwineModal { }` gates both ends of the mode count on it at cast time (the declaration this very cast made is in context, CR 601.2b); usable as a plain rider too. Never true for a merely kicked or bargained spell.
 - `TeamworkWasPaid` — the spell was cast **using teamwork** (CR 702.194b, Marvel Super Heroes): its optional "tap any number of creatures you control with total power N or more" additional cost was declared as it was cast. A facade over `CastChoiceMade(ChoiceSlot.TEAMWORK)`, so teamwork needs no condition type of its own. Reads the declaration carried on a still-on-the-stack spell (an "if this spell was cast using teamwork" rider) *and* the durable flag on a resolved permanent, and is the condition `teamworkModal { }` gates both ends of the mode count on for "choose one; if cast using teamwork, choose both instead". Never true for a merely kicked or bargained spell.
 - `SneakCostWasPaid` — the source was cast for its `Sneak` cost (CR 702.190 — mana + returning an unblocked attacker). Reads the durable `ChoiceSlot.SNEAK` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. Backs riders like Leonardo, Leader in Blue and The Last Ronin's Technique.
 - `WebSlungCostWasPaid` — the source was cast using web-slinging (CR 702.188 — mana + returning a tapped creature you control). Reads the durable `ChoiceSlot.WEB_SLUNG` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. Backs riders like *Spiders-Man, Heroic Horde* and *Scarlet Spider, Ben Reilly*; the latter also reads the returned creature's mana value via `DynamicAmount.CastChoice(ChoiceSlot.WEB_SLUNG_RETURNED_MV)`.
@@ -19181,6 +19213,8 @@ spell {
     }
 }
 ```
+
+**Entwine is not escalate.** Escalate charges per mode beyond the first; entwine charges once for "all modes instead of the specified number". Use `entwine(cost)` + `entwineModal(chooseCount) { }` for entwine (see the Entwine entry in the optional-additional-cost section) — escalate's per-extra-mode price is wrong for any entwine card with more than two modes.
 
 **Escalate with a non-mana cost.** *"Escalate—Discard a card"* (Collective Brutality),
 *"Escalate—Tap an untapped creature you control"* (Collective Effort). Pass the payable thing as a

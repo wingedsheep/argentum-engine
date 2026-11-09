@@ -324,4 +324,18 @@ enum class ChoiceSlot {
      * bought-back spell is not kicked, so it must not satisfy "whenever you cast a kicked spell".
      */
     BOUGHT_BACK,
+
+    /**
+     * Whether the spell's **entwine** cost was paid when cast (CR 702.42a — "You may choose all
+     * modes of this spell instead of just the number specified. If you do, you pay an additional
+     * [cost]."). A present value means the entwine cost was declared, so the spell's modal effect
+     * takes every mode. Declared through the `entwine(cost)` DSL helper and read back through
+     * [com.wingedsheep.sdk.dsl.Conditions.WasEntwined] — the mode count of `entwineModal { }`
+     * branches on it at cast time.
+     *
+     * Deliberately distinct from [KICKED] even though both ride the same optional-additional-cost
+     * rail ([com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost.declaredSlot]): an
+     * entwined spell is not kicked, so it must not satisfy "whenever you cast a kicked spell".
+     */
+    ENTWINED,
 }

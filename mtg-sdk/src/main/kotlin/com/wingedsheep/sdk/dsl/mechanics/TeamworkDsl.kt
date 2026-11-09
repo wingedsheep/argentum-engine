@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Add Teamwork [n] (CR 702.194, Marvel Super Heroes) — "As an additional cost to cast this spell,
@@ -65,18 +64,5 @@ fun CardBuilder.teamwork(n: Int) {
  * the evaluation context.
  */
 fun SpellBuilder.teamworkModal(init: ModalBuilder.() -> Unit) {
-    val builder = ModalBuilder(chooseCount = 1, minChooseCount = 1)
-    builder.init()
-    val base = builder.build()
-    val bothIfTeamwork = DynamicAmount.Conditional(
-        condition = Conditions.TeamworkWasPaid,
-        ifTrue = DynamicAmount.Fixed(base.modes.size),
-        ifFalse = DynamicAmount.Fixed(1),
-    )
-    effect = base.copy(
-        chooseCount = base.modes.size,
-        minChooseCount = 1,
-        dynamicChooseCount = bothIfTeamwork,
-        dynamicMinChooseCount = bothIfTeamwork,
-    )
+    modalChoosingAllIf(Conditions.TeamworkWasPaid, chooseCount = 1, init)
 }
