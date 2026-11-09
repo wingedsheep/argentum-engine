@@ -2138,7 +2138,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         }
         override val description: String = buildString {
             append("the number of ")
-            append(if (filter == GameObjectFilter.Any) "permanents" else "${filter.description}s")
+            append(filter.pluralPermanentDescription)
             append(" ${player.description} sacrificed this turn")
         }
     }

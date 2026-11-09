@@ -114,6 +114,36 @@ class BriarbridgePatrolScenarioTest : ScenarioTestBase() {
             game.findCardsInHand(1, "Grizzly Bears") shouldHaveSize 1
         }
 
+        test("it checks each end step: Clues cracked on the opponent's turn pay off in their end step") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Briarbridge Patrol")
+                .apply { repeat(3) { withCardOnBattlefield(1, "Clue", isToken = true) } }
+                .withLandsOnBattlefield(1, "Forest", 6)
+                .withCardInHand(1, "Grizzly Bears")
+                .apply { repeat(5) { withCardInLibrary(1, "Forest") } }
+                .apply { repeat(3) { withCardInLibrary(2, "Forest") } }
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            for (clue in game.findPermanents("Clue")) {
+                game.passPriority() // the active player passes; the Patrol's controller may act
+                game.execute(ActivateAbility(playerId = game.player1Id, sourceId = clue, abilityId = clueAbilityId)).error shouldBe null
+                game.resolveStack()
+            }
+            game.findPermanents("Clue") shouldHaveSize 0
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.state.activePlayerId shouldBe game.player2Id
+            game.state.stack.size shouldBe 1
+            game.resolveStack()
+            game.selectCards(game.findCardsInHand(1, "Grizzly Bears"))
+            game.resolveStack()
+
+            game.isOnBattlefield("Grizzly Bears") shouldBe true
+        }
+
         test("two Clues aren't enough — the ability doesn't trigger") {
             val game = clueBoard(clues = 2)
             game.crackClues(2)

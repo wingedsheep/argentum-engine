@@ -208,8 +208,12 @@ data class GameObjectFilter(
         val (lead, trail) = splitStatePredicates()
         val controller = controllerPredicate?.description?.takeIf { it.isNotEmpty() }
         val types = typeWords()
+        // "nontoken" / "token" alone is an adjective, not a noun: "nontoken permanents", not "nontokens".
+        val adjectiveOnly = anyOf.isEmpty() && cardPredicates.isNotEmpty() &&
+            cardPredicates.all { it == CardPredicate.IsToken || it == CardPredicate.IsNontoken }
         val noun = when {
             types.isEmpty() -> if (plural) "permanents" else "permanent"
+            adjectiveOnly -> if (plural) "$types permanents" else "$types permanent"
             !plural -> types
             anyOf.isNotEmpty() -> "$types permanents"
             else -> pluralizeLastWord(types)

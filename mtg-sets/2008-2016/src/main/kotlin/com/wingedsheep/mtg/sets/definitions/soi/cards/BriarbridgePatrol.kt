@@ -36,6 +36,7 @@ val BriarbridgePatrol = card("Briarbridge Patrol") {
     triggeredAbility {
         trigger = Triggers.self.dealsDamage(Recipient.AnyCreature, batch = true)
         effect = Effects.Investigate()
+        description = "Whenever this creature deals damage to one or more creatures, investigate."
     }
 
     triggeredAbility {

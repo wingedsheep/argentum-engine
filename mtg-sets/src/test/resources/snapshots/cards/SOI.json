@@ -1320,7 +1320,8 @@
                     },
                     "batch": true
                 },
-                "effect": "Investigate"
+                "effect": "Investigate",
+                "descriptionOverride": "Whenever this creature deals damage to one or more creatures, investigate."
             },
             {
                 "id": "Briarbridge Patrol:2",
