@@ -2536,6 +2536,209 @@
     ]
 }
 
+// Crop Sigil
+{
+    "name": "Crop Sigil",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you may mill a card.\nDelirium — {2}{G}, Sacrifice this enchantment: Return up to one target creature card and up to one target land card from your graveyard to your hand. Activate only if there are four or more card types among cards in your graveyard.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crop Sigil:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may mill a card."
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Crop Sigil:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "land own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Delirium — {2}{G}, Sacrifice this enchantment: Return up to one target creature card and up to one target land card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/861e8c51-0cda-497a-b289-a9f678f0e328.jpg?1783937449"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Crossroads Consecrator
+{
+    "name": "Crossroads Consecrator",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{G}, {T}: Target attacking Human gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crossroads Consecrator:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Human attacking"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "David Gaillet",
+        "flavorText": "\"May the steel of your blade match the steel in your soul.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1a83854-dc45-4c26-aca0-67f372236383.jpg?1783937453"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cryptbreaker
 {
     "name": "Cryptbreaker",
@@ -4125,6 +4328,85 @@
         "rarity": "RARE",
         "artist": "Jason Rainville",
         "imageUri": "https://cards.scryfall.io/normal/front/e/f/efcb00e5-2caa-45c8-ad19-05d45c683d16.jpg?1782711841"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Emrakul's Evangel
+{
+    "name": "Emrakul's Evangel",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Horror",
+    "oracleText": "{T}, Sacrifice this creature and any number of other non-Eldrazi creatures: Create a 3/2 colorless Eldrazi Horror creature token for each creature sacrificed this way.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Emrakul's Evangel:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomVariablePermanents",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Eldrazi"
+                                        }
+                                    ]
+                                },
+                                "minCount": 0,
+                                "action": "SACRIFICE",
+                                "xMeasure": "COUNT"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Add",
+                        "left": "PermanentsSacrificedThisWay",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "power": 3,
+                    "toughness": 2,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Horror"
+                    ]
+                },
+                "descriptionOverride": "{T}, Sacrifice this creature and any number of other non-Eldrazi creatures: Create a 3/2 colorless Eldrazi Horror creature token for each creature sacrificed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "flavorText": "\"In times like these, be particularly wary of those who claim they can save your soul.\"\n—Alena, trapper of Kessig",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51c21822-972f-4c20-ac3b-80ba9af101c5.jpg?1783937449",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You may choose to sacrifice no other non-Eldrazi creatures this way. Emrakul's Evangel's ability counts itself, so you'll get one Eldrazi Horror token."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -7120,6 +7402,113 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ishkanah, Grafwidow
+{
+    "name": "Ishkanah, Grafwidow",
+    "manaCost": "{4}{G}",
+    "typeLine": "Legendary Creature — Spider",
+    "oracleText": "Reach\nDelirium — When Ishkanah enters, if there are four or more card types among cards in your graveyard, create three 1/2 green Spider creature tokens with reach.\n{6}{B}: Target opponent loses 1 life for each Spider you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ishkanah, Grafwidow:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 1,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Spider"
+                    ],
+                    "keywords": [
+                        "REACH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce90c48f-74fb-4e87-9e46-7f8c3d79cbb0.jpg?1783937414"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "Delirium — When Ishkanah enters, if there are four or more card types among cards in your graveyard, create three 1/2 green Spider creature tokens with reach."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ishkanah, Grafwidow:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Spider"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{6}{B}: Target opponent loses 1 life for each Spider you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "MYTHIC",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a6c5a98-2fe5-4671-a6a8-98a47c09c5a7.jpg?1783937444",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "The number of Spiders you control is checked only as Ishkanah's last ability resolves. The ability will count Ishkanah itself if it's still on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -10877,6 +11266,76 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Spirit of the Hunt
+{
+    "name": "Spirit of the Hunt",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Wolf Spirit",
+    "oracleText": "Flash\nWhen this creature enters, each other creature you control that's a Wolf or a Werewolf gets +0/+3 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spirit of the Hunt:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasAnyOfSubtypes",
+                                        "subtypes": [
+                                            "Wolf",
+                                            "Werewolf"
+                                        ]
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "The bonds of the pack transcend time and death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c5f7b11-49ac-4078-aab7-efe3aff746b2.jpg?1783937439"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
