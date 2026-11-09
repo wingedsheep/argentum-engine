@@ -7806,7 +7806,6 @@
                     "prompt": "Return any number of cards with different mana values to your hand",
                     "selectedLabel": "Return to hand",
                     "remainderLabel": "Leave in graveyard",
-                    "showAllCards": true,
                     "restrictions": [
                         "OnePerManaValue"
                     ]

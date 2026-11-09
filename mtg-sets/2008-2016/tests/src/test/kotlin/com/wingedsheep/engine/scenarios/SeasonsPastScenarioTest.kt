@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -36,6 +37,9 @@ class SeasonsPastScenarioTest : ScenarioTestBase() {
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
         .build()
 
+    private fun TestGame.bottomOfLibraryName(): String? =
+        state.getEntity(state.getZone(ZoneKey(player1Id, Zone.LIBRARY)).last())?.get<CardComponent>()?.name
+
     init {
         test("returns one card of each mana value; a second card of a claimed value stays put") {
             val game = board()
@@ -50,23 +54,22 @@ class SeasonsPastScenarioTest : ScenarioTestBase() {
             }
 
             val bears = game.findCardsInGraveyard(1, "Grizzly Bears")
-            // Both Bears (mana value 2) plus the Elves: the second Bears can't share a claimed value.
-            game.selectCards(bears + game.findCardsInGraveyard(1, "Llanowar Elves")).error shouldBe null
+            // Both Bears (mana value 2), named in reverse graveyard order, plus the Elves: the
+            // first-named Bears claims mana value 2, so the other can't come back with it.
+            game.selectCards(bears.reversed() + game.findCardsInGraveyard(1, "Llanowar Elves")).error shouldBe null
             game.resolveStack()
 
-            withClue("the first Bears and the Elves came back; the unpicked Forest stayed") {
-                game.findCardsInHand(1, "Grizzly Bears") shouldBe listOf(bears.first())
+            withClue("the first-named Bears and the Elves came back; the unpicked Forest stayed") {
+                game.findCardsInHand(1, "Grizzly Bears") shouldBe listOf(bears.last())
                 game.isInHand(1, "Llanowar Elves") shouldBe true
                 game.isInGraveyard(1, "Forest") shouldBe true
             }
             withClue("the second mana-value-2 card was rejected and stayed in the graveyard") {
-                game.findCardsInGraveyard(1, "Grizzly Bears") shouldBe listOf(bears.last())
+                game.findCardsInGraveyard(1, "Grizzly Bears") shouldBe listOf(bears.first())
             }
             withClue("Seasons Past went to the bottom of its owner's library, not the graveyard") {
                 game.isInGraveyard(1, "Seasons Past") shouldBe false
-                val library = game.state.getZone(ZoneKey(game.player1Id, Zone.LIBRARY))
-                game.state.getEntity(library.last())
-                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name shouldBe "Seasons Past"
+                game.bottomOfLibraryName() shouldBe "Seasons Past"
             }
         }
 
@@ -79,6 +82,7 @@ class SeasonsPastScenarioTest : ScenarioTestBase() {
 
             game.graveyardSize(1) shouldBe 4
             game.isInGraveyard(1, "Seasons Past") shouldBe false
+            game.bottomOfLibraryName() shouldBe "Seasons Past"
         }
     }
 }

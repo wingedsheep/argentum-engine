@@ -32,7 +32,6 @@ val SeasonsPast = card("Seasons Past") {
             val graveyard = gather(CardSource.FromZone(Zone.GRAVEYARD, Player.You))
             val chosen = chooseAnyNumber(
                 from = graveyard,
-                showAllCards = true,
                 restrictions = listOf(SelectionRestriction.OnePerManaValue),
                 prompt = "Return any number of cards with different mana values to your hand",
                 selectedLabel = "Return to hand",
