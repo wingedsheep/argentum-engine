@@ -43,6 +43,15 @@ data class CastChooseXContinuation(
     val baseCastAction: CastSpell,
 ) : AnswerContinuation
 
+/**
+ * The division of damage (CR 601.2d) a synthesized cast still owes — Avacyn's Judgment cast for
+ * its madness cost. Answered with a [DistributionResponse]; the cast re-enters with it announced.
+ */
+@Serializable
+data class CastDivideDamageContinuation(
+    val baseCastAction: CastSpell,
+) : AnswerContinuation
+
 /** Announcement of a named additional-cost branch, before any payment is made. */
 @Serializable
 data class CastCostChoiceContinuation(

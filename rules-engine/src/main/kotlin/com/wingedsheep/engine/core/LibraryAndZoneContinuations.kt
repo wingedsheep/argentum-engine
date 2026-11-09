@@ -493,6 +493,21 @@ data class CastFromCollectionTargetsContinuation(
     /** The grant stamped a fixed alternative mana cost (Jadzi's {1}) to strip if the cast fails. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val stampedAlternativeManaCost: Boolean = false,
+    /** The X announced before these targets (CR 601.2b) — a madness or miracle `{X}` — or null. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val xValue: Int? = null,
+) : AnswerContinuation
+
+/**
+ * X announced (CR 601.2b) for a synthesized cast whose cost has an `{X}` no client announced — a
+ * madness or miracle cast — *before* its targets are chosen (601.2c), because the target count
+ * may read X (Avacyn's Judgment: up to X targets when cast for madness). Resumed by building the
+ * target question with that X and suspending on [pending] with it bound.
+ */
+@Serializable
+data class CastFromCollectionAnnounceXContinuation(
+    val pending: CastFromCollectionTargetsContinuation,
+    val castTransformed: Boolean = false,
 ) : AnswerContinuation
 
 /**
