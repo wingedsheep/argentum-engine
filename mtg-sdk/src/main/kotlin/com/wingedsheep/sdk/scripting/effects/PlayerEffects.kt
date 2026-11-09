@@ -373,12 +373,11 @@ data class AddAdditionalEndStepsEffect(
  * Take an extra turn after this one, optionally with a rider that applies **during that turn**.
  *
  * The riders live on this effect rather than as separate composable effects because "that turn" is
- * the extra turn *this* effect creates: if the extra turn is never granted (a `PreventExtraTurns`
- * source such as Ugin's Nexus is out), the rider must not apply either. A sibling effect in a
- * `Composite` *could* re-check that condition, but only by duplicating a precondition that the
- * extra-turn executor legitimately owns — and it would silently drift the moment this effect gains
- * another way to fail (a targeted variant whose target is gone, say). Keeping "did a turn actually
- * get created" in one place is the reason.
+ * the extra turn *this* effect creates, and the engine applies it when that turn begins: if the
+ * extra turn is skipped as it would begin (a `PreventExtraTurns` source such as Ugin's Nexus or
+ * Trouble in Pairs is out), the rider must not apply either. A sibling effect in a `Composite`
+ * couldn't know whether the turn it names ever began. Keeping the rider on the pending turn is the
+ * reason.
  *
  * @param loseAtEndStep If true, you lose the game at the beginning of that turn's end step
  *   (Last Chance, Final Fortune).

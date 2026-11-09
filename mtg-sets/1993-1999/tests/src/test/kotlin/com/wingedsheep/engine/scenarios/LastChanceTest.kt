@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.player.ExtraTurnsComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
@@ -59,7 +60,7 @@ class LastChanceTest : FunSpec({
         opponentEntity?.has<SkipNextTurnComponent>() shouldBe true
     }
 
-    test("Last Chance adds LoseAtEndStepComponent to caster") {
+    test("Last Chance puts the lose-the-game rider on the extra turn it creates") {
         val driver = createDriver()
         val caster = driver.activePlayer!!
 
@@ -74,9 +75,10 @@ class LastChanceTest : FunSpec({
         driver.castSpell(caster, lastChance, emptyList())
         driver.bothPass()
 
-        // Verify caster has LoseAtEndStepComponent
+        // The rider belongs to the extra turn: pending now, applied when that turn begins.
         val casterEntity = driver.state.getEntity(caster)
-        casterEntity?.has<LoseAtEndStepComponent>() shouldBe true
+        casterEntity?.get<ExtraTurnsComponent>()?.pending?.single()?.loseAtEndStep shouldBe true
+        casterEntity?.has<LoseAtEndStepComponent>() shouldBe false
     }
 
     test("opponent's turn is skipped after Last Chance") {
@@ -154,12 +156,10 @@ class LastChanceTest : FunSpec({
         driver.castSpell(caster, lastChance, emptyList())
         driver.bothPass()
 
-        // Verify caster has the component
-        driver.state.getEntity(caster)?.has<LoseAtEndStepComponent>() shouldBe true
-
-        // End the current turn and reach end step of extra turn
+        // End the current turn; the extra turn begins and applies the rider
         driver.passPriorityUntil(Step.END, maxPasses = 200)
         driver.bothPass()
+        driver.state.getEntity(caster)?.has<LoseAtEndStepComponent>() shouldBe true
         driver.passPriorityUntil(Step.END, maxPasses = 200)
 
         // Component should be consumed after loss triggered

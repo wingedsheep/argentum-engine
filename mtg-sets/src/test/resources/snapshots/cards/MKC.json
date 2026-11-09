@@ -33,3 +33,90 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebb44595-56f6-4be5-80bb-618ddd320f4a.jpg?1783912997"
     }
 }
+
+// Trouble in Pairs
+{
+    "name": "Trouble in Pairs",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "If an opponent would begin an extra turn, that player skips that turn instead.\nWhenever an opponent attacks you with two or more creatures, draws their second card each turn, or casts their second spell each turn, you draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trouble in Pairs:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "CreaturesAttackYouEvent",
+                            "minAttackers": 2
+                        },
+                        {
+                            "type": "NthCardDrawnEvent",
+                            "nthCard": 2,
+                            "player": "EachOpponent"
+                        },
+                        {
+                            "type": "NthSpellCastEvent",
+                            "nthSpell": 2,
+                            "player": "EachOpponent"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventExtraTurns",
+                "appliesTo": {
+                    "type": "ExtraTurnEvent",
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Fay Dalton",
+        "flavorText": "Together, they're greater than the sum of their rap sheets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f61e93f-5f97-4c7d-b3d5-0e05242faeb3.jpg?1783913050",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "An \"extra turn\" is any turn created by a spell or ability. Notably, it doesn't include additional turns taken in tournaments after time expires for a round."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Trouble in Pairs counts spells that were cast even if they didn't resolve. This means it still counts spells that were countered."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Extra turns can still be created while Trouble in Pairs is on the battlefield. They're not skipped until they would begin, so if Trouble in Pairs leaves the battlefield before that happens, the extra turns will be unaffected."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Trouble in Pairs doesn't have to be on the battlefield to see the first card an opponent draws in a turn or the first spell they cast in a turn. As long as it's already on the battlefield when they draw their second card or cast their second spell in a turn, its last ability will trigger."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Trouble in Pairs's last ability can trigger multiple times per opponent per turn. For example, if an opponent draws a second card, casts a second spell, and attacks you with two or more creatures in a single turn, Trouble in Pairs's last ability will trigger once when each of those events occurs, for a total of three times."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If an opponent attacks you with two or more creatures more than once in a turn (probably because they've generated extra combat phases), Trouble in Pairs's last ability will trigger each time that happens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

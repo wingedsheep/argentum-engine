@@ -15,7 +15,8 @@ class UnsupportedGameStateFormatException(message: String) : SerializationExcept
  * pre-record flat trigger facts into their `triggerContext` record ([LegacyTriggerContextLift]),
  * convert retired `EffectContinuation` frames to effect programs ([LegacyEffectContinuationLift]),
  * rewrite retired SDK types to their current shape ([RetiredSdkTypeLift]), and move a trigger wave
- * parked on the continuation stack into [GameState.triggersBeingPlaced] ([PendingTriggersFrameLift]).
+ * parked on the continuation stack into [GameState.triggersBeingPlaced] ([PendingTriggersFrameLift]),
+ * and expand a counted `ExtraTurnsComponent.pending` into one entry per turn ([ExtraTurnsPendingLift]).
  */
 @OptIn(ExperimentalSerializationApi::class)
 object GameStateSerializer : JsonTransformingSerializer<GameState>(GameState.generatedSerializer()) {
@@ -30,6 +31,6 @@ object GameStateSerializer : JsonTransformingSerializer<GameState>(GameState.gen
         }
         // Trigger facts used to be flat fields on each carrier; move them into the nested record
         // before permissive decoding (ignoreUnknownKeys) can discard them.
-        return PendingTriggersFrameLift.lift(RetiredSdkTypeLift.lift(LegacyEffectContinuationLift.lift(LegacyTriggerContextLift.lift(state))))
+        return ExtraTurnsPendingLift.lift(PendingTriggersFrameLift.lift(RetiredSdkTypeLift.lift(LegacyEffectContinuationLift.lift(LegacyTriggerContextLift.lift(state)))))
     }
 }

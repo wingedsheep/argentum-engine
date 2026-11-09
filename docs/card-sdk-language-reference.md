@@ -2000,9 +2000,11 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   turn's end step" (Last Chance, Final Fortune). Set `powerUpAbilitiesCantBeActivated = true` for "During that turn,
   power-up abilities can't be activated" (Kang the Conqueror) — a global lockout on every player's power-up abilities
   (§ Power-up, CR 702.193) for the extra turn only, on every permanent, that outlives its source. Both riders are
-  scoped to the extra turn *this* effect creates, so neither applies when the `PreventExtraTurns` replacement
-  (Ugin's Nexus) stops the extra turn from happening; that is why they are parameters here rather than separate
-  effects sequenced after it in a `Composite`.
+  scoped to the extra turn *this* effect creates: they ride on the pending extra turn (`PendingExtraTurn`) and apply
+  when that turn **begins**, so neither applies when the `PreventExtraTurns` replacement (Ugin's Nexus, Trouble in
+  Pairs) skips the turn as it would begin; that is why they are parameters here rather than separate effects
+  sequenced after it in a `Composite`. The extra turn is always created — a skip replacement is read only when it
+  would begin.
 - `EndTheTurn` — end the current turn (CR 724.1): Ultima ("Destroy all artifacts and creatures. End the turn."),
   Time Stop, Sundial of the Infinite, Discontinuity. When it resolves the whole stack is exiled (including the
   source and any triggered abilities the resolution queued — even ones that can't be countered — so those never
@@ -3864,6 +3866,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   The blocker is checked using projected creature types, including animated lands and artifacts.
   The end-of-turn requirement is removed when either permanent leaves the battlefield; returning
   that card does not restore the old requirement.
+- `PreventExtraTurns(appliesTo = EventPattern.ExtraTurnEvent(Player.Each))` — "If a player would begin an extra turn,
+  that player skips that turn instead" (Ugin's Nexus); `ExtraTurnEvent(Player.EachOpponent)` is "if an **opponent**
+  would begin an extra turn …" (Trouble in Pairs), scoped relative to the source's controller. Mandatory, and read when
+  the turn would **begin**, not when it is created (CR 614.10): the effect that grants the extra turn still creates it,
+  and if the source has left the battlefield by the time it would begin, the turn happens. A skipped extra turn never
+  begins, so it doesn't count toward `ExtraTurnsBegunThisGame` and takes its `TakeExtraTurn` riders with it; the turn
+  order carries on as if it never existed (in multiplayer too). When an optional `OptionalSkipTurnWith` also applies, the
+  affected player chooses between the skips and "begin this turn" is not offered. Emits `TurnSkippedEvent` naming the
+  source. The type predates the begin-time reading and keeps its name.
 - `OptionalSkipTurnWith(effect, appliesTo = EventPattern.TurnBeginEvent(Player.You), restrictions = …)` — optional turn-start replacement. The affected player chooses before a turn begins, independently of the untap step. Accepting skips this occurrence, preserves other pending turn skips, and performs the composed `effect` as the first action in the next turn that actually occurs (CR 614.10b), before that turn's untap actions. Multiple applicable sources appear in the existing option chooser with card previews; declining begins the turn or consumes a pending mandatory skip. Printed sources use projected controllers and respect lost abilities, face-down status and phasing; grants use captured grant controllers and existing end-of-turn expiry. Restrictions and follow-up `You` name the replacement's controller; `TriggeringPlayer` names the player whose turn was skipped. Follow-ups capture object identity and can pause for ordinary effect decisions. `TurnBeginEvent` is an interception pattern for replacements, not a trigger. Time Vault composes this with `SourceIsTapped` and `Untap(Self)` plus the existing extra-turn effect. Synthetic scheduling bypasses used to insert extra turns are consumed before offering turn replacements and do not consume real pending skips. Existing skip-based extra-turn scheduling retains its differently owned extra-turn ordering and turn-identity limitations; this primitive does not create extra turns.
 - `Effects.SkipNextTurn(target = Controller, count = Fixed(1))` (`SkipNextTurnEffect`) — target skips their next `count` turns. `count` is a `DynamicAmount`, so it can read a pipeline value (e.g. a coin-flip tally via `DynamicAmount.VariableReference`). Skips accumulate on a `SkipNextTurnComponent(turns)`, decremented one turn per the player's turn-start; a resolved count of 0 is a no-op. Used by Lethal Vapors (one turn) and **Ral Zarek, Guest Lecturer** (skip N turns where N = heads).
 - `Effects.SkipUntap(target, permanents = Creature or Land, lockedAtResolution = false)` (`SkipUntapEffect`) — "[permanents] target player controls don't untap during their next untap step." `permanents` is a `GameObjectFilter` naming the kind of permanent only (the player comes from `target`): the default for **Exhaustion**, `GameObjectFilter.Land` for **Mana Vapors**, `Creature` for **Blinding Beam** / **Pollen Lullaby**, `Artifact or Creature` for **Icebreaker Kraken**. It adds the filter to the player's `SkipUntapComponent`, read at that player's next untap step against the projected permanents they control *then* — something they gained control of after it resolved stays tapped too (Icebreaker Kraken ruling) — and consumed by that step. Several such effects stack: each filter holds its own permanents. A skipped untap step (`SkipNextStepOrPhase(UNTAP_STEP)`) leaves the marker waiting. It taps nothing. `lockedAtResolution = true` fixes the set instead — "those creatures don't untap during that player's next untap step": only the matching permanents the player controls as it resolves are held (snapshotted into the component's `objects` as `ObjectRef`s, so a permanent flickered in between is a new object and untaps), each only while that player still controls it at the step, so a creature that changes control untaps in its new controller's untap step and one gained later isn't held. This is the tool when the clause names *that player's* untap step; for "its controller's next untap step" (Frost Breath) use `GrantKeyword(DOESNT_UNTAP, …, Duration.UntilAfterAffectedControllersNextUntap())`, which follows the creature's current controller. **Sleep**: `Patterns.Group.tapAll(GroupFilter(Creature.targetPlayerControls(player))) then Effects.SkipUntap(player, Creature, lockedAtResolution = true)`.
@@ -17998,12 +18009,12 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   `SpellsCastThisGameComponent`.
 - `ExtraTurnsBegunThisGame(player = Player.You)` (facade `DynamicAmounts.extraTurnsBegunThisGame(player)`)
   — how many extra turns `player` has **begun** this game. Counted as the inserted turn starts, so an
-  extra turn that was created but never began (prevented by a `PreventExtraTurns` permanent, or skipped
+  extra turn that was created but never began (skipped by a `PreventExtraTurns` permanent, or skipped
   through a turn-start replacement) doesn't count, and ordinary turns never do. H.M.S. Bounty, Unlikely
   Timeship ("If you control a Whale and haven't begun an extra turn this game, take an extra turn after
   this one"): `Effects.If(Conditions.All(Conditions.YouControl(Permanent.withSubtype("Whale")),
   Conditions.CompareAmounts(DynamicAmounts.extraTurnsBegunThisGame(), EQ, 0)), Effects.TakeExtraTurn())`.
-  Backed by `ExtraTurnsComponent` (`pending` set as the extra turn is created, spent as the taker's next turn begins or is skipped; `begun` never cleared).
+  Backed by `ExtraTurnsComponent` (`pending` — the extra turns created and not yet begun, most recent first, each with its riders — spent as the taker's next turn begins or is skipped; `begun` never cleared).
 - `CraftedMaterialsTotalPower` — total printed power of the cards exiled to craft the source
   permanent (CR 702.167c). Reads the source's `CraftedFromExiledComponent`. Used for the
   `*`-power CDA on Mastercraft Raptor (Saheeli's Lattice back face). Evaluates to 0 when the

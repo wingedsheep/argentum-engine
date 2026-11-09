@@ -23,14 +23,14 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The lockout is the `powerUpAbilitiesCantBeActivated` rider on [Effects.TakeExtraTurn] rather than
  * a separately sequenced effect, because "that turn" is the turn *that* effect creates. The engine
- * models Ugin's Nexus and other `PreventExtraTurns` sources as preventing the extra turn outright,
- * so when one is out there is no turn for the prohibition to bind to and it must not apply. Keeping
- * the rider on the effect keeps that precondition in its one legitimate owner instead of having a
- * sibling in the `Composite` re-derive it.
+ * records the rider on the pending extra turn and applies it when that turn begins; a
+ * `PreventExtraTurns` source (Ugin's Nexus, Trouble in Pairs) that skips the turn as it would begin
+ * takes the prohibition with it, since there is no "that turn" for it to bind to. A sibling in the
+ * `Composite` would have to re-derive that.
  *
  * The prohibition covers **every** player's power-up abilities, not just Kang's controller's, and
  * it outlives Kang: killing him in response to the ability, or during the extra turn, does not lift
- * it. The engine therefore records the extra turn's number in `GameState.powerUpRestrictedTurns`
+ * it. The engine therefore records the extra turn's number, once it begins, in `GameState.powerUpRestrictedTurns`
  * instead of hanging a static ability off the permanent.
  */
 val KangTheConqueror = card("Kang the Conqueror") {

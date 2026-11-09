@@ -3583,11 +3583,17 @@ data class ExileCounteredSpellInstead(
 // =============================================================================
 
 /**
- * Prevent extra turns from being taken.
- * Example: Ugin's Nexus — "If a player would begin an extra turn, that player
- * skips that turn instead."
+ * Skip extra turns as they would begin. "If a player would begin an extra turn, that player skips
+ * that turn instead" (Ugin's Nexus); scoped to whose turns by [appliesTo]'s player — "if an
+ * opponent would begin an extra turn …" (Trouble in Pairs) is `ExtraTurnEvent(Player.EachOpponent)`,
+ * relative to the source's controller.
  *
- * Checked by TakeExtraTurnExecutor before granting extra turns.
+ * This is a replacement of the turn's *beginning*, not a prevention of its creation: the effect
+ * that grants the extra turn still creates it, and the turn is skipped only when it would begin
+ * (CR 614.10). If the source has left the battlefield by then, the extra turn happens. A skipped
+ * extra turn takes its riders with it (Last Chance's "lose the game" and Kang's power-up lockout
+ * are bound to the turn, not to the effect that made it). Consulted by `TurnManager` when the turn
+ * would begin; the name predates that and is kept for the one primitive.
  */
 @SerialName("PreventExtraTurns")
 @Serializable
@@ -3595,7 +3601,8 @@ data class PreventExtraTurns(
     override val appliesTo: EventPattern = EventPattern.ExtraTurnEvent()
 ) : ReplacementEffect {
     override val description: String =
-        "If a player would begin an extra turn, that player skips that turn instead"
+        "If ${(appliesTo as? EventPattern.ExtraTurnEvent)?.subjectDescription ?: "a player"} " +
+            "would begin an extra turn, that player skips that turn instead"
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)

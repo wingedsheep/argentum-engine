@@ -18,31 +18,15 @@ import com.wingedsheep.sdk.scripting.CapCounterPlacementThisTurn
 import com.wingedsheep.sdk.scripting.CounterPlacementScale
 import com.wingedsheep.sdk.scripting.MaxCounters
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
-import com.wingedsheep.sdk.scripting.PreventExtraTurns
 import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Utility functions for applying replacement effects that modify game actions
- * before they produce events (counter placement modifiers, extra turn prevention).
+ * before they produce events (counter placement modifiers).
  */
 object ReplacementEffectUtils {
-
-    /**
-     * Check if extra turns are prevented by any PreventExtraTurns replacement effect
-     * on the battlefield (e.g., Ugin's Nexus).
-     */
-    fun isExtraTurnPrevented(state: GameState): Boolean {
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val replacementComponent = state.activeReplacementSource(entityId) ?: continue
-            for (effect in replacementComponent.replacementEffects) {
-                if (effect is PreventExtraTurns) return true
-            }
-        }
-        return false
-    }
 
     /**
      * Apply every counter-placement replacement to one placement of [count] [counterType] counters

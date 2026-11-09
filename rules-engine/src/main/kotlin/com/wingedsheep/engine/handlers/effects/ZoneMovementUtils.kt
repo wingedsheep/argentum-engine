@@ -1267,9 +1267,6 @@ object ZoneMovementUtils {
             ) ?: (state to emptyList())
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
-            // Check if extra turns are prevented by any permanent on the battlefield
-            if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state to emptyList()
-
             val cid = controllerId ?: return state to emptyList()
             return com.wingedsheep.engine.handlers.effects.player.TakeExtraTurnExecutor.insertExtraTurn(state, cid) to emptyList()
         }
