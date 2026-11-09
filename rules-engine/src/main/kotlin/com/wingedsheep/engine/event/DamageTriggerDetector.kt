@@ -93,17 +93,22 @@ class DamageTriggerDetector(
         val departed = if (sourceId in state.getBattlefield()) null
             else sourceDeparture?.lastKnown
                 ?: container?.get<LastKnownPermanentComponent>()?.snapshot?.takeIf { it.entityId == sourceId }
-        if (container == null) {
-            val departure = sourceDeparture ?: return
-            val lastKnown = departure.lastKnown ?: return
-            val definitionId = lastKnown.cardDefinitionId ?: return
-            val abilities = abilityResolver.getDepartedTriggeredAbilities(departure, definitionId, state, statics)
+        // A source that left in this batch triggers as the permanent it was: its controller then
+        // controls the ability (CR 603.3a — a stolen creature's trigger isn't its owner's), and a
+        // face-down or ability-stripped permanent had no abilities to trigger.
+        val departure = sourceDeparture?.takeIf { sourceId !in state.getBattlefield() }
+        val lastKnown = departure?.lastKnown
+        val departedDefinitionId = lastKnown?.cardDefinitionId
+            ?: container?.get<CardComponent>()?.cardDefinitionId
+        if (departure != null && lastKnown != null && departedDefinitionId != null) {
+            val abilities = abilityResolver.getDepartedTriggeredAbilities(departure, departedDefinitionId, state, statics)
             addDealsDamageTriggers(
                 abilities, event, state, lastKnown.controllerId ?: departure.ownerId, sourceId,
                 departure.entityName, departed, triggers,
             )
             return
         }
+        if (container == null) return
         val cardComponent = container.get<CardComponent>() ?: return
         // Fall back to ownerId if ControllerComponent was stripped (e.g., creature died to SBA
         // during combat damage, but its damage trigger should still fire per Rule 603.10)
