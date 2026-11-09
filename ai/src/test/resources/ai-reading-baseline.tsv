@@ -1104,6 +1104,7 @@ Avacyn's Judgment
 Avacyn's Pilgrim
 Avacyn, Angel of Hope
 Avacyn, Angel of Horror
+Avacynian Missionaries
 Avacynian Priest
 Avalanche Caller	polarity: BecomeCreatureEffect
 Avalanche Tusker
@@ -2436,6 +2437,7 @@ Buzz Bots
 Buzzard-Wasp Colony
 By Force
 By Invitation Only	intent: ChooseNumberThenEffect
+Bygone Bishop
 Bygone Colossus
 Byrke, Long Ear of the Law
 Byway Barterer
@@ -4179,6 +4181,7 @@ Decimator Beetle
 Decimator of the Provinces
 Decision Paralysis
 Decisive Denial
+Declaration in Stone
 Declare Dominance
 Decoction Module
 Decode Transmissions
@@ -4343,6 +4346,7 @@ Derelict Attic // Widow's Walk
 Derelor
 Derevi, Empyrial Tactician
 Dermoplasm
+Descend upon the Sinful
 Descendant of Storms
 Desculpting Blast
 Desdemona, Freedom's Edge	intent: GrantEscapeEffect; polarity: GrantEscapeEffect
@@ -5773,6 +5777,7 @@ Explosive Singularity
 Explosive Vegetation
 Explosive Welcome
 Exponential Growth
+Expose Evil
 Expose the Culprit	intent: ModalEffect; polarity: TurnFaceUpEffect
 Expose to Daylight
 Expressive Firedancer
@@ -7955,6 +7960,7 @@ Hanna's Custody
 Hanna, Ship's Navigator
 Hanweir Battlements	intent: MeldEffect
 Hanweir Garrison
+Hanweir Militia Captain
 Hanweir Watchkeep
 Hanweir, the Writhing Township
 Hapatra's Mark
@@ -8419,6 +8425,7 @@ Hoofprints of the Stag
 Hookhand Mariner
 Hooting Mandrills
 Hop to It
+Hope Against Hope
 Hope Estheim
 Hope Tender
 Hope of Ghirapur
@@ -8542,6 +8549,7 @@ Human Torch, Johnny Storm
 Humble Budoka
 Humble Defector	polarity: GiveControlToTargetPlayerEffect
 Humble Naturalist
+Humble the Brute
 Humbling Elder
 Humiliate
 Humongulus
@@ -9064,6 +9072,7 @@ Invigorating Surge
 Invisibility	polarity: Aura>CantBeBlockedExceptBy
 Invisible Stalker
 Invisible Woman, Sue Storm
+Invocation of Saint Traft
 Invoke Calamity	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromMultipleZones→?)
 Invoke Despair
 Invoke Justice	polarity: DistributeCountersAmongFilteredEffect
@@ -10127,7 +10136,7 @@ Legion Guildmage
 Legion Leadership
 Legion Lieutenant
 Legion Warboss
-Legion's End	polarity: Pipeline(ChosenTargets|ControlledPermanents|graveyard|hand→exile); polarity: StoreCardNameEffect
+Legion's End
 Legion's Judgment
 Legion's Landing
 Legions to Ashes
@@ -13021,6 +13030,7 @@ Pinnacle Kill-Ship
 Pinnacle Monk
 Pinnacle Starcage
 Pinpoint Avalanche
+Pious Evangel
 Pious Interdiction
 Pious Kitsune
 Pious Wayfarer
@@ -15633,6 +15643,7 @@ Shapers' Sanctuary
 Shapesharer
 Shapeshifter	intent: ChooseNumberForSourceEffect
 Sharae of Numbing Depths
+Shard of Broken Glass
 Shardless Agent
 Shardless Outlander
 Shardmage's Rescue
@@ -15876,6 +15887,7 @@ Sigarda's Splendor
 Sigarda's Summons
 Sigarda, Champion of Light
 Sigarda, Font of Blessings
+Sigarda, Heron's Grace
 Sigarda, Host of Herons
 Sigardian Paladin
 Sigardian Priest
@@ -17399,6 +17411,7 @@ Surveillance Room
 Surveilling Sprite
 Survey Mechan
 Survey the Wreckage
+Survive the Night
 Survivor of Korlis
 Survivor's Med Kit	polarity: RemoveAllCountersOfTypeEffect
 Survivors' Bond
@@ -17971,6 +17984,7 @@ Thalakos Seer
 Thalakos Sentry
 Thalia and The Gitrog Monster
 Thalia's Lancers
+Thalia's Lieutenant
 Thalia, Guardian of Thraben
 Thalia, Heretic Cathar
 Thalia, the Survivor
@@ -18918,6 +18932,7 @@ True Ancestry
 True Believer
 True Love's Kiss
 True Polymorph
+True-Faith Censer
 Truefire Captain
 Trueheart Duelist
 Trueheart Twins
