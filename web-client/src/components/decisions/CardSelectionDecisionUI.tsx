@@ -226,6 +226,13 @@ export function CardSelectionDecision({
     return manaValueFromCost(typeof cost === 'string' ? cost : '')
   }
 
+  // OnePerManaValue: the mana values already claimed by selected cards.
+  const claimedManaValues = useMemo(() => {
+    if (!decision.onePerManaValue) return new Set<number>()
+    return new Set(selectedCards.map(manaValueForCard))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decision.onePerManaValue, decision.cardInfo, selectedCards, gameState?.cards])
+
   // Running sum of selected cards' mana values — used by both the `maxTotalManaValue` cap
   // (Scout for Survivors) and the `minTotalManaValue` floor (collect evidence N, CR 701.59a).
   const totalManaValueSelected = useMemo(() => {
@@ -288,12 +295,13 @@ export function CardSelectionDecision({
       // A card with no fixed power can't be kept; one sharing a claimed power is blocked.
       if (power == null || claimedPowers.has(power)) return true
     }
+    if (decision.onePerManaValue && claimedManaValues.has(manaValueForCard(cardId))) return true
     return false
   }
 
   const hasRestrictions =
     decision.onePerCardType || decision.onePerCardName || decision.onePerColor ||
-    decision.onePerBasicLandType || decision.onePerPower ||
+    decision.onePerBasicLandType || decision.onePerPower || decision.onePerManaValue ||
     decision.maxTotalManaValue != null || decision.maxTotalPower != null
 
   const toggleCard = (cardId: EntityId) => {

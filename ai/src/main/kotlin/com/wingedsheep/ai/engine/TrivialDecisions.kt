@@ -84,6 +84,7 @@ object TrivialDecisions {
                 decision.onePerCardName ||
                 decision.onePerBasicLandType ||
                 decision.onePerPower ||
+                decision.onePerManaValue ||
                 decision.maxTotalManaValue != null ||
                 decision.minTotalManaValue != null ||
                 decision.maxTotalPower != null ||

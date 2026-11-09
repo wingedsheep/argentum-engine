@@ -1,0 +1,20 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "hand": ["Seasons Past"],
+    "battlefield": [
+      {"name": "Forest"}, {"name": "Forest"}, {"name": "Forest"},
+      {"name": "Forest"}, {"name": "Forest"}, {"name": "Forest"}
+    ],
+    "graveyard": ["Craw Wurm", "Craw Wurm", "Hill Giant", "Grizzly Bears", "Llanowar Elves", "Forest"],
+    "library": ["Forest", "Forest", "Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "battlefield": [{"name": "Mountain"}],
+    "library": ["Mountain", "Mountain", "Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

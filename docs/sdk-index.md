@@ -1684,6 +1684,7 @@ Families:
 - `SelectionRestriction.OnePerCardName` — At most one card of each name may be selected.
 - `SelectionRestriction.OnePerCardType` — At most one card of each card type may be selected.
 - `SelectionRestriction.OnePerColor(matchControllerPermanentColors: Boolean)` — At most one card of each colour may be selected.
+- `SelectionRestriction.OnePerManaValue` — At most one card of each mana value may be selected — "any number of cards with different mana values" (Seasons Past).
 - `SelectionRestriction.OnePerPower` — At most one card of each power may be selected.
 - `SelectionRestriction.ReducedMinimumIfMatches(reducedMinimum: Int, filter: GameObjectFilter, requiredMatches: Int)` — Allows a selection to satisfy a lower minimum when the chosen cards include requiredMatches cards matching filter.
 - `SelectionRestriction.TotalManaValueAtMost(max: Int, maxAmount: DynamicAmount?)` — The sum of selected cards' mana values must not exceed the cap.

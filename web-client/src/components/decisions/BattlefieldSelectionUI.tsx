@@ -65,7 +65,7 @@ export function BattlefieldSelectionUI({
   // sent a suggestion. Each is a starting point the player can still adjust on the board.
   const unconstrained = decision.selectionLimits == null && conditionalMinimums.length === 0 &&
     !decision.onePerCardType && !decision.onePerColor && !decision.onePerCardName &&
-    !decision.onePerBasicLandType && !decision.onePerPower &&
+    !decision.onePerBasicLandType && !decision.onePerPower && !decision.onePerManaValue &&
     decision.maxTotalManaValue == null && decision.minTotalManaValue == null && decision.maxTotalPower == null
   const recommended = decision.recommendedSelection ?? null
   const showSelectAll = unconstrained && minSelections === 0 &&

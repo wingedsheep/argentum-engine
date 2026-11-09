@@ -110,6 +110,7 @@ class SelectFromCollectionExecutor(
                 is SelectionRestriction.MaxAffordablePayment, is SelectionRestriction.ReducedMinimumIfMatches -> false
                 is SelectionRestriction.OnePerCardType, is SelectionRestriction.OnePerColor,
                 is SelectionRestriction.OnePerCardName, is SelectionRestriction.OnePerPower,
+                is SelectionRestriction.OnePerManaValue,
                 is SelectionRestriction.TotalManaValueAtMost, is SelectionRestriction.TotalPowerAtMost,
                 is SelectionRestriction.OnePerBasicLandType -> true
             }
@@ -446,6 +447,13 @@ class SelectFromCollectionExecutor(
                         state.getEntity(cardId)?.get<CardComponent>()?.baseStats?.basePower
                     }.toSet().size
                 }
+                is SelectionRestriction.OnePerManaValue ->
+                    // One slot per distinct mana value present; every card has one.
+                    eligibleCards.mapNotNull { cardId ->
+                        com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.value(
+                            state, cardId, com.wingedsheep.sdk.scripting.values.CardNumericProperty.MANA_VALUE
+                        )
+                    }.toSet().size
                 is SelectionRestriction.TotalManaValueAtMost -> {
                     // Greedy upper bound: how many cards fit under the cap when picking
                     // the cheapest first. Any selection of more cards than this is
@@ -648,6 +656,7 @@ class SelectFromCollectionExecutor(
             onePerCardName = effect.restrictions.any { it is SelectionRestriction.OnePerCardName },
             onePerBasicLandType = effect.restrictions.any { it is SelectionRestriction.OnePerBasicLandType },
             onePerPower = effect.restrictions.any { it is SelectionRestriction.OnePerPower },
+            onePerManaValue = effect.restrictions.any { it is SelectionRestriction.OnePerManaValue },
             maxTotalManaValue = effect.restrictions
                 .filterIsInstance<SelectionRestriction.TotalManaValueAtMost>()
                 .also {

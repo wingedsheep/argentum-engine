@@ -334,6 +334,11 @@ data class SelectCardsDecision(
      */
     val onePerPower: Boolean = false,
     /**
+     * When true, at most one card of each mana value may be selected (Seasons Past). The
+     * server enforces this; the UI should disable cards sharing an already-claimed mana value.
+     */
+    val onePerManaValue: Boolean = false,
+    /**
      * Maximum sum of mana values across selected cards (Scout for Survivors). null
      * means no cap. {X} contributes 0 (CR 202.3e for cards not on the stack). The
      * UI is expected to disable cards whose mana value would push the running total

@@ -7780,6 +7780,78 @@
     ]
 }
 
+// Seasons Past
+{
+    "name": "Seasons Past",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return any number of cards with different mana values from your graveyard to your hand. Put Seasons Past on the bottom of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "prompt": "Return any number of cards with different mana values to your hand",
+                    "selectedLabel": "Return to hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "restrictions": [
+                        "OnePerManaValue"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "selfLibraryPlacementOnResolve": "Bottom"
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "MYTHIC",
+        "artist": "Christine Choi",
+        "flavorText": "The seeds of new life take root in the soil of old.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/668afd78-3cf5-4daf-8dfb-fca90de0ae5a.jpg?1783937721",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "The phrase \"different mana values\" compares the mana costs of cards in your graveyard to one another, not to Seasons Past. You may return a card with a mana value of 6."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "A card with no mana cost, such as a land, has a mana value of 0."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You choose which cards to return as Seasons Past resolves, not as you cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Second Harvest
 {
     "name": "Second Harvest",

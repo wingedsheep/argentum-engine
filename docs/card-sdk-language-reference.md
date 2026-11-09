@@ -21160,7 +21160,7 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   creature slot open, per Atraxa, Grand Unifier's ruling; the cap is the largest such matching — Portent of Calamity),
   `OnePerColor(matchControllerPermanentColors?)`, `OnePerCardName` (surfaces `onePerCardName` on `SelectCardsDecision`;
   the UI disables a card sharing an already-picked card's name — Behold the Sinister Six!, Extrapolate the Impossible),
-  `OnePerPower`, `TotalManaValueAtMost(max)` /
+  `OnePerPower`, `OnePerManaValue`, `TotalManaValueAtMost(max)` /
   `TotalManaValueAtMost(maxAmount = <DynamicAmount>)` (the dynamic overload caps the sum at a resolved amount — e.g.
   `DynamicAmount.XValue` for "with total mana value X or less"; the executor resolves it to a fixed cap up front so every
   downstream consumer sees an integer — The Rise of Sozin // Fire Lord Sozin),
@@ -21172,7 +21172,10 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   creatures you control with total power N or less, then sacrifice the rest" (Destined Confrontation). `OnePerPower` keeps at most one card of each *printed* power
   (a card with no fixed power — no printed P/T, or a characteristic-defining `*` — can't be kept and bottoms out,
   like a typeless land under `OnePerBasicLandType`); pair it with the `CreatureOrVehicle` filter for "any number of
-  creature and/or Vehicle cards with different powers" (Rip, Spawn Hunter). `OnePerBasicLandType` keeps at most one
+  creature and/or Vehicle cards with different powers" (Rip, Spawn Hunter). `OnePerManaValue` keeps at most one card
+  of each mana value (read like `differentNumericProperty = MANA_VALUE`; surfaces `onePerManaValue` on
+  `SelectCardsDecision`) — the untargeted "return any number of cards with different mana values from your graveyard"
+  (Seasons Past); the targeted wording is `TargetObject.differentNumericProperty` (Long Rest). `OnePerBasicLandType` keeps at most one
   land of each basic land type (a kept land claims
   *every* basic type it has) and — unlike `OnePerColor`, where a colourless card is unconstrained — a land with no
   basic land type can't be kept at all (Global Ruin: "chooses a land of each basic land type, then sacrifices the
