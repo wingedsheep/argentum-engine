@@ -10,6 +10,8 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -343,6 +345,17 @@ object SynergyAxes {
             if (sacrifices(ability.cost, creatureSource)) add(SynergyAxis.DEATH)
             // "{T}, Discard a card: …" bins our cards as a discard effect does (Murmuring Volume).
             if (discards(ability.cost)) add(SynergyAxis.GRAVEYARD)
+        }
+        // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
+        // Equipment's "equipped creature has '…'": the ability handed to the host is ours to
+        // activate, so its cost and effect feed what the same ability printed on the host would.
+        for (static in script.staticAbilities) {
+            val grant = static as? GrantActivatedAbility ?: continue
+            if (grant.filter.scope != Scope.AttachedTo || grant.ability.isManaAbility) continue
+            val creatureHost = couldBeCreature(grant.filter.baseFilter)
+            addAll(effectFeeds(grant.ability.effect, creatureHost, grant.ability.targetRequirements))
+            if (sacrifices(grant.ability.cost, creatureHost)) add(SynergyAxis.DEATH)
+            if (discards(grant.ability.cost)) add(SynergyAxis.GRAVEYARD)
         }
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
         // "As an additional cost, discard a card / X cards" bins our cards like a discard effect
