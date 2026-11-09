@@ -429,6 +429,7 @@ Alluring Suitor
 Ally Encampment
 Almighty Brushwagg
 Almost Perfect
+Alms of the Vein
 Aloe Alchemist
 Along the Crooked Way
 Alpha Deathclaw	intent: BecomeMonstrousEffect
@@ -553,6 +554,7 @@ Andromedan Automatons
 Andúril, Flame of the West
 Anep, Vizier of Hazoret
 Angel of Condemnation
+Angel of Deliverance
 Angel of Despair
 Angel of Destiny
 Angel of Finality
@@ -4137,6 +4139,7 @@ Deathbloom Ritualist
 Deathbloom Thallid
 Deathbonnet Sprout
 Deathbringer Regent
+Deathcap Cultivator
 Deathcap Glade
 Deathcap Marionette
 Deathcoil Wurm
@@ -5414,6 +5417,7 @@ Emil, Vastlands Roamer
 Emissary Escort
 Emissary of Soulfire	intent: AddCountersEffect; polarity: AddCountersEffect
 Emissary of Sunrise
+Emissary of the Sleepless
 Emmara, Soul of the Accord
 Emmessi Tome
 Emperor of Bones
@@ -7017,9 +7021,11 @@ Ghostly Prison
 Ghostly Sentinel
 Ghostly Touch
 Ghostly Visit
+Ghostly Wings
 Ghosts of the Damned
 Ghosts of the Innocent
 Ghoul's Feast
+Ghoulcaller's Accomplice
 Ghoulcaller's Harvest
 Ghoulish Procession
 Ghoulraiser
@@ -7059,6 +7065,7 @@ Giant's Skewer
 Giant-Sized Flying Ant
 Giantfall
 Gibbering Barricade
+Gibbering Fiend
 Gibbering Kami
 Gideon Blackblade
 Gideon of the Trials
@@ -8467,6 +8474,7 @@ Hotshot Investigators
 Hotshot Mechanic
 Hound Tamer
 Hound of Griselbrand
+Hound of the Farbogs
 Hour of Defeat
 Hour of Devastation
 Hour of Eternity
@@ -8902,6 +8910,7 @@ Inordinate Rage
 Inquisition
 Inquisitive Glimmer
 Inquisitive Puppet
+Inquisitor's Ox
 Insatiable Appetite
 Insatiable Avarice
 Insatiable Frugivore
@@ -9610,6 +9619,7 @@ Keral Keep Disciples
 Keranos, God of Storms
 Keruga, the Macrosage
 Kessig Cagebreakers
+Kessig Dire Swine
 Kessig Flamebreather
 Kessig Malcontents
 Kessig Naturalist
@@ -11443,6 +11453,7 @@ Moldering Karok
 Moldervine Cloak
 Moldervine Reclamation
 Moldgraf Millipede
+Moldgraf Scavenger
 Mole Man, Moloid Master
 Molecular Modifier
 Molimo, Maro-Sorcerer
@@ -11546,6 +11557,7 @@ Moonveil Regent
 Moopsy	intent: GrantKeywordEffect
 Moor Fiend
 Moorish Cavalry
+Moorland Drifter
 Moorland Inquisitor
 Morale
 Moraug, Fury of Akoum	intent: AddCombatPhaseEffect
@@ -11851,6 +11863,7 @@ Naya Battlemage
 Naya Charm
 Nazar, the Velvet Fang
 Nazgûl
+Nearheath Chaplain
 Nebelgast Beguiler
 Nebelgast Herald
 Nebelgast Intruder
@@ -11915,6 +11928,7 @@ Nemata, Primeval Warden
 Neoform
 Neonate's Rush
 Nephalia Academy
+Nephalia Moondrakes
 Nephalia Seakite
 Nephalia Smuggler	polarity: MoveToZoneEffect
 Nerd Rage
@@ -12258,6 +12272,7 @@ Obscura Interceptor
 Obscura Storefront
 Obsessive Astronomer
 Obsessive Pursuit
+Obsessive Skinner
 Obsessive Stitcher
 Obsianus Golem
 Obsidian Acolyte
@@ -12402,6 +12417,7 @@ One with the Multiverse
 One with the Stars	polarity: Aura>TransformPermanent
 One-Eyed Scarecrow
 Oneirophage
+Ongoing Investigation
 Oni Possession
 Oni-Cult Anvil
 Onulet
@@ -12691,6 +12707,7 @@ Parallel Lives
 Parallel Thoughts
 Paralyze	intent: GatedEffect
 Paramecia Coloniex
+Paranoid Parish-Blade
 Paranormal Analyst	intent: Pipeline(?→hand)
 Parapet Thrasher
 Parapet Watchers
@@ -13933,6 +13950,7 @@ Realmwalker
 Reanimate
 Reaper King
 Reaper from the Abyss
+Reaper of Flight Moonsilver
 Reaper of Night
 Reaper's Talisman
 Reaping Willow
@@ -15162,6 +15180,7 @@ Scour for Scrap
 Scour from Existence
 Scour the Laboratory
 Scoured Barrens
+Scourge Wolf
 Scourge of Valkas
 Scourge of the Skyclaves
 Scourge of the Throne	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
@@ -16409,6 +16428,7 @@ Soul Search
 Soul Separator
 Soul Shatter
 Soul Shred
+Soul Swallower
 Soul Transfer
 Soul Warden
 Soul of Emancipation
@@ -16793,6 +16813,7 @@ Stalking Stones
 Stalking Tiger
 Stall Out
 Stall for Time
+Stallion of Ashmouth
 Stalwart Aven
 Stalwart Shield-Bearers
 Stalwart Successor
@@ -17122,6 +17143,7 @@ Stroke of Midnight
 Stromkirk Bloodthief
 Stromkirk Captain
 Stromkirk Condemned
+Stromkirk Mentor
 Stromkirk Noble
 Stromkirk Occultist
 Strong Back
@@ -18705,6 +18727,7 @@ Tragic Poet
 Tragic Slip
 Tragic Trajectory
 Trail of Crumbs
+Trail of Evidence
 Trail of Mystery
 Trailblazer
 Trailblazer's Boots
@@ -19063,6 +19086,7 @@ Ultron Drone
 Ultron, Artificial Malevolence
 Ultros, Obnoxious Octopus
 Ulvenwald Captive
+Ulvenwald Hydra
 Ulvenwald Mysteries
 Ulvenwald Observer
 Ulvenwald Oddity
