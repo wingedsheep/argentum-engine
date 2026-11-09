@@ -82,6 +82,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.ForetoldComponent
+import com.wingedsheep.engine.state.components.identity.MadnessExiledComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
@@ -278,16 +279,27 @@ class CastSpellHandler(
     }
 
     /**
-     * Ask for X (CR 601.2b) when a miracle cast reaches the handler without one. The miracle
-     * trigger casts as it resolves, so no client announced X; Entreat the Angels' {X}{W}{W} would
-     * otherwise be cast with X = 0. Bounded by the mana the caster can make after the cost's fixed
-     * part, like a cycling {X}; the payment still charges the total authoritatively.
+     * Ask for X (CR 601.2b) when a keyword cast made while its trigger resolves reaches the handler
+     * without one: a miracle cast (Entreat the Angels' {X}{W}{W}) or a madness cast (From Under the
+     * Floorboards' madness {X}{B}{B}, CR 702.35b — madness follows the alternative-cost rules of
+     * 601.2b). No client announced X, so the spell would otherwise be cast with X = 0. Bounded by the
+     * mana the caster can make after the cost's fixed part, like a cycling {X}; the payment still
+     * charges the total authoritatively.
      */
+    /** The `{X}` alternative cost a resolution-time miracle or madness cast is about to pay, or null. */
+    private fun unannouncedXCost(state: GameState, action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition): ManaCost? {
+        if (action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.MIRACLE) {
+            return MiracleGrants.effectiveMiracle(state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator)
+                ?.cost?.takeIf { it.hasX }
+        }
+        if (action.useAlternativeCost || madnessChoice(state, action).isEmpty()) return null
+        return state.getEntity(action.cardId)?.get<PlayWithFixedAlternativeManaCostComponent>()
+            ?.fixedCost?.takeIf { it.hasX }
+    }
+
     private fun surfaceUnannouncedX(state: GameState, action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition?): ExecutionResult? {
         if (action.xValue != null || cardDef == null) return null
-        if (!action.useAlternativeCost || action.alternativeCostType != AlternativeCostType.MIRACLE) return null
-        val cost = MiracleGrants.effectiveMiracle(state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator)
-            ?.cost?.takeIf { it.hasX } ?: return null
+        val cost = unannouncedXCost(state, action, cardDef) ?: return null
         val maxX = ((manaSolver.getAvailableManaCount(state, action.playerId) - cost.withXAs(0).cmc) /
             cost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
         val cardName = state.getEntity(action.cardId)?.get<CardComponent>()?.name ?: "the spell"
@@ -685,6 +697,25 @@ class CastSpellHandler(
             castCostTotaller.castSourceZone(originState, action.cardId) == Zone.EXILE
         ) mapOf(ChoiceSlot.FORETOLD to 1) else emptyMap()
 
+    /**
+     * CR 702.35: a spell's "madness cost was paid" when it is cast from exile — where the madness
+     * replacement discarded it — paying the madness cost the engine stamped on it, rather than its
+     * mana cost. A free cast of the same exiled card (CR 118.9: a "without paying its mana cost"
+     * permission is itself an alternative cost) or one announcing a different alternative cost paid
+     * something else, so neither counts. Recorded on the cast-choice rail like [foretoldChoice], so
+     * `Conditions.MadnessCostWasPaid` reads it from the resolving spell and from the permanent it
+     * becomes.
+     */
+    private fun madnessChoice(originState: GameState, action: CastSpell): Map<ChoiceSlot, Int> {
+        val card = originState.getEntity(action.cardId) ?: return emptyMap()
+        val paidMadness = card.has<MadnessExiledComponent>() &&
+            card.has<PlayWithFixedAlternativeManaCostComponent>() &&
+            !card.has<PlayWithoutPayingCostComponent>() &&
+            !action.useAlternativeCost &&
+            castCostTotaller.castSourceZone(originState, action.cardId) == Zone.EXILE
+        return if (paidMadness) mapOf(ChoiceSlot.MADNESS_CAST to 1) else emptyMap()
+    }
+
     /** Puts the paid-for spell on the stack with everything its resolution will read. */
     private fun putSpellOnStack(
         state: GameState,
@@ -749,7 +780,7 @@ class CastSpellHandler(
                         ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()).any { it.multi }
                 }?.let { it to action.declaredCostTimes }).toMap() + linkedKickerChoices(
                 action, cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()
-            ) + foretoldChoice(originState, action),
+            ) + foretoldChoice(originState, action) + madnessChoice(originState, action),
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             // True when the spell's waterbend additional cost was paid (Avatar) — mandatory costs
             // always, optional "you may waterbend {N}" only when the player elected it.

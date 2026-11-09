@@ -922,6 +922,9 @@ object CardLinter {
         // Foretell (CR 702.143c): a spell cast from exile as a foretold card is stamped "foretold"
         // (see CastSpellHandler.foretoldChoice), read back by Conditions.WasForetold.
         "Foretell" to listOf("FORETOLD"),
+        // Madness (CR 702.35): a spell cast from exile for its madness cost is stamped "madness
+        // cost was paid" (see CastSpellHandler.madnessChoice), read by Conditions.MadnessCostWasPaid.
+        "Madness" to listOf("MADNESS_CAST"),
         "BlightVariable" to listOf("BLIGHT_AMOUNT"),
         "BlightOrPay" to listOf("BLIGHT_AMOUNT"),
         // Resolution-time color choices: ChooseColorThen sets EffectContext.chosenColor for its
