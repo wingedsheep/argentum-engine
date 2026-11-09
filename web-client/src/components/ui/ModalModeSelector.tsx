@@ -93,6 +93,10 @@ function ModalModePanel({ state }: { state: ModalModeSelectionState }) {
     ),
   ])
   const totalCost = combineManaCosts([baseManaCost, additionalCost])
+  // Spree / per-mode costs and escalate are the only shapes where the choice changes the price; a
+  // plain "choose two" (a Command, an entwined cast) gets no cost column or "Additional" line.
+  const hasPerModeCosts = modes.some((m) => m.additionalManaCost)
+  const hasEscalate = Boolean(additionalManaCostPerExtraMode || additionalCostPerExtraMode)
 
   // Non-mana escalate is paid after this panel closes, so name what the current selection owes.
   const extraModes = Math.max(0, totalChosen - 1)
@@ -137,9 +141,9 @@ function ModalModePanel({ state }: { state: ModalModeSelectionState }) {
       <h2 className={decisionStyles.title}>{cardName}</h2>
       <p className={decisionStyles.sourceLabel}>
         {rangeLabel}
-        {additionalManaCostPerExtraMode || additionalCostPerExtraMode
+        {hasEscalate
           ? ' — escalate for each mode beyond the first'
-          : ' — pay for each chosen mode'}
+          : hasPerModeCosts ? ' — pay for each chosen mode' : ''}
       </p>
 
       {/* Mode list */}
@@ -183,11 +187,13 @@ function ModalModePanel({ state }: { state: ModalModeSelectionState }) {
               )}
 
               {/* Cost chip */}
-              <span style={{ flexShrink: 0, minWidth: 34, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                {mode.additionalManaCost
-                  ? <ManaCost cost={mode.additionalManaCost} size={16} />
-                  : <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--font-sm)' }}>—</span>}
-              </span>
+              {hasPerModeCosts && (
+                <span style={{ flexShrink: 0, minWidth: 34, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                  {mode.additionalManaCost
+                    ? <ManaCost cost={mode.additionalManaCost} size={16} />
+                    : <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--font-sm)' }}>—</span>}
+                </span>
+              )}
 
               {/* Description (cost prefix stripped; symbols rendered inline) */}
               <span style={{ flex: 1, fontSize: 'var(--font-md)', lineHeight: 1.35, color: 'var(--text-primary)' }}>
@@ -220,9 +226,11 @@ function ModalModePanel({ state }: { state: ModalModeSelectionState }) {
 
       {/* Cost summary */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 4, fontSize: 'var(--font-sm)' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}>
-          Additional: {additionalCost ? <ManaCost cost={additionalCost} size={15} /> : <span>—</span>}
-        </span>
+        {(hasPerModeCosts || hasEscalate) && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}>
+            Additional: {additionalCost ? <ManaCost cost={additionalCost} size={15} /> : <span>—</span>}
+          </span>
+        )}
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-primary)', fontWeight: 600 }}>
           Total: <ManaCost cost={totalCost} size={15} />
         </span>

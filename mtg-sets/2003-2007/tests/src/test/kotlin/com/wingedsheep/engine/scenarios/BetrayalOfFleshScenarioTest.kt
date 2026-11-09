@@ -82,7 +82,7 @@ class BetrayalOfFleshScenarioTest : ScenarioTestBase() {
 
         test("the entwined cast is offered beside the plain one") {
             val game = board()
-            game.getLegalActions(1).map { it.description } shouldContain "Cast Betrayal of Flesh (Entwined)"
+            game.getLegalActions(1).map { it.description } shouldContain "Cast Betrayal of Flesh (Entwined — Sacrifice three lands)"
         }
     }
 }

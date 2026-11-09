@@ -50,6 +50,26 @@ describe('computePhases — choose-N modal', () => {
     expect(computePhases(info)).toEqual([{ type: 'modalModes' }, { type: 'costPayment' }])
   })
 
+  it('an entwined cast paid by sacrifice (Betrayal of Flesh) collects the lands after the modes', () => {
+    // "Entwine—Sacrifice three lands" rides the declared cast variant; the engine rejects the
+    // action unless it carries the sacrificed lands, so the modal path must run costPayment.
+    const info = castAction({
+      modalEnumeration: {
+        chooseCount: 2,
+        minChooseCount: 2,
+        allowRepeat: false,
+        modes: [],
+      },
+      additionalCostInfo: {
+        costType: 'SacrificePermanent',
+        description: 'Sacrifice three lands',
+        validSacrificeTargets: ['land1', 'land2', 'land3', 'land4'],
+        sacrificeCount: 3,
+      },
+    })
+    expect(computePhases(info)).toEqual([{ type: 'modalModes' }, { type: 'costPayment' }])
+  })
+
   it('a choose-N modal with an {X} cost (Profane Command) still announces X', () => {
     // CR 601.2b announces the modes first and the value of X second. Dropping the xSelection
     // phase cast the spell at X = 0 — every chosen mode read that 0 and did nothing.
