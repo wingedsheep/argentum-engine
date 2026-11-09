@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.mtg.sets.definitions.emn.EldritchMoonSet
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.limited.DedicatedSlotBooster
@@ -738,6 +739,64 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (dfcRares.toDouble() / packs) shouldBe ((1.0 / 6) plusOrMinus 0.03)
     }
 
+    test("Eldritch Moon draft pack opens a double-faced or meld card beside 9 commons, 3 uncommons and a rare") {
+        // Draft Booster (collation per mtg.wtf/pack/emn-draft, after lethe.xyz): 8 single-faced commons, 3 uncommons,
+        // a single-faced rare or mythic, one double-faced-or-meld common or uncommon (sheet: each common x5, each
+        // uncommon x2), and a slot that is a single-faced common in 7 packs of 8 and a double-faced-or-meld rare or
+        // mythic in the eighth, plus a Shadows over Innistrad basic (supplied at deck building). The foil replacing
+        // a common in 9 packs of 40 is cosmetic and not modelled.
+        val emn = boosterGenerator.availableSets["EMN"].shouldNotBeNull()
+        emn.fullyImplemented shouldBe true
+        emn.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val eligible = emn.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand && !it.meldResult }
+        // Scryfall `set:emn is:booster -t:basic`, minus the three meld results.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 74, Rarity.UNCOMMON to 70, Rarity.RARE to 47, Rarity.MYTHIC to 14,
+        )
+        // Scryfall `set:emn (is:dfc or is:meld) -is:meldresult`: 4 commons, 10 uncommons, 5 rares, 2 mythics.
+        val sheet = eligible.filter { it.name in EldritchMoonSet.DOUBLE_FACED_SHEET }
+        sheet.size shouldBe EldritchMoonSet.DOUBLE_FACED_SHEET.size
+        sheet.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 4, Rarity.UNCOMMON to 10, Rarity.RARE to 5, Rarity.MYTHIC to 2,
+        )
+        eligible.filter { it.isDoubleFaced }.all { it.name in EldritchMoonSet.DOUBLE_FACED_SHEET } shouldBe true
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        fun CardDefinition.isRareOrMythic() = metadata.rarity == Rarity.RARE || metadata.rarity == Rarity.MYTHIC
+        var sheetCommons = 0
+        var sheetRares = 0
+        var sheetMythics = 0
+        val packs = 4000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("EMN")
+            val onSheet = pack.filter { it.name in EldritchMoonSet.DOUBLE_FACED_SHEET }
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.all { it.name in eligibleNames } shouldBe true
+                onSheet.count { !it.isRareOrMythic() } shouldBe 1
+                pack.count { it.isRareOrMythic() && it.name !in EldritchMoonSet.DOUBLE_FACED_SHEET } shouldBe 1
+                pack.count { it.metadata.rarity == Rarity.UNCOMMON && it.name !in EldritchMoonSet.DOUBLE_FACED_SHEET } shouldBe 3
+                val sheetRare = onSheet.count { it.isRareOrMythic() }
+                pack.count { it.metadata.rarity == Rarity.COMMON && it.name !in EldritchMoonSet.DOUBLE_FACED_SHEET } shouldBe
+                    9 - sheetRare
+            }
+            if (onSheet.any { it.metadata.rarity == Rarity.COMMON }) sheetCommons++
+            sheetRares += onSheet.count { it.metadata.rarity == Rarity.RARE }
+            sheetMythics += onSheet.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (sheetCommons.toDouble() / packs) shouldBe (0.5 plusOrMinus 0.03)
+        ((sheetRares + sheetMythics).toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
+        (sheetMythics.toDouble() / (sheetRares + sheetMythics)) shouldBe ((1.0 / 6) plusOrMinus 0.06)
+    }
+
+    test("Eldritch Moon offers Shadows over Innistrad basic lands for sealed deckbuilding") {
+        val emn = boosterGenerator.availableSets["EMN"].shouldNotBeNull()
+
+        emn.basicLands.map { it.name }.toSet() shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        emn.basicLands.all { it.setCode == "SOI" } shouldBe true
+        boosterGenerator.getBasicLands("EMN").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+    }
+
     test("Zendikar Rising draft pack opens exactly one modal double-faced card beside 10 commons and a rare") {
         // Draft Booster (MTGJSON `booster.draft`): 10 commons, 3 uncommons, 1 rare or mythic and a basic land
         // (supplied at deck building), one of the uncommons or the rare being a modal double-faced card — the
@@ -1121,7 +1180,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "EMN" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,

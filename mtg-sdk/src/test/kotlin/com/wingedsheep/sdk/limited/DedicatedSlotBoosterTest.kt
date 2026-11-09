@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.model.ScryfallMetadata
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.plusOrMinus
@@ -215,6 +216,66 @@ class DedicatedSlotBoosterTest : DescribeSpec({
                 if (ordinarySlots.any { it.name == "Rare 1" }) rareInRareSlot++
             }
             (rareInRareSlot > 0) shouldBe true
+        }
+    }
+
+    describe("a slot that is an ordinary common unless it rolls a double-faced rare (Eldritch Moon)") {
+        val strategy = DedicatedSlotBooster(
+            base = StandardBooster(commons = 8, uncommons = 3),
+            slots = listOf(
+                DedicatedSlot(SheetSelector.DoubleFaced, mapOf(Rarity.COMMON to 1.0, Rarity.UNCOMMON to 1.0)),
+                DedicatedSlot(
+                    SheetSelector.DoubleFaced,
+                    mapOf(Rarity.COMMON to 7.0, Rarity.RARE to 10.0 / 12, Rarity.MYTHIC to 2.0 / 12),
+                    ordinaryRarities = setOf(Rarity.COMMON),
+                ),
+            ),
+        )
+
+        it("opens a single-faced common in seven packs of eight and a double-faced rare or mythic in the eighth") {
+            val random = Random(11)
+            val packs = 8000
+            var dfcRares = 0
+            var dfcMythics = 0
+            repeat(packs) {
+                val pack = strategy.generate(dfcPool, random)
+                pack shouldHaveSize 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.count { it.isDoubleFaced && !it.isRareOrMythic() } shouldBe 1
+                pack.count { it.isRareOrMythic() && !it.isDoubleFaced } shouldBe 1
+                pack.count { it.metadata.rarity == Rarity.UNCOMMON && !it.isDoubleFaced } shouldBe 3
+                val sheetRare = pack.count { it.isDoubleFaced && it.isRareOrMythic() }
+                pack.count { it.metadata.rarity == Rarity.COMMON && !it.isDoubleFaced } shouldBe 9 - sheetRare
+                dfcRares += pack.count { it.isDoubleFaced && it.metadata.rarity == Rarity.RARE }
+                dfcMythics += pack.count { it.isDoubleFaced && it.metadata.rarity == Rarity.MYTHIC }
+            }
+            ((dfcRares + dfcMythics).toDouble() / packs) shouldBe (0.125 plusOrMinus 0.012)
+            (dfcMythics.toDouble() / (dfcRares + dfcMythics)) shouldBe ((1.0 / 6) plusOrMinus 0.04)
+        }
+
+        it("keeps double-faced rares out of the ordinary rare slot") {
+            repeat(500) { seed ->
+                val pack = strategy.generate(dfcPool, Random(seed))
+                pack.take(12).none { it.isDoubleFaced } shouldBe true
+            }
+        }
+
+        it("opens an ordinary common in the slot when every double-faced rare and mythic is banned") {
+            repeat(200) { seed ->
+                val pack = strategy.generate(singleFaced + dfcCommons + dfcUncommons, Random(seed))
+                pack shouldHaveSize 14
+                pack.count { it.isDoubleFaced } shouldBe 1
+                pack.count { it.metadata.rarity == Rarity.COMMON && !it.isDoubleFaced } shouldBe 9
+            }
+        }
+
+        it("rejects ordinary rarities the slot never rolls, and a slot with nothing left on its own sheet") {
+            shouldThrow<IllegalArgumentException> {
+                DedicatedSlot(SheetSelector.DoubleFaced, mapOf(Rarity.RARE to 1.0), ordinaryRarities = setOf(Rarity.COMMON))
+            }
+            shouldThrow<IllegalArgumentException> {
+                DedicatedSlot(SheetSelector.DoubleFaced, mapOf(Rarity.COMMON to 1.0), ordinaryRarities = setOf(Rarity.COMMON))
+            }
         }
     }
 })

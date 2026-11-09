@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-emn',
+    date: '2026-11-09',
+    kind: 'set',
+    setCode: 'EMN',
+    title: 'Eldritch Moon is complete',
+    body: "Emrakul descends on Innistrad. Sacrifice creatures to emerge Eldrazi early, meld pairs into giants, escalate modal spells, and flip werewolves and Eldrazi-touched double-faced cards, across ten two-colour decks from Spirit fliers and Zombie self-mill to delirium and Vampire madness.",
+    tryIf: 'graveyard value, sacrifice-to-cast tricks and tribal Innistrad horror',
+  },
+  {
     id: 'set-j25',
     date: '2026-11-08',
     kind: 'set',

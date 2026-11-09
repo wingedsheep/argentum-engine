@@ -491,12 +491,14 @@ building). The strategies compose:
 
 **Dedicated-slot boosters** — `DedicatedSlotBooster(base, slots)` adds slots that each draw from their own print
 sheet to a `StandardBooster` or `PlayBooster` base. A `DedicatedSlot(sheet, rarityWeights, rareChance, sharedRarities,
-mythicChance)` names its cards with a `SheetSelector` — `DoubleFaced`, `Battle`, `LegendaryCreature`,
+mythicChance, ordinaryRarities)` names its cards with a `SheetSelector` — `DoubleFaced`, `Battle`, `LegendaryCreature`,
 `Planeswalker`, `HasSubtype(subtype)`, `Named(names)`, `Except(matching, except)` — and opens a rarity rolled from `rarityWeights`. Its sheet is the
 selected cards at those rarities (plus rare and mythic when `rareChance > 0`), and they leave the base's pool unless
 their rarity is in `sharedRarities`. With `rareChance` the slot holds the pack's one rare or mythic instead, and the
 base trades its rare slot for an uncommon (`RarityCountBooster.withRareSlotAsUncommon`); the slots' chances are rolled
-together, so a pack never opens two. A dry sheet (host bans) opens the rolled rarity from the ordinary sheets. In use:
+together, so a pack never opens two. A dry sheet (host bans) opens the rolled rarity from the ordinary sheets. A rolled
+rarity in `ordinaryRarities` always opens from the ordinary sheets, and isn't on the slot's sheet — a slot that is
+usually an ordinary common and only sometimes a sheet card. In use:
 
 - Innistrad: Midnight Hunt / Crimson Vow — base `StandardBooster(9, 2)`, a double-faced common slot and a double-faced
   uncommon slot with `rareChance = 1.0 / 6`.
@@ -511,6 +513,9 @@ together, so a pack never opens two. A dry sheet (host bans) opens the rolled ra
 - Innistrad Remastered — a double-faced common slot on a 5-common Play Booster.
 - Teenage Mutant Ninja Turtles — a `Named` legendary-Turtle slot with `sharedRarities = setOf(RARE, MYTHIC)`, so the
   rare Turtles also stay on the rare sheet.
+- Eldritch Moon — base `StandardBooster(8, 3)`, a `Named` double-faced-and-meld common-or-uncommon slot (weighted
+  5 per common, 2 per uncommon), and a second slot on the same sheet weighted 7 C / 10/12 R / 2/12 M with
+  `ordinaryRarities = setOf(COMMON)`: an ordinary common in seven packs in eight, a double-faced or meld rare in the eighth.
 - Strixhaven: School of Mages — base `StandardBooster(10, 3)` (its Mystical Archive slot opens a common) and a
   `HasSubtype(Subtype.LESSON)` slot weighted 1233 C / 90 R / 9 M; uncommon Lessons stay in the uncommon slots.
 
