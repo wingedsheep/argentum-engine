@@ -207,6 +207,79 @@
     ]
 }
 
+// Balustrade Spy
+{
+    "name": "Balustrade Spy",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Flying\nWhen this creature enters, target player reveals cards from the top of their library until they reveal a land card, then puts those cards into their graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Balustrade Spy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "TargetPlayer",
+                            "filter": "land",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetPlayer"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df8a3f05-864d-401d-a2f1-5f58358fe089.jpg?1783940132",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "The land card they reveal, if any, is included in the cards put into their graveyard."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If the target player has no land cards in their library, all cards from that library will be revealed and put into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Biomass Mutation
 {
     "name": "Biomass Mutation",
@@ -1252,6 +1325,58 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Killing Glare
+{
+    "name": "Killing Glare",
+    "manaCost": "{X}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with power X or less.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtMostDynamic",
+                                "amount": "XValue"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "A casual glance into a dark corner may be your last.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7a4d87d-b844-4f20-8b14-4fd32c53dea5.jpg?1783940130",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The power of the target creature is checked both as you target it and as Killing Glare resolves. If its power is greater than the value chosen for X when Killing Glare tries to resolve, it won't resolve and none of its effects will happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

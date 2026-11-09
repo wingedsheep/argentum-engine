@@ -261,7 +261,7 @@ class ReflexiveTriggerEffectExecutor(
             ).count { com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canBeSacrificed(state, it) } >= action.count
         }
         is ChooseActionEffect -> action.choices.any { choice ->
-            checkFeasibility(state, context.controllerId, choice.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly)
+            checkFeasibility(state, context.controllerId, choice.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly, context)
         }
         is SelectFromCollectionEffect -> {
             val available = gathered?.get(action.from)

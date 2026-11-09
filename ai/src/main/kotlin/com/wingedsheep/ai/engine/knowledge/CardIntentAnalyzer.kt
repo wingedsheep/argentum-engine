@@ -262,12 +262,23 @@ object CardIntentAnalyzer {
         turnAhead: Boolean = false,
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
+        /**
+         * The card the effect is printed on, when known: a creature-type change reads through that
+         * card's own statics ([TypeEvasion]). The card-level readings need it for nothing — every
+         * card [TypeEvasion] reads carries the [CantBeBlockedBy] that already tags it
+         * [IntentTag.EVASION_GRANT].
+         */
+        source: CardDefinition? = null,
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
         val refunds = handRefundDraws(effect)
         for (leaf in readingLeaves(effect, requirements)) {
             tags += refundedTagsOf(leaf, refunds)
+            // "Target creature becomes a Coward" beside "Cowards can't block Warriors" is the
+            // single-creature can't-block ([CantBlockEffect]'s evasion grant); "becomes a Warrior"
+            // is the evasion itself ([GrantEvasionKeywordEffect]'s).
+            if (leaf is SetCreatureSubtypesEffect && TypeEvasion.of(source, leaf) != null) tags += IntentTag.EVASION_GRANT
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
@@ -741,9 +752,36 @@ object CardIntentAnalyzer {
                     else listOf(leaf.copy(powerModifier = power, toughnessModifier = toughness))
                 }
                 is GatedEffect -> punisherBranchLeaves(leaf, requirements) ?: listOf(leaf)
+                is ChooseActionEffect -> punisherChoiceLeaves(leaf, requirements) ?: listOf(leaf)
                 else -> listOf(leaf)
             }
         }
+    }
+
+    /**
+     * The branches of a punisher written as a choice another player makes — "that source's
+     * controller loses that much life unless they sacrifice that many permanents" (Archfiend of
+     * Spite), as a [ChooseActionEffect] the damage source's controller answers. Like
+     * [punisherBranchLeaves], the card does whichever branch the decider picks, so it is for what
+     * either branch does; the decider takes the branch worse for us, which is the value readers'
+     * question. Life the decider loses is the clock it is, so a [LoseLifeEffect] aimed at the
+     * deciding player is read as one aimed at an opponent — for a choice only another player makes,
+     * the loser is that player, not our controller.
+     *
+     * Null — the choice stays an unread leaf — for a choice our controller makes (its branches are
+     * modes, opened by [EffectWalker.payoffLeaves]) and when any branch reads as nothing for us: a
+     * tax the decider can always buy their way out of.
+     */
+    private fun punisherChoiceLeaves(choice: ChooseActionEffect, requirements: List<TargetRequirement>): List<Effect>? {
+        if (EffectWalker.choosesOwnBranch(choice)) return null
+        val branches = choice.choices.map { option ->
+            readingLeaves(option.effect, requirements).map { leaf ->
+                if (leaf is LoseLifeEffect && leaf.target == choice.player)
+                    leaf.copy(target = EffectTarget.PlayerRef(Player.EachOpponent))
+                else leaf
+            }
+        }
+        return if (branches.size >= 2 && branches.all { leaves -> leaves.any { tagsOf(it).isNotEmpty() } }) branches.flatten() else null
     }
 
     /**
@@ -1090,6 +1128,7 @@ object CardIntentAnalyzer {
         addAll(regrowthTags(root, ownPile))
         addAll(wishTags(root))
         addAll(graveyardExileTags(root))
+        addAll(revealUntilMillTags(root))
         addAll(handToBattlefieldTags(root))
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
@@ -1862,6 +1901,38 @@ object CardIntentAnalyzer {
         else -> false
     }
 
+    /**
+     * "Target player reveals cards from the top of their library until they reveal a land card, then
+     * puts those cards into their graveyard" (Balustrade Spy; Tunnel Vision; Sméagol, Helpful Guide's
+     * "and the rest into their graveyard"): a [GatherUntilMatchEffect] off a library that can be an
+     * opponent's, whose cards — or the ones split from them — are binned. A mill of unknown depth,
+     * read as [IntentTag.MILL] like the fixed-count mill ([CardSource.TopOfLibrary.isMill]) is, under
+     * the same [canMillOpponent] line. Inside "each opponent …" ([eachPlayer], Consuming
+     * Aberration) `You` is the opponent visited. Our own library binned is self-mill fuel, no MILL
+     * claim; revealed cards put onto the battlefield, into a hand or back into the library
+     * (Polymorph, Madcap Experiment, Aurora Awakener) are no mill either.
+     */
+    private fun revealUntilMillTags(root: Effect, eachPlayer: Player? = null): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val iteratesOpponents = eachPlayer in OPPONENT_PLAYERS
+        val revealed = HashSet<String>()
+        for (leaf in leaves) {
+            if (leaf is GatherUntilMatchEffect && (canMillOpponent(leaf.player) || (iteratesOpponents && leaf.player == Player.You))) {
+                revealed += listOf(leaf.storeMatch, leaf.storeRevealed)
+            }
+        }
+        if (revealed.isEmpty()) return emptySet()
+        do {
+            val before = revealed.size
+            for (leaf in leaves) revealed += derivedCollections(leaf, revealed)
+        } while (revealed.size != before)
+        val binned = leaves.any {
+            it is MoveCollectionEffect && it.from in revealed &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD
+        }
+        return if (binned) setOf(IntentTag.MILL) else emptySet()
+    }
+
     /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
     private fun collectionsFromTop(leaves: List<Effect>, whose: (Player) -> Boolean): Set<String> {
         val names = HashSet<String>()
@@ -2154,6 +2225,11 @@ object CardIntentAnalyzer {
         // "Return target spell to its owner's hand" (Failure, Reprieve) answers a spell on the stack
         // the way a counter does — its caster gets the card back, not the tempo or the mana.
         ReturnSpellToOwnersHandEffect -> setOf(IntentTag.COUNTERSPELL)
+        // "Return target spell or permanent to its owner's hand" (Venser, Shaper Savant,
+        // Unsubstantiate) reaches the battlefield too, so it is a bounce first: removal, the way a
+        // single-target return of a permanent to hand reads above. Not [IntentTag.COUNTERSPELL] —
+        // that would brand the card dead on an empty stack, where its permanent half is live.
+        is ReturnSpellOrPermanentToOwnersHandEffect -> removalTags(effect.target)
         // "End the turn" as a card's whole payoff (Time Stop, Discontinuity, Glorious End) exiles
         // every spell and ability on the stack — a counter-everything that can't be stopped — and
         // takes the attackers out of combat with it. What it answers is already on the stack or in
@@ -2303,7 +2379,8 @@ object CardIntentAnalyzer {
                     destroyAll(effect.body, eachPlayer = space.players).tags +
                     handDisruptionTags(effect.body, eachPlayer = space.players) +
                     discardPunisherTags(effect.body, eachPlayer = space.players) +
-                    graveyardExileTags(effect.body, eachPlayer = space.players)
+                    graveyardExileTags(effect.body, eachPlayer = space.players) +
+                    revealUntilMillTags(effect.body, eachPlayer = space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
                 space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP

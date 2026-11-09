@@ -72,10 +72,10 @@ class ChooseActionEffectExecutor(
             CompelledActionImmunity.appliesTo(state, choosingPlayerId, cause, action, predicateEvaluator)
         }
         val publiclyFeasible = allowed.filter { choice ->
-            checkFeasibility(state, choosingPlayerId, choice.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly = true)
+            checkFeasibility(state, choosingPlayerId, choice.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly = true, context = context)
         }
         val feasibleChoices = publiclyFeasible.filter { choice ->
-            isFeasible(state, choosingPlayerId, choice.feasibilityCheck)
+            isFeasible(state, choosingPlayerId, choice.feasibilityCheck, context)
         }
 
         if (publiclyFeasible.size <= 1) {
@@ -118,8 +118,9 @@ class ChooseActionEffectExecutor(
     private fun isFeasible(
         state: GameState,
         playerId: com.wingedsheep.sdk.model.EntityId,
-        check: FeasibilityCheck?
-    ): Boolean = checkFeasibility(state, playerId, check, predicateEvaluator, manaSolver)
+        check: FeasibilityCheck?,
+        context: EffectContext
+    ): Boolean = checkFeasibility(state, playerId, check, predicateEvaluator, manaSolver, context = context)
 }
 
 /**
@@ -133,6 +134,12 @@ class ChooseActionEffectExecutor(
  * question offers. Every `false` in public mode is also `false` in full mode.
  *
  * [FeasibilityCheck.CanPayMana] reads [ManaSolver.canPay] either way. That is #3340's group C.
+ *
+ * [context] is the resolving effect's, needed only to evaluate a
+ * [FeasibilityCheck.ControlsPermanentMatching.dynamicCount] ("sacrifice that many permanents",
+ * Archfiend of Spite) — the amount is read against the same context the payment will run in, so
+ * the check and the sacrifice agree on N. It is required so that a caller without one can't
+ * compile, rather than reading the count as zero (which would make an unpayable option look free).
  */
 internal fun checkFeasibility(
     state: GameState,
@@ -140,7 +147,8 @@ internal fun checkFeasibility(
     check: FeasibilityCheck?,
     predicateEvaluator: PredicateEvaluator,
     manaSolver: ManaSolver,
-    publicOnly: Boolean = false
+    publicOnly: Boolean = false,
+    context: EffectContext
 ): Boolean {
     if (check == null) return true
 
@@ -154,7 +162,10 @@ internal fun checkFeasibility(
                 PredicateContext(controllerId = playerId),
                 predicateEvaluator = predicateEvaluator
             )
-            matching.size >= check.count
+            val needed = check.dynamicCount
+                ?.let { predicateEvaluator.amounts.evaluate(state, it, context) }
+                ?: check.count
+            matching.size >= needed
         }
         is FeasibilityCheck.HasCardsInZone -> {
             val zoneKey = ZoneKey(playerId, check.zone)

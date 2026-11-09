@@ -270,8 +270,12 @@ object SynergyAxes {
             if (opponents(pattern.filter)) emptySet() else enterAxes(pattern.filter)
         is EventPattern.CreaturesYouControlDiedEvent ->
             if (opponents(pattern.filter)) emptySet() else setOf(SynergyAxis.DEATH)
+        // "Whenever a player sacrifices a nontoken creature" (Fumulus) cashes in our own sacrifices
+        // too, so it rewards the deck's outlets like "whenever you sacrifice" does; an
+        // opponent-only watch doesn't.
         is EventPattern.PermanentsSacrificedEvent ->
-            if (pattern.sacrificedBy == Player.You) setOf(SynergyAxis.DEATH) else emptySet()
+            if (pattern.sacrificedBy == Player.You || pattern.sacrificedBy == Player.Each) setOf(SynergyAxis.DEATH)
+            else emptySet()
         is EventPattern.TokenCreationEvent ->
             if (pattern.controller == Player.You) setOf(SynergyAxis.TOKENS) else emptySet()
         is EventPattern.LifeGainEvent ->
@@ -410,6 +414,9 @@ object SynergyAxes {
             setOf(SynergyAxis.TOKENS, SynergyAxis.CREATURES_ENTER, SynergyAxis.DEATH)
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
+        // "Tap any number of untapped Vampires you control; put a +1/+1 counter on each" (Urge to
+        // Feed): counters on each permanent of a gathered collection stock the same axis.
+        is com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect -> plusCounters(leaf.counterType)
         // "Distribute four +1/+1 counters among any number of target creatures you control" (Verdurous Gearhulk).
         is com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect -> plusCounters(leaf.counterType)
         is SurveilEffect -> setOf(SynergyAxis.GRAVEYARD)

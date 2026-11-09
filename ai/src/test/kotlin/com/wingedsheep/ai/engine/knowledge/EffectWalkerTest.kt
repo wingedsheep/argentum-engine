@@ -1,11 +1,13 @@
 package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.ai.engine.LimitedCardRater
+import com.wingedsheep.mtg.sets.definitions.ala.cards.AdNauseam
 import com.wingedsheep.mtg.sets.definitions.msh.cards.AimScientists
 import com.wingedsheep.mtg.sets.definitions.msh.cards.LeaderSuperGenius
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -40,6 +42,17 @@ class EffectWalkerTest : FunSpec({
         }
         withClue("the pipeline's draw is what the scorers read a connive by") {
             EffectWalker.leaves(connive).filterIsInstance<DrawCardsEffect>() shouldHaveSize 1
+        }
+    }
+
+    test("a repeat-while loop is read as its body, not as one opaque leaf") {
+        val loop = AdNauseam.script.spellEffect as RepeatWhileEffect
+
+        withClue("the loop contributes no leaf of its own — its payoff is the body's") {
+            EffectWalker.payoffLeaves(loop) shouldBe EffectWalker.payoffLeaves(loop.body)
+        }
+        withClue("Ad Nauseam's reveal-and-lose-life rounds are what the intent reader tags it by") {
+            (CardIntentAnalyzer.analyze(AdNauseam).tags.isNotEmpty()) shouldBe true
         }
     }
 

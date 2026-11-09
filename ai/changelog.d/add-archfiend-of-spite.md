@@ -1,0 +1,1 @@
+- #4580 The AI now reads an opponent-chosen "lose life unless you sacrifice" choice (Archfiend of Spite's trigger) as removal plus damage to players, instead of an ability it has no intent for

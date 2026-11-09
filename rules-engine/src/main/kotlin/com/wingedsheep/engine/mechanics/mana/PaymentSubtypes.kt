@@ -51,6 +51,7 @@ internal fun spellPaymentContextFor(
     hasXInCost = cardComponent.manaCost.hasX,
     isColorless = colors.isEmpty(),
     colorCount = colors.size,
+    colors = colors,
     subtypes = paymentSubtypesOf(cardComponent),
     isFromExile = isFromExile,
     isFromHand = isFromHand,

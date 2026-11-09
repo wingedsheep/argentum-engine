@@ -1068,7 +1068,7 @@ class TournamentLobby(
      * Only the host can trigger this. Valid for SEALED and COMMANDER_SEALED formats.
      */
     /** Automatic only for a single Jumpstart set using ordinary limited rules. */
-    val jumpstartEligible: Boolean get() = !isCube && setCodes.size == 1 && setCodes.single() in setOf("JMP", "J22") &&
+    val jumpstartEligible: Boolean get() = !isCube && setCodes.size == 1 && setCodes.single() in com.wingedsheep.gameserver.jumpstart.JumpstartPacks.SUPPORTED_SETS &&
         !usesCommanderRules && format in setOf(TournamentFormat.SEALED, TournamentFormat.DRAFT)
     val isJumpstart: Boolean get() = jumpstartEligible && useJumpstart
     // Settings can switch sets before starting; cache by set rather than freezing the first choice.

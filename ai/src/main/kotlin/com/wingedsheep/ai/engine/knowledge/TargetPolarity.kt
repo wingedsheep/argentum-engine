@@ -52,6 +52,7 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -142,6 +143,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -333,8 +335,12 @@ object TargetPolarityAnalyzer {
     }
 
     /** Polarity of each target slot of one [mode] of a modal spell or triggered ability. */
-    fun forMode(mode: Mode, definitions: CardLookup = NO_DEFINITIONS): List<TargetPolarity> =
-        forRequirements(mode.effect, mode.targetRequirements, definitions)
+    fun forMode(
+        mode: Mode,
+        definitions: CardLookup = NO_DEFINITIONS,
+        source: CardDefinition? = null,
+    ): List<TargetPolarity> =
+        forRequirements(mode.effect, mode.targetRequirements, definitions, source = source)
 
     /** Polarity of each target slot of the activated [ability] printed on [card]. */
     fun forAbility(
@@ -620,9 +626,16 @@ object TargetPolarityAnalyzer {
                 val top = leaf.source as? CardSource.TopOfLibrary
                 if (top != null) {
                     val slot = playerSlotOf(top.player, requirements)
-                    val reading = if (top.isMill) TargetPolarity.HARMFUL else libraryTopPolarity(leaf.storeAs, effect)
+                    val reading = if (top.isMill) TargetPolarity.HARMFUL else libraryTopPolarity(setOf(leaf.storeAs), effect)
                     if (reading != null) slot?.let { perSlot[it] += reading }
                 }
+            }
+            // "Target player reveals cards from the top of their library until they reveal a land
+            // card, then puts those cards into their graveyard" (Balustrade Spy): a dig of unknown
+            // depth off that player's top, read as the fixed-count gather above — binned, it is a mill.
+            if (leaf is GatherUntilMatchEffect) {
+                val reading = libraryTopPolarity(setOf(leaf.storeMatch, leaf.storeRevealed), effect)
+                if (reading != null) playerSlotOf(leaf.player, requirements)?.let { perSlot[it] += reading }
             }
             val offenceWatch = offenceWatchSlot(leaf, requirements)
             if (offenceWatch != null) {
@@ -847,6 +860,7 @@ object TargetPolarityAnalyzer {
             leaf is com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect ->
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap(::targetLeaves)
             leaf is com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect -> targetLeaves(leaf.body)
+            leaf is com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect -> targetLeaves(leaf.body)
             leaf is ChooseActionEffect && EffectWalker.choosesOwnBranch(leaf) ->
                 leaf.choices.flatMap { targetLeaves(it.effect) }
             // "Target creature gains your choice of double strike or lifelink" (Practiced Offense,
@@ -1262,17 +1276,19 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * What the cards gathered off a target player's library top into [collection] do to that player,
+     * What the cards gathered off a target player's library top into [collections] do to that player,
      * when the gather is no mill of its own: "target player mills five cards, then puts each Goblin
      * card milled this way into their hand" (Grub's Command), "exile the top two cards of target
      * opponent's library" (Maralen, Fae Ascendant). Cards that only leave for a graveyard, exile or
      * our hand are their loss, [TargetPolarity.HARMFUL]; some of them handed back to their own hand
      * makes it [TargetPolarity.FLEXIBLE] — which library it is worth digging depends on the cards.
-     * Null when nothing moves them out (a look, a reorder).
+     * Null when nothing moves them out (a look, a reorder). The moves are read through gates
+     * ([EffectWalker.payoffLeaves]): Tunnel Vision bins the pile only "if a card with the chosen
+     * name is revealed this way".
      */
-    private fun libraryTopPolarity(collection: String, effect: Effect): TargetPolarity? {
-        val leaves = EffectWalker.leaves(effect)
-        val names = hashSetOf(collection)
+    private fun libraryTopPolarity(collections: Set<String>, effect: Effect): TargetPolarity? {
+        val leaves = EffectWalker.payoffLeaves(effect)
+        val names = HashSet(collections)
         do {
             val before = names.size
             for (leaf in leaves) names += CardIntentAnalyzer.derivedCollections(leaf, names)
@@ -1723,6 +1739,12 @@ object TargetPolarityAnalyzer {
             // loss is the curse it reads as.
             is LoseAllCreatureTypesEffect -> leaf.target to TargetPolarity.HARMFUL
                 .takeIf { it != TargetPolarity.UNKNOWN }
+            // "Target creature becomes a Coward" / "becomes a Warrior" on a card whose own "Cowards
+            // can't block Warriors" names the type: the blocker type takes the creature's blocks
+            // away, the protected type makes it evade them — see [TypeEvasion]. A type change the
+            // card's statics don't name stays unread: what it is for is the board's question.
+            is SetCreatureSubtypesEffect -> TypeEvasion.of(source, leaf)?.let { leaf.target to it.polarity }
+                ?: return emptyList()
             // "If a triggered ability of that creature triggers, it triggers an additional time"
             // (Lwaxana Troi, Charming Guest): a doubler only ever repeats its holder's controller's
             // own triggers, so it is aimed at a creature of yours.

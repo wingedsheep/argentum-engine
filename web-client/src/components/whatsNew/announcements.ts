@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-j25',
+    date: '2026-11-08',
+    kind: 'set',
+    setCode: 'J25',
+    title: 'Foundations Jumpstart is complete',
+    body:
+      'All 768 cards of the half-deck set released alongside Foundations are playable, and all 121 of its published packs are in Jump In: pick two of 46 themes — Vampires, Ninjas, Dinosaurs, Angels, Food and more — and play the 40-card deck they make. Choose Foundations under "Packs from" when you start a Jump In game.',
+    tryIf: 'quick themed decks with no deckbuilding',
+  },
+  {
     id: 'feature-best-of-three',
     date: '2026-11-07',
     kind: 'feature',

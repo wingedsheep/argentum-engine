@@ -22,6 +22,7 @@ const SETS: readonly AvailableSet[] = [
   { code: 'ECL', name: 'Eclipse' },
   { code: 'BLB', name: 'Bloomburrow' },
   { code: 'J22', name: 'Jumpstart 2022' },
+  { code: 'J25', name: 'Foundations Jumpstart' },
 ]
 
 /** Every selection the wizard can actually reach — the same space `modeMatrix.test.ts` walks. */
@@ -83,11 +84,11 @@ describe('recipeFromSelection', () => {
     }
   })
 
-  it('chooses published J22 packs for Jump In and leaves other selections unconfigured', () => {
+  it('chooses the newest published Jumpstart packs (J25) for Jump In and leaves other selections unconfigured', () => {
     // The whole point of Phase 0: the launch path used to invent `['ECL'], 6, 45`.
     for (const selection of everyReachableSelection()) {
       expect(recipeFromSelection(selection).settings).toEqual(selection.cards.kind === 'JUMP_IN'
-        ? { setCodes: ['J22'], useJumpstart: true, gamesPerMatch: 1, bestOf: 1 } : {})
+        ? { setCodes: ['J25'], useJumpstart: true, gamesPerMatch: 1, bestOf: 1 } : {})
     }
   })
 

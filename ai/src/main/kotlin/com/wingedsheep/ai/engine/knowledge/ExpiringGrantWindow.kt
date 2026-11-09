@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -33,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -49,10 +51,12 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -177,7 +181,11 @@ internal object ExpiringGrantWindow {
             return true
         }
 
-        if ((refuseUnspendable || readShrinks || readBorrows) && activation != null &&
+        // A loyalty ability's trigger is not all it buys: the loyalty it adds is permanent value the
+        // leaf prices, so Jace, Cunning Castaway's +1 is never "nothing" with no attacker to connect.
+        val loyaltyConnect = ability.isPlaneswalkerAbility &&
+            expiringPayoffs(ability.effect)?.any { it.kind == PayoffKind.CONNECT } == true
+        if ((refuseUnspendable || readShrinks || readBorrows) && activation != null && !loyaltyConnect &&
             nothingCanSpend(
                 state, playerId, ability.effect,
                 sourceId = activation.sourceId,
@@ -190,6 +198,7 @@ internal object ExpiringGrantWindow {
                 readBorrows = readBorrows,
                 xValue = activation.xValue,
                 canWaitForATarget = ability.timing == TimingRule.InstantSpeed,
+                source = state.getEntity(activation.sourceId)?.get<CardComponent>()?.name?.let(intents::definition),
             )
         ) {
             return true
@@ -215,8 +224,10 @@ internal object ExpiringGrantWindow {
         // A silence names its source only as it resolves (Mourner's Shield, Burrenton Forge-Tender:
         // "a source of your choice"), so it is best raised once blocks show which source deals the
         // damage — the same reasoning [waitsForBlocks] gives lifelink, on every profile that reads it.
+        // A [PayoffKind.CONNECT] trigger waits for blocks too: it changes no declaration, and only
+        // once blockers are declared is it known which of its creatures connect.
         val untilBlocks = (lifelinkWaitsForBlocks && waitsForBlocks(ability.effect)) ||
-            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.SILENCE } == true
+            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.SILENCE || it.kind == PayoffKind.CONNECT } == true
         if (!laterWindowIsStillAhead(state, playerId, untilBlocks)) return false
 
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
@@ -298,8 +309,10 @@ internal object ExpiringGrantWindow {
          * ability that targets. See [SPENT_ONLY_AGAINST_TARGETING].
          */
         canWaitForATarget: Boolean = false,
+        /** The card the effect is printed on — see [PayoffKind.RETYPE]. Null for a spell. */
+        source: CardDefinition? = null,
     ): Boolean {
-        val payoffs = expiringPayoffs(effect, readShrinks, readBorrows) ?: return false
+        val payoffs = expiringPayoffs(effect, readShrinks, readBorrows, source) ?: return false
         // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf —
         // unless it rides on a borrow, where it lands on the creature the borrow is judged by.
         val borrows = payoffs.any { it.kind == PayoffKind.BORROW }
@@ -323,6 +336,10 @@ internal object ExpiringGrantWindow {
                 return@none silenceCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets)
                     ?: return false
             }
+            if (payoff.kind == PayoffKind.CONNECT) {
+                return@none connectorCanStillHit(state, projected, playerId, payoff, sourceId, sourceTaps, intents)
+                    ?: return false
+            }
             val affected = affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
                 ?: return false
             when (payoff.kind) {
@@ -344,11 +361,11 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
-                PayoffKind.SHIELD, PayoffKind.SILENCE -> true // answered above
+                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
-                PayoffKind.SHRINK, PayoffKind.SET_BASE -> affected.any { id ->
+                PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE -> affected.any { id ->
                     // A set replaces the base (layer 7b) only: counters and pumps (7c, 7d) still
                     // apply on top, so the toughness lost is the old base less the new one.
                     val toughnessLoss = payoff.setToughness
@@ -390,6 +407,7 @@ internal object ExpiringGrantWindow {
     }
 
     private val HASTE = Keyword.HASTE.name
+    private val TRAMPLE = Keyword.TRAMPLE.name
 
     /** Whether the same ability from the same source is already on the stack. */
     private fun selfGrantPending(state: GameState, sourceId: EntityId, ability: ActivatedAbility): Boolean =
@@ -652,12 +670,14 @@ internal object ExpiringGrantWindow {
      * [castBuysNothing] can judge under some profile flag. With [creatureGrants] false the
      * creature-grant kind is left out, which is what a *spell* gets: [castBuysNothing] reads a
      * grant only when the whole spell is one ([readsSpellKeywordGrant], which the audit asks of the
-     * spell); a pump spell's reading is [HoldPolicy]'s combat-trick tag instead.
+     * spell); a pump spell's reading is [HoldPolicy]'s combat-trick tag instead. [source] is the
+     * card an activated ability is printed on, which [PayoffKind.RETYPE] reads; [holds] resolves
+     * the same card off the activation's source.
      *
      * Read only by the AI card-reading audit (`just ai-reading-audit`); nothing decides on it.
      */
-    fun hasExpiringReading(effect: Effect, creatureGrants: Boolean): Boolean {
-        val payoffs = expiringPayoffs(effect, readShrinks = true, readBorrows = true) ?: return false
+    fun hasExpiringReading(effect: Effect, creatureGrants: Boolean, source: CardDefinition? = null): Boolean {
+        val payoffs = expiringPayoffs(effect, readShrinks = true, readBorrows = true, source = source) ?: return false
         // A spell's shield is not read either: [castBuysNothing] asks only about shrinks.
         return creatureGrants || payoffs.none { it.kind in DEFERRABLE }
     }
@@ -710,8 +730,15 @@ internal object ExpiringGrantWindow {
          * may once it is a creature — so a fresh land counts as able to attack, the generous side.
          */
         animates: Boolean = false,
+        /**
+         * The payoff is spent only by [creature] dealing combat damage to a player — see
+         * [PayoffKind.CONNECT]. A blocker never does, so their turn has no fight for it, and once
+         * blockers are declared a blocked attacker connects only with trample.
+         */
+        connects: Boolean = false,
     ): Boolean {
         val entity = state.getEntity(creature) ?: return false
+        if (connects && !state.isActiveTurnFor(playerId)) return false
         val tapsAway = sourceTaps && creature == sourceId
         if (animates && !projected.isCreature(creature)) {
             if (tapsAway || entity.has<TappedComponent>()) return false
@@ -735,7 +762,8 @@ internal object ExpiringGrantWindow {
                 Step.DECLARE_ATTACKERS -> entity.has<AttackingComponent>() &&
                     (!blockedOnly || couldBeBlocked(state, projected, playerId, creature))
                 in FIGHT_STILL_AHEAD -> entity.has<AttackingComponent>() &&
-                    (!blockedOnly || entity.has<BlockedComponent>())
+                    (!blockedOnly || entity.has<BlockedComponent>()) &&
+                    (!connects || !entity.has<BlockedComponent>() || projected.hasKeyword(creature, TRAMPLE))
                 else -> false
             }
         } else {
@@ -761,6 +789,30 @@ internal object ExpiringGrantWindow {
     ): Boolean = state.getOpponents(playerId).any { opponent ->
         CombatMath.getOpponentUntappedCreatures(state, projected, opponent).any { blocker ->
             CombatMath.canBeBlockedBy(state, projected, attacker, blocker)
+        }
+    }
+
+    /**
+     * Whether a creature of ours a [PayoffKind.CONNECT] trigger watches can still deal combat
+     * damage to a player this turn — [canStillFight]'s step reading with `connects` on — or null
+     * when the catalog cannot evaluate the trigger's filter, which keeps the leaf in charge.
+     */
+    private fun connectorCanStillHit(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        payoff: Payoff,
+        sourceId: EntityId?,
+        sourceTaps: Boolean,
+        intents: IntentCatalog,
+    ): Boolean? {
+        val filter = payoff.matching ?: return null
+        val predicates = intents.predicates ?: return null
+        val context = PredicateContext(controllerId = playerId)
+        return projected.getBattlefieldControlledBy(playerId).any { id ->
+            projected.isCreature(id) &&
+                predicates.matches(state, projected, id, filter, context) &&
+                canStillFight(state, projected, playerId, id, sourceId, sourceTaps, connects = true)
         }
     }
 
@@ -1030,6 +1082,21 @@ internal object ExpiringGrantWindow {
         SET_BASE,
 
         /**
+         * A creature's types set until end of turn on a creature that is not the source, where the
+         * source card's own blocking restriction names the type ([TypeEvasion]) — "target creature
+         * becomes a Coward until end of turn" beside "Cowards can't block Warriors" (Boldwyr
+         * Intimidator, Kargan Intimidator), "… becomes a Warrior". On that card the new type's
+         * whole payoff is what it changes in this turn's combat — a blocker kept off an attacker,
+         * an attacker no longer blockable — and it kills nothing, so it is judged as a [SET_BASE]
+         * that sets no toughness: spent only in a fight its creature can still be in, on either
+         * side of the table, and wasted once the turn has none. Read with the shrinks, under
+         * [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs]. A retype the source's statics
+         * don't name (Mordenkainen's Polymorph, Wild Shape, Secret Identity) is not collected: what
+         * that type is for is the board's question, not the fight's.
+         */
+        RETYPE,
+
+        /**
          * Control of a creature until end of turn — "gain control of target creature until end of
          * turn" (Threaten, Involuntary Employment, Sibling Rivalry). It goes home at cleanup, so it
          * buys only what the creature does before then: an attack or a block on our side, or a fight
@@ -1063,6 +1130,22 @@ internal object ExpiringGrantWindow {
          * deferral waits for blocks ([holds]).
          */
         SILENCE,
+
+        /**
+         * An until-end-of-turn global trigger that fires when creatures of ours matching a filter
+         * deal combat damage to a player — "until end of turn, whenever one or more Gorgons and/or
+         * Snakes you control deal combat damage to a player, that player loses half their life"
+         * (Aphelia, Viper Whisperer), the shape of The Raven's Warning's chapter II, Jace, Cunning
+         * Castaway's +1 and Mistway Spy's turned-face-up trigger. A loyalty ability carrying it is
+         * never refused on it ([holds]): the loyalty is permanent. Whatever its trigger does, it is
+         * spent only by one of those creatures connecting in this turn's combat, so it is
+         * [PayoffKind.CREATURE]'s fight read from the attacker's side alone ([canStillFight] with
+         * `connects`): on our turn, a matching creature that can still attack, or an attacker not
+         * blocked (or trampling over). Their turn, our second main and the end step have none.
+         * Blocks show who connects and the trigger changes no declaration, so the deferral waits
+         * for them ([holds]).
+         */
+        CONNECT,
     }
 
     /**
@@ -1077,10 +1160,10 @@ internal object ExpiringGrantWindow {
         state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD || it.kind == PayoffKind.SILENCE }
 
     /** The stat-change payoffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
-    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE)
+    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE)
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
-    private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE)
+    private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT)
 
     /** One leaf of an ability whose payoff ends at cleanup, and where it lands. */
     private data class Payoff(
@@ -1099,6 +1182,8 @@ internal object ExpiringGrantWindow {
         val setToughness: Int? = null,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
         val animates: Boolean = false,
+        /** For a [PayoffKind.CONNECT]: the creatures of ours whose combat damage fires the trigger. */
+        val matching: GameObjectFilter? = null,
     )
 
     /**
@@ -1121,7 +1206,13 @@ internal object ExpiringGrantWindow {
      *
      * An effect with no payoff left once those are skipped is not this shape either.
      */
-    private fun expiringPayoffs(effect: Effect, readShrinks: Boolean = false, readBorrows: Boolean = false): List<Payoff>? {
+    private fun expiringPayoffs(
+        effect: Effect,
+        readShrinks: Boolean = false,
+        readBorrows: Boolean = false,
+        /** The card the effect is printed on, for [PayoffKind.RETYPE]'s [TypeEvasion] reading. */
+        source: CardDefinition? = null,
+    ): List<Payoff>? {
         val payoffs = mutableListOf<Payoff>()
         // Leaves that are not payoffs of their own but ride on a borrow — see the end of the loop.
         var borrowRiders = 0
@@ -1147,7 +1238,7 @@ internal object ExpiringGrantWindow {
                     leaf.expiry == DelayedTriggerExpiry.EndOfTurn && leaf.watchedTarget != null ->
                     watchRiders += checkNotNull(leaf.watchedTarget)
                 leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
-                    val body = expiringPayoffs(leaf.body, readShrinks) ?: return null
+                    val body = expiringPayoffs(leaf.body, readShrinks, source = source) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
                     payoffs += body
                 }
@@ -1178,6 +1269,11 @@ internal object ExpiringGrantWindow {
                 // something on the stack, which is exactly when a [PayoffKind.SHIELD] is spendable.
                 returnsFromDeathThisTurn(leaf) ->
                     payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
+                // "Until end of turn, whenever one or more Snakes you control deal combat damage to a
+                // player, …" (Aphelia, Viper Whisperer; Jace, Cunning Castaway): see [PayoffKind.CONNECT].
+                leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+                    combatDamageConnectors(leaf.ability) != null ->
+                    payoffs += Payoff(PayoffKind.CONNECT, null, matching = combatDamageConnectors(leaf.ability))
                 leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     firesOnlyInAFight(leaf.ability) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
@@ -1201,6 +1297,9 @@ internal object ExpiringGrantWindow {
                     if (leaf.power != null && leaf.power !is DynamicAmount.Fixed) return null
                     payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount)
                 }
+                readShrinks && leaf is SetCreatureSubtypesEffect && leaf.duration == Duration.EndOfTurn &&
+                    leaf.target != EffectTarget.Self && TypeEvasion.of(source, leaf) != null ->
+                    payoffs += Payoff(PayoffKind.RETYPE, leaf.target)
                 else -> return null
             }
         }
@@ -1273,6 +1372,25 @@ internal object ExpiringGrantWindow {
             else -> false
         }
     }
+
+    /**
+     * The creatures of ours whose combat damage to a player fires [ability], when that is its whole
+     * trigger — the batched "one or more [filter] you control deal combat damage to a player"
+     * (whose event reads "you control" itself), or "a [filter] deals combat damage to a player"
+     * bound to any matching creature (Mistway Spy's). Null for any other trigger. See
+     * [PayoffKind.CONNECT].
+     */
+    private fun combatDamageConnectors(ability: TriggeredAbility): GameObjectFilter? =
+        when (val pattern = ability.trigger) {
+            is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent -> pattern.sourceFilter
+            is EventPattern.DealsDamageEvent -> pattern.sourceFilter.takeIf {
+                ability.binding == TriggerBinding.ANY && pattern.damageType == DamageType.Combat &&
+                    pattern.recipient in PLAYER_RECIPIENTS && pattern.requires.isEmpty()
+            }
+            else -> null
+        }
+
+    private val PLAYER_RECIPIENTS = setOf(Recipient.AnyPlayer, Recipient.Opponent, Recipient.AnotherPlayer)
 
     /**
      * Whether [effect] grants, until end of turn, a "when this creature dies, return it to the

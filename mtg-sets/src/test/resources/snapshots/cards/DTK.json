@@ -39,6 +39,54 @@
     ]
 }
 
+// Ainok Artillerist
+{
+    "name": "Ainok Artillerist",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Dog Archer",
+    "oracleText": "This creature has reach as long as it has a +1/+1 counter on it. (It can block creatures with flying.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "James Paick",
+        "flavorText": "\"In the Tarkir I once knew, the Abzan revered their ancestor trees. Now, as Dromoka, they cut their finest groves to make weapons.\"\n—Sarkhan Vol",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a4c8964-06e4-4a24-9a7e-9cac0fb8518e.jpg?1783938582"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ancestral Statue
 {
     "name": "Ancestral Statue",
@@ -3735,6 +3783,80 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sibsig Icebreakers
+{
+    "name": "Sibsig Icebreakers",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, each player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sibsig Icebreakers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"I almost envy them. They can't get frostbite.\"\n—Kirada, Silumgar enforcer",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3835752e-11a6-406c-8bff-b7d4f2f31d85.jpg?1783938594"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

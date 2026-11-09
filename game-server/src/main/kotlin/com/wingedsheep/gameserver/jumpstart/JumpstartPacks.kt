@@ -45,8 +45,11 @@ class JumpstartPacks(generator: BoosterGenerator, setCode: String = "JMP") {
     companion object {
         val lists: Map<String, List<String>> get() = listsFor("JMP")
 
+        /** Jumpstart sets with checked-in paper pack lists (`/jumpstart/<code>.txt`), newest first. */
+        val SUPPORTED_SETS: List<String> = listOf("J25", "J22", "JMP")
+
         private val published by lazy {
-            setOf("JMP", "J22").associateWith { loadLists(it) }
+            SUPPORTED_SETS.associateWith { loadLists(it) }
         }
 
         fun listsFor(setCode: String): Map<String, List<String>> =

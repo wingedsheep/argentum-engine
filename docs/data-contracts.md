@@ -962,8 +962,9 @@ costs remain unchanged. The field defaults to empty and is public information.
 
 ### Jumpstart pack selection
 
-For a lobby selecting only `JMP` or only `J22`, ordinary `SEALED` and `DRAFT` use Jumpstart by default.
-The client presents this as **Jump In**; its wizard creates a `SEALED` lobby selecting `J22`,
+For a lobby selecting only one of `JumpstartPacks.SUPPORTED_SETS` (`J25`, `J22`, `JMP`), ordinary `SEALED` and
+`DRAFT` use Jumpstart by default. The client presents this as **Jump In**; it creates a `SEALED` lobby selecting
+the Jumpstart set the player chose under "Packs from" (default `J25`),
 with `useJumpstart: true` and one game per matchup. It uses the existing tournament transport,
 AI seats, private pack selections, reconnect and automatic deck submission.
 `LobbySettings.useJumpstart` is the host's persistent preference; `jumpstartEligible` and
@@ -983,7 +984,8 @@ server-side. Players cannot add lands, remove cards, or edit this deck. Offers, 
 preference survive persistence and reconnection; a pair can be chosen only once, so a retransmit
 cannot choose another.
 
-The checked-in `game-server/src/main/resources/jumpstart/j22.txt` contains Wizards' 121 paper J22
+`game-server/src/main/resources/jumpstart/j25.txt` holds the 121 paper Foundations Jumpstart variants across 46
+themes, generated from MTGJSON's J25 Jumpstart deck files. The checked-in `game-server/src/main/resources/jumpstart/j22.txt` contains Wizards' 121 paper J22
 variants across 46 themes, taken from the [published decklists](https://magic.wizards.com/en/news/feature/jumpstart-2022-booster-themes-and-card-lists).
 `game-server/src/main/resources/jumpstart/jmp.txt` contains Wizards' 121 paper JMP
 lists (including cards printed in M21). Themed basic-land labels are normalized to their printed

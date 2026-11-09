@@ -1663,3 +1663,90 @@
         "WHITE"
     ]
 }
+
+// Urge to Feed
+{
+    "name": "Urge to Feed",
+    "manaCost": "{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -3/-3 until end of turn. You may tap any number of untapped Vampire creatures you control. If you do, put a +1/+1 counter on each of those Vampires.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature Vampire untapped ctrl:you"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected2",
+                    "prompt": "You may tap any number of untapped Vampires you control to put a +1/+1 counter on each",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "TapUntapCollection",
+                    "collectionName": "selected2"
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "selected2",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b388d4d9-62b6-4174-897e-f933a4badcf9.jpg?1783942054",
+        "rulings": [
+            {
+                "date": "2010-03-01",
+                "text": "You don't choose which untapped Vampire creatures you control to tap (if any) until Urge to Feed resolves."
+            },
+            {
+                "date": "2010-03-01",
+                "text": "If you cast Urge to Feed targeting an untapped Vampire creature you control with toughness 3, its toughness will be reduced to 0 by the -3/-3 effect. However, state-based actions aren't checked until the spell has finished resolving. You may then tap that Vampire and put a +1/+1 counter on it, raising its toughness to 1. It will remain on the battlefield."
+            },
+            {
+                "date": "2010-03-01",
+                "text": "If the targeted creature is an illegal target by the time Urge to Feed resolves, the entire spell doesn't resolve. You can't tap any Vampires."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
