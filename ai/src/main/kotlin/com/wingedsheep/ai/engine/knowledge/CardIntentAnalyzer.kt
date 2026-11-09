@@ -2186,7 +2186,14 @@ object CardIntentAnalyzer {
         is AddManaEffect, is AddColorlessManaEffect, is AddDynamicManaEffect,
         is AddManaOfChoiceEffect, is PlayAdditionalLandsEffect -> setOf(IntentTag.RAMP)
 
-        is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect -> setOf(IntentTag.PROTECTION)
+        is RegenerateEffect, is HealDamageEffect -> setOf(IntentTag.PROTECTION)
+        // A shield is protection; the reaction it carries ("for each 1 damage prevented this way,
+        // create a 2/1 Inkling", Inkshield; "you gain that much life", Awe Strike) is a payoff the
+        // card makes on top of it, read as any effect of that kind. Damage it reflects (Deflecting
+        // Palm) is no burn: it only happens if the shield fires, so it never aims the card at a face.
+        is PreventDamageEffect -> setOf(IntentTag.PROTECTION) +
+            (effect.onPrevented?.let { reaction -> EffectWalker.leaves(reaction).flatMapTo(mutableSetOf()) { tagsOf(it) } }
+                ?: emptySet()) - IntentTag.DAMAGE_TO_PLAYERS
         // "All damage that would be dealt this turn to you and permanents you control is dealt to
         // enchanted creature instead" (Saving Grace, Gideon's Sacrifice, Glarecaster): a shield over
         // what it protects, the damage soaked by a body chosen for it — a prevention that lands elsewhere.

@@ -1,0 +1,1 @@
+- #0 The AI now reads a damage-prevention shield's reaction (Inkshield's Inkling tokens, Awe Strike's life gain): such a card counts as a token maker or life-gain source and feeds the token and life-gain synergy axes.

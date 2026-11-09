@@ -7146,7 +7146,10 @@ object Effects {
      * @param halve With [nextInstanceOnly], prevent half that instance, rounded down (Dark Sphere).
      * @param onPrevented "When damage is prevented this way, …" — run with the prevented amount as
      *   [DynamicAmounts.preventedDamage] and the source's controller as
-     *   [EffectTarget.ControllerOfTriggeringEntity] (Deflecting Palm, New Way Forward).
+     *   [EffectTarget.ControllerOfTriggeringEntity] (Deflecting Palm, New Way Forward). On a
+     *   recipient-side shield ([alsoToYou] / [toGroup]) it runs once per damage instance the shield
+     *   prevents, with that instance's amount — "for each 1 damage prevented this way, create a 2/1
+     *   Inkling" (Inkshield); damage that can't be prevented (CR 615.12) prevents nothing, so it runs with 0.
      * @param stillDealt The damage is dealt anyway and only [onPrevented] reacts (Eye for an Eye).
      * @param gainLifeFromColors Gain life whenever damage from a source of these colors is prevented
      *   this way (Samite Ministration).

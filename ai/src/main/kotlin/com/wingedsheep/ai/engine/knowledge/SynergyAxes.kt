@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
@@ -377,6 +378,9 @@ object SynergyAxes {
             if (leaf is SacrificeTargetEffect && !leaf.sacrificedByItsController &&
                 sacrificesACreature(leaf.target, requirements, creatureSource)
             ) add(SynergyAxis.DEATH)
+            // The reaction a prevention shield carries ("for each 1 damage prevented this way,
+            // create a 2/1 Inkling", Inkshield) produces what it does when the shield fires.
+            if (leaf is PreventDamageEffect) leaf.onPrevented?.let { addAll(effectFeeds(it, creatureSource)) }
             addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
             if (IntentTag.LIFEGAIN in tags) add(SynergyAxis.LIFEGAIN)
