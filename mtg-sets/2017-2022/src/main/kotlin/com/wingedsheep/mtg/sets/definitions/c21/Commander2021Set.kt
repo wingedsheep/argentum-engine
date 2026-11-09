@@ -15,10 +15,12 @@ object Commander2021Set : MtgSet {
     override val sealedSupported = false
     override val incomplete = true
 
-    // The Strixhaven Commander decks shipped alongside Strixhaven and share its token sheet — the
-    // Inkling Inkshield mints is a Strixhaven token, and `tc21` never printed it.
+    // The Inkling Inkshield mints is a Strixhaven token; `tc21` never printed it. Only that row is
+    // borrowed: declaring any art registers C21 as an art-carrying set, so the rest of Strixhaven's
+    // sheet would shadow the canonical art of every other token a C21 printing mints (Thopters,
+    // Myr, Food), and C21's own `tc21` sheet isn't synced for `borrowedFrom` to filter against.
     override val tokenArt: List<TokenPrinting> by lazy {
-        TokenArtData.borrowedFrom(StrixhavenSchoolOfMagesSet.code, code)
+        TokenArtData.forSet(StrixhavenSchoolOfMagesSet.code).filter { it.matchesName("Inkling") }
     }
     override val cards: List<CardDefinition> by lazy { CardDiscovery.findIn(CARDS_PACKAGE) }
     override val printings: List<Printing> by lazy { CardDiscovery.findPrintingsIn(CARDS_PACKAGE) }

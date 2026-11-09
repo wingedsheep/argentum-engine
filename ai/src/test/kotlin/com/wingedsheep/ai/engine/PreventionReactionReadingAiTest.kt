@@ -6,6 +6,7 @@ import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.mtg.sets.definitions.c21.cards.Inkshield
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.DeflectingPalm
+import com.wingedsheep.mtg.sets.definitions.tdm.cards.NewWayForward
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import io.kotest.core.spec.style.FunSpec
@@ -41,5 +42,13 @@ class PreventionReactionReadingAiTest : FunSpec({
         val tags = CardIntentAnalyzer.analyzeEffect(DeflectingPalm.script.spellEffect!!).tags
         tags shouldContain IntentTag.PROTECTION
         tags shouldNotContain IntentTag.DAMAGE_TO_PLAYERS
+    }
+
+    test("a shield whose reaction draws is not read as a cantrip") {
+        // New Way Forward draws only when it prevents damage; a DRAW reading would earn it the
+        // opponent's-end-step cantrip window, where nothing is dealing damage.
+        val tags = CardIntentAnalyzer.analyzeEffect(NewWayForward.script.spellEffect!!).tags
+        tags shouldContain IntentTag.PROTECTION
+        tags shouldNotContain IntentTag.DRAW
     }
 })
