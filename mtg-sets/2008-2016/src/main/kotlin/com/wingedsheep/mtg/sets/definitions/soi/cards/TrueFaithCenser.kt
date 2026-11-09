@@ -26,7 +26,7 @@ val TrueFaithCenser = card("True-Faith Censer") {
     oracleText =
         "Equipped creature gets +1/+1 and has vigilance.\n" +
             "As long as equipped creature is a Human, it gets an additional +1/+0.\n" +
-            "Equip {2}"
+            "Equip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)"
 
     staticAbility {
         ability = ModifyStats(1, 1, Filters.EquippedCreature)
