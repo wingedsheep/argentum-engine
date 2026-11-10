@@ -2000,6 +2000,115 @@
     ]
 }
 
+// Kozilek, the Great Distortion
+{
+    "name": "Kozilek, the Great Distortion",
+    "manaCost": "{8}{C}{C}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "When you cast this spell, if you have fewer than seven cards in hand, draw cards equal to the difference.\nMenace\nDiscard a card with mana value X: Counter target spell with mana value X.",
+    "creatureStats": {
+        "power": 12,
+        "toughness": 12
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kozilek, the Great Distortion:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 7
+                        },
+                        "right": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, if you have fewer than seven cards in hand, draw cards equal to the difference."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kozilek, the Great Distortion:2",
+                "cost": {
+                    "type": "CostDiscardX",
+                    "xMeasure": "TOTAL_MANA_VALUE",
+                    "count": 1
+                },
+                "effect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Discard a card with mana value X: Counter target spell with mana value X."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "flavorText": "A void as cryptic as reality itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f06fc6e0-b22c-40d3-bb53-d5ec400d921c.jpg?1783937930",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Kozilek's triggered ability checks to see if you have fewer than seven cards in hand when you cast it. Kozilek is on the stack at this time and not in your hand. If you don't, the ability won't trigger at all. If the ability does trigger, it will check again as it tries to resolve. If you have seven or more cards in hand at that time, the ability won't do anything."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "To activate the last ability, there must be a legal target: a spell on the stack. That target will determine the value of X and the mana value of the card you discard. You can't activate the ability unless you can match the mana value of a spell on the stack to that of a card in your hand."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The mana value of a spell doesn't change, even if it's been cast using an alternative cost (such as an awaken cost). For example, the mana value of a Sheer Drop (a spell with mana cost {2}{W}) that's been cast for its awaken cost of {5}{W} is 3."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If there's an {X} in the mana cost of the card you discard, that X is 0. Any {X} in the mana cost of the target spell will have whatever value was determined for it as the spell was cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Loam Larva
 {
     "name": "Loam Larva",

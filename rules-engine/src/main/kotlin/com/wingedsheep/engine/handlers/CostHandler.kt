@@ -152,9 +152,14 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 // You can always discard your hand, even if it's empty
                 true
             }
-            // X can be 0 (discard nothing), so this is always payable; the hand caps X in
-            // calculateMaxAffordableX and in the selection pause.
-            is AbilityCost.DiscardX -> true
+            // X can be 0 (discard nothing), so "discard X cards" is always payable; the hand caps X
+            // in calculateMaxAffordableX and in the selection pause. A printed count ("discard a
+            // card with mana value X") needs that many matching cards; which of them leave a
+            // target is the enumerator's and the selection pause's question.
+            is AbilityCost.DiscardX -> {
+                val printedCount = cost.count
+                printedCount == null || discardXCandidates(state, controllerId, sourceId, cost).size >= printedCount
+            }
             is AbilityCost.ExileXFromGraveyard -> {
                 // X can be 0, so this is always payable as long as graveyard exists
                 // maxAffordableX is capped by graveyard size in LegalActionsCalculator
@@ -384,6 +389,24 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 }
             }
             is AbilityCost.DiscardX -> {
+                val printedCount = cost.count
+                if (printedCount != null) {
+                    // "Discard a card with mana value X": exactly one matching hand card, measuring
+                    // exactly the activation's X (announced by this very pick, or fixed by `{X}`
+                    // mana). A GameAction is client-supplied, so both are re-checked here; the
+                    // selection pause always supplies the pick.
+                    val x = choices.xValue
+                    val candidates = discardXCandidates(state, controllerId, sourceId, cost)
+                    val toDiscard = choices.discardChoices
+                    if (toDiscard.size != printedCount || toDiscard.distinct().size != printedCount ||
+                        toDiscard.any { it !in candidates } ||
+                        com.wingedsheep.engine.mechanics.cost.CostDefinedX.discardX(state, cost, toDiscard) != x
+                    ) {
+                        return CostPaymentResult.failure("Must discard ${cost.description.removePrefix("Discard ")} (X = $x)")
+                    }
+                    val result = zones.discardCards(state, controllerId, toDiscard)
+                    return CostPaymentResult.success(result.state, manaPool, result.events)
+                }
                 // A GameAction is client-supplied: the discards must be exactly X distinct matching
                 // cards from the payer's hand. With none chosen and no real choice (X equals the
                 // candidates) the engine-direct path takes them all.
@@ -2083,13 +2106,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
         controllerId: EntityId,
         sourceId: EntityId,
         cost: AbilityCost.DiscardX
-    ): List<EntityId> = findMatchingCardsUnified(
-        state,
-        state.getZone(ZoneKey(controllerId, Zone.HAND)).filter { it != sourceId },
-        cost.filter,
-        controllerId,
-        sourceId = sourceId
-    )
+    ): List<EntityId> = com.wingedsheep.engine.mechanics.cost.CostDefinedX
+        .discardCandidates(state, controllerId, sourceId, cost, predicateEvaluator)
 
     internal fun findMatchingCardsUnified(
         state: GameState,

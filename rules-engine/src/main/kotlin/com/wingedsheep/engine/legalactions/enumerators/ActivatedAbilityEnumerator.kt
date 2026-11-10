@@ -3,6 +3,8 @@ package com.wingedsheep.engine.legalactions.enumerators
 import com.wingedsheep.engine.handlers.actions.ability.tapXExcludedSource
 import com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment
 import com.wingedsheep.engine.handlers.actions.ability.extractVariablePermanentsCost
+import com.wingedsheep.engine.handlers.actions.ability.extractDiscardXCost
+import com.wingedsheep.engine.handlers.actions.ability.targetsFollowCostChoice
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
@@ -1160,11 +1162,26 @@ class ActivatedAbilityEnumerator(
                     // fizzle. Surface a bare action; the handler pauses first for the exile selection,
                     // then for the X-bounded target, in order. (The satisfiability gate above still
                     // applies — no artifact card in the graveyard means no legal target at any X.)
-                    if (costContainsVariablePermanents(effectiveCost)) {
+                    // Kozilek, the Great Distortion ("discard a card with mana value X: counter target
+                    // spell with mana value X") defers its target the same way: the discard is the pick.
+                    if (effectiveCost.targetsFollowCostChoice()) {
                         // A single-permanent cost ("sacrifice an artifact with mana value X" —
                         // Scrap Welder) is unpayable when no pick leaves its X-bounded target a
                         // legal choice; the selection pause offers the same viable picks.
                         val single = effectiveCost.extractVariablePermanentsCost()?.takeIf { it.maxCount == 1 }
+                        val measuredDiscard = effectiveCost.extractDiscardXCost()
+                        val measuredCount = measuredDiscard?.count
+                        if (measuredDiscard != null && measuredCount != null) {
+                            val viable = com.wingedsheep.engine.mechanics.cost.CostDefinedX.viableDiscards(
+                                state, measuredDiscard,
+                                com.wingedsheep.engine.mechanics.cost.CostDefinedX.discardCandidates(
+                                    state, playerId, entityId, measuredDiscard, context.predicateEvaluator
+                                ),
+                                null, targetReqs, playerId, entityId,
+                                com.wingedsheep.engine.handlers.TargetFinder(context.predicateEvaluator)
+                            )
+                            if (viable.size < measuredCount) continue
+                        }
                         if (single != null) {
                             val eligible = context.costUtils.findVariablePermanentCostTargets(
                                 state, playerId, single, if (single.excludeSelf) entityId else null, sourceId = entityId
@@ -1673,7 +1690,6 @@ class ActivatedAbilityEnumerator(
      * "real" effect is hidden inside (e.g., Figure of Fable's `Effects.If(... BecomeCreature)`) is
      * also excluded.
      */
-    /** True when [cost] contains a [CostAtom.VariablePermanents] atom (top-level or in a Composite). */
     /**
      * Whether [cost] includes "Reveal the creature type you chose" — the cost only the player who
      * made the source's secret note can pay. Mirrors `ActivateAbilityHandler`'s helper of the same
@@ -1682,12 +1698,6 @@ class ActivatedAbilityEnumerator(
     private fun costRevealsNotedCreatureType(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Atom -> cost.atom is CostAtom.RevealNotedCreatureType
         is AbilityCost.Composite -> cost.costs.any { costRevealsNotedCreatureType(it) }
-        else -> false
-    }
-
-    private fun costContainsVariablePermanents(cost: AbilityCost): Boolean = when (cost) {
-        is AbilityCost.Atom -> cost.atom is CostAtom.VariablePermanents
-        is AbilityCost.Composite -> cost.costs.any { costContainsVariablePermanents(it) }
         else -> false
     }
 

@@ -242,6 +242,18 @@ internal fun AbilityCost.extractDiscardXCost(): AbilityCost.DiscardX? =
     }
 
 /**
+ * Whether an activation with this cost chooses its controller targets *after* a cost pick that
+ * announces X (CR 601.2b via CR 602.2b): a variable-permanents cost (Fabrication Foundry, Scrap
+ * Welder), or a measured discard — "discard a card with mana value X" (Kozilek, the Great
+ * Distortion) — with no `{X}` mana to fix X first. The enumerator, the validator and the
+ * activation's pauses all ask this one question, so a bare submission is offered, accepted and
+ * then asked for its targets in the same cases.
+ */
+internal fun AbilityCost.targetsFollowCostChoice(): Boolean =
+    extractVariablePermanentsCost() != null ||
+        (extractDiscardXCost()?.count != null && extractManaCost()?.hasX != true)
+
+/**
  * Pull the [CostAtom.Sacrifice] sub-cost out of an ability cost (top-level [AbilityCost.Atom] or
  * inside a [AbilityCost.Composite]), or null if none. Used by the legal-actions submission path
  * to detect that an activation needs to pause for a sacrifice-target selection when the player

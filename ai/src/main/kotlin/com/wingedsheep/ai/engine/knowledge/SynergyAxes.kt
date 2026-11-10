@@ -529,6 +529,8 @@ object SynergyAxes {
 
     private fun discards(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Atom -> cost.atom is CostAtom.Discard
+        // "Discard X cards" (Gix) and "discard a card with mana value X" (Kozilek) stock it too.
+        is AbilityCost.DiscardX -> true
         is AbilityCost.Composite -> cost.costs.any(::discards)
         else -> false
     }
