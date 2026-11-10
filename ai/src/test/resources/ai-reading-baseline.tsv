@@ -228,6 +228,7 @@ Aetherwind Basker
 Aetherworks Marvel
 Aettir and Priwen
 Affa Guard Hound
+Affa Protector
 Affectionate Indrik
 Afflict
 Afterburner Expert
@@ -420,6 +421,7 @@ Alley Assailant
 Alley Evasion
 Alley Strangler
 Allied Assault
+Allied Reinforcements
 Allies at Last
 Alloy Animist	polarity: BecomeCreatureEffect
 Alloy Golem
@@ -1786,6 +1788,7 @@ Blind with Anger
 Blind-Spot Giant
 Blindblast
 Blinding Beam
+Blinding Drone
 Blinding Fog	timing: ForEach>GrantKeywordEffect
 Blinding Light
 Blinding Mage
@@ -2510,6 +2513,7 @@ Call of the Ring
 Call the Bloodline
 Call the Cavalry
 Call the Coppercoats	polarity: CreateTokenEffect
+Call the Gatewatch
 Call the Mountain Chocobo
 Call the Spirit Dragons
 Call to Glory
@@ -2990,6 +2994,7 @@ Chimil, the Inner Sun
 Chimney Imp
 Chimney Rabble
 Chitin Gravestalker
+Chitinous Cloak
 Chitinous Graspling
 Chittering Harvester
 Chittering Host
@@ -3043,6 +3048,7 @@ Cid, Timeless Artificer
 Cinder Barrens
 Cinder Elemental
 Cinder Glade
+Cinder Hellion
 Cinder Shade
 Cinder Storm
 Cinder Strike
@@ -3150,6 +3156,7 @@ Clickslither
 Cliff Threader
 Cliffhaven Kitesail
 Cliffhaven Sell-Sword
+Cliffhaven Vampire
 Cliffrunner Behemoth
 Cliffside Lookout
 Clifftop Lookout
@@ -3734,6 +3741,7 @@ Crumb and Get It
 Crumble
 Crumbling Ashes
 Crumbling Necropolis
+Crumbling Vestige
 Crusade
 Crusader of Odric
 Crusading Knight
@@ -4231,6 +4239,7 @@ Deep-Sea Serpent
 Deep-Slumber Titan
 Deepchannel Duelist
 Deepfathom Echo
+Deepfathom Skulker
 Deepglow Skate	intent: ForEach>DoubleCountersEffect
 Deepmuck Desperado
 Deeproot Champion
@@ -4438,6 +4447,7 @@ Devoted Paladin
 Devoted Retainer
 Devotee of Strength
 Devour Intellect
+Devour in Flames
 Devourer of Destiny
 Devourer of Memory
 Devouring Deep
@@ -4839,6 +4849,7 @@ Dramatic Rescue
 Dramatic Reversal
 Dramatist's Puppet
 Drana and Linvala
+Drana's Chosen
 Drana's Emissary
 Drana's Silencer
 Drana, Liberator of Malakir
@@ -5637,6 +5648,7 @@ Essence Anchor
 Essence Burn
 Essence Capture	polarity: AddCountersEffect; polarity: CounterEffect
 Essence Channeler
+Essence Depleter
 Essence Drain
 Essence Extraction
 Essence Flux
@@ -7664,6 +7676,7 @@ Graveyard Shift
 Graveyard Trespasser	polarity: GainLifeEffect; polarity: LoseLifeEffect; polarity: Pipeline(ChosenTargets→exile)
 Gravitational Shift
 Gravitic Punch
+Gravity Negator
 Gravity Sphere
 Gravkill
 Gravpack Monoist
@@ -8092,6 +8105,7 @@ Havenwood Wurm
 Havoc Demon
 Havoc Devils
 Havoc Jester
+Havoc Sower
 Hawkeater Moth
 Hawkeye's Bow
 Hawkeye, Master Marksman
@@ -8175,6 +8189,7 @@ Hedge Whisperer	polarity: BecomeCreatureEffect
 Hedgewitch's Mask
 Hedron Archive
 Hedron Crab
+Hedron Crawler
 Hedron Scrabbler
 Heedless One
 Hei Bai, Forest Guardian
@@ -8405,6 +8420,7 @@ Hog-Monkey
 Hold for Questioning
 Hold for Ransom
 Hold the Line
+Holdout Settlement
 Hollow Dogs
 Hollow Marauder
 Hollow One
@@ -8775,6 +8791,7 @@ Immersturm Predator
 Immersturm Raider
 Immersturm Skullcairn
 Imminent Doom
+Immolating Glare
 Immolation
 Immolation Shaman
 Immortal Phoenix
@@ -9201,6 +9218,7 @@ Island of Wak-Wak
 Isochron Scepter	intent: Pipeline(hand→exile)
 Isolate
 Isolated Chapel
+Isolation Zone
 Isolation at Orthanc
 Isolinear Processor
 Isshin, Two Heavens as One
@@ -9404,6 +9422,7 @@ Joo Dee, One of Many
 Jor Kadeen, First Goldwarden
 Joraga Invocation
 Joraga Visionary
+Jori En, Ruin Diver
 Jorn, God of Winter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
 Jorubai Murk Lurker
 Joshua, Phoenix's Dominant
@@ -9901,6 +9920,7 @@ Kor Celebrant
 Kor Entanglers
 Kor Halberd
 Kor Line-Slinger
+Kor Sky Climber
 Korlessa, Scale Singer
 Kormus Bell
 Korvold and the Noble Thief
@@ -9916,6 +9936,8 @@ Kotose, the Silent Spider
 Koya, Death from Above
 Kozilek's Channeler
 Kozilek's Command
+Kozilek's Shrieker
+Kozilek's Translator
 Kozilek's Unsealing
 Kozilek, Butcher of Truth	intent: Pipeline(graveyard→library)
 Kozilek, the Broken Reality	polarity: DrawCardsEffect; polarity: ForEachEffect
@@ -10443,6 +10465,7 @@ Lo and Li, Twin Tutors
 Loading Zone
 Loafing Giant
 Loam Dryad
+Loam Larva
 Loamdragger Giant
 Loaming Shaman	polarity: ForEachEffect; polarity: Pipeline(?→?)
 Loan Shark
@@ -10776,6 +10799,7 @@ Makeshift Binding
 Makeshift Mannequin
 Makeshift Mauler
 Makeshift Munitions
+Makindi Aeronaut
 Makindi Griffin
 Makindi Ox
 Makindi Patrol
@@ -10789,6 +10813,7 @@ Malakir Blood-Priest
 Malakir Bloodwitch
 Malakir Familiar
 Malakir Rebirth
+Malakir Soothsayer
 Malamet Battle Glyph
 Malamet Brawler
 Malamet Scythe
@@ -11039,6 +11064,7 @@ Mausoleum Wanderer
 Maverick Thopterist
 Mavinda, Students' Advocate	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithCostIncreaseEffect; intent: Pipeline(ChosenTargets→?)
 Mavren Fein, Dusk Apostle
+Maw of Kozilek
 Maw of the Mire
 Mawcor
 Maximize Altitude
@@ -11318,6 +11344,7 @@ Mindleech Ghoul
 Mindleech Mass
 Mindless Conscription
 Mindlink Mech
+Mindmelter
 Mindmoil
 Mindseeker Oculus
 Mindslaver	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
@@ -11742,6 +11769,7 @@ Multiply by Zero
 Multiversal Incursion
 Multiversal Passage
 Mummy Paramount
+Munda's Vanguard
 Munitions Enthusiast
 Muraganda Raceway
 Murasa Brute
@@ -11911,6 +11939,7 @@ Natural Order
 Natural Reclamation
 Natural Selection	intent: Pipeline(TopOfLibrary→library); polarity: Pipeline(TopOfLibrary→library)
 Natural Spring
+Natural State
 Naturalize
 Nature's Chant
 Nature's Claim
@@ -12249,6 +12278,7 @@ Nuclear Fallout
 Nuisance Engine
 Nuka-Cola Vending Machine
 Nuka-Nuke Launcher
+Null Caller
 Null Elemental Blast
 Null Group Biological Assets
 Null Summoner
