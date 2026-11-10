@@ -92,6 +92,11 @@ class CastFromZoneEnumerator(
         val state = context.state
         val playerId = context.playerId
 
+        // Hand casts for a keyword alternative cost — Avatar's Wrath's hand-only restriction below
+        // doesn't reach them.
+        enumerateDash(context, result)
+        enumerateSurge(context, result)
+
         // Avatar's Wrath: "your opponents can't cast spells from anywhere other than their hands."
         // Every path this enumerator offers is a non-hand cast (library top, exile, linked exile,
         // graveyard, flashback, harmonize, command zone), so suppress the whole enumerator while
@@ -118,7 +123,6 @@ class CastFromZoneEnumerator(
         enumerateDisturb(context, result)
         enumerateGraveyardCast(context, result)
         enumerateWarp(context, result)
-        enumerateDash(context, result)
         enumerateBlitz(context, result)
         enumerateCommandZone(context, result)
         enumerateKickerForZoneCasts(context, result)
@@ -2499,6 +2503,32 @@ class CastFromZoneEnumerator(
     }
 
     /**
+     * Enumerate surge casts of hand cards (CR 702.117a) — offered only once the player or a
+     * teammate has cast another spell this turn, so the "Surge" button appears exactly when it is
+     * legal. Hand-only, like [enumerateDash].
+     */
+    private fun enumerateSurge(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>
+    ) {
+        val zones = com.wingedsheep.engine.handlers.actions.spell.CastZoneResolver(
+            context.cardRegistry, context.conditionEvaluator, context.legality
+        )
+        if (context.cantPlayCardsFromHand) return
+        if (!zones.surgeEnabled(context.state, context.playerId)) return
+        for (cardId in context.state.getHand(context.playerId)) {
+            val cardComponent = context.state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (cardComponent.typeLine.isLand) continue
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val surge = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Surge>().firstOrNull() ?: continue
+            enumerateKeywordAlternativeCast(
+                context, result, cardId, cardComponent, cardDef, Zone.HAND,
+                surge.cost, emptyList(), AlternativeCostType.SURGE, "CastWithSurge", "Surge"
+            )
+        }
+    }
+
+    /**
      * Enumerate blitz casts (CR 702.152a): from the hand, and from the graveyard when the card's
      * `MayCastSelfFromZones(castUsing = Keyword.BLITZ)` permission reaches it (Tenacious Underdog).
      */
@@ -2528,7 +2558,7 @@ class CastFromZoneEnumerator(
 
     /**
      * One card's cast for a keyword alternative cost that replaces the mana cost and otherwise
-     * follows the normal casting rules — dash and blitz. Same "always show both the normal cast and
+     * follows the normal casting rules — dash, blitz and surge. Same "always show both the normal cast and
      * the alternative cast" UX as [enumerateWarpFromZone], with target-requirement handling, {X} in
      * the alternative cost, and the cost's bundled non-mana half ([bundledCosts]).
      */
@@ -2549,12 +2579,14 @@ class CastFromZoneEnumerator(
         val playerId = context.playerId
         val description = "Cast ${cardComponent.name} ($label)"
 
-        // Permanents at sorcery speed, instants at instant speed — dash (CR 702.109a) and blitz
-        // (CR 702.152a) fold into the normal alternative-cost casting rules (601.2b, 601.2f–h)
+        // Permanents at sorcery speed, instants at instant speed — dash (CR 702.109a), blitz
+        // (CR 702.152a) and surge (CR 702.117a) fold into the normal alternative-cost casting rules (601.2b, 601.2f–h)
         // rather than waiving timing; the dash ruling spells it out: "You can cast a creature
         // spell for its dash cost only when you otherwise could cast that creature spell."
-        val isInstant = cardComponent.typeLine.isInstant
-        if (!isInstant && !context.canPlaySorcerySpeed) return
+        // Flash — printed or granted — lets it be cast whenever its controller could otherwise cast it.
+        val instantSpeed = cardComponent.typeLine.isInstant || cardDef.keywords.contains(Keyword.FLASH) ||
+            context.castPermissionUtils.hasGrantedFlash(state, cardId, playerId)
+        if (!instantSpeed && !context.canPlaySorcerySpeed) return
 
         if (context.cantCastSpell(cardId)) {
             result.add(

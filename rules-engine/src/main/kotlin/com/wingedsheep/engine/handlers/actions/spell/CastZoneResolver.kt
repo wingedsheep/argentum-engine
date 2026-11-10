@@ -800,6 +800,30 @@ class CastZoneResolver(
     }
 
     /**
+     * Check if a card can be cast for its surge cost (CR 702.117a): it has a printed Surge, it is in
+     * its caster's hand, and the caster or one of their teammates has already cast another spell
+     * this turn. Read before the spell is counted (the cast being priced is not "another spell"),
+     * and from the turn's per-player cast counts, so a spell that was countered still enables it.
+     * Hand-only like [hasDashPermission] — an engine limit, not the rule's (CR 702.117a names no
+     * zone): the zone-cast permissions (exile, library top) don't offer keyword alternative costs.
+     */
+    fun hasSurgePermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
+        if (cardDef.keywordAbilities.none { it is KeywordAbility.Surge }) return false
+        if (cardId !in state.getZone(ZoneKey(playerId, Zone.HAND))) return false
+        return surgeEnabled(state, playerId)
+    }
+
+    /** CR 702.117a's "you or one of your teammates has cast another spell this turn". */
+    fun surgeEnabled(state: GameState, playerId: EntityId): Boolean =
+        state.teamOf(playerId).any { (state.playerSpellsCastThisTurn[it] ?: 0) > 0 }
+
+    /**
      * Check if a card can be cast for its blitz cost (CR 702.152a) from its current zone: from the
      * hand, or from wherever a `MayCastSelfFromZones(castUsing = Keyword.BLITZ)` permission reaches
      * ("You may cast this card from your graveyard using its blitz ability", Tenacious Underdog).

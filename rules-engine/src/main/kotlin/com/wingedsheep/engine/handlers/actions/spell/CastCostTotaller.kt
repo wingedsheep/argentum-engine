@@ -585,6 +585,12 @@ internal class CastCostTotaller(
                 ?.takeIf { zoneResolver.hasDashPermission(state, playerId, cardId) }
                 ?.let { priced(it.cost) }
         },
+        // Surge (CR 702.117a — hand, once you or a teammate has cast another spell this turn).
+        AlternativeCostType.SURGE to {
+            cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Surge>().firstOrNull()
+                ?.takeIf { zoneResolver.hasSurgePermission(state, playerId, cardId) }
+                ?.let { priced(it.cost) }
+        },
         // Blitz (CR 702.152a — hand, or a graveyard cast permission restricted to blitz). The bundled
         // non-mana half (Tenacious Underdog's "Pay 2 life") is paid with the additional costs.
         AlternativeCostType.BLITZ to {

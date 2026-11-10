@@ -321,6 +321,14 @@ enum class AlternativeCostType {
      */
     DASH,
     /**
+     * Surge ([com.wingedsheep.sdk.scripting.KeywordAbility.Surge], CR 702.117) — offered from the
+     * hand (an engine limit: the zone-cast permissions don't offer keyword alternative costs; the
+     * rule itself names no zone), at the spell's normal timing, only once the caster or a teammate has cast another spell this turn.
+     * Pays the surge mana instead of the mana cost; the spell (and the permanent it becomes) is
+     * stamped `ChoiceSlot.SURGE_CAST` for its "if its surge cost was paid" riders.
+     */
+    SURGE,
+    /**
      * Blitz ([com.wingedsheep.sdk.scripting.KeywordAbility.Blitz], CR 702.152) — hand, or the
      * graveyard through `MayCastSelfFromZones(castUsing = Keyword.BLITZ)` (Tenacious Underdog). Pays
      * the blitz mana plus any bundled non-mana cost. The resulting permanent carries

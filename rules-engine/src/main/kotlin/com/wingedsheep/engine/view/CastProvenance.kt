@@ -121,6 +121,7 @@ object CastProvenance {
         AlternativeCostType.DISTURB -> "disturb"
         AlternativeCostType.WARP -> "warp"
         AlternativeCostType.DASH -> "dash"
+        AlternativeCostType.SURGE -> "surge"
         AlternativeCostType.BLITZ -> "blitz"
         AlternativeCostType.EVOKE -> "evoke"
         AlternativeCostType.BESTOW -> "bestow"

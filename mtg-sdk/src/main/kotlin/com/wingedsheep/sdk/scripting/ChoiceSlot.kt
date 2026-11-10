@@ -225,6 +225,17 @@ enum class ChoiceSlot {
      */
     MADNESS_CAST,
 
+    /**
+     * Whether the spell's **surge cost was paid** (CR 702.117a) — it was cast for its
+     * [Surge][com.wingedsheep.sdk.scripting.KeywordAbility.Surge] cost rather than its mana cost.
+     * Stamped by the engine from the alternative cost the spell was cast for, never declared by the
+     * player. Read back through [com.wingedsheep.sdk.dsl.Conditions.SurgeCostWasPaid] for the Oath of
+     * the Gatewatch "if its surge cost was paid, …" riders (Reckless Bushwhacker, Crush of
+     * Tentacles), from the spell while it resolves (a copy keeps the original's answer, CR 707.10)
+     * and from the permanent a permanent spell becomes.
+     */
+    SURGE_CAST,
+
     /** The X declared for a `blight X` additional cost when cast (e.g. Soul Immolation). */
     BLIGHT_AMOUNT,
 
