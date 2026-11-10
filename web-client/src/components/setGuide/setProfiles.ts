@@ -492,6 +492,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Transform', inPlay: 'Legendary enchantments and artifacts flip into lands once you meet their condition, turning a slow card into a lasting engine.' },
     ],
   },
+  SOI: {
+    tagline: 'A gothic mystery on Innistrad: investigate for Clues, fill your graveyard for delirium, discard into madness and watch Werewolves flip when nobody casts a spell.',
+    setting: 'Innistrad slipping into madness, as humans, vampires, werewolves and spirits uncover the secret behind the angels\' fall.',
+    gameplay: 'Games are grindy midrange with a lot of card flow. Investigate leaves Clue tokens you crack later for cards, so mana sinks and long games favour careful players. Delirium rewards a graveyard holding four card types, which pushes self-mill and cheap spells, while madness turns discard outlets into free tempo. Double-faced Werewolves transform on turns where no spells were cast, so the player who keeps casting controls how big the board gets.',
+    tips: [
+      'Clues are card advantage on a delay: spend spare mana cracking them instead of letting turns go to waste.',
+      'Plan delirium on purpose: a land, a creature, an instant and an artifact or Clue in the graveyard turn on many commons.',
+      'Against Werewolves, keep an instant to cast on your opponent\'s turn so they stay on their smaller day side.',
+    ],
+    tryIf: 'graveyard puzzles, card-drawing grinds and tribal Innistrad horror',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['graveyard', 'tribal'],
+    mechanics: [
+      { name: 'Investigate', inPlay: 'Make a Clue token you can sacrifice for {2} to draw a card, so cheap spells bank cards for later turns.' },
+      { name: 'Delirium', inPlay: 'Cards get stronger once your graveyard holds four or more card types, so what you lose and discard matters.' },
+      { name: 'Madness', inPlay: 'Discard the card to cast it for its madness cost, so rummaging and discard outlets turn into cheap spells.' },
+      { name: 'Transform', inPlay: 'Werewolves flip to bigger night faces after a turn with no spells cast, and other double-faced cards transform when their condition is met.' },
+      { name: 'Skulk', inPlay: 'A skulking creature can\'t be blocked by bigger creatures, so small sneaky attackers chip in all game.' },
+    ],
+  },
   EMN: {
     tagline: 'Emrakul arrives on Innistrad: sacrifice creatures to emerge Eldrazi early, fill your graveyard for delirium and meld pairs into giants.',
     setting: 'Innistrad as Emrakul descends on it, twisting humans, werewolves and spirits into Eldrazi horrors.',

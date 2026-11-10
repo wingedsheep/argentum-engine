@@ -395,6 +395,22 @@ object SynergyAxes {
                 addAll(effectFeeds(leaf.ability.effect, creatureSource))
                 continue
             }
+            // "You may discard a card. If you do, draw a card / put a +1/+1 counter on it" (Nahiri,
+            // the Harbinger; Olivia, Mobilized for War): a gate we decide produces what its payoff
+            // does, and its action or cost bins our cards like an additional-cost discard does. A
+            // gate an opponent decides (the punisher shape) is their call, so it feeds nothing here.
+            if (leaf is com.wingedsheep.sdk.scripting.effects.GatedEffect && leaf.decisionMaker == null) {
+                addAll(effectFeeds(leaf.then, creatureSource, requirements))
+                leaf.otherwise?.let { addAll(effectFeeds(it, creatureSource, requirements)) }
+                when (val gate = leaf.gate) {
+                    is com.wingedsheep.sdk.scripting.effects.Gate.DoAction ->
+                        addAll(effectFeeds(gate.action, creatureSource, requirements))
+                    is com.wingedsheep.sdk.scripting.effects.Gate.MayPay ->
+                        addAll(effectFeeds(gate.cost, creatureSource, requirements))
+                    else -> {}
+                }
+                continue
+            }
             // A delayed trigger produces what its body does when it fires — and "sacrifice it at the
             // beginning of the next end step" (Hazoret's Favor, Junkyo Bell, Through the Breach) is a
             // creature of ours dying, whatever the scheduling ability got for it.

@@ -1181,6 +1181,128 @@
     ]
 }
 
+// Autumnal Gloom
+{
+    "name": "Autumnal Gloom",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "{B}: Mill a card.\nDelirium — At the beginning of your end step, if there are four or more card types among cards in your graveyard, transform this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Autumnal Gloom:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "Delirium — At the beginning of your end step, if there are four or more card types among cards in your graveyard, transform this enchantment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Autumnal Gloom:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ancient of the Equinox",
+        "manaCost": "",
+        "typeLine": "Creature — Treefolk",
+        "oracleText": "Trample, hexproof",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "TRAMPLE",
+            "HEXPROOF"
+        ],
+        "metadata": {
+            "collectorNumber": "194",
+            "rarity": "UNCOMMON",
+            "artist": "Jaime Jones",
+            "flavorText": "\"When the leaves fall and the nights grow cold, look elsewhere for firewood.\"\n—Ola of Lambholt",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/4/d41b07c8-f0c8-4654-bcc2-00c785c8c628.jpg?1783937742"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d41b07c8-f0c8-4654-bcc2-00c785c8c628.jpg?1783937742",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Because you consider only the characteristics of a double-faced card's front face while it's not on the battlefield, the types of its back face won't be counted for delirium."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Most triggered delirium abilities use an intervening \"if\" clause. There must be four or more card types among cards in your graveyard in order for these abilities to trigger, otherwise they never trigger at all. The number of card types is checked again as the trigger resolves, and if it has become too low somehow, the ability does nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Avacyn's Judgment
 {
     "name": "Avacyn's Judgment",
@@ -8288,6 +8410,78 @@
     ]
 }
 
+// Inexorable Blob
+{
+    "name": "Inexorable Blob",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "Delirium — Whenever this creature attacks, if there are four or more card types among cards in your graveyard, create a 3/3 green Ooze creature token that's tapped and attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inexorable Blob:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/2/623a7905-3a10-4d23-96fa-4960cac8f4e3.jpg?1783937681",
+                    "tapped": true,
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0210ff44-19d9-4d24-9d32-f1f9f219d9e0.jpg?1783937727",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You declare which player or planeswalker the token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker Inexorable Blob is attacking."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Although the token is attacking, it was never declared as an attacking creature (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an effect gives the token vigilance, the token will still enter the battlefield tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Inner Struggle
 {
     "name": "Inner Struggle",
@@ -10594,6 +10788,234 @@
     ]
 }
 
+// Nahiri, the Harbinger
+{
+    "name": "Nahiri, the Harbinger",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Planeswalker — Nahiri",
+    "oracleText": "+2: You may discard a card. If you do, draw a card.\n−2: Exile target enchantment, tapped artifact, or tapped creature.\n−8: Search your library for an artifact or creature card, put it onto the battlefield, then shuffle. It gains haste. Return it to your hand at the beginning of the next end step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nahiri, the Harbinger:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "You may discard a card. If you do, draw a card."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nahiri, the Harbinger:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "anyOf": [
+                                            {
+                                                "cardPredicates": [
+                                                    "IsEnchantment"
+                                                ]
+                                            },
+                                            {
+                                                "cardPredicates": [
+                                                    "IsArtifact"
+                                                ],
+                                                "statePredicates": [
+                                                    "IsTapped"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            "IsTapped"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nahiri, the Harbinger:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature|artifact"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for an artifact or creature card to put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "moved2"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "IterationEntity",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveToZone",
+                                            "target": "IterationEntity",
+                                            "destination": "Hand"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84d70487-21d1-4897-ac20-2a996e893b5b.jpg?1783937713",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can activate Nahiri's first ability with no intention of discarding a card just to add loyalty to Nahiri."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you find a noncreature artifact with Nahiri's third ability, it will still gain haste, even though it won't be meaningful unless that artifact becomes a creature."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If the artifact or creature put onto the battlefield with Nahiri's third ability leaves the battlefield before the next end step, it won't be returned to your hand from its new zone."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Nearheath Chaplain
 {
     "name": "Nearheath Chaplain",
@@ -11562,6 +11984,124 @@
     ]
 }
 
+// Olivia, Mobilized for War
+{
+    "name": "Olivia, Mobilized for War",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Vampire Knight",
+    "oracleText": "Flying\nWhenever another creature you control enters, you may discard a card. If you do, put a +1/+1 counter on that creature, it gains haste until end of turn, and it becomes a Vampire in addition to its other types.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Olivia, Mobilized for War:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "TriggeringEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "TriggeringEntity"
+                                },
+                                {
+                                    "type": "AddCreatureType",
+                                    "subtype": "Vampire",
+                                    "target": "TriggeringEntity"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/7297dd81-8367-42e9-abf9-9227e202e7ae.jpg?1783937713",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You decide whether to discard a card as the triggered ability of Olivia, Mobilized for War resolves. If you do, the rest of the ability's effects happen before any player may take actions."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If the entering creature leaves the battlefield before the triggered ability of Olivia, Mobilized for War resolves, you may still discard a card. The rest of the ability has no effect."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you discard a card, the creature only gains haste until end of turn, but the +1/+1 counter and Vampire subtype remain indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Ongoing Investigation
 {
     "name": "Ongoing Investigation",
@@ -12453,6 +12993,119 @@
     ]
 }
 
+// Prized Amalgam
+{
+    "name": "Prized Amalgam",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Whenever a creature enters, if it entered from your graveyard or you cast it from your graveyard, return this card from your graveyard to the battlefield tapped at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prized Amalgam:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "placement": "Tapped",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "TriggeringEntityEnteredOrWasCastFrom",
+                            "zone": "Graveyard"
+                        },
+                        {
+                            "type": "Not",
+                            "condition": "TriggeringEntityWasCast"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature enters, if it entered from your graveyard or you cast it from your graveyard, return this card from your graveyard to the battlefield tapped at the beginning of the next end step."
+            },
+            {
+                "id": "Prized Amalgam:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerAnd",
+                            "predicates": [
+                                "ControlledByYou",
+                                "OwnedByYou"
+                            ]
+                        }
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "placement": "Tapped",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "TriggeringEntityWasCast",
+                    "zone": "Graveyard"
+                },
+                "descriptionOverride": "Whenever a creature enters, if it entered from your graveyard or you cast it from your graveyard, return this card from your graveyard to the battlefield tapped at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Ludevic's laboratory is a veritable wonderland. I have never felt so inspired.\"\n—Stitcher Geralf",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/634cedb6-8b00-4f4b-8790-541188955295.jpg?1783937712",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "A card cast using its madness ability is cast from exile, not from your graveyard."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Prized Amalgam's ability triggers only if it's in your graveyard immediately after an appropriate creature enters the battlefield. A Prized Amalgam that's already on the battlefield won't be returned at the beginning of the next end step if it's put into your graveyard later."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Pyre Hound
 {
     "name": "Pyre Hound",
@@ -13235,6 +13888,164 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Sage of Ancient Lore
+{
+    "name": "Sage of Ancient Lore",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Shaman Werewolf",
+    "oracleText": "Sage of Ancient Lore's power and toughness are each equal to the number of cards in your hand.\nWhen this creature enters, draw a card.\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage of Ancient Lore:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Sage of Ancient Lore:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Werewolf of Ancient Hunger",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Vigilance, trample\nWerewolf of Ancient Hunger's power and toughness are each equal to the total number of cards in all players' hands.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "Count",
+                    "player": "Each",
+                    "zone": "Hand"
+                }
+            },
+            "toughness": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "Count",
+                    "player": "Each",
+                    "zone": "Hand"
+                }
+            }
+        },
+        "keywords": [
+            "VIGILANCE",
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Werewolf of Ancient Hunger:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "225",
+            "rarity": "RARE",
+            "artist": "Slawomir Maniak",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/4/94c5f7fe-9ca6-4040-bf7c-062ab22e6a02.jpg?1783937728",
+            "rulings": [
+                {
+                    "date": "2016-04-08",
+                    "text": "To trigger the Werewolf's back face's transform ability, a single player must have cast two or more spells during the previous turn. If multiple players each cast just one spell during the previous turn, the ability won't trigger."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94c5f7fe-9ca6-4040-bf7c-062ab22e6a02.jpg?1783937728",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If you have no cards in hand after Sage of Ancient Lore enters the battlefield, it will be put into your graveyard before its first triggered ability resolves. You'll draw a card, but Sage of Ancient Lore will already be gone."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "The abilities that transform a Werewolf back and forth look at the entire previous turn, even if the Werewolf with that ability wasn't on the battlefield for some or all of that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -14565,6 +15376,143 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sorin, Grim Nemesis
+{
+    "name": "Sorin, Grim Nemesis",
+    "manaCost": "{4}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Sorin",
+    "oracleText": "+1: Reveal the top card of your library and put that card into your hand. Each opponent loses life equal to its mana value.\n−X: Sorin deals X damage to target creature or planeswalker and you gain X life.\n−9: Create a number of 1/1 black Vampire Knight creature tokens with lifelink equal to the highest life total among all players.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sorin, Grim Nemesis:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Reveal the top card of your library and put it into your hand. Each opponent loses life equal to its mana value."
+            },
+            {
+                "id": "Sorin, Grim Nemesis:2",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": "XValue",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": "XValue"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Sorin deals X damage to target creature or planeswalker and you gain X life."
+            },
+            {
+                "id": "Sorin, Grim Nemesis:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "GreatestAmongPlayers",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Vampire",
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 1/1 black Vampire Knight token with lifelink for each point of the highest life total among all players."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2933144-c931-498a-9e91-f5165873c3b7.jpg?1783937711",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If a card in your library has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 

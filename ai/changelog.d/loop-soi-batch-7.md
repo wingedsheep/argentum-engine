@@ -1,0 +1,1 @@
+- #4618 The deckbuilder now reads a "you may <action>. If you do, …" gate (Nahiri, the Harbinger; Olivia, Mobilized for War; Sarkhan, Fireblood) as feeding what its action and payoff produce — a gated discard stocks the graveyard axis, gated counters the +1/+1-counter axis.

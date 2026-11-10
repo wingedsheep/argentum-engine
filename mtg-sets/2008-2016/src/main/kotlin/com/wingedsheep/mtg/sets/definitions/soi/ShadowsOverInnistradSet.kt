@@ -17,7 +17,6 @@ object ShadowsOverInnistradSet : MtgSet {
     override val displayName = "Shadows over Innistrad"
     override val releaseDate = "2016-04-08"
     override val block = "Shadows over Innistrad"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
