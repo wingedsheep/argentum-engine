@@ -2329,6 +2329,12 @@ object CardIntentAnalyzer {
         // turned into a creature for the turn's fight — a combat enhancement, like a base P/T it
         // takes from something bigger. The source animating itself (a manland) is just a body.
         is BecomeCreatureEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+
+        // "Switch this creature's power and toughness until end of turn" (Turtleshell Changeling,
+        // Wandering Fumarole's granted {0}), "switch target creature's power and toughness"
+        // (Strange Inversion, Transmutation): the creature's stats reshaped for the fight — a 0/4
+        // wall swings for four, a 1/4 blocks as a 4/1 — like a base P/T taken for the turn.
+        is SwitchPowerToughnessEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
         is AnimateLandEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
 
         // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
@@ -2632,6 +2638,12 @@ object CardIntentAnalyzer {
         // HoldPolicy card-flow windows must not cash it.
         is GrantActivatedAbilityEffect -> when {
             effect.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            // "Until end of turn, this land becomes a 1/4 Elemental creature with '{0}: Switch this
+            // creature's power and toughness until end of turn'" (Wandering Fumarole): a trick the
+            // holder plays on its own stats in this turn's fight — a combat enhancement, as the same
+            // ability printed on Turtleshell Changeling is. It waits on combat, not on card flow.
+            effect.duration == Duration.EndOfTurn && grantsOwnFightTrick(effect.ability) ->
+                setOf(IntentTag.COMBAT_ENHANCEMENT)
             effect.duration != Duration.EndOfTurn &&
                 TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(effect.ability.effect, effect.ability.targetRequirements).tags
@@ -2783,6 +2795,23 @@ object CardIntentAnalyzer {
         is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
         is EffectTarget.PlayerRef -> target.player in OPPONENT_PLAYERS || target.player == Player.TriggeringPlayer
         else -> false
+    }
+
+    /**
+     * Whether [ability], granted to a creature, only reshapes that creature's own stats for a
+     * fight — "{0}: Switch this creature's power and toughness until end of turn" (Wandering
+     * Fumarole), "{R}: This creature gets +1/+0 until end of turn": every step it takes is a P/T
+     * change on its holder, so it is spent in this turn's combat or not at all. Public for
+     * [ExpiringGrantWindow], which reads the same grant's timing.
+     */
+    fun grantsOwnFightTrick(ability: ActivatedAbility): Boolean {
+        if (ability.isManaAbility) return false
+        val leaves = EffectWalker.leaves(ability.effect)
+        return leaves.isNotEmpty() && leaves.all {
+            (it is SwitchPowerToughnessEffect && it.target == EffectTarget.Self) ||
+                (it is ModifyStatsEffect && it.target == EffectTarget.Self &&
+                    it.duration == Duration.EndOfTurn && raises(it.powerModifier))
+        }
     }
 
     /**

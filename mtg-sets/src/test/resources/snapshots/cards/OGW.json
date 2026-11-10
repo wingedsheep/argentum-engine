@@ -944,6 +944,95 @@
     ]
 }
 
+// Captain's Claws
+{
+    "name": "Captain's Claws",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0.\nWhenever equipped creature attacks, create a 1/1 white Kor Ally creature token that's tapped and attacking.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Captain's Claws:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Kor",
+                        "Ally"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/e/be224180-a482-4b94-8a9d-3a92ee0eb34b.jpg?1783938120",
+                    "tapped": true,
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Captain's Claws:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Forged for victory in a time of despair.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/521ee576-5a51-4353-af38-c461f05d66ce.jpg?1783937895",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You choose which opponent or planeswalker controlled by an opponent the token is attacking as it enters the battlefield. It doesn't have to be the same opponent or planeswalker that the equipped creature is attacking."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The token is never declared as an attacking creature. It simply enters the battlefield attacking. This won't cause any abilities that trigger \"whenever a creature attacks\" to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Chitinous Cloak
 {
     "name": "Chitinous Cloak",
@@ -1320,6 +1409,73 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Corrupted Crossroads
+{
+    "name": "Corrupted Crossroads",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}. ({C} represents colorless mana.)\n{T}, Pay 1 life: Add one mana of any color. Spend this mana only to cast a spell with devoid.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Corrupted Crossroads:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Corrupted Crossroads:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "SpellsWithKeywordOnly",
+                        "keyword": "DEVOID"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"Look, and see the future.\"\n—Ayli, high priest of the Eternal Pilgrims",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/7043e193-8051-4f1b-9633-9c1f250d3607.jpg",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The mana produced by the last ability can't be spent on a colorless spell unless that spell specifically has the devoid ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Crumbling Vestige
@@ -2885,6 +3041,133 @@
     ]
 }
 
+// General Tazri
+{
+    "name": "General Tazri",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Human Ally",
+    "oracleText": "When General Tazri enters, you may search your library for an Ally creature card, reveal it, put it into your hand, then shuffle.\n{W}{U}{B}{R}{G}: Ally creatures you control get +X/+X until end of turn, where X is the number of colors among those creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "General Tazri:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "creature Ally"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an Ally creature card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "General Tazri:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}{B}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Ally ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature Ally",
+                            "aggregation": "DISTINCT_COLORS"
+                        },
+                        "toughnessModifier": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature Ally",
+                            "aggregation": "DISTINCT_COLORS"
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34e9aa86-1a31-4c0f-928d-923f066286b6.jpg?1783937927",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The last ability checks only Ally creatures you control as the ability resolves. The value of X will be between 0 and 5. Colorless is not a color."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Once the last ability resolves, the bonus given doesn't change, even if the number of colors among your Allies does."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Gladehart Cavalry
 {
     "name": "Gladehart Cavalry",
@@ -3390,6 +3673,97 @@
     "colorIdentityOverride": []
 }
 
+// Hissing Quagmire
+{
+    "name": "Hissing Quagmire",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {B} or {G}.\n{1}{B}{G}: Until end of turn, this land becomes a 2/2 black and green Elemental creature with deathtouch. It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hissing Quagmire:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hissing Quagmire:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hissing Quagmire:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ]
+                },
+                "descriptionOverride": "{1}{B}{G}: Until end of turn, this land becomes a 2/2 black and green Elemental creature with deathtouch. It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ef11b54-205a-48e9-92d0-5d416be869ef.jpg?1783937892",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "A land that becomes a creature may be affected by \"summoning sickness.\" You can't attack with it or use any of its {T} abilities (including its mana abilities) unless it began your most recent turn on the battlefield under your control. Note that summoning sickness cares about when that permanent came under your control, not when it became a creature nor when it entered the battlefield."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "This land is colorless until the last ability gives it colors."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "An ability that turns a land into a creature also sets that creature's power and toughness. If the land was already a creature (for example, if it was the target of a spell with awaken), this will overwrite the previous effect that set its power and toughness. Effects that modify its power or toughness will continue to apply no matter when they started to take effect. The same is true for counters that change its power or toughness (such as +1/+1 counters) and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Holdout Settlement
 {
     "name": "Holdout Settlement",
@@ -3627,6 +4001,56 @@
     ]
 }
 
+// Iona's Blessing
+{
+    "name": "Iona's Blessing",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2, has vigilance, and can block an additional creature each combat.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "\"Walk now in my light. When the rest of the world closes its eyes, you will still see.\"\n—Iona",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a30f26f7-5181-4bf1-9084-5563b4996a3c.jpg?1783937926",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The ability to block an additional creature is cumulative. If a creature is enchanted with two Iona's Blessings, it can block three creatures each combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Isolation Zone
 {
     "name": "Isolation Zone",
@@ -3842,6 +4266,47 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Kor Scythemaster
+{
+    "name": "Kor Scythemaster",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Kor Soldier Ally",
+    "oracleText": "This creature has first strike as long as it's attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Ryan Pancoast",
+        "flavorText": "The kor of Zendikar are known for quiet determination in the face of overwhelming odds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ce587ba-f23a-4548-a5b8-fca54984d4b4.jpg?1783937925"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4217,6 +4682,114 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Linvala, the Preserver
+{
+    "name": "Linvala, the Preserver",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nWhen Linvala enters, if an opponent has more life than you, you gain 5 life.\nWhen Linvala enters, if an opponent controls more creatures than you, create a 3/3 white Angel creature token with flying.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Linvala, the Preserver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                }
+            },
+            {
+                "id": "Linvala, the Preserver:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/6/96f407ef-2b08-45e9-a45e-128cf0a63839.jpg?1783937862"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
+                        }
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef0dbb08-d124-46da-bfb1-af7ef4a18179.jpg?1783937925",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "For each triggered ability, the game checks to see if the condition is true at the moment the ability would trigger. If the condition isn't true, the ability won't trigger. If the ability does trigger, the game will check again to see if the condition is true as the ability tries to resolve. If it's not true at that time, the ability won't do anything."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "In a multiplayer game, it's possible for the condition to be true at both times but with respect to two different opponents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4802,6 +5375,120 @@
     ]
 }
 
+// Mirrorpool
+{
+    "name": "Mirrorpool",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {C}.\n{2}{C}, {T}, Sacrifice this land: Copy target instant or sorcery spell you control. You may choose new targets for the copy.\n{4}{C}, {T}, Sacrifice this land: Create a token that's a copy of target creature you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mirrorpool:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mirrorpool:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{C}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery ctrl:you",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Copy target instant or sorcery spell you control. You may choose new targets for the copy."
+            },
+            {
+                "id": "Mirrorpool:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{C}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Create a token that's a copy of target creature you control."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "MYTHIC",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edbea2b5-eed3-464b-9d5c-9591f309f298.jpg?1783937891",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Mirrorpool's third ability can target (and copy) any instant or sorcery spell, not just one with targets."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "For Mirrorpool's last ability, the token copies exactly what's printed on the original creature and nothing else (unless that creature is copying something else). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Munda's Vanguard
 {
     "name": "Munda's Vanguard",
@@ -4893,6 +5580,101 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Needle Spires
+{
+    "name": "Needle Spires",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {R} or {W}.\n{2}{R}{W}: Until end of turn, this land becomes a 2/1 red and white Elemental creature with double strike. It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Needle Spires:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Needle Spires:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Needle Spires:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "keywords": [
+                        "DOUBLE_STRIKE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ]
+                },
+                "descriptionOverride": "{2}{R}{W}: Until end of turn, this land becomes a 2/1 red and white Elemental creature with double strike. It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d73700c-fa62-42be-aaca-5f8a50af20db.jpg?1783937892",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "A land that becomes a creature may be affected by \"summoning sickness.\" You can't attack with it or use any of its {T} abilities (including its mana abilities) unless it began your most recent turn on the battlefield under your control. Note that summoning sickness cares about when that permanent came under your control, not when it became a creature nor when it entered the battlefield."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "This land is colorless until the last ability gives it colors."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "When a land becomes a creature, that doesn't count as having a creature enter the battlefield. The permanent was already on the battlefield; it only changed its types. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "An ability that turns a land into a creature also sets that creature's power and toughness. If the land was already a creature (for example, if it was the target of a spell with awaken), this will overwrite the previous effect that set its power and toughness. Effects that modify its power or toughness will continue to apply no matter when they started to take effect. The same is true for counters that change its power or toughness (such as +1/+1 counters) and effects that switch its power and toughness. For example, if Needle Spires has been made a 0/0 creature with three +1/+1 counters on it, activating its last ability will turn it into a 5/4 creature that's still a land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -5065,6 +5847,78 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Oath of Gideon
+{
+    "name": "Oath of Gideon",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Gideon enters, create two 1/1 white Kor Ally creature tokens.\nEach planeswalker you control enters with an additional loyalty counter on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Gideon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Kor",
+                        "Ally"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e820517-9895-47ba-a9d7-11ed807dcc6d.jpg?1783915235"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "LOYALTY",
+                "count": 1,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "planeswalker ctrl:you",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"For justice and peace, I will keep watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97976ade-c6ec-4068-be6b-953255b86a79.jpg?1783937924",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The “legend rule” checks the full names of legendary permanents. You can control Oath of Gideon and Oath of Chandra at the same time, for example."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Even if you control a particular Oath, you can cast another of that Oath to take advantage of its enters-the-battlefield ability. It will enter the battlefield, causing its first ability to trigger. You will then choose one to keep, as detailed above, and then its enters-the-battlefield ability will resolve."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Each of the Oaths is legendary: if you control more than one of any particular Oath, you choose one to remain on the battlefield and the others are put into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6167,6 +7021,78 @@
     ]
 }
 
+// Ruins of Oran-Rief
+{
+    "name": "Ruins of Oran-Rief",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {C}. ({C} represents colorless mana.)\n{T}: Put a +1/+1 counter on target colorless creature that entered this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ruins of Oran-Rief:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}."
+            },
+            {
+                "id": "Ruins of Oran-Rief:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ],
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Put a +1/+1 counter on target colorless creature that entered this turn."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fed86e5-5631-401b-8820-9685f8296134.jpg?1783937891",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The target of the last ability didn't necessarily have to be a colorless creature as it entered the battlefield, provided it entered the battlefield during that turn. However, it does have to be a colorless creature to be a legal target of the ability."
+            }
+        ]
+    }
+}
+
 // Saddleback Lagac
 {
     "name": "Saddleback Lagac",
@@ -6296,6 +7222,79 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Sea Gate Wreckage
+{
+    "name": "Sea Gate Wreckage",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}. ({C} represents colorless mana.)\n{2}{C}, {T}: Draw a card. Activate only if you have no cards in hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sea Gate Wreckage:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Sea Gate Wreckage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{C}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Hand",
+                            "negate": true
+                        }
+                    }
+                ],
+                "descriptionOverride": "Draw a card. Activate only if you have no cards in hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd42576b-9de5-4d77-9d30-1ef5b5a4fd73.jpg?1783937892",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "It doesn't matter how many cards are in your hand as the last ability resolves. For example, if you have no cards in hand and control two Sea Gate Wreckages, you can activate the last ability of each of them. You'll draw a card as each ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Searing Light
@@ -7090,6 +8089,102 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Stoneforge Masterwork
+{
+    "name": "Stoneforge Masterwork",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 for each other creature you control that shares a creature type with it.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stoneforge Masterwork:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesCreatureTypeWith",
+                                "entity": "AffectedEntity"
+                            }
+                        ]
+                    },
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesCreatureTypeWith",
+                                "entity": "AffectedEntity"
+                            }
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Ben Maier",
+        "flavorText": "The nomadic kor carry only necessities on their long treks. The coming of the Eldrazi redefined \"necessities.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae5b78f5-6a49-4433-a42b-5abf5ea60919.jpg?1783937894",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The bonus is only +1/+1 per applicable creature, even if it shares more than one creature type with the equipped creature. For example, if the equipped creature is a Human Shaman and you control a Human Warrior, a Goblin Shaman, and another Human Shaman, the equipped creature will get +3/+3."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The bonus will change as the creatures you control change. This may cause the equipped creature to lose toughness and die because of damage dealt earlier in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Stormchaser Mage
@@ -8201,6 +9296,219 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Wall of Resurgence
+{
+    "name": "Wall of Resurgence",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender\nWhen this creature enters, you may put three +1/+1 counters on target land you control. If you do, that land becomes a 0/0 Elemental creature with haste that's still a land.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Resurgence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "keywords": [
+                                    "HASTE"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may put three +1/+1 counters on target land you control. If you do, that land becomes a 0/0 Elemental creature with haste that's still a land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c99f0dc1-c8cf-4733-a874-5ae57b38258e.jpg?1783937923",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If you target a land that's already a creature with Wall of Resurgence's triggered ability, that land creature's base power and toughness will become 0/0, overwriting its previous base power and toughness. Other effects that modify its power and/or toughness (including the new and any previously-existing +1/+1 counters) will continue to apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Wandering Fumarole
+{
+    "name": "Wandering Fumarole",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {U} or {R}.\n{2}{U}{R}: Until end of turn, this land becomes a 1/4 blue and red Elemental creature with \"{0}: Switch this creature's power and toughness until end of turn.\" It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wandering Fumarole:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Wandering Fumarole:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Wandering Fumarole:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "creatureTypes": [
+                                "Elemental"
+                            ],
+                            "colors": [
+                                "BLUE",
+                                "RED"
+                            ]
+                        },
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Wandering Fumarole:3",
+                                "cost": {
+                                    "type": "CostAtomWrapper",
+                                    "atom": {
+                                        "type": "AtomMana",
+                                        "cost": "{0}"
+                                    }
+                                },
+                                "effect": {
+                                    "type": "SwitchPowerToughness",
+                                    "target": "Self"
+                                },
+                                "descriptionOverride": "{0}: Switch this creature's power and toughness until end of turn."
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{U}{R}: Until end of turn, this land becomes a 1/4 blue and red Elemental creature with \"{0}: Switch this creature's power and toughness until end of turn.\" It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Florian de Gesincourt",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd0ee251-6c79-499b-8366-c281c989b061.jpg?1783937890",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Effects that switch a creature's power and toughness apply after all other effects, regardless of when those effects began to apply. For instance, if you target a 1/2 creature then give it +2/+0 later in the turn, it's a 2/3 creature, not a 4/1 creature."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a creature may become lethal if you switch its power and toughness during that turn."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Switching a creature's power and toughness twice (or any even number of times) effectively returns the creature to the power and toughness it had before any switches."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "A land that becomes a creature may be affected by \"summoning sickness.\" You can't attack with it or use any of its {T} abilities (including its mana abilities) unless it began your most recent turn on the battlefield under your control. Note that summoning sickness cares about when that permanent came under your control, not when it became a creature nor when it entered the battlefield."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "An ability that turns a land into a creature also sets that creature's power and toughness. If the land was already a creature (for example, if it was the target of a spell with awaken), this will overwrite the previous effect that set its power and toughness. Effects that modify its power or toughness will continue to apply no matter when they started to take effect. The same is true for counters that change its power or toughness (such as +1/+1 counters) and effects that switch its power and toughness. For example, if Wandering Fumarole has been made a 0/0 creature with three +1/+1 counters on it, activating its last ability will turn it into a 4/7 creature that's still a land."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "This land is colorless until the last ability gives it colors."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Warden of Geometries
