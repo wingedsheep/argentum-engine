@@ -14,7 +14,11 @@ import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.Effect
 
-/** Installs a one-shot source shield and its linked "when damage is prevented this way" trigger. */
+/**
+ * Installs a one-shot source shield and, when [onPrevented] is given, its linked "when damage is
+ * prevented this way" trigger (Awe Strike); without one it is a plain next-instance shield
+ * (Dazzling Reflection).
+ */
 internal fun GameState.installPreventAndReactShield(
     damageSourceId: EntityId,
     protectedEntityId: EntityId?,
@@ -63,7 +67,8 @@ internal fun GameState.installPreventAndReactShield(
             linkId = delayedTriggerId,
             preventDamage = preventDamage,
             combatOnly = combatOnly,
-            playersOnly = playersOnly
+            playersOnly = playersOnly,
+            hasReaction = onPrevented != null
         ),
         affectedEntities = protectedEntityId?.let(::setOf) ?: emptySet(),
         duration = duration,

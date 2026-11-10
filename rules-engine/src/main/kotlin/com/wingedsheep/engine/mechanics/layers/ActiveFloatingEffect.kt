@@ -812,7 +812,13 @@ sealed interface SerializableModification {
          * Only damage to a player matches (Ria Ivor: "combat damage to one or more players"); damage
          * to a permanent passes and leaves the shield up.
          */
-        val playersOnly: Boolean = false
+        val playersOnly: Boolean = false,
+        /**
+         * False for a plain next-instance shield with no linked reaction ("the next time that
+         * creature would deal damage this turn, prevent that damage" — Dazzling Reflection); the
+         * [linkId] then routes to no delayed trigger.
+         */
+        val hasReaction: Boolean = true
     ) : SerializableModification
 
     /**

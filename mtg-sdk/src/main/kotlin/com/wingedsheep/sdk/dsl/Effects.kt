@@ -7168,7 +7168,9 @@ object Effects {
      *   or, without [toGroup], "to you" alone for a [PreventionSourceFilter.Matching] shield
      *   (Scarecrow, Heavy Fog).
      * @param nextInstanceOnly Prevent only the next instance of damage from a covered source, then
-     *   spend the shield (the Circle of Protection family).
+     *   spend the shield (the Circle of Protection family). With `direction = FromTarget` it is "the
+     *   next time target creature would deal damage this turn, prevent that damage" (Dazzling
+     *   Reflection; Awe Strike adds [onPrevented]).
      * @param halve With [nextInstanceOnly], prevent half that instance, rounded down (Dark Sphere).
      * @param onPrevented "When damage is prevented this way, …" — run with the prevented amount as
      *   [DynamicAmounts.preventedDamage] and the source's controller as
@@ -7182,7 +7184,7 @@ object Effects {
      * @param gainLifeFromPrevented Gain life equal to the damage prevented this way (Chant of Vitu-Ghazi).
      * @param toPlayersOnly Only damage that would be dealt to a player — "would deal combat damage to
      *   one or more players" (Ria Ivor, Bane of Bladehold). Needs `direction = FromTarget` plus
-     *   [onPrevented].
+     *   [nextInstanceOnly] or [onPrevented].
      */
     fun PreventDamage(
         target: EffectTarget = EffectTarget.Controller,

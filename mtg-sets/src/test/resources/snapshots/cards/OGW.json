@@ -1644,6 +1644,59 @@
     ]
 }
 
+// Dazzling Reflection
+{
+    "name": "Dazzling Reflection",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain life equal to target creature's power. The next time that creature would deal damage this turn, prevent that damage.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "direction": "FromTarget",
+                    "nextInstanceOnly": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "David Palumbo",
+        "flavorText": "\"The light of a felidar's horns can give even an Eldrazi pause.\"\n—Zarra, lullmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f77977e8-25d8-4531-a6fc-8c46e6904670.jpg?1783937927"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Deceiver of Form
 {
     "name": "Deceiver of Form",

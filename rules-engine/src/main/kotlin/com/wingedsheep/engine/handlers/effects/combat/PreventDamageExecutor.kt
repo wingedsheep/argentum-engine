@@ -266,7 +266,14 @@ class PreventDamageExecutor(
         sourceFilter: GameObjectFilter?,
         context: EffectContext
     ): EffectResult {
-        if (effect.direction == PreventionDirection.FromTarget && effect.onPrevented != null) {
+        // A targeted source shield: "the next time target creature would deal damage this turn,
+        // prevent that damage", with a linked reaction (Awe Strike) or without one (Dazzling
+        // Reflection). Spent by the source's next damage event, whichever recipients it hits.
+        val plainNextInstanceFromTarget = effect.onPrevented == null && effect.nextInstanceOnly &&
+            sourceFilter == null && effect.amount == null && effect.preventDamage &&
+            !effect.halvePreventedDamage && !effect.gainLifeFromPrevented && effect.gainLifeFromColors.isEmpty() &&
+            effect.recipientGroup == null && !effect.recipientGroupIncludesController
+        if (effect.direction == PreventionDirection.FromTarget && (effect.onPrevented != null || plainNextInstanceFromTarget)) {
             val targetId = context.resolveTarget(effect.target, state)
                 ?: return EffectResult.success(state)
             state.getEntity(targetId) ?: return EffectResult.success(state)
@@ -291,7 +298,7 @@ class PreventDamageExecutor(
         if (effect.toPlayersOnly) {
             return EffectResult.error(
                 state,
-                "PreventDamageEffect.toPlayersOnly needs direction = FromTarget with an onPrevented reaction"
+                "PreventDamageEffect.toPlayersOnly needs direction = FromTarget with nextInstanceOnly or an onPrevented reaction"
             )
         }
 

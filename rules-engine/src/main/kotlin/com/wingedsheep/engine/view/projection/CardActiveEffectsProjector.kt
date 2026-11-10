@@ -61,6 +61,7 @@ internal class CardActiveEffectsProjector(
         effects += floatingEffectBadges(state, entityId, projectedState)
         effects += temporaryEffectBadges(state, entityId)
         effects += damageShieldBadges(state, entityId)
+        effects += sourceShieldBadges(state, entityId)
         effects += redirectRecipientBadges(state, entityId)
         effects += combatRequirementBadges(state, entityId)
         // Check for triggered ability condition indicators (intervening-if progress)
@@ -289,12 +290,13 @@ internal class CardActiveEffectsProjector(
         return summedPump + (others + whileTrue).distinct()
     }
 
-    /** Whether a modification already has a badge that [lasting] can date: its own, or a damage shield's. */
+    /** Whether a modification already has a badge that [lasting] can date: its own, or a damage or source shield's. */
     private fun hasOwnBadge(state: GameState, modification: SerializableModification): Boolean =
         modificationBadge(state, modification) != null ||
             modification is SerializableModification.PreventNextDamage ||
             modification is SerializableModification.RegenerationShield ||
-            modification is SerializableModification.RemoveDamageShield
+            modification is SerializableModification.RemoveDamageShield ||
+            modification is SerializableModification.PreventNextDamageFromSourceShield
 
     /** A short account of a stat or keyword change, or null for one the card's own display covers. */
     private fun modificationSummary(modification: SerializableModification): String? = when (modification) {
@@ -507,12 +509,6 @@ internal class CardActiveEffectsProjector(
                 icon = "redirect"
             )
         }
-        is SerializableModification.PreventNextDamageFromSourceShield -> ClientCardEffect(
-            effectId = "deflect_damage_${modification.damageSourceId}",
-            name = "Deflect",
-            description = "The next damage from the chosen source is prevented; a triggered ability then resolves",
-            icon = "redirect"
-        )
         is SerializableModification.RedirectCombatDamageToController -> ClientCardEffect(
             effectId = "redirect_combat_damage_to_controller",
             name = "Redirected",
@@ -598,6 +594,40 @@ internal class CardActiveEffectsProjector(
         }
         return effects
     }
+
+    /**
+     * A one-shot source shield ("the next time target creature would deal damage this turn, prevent
+     * that damage" — Dazzling Reflection; with a reaction, Awe Strike and Deflecting Palm) is keyed
+     * to the damage *source*, not to anything it protects, so badge the source: it is the permanent
+     * whose next hit won't land.
+     */
+    private fun sourceShieldBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
+        state.floatingEffects.mapNotNull { floating ->
+            val mod = floating.effect.modification as? SerializableModification.PreventNextDamageFromSourceShield
+                ?: return@mapNotNull null
+            if (mod.damageSourceId != entityId) return@mapNotNull null
+            val kind = if (mod.combatOnly) "combat damage" else "damage"
+            val protectedName = floating.effect.affectedEntities.firstNotNullOfOrNull { protectedId ->
+                if (protectedId in state.turnOrder) state.getEntity(protectedId)?.get<PlayerComponent>()?.name
+                else state.getEntity(protectedId)?.get<CardComponent>()?.name
+            }
+            val recipient = when {
+                mod.playersOnly -> " to a player"
+                protectedName != null -> " to $protectedName"
+                else -> ""
+            }
+            val outcome = when {
+                !mod.preventDamage -> "it is still dealt, and a triggered ability resolves"
+                mod.hasReaction -> "that damage is prevented and a triggered ability resolves"
+                else -> "that damage is prevented"
+            }
+            ClientCardEffect(
+                effectId = "source_shield_${floating.id}",
+                name = if (mod.hasReaction) "Deflect" else "Prevent next damage",
+                description = "The next time this would deal $kind$recipient, $outcome",
+                icon = if (mod.hasReaction) "redirect" else "prevent-damage"
+            ).lasting(durationPhrase(state, floating))
+        }
 
     /**
      * A class-wide redirection shield ("all damage that would be dealt to creatures you control is
