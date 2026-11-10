@@ -1,1 +1,1 @@
-- #TBD The AI now counts "discard X cards" and "discard a card with mana value X" ability costs (Gix, Kozilek, the Great Distortion) as stocking its graveyard, like a plain discard cost
+- #4626 The AI now counts "discard X cards" and "discard a card with mana value X" ability costs (Gix, Kozilek, the Great Distortion) as stocking its graveyard, like a plain discard cost
