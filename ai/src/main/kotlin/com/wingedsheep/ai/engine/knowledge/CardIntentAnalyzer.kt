@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.CantBlockUnless
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
@@ -609,6 +610,8 @@ object CardIntentAnalyzer {
             (if (exilesChosenGraveyardTargetsToUse(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
             // Wildest Dreams' "return X target cards from your graveyard to your hand" pipeline.
             (if (returnsChosenGraveyardTargetsToHand(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
+            // Harness the Storm's "you may cast target card … from your graveyard (you still pay its costs)".
+            (if (castsChosenGraveyardTargetsPaying(effect, requirements)) listOf(RECAST_FROM_OUR_GRAVEYARD) else emptyList()) +
             payoff.flatMap { leaf ->
             when (leaf) {
                 is ReflexiveTriggerEffect -> readingLeaves(leaf.reflexiveEffect, leaf.reflexiveTargetRequirements)
@@ -955,6 +958,18 @@ object CardIntentAnalyzer {
         if (objects.isEmpty() || objects.any { it?.filter?.zone != Zone.GRAVEYARD }) return false
         return putsChosenTargetsOntoOurBattlefield(effect)
     }
+
+    /**
+     * Whether [effect] casts its own chosen graveyard targets on resolution, paying their costs —
+     * "you may cast target card with the same name as that spell from your graveyard" (Harness the
+     * Storm), "you may cast target instant or sorcery card from your graveyard" (Chandra, Flame's
+     * Catalyst): the card comes back through the stack, the recursion a return to hand is
+     * ([RECAST_FROM_OUR_GRAVEYARD]). The free cast of the same slot already reads as
+     * [IntentTag.FREE_SPELL] — the mana it saves *and* the card — so only the paid cast is this.
+     */
+    internal fun castsChosenGraveyardTargetsPaying(effect: Effect, requirements: List<TargetRequirement>): Boolean =
+        TargetPolarityAnalyzer.castGraveyardSlots(effect, requirements).isNotEmpty() &&
+            gateInteriorLeaves(effect).any { it is CastFromCollectionWithoutPayingCostEffect && it.payManaCost }
 
     /**
      * Whether [effect] returns its own chosen targets, every one a graveyard card, to our hand —
@@ -2495,6 +2510,11 @@ object CardIntentAnalyzer {
         // as an Aura — the single-card return a graveyard-to-battlefield [MoveToZoneEffect] reads
         // as. Whom it lands on is the polarity reader's question, read off what the Aura does.
         is ReturnSelfToBattlefieldAttachedEffect -> setOf(IntentTag.RECURSION)
+        // "Return it to the battlefield transformed" out of the graveyard (Harvest Hand, Skin
+        // Invasion, the Ojer gods): our own card back onto the battlefield as its other face — the
+        // single-card return a graveyard-to-battlefield [MoveToZoneEffect] reads as.
+        is ReturnSelfFromZoneTransformedEffect ->
+            if (effect.fromZone == Zone.GRAVEYARD) setOf(IntentTag.RECURSION) else emptySet()
 
         // A wrath is "for each creature: destroy it" — an iteration, not a group-targeted move, so
         // the shape only shows up here. [EffectWalker] deliberately treats a ForEach as a leaf (see
@@ -3266,6 +3286,9 @@ object CardIntentAnalyzer {
         // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
         is CantAttackUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature can't block unless you control another Wolf or Werewolf" (Howlpack Wolf):
+        // the blocking half of [CantAttackUnless] — a condition on its own blocks, a drawback.
+        is CantBlockUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature can't block artifact creatures" (Hinterland Drake), "can block only
         // creatures with flying" (Cloud Sprite): a narrower "can't block" on its own body.
         is CanOnlyBlockCreaturesWith -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
