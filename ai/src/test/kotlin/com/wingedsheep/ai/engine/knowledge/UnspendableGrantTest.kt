@@ -205,6 +205,33 @@ class UnspendableGrantTest : ScenarioTestBase() {
             board().advanceToPriority(1, Step.POSTCOMBAT_MAIN).uprising() shouldBe TimingVerdict.NoWindow
         }
 
+        // ── Fractalize: `Until end of turn, target creature becomes a green and blue Fractal with
+        //    base power and toughness each equal to X plus 1.` ──
+
+        test("an animation aimed at an opposing attacker reshapes their fight: the leaf's call") {
+            val game = scenario().withPlayers()
+                .withActivePlayer(2)
+                .withCardInHand(1, "Fractalize")
+                .withLandsOnBattlefield(1, "Island", 3)
+                .withCardOnBattlefield(2, "Hill Giant")
+                .build()
+                .advanceToDeclaration(2, Step.DECLARE_ATTACKERS)
+                .also { it.declareAttackers(mapOf("Hill Giant" to 1)) }
+                .advanceToPriority(1, Step.DECLARE_BLOCKERS)
+
+            val verdict = wasted.verdictFor(
+                game.state, game.player1Id, "Fractalize",
+                cast = CastSpell(
+                    game.player1Id,
+                    game.state.getZone(game.player1Id, Zone.HAND)
+                        .first { game.state.getEntity(it)?.get<CardComponent>()?.name == "Fractalize" },
+                    targets = listOf(ChosenTarget.Permanent(game.findPermanent("Hill Giant")!!)),
+                    xValue = 0,
+                ),
+            )
+            verdict shouldNotBe TimingVerdict.NoWindow
+        }
+
         // ── Dream Thrush: `{T}: Target land becomes the basic land type of your choice until EOT` ──
 
         test("our own turn, an opponent's land: nothing walks through it and no mana is denied") {

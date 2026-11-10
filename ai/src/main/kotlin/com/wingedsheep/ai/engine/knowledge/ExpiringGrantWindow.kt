@@ -359,6 +359,10 @@ internal object ExpiringGrantWindow {
             when (payoff.kind) {
                 PayoffKind.CREATURE -> {
                     val keyword = payoff.keyword
+                    // An animation aimed at an opposing creature (Fractalize, Metamorphic Blast's
+                    // rabbit) reshapes their fight, not ours: [canStillFight] asks whether the
+                    // creature attacks or blocks for us, which it never does, so leave it to the leaf.
+                    if (payoff.animates && affected.any { projected.getController(it) != playerId }) return false
                     // Hexproof and shroud change no fight; only a spell or ability that targets the
                     // creature spends them, and one on the stack has already released this floor.
                     if (canWaitForATarget && keyword in SPENT_ONLY_AGAINST_TARGETING) return@none false
