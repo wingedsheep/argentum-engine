@@ -2614,6 +2614,7 @@ Captain of Umbar
 Captain of the Mists
 Captain of the Watch
 Captain's Call
+Captain's Claws
 Captain's Hook
 Captain's Tutelage
 Captivating Cave
@@ -3549,6 +3550,7 @@ Corrupt
 Corrupt Court Official
 Corrupt Eunuchs
 Corrupted Conviction
+Corrupted Crossroads
 Corrupted Grafstone
 Corrupted Harvester
 Corrupted Shapeshifter
@@ -7001,6 +7003,7 @@ General Chang, Cold Warrior
 General Ferrous Rokiric
 General Kreat, the Boltbringer
 General Kudro of Drannith
+General Tazri
 General Traag, Heart of Stone
 General's Enforcer
 General's Kabuto
@@ -8413,6 +8416,7 @@ Hired Poisoner
 Hisoka's Defiance
 Hisoka's Guard
 Hisoka, Minamo Sensei
+Hissing Quagmire
 Historian of Zhalfir
 Historian's Boon
 Historian's Wisdom
@@ -9148,7 +9152,7 @@ Inventor's Axe
 Inventor's Goggles
 Inventors' Fair
 Inventory Management	intent: ForEach>AttachToChosenHostEffect
-Invert // Invent	intent: ForEach>SwitchPowerToughnessEffect; polarity: ForEachEffect; timing: ForEach>SwitchPowerToughnessEffect
+Invert // Invent	polarity: ForEachEffect; timing: ForEach>SwitchPowerToughnessEffect
 Invert Polarity	intent: FlipCoinEffect; polarity: FlipCoinEffect
 Inverted Iceberg
 Inverter of Truth
@@ -9171,6 +9175,7 @@ Invoke the Divine
 Invoke the Winds
 Involuntary Cooldown
 Involuntary Employment
+Iona's Blessing
 Ionize
 Ioreth of the Healing House
 Ipnu Rivulet
@@ -9951,6 +9956,7 @@ Kor Celebrant
 Kor Entanglers
 Kor Halberd
 Kor Line-Slinger
+Kor Scythemaster
 Kor Sky Climber
 Korlessa, Scale Singer
 Kormus Bell
@@ -10436,6 +10442,7 @@ Lingering Phantom
 Lingering Souls
 Linvala, Keeper of Silence
 Linvala, Shield of Sea Gate
+Linvala, the Preserver
 Lion Heart
 Lion Sash	intent: UnattachEquipmentEffect
 Lion Umbra
@@ -11462,6 +11469,7 @@ Mirrorhall Mimic
 Mirrormade
 Mirrormere Guardian
 Mirrormind Crown
+Mirrorpool
 Mirrorshell Crab
 Mirrorwing Dragon
 Miscalculation
@@ -12031,6 +12039,7 @@ Necrotic Wound
 Nectar Faerie
 Need for Speed
 Needle Drop
+Needle Spires
 Needle Storm
 Needlebug
 Needlepeak Spider
@@ -12365,6 +12374,7 @@ Oasis
 Oasis Gardener
 Oasis Ritualist
 Oath of Ajani
+Oath of Gideon
 Oath of Kaya
 Oath of Liliana
 Oath of Nissa
@@ -14861,6 +14871,7 @@ Ruinous Rampage
 Ruinous Ultimatum
 Ruinous Waterbending
 Ruins Recluse
+Ruins of Oran-Rief
 Ruins of Trokair
 Rukh Egg
 Rule of Law
@@ -15430,6 +15441,7 @@ Sea Gate Loremaster
 Sea Gate Oracle
 Sea Gate Restoration
 Sea Gate Stormcaller
+Sea Gate Wreckage
 Sea God's Scorn
 Sea Kings' Blessing	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect
 Sea Legs
@@ -17210,6 +17222,7 @@ Stonebound Mentor
 Stonecoil Serpent
 Stonefare Crocodile
 Stoneforge Acolyte
+Stoneforge Masterwork
 Stonefury
 Stonehorn Chanter
 Stonerise Spirit
@@ -17279,7 +17292,7 @@ Storyweave	polarity: AddCountersEffect
 Strafe
 Strands of Undeath
 Strange Augmentation
-Strange Inversion	intent: SwitchPowerToughnessEffect; polarity: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
+Strange Inversion	polarity: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
 Strangle
 Strangled Cemetery
 Strangling Spores
@@ -18956,7 +18969,7 @@ Transmogrant Altar
 Transmogrant's Crown
 Transmogrify
 Transmogrifying Wand
-Transmutation	intent: SwitchPowerToughnessEffect; polarity: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
+Transmutation	polarity: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
 Transmutation Font
 Transmute Artifact
 Transplant Theorist
@@ -19166,7 +19179,7 @@ Turtle Van
 Turtle-Duck	timing: SetBaseStatsEffect
 Turtles Forever
 Turtles in Time
-Turtleshell Changeling	combat: SwitchPowerToughnessEffect; intent: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
+Turtleshell Changeling
 Tusked Colossodon
 Tuskeri Firewalker
 Tuskguard Captain
@@ -20158,6 +20171,7 @@ Wall of Omens
 Wall of Opposition
 Wall of Pine Needles
 Wall of Putrid Flesh
+Wall of Resurgence
 Wall of Runes
 Wall of Shadows
 Wall of Shields
@@ -20188,6 +20202,7 @@ Wanderer's Strike
 Wanderer's Twig
 Wanderguard Sentry	intent: LookAtTargetHandEffect
 Wandering Archaic	intent: PayOrSufferEffect
+Wandering Fumarole
 Wandering Mind
 Wandering Musicians
 Wandering Ones
