@@ -1,0 +1,1 @@
+- #4630 Switch-power/toughness tricks (Turtleshell Changeling, Strange Inversion, Wandering Fumarole's granted {0} switch) read as combat enhancements and are held for a fight this turn

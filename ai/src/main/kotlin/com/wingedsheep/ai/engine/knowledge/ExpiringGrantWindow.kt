@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
@@ -63,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
+import com.wingedsheep.sdk.scripting.effects.SwitchPowerToughnessEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -1372,6 +1374,16 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CONNECT, null, matching = combatDamageConnectors(leaf.ability))
                 leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     firesOnlyInAFight(leaf.ability) ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "… with '{0}: Switch this creature's power and toughness until end of turn'"
+                // (Wandering Fumarole) granted for the turn: a trick on the holder's own stats,
+                // spent in this turn's fight like the pump it resembles.
+                leaf is GrantActivatedAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+                    CardIntentAnalyzer.grantsOwnFightTrick(leaf.ability) ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "Switch target creature's power and toughness until end of turn" (Turtleshell
+                // Changeling, Strange Inversion): the creature's stats reshaped for this fight only.
+                leaf is SwitchPowerToughnessEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
                 leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     (isPump(leaf) || leaf.target == EffectTarget.Self) ->
