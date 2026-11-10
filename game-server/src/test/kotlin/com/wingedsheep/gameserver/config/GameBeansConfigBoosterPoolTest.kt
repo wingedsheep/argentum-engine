@@ -834,7 +834,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         ((dfcRares + dfcMythics).toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
         (dfcMythics.toDouble() / (dfcRares + dfcMythics)) shouldBe (0.2 plusOrMinus 0.07)
 
-        // A host ban on every double-faced card leaves both sheet slots to single-faced commons: no extra rare.
+        // A host ban on every double-faced card leaves the double-faced slots to single-faced commons and uncommons: no extra rare.
         val dfcNames = eligible.filter { it.isDoubleFaced }.mapTo(hashSetOf()) { it.name }
         repeat(200) {
             val pack = boosterGenerator.generateBooster("SOI", bannedCardNames = dfcNames)
