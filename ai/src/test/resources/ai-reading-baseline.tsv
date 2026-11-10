@@ -101,6 +101,7 @@ Accursed Duneyard
 Accursed Horde
 Accursed Marauder
 Accursed Spirit
+Accursed Witch
 Acererak the Archlich	intent: ForEach>PayOrSufferEffect
 Acid Rain
 Aclazotz, Deepest Betrayal	intent: ReturnSelfFromZoneTransformedEffect
@@ -199,7 +200,7 @@ Aether Inspector
 Aether Meltdown
 Aether Poisoner
 Aether Revolt
-Aether Rift	intent: AnyPlayerMayPayEffect; intent: Pipeline(hand→graveyard)
+Aether Rift	intent: AnyPlayerMayPayEffect
 Aether Spellbomb
 Aether Spike
 Aether Sting
@@ -1502,6 +1503,8 @@ Befuddle
 Behemoth Sledge
 Behemoth of Vault 0	polarity: ReflexiveTriggerEffect
 Behind the Mask	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
+Behind the Scenes
+Behold the Beyond
 Behold the Multiverse
 Behold the Sinister Six!
 Behold the Unspeakable
@@ -1887,7 +1890,7 @@ Bloodmad Vampire
 Bloodmark Mentor
 Bloodmist Infiltrator
 Bloodpyre Elemental
-Bloodrage Brawler	intent: Pipeline(hand→graveyard)
+Bloodrage Brawler
 Bloodrite Invoker
 Bloodrock Cyclops
 Bloodroot Apothecary
@@ -3637,6 +3640,7 @@ Creeperhulk
 Creeping Bloodsucker
 Creeping Chill
 Creeping Corrosion
+Creeping Dread
 Creeping Mold
 Creeping Peeper
 Creeping Trailblazer
@@ -4752,17 +4756,17 @@ Drag to the Bottom
 Drag to the Roots
 Drag to the Underworld
 Dragon Blood
-Dragon Breath	intent: ReturnSelfToBattlefieldAttachedEffect
+Dragon Breath
 Dragon Egg
 Dragon Engine
-Dragon Fangs	intent: ReturnSelfToBattlefieldAttachedEffect
+Dragon Fangs
 Dragon Fodder
 Dragon Grip
 Dragon Hatchling
 Dragon Mage
 Dragon Roost
-Dragon Scales	intent: ReturnSelfToBattlefieldAttachedEffect
-Dragon Shadow	intent: ReturnSelfToBattlefieldAttachedEffect
+Dragon Scales
+Dragon Shadow
 Dragon Sniper
 Dragon Tempest
 Dragon Throne of Tarkir
@@ -4770,7 +4774,7 @@ Dragon Trainer
 Dragon Turtle
 Dragon Tyrant
 Dragon Whelp
-Dragon Wings	intent: ReturnSelfToBattlefieldAttachedEffect
+Dragon Wings
 Dragon's Approach
 Dragon's Claw
 Dragon's Disciple
@@ -5094,7 +5098,7 @@ Eager Trufflesnout
 Eagle of Deliverance
 Eagle of the Great Shelf
 Eagle of the Watch
-Eagle's Rescue	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
+Eagle's Rescue
 Eagles of the North
 Eardrum Rattler
 Early Frost
@@ -5316,6 +5320,7 @@ Elspeth, Undaunted Hero
 Elturgard Ranger
 Eluge, the Shoreless Sea	intent: AddCountersEffect; polarity: AddCountersEffect
 Elusive Otter
+Elusive Tormentor
 Elven Ambush
 Elven Bow
 Elven Cache
@@ -5680,6 +5685,7 @@ Evelyn, the Covetous	intent: Pipeline(TopOfLibrary→exile)
 Even the Score
 Evendo Brushrazer
 Evendo, Waking Haven
+Ever After
 Evercoat Ursine	intent: Pipeline(TopOfLibrary→exile|library)
 Everdawn Champion
 Evereth, Viceroy of Plunder
@@ -5728,7 +5734,7 @@ Exhaustion
 Exhibition Magician
 Exhibition Tidecaller
 Exhilarating Elocution
-Exiled Boggart	intent: Pipeline(hand→graveyard)
+Exiled Boggart
 Exiled Doomsayer
 Exit Specialist
 Exocomp
@@ -5958,6 +5964,7 @@ Faramir, Field Commander
 Faramir, Prince of Ithilien	polarity: CreateDelayedTriggerEffect
 Faramir, Steward of Gondor	intent: TakeDesignationEffect
 Farbog Explorer
+Farbog Revenant
 Farewell
 Farfinder
 Farhaven Elf
@@ -7800,7 +7807,7 @@ Gruul Turf
 Gruul War Chant
 Gryff Rider
 Gryff Vanguard
-Gryff's Boon	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
+Gryff's Boon
 Gryffwing Cavalry
 Gríma Wormtongue
 Gríma, Saruman's Footman
@@ -7874,7 +7881,7 @@ Gutter Skulk
 Gutter Skulker
 Gutterbones
 Guttersnipe
-Gutwrencher Oni	intent: Pipeline(hand→graveyard)
+Gutwrencher Oni
 Guul Draz Mucklord
 Guy in the Chair
 Gwaihir the Windlord
@@ -8154,6 +8161,7 @@ Hei Bai, Forest Guardian
 Hei Bai, Spirit of Balance
 Heightened Reflexes
 Heiko Yamazaki, the General	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Heir of Falkenrath
 Heir of the Ancient Fang
 Heir of the Wilds
 Heirloom Auntie
@@ -9703,6 +9711,7 @@ Kindled Fury
 Kindled Heroism
 Kindlespark Duo
 Kindly Ancestor
+Kindly Stranger
 Kindred Discovery
 Kindred Dominance
 Kindred Judgment
@@ -9936,7 +9945,7 @@ Krovikan Mist
 Krovikan Scoundrel
 Krovod Haunch
 Kroxa and Kunoros
-Kroxa, Titan of Death's Hunger	intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
+Kroxa, Titan of Death's Hunger
 Kruin Outlaw
 Kruin Striker
 Krumar Bond-Kin
@@ -10312,6 +10321,7 @@ Liliana's Contract
 Liliana's Defeat
 Liliana's Devotee
 Liliana's Elite
+Liliana's Indignation
 Liliana's Influence
 Liliana's Mastery
 Liliana's Scorn
@@ -10326,7 +10336,7 @@ Liliana, Death Wielder
 Liliana, Death's Majesty
 Liliana, Dreadhorde General
 Liliana, Untouched by Death	intent: GrantStaticAbilityEffect
-Liliana, Waker of the Dead	intent: ForEach>Pipeline(hand→?); intent: ForEach>StorePlayerEffect; intent: Pipeline(?→graveyard)
+Liliana, Waker of the Dead
 Liliana, the Last Hope
 Liliana, the Necromancer
 Lily Bowen, Raging Grandma
@@ -10874,7 +10884,7 @@ Mardu Strike Leader
 Mardu Warshrieker
 Marhault Elsdragon
 Marina Vendrell	intent: LockDoorEffect; intent: UnlockDoorEffect; polarity: LockDoorEffect; polarity: UnlockDoorEffect
-Marina Vendrell's Grimoire	intent: Pipeline(hand→graveyard)
+Marina Vendrell's Grimoire
 Marionette Apprentice
 Marionette Master
 Mariposa Military Base
@@ -12288,7 +12298,7 @@ Obliterating Bolt
 Oblivion Ring
 Oblivion Stone	intent: AddCountersEffect; polarity: AddCountersEffect
 Oblivion's Hunger
-Oblivious Bookworm	intent: Pipeline(hand→graveyard)
+Oblivious Bookworm
 Obosh, the Preypiercer
 Obscura Ascendancy
 Obscura Charm
@@ -12705,6 +12715,7 @@ Paladin's Shield
 Palani's Hatcher
 Palantír of Orthanc
 Pale Bears
+Pale Rider of Trostad
 Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
 Palladia-Mors
@@ -13002,6 +13013,7 @@ Pia, Determined Rebuilder
 Pianna, Nomad Captain
 Picard, Leading by Example
 Pick Your Poison
+Pick the Brain
 Picklock Prankster
 Picnic Ruiner
 Pictures of Spider-Man
@@ -13672,7 +13684,7 @@ Radha, Heart of Keld
 Radha, Heir to Keld
 Radiant Destiny
 Radiant Fountain
-Radiant Grace	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
+Radiant Grace
 Radiant Grove
 Radiant Lotus	polarity: AddManaOfChoiceEffect
 Radiant Scrollwielder	intent: GrantMayPlayFromExileEffect
@@ -13833,6 +13845,7 @@ Ramunap Excavator
 Ramunap Hydra
 Ramunap Ruins
 Ran and Shaw
+Rancid Rats
 Rancor
 Rancorous Archaic
 Random Encounter
@@ -14676,7 +14689,7 @@ Rottenmouth Viper
 Rotting Fensnake
 Rotting Legion
 Rotting Mastodon
-Rotting Regisaur	intent: Pipeline(hand→graveyard)
+Rotting Regisaur
 Rough Rhino Cavalry
 Roughshod Duo
 Roughshod Mentor
@@ -15634,6 +15647,7 @@ Shaleskin Plower
 Shaman of Spring
 Shaman of the Pack
 Shamanic Revelation
+Shamble Back
 Shambling Attendants
 Shambling Cie'th
 Shambling Ghast
@@ -16289,7 +16303,7 @@ Smite the Monstrous
 Smiting Helix
 Smitten Swordmaster
 Smoke
-Smoke Shroud	intent: ReturnSelfToBattlefieldAttachedEffect
+Smoke Shroud
 Smoke Teller	intent: LookAtFaceDownEffect; polarity: LookAtFaceDownEffect
 Smokebraider
 Smokespew Invoker
@@ -16399,7 +16413,7 @@ Somberwald Stag
 Something Worth Saving
 Somnomancer
 Sonar Strike
-Song of Creation	intent: Pipeline(hand→graveyard)
+Song of Creation
 Song of Eärendil
 Song of Freyalise	intent: GrantActivatedAbilityToGroupEffect
 Song of Stupefaction
@@ -18095,7 +18109,7 @@ The Fire Crystal
 The Fire Nation Drill	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
 The First Eruption
 The First Iroan Games
-The Flame of Keld	intent: GrantDamageBonusEffect; intent: Pipeline(hand→graveyard)
+The Flame of Keld	intent: GrantDamageBonusEffect
 The Gaffer
 The Gitrog Monster
 The Gitrog, Ravenous Ride
@@ -18599,6 +18613,7 @@ Tithebearer Giant
 Tithing Blade
 Tivadar's Crusade
 Tivash, Gloom Summoner
+To the Slaughter
 Toadstool Admirer
 Tobias Andrion
 Toby, Beastie Befriender
@@ -19549,7 +19564,7 @@ Vengeful Dead
 Vengeful Possession
 Vengeful Reaper
 Vengeful Rebel
-Vengeful Strangler	intent: ReturnSelfToBattlefieldAttachedEffect; polarity: ReturnSelfToBattlefieldAttachedEffect
+Vengeful Strangler
 Vengeful Townsfolk
 Vengeful Tracker
 Vengeful Villagers
