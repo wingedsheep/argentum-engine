@@ -1,3 +1,63 @@
+// Affa Protector
+{
+    "name": "Affa Protector",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier Ally",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Izzy",
+        "flavorText": "\"Through all the terrors we face, I hold on to the memory of the world before the Eldrazi came. I'd like to see that world again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e54ac79-fbaa-4385-869b-aaf31e33a11f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Allied Reinforcements
+{
+    "name": "Allied Reinforcements",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 2/2 white Knight Ally creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "WHITE"
+            ],
+            "creatureTypes": [
+                "Knight",
+                "Ally"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Our formation was scattered after Sea Gate fell. If you're fighting the Eldrazi, consider us your newest recruits.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd7d7c93-5622-45ca-9359-110685d9162c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ancient Crab
 {
     "name": "Ancient Crab",
@@ -144,6 +204,66 @@
     ]
 }
 
+// Blinding Drone
+{
+    "name": "Blinding Drone",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{C}, {T}: Tap target creature. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blinding Drone:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{C}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Lake Hurwitz",
+        "flavorText": "\"Zendikar's true gods have risen. Whether in reverence or agony, all the world will kneel.\"\n—Ayli, high priest of the Eternal Pilgrims",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eb60957-0811-40c3-a92b-cce3e6a94745.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Brute Strength
 {
     "name": "Brute Strength",
@@ -200,6 +320,66 @@
     ]
 }
 
+// Call the Gatewatch
+{
+    "name": "Call the Gatewatch",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a planeswalker card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "planeswalker"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a planeswalker card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Yefim Kligerman",
+        "flavorText": "\"I've heard it said that a Planeswalker is someone who can always run from danger. But Gideon's right: we're also the ones who can choose to stay.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/4719ac60-2cff-4abb-b9cc-b677d3ac945c.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Canopy Gorger
 {
     "name": "Canopy Gorger",
@@ -218,6 +398,66 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Chitinous Cloak
+{
+    "name": "Chitinous Cloak",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2 and has menace. (It can't be blocked except by two or more creatures.)\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chitinous Cloak:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "\"If we're going to survive, we have to use every tool at our disposal. Especially the disgusting ones.\"\n—Ryza, Oran-Rief scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15e54603-af67-497f-afe0-88cfa4d00095.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Cinder Barrens
@@ -263,6 +503,102 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Cinder Hellion
+{
+    "name": "Cinder Hellion",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "Trample\nWhen this creature enters, it deals 2 damage to target opponent or planeswalker.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cinder Hellion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponentOrPlaneswalker",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Jason Kang",
+        "flavorText": "Chandra used jets of flame to lure hellions into the path of oncoming Eldrazi.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a069118-42e4-40e3-a2ba-593ac89b9064.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Cliffhaven Vampire
+{
+    "name": "Cliffhaven Vampire",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Creature — Vampire Warrior Ally",
+    "oracleText": "Flying\nWhenever you gain life, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cliffhaven Vampire:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "\"My people are no longer slaves to the Eldrazi, beholden to the past. We will determine our own future.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5544247d-1f8f-443f-a4c4-d8461db28a79.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
     ]
 }
 
@@ -348,6 +684,231 @@
                 "text": "Because Corpse Churn doesn't target the creature card in your graveyard, you may choose one of the three cards you put there from your library if applicable."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Crumbling Vestige
+{
+    "name": "Crumbling Vestige",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, add one mana of any color.\n{T}: Add {C}. ({C} represents colorless mana.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crumbling Vestige:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "AddManaOfChoice"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Crumbling Vestige:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d491c13c-43e3-4ca3-b888-4edd34dfe14a.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Deepfathom Skulker
+{
+    "name": "Deepfathom Skulker",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhenever a creature you control deals combat damage to a player, you may draw a card.\n{3}{C}: Target creature can't be blocked this turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deepfathom Skulker:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Deepfathom Skulker:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/496a22cc-36dd-4d4d-b887-8c4733a29870.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Devour in Flames
+{
+    "name": "Devour in Flames",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, return a land you control to its owner's hand.\nDevour in Flames deals 5 damage to target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomReturnToHand",
+                    "filter": "land"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Ob Nixilis had prepared for every eventuality—except Chandra Nalaar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/432dd78b-9520-4c28-8699-d7ff9c477070.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Drana's Chosen
+{
+    "name": "Drana's Chosen",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire Shaman Ally",
+    "oracleText": "Cohort — {T}, Tap an untapped Ally you control: Create a tapped 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Drana's Chosen:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "permanent Ally"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"Drana commands me. I command my nulls. And so her bidding is done.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/189abe2f-5899-438b-9f54-3c98e50f037a.jpg"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -480,6 +1041,74 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Essence Depleter
+{
+    "name": "Essence Depleter",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{1}{C}: Target opponent loses 1 life and you gain 1 life. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Essence Depleter:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "When Kozilek emerged at Sea Gate, his brood lineage swarmed to the surface.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/996da623-1c34-4545-a800-648238ea91ae.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Expedite
@@ -692,6 +1321,581 @@
     ]
 }
 
+// Gravity Negator
+{
+    "name": "Gravity Negator",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhenever this creature attacks, you may pay {C}. If you do, another target creature gains flying until end of turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gravity Negator:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{C}"
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85f9b63e-6ecc-4d85-9724-87b8176ae6a6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Havoc Sower
+{
+    "name": "Havoc Sower",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{1}{C}: This creature gets +2/+1 until end of turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Havoc Sower:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "It grew with a terrible swiftness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8585871-24a2-41d7-ae12-29aabfbc9ccc.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hedron Crawler
+{
+    "name": "Hedron Crawler",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{T}: Add {C}. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hedron Crawler:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"It's endearing, in a mystical, pointy sort of way.\"\n—General Tazri, allied commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f827f92-1df6-4fd0-aa61-ec2e53476f9c.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Holdout Settlement
+{
+    "name": "Holdout Settlement",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}. ({C} represents colorless mana.)\n{T}, Tap an untapped creature you control: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Holdout Settlement:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Holdout Settlement:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Kieran Yanner",
+        "flavorText": "Even in areas of profound devastation, the hedrons remained intact.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf08c317-6f2d-47e3-ab5b-8af73fd3e404.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Immolating Glare
+{
+    "name": "Immolating Glare",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target attacking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"The sun can warm your skin or blister it, nurture your crops or wither them, light your path or blind you. She is a fickle friend, but a far worse enemy.\"\n—Nazra of the Stone Havens",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f468338-bb66-4db0-a883-69095566092b.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Isolation Zone
+{
+    "name": "Isolation Zone",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target creature or enchantment an opponent controls until this enchantment leaves the battlefield. (That permanent returns under its owner's control.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Isolation Zone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|enchantment ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Isolation Zone:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Chris Rallis",
+        "flavorText": "When properly aligned, hedrons become powerful tools of binding.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1ca698e3-1249-4a08-be04-bae3bd944e99.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Jori En, Ruin Diver
+{
+    "name": "Jori En, Ruin Diver",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Merfolk Wizard",
+    "oracleText": "Whenever you cast your second spell each turn, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jori En, Ruin Diver:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Some relic hunters have given up exploring and gone to fight the Eldrazi. But I know our work is more important than ever. The secrets we uncover could lead to the world's salvation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/900d3af7-a03f-4173-8a8a-bd146dec9c0f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE"
+    ]
+}
+
+// Kor Sky Climber
+{
+    "name": "Kor Sky Climber",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Kor Soldier Ally",
+    "oracleText": "{1}{W}: This creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kor Sky Climber:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"With rope, I can fly as far as the rope can reach. But with light, the sky is the limit.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54938334-ebad-4dde-82e6-8c854aef4a91.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Kozilek's Shrieker
+{
+    "name": "Kozilek's Shrieker",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{C}: This creature gets +1/+0 and gains menace until end of turn. (It can't be blocked except by two or more creatures. {C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kozilek's Shrieker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{C}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Jason Felix",
+        "flavorText": "Listen to the sound of defeat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a384cd5b-2c6c-4969-bb62-a017e2fc9794.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Kozilek's Translator
+{
+    "name": "Kozilek's Translator",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nPay 1 life: Add {C}. Activate only once each turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kozilek's Translator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Izzy",
+        "flavorText": "From nothingness, sustenance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d80665ae-fcb2-48fd-95be-8768293bcef7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Loam Larva
+{
+    "name": "Loam Larva",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "When this creature enters, you may search your library for a basic land card, reveal it, then shuffle and put that card on top.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loam Larva:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
+                            },
+                            "ShuffleLibrary",
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "revealed": true
+                            },
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Jason Kang",
+        "flavorText": "The forest floor of Murasa is home to life as diverse and vibrant as that of the canopy above.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/affa9314-0021-445e-9496-349254b16bf8.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Make a Stand
 {
     "name": "Make a Stand",
@@ -740,6 +1944,142 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Makindi Aeronaut
+{
+    "name": "Makindi Aeronaut",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Scout Ally",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Matt Stewart",
+        "flavorText": "\"The Eldrazi have surprised us before. It's my job to make sure that never happens again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a35d3113-6cb7-4b74-94a3-8160d9ac1b89.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Malakir Soothsayer
+{
+    "name": "Malakir Soothsayer",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire Shaman Ally",
+    "oracleText": "Cohort — {T}, Tap an untapped Ally you control: You draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Malakir Soothsayer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "permanent Ally"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"Your blood whispers secrets your mind could never comprehend.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72cb3c2c-5d5a-4c9b-a381-ab4dd477d84d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Maw of Kozilek
+{
+    "name": "Maw of Kozilek",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{C}: This creature gets +2/-2 until end of turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Maw of Kozilek:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{C}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Daarken",
+        "flavorText": "\"The Eldrazi make worse than ruins—they make a world where not even ruins stand.\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48669993-ad68-499e-8f2e-bc5c651b4b28.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -862,6 +2202,253 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Mindmelter
+{
+    "name": "Mindmelter",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nThis creature can't be blocked.\n{3}{C}: Target opponent exiles a card from their hand. Activate only as a sorcery. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mindmelter:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "exiled",
+                            "prompt": "Choose a card to exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a5bf575-6d09-4cb0-8fe0-8e49d2c39fd5.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "BLUE"
+    ]
+}
+
+// Munda's Vanguard
+{
+    "name": "Munda's Vanguard",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Kor Knight Ally",
+    "oracleText": "Cohort — {T}, Tap an untapped Ally you control: Put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Munda's Vanguard:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "permanent Ally"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Do not let yourselves fall now. Zendikar is depending on us—on you!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dfb21b1-95a5-446d-afc6-aede81ee5a0d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Natural State
+{
+    "name": "Natural State",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment with mana value 3 or less.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment mv<=3"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Killing the Eldrazi is not enough. We must erase all memory of them from this world.\"\n—Greenweaver Mina",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdd4bdd5-1673-4f22-b593-41df8ce95a97.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Null Caller
+{
+    "name": "Null Caller",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire Shaman",
+    "oracleText": "{3}{B}, Exile a creature card from your graveyard: Create a tapped 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Null Caller:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "flavorText": "Zendikar's defenders include both healers and vampires. One way or another, the fallen will return to the fight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4afe773b-2987-4001-a0fd-9dca414a9129.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
