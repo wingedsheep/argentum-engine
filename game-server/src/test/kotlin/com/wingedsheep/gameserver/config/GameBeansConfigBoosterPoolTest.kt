@@ -789,6 +789,63 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (sheetMythics.toDouble() / (sheetRares + sheetMythics)) shouldBe ((1.0 / 6) plusOrMinus 0.06)
     }
 
+    test("Shadows over Innistrad draft pack opens a double-faced card beside 9 commons, 3 uncommons and a rare") {
+        // Draft Booster (collation per mtg.wtf/pack/soi-draft, after lethe.xyz): 8 single-faced commons, 3 uncommons,
+        // a single-faced rare or mythic, one double-faced common or uncommon (sheet: each common x5, each uncommon x2),
+        // and a slot that is a single-faced common in 7 packs of 8 and a double-faced rare or mythic in the eighth,
+        // plus a basic land (supplied at deck building). The foil replacing a common in 9 packs of 40 is cosmetic and
+        // not modelled.
+        val soi = boosterGenerator.availableSets["SOI"].shouldNotBeNull()
+        soi.fullyImplemented shouldBe true
+        soi.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val eligible = soi.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:soi is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 105, Rarity.UNCOMMON to 100, Rarity.RARE to 59, Rarity.MYTHIC to 18,
+        )
+        // Scryfall `set:soi is:booster is:dfc`: 4 commons, 20 uncommons, 6 rares, 3 mythics.
+        eligible.filter { it.isDoubleFaced }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 4, Rarity.UNCOMMON to 20, Rarity.RARE to 6, Rarity.MYTHIC to 3,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        fun CardDefinition.isRareOrMythic() = metadata.rarity == Rarity.RARE || metadata.rarity == Rarity.MYTHIC
+        var dfcCommons = 0
+        var dfcRares = 0
+        var dfcMythics = 0
+        val packs = 4000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("SOI")
+            val dfcs = pack.filter { it.isDoubleFaced }
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.all { it.name in eligibleNames } shouldBe true
+                dfcs.count { !it.isRareOrMythic() } shouldBe 1
+                pack.count { it.isRareOrMythic() && !it.isDoubleFaced } shouldBe 1
+                pack.count { it.metadata.rarity == Rarity.UNCOMMON && !it.isDoubleFaced } shouldBe 3
+                val dfcRare = dfcs.count { it.isRareOrMythic() }
+                pack.count { it.metadata.rarity == Rarity.COMMON && !it.isDoubleFaced } shouldBe 9 - dfcRare
+            }
+            if (dfcs.any { it.metadata.rarity == Rarity.COMMON }) dfcCommons++
+            dfcRares += dfcs.count { it.metadata.rarity == Rarity.RARE }
+            dfcMythics += dfcs.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (dfcCommons.toDouble() / packs) shouldBe ((1.0 / 3) plusOrMinus 0.03)
+        ((dfcRares + dfcMythics).toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
+        (dfcMythics.toDouble() / (dfcRares + dfcMythics)) shouldBe (0.2 plusOrMinus 0.07)
+
+        // A host ban on every double-faced card leaves both sheet slots to single-faced commons: no extra rare.
+        val dfcNames = eligible.filter { it.isDoubleFaced }.mapTo(hashSetOf()) { it.name }
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("SOI", bannedCardNames = dfcNames)
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.none { it.isDoubleFaced } shouldBe true
+                pack.count { it.isRareOrMythic() } shouldBe 1
+            }
+        }
+    }
+
     test("Eldritch Moon offers Shadows over Innistrad basic lands for sealed deckbuilding") {
         val emn = boosterGenerator.availableSets["EMN"].shouldNotBeNull()
 
@@ -1180,7 +1237,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "EMN" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "SOI" to 14, "EMN" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,

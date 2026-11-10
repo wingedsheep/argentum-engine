@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-soi',
+    date: '2026-11-10',
+    kind: 'set',
+    setCode: 'SOI',
+    title: 'Shadows over Innistrad is complete',
+    body: "A gothic mystery on Innistrad. Investigate for Clues, fill your graveyard to switch on delirium, discard into madness and flip Werewolves on quiet turns, across ten two-colour decks from Spirit fliers and Zombie self-mill to Vampire madness, Human packs and Clue engines.",
+    tryIf: 'graveyard puzzles, card-drawing grinds and tribal Innistrad horror',
+  },
+  {
     id: 'set-emn',
     date: '2026-11-09',
     kind: 'set',
