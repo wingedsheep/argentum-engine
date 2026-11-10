@@ -65,6 +65,7 @@ import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
@@ -783,6 +784,21 @@ object TargetPolarityAnalyzer {
             val slot = slotOf(equip.target, requirements) ?: continue
             if (source != null && perSlot[slot].isEmpty() && isOwnSide(requirements[slot])) {
                 perSlot[slot] += TargetPolarity.FLEXIBLE
+            }
+        }
+        // An Aura returned attached to a target whose effect on its host can't be read one-sidedly
+        // — Radiant Restraints' "creatures enchanted player controls enter tapped" is a replacement
+        // effect, a veto on the Aura reading — is still aimed by the side its slot is confined to:
+        // "target opponent" or "target creature an opponent controls" is a curse's victim. On our own
+        // side ("target creature you control") it is, like Equip above, a question of which of our
+        // creatures wears it best: open for the simulation. Only when nothing else reads the slot.
+        for (aura in leaves.filterIsInstance<ReturnSelfToBattlefieldAttachedEffect>()) {
+            val slot = slotOf(aura.target, requirements) ?: continue
+            if (perSlot[slot].isNotEmpty()) continue
+            val requirement = requirements[slot]
+            when {
+                requirement is TargetOpponent || isOpponentSide(requirement) -> perSlot[slot] += TargetPolarity.HARMFUL
+                isOwnSide(requirement) -> perSlot[slot] += TargetPolarity.FLEXIBLE
             }
         }
         // "Remove all counters from target creature" (Perfect Intimidation) strips an opponent's
@@ -1726,6 +1742,17 @@ object TargetPolarityAnalyzer {
             // [forRequirements], or an Equipment whose bonus is mixed) the attach names nothing, so
             // a sibling leaf can still read the slot — The Aetherspark's "+1/+1 counter on that creature".
             is AttachEquipmentEffect -> source?.let { attachmentPolarity(it, definitions) }
+                ?.takeIf { it != TargetPolarity.UNKNOWN }
+                ?.let { leaf.target to it } ?: return emptyList()
+            // "Return this card to the battlefield transformed attached to target opponent" (Accursed
+            // Witch's Infectious Curse), "… attached to target creature" (Gryff's Boon): the target
+            // gets whatever the returned Aura — the back face when it returns transformed — does to
+            // what it enchants, the same reading the Aura's own enchant target gets. Unread (no
+            // source card, or an Aura that reads mixed) it names nothing here, and
+            // [forRequirements] falls back on the side the target is confined to.
+            is ReturnSelfToBattlefieldAttachedEffect -> source
+                ?.let { if (leaf.transformed) it.backFace else it }
+                ?.let { attachmentPolarity(it, definitions) }
                 ?.takeIf { it != TargetPolarity.UNKNOWN }
                 ?.let { leaf.target to it } ?: return emptyList()
             // "Attach target Equipment you control to target creature you control" (Halvar, Kemba,

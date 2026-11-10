@@ -110,6 +110,154 @@
     ]
 }
 
+// Accursed Witch
+{
+    "name": "Accursed Witch",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Spells your opponents cast that target this creature cost {1} less to cast.\nWhen this creature dies, return it to the battlefield transformed under your control attached to target opponent.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Accursed Witch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfToBattlefieldAttached",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "transformed": true
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, return it to the battlefield transformed under your control attached to target opponent."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "OpponentsCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 1,
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Infectious Curse",
+        "manaCost": "",
+        "typeLine": "Enchantment — Aura Curse",
+        "oracleText": "Enchant player\nSpells you cast that target enchanted player cost {1} less to cast.\nAt the beginning of enchanted player's upkeep, that player loses 1 life and you gain 1 life.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Infectious Curse:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "EnchantedPlayer"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EnchantedPlayer"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of enchanted player's upkeep, that player loses 1 life and you gain 1 life."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "YouCast",
+                        "filter": {}
+                    },
+                    "modification": {
+                        "type": "ReduceGenericBy",
+                        "source": {
+                            "type": "FixedIfAnyTargetMatches",
+                            "amount": 1,
+                            "filter": {
+                                "statePredicates": [
+                                    "IsAttachedToBySource"
+                                ]
+                            }
+                        }
+                    }
+                }
+            ],
+            "auraTarget": "TargetPlayer"
+        },
+        "metadata": {
+            "collectorNumber": "97",
+            "rarity": "UNCOMMON",
+            "artist": "Wesley Burt",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/0/8093f8b0-5d50-48ca-b616-e92535a47138.jpg?1783937786"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8093f8b0-5d50-48ca-b616-e92535a47138.jpg?1783937786",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If an effect causes Accursed Witch to transform on the battlefield, rather than leaving it and returning transformed, then Infectious Curse doesn't become attached to any player and is put into your graveyard. This won't cause abilities that trigger when a creature leaves the battlefield to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Aim High
 {
     "name": "Aim High",
@@ -1231,6 +1379,159 @@
     ]
 }
 
+// Behind the Scenes
+{
+    "name": "Behind the Scenes",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control have skulk. (They can't be blocked by creatures with greater power.)\n{4}{W}: Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Behind the Scenes:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SKULK",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "It does no good to bar the gate when the enemy is already inside.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fac171d-a8b6-4bb7-a559-473574aa02a8.jpg?1783937780",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Behold the Beyond
+{
+    "name": "Behold the Beyond",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Discard your hand. Search your library for three cards, put them into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "discardedHand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discardedHand",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for up to three cards to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "MYTHIC",
+        "artist": "Noah Bradley",
+        "flavorText": "There is power in the abyss, in blackness more profound than the darkest dreams.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd22350b-d48c-4ae6-b95f-63336fabe0e3.jpg?1783937781"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Biting Rain
 {
     "name": "Biting Rain",
@@ -1969,6 +2270,141 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Creeping Dread
+{
+    "name": "Creeping Dread",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, each player discards a card. Each opponent who discarded a card that shares a card type with the card you discarded loses 3 life. (Players reveal the discarded cards simultaneously.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Creeping Dread:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a card to discard"
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected3"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "collected3",
+                            "filter": "own:you",
+                            "storeMatching": "matching5"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "collected3",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesCardTypeWith",
+                                        "entity": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "matching5"
+                                        }
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByOpponent"
+                            },
+                            "storeMatching": "matching6"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "matching6"
+                            },
+                            "body": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "OwnerOfIterationEntity"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, each player discards a card. Each opponent who discarded a card that shares a card type with the card you discarded loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b3376c4-369a-4d63-bd48-966bcfb0c9b9.jpg?1783937777",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "When a spell or ability instructs each player to discard a card, starting with the player whose turn it is and proceeding in turn order, each player selects a card from their hand without revealing it, sets it aside, and then all of those cards are revealed and discarded at once."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a player has no cards in hand, that player doesn't discard a card while everyone else does. If you didn't discard a card, no player can have discarded a card that shares a card type with the card you discarded, so no player loses 3 life."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an opponent discards a card that shares two card types with the card you discarded, such as an artifact creature, that player still only loses 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3259,6 +3695,120 @@
     ]
 }
 
+// Elusive Tormentor
+{
+    "name": "Elusive Tormentor",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Vampire Wizard",
+    "oracleText": "{1}, Discard a card: Transform this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elusive Tormentor:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": "Transform",
+                "descriptionOverride": "{1}, Discard a card: Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Insidious Mist",
+        "manaCost": "",
+        "typeLine": "Creature — Elemental",
+        "oracleText": "Hexproof, indestructible\nThis creature can't block and can't be blocked.\nWhenever this creature attacks and isn't blocked, you may pay {2}{B}. If you do, transform it.",
+        "creatureStats": {
+            "power": 0,
+            "toughness": 1
+        },
+        "keywords": [
+            "HEXPROOF",
+            "INDESTRUCTIBLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Insidious Mist:1",
+                    "trigger": "BecomesUnblockedEvent",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "PayManaCost",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "then": "Transform"
+                    },
+                    "descriptionOverride": "Whenever this creature attacks and isn't blocked, you may pay {2}{B}. If you do, transform it."
+                }
+            ],
+            "staticAbilities": [
+                "CantBlock",
+                "CantBeBlocked"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "108",
+            "rarity": "RARE",
+            "artist": "Izzy",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/3/a32ce90d-9138-4aca-aa3c-a558dd16fad8.jpg?1783937784"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "Older vampires are usually more cautious than the newly-sired, calling upon ancient magic for which neonates lack patience.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a32ce90d-9138-4aca-aa3c-a558dd16fad8.jpg?1783937784",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can activate Elusive Tormentor's ability multiple times to discard multiple cards. Only the first instance of the ability to resolve will cause it to transform."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You can, all within one turn, attack with Elusive Tormentor, transform it into Insidious Mist before blockers are chosen, transform it back as its triggered ability resolves, and have it deal 4 combat damage."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Once blockers have been chosen, transforming Elusive Tormentor into Insidious Mist won't cause it to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "BLUE"
+    ]
+}
+
 // Ember-Eye Wolf
 {
     "name": "Ember-Eye Wolf",
@@ -3701,6 +4251,70 @@
     ]
 }
 
+// Ever After
+{
+    "name": "Ever After",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to two target creature cards from your graveyard to the battlefield. Each of those creatures is a black Zombie in addition to its other colors and types. Put Ever After on the bottom of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "entersWith": {
+                        "addedSubtypes": [
+                            "Zombie"
+                        ],
+                        "addedColors": [
+                            "BLACK"
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfLibraryPlacementOnResolve": "Bottom"
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a530a54-2711-4858-bc88-559d90be4f05.jpg?1783937775",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If a targeted creature card is normally colorless, it will simply become black. It won’t be both black and colorless."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Explosive Apparatus
 {
     "name": "Explosive Apparatus",
@@ -3851,6 +4465,41 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Farbog Revenant
+{
+    "name": "Farbog Revenant",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nLifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "SKULK",
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Min Yum",
+        "flavorText": "Spiteful geists rise from the muck of the Farbogs, eager to lure travelers to their doom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f6de332-debb-49f3-8b29-1719060ab00c.jpg?1783937775",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5397,6 +6046,65 @@
     }
 }
 
+// Heir of Falkenrath
+{
+    "name": "Heir of Falkenrath",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Discard a card: Transform this creature. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Heir of Falkenrath:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": "Transform",
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Discard a card: Transform this creature. Activate only once each turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Heir to the Night",
+        "manaCost": "",
+        "typeLine": "Creature — Vampire Berserker",
+        "oracleText": "Flying",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "metadata": {
+            "collectorNumber": "116",
+            "rarity": "UNCOMMON",
+            "artist": "Jason Rainville",
+            "flavorText": "The Falkenrath have relinquished all pretense at nobility, losing themselves completely to their all-consuming thirst.",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/f/cf2ad186-4d85-4628-ae84-3c58c88d34cb.jpg?1783937783"
+        },
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "flavorText": "Among vampires, there has long been the belief that the urge to feed must be balanced by the poise of nobility.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf2ad186-4d85-4628-ae84-3c58c88d34cb.jpg?1783937783"
+    }
+}
+
 // Highland Lake
 {
     "name": "Highland Lake",
@@ -6602,6 +7310,129 @@
     ]
 }
 
+// Kindly Stranger
+{
+    "name": "Kindly Stranger",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Delirium — {2}{B}: Transform this creature. Activate only if there are four or more card types among cards in your graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kindly Stranger:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": "Transform",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Delirium — {2}{B}: Transform this creature. Activate only if there are four or more card types among cards in your graveyard."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Demon-Possessed Witch",
+        "manaCost": "",
+        "typeLine": "Creature — Human Shaman",
+        "oracleText": "When this creature transforms into Demon-Possessed Witch, you may destroy target creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Demon-Possessed Witch:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "When this creature transforms into Demon-Possessed Witch, you may destroy target creature."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "119",
+            "rarity": "UNCOMMON",
+            "artist": "Ryan Pancoast",
+            "flavorText": "\"It looks like you could use some protection of your own.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/3/e326d5f4-63e1-45fa-8c48-6fdc05709c52.jpg?1783937777"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"I'm not afraid out here, for I know that a higher power protects me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e326d5f4-63e1-45fa-8c48-6fdc05709c52.jpg?1783937777",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Activating Kindly Stranger's ability twice won't cause it to transform back into Kindly Stranger once it has already transformed into Demon-Possessed Witch."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Some delirium abilities are activated abilities of permanents. To activate such an ability, there must be four or more card types among cards in your graveyard. The number of card types is not rechecked as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lamplighter of Selhoff
 {
     "name": "Lamplighter of Selhoff",
@@ -6689,6 +7520,91 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Liliana's Indignation
+{
+    "name": "Liliana's Indignation",
+    "manaCost": "{X}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Mill X cards. Target player loses 2 life for each creature card put into your graveyard this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue",
+                        "isMill": true
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching2"
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "matching2_count"
+                        },
+                        "multiplier": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"Days ago, you came to my door asking for help, Jace. Yet now here you are with accusations?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3817ea1a-b3d8-46f1-ac6c-69caf2466bab.jpg?1783937770",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You don't lose the game for having zero cards in your library until you're instructed to draw a card. X can be greater than or equal to the number of cards in your library without causing you to lose the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8639,6 +9555,92 @@
     ]
 }
 
+// Pale Rider of Trostad
+{
+    "name": "Pale Rider of Trostad",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nWhen this creature enters, discard a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "SKULK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pale Rider of Trostad:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"What's worse than being alone on the moors at night? Try *not* being alone.\"\n—Nadila Maas, moor chaplain",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dad70b8-0dec-4634-a31a-b78438a313a2.jpg?1783937767",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can cast Pale Rider of Trostad even if you have no other cards in your hand. If you have no cards in hand as the last ability resolves, nothing happens."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Paranoid Parish-Blade
 {
     "name": "Paranoid Parish-Blade",
@@ -8713,6 +9715,172 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pick the Brain
+{
+    "name": "Pick the Brain",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it and exile that card.\nDelirium — If there are four or more card types among cards in your graveyard, search that player's graveyard, hand, and library for any number of cards with the same name as the exiled card, exile those cards, then that player shuffles.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to exile",
+                    "selectedLabel": "Exile",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "selected2",
+                    "storeAs": "cardName3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Graveyard",
+                                        "Hand",
+                                        "Library"
+                                    ],
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "NameEqualsChosen",
+                                                "variableName": "cardName3"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered6",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered6",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected7",
+                                "prompt": "Choose any number of cards with the same name to exile",
+                                "selectedLabel": "Exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected7",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "ShuffleLibrary",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53503e59-6b6c-4de1-8528-458ab94f4e9a.jpg?1783937767",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If there is no nonland card to choose, and you have four or more card types among cards in your graveyard, you'll search that player's library even though you won't be able to find any cards. That library will be shuffled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9142,6 +10310,41 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Rancid Rats
+{
+    "name": "Rancid Rats",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Rat",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nDeathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "SKULK",
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"They're in the walls! Can't you hear them?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/336e0a75-8104-4e88-aad0-af7ac3efc115.jpg?1783937767",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9945,6 +11148,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Shamble Back
+{
+    "name": "Shamble Back",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature card from a graveyard. Create a 2/2 black Zombie creature token. You gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ]
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Izzy",
+        "flavorText": "Lost loved ones are never truly gone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6913dce-05f5-4e1b-9dd9-67eb347b5be8.jpg?1783937766",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If the creature card becomes an illegal target, Shamble Back doesn't resolve. None of its effects happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -11771,6 +13040,271 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// To the Slaughter
+{
+    "name": "To the Slaughter",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target player sacrifices a creature or planeswalker of their choice.\nDelirium — If there are four or more card types among cards in your graveyard, instead that player sacrifices a creature and a planeswalker of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "ControlledPermanents",
+                            "player": "TargetPlayer",
+                            "filter": "creature|planeswalker"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "ChooseOnePerCategory",
+                        "from": "gathered0",
+                        "categories": [
+                            {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsCreature",
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                        "storeAs": "picked1",
+                        "purpose": "SACRIFICE"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "collectionFilter": {
+                            "type": "ExcludeOtherCollection",
+                            "otherCollectionName": "picked1"
+                        },
+                        "storeMatching": "matching2"
+                    },
+                    {
+                        "type": "ConditionalOnCollection",
+                        "collection": "picked1",
+                        "ifNotEmpty": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ChooseOnePerCategory",
+                                    "from": "matching2",
+                                    "categories": [
+                                        {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ]
+                                        }
+                                    ],
+                                    "storeAs": "picked4",
+                                    "purpose": "SACRIFICE"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "matching2",
+                                    "collectionFilter": {
+                                        "type": "ExcludeOtherCollection",
+                                        "otherCollectionName": "picked4"
+                                    },
+                                    "storeMatching": "matching5"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "collectionFilter": {
+                                        "type": "ExcludeOtherCollection",
+                                        "otherCollectionName": "matching5"
+                                    },
+                                    "storeMatching": "matching6"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "matching6",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Sacrifice"
+                                }
+                            ]
+                        },
+                        "ifEmpty": {
+                            "type": "ConditionalOnCollection",
+                            "collection": "picked1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ChooseOnePerCategory",
+                                        "from": "matching2",
+                                        "categories": [
+                                            {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "Or",
+                                                        "predicates": [
+                                                            "IsCreature",
+                                                            "IsPlaneswalker"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "storeAs": "picked9",
+                                        "purpose": "SACRIFICE"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "matching2",
+                                        "collectionFilter": {
+                                            "type": "ExcludeOtherCollection",
+                                            "otherCollectionName": "picked9"
+                                        },
+                                        "storeMatching": "matching10"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered0",
+                                        "collectionFilter": {
+                                            "type": "ExcludeOtherCollection",
+                                            "otherCollectionName": "matching10"
+                                        },
+                                        "storeMatching": "matching11"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matching11",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Sacrifice"
+                                    }
+                                ]
+                            },
+                            "ifEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ChooseOnePerCategory",
+                                        "from": "matching2",
+                                        "categories": [
+                                            {
+                                                "cardPredicates": [
+                                                    "IsPlaneswalker"
+                                                ]
+                                            }
+                                        ],
+                                        "storeAs": "picked13",
+                                        "purpose": "SACRIFICE"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "matching2",
+                                        "collectionFilter": {
+                                            "type": "ExcludeOtherCollection",
+                                            "otherCollectionName": "picked13"
+                                        },
+                                        "storeMatching": "matching14"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered0",
+                                        "collectionFilter": {
+                                            "type": "ExcludeOtherCollection",
+                                            "otherCollectionName": "matching14"
+                                        },
+                                        "storeMatching": "matching15"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matching15",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Sacrifice"
+                                    }
+                                ]
+                            },
+                            "filter": "creature planeswalker"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPlaneswalker",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "ForceSacrifice",
+                "filter": "creature|planeswalker",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Christine Choi",
+        "flavorText": "\"Where has little Gossamer gone?\"\n—Thaniel, Gatstaf shepherd",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a645c8d-7cfb-466b-9fd0-e1c26bf6f652.jpg?1783937761",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If the delirium ability applies, that player must sacrifice a creature object and a planeswalker object if able. In the unusual case that the player controls a single permanent that's both a creature and a planeswalker, that player must sacrifice another creature or planeswalker (unless they control no other creatures and no other planeswalkers)."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Some delirium abilities that appear on instants and sorceries use the word \"instead.\" These spells have an upgraded effect when they resolve if there are four or more card types among cards in your graveyard. They check that number only while they're resolving and don't count themselves, since they aren't in your graveyard yet. You only get the upgraded effect, not both effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

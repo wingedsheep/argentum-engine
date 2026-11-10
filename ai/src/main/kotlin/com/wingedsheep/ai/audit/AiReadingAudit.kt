@@ -702,7 +702,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself or pays its own, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself or pays its own, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, discards from its controller's own hand, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -1326,6 +1326,15 @@ object AiReadingAudit {
         if (label == "Pipeline(graveyard→exile)") {
             val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
             return sources.isNotEmpty() && sources.all { it is CardSource.FromZone && it.zone == Zone.GRAVEYARD && it.player == Player.You }
+        }
+        // A discard out of our own hand — Pale Rider of Trostad's and Bloodrage Brawler's "when this
+        // enters, discard a card", Rotting Regisaur's upkeep, Song of Creation's "discard your hand" —
+        // is the card's drawback or graveyard fuel, as a self-mill is: never the disruption
+        // [IntentTag.DISCARD] reads off another player's hand. Which card goes is the simulation's
+        // call when it resolves; the synergy reader already counts the graveyard it fills.
+        if (label == "Pipeline(hand→graveyard)") {
+            val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
+            return sources.isNotEmpty() && sources.all { it is CardSource.FromZone && it.zone == Zone.HAND && it.player == Player.You }
         }
         if (label != "Pipeline(BattlefieldMatching→hand)" && label != "Pipeline(BattlefieldMatching→exile)") return false
         val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }

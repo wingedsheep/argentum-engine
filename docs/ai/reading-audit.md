@@ -55,7 +55,7 @@ Two label shapes need explaining:
   plus bookkeeping) named as one type by where its cards come from and go to. Its stages mean
   nothing alone.
 
-The `intent` check leaves out three shapes the reader is right to leave untagged. First, a counter an
+The `intent` check leaves out four shapes the reader is right to leave untagged. First, a counter an
 effect puts on its own source or on its own controller (a creature growing itself, a charge, oil or
 quest counter, `{E}` or experience for you), keyword counters included: a flying or indestructible
 counter on itself lasts, so unlike an until-end-of-turn keyword grant it has no window, and the
@@ -65,7 +65,10 @@ time, and tagging a self-grown flash creature `PUMP` would make `AmbushWindow` s
 Second, equip, fortify and reconfigure: what the Equipment is for is read off its "equipped creature"
 statics, and which creature gets it is the polarity check. Third, a card moving itself ("return this card
 to its owner's hand" when it dies, ninjutsu, "shuffle it into its owner's library"): there is no target
-to aim and no spell to time, so whether to do it is left to the simulation.
+to aim and no spell to time, so whether to do it is left to the simulation. Fourth, a discard out of the
+controller's own hand (Pale Rider of Trostad's "when this enters, discard a card", Rotting Regisaur's
+upkeep) is left out like a self-mill: a drawback or graveyard fuel, never the `DISCARD` disruption
+another player's hand reads as.
 
 Not every flag is a bug. Some effects legitimately carry no intent tag, and an until-end-of-turn
 effect that is a drawback has nothing to time. A group is a list of places to look, ranked by how many

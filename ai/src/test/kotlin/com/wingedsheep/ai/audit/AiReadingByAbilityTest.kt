@@ -56,6 +56,7 @@ class AiReadingByAbilityTest : FunSpec({
     test("an intent gap points at the ability and step, and the flags fold back to the audit's") {
         // "At the beginning of your upkeep, discard a card at random. If you discard a creature card
         // this way, return it … unless any player pays 5 life": its one trigger is still unread for intent.
+        // The random discard out of its own hand is its drawback and needs none; the punisher return does.
         val c = card("Aether Rift")
         val reading = AiReadingAudit.read(c)
         val intent = reading.abilities.single().findings.filter { it.check == Check.INTENT }
@@ -63,7 +64,7 @@ class AiReadingByAbilityTest : FunSpec({
             it.read shouldBe false
             it.reason shouldBe "no intent: the AI doesn't know what this effect is for"
         }
-        intent.map { it.effectType } shouldContainExactly listOf("AnyPlayerMayPayEffect", "Pipeline(hand→graveyard)")
+        intent.map { it.effectType } shouldContainExactly listOf("AnyPlayerMayPayEffect")
         reading.flags shouldBe AiReadingAudit.audit(c)
     }
 
