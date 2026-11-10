@@ -540,8 +540,9 @@ internal object ExpiringGrantWindow {
      *    can't-block, or a can't-attack after their attack, gets the source back before its next
      *    window, so the counter there is free and stays the leaf's call.
      *
-     * Any other leaf, a restriction on a creature of ours, a target that cannot be resolved, or a
-     * stack object that threatens us hands the decision back to the leaf score.
+     * Any other leaf, a targeted restriction on a creature of ours, a target that cannot be
+     * resolved, or a stack object that threatens us hands the decision back to the leaf score. A
+     * group can't-block sweeps ours in unasked, so our own members of it are skipped instead.
      */
     private fun restrictionHasNoWindow(
         state: GameState,

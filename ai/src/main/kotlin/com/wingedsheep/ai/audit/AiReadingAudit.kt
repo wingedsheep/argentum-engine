@@ -1333,7 +1333,7 @@ object AiReadingAudit {
         // Our own library exiled whole (Leveler, Inverter of Truth: "exile all cards from your
         // library") is the card's drawback, never a search ([CardIntentAnalyzer.binnedLibraryGathers]);
         // Inverter's "then shuffle your graveyard into your library" only refills what it emptied.
-        if (label.startsWith("Pipeline(library→") || label.startsWith("Pipeline(graveyard|library→")) {
+        if (label.startsWith("Pipeline(library→exile") || label.startsWith("Pipeline(graveyard|library→exile")) {
             val gathers = stages.filterIsInstance<GatherCardsEffect>()
             val binned = CardIntentAnalyzer.binnedLibraryGathersOf(stages)
             return gathers.any { it in binned } && gathers.all { gather ->

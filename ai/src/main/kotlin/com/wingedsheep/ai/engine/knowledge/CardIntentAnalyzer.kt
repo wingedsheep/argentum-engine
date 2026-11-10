@@ -1103,7 +1103,7 @@ object CardIntentAnalyzer {
         handRefundDraws(root) + refundSearches(root) + binnedLibraryGathers(root)
 
     /**
-     * [tagsOf], except that a draw or search in [refunds] ([handRefundDraws], [refundSearches]) is
+     * [tagsOf], except that a draw or search in [refunds] ([refundsOf]) is
      * not the card's own card draw or tutor.
      */
     private fun refundedTagsOf(leaf: Effect, refunds: Collection<Effect>): Set<IntentTag> = when {
@@ -1113,9 +1113,10 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * "Exile all cards from your library face down" (Inverter of Truth): our own library gathered
-     * only to be exiled or binned, with nothing picked out of it and nothing played from where it
-     * went, finds no card we need — not a tutor.
+     * "Exile all cards from your library face down" (Inverter of Truth, Leveler): our own library
+     * gathered only to be exiled, with nothing picked out of it and nothing played or moved on from
+     * where it went, finds no card we need — not a tutor. A self-mill into the graveyard is fuel,
+     * not this.
      */
     internal fun binnedLibraryGathers(root: Effect): List<GatherCardsEffect> = binnedLibraryGathersOf(readingLeaves(root))
 
@@ -1127,9 +1128,11 @@ object CardIntentAnalyzer {
             if (source == null || source.zone != Zone.LIBRARY || !searchesOwnZones(gather, source.player)) return@filter false
             val sources = setOf(gather.storeAs)
             val moves = leaves.filterIsInstance<MoveCollectionEffect>().filter { it.from == gather.storeAs }
+            val movedOn = moves.mapNotNullTo(HashSet()) { it.storeMovedAs }
             moves.isNotEmpty() &&
-                moves.all { (it.destination as? CardDestination.ToZone)?.zone.let { z -> z == Zone.EXILE || z == Zone.GRAVEYARD } } &&
-                leaves.none { it !is MoveCollectionEffect && derivedCollections(it, sources).isNotEmpty() }
+                moves.all { (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE } &&
+                leaves.none { it !is MoveCollectionEffect && derivedCollections(it, sources).isNotEmpty() } &&
+                leaves.none { derivedCollections(it, movedOn).isNotEmpty() || (it is MoveCollectionEffect && it.from in movedOn) }
         }
     }
 
