@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.mana
 
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.state.PendingOneSpellAnyManaType
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -56,10 +59,16 @@ class SpendManaAsThoughAnyColorForSpellsTest : FunSpec({
         spell { effect = Effects.GainLife(3) }
     }
 
+    val PhyrexianSorcery = card("Phyrexian Pip Sorcery") {
+        manaCost = "{1}{U/P}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.GainLife(3) }
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(AnyColorGranter, AnyTypeGranter, TopCaster, BlueSorcery, ColorlessPip)
+            TestCards.all + listOf(AnyColorGranter, AnyTypeGranter, TopCaster, BlueSorcery, ColorlessPip, PhyrexianSorcery)
         )
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -132,5 +141,39 @@ class SpendManaAsThoughAnyColorForSpellsTest : FunSpec({
         d.offered("Blue Pip Sorcery", zone = "LIBRARY") shouldBe true
         d.castSpell(d.me(), sorcery).error shouldBe null
         d.redInPool() shouldBe 0
+    }
+
+    test("a Phyrexian pip stays payable with 2 life: only mana is spent as though any color") {
+        val d = newDriver()
+        d.putPermanentOnBattlefield(d.me(), "Any Color Granter")
+        val sorcery = d.putCardInHand(d.me(), "Phyrexian Pip Sorcery")
+        d.giveMana(d.me(), Color.RED, 1)
+
+        d.submit(
+            CastSpell(
+                d.me(), sorcery,
+                paymentStrategy = PaymentStrategy.Explicit(emptyList(), phyrexianLifePayments = listOf(Color.BLUE))
+            )
+        ).error shouldBe null
+        d.getLifeTotal(d.me()) shouldBe 18
+        d.redInPool() shouldBe 0
+    }
+
+    test("a waiting any-type rider still pays the {C} pip the any-color static leaves") {
+        val d = newDriver()
+        val granter = d.putPermanentOnBattlefield(d.me(), "Any Color Granter")
+        d.replaceState(
+            d.state.copy(
+                pendingAnyManaTypeSpells = listOf(
+                    PendingOneSpellAnyManaType(d.me(), GameObjectFilter.Any, granter, "Test Rider")
+                )
+            )
+        )
+        val sorcery = d.putCardInHand(d.me(), "Colorless Pip Sorcery")
+        d.giveMana(d.me(), Color.RED, 2)
+
+        d.offered("Colorless Pip Sorcery") shouldBe true
+        d.castSpell(d.me(), sorcery).error shouldBe null
+        d.state.pendingAnyManaTypeSpells shouldBe emptyList()
     }
 })

@@ -399,7 +399,8 @@ class CastFromZoneEnumerator(
                     val topCostByTargetCount = topPricing?.byCountStrings()
                     // "You can spend mana of any type to cast [these] spells" (Vizier of the
                     // Menagerie — whose own second ability is what makes a creature spell castable
-                    // from here in the first place). Relaxed for payment only; the displayed
+                    // from here in the first place), or "as though it were mana of any color" (Oath of
+                    // Nissa's planeswalker spells). Relaxed for payment only; the displayed
                     // `manaCostString` below stays the printed cost.
                     // Xanathar's "spend mana as though it were mana of any color to cast spells
                     // this way" relaxes the colored pips only (CR 609.4b).

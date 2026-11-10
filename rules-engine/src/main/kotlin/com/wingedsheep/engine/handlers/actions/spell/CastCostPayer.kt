@@ -600,13 +600,31 @@ internal class CastCostPayer(
         paymentXValue: Int,
         allowOneSpellRider: Boolean,
     ): Pair<ManaCost, PendingOneSpellAnyManaType?> {
-        if (isCastWithAnyManaType(state, action)) return cost.relaxColors() to null
-        if (isCastWithAnyManaColor(state, action)) return cost.relaxColoredRequirements() to null
-        if (!allowOneSpellRider) return cost to null
+        if (isCastWithAnyManaType(state, action)) return relaxKeepingLifePaidPips(action, cost, ManaCost::relaxColors) to null
+        // "As though any color" leaves a {C} pip demanding colorless, so a waiting any-type rider
+        // can still be what makes the spell payable: fall through to it when this alone can't.
+        val colorRelaxed = if (isCastWithAnyManaColor(state, action))
+            relaxKeepingLifePaidPips(action, cost, ManaCost::relaxColoredRequirements) else cost
+        if (!allowOneSpellRider) return colorRelaxed to null
         val rider = castPermissionUtils.oneSpellAnyManaTypeRider(state, action.playerId, action.cardId)
-            ?: return cost to null
-        if (validateManaPayment(state, action, cost, paymentXValue, allowOneSpellRider = false) == null) return cost to null
+            ?: return colorRelaxed to null
+        if (validateManaPayment(state, action, cost, paymentXValue, allowOneSpellRider = false) == null) return colorRelaxed to null
         return relaxManaCostPips(state, action, cost) to rider
+    }
+
+    /**
+     * [relax] applied to [cost] except for the Phyrexian pips the caster chose to pay with life
+     * (`PaymentStrategy.Explicit.phyrexianLifePayments`): spending mana as though it were another
+     * colour or type changes only how *mana* pays (CR 609.4b), so a `{U/P}` stays payable with 2
+     * life. Relaxing it to generic first would leave nothing for the life payment to remove.
+     */
+    private fun relaxKeepingLifePaidPips(action: CastSpell, cost: ManaCost, relax: (ManaCost) -> ManaCost): ManaCost {
+        val lifePayments = (action.paymentStrategy as? PaymentStrategy.Explicit)?.phyrexianLifePayments.orEmpty()
+        if (lifePayments.isEmpty()) return relax(cost)
+        val manaPart = cost.withPhyrexianPaidByLife(lifePayments) ?: return relax(cost)
+        val unclaimed = manaPart.symbols.toMutableList()
+        val lifePaidPips = cost.symbols.filterNot { unclaimed.remove(it) }
+        return ManaCost(relax(manaPart).symbols + lifePaidPips)
     }
 
     /**
