@@ -48,6 +48,7 @@ val SeaGateWreckage = card("Sea Gate Wreckage") {
         rarity = Rarity.RARE
         collectorNumber = "177"
         artist = "Zack Stella"
+        flavorText = "Once a center for knowledge, Sea Gate now serves as a reminder of what was lost."
         imageUri = "https://cards.scryfall.io/normal/front/c/d/cd42576b-9de5-4d77-9d30-1ef5b5a4fd73.jpg?1783937892"
         ruling(
             "2016-01-22",

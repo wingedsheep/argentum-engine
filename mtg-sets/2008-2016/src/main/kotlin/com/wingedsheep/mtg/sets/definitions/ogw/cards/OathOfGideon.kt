@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * When Oath of Gideon enters, create two 1/1 white Kor Ally creature tokens.
  * Each planeswalker you control enters with an additional loyalty counter on it.
  *
- * The second ability is a global [EntersWithCounters] replacement (CR 614.1c): the extra loyalty
+ * The second ability is a global [EntersWithCounters] replacement (CR 614.1d): the extra loyalty
  * counter is added on top of the planeswalker's printed starting loyalty as it enters, whether it
  * was cast or put onto the battlefield some other way.
  */
