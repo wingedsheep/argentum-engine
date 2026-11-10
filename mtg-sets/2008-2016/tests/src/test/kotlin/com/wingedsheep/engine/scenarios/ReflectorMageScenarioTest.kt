@@ -134,7 +134,11 @@ class ReflectorMageScenarioTest : FunSpec({
 
         driver.getHand(opponent).contains(faceDown) shouldBe true
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN, opponent)
-        driver.giveMana(opponent, Color.BLACK, 1)
+        driver.giveMana(opponent, Color.BLACK, 3)
         driver.canCast(opponent, faceDown) shouldBe true
+        // Cast face down, a spell has no name either — the ban must not catch it.
+        driver.legalActions(opponent).any {
+            (it.action as? CastSpell)?.let { a -> a.cardId == faceDown && a.castFaceDown } == true && it.affordable
+        } shouldBe true
     }
 })

@@ -109,8 +109,9 @@ class CantCastSpellsExecutor(
      * The referenced entity's name as of now, as a fixed [CardPredicate.NameEquals]. Projected
      * first so a copy or a renamed permanent is read under the name it has on the battlefield; base
      * card data second for a reference with no projection entry. A face-down or nameless reference
-     * — or one that no longer resolves — has no name (CR 708.2), so the ban matches nothing:
-     * [NO_NAME] is never a card's name, and a face-down spell never matches a name at all.
+     * — or one that no longer resolves — has no name (CR 708.2), so the ban matches nothing
+     * ([MATCHES_NOTHING]). Not `NameEquals("")`: a spell announced face down is checked under an
+     * empty name, so that would ban every face-down cast (morph, disguise).
      */
     private fun lockedName(entity: EffectTarget.SingleEntity, state: GameState, context: EffectContext): CardPredicate {
         val projected = state.projectedState
@@ -119,10 +120,11 @@ class CantCastSpellsExecutor(
             projected.getName(id)?.takeIf { it.isNotBlank() }
                 ?: state.getEntity(id)?.get<CardComponent>()?.name
         }
-        return CardPredicate.NameEquals(name?.takeIf { it.isNotBlank() } ?: NO_NAME)
+        return name?.takeIf { it.isNotBlank() }?.let(CardPredicate::NameEquals) ?: MATCHES_NOTHING
     }
 
     private companion object {
-        const val NO_NAME = ""
+        /** An empty disjunction: true of no object, on every evaluation path. */
+        val MATCHES_NOTHING: CardPredicate = CardPredicate.Or(emptyList())
     }
 }
