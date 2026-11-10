@@ -2558,7 +2558,7 @@ class CastFromZoneEnumerator(
 
     /**
      * One card's cast for a keyword alternative cost that replaces the mana cost and otherwise
-     * follows the normal casting rules — dash and blitz. Same "always show both the normal cast and
+     * follows the normal casting rules — dash, blitz and surge. Same "always show both the normal cast and
      * the alternative cast" UX as [enumerateWarpFromZone], with target-requirement handling, {X} in
      * the alternative cost, and the cost's bundled non-mana half ([bundledCosts]).
      */
@@ -2579,8 +2579,8 @@ class CastFromZoneEnumerator(
         val playerId = context.playerId
         val description = "Cast ${cardComponent.name} ($label)"
 
-        // Permanents at sorcery speed, instants at instant speed — dash (CR 702.109a) and blitz
-        // (CR 702.152a) fold into the normal alternative-cost casting rules (601.2b, 601.2f–h)
+        // Permanents at sorcery speed, instants at instant speed — dash (CR 702.109a), blitz
+        // (CR 702.152a) and surge (CR 702.117a) fold into the normal alternative-cost casting rules (601.2b, 601.2f–h)
         // rather than waiving timing; the dash ruling spells it out: "You can cast a creature
         // spell for its dash cost only when you otherwise could cast that creature spell."
         // Flash — printed or granted — lets it be cast whenever its controller could otherwise cast it.

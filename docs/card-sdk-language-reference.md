@@ -21578,7 +21578,8 @@ Card authors rarely reference these directly; they are created/updated by the ma
   doesn't. Normal timing (flash, printed or granted, lets it be cast at instant speed); `{X}` in the
   surge cost is announced as usual (Fall of the Titans). It leaves no marker of its own: the linked
   riders read `Conditions.SurgeCostWasPaid` (Crush of Tentacles, Reckless Bushwhacker, Tyrant of
-  Valakut). Like dash, the zone-cast permissions (exile, library top) don't offer it.
+  Valakut). Offered from the hand only — an engine limit, not CR 702.117a's (the rule names no zone):
+  like dash, the zone-cast permissions (exile, library top) don't offer keyword alternative costs.
 - **Dash** — `dash = "{1}{R}"`; hand-only alt-cost (CR 702.109). Mirrors warp's cast-window and
   timestamp-guarded delayed-trigger shape, but simpler: no graveyard variant, no recast-from-exile
   permission. The cast is tracked with a `DashedComponent` marker (not a floating continuous

@@ -804,8 +804,8 @@ class CastZoneResolver(
      * its caster's hand, and the caster or one of their teammates has already cast another spell
      * this turn. Read before the spell is counted (the cast being priced is not "another spell"),
      * and from the turn's per-player cast counts, so a spell that was countered still enables it.
-     * Hand-only like [hasDashPermission]: the zone-cast permissions (exile, library top) don't offer
-     * keyword alternative costs.
+     * Hand-only like [hasDashPermission] — an engine limit, not the rule's (CR 702.117a names no
+     * zone): the zone-cast permissions (exile, library top) don't offer keyword alternative costs.
      */
     fun hasSurgePermission(
         state: GameState,

@@ -2,14 +2,12 @@ package com.wingedsheep.mtg.sets.definitions.ogw.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Reckless Bushwhacker
@@ -39,11 +37,7 @@ val RecklessBushwhacker = card("Reckless Bushwhacker") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         interveningIf = Conditions.SurgeCostWasPaid
-        effect = Effects.ForEachInGroup(
-            GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true),
-            Effects.ModifyStats(1, 0, EffectTarget.IterationEntity) then
-                Effects.GrantKeyword(Keyword.HASTE, EffectTarget.IterationEntity)
-        )
+        effect = Patterns.Group.pumpAndGrantToAll(1, 0, Keyword.HASTE, GroupFilter.OtherCreaturesYouControl)
     }
 
     metadata {
