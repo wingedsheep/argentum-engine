@@ -104,6 +104,8 @@ import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
+import com.wingedsheep.sdk.scripting.effects.EmitScriedEventEffect
+import com.wingedsheep.sdk.scripting.effects.EmitSurveiledEventEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TheRingTemptsYouEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
@@ -1072,7 +1074,8 @@ object AiReadingAudit {
         // read where it acts (CombatMath's evasion), not by an intent tag. The Ring tempting another player stays flagged.
         if (leaf is TheRingTemptsYouEffect && (leaf.target == EffectTarget.Controller || leaf.target == EffectTarget.PlayerRef(Player.You))) return true
         // Scry and surveil are read (card selection); skipped here only so a sibling leaf is still asked about.
-        if (leaf is ScryEffect || leaf is SurveilEffect) return true
+        // A dynamic "scry X" / "surveil X" is its pipeline, whose ScriedEvent / SurveiledEvent tail is that read.
+        if (leaf is ScryEffect || leaf is SurveilEffect || leaf is EmitScriedEventEffect || leaf is EmitSurveiledEventEffect) return true
         // A permanent exploring itself (Jadelight Ranger) is read as card selection, and its +1/+1
         // counter is self-growth, which needs no tag: skipped so a sibling leaf is still asked about.
         // A target creature exploring reads as a pump too and never gets here.

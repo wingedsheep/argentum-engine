@@ -1720,6 +1720,209 @@
     ]
 }
 
+// Brain in a Jar
+{
+    "name": "Brain in a Jar",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Put a charge counter on this artifact, then you may cast an instant or sorcery spell with mana value equal to the number of charge counters on this artifact from your hand without paying its mana cost.\n{3}, {T}, Remove X charge counters from this artifact: Scry X.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Brain in a Jar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "CHARGE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsInstant",
+                                                        "IsSorcery"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "ManaValueEqualsDynamic",
+                                                    "amount": {
+                                                        "type": "EntityProperty",
+                                                        "entity": "Self",
+                                                        "numericProperty": {
+                                                            "type": "CounterCount",
+                                                            "counterType": "CHARGE"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may cast an instant or sorcery with mana value equal to the charge counters on Brain in a Jar",
+                                    "selectedLabel": "Cast without paying its mana cost"
+                                },
+                                {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected1"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, {T}: Put a charge counter on Brain in a Jar, then you may cast an instant or sorcery with mana value equal to its charge counters from your hand for free"
+            },
+            {
+                "id": "Brain in a Jar:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": "XValue",
+                                "isScry": true
+                            },
+                            "storeAs": "scried"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "scried",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "toBottom",
+                            "storeRemainder": "toTop",
+                            "prompt": "Scry X: choose cards to put on the bottom of your library",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "EmitScriedEvent"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}, {T}, Remove X charge counters from Brain in a Jar: Scry X."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88ecfcbe-e8db-4f08-aa8b-5b7b3e6c6ce7.jpg?1783937708",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "When resolving the first ability of Brain in a Jar, the newly-placed charge counter will be counted when determining what spells you may cast. No player may take any action between you placing the counter and choosing which spell to cast."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If Brain in a Jar leaves the battlefield before its first ability resolves, use the number of counters on it at the moment it left to determine what spell you may cast. That number won't change because you can't put a new counter on Brain in a Jar."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as awaken costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, such as that of Lightning Axe, you must pay those to cast the card."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Breakneck Rider
 {
     "name": "Breakneck Rider",
@@ -2600,6 +2803,48 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Corrupted Grafstone
+{
+    "name": "Corrupted Grafstone",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Choose a color of a card in your graveyard. Add one mana of that color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Corrupted Grafstone:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.AmongCardsInGraveyard",
+                        "filter": {}
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "It is all too easy to disturb the Blessed Sleep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1ffa34cc-4042-4d2b-a7a0-eca0b593eeb6.jpg?1783937708",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Colorless cards have no color, so you can't add {C} this way."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Crawling Sensation
@@ -5699,6 +5944,76 @@
     ]
 }
 
+// Fortified Village
+{
+    "name": "Fortified Village",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Forest or Plains card from your hand. If you don't, this land enters tapped.\n{T}: Add {G} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fortified Village:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Fortified Village:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "MayRevealCardFromHand",
+                    "filter": "land Forest|Plains",
+                    "otherwise": "EnterTapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1feb9dc1-671d-43ad-ae22-ed1a9916b140.jpg?1783937698",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Lands don't have a subtype just because they can produce mana of the corresponding color. Fortified Village itself is neither a Forest nor a Plains, even though it produces green and white mana, so you can't reveal one to satisfy the ability of another."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an effect instructs you to put Fortified Village onto the battlefield tapped, it will still enter the battlefield tapped even if you reveal a land card from your hand."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You may reveal any land card with either or both of the appropriate subtypes. It doesn't have to be a basic land. For example, you could reveal Prairie Stream from the Battle for Zendikar set to satisfy the ability of Fortified Village."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a Forest or Plains is entering the battlefield from your hand at the same time as Fortified Village, you may reveal the other land to have Fortified Village enter untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Foul Orchard
 {
     "name": "Foul Orchard",
@@ -6149,6 +6464,94 @@
         "imageUri": "https://cards.scryfall.io/normal/front/4/5/4570117d-c04b-4bdc-b804-21d49154721b.jpg?1783937760"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Geistblast
+{
+    "name": "Geistblast",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Geistblast deals 2 damage to any target.\n{2}{U}, Exile this card from your graveyard: Copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Geistblast:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery ctrl:you",
+                            "zone": "Stack"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{U}, Exile this card from your graveyard: Copy target instant or sorcery spell you control. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19b1dfd9-b717-4c23-b8e5-a6ec835b278a.jpg?1783937752",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Geistblast's ability can copy any instant or sorcery spell, not just one with targets."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "When Geistblast's ability resolves, it creates a copy of the instant or sorcery spell. The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If the spell being copied is modal, the copy will have the same mode. If it has an X whose value was determined as it was cast, the copy will have the same value of X. If an alternative cost was paid for the spell, the same alternative cost is considered to have been paid for the copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
@@ -9940,6 +10343,59 @@
     ]
 }
 
+// Murderer's Axe
+{
+    "name": "Murderer's Axe",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2.\nEquip—Discard a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Murderer's Axe:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "descriptionOverride": "Equip—Discard a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "Though the first who raised it in a fit of passion is long dead, the axe still carries memories of bitter scorn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/696dcb79-4915-424f-ba8f-5363ae3395a6.jpg?1783937707"
+    },
+    "colorIdentityOverride": []
+}
+
 // Murderous Compulsion
 {
     "name": "Murderous Compulsion",
@@ -11653,6 +12109,74 @@
     ]
 }
 
+// Pieces of the Puzzle
+{
+    "name": "Pieces of the Puzzle",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top five cards of your library. Put up to two instant and/or sorcery cards from among them into your hand and the rest into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "filter": "instant|sorcery",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "Put up to two instant and/or sorcery cards into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"The clues have begun to reveal a truth I hesitate to accept.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69204c83-2e43-4ca1-a4cd-d75399a7d6dd.jpg?1783937790"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pious Evangel
 {
     "name": "Pious Evangel",
@@ -12114,6 +12638,64 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Rattlechains
+{
+    "name": "Rattlechains",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, target Spirit gains hexproof until end of turn.\nYou may cast Spirit spells as though they had flash.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rattlechains:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Spirit"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": "Spirit",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6fc4db9-a29c-4f50-8e41-105b45af0be9.jpg?1783937791"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -13198,6 +13780,45 @@
     ]
 }
 
+// Silburlind Snapper
+{
+    "name": "Silburlind Snapper",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Turtle",
+    "oracleText": "This creature can't attack unless you've cast a noncreature spell this turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "filter": "noncreature",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "Nephalia is home to many hard-shelled creatures of unusual size, the largest of which are either avoided or worshipped.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7347f4c-a4b3-4c71-91e5-699475e5926e.jpg?1783937787",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "It doesn't matter whether the noncreature spell resolved or was countered, as long as it was cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Silent Observer
 {
     "name": "Silent Observer",
@@ -13511,6 +14132,132 @@
     ]
 }
 
+// Skeleton Key
+{
+    "name": "Skeleton Key",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has skulk. (It can't be blocked by creatures with greater power.)\nWhenever equipped creature deals combat damage to a player, you may draw a card. If you do, discard a card.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skeleton Key:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever equipped creature deals combat damage to a player, you may draw a card. If you do, discard a card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Skeleton Key:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SKULK"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "263",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/3168317b-b166-483e-9d9a-20cdfcdc255c.jpg?1783937707",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Skin Invasion
 {
     "name": "Skin Invasion",
@@ -13596,6 +14343,89 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Slayer's Plate
+{
+    "name": "Slayer's Plate",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +4/+2.\nWhenever equipped creature dies, if it was a Human, create a 1/1 white Spirit creature token with flying.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slayer's Plate:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "TriggeringEntityWas",
+                    "filter": "Human"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Slayer's Plate:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "264",
+        "rarity": "RARE",
+        "artist": "Ben Maier",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0810651-0301-46d4-b9d7-c2283ef4031a.jpg?1783937705"
+    }
 }
 
 // Sleep Paralysis
@@ -13956,6 +14786,134 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Startled Awake
+{
+    "name": "Startled Awake",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent mills thirteen cards.\n{3}{U}{U}: Put this card from your graveyard onto the battlefield transformed. Activate only as a sorcery.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 13
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Startled Awake:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}{U}"
+                    }
+                },
+                "effect": "ReturnSelfFromZoneTransformed",
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Put Startled Awake from your graveyard onto the battlefield transformed."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Persistent Nightmare",
+        "manaCost": "",
+        "typeLine": "Creature — Nightmare",
+        "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nWhen this creature deals combat damage to a player, return it to its owner's hand.",
+        "creatureStats": {
+            "power": 1,
+            "toughness": 1
+        },
+        "keywords": [
+            "SKULK"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Persistent Nightmare:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "When Persistent Nightmare deals combat damage to a player, return it to its owner's hand."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "88",
+            "rarity": "MYTHIC",
+            "artist": "Sean Sevestre",
+            "flavorText": "\"It seemed so real!\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/6/e630fc56-a96f-4abf-be8d-f0f40d5a9edf.jpg?1783937793"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "MYTHIC",
+        "artist": "Sean Sevestre",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e630fc56-a96f-4abf-be8d-f0f40d5a9edf.jpg?1783937793",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "A sorcery can't be put onto the battlefield and a permanent can't transform into a sorcery. If an effect exiles Persistent Nightmare and then instructs you to return it to the battlefield, it remains face up in exile (unless that effect instructs you to put it onto the battlefield transformed, in which case it returns as Persistent Nightmare). If an effect instructs you to transform Persistent Nightmare, the instruction is ignored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -14446,6 +15404,55 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Structural Distortion
+{
+    "name": "Structural Distortion",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target artifact or land. Structural Distortion deals 2 damage to that permanent's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Jung Park",
+        "flavorText": "\"As Zendikar has bled, so will Innistrad. As I have wept, so will Sorin.\"\n—Nahiri",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7895890-a774-4c7c-9f15-78b8aadfd9ef.jpg?1783937741"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -14988,6 +15995,67 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Thraben Gargoyle
+{
+    "name": "Thraben Gargoyle",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Defender\n{6}: Transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thraben Gargoyle:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Stonewing Antagonizer",
+        "manaCost": "",
+        "typeLine": "Artifact Creature — Gargoyle Horror",
+        "oracleText": "Flying",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "metadata": {
+            "collectorNumber": "266",
+            "rarity": "UNCOMMON",
+            "artist": "Daniel Ljunggren",
+            "flavorText": "Nahiri twisted them in shape and bent them to her will.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/2/f2687683-2986-4e22-97d9-7820c870475b.jpg?1783937707"
+        },
+        "colorIdentityOverride": [],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "266",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Runechanters engrave their strongest wards on those that protect the church.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2687683-2986-4e22-97d9-7820c870475b.jpg?1783937707"
+    },
+    "colorIdentityOverride": []
 }
 
 // Thraben Inspector
@@ -16131,6 +17199,87 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Uninvited Geist
+{
+    "name": "Uninvited Geist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Skulk (This creature can't be blocked by creatures with greater power.)\nWhen this creature deals combat damage to a player, transform it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SKULK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Uninvited Geist:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "When this creature deals combat damage to a player, transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Unimpeded Trespasser",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit",
+        "oracleText": "This creature can't be blocked.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "staticAbilities": [
+                "CantBeBlocked"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "94",
+            "rarity": "UNCOMMON",
+            "artist": "Dan Murayama Scott",
+            "flavorText": "Knocking was simply a formality.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/d/4dea7c9f-ce66-447b-9f1b-d9bca5806153.jpg?1783937790"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "A slow knock at midnight is best left unanswered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dea7c9f-ce66-447b-9f1b-d9bca5806153.jpg?1783937790",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Skulk matters only as blockers are chosen. Modifying either creature's power after blockers are chosen won't cause the attacking creature to become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you cause a creature to have 0 power or less, use the actual value (which may be negative) to determine whether it can block or be blocked. A creature with skulk and 0 or less power most likely won't be blocked, but it won't deal combat damage and won't trigger any abilities that trigger when combat damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
