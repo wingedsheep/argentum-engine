@@ -6,10 +6,13 @@ import com.wingedsheep.engine.state.components.player.SpellCastRestriction
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
@@ -24,7 +27,11 @@ import kotlin.reflect.KClass
  * "spells with the same mana value as that spell" fixes the triggering spell's mana value when
  * the trigger resolves. A chosen card name is frozen the same way: Academic Probation's
  * "opponents can't cast spells with the chosen name" reads the name out of the pipeline now, since
- * a later cast check has no pipeline to read it from. A [CantCastSpellsEffect.moreAllowed]
+ * a later cast check has no pipeline to read it from. A name referenced through an entity is frozen
+ * too: Reflector Mage's "can't cast spells with the same name as that creature" reads the target's
+ * name now, from the projection first (a Clone copying a creature, or a transformed double-faced
+ * card, is named as it was on the battlefield — the card's ruling), since by the next cast check
+ * the reference is gone. A nameless reference (a face-down creature) bans nothing. A [CantCastSpellsEffect.moreAllowed]
  * allowance is fixed the same way: the ban binds once the player's spell count this turn reaches
  * its count now plus the allowance (Irencrag Feat).
  */
@@ -91,9 +98,31 @@ class CantCastSpellsExecutor(
                 CardPredicate.ManaValueAtMost(amounts.evaluate(state, predicate.amount, context))
             is CardPredicate.NameEqualsChosen ->
                 context.pipeline.chosenValues[predicate.variableName]?.let(CardPredicate::NameEquals) ?: predicate
+            is CardPredicate.SharesNameWith -> lockedName(predicate.entity, state, context)
             is CardPredicate.And -> CardPredicate.And(predicate.predicates.map { lockIn(it, state, context) })
             is CardPredicate.Or -> CardPredicate.Or(predicate.predicates.map { lockIn(it, state, context) })
             is CardPredicate.Not -> CardPredicate.Not(lockIn(predicate.predicate, state, context))
             else -> predicate
         }
+
+    /**
+     * The referenced entity's name as of now, as a fixed [CardPredicate.NameEquals]. Projected
+     * first so a copy or a renamed permanent is read under the name it has on the battlefield; base
+     * card data second for a reference with no projection entry. A face-down or nameless reference
+     * — or one that no longer resolves — has no name (CR 708.2), so the ban matches nothing:
+     * [NO_NAME] is never a card's name, and a face-down spell never matches a name at all.
+     */
+    private fun lockedName(entity: EffectTarget.SingleEntity, state: GameState, context: EffectContext): CardPredicate {
+        val projected = state.projectedState
+        val referenceId = TargetResolutionUtils.resolveEntity(entity, context, state, projected)
+        val name = referenceId?.takeUnless { projected.isFaceDown(it) }?.let { id ->
+            projected.getName(id)?.takeIf { it.isNotBlank() }
+                ?: state.getEntity(id)?.get<CardComponent>()?.name
+        }
+        return CardPredicate.NameEquals(name?.takeIf { it.isNotBlank() } ?: NO_NAME)
+    }
+
+    private companion object {
+        const val NO_NAME = ""
+    }
 }
