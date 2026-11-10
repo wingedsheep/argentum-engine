@@ -1,1 +1,1 @@
-- #TBD The AI reads a targeted "becomes an N/N creature" animate (Embodiment of Fury, Llanowar Loamspeaker) as a gift and aims a sizeable one at its own land.
+- #4627 The AI reads a targeted "becomes an N/N creature" animate (Embodiment of Fury, Llanowar Loamspeaker) as a gift and aims a sizeable one at its own land.
