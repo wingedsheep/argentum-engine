@@ -789,15 +789,16 @@ object TargetPolarityAnalyzer {
         // An Aura returned attached to a target whose effect on its host can't be read one-sidedly
         // — Radiant Restraints' "creatures enchanted player controls enter tapped" is a replacement
         // effect, a veto on the Aura reading — is still aimed by the side its slot is confined to:
-        // "target opponent" or "target creature an opponent controls" is a curse's victim, "target
-        // creature you control" the wearer of a gift. Only when nothing else reads the slot.
+        // "target opponent" or "target creature an opponent controls" is a curse's victim. On our own
+        // side ("target creature you control") it is, like Equip above, a question of which of our
+        // creatures wears it best: open for the simulation. Only when nothing else reads the slot.
         for (aura in leaves.filterIsInstance<ReturnSelfToBattlefieldAttachedEffect>()) {
             val slot = slotOf(aura.target, requirements) ?: continue
             if (perSlot[slot].isNotEmpty()) continue
             val requirement = requirements[slot]
             when {
                 requirement is TargetOpponent || isOpponentSide(requirement) -> perSlot[slot] += TargetPolarity.HARMFUL
-                isOwnSide(requirement) -> perSlot[slot] += TargetPolarity.BENEFICIAL
+                isOwnSide(requirement) -> perSlot[slot] += TargetPolarity.FLEXIBLE
             }
         }
         // "Remove all counters from target creature" (Perfect Intimidation) strips an opponent's

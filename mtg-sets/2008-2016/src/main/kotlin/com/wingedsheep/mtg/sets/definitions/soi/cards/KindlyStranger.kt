@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * - Delirium is checked only on activation, not on resolution (ruling) — an
  *   [ActivationRestriction.OnlyIfCondition], like Stallion of Ashmouth.
- * - Two stacked activations transform it only once (CR 701.28f, enforced by the transform
+ * - Two stacked activations transform it only once (CR 701.27g, enforced by the transform
  *   executor), so the Witch never flips back.
  * - The target is chosen as the trigger goes on the stack; "you may" is the resolution-time choice
  *   ([Effects.May]), mirroring Lunarch Inquisitors.

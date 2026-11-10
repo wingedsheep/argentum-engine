@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  *
  * What depends on the engine rather than the script: flipping back to the 4/4 mid-combat keeps it
  * an unblocked attacker, so it deals 4 combat damage (the second ruling); declining leaves a 0/1
- * that deals nothing; and two stacked activations transform it only once (CR 701.28f, the first
+ * that deals nothing; and two stacked activations transform it only once (CR 701.27g, the first
  * ruling).
  */
 class ElusiveTormentorScenarioTest : ScenarioTestBase() {

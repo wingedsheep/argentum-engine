@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The back face has no mana cost, so its blue comes from a color indicator (CR 204); the card's
  * color identity is therefore blue-black. Transforming mid-combat keeps the creature attacking and
  * keeps its unblocked status, so flipping back to the 4/4 after the trigger resolves lets it deal
- * 4 combat damage. Stacked transform abilities only flip it once (CR 701.28f, enforced by the
+ * 4 combat damage. Stacked transform abilities only flip it once (CR 701.27g, enforced by the
  * transform executor).
  */
 
