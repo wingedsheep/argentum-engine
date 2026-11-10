@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.GrantProtectionFromCardType
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
@@ -2031,6 +2032,12 @@ object TargetPolarityAnalyzer {
         if (reading == TargetPolarity.UNKNOWN && aura != null && isOpponentSide(aura) &&
             attachmentReadings(card, definitions, hostIs = null).isEmpty()
         ) return TargetPolarity.HARMFUL
+        // The mirror, "Enchant creature you control" (Journey to Eternity, whose whole card is a
+        // dies trigger that brings the creature back): only our own creature can wear it, so the
+        // slot is a gift on our side — the best creature is the one to name.
+        if (reading == TargetPolarity.UNKNOWN && aura != null && isOwnSide(aura) &&
+            attachmentReadings(card, definitions, hostIs = null).isEmpty()
+        ) return TargetPolarity.BENEFICIAL
         return reading
     }
 
@@ -2104,6 +2111,14 @@ object TargetPolarityAnalyzer {
         // landed: a pump that fades, not a curse. With no gift beside it, the harm is the card.
         val prices = mutableListOf<TargetPolarity>()
         for (static in card.script.staticAbilities) {
+            // "Enchanted creature attacks each combat if able" (Skin Invasion): its controller loses
+            // the choice to hold it back, so it runs into the blockers of whoever cast it — a curse
+            // on its own. Beside a gift ("gets +2/+2 and attacks each combat if able", Furor of the
+            // Bitten) it is the gift's price, as a harmful granted trigger is, not a veto on it.
+            if (static is MustAttack && static.filter.scope == Scope.AttachedTo) {
+                prices += TargetPolarity.HARMFUL
+                continue
+            }
             if (hostIs != null && static is ConditionalStaticAbility) {
                 val holds = when (static.condition) {
                     is NotCondition -> !hostIs

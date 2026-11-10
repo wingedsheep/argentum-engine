@@ -1720,6 +1720,121 @@
     ]
 }
 
+// Breakneck Rider
+{
+    "name": "Breakneck Rider",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Human Scout Werewolf",
+    "oracleText": "At the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Breakneck Rider:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Neck Breaker",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Attacking creatures you control get +1/+0 and have trample.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Neck Breaker:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "creature attacking ctrl:you"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "creature attacking ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "147",
+            "rarity": "UNCOMMON",
+            "artist": "Victor Adame Minguez",
+            "flavorText": "He can't outrun what he is.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/e/fe9f85e8-1e4c-4478-8344-71fae357b694.jpg?1783937764"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "Only the most skillful riders brave the Breakneck Ride through Kessig.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe9f85e8-1e4c-4478-8344-71fae357b694.jpg?1783937764"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Briarbridge Patrol
 {
     "name": "Briarbridge Patrol",
@@ -1851,6 +1966,110 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Burn from Within
+{
+    "name": "Burn from Within",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Burn from Within deals X damage to any target. If a creature is dealt damage this way, it loses indestructible until end of turn. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageDealtVariable": "storedNumber0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "storedNumber0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RemoveKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "MarkExileOnDeath",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8bdc165-4c6f-47e6-8bda-877c0be3613b.jpg?1783937758",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "The damaged creature will be exiled if it would die for any reason that turn, not just if it dies due to damage from Burn from Within."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If Burn from Within doesn't deal damage to the target creature (perhaps because that damage was prevented or X is 0), neither additional effect will apply. It won't lose indestructible, and it won't be exiled instead of dying that turn."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You can target a creature that doesn't have indestructible with Burn from Within. It will still be exiled if it would die this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2284,6 +2503,102 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Convicted Killer
+{
+    "name": "Convicted Killer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "At the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Convicted Killer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Branded Howler",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "At the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Branded Howler:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "149",
+            "artist": "Deruchenko Alexander",
+            "flavorText": "It is said that one of the most notorious werewolf howlpacks, the Vildin, only calls those whose hands are already stained with blood.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/4/f43f5f02-1b29-4e75-a6af-378dcc88c3df.jpg?1783937763"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "None are more dangerous than those who have already been sentenced to death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f43f5f02-1b29-4e75-a6af-378dcc88c3df.jpg?1783937763"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3318,6 +3633,68 @@
     ]
 }
 
+// Devils' Playground
+{
+    "name": "Devils' Playground",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create four 1/1 red Devil creature tokens. They have \"When this token dies, it deals 1 damage to any target.\"",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Devil"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e78c4b8-371b-43d7-a315-fb299704aa60.jpg?1783937682",
+            "triggeredAbilities": [
+                {
+                    "id": "Devils' Playground:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Wayne England",
+        "flavorText": "\"The city is overrun. I would say burn it to the ground, but that won't be necessary.\"\n—Inquisitor Delmund",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/1207e6eb-15a7-4ec4-91b3-880375704bb6.jpg?1783937756"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Devilthorn Fox
 {
     "name": "Devilthorn Fox",
@@ -3408,6 +3785,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dissension in the Ranks
+{
+    "name": "Dissension in the Ranks",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target blocking creature fights another target blocking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0[0]"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t0[1]"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature blocking"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"It came on as quickly as taking in a breath of air. Cathars who had fought shoulder to shoulder were at each other's throats. They were not themselves.\"\n—Halmig, Order of Saint Traft",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c1b563a-7856-40bf-954a-a0110ed4880d.jpg?1783937758",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Destroying a blocking creature doesn't cause the attacking creature it blocked to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4800,6 +5224,103 @@
     ]
 }
 
+// Flameblade Angel
+{
+    "name": "Flameblade Angel",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhenever a source an opponent controls deals damage to you or a permanent you control, you may have this creature deal 1 damage to that source's controller.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flameblade Angel:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfTriggeringEntity"
+                        }
+                    },
+                    "descriptionOverride": "Whenever a source an opponent controls deals damage to you, you may have this creature deal 1 damage to that source's controller."
+                },
+                "descriptionOverride": "Whenever a source an opponent controls deals damage to you, you may have this creature deal 1 damage to that source's controller."
+            },
+            {
+                "id": "Flameblade Angel:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "permanent ctrl:you"
+                    },
+                    "sourceFilter": "ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfTriggeringEntity"
+                        }
+                    },
+                    "descriptionOverride": "Whenever a source an opponent controls deals damage to a permanent you control, you may have this creature deal 1 damage to that source's controller."
+                },
+                "descriptionOverride": "Whenever a source an opponent controls deals damage to a permanent you control, you may have this creature deal 1 damage to that source's controller."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"You must pay for your sin in blood.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/1031ec22-c99f-4843-a7cf-c8332234eca8.jpg?1783937753",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If a source deals damage to you and/or one or more permanents you control at the same time, Flameblade Angel's last ability will trigger that many times. For example, if a creature with trample deals damage to a blocking creature you control and you, Flameblade Angel's ability will trigger two times."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Note that the last ability is optional. Say two players each control a Flameblade Angel, and a source controlled by the first player deals damage to the second player or a permanent they control. The resulting triggered ability may deal damage to the first player, causing the ability of that player's Flameblade Angel to trigger. That ability may deal damage to the second player, and so on. This cycle will repeat until the game ends or one player declines to use the ability, putting an end to the carnage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fleeting Memories
 {
     "name": "Fleeting Memories",
@@ -5416,6 +5937,104 @@
     ]
 }
 
+// Gatstaf Arsonists
+{
+    "name": "Gatstaf Arsonists",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "At the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gatstaf Arsonists:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Gatstaf Ravagers",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 5
+        },
+        "keywords": [
+            "MENACE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Gatstaf Ravagers:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "158",
+            "artist": "Greg Staples",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/a/6ab67098-d3d5-4799-ae03-c734244f370e.jpg?1783937760"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Greg Staples",
+        "flavorText": "The glow in their eyes reveals more than anger or madness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6ab67098-d3d5-4799-ae03-c734244f370e.jpg?1783937760"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Geier Reach Bandit
 {
     "name": "Geier Reach Bandit",
@@ -5860,6 +6479,66 @@
     ]
 }
 
+// Goldnight Castigator
+{
+    "name": "Goldnight Castigator",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying, haste\nIf a source would deal damage to you, it deals double that damage to you instead.\nIf a source would deal damage to this creature, it deals double that damage to this creature instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 9
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                }
+            },
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "MYTHIC",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca3d3c9a-d41b-4743-87a6-68d116460fe2.jpg?1783937751",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If multiple replacement effects could apply to damage being dealt to you or Goldnight Castigator, you choose the order to apply those effects."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you control two Goldnight Castigators and a source would deal damage to you, it deals four times that much damage instead. If you control a third Goldnight Castigator, the source deals eight times that much damage to you, and so on. Damage dealt to a Goldnight Castigator is only doubled, regardless of how many are on the battlefield."
+            }
+        ]
+    }
+}
+
 // Gone Missing
 {
     "name": "Gone Missing",
@@ -6210,6 +6889,115 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Harness the Storm
+{
+    "name": "Harness the Storm",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast an instant or sorcery spell from your hand, you may cast target card with the same name as that spell from your graveyard. (You still pay its costs.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harness the Storm:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "payManaCost": true
+                            },
+                            "descriptionOverride": "You may cast target card with the same name as that spell from your graveyard."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "SharesNameWith",
+                                    "entity": "TriggeringEntity"
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell from your hand, you may cast target card with the same name as that spell from your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"There is no place like a rooftop laboratory in a lightning storm. It's where genius strikes.\"\n—Renna, Selhoff alchemist",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5294d359-c599-40ed-9e06-2a3cc8624d6a.jpg?1783937750",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You must choose a target for Harness the Storm's ability (if one exists) immediately after you've cast an instant or sorcery spell. There's no way for that spell to be countered and then targeted by Harness the Storm once it's in the graveyard."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You choose whether to cast the targeted card as the ability resolves. You can't wait to cast it later, and there's no way for your opponents to set up a situation where you have to cast the card but don't want to."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If the spell you cast from your hand is countered in response to Harness the Storm's triggered ability, you can still cast the target card while the ability is resolving."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Because you're paying the spell's costs, you can pay alternative costs, such as awaken costs and surge costs from the Battle for Zendikar block. You can also pay additional costs, such as kicker costs. If the card has a mandatory additional cost, like Lightning Axe, you must pay it to cast the card."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "The spell you cast from your graveyard can target the spell you cast from your hand."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "The spell you cast from your graveyard resolves before the spell you cast from your hand. It's put into your graveyard as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6888,6 +7676,47 @@
     ]
 }
 
+// Howlpack Wolf
+{
+    "name": "Howlpack Wolf",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "This creature can't block unless you control another Wolf or Werewolf.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Wolf|Werewolf",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Wolves and werewolves join together for the common cause of the hunt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7379689-8e4f-4c23-9276-3510f70ba7ff.jpg?1783937751",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If you control a second Howlpack Wolf, they can both block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hulking Devil
 {
     "name": "Hulking Devil",
@@ -7053,6 +7882,54 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Inner Struggle
+{
+    "name": "Inner Struggle",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature deals damage to itself equal to its power.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Reflect upon your evils lest they reflect upon you.\"\n—Inquisitor Laerin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b43be50a-8624-46f6-860a-39ffbfbdaa6a.jpg?1783937748"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7772,6 +8649,160 @@
     ]
 }
 
+// Kessig Forgemaster
+{
+    "name": "Kessig Forgemaster",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman Werewolf",
+    "oracleText": "Whenever this creature blocks or becomes blocked by a creature, this creature deals 1 damage to that creature.\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kessig Forgemaster:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity"
+                }
+            },
+            {
+                "id": "Kessig Forgemaster:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Flameheart Werewolf",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever this creature blocks or becomes blocked by a creature, this creature deals 2 damage to that creature.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 2
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Flameheart Werewolf:1",
+                    "trigger": {
+                        "type": "BlocksOrBecomesBlockedByEvent",
+                        "partnerFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ]
+                        }
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "TriggeringEntity"
+                    }
+                },
+                {
+                    "id": "Flameheart Werewolf:2",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "169",
+            "rarity": "UNCOMMON",
+            "artist": "Winona Nelson",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/3/33e542ce-1106-489d-9563-bd62886b8ed3.jpg?1783937754",
+            "rulings": [
+                {
+                    "date": "2016-04-08",
+                    "text": "Flameheart Werewolf's first ability triggers once for each creature blocking or blocked by it. The ability resolves and deals damage to that creature before combat damage is dealt. If that damage destroys a creature blocking Flameheart Werewolf, Flameheart Werewolf doesn't become unblocked."
+                },
+                {
+                    "date": "2016-04-08",
+                    "text": "To trigger the Werewolf's back face's transform ability, a single player must have cast two or more spells during the previous turn. If multiple players each cast just one spell during the previous turn, the ability won't trigger."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33e542ce-1106-489d-9563-bd62886b8ed3.jpg?1783937754",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Kessig Forgemaster's first ability triggers once for each creature blocking or blocked by it. The ability resolves and deals damage to that creature before combat damage is dealt. If that damage destroys a creature blocking Kessig Forgemaster, Kessig Forgemaster doesn't become unblocked."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "The abilities that transform a Werewolf back and forth look at the entire previous turn, even if the Werewolf with that ability wasn't on the battlefield for some or all of that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kindly Stranger
 {
     "name": "Kindly Stranger",
@@ -8286,6 +9317,97 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Malevolent Whispers
+{
+    "name": "Malevolent Whispers",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gets +2/+0 and gains haste until end of turn.\nMadness {3}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{3}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/674d33d6-dfd4-4972-aaa3-6de0236a8c45.jpg?1783937746",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it, even though those remain attached to it."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Malevolent Whispers can target any creature, even one that's untapped or one you already control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Manic Scribe
@@ -12389,6 +13511,93 @@
     ]
 }
 
+// Skin Invasion
+{
+    "name": "Skin Invasion",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature attacks each combat if able.\nWhen enchanted creature dies, return this card to the battlefield transformed under your control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skin Invasion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "ReturnSelfFromZoneTransformed",
+                    "controllerOverride": "Controller"
+                },
+                "descriptionOverride": "When enchanted creature dies, return Skin Invasion to the battlefield transformed under your control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "backFace": {
+        "name": "Skin Shedder",
+        "manaCost": "",
+        "typeLine": "Creature — Insect Horror",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "metadata": {
+            "collectorNumber": "182",
+            "rarity": "UNCOMMON",
+            "artist": "Nils Hamm",
+            "flavorText": "\"Patient complained of burning sensation in upper back and at base of neck. Bed rest recommended. In a couple days, he should feel like a new man.\"\n—Lagra, hamlet physician",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/0/c0243401-e3ae-41c6-a3a0-9cd4b330c200.jpg?1783937747"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0243401-e3ae-41c6-a3a0-9cd4b330c200.jpg?1783937747",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "The controller of Skin Invasion, not the controller of the enchanted creature, returns Skin Invasion to the battlefield transformed."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "The enchanted creature's controller still chooses which player or planeswalker that creature attacks."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If, during your declare attackers step, the enchanted creature is tapped or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having that creature attack, its controller isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sleep Paralysis
 {
     "name": "Sleep Paralysis",
@@ -16033,6 +17242,136 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/2/1285b444-1668-4a3d-9fcd-8ce4e95c6d2f.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Wolf of Devil's Breach
+{
+    "name": "Wolf of Devil's Breach",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Elemental Wolf",
+    "oracleText": "Whenever this creature attacks, you may pay {1}{R} and discard a card. If you do, this creature deals damage to target creature or planeswalker equal to the discarded card's mana value.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wolf of Devil's Breach:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "PayManaCost",
+                                        "cost": "{1}{R}"
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "discarded"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "descriptionOverride": "You may pay {1}{R} and discard a card. If you do, this creature deals damage to target creature or planeswalker equal to the discarded card's mana value."
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetCreatureOrPlaneswalker",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may pay {1}{R} and discard a card. If you do, this creature deals damage to target creature or planeswalker equal to the discarded card's mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "MYTHIC",
+        "artist": "Jack Wang",
+        "flavorText": "\"How can werewolves be considered abominations next to such creatures?\"\n—Arlinn Kord",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fedce04c-e7bc-4db0-94a1-66131761512c.jpg?1783937738",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can't choose to discard a card without also paying {1}{R}."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a card with {X} in its mana cost is discarded to Wolf of Devil's Breach's ability, X is considered to be 0."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You choose the target creature or planeswalker as the triggered ability of Wolf of Devil's Breach is put onto the stack. You choose which card to discard, if any, as the ability resolves. While players may respond to the triggered ability once you've chosen a target, no player may take actions between the time you discard the card and the time damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Woodland Stream
