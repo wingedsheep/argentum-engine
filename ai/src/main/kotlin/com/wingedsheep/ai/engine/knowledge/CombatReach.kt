@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.RegenerateEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import java.util.Collections
@@ -98,6 +99,11 @@ internal enum class CombatReach {
                 // power and toughness 3/3" (Marsh Flitter): a new base P/T reshapes a fight either way,
                 // as a pump or a shrink does — which side it helps is the simulation's to find.
                 is SetBaseStatsEffect -> reach += FIGHT
+                // "Creatures your opponents control lose hexproof and indestructible until end of
+                // turn" (Bonds of Mortality), "target creature loses flying": a keyword taken off
+                // another creature mid-fight lets damage kill it, a blocker reach it, or the same
+                // player's removal aim at it — the granted keyword's reading, from the other side.
+                is RemoveKeywordEffect -> if (leaf.target != EffectTarget.Self) reach += FIGHT
                 // "Tap two artifacts: put two +1/+1 counters on this creature" grows a blocker the
                 // same as a pump does, and keeps it grown; a -1/-1 counter shrinks one.
                 is AddCountersEffect -> if (changesStats(leaf.counterType)) reach += FIGHT

@@ -162,6 +162,20 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             intent.speed shouldBe Speed.INSTANT
         }
 
+        test("a keyword stripped from the opponents' creatures opens them to the fight") {
+            // Bonds of Mortality: "{G}: Creatures your opponents control lose hexproof and
+            // indestructible until end of turn."
+            val strip = cardRegistry.requireCard("Bonds of Mortality").script.activatedAbilities.single()
+            CardIntentAnalyzer.analyzeEffect(strip.effect).tags shouldContain IntentTag.COMBAT_ENHANCEMENT
+            CombatReach.of(strip) shouldContain CombatReach.FIGHT
+        }
+
+        test("a group of our creatures biting one chosen victim is removal, not a sweeper") {
+            val intent = intentOf("Nissa's Judgment")
+            intent.tags shouldContain IntentTag.REMOVAL
+            intent.tags shouldNotContain IntentTag.SWEEPER
+        }
+
         test("a sweeper is tagged as one, and reads as opponent-facing") {
             val intent = intentOf("Wrath of God")
             intent.tags shouldContain IntentTag.REMOVAL

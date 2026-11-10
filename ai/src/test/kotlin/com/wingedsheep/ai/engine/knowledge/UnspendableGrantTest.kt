@@ -9,6 +9,10 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Zone
 
 /**
  * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants], measured on the policy rather than
@@ -29,6 +33,9 @@ class UnspendableGrantTest : ScenarioTestBase() {
     private val both by lazy {
         HoldPolicy(intents, holdExpiringGrantsForCombat = true, refuseUnspendableGrants = true)
     }
+
+    /** The live floors: unspendable grants and wasted payoffs (shrinks, strips) both read. */
+    private val wasted by lazy { HoldPolicy(intents, refuseUnspendableGrants = true, refuseWastedPayoffs = true) }
 
     /** Seat 1 activating the first non-mana ability of its [cardName], aimed at [targets]. */
     private fun TestGame.activation(cardName: String, vararg targets: String): ActivateAbility {
@@ -149,6 +156,80 @@ class UnspendableGrantTest : ScenarioTestBase() {
 
             game.verdict(noop, "Esquire of the King") shouldBe TimingVerdict.Neutral
             game.verdict(both, "Esquire of the King") shouldBe TimingVerdict.Neutral
+        }
+
+        // ── Bonds of Mortality: `{G}: Creatures your opponents control lose hexproof and
+        //    indestructible until end of turn` ──
+
+        test("a strip of keywords no opposing creature has changes nothing") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Bonds of Mortality")
+                .withLandsOnBattlefield(1, "Forest", 2)
+                .withCardOnBattlefield(2, "Hill Giant")
+                .build().advanceToPriority(1, Step.PRECOMBAT_MAIN)
+
+            game.verdict(wasted, "Bonds of Mortality") shouldBe TimingVerdict.NoWindow
+        }
+
+        test("an indestructible opposing creature: the strip is the leaf's call") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Bonds of Mortality")
+                .withLandsOnBattlefield(1, "Forest", 2)
+                .withCardOnBattlefield(2, "Darksteel Myr")
+                .build().advanceToPriority(1, Step.PRECOMBAT_MAIN)
+
+            game.verdict(wasted, "Bonds of Mortality") shouldBe TimingVerdict.Neutral
+        }
+
+        // ── Elemental Uprising: `Target land you control becomes a 4/4 Elemental creature with
+        //    haste until end of turn. It must be blocked this turn if able.` ──
+
+        test("an animated land is a precombat play: after combat it is a creature for nothing") {
+            fun TestGame.uprising() = wasted.verdictFor(
+                state, player1Id, "Elemental Uprising",
+                cast = CastSpell(
+                    player1Id,
+                    state.getZone(player1Id, Zone.HAND).first { state.getEntity(it)?.get<CardComponent>()?.name == "Elemental Uprising" },
+                    targets = listOf(ChosenTarget.Permanent(state.getBattlefield(player1Id).first {
+                        state.getEntity(it)?.get<CardComponent>()?.name == "Forest" && !state.getEntity(it)!!.has<TappedComponent>()
+                    })),
+                ),
+            )
+            fun board() = scenario().withPlayers()
+                .withCardInHand(1, "Elemental Uprising")
+                .withLandsOnBattlefield(1, "Forest", 3)
+                .withCardOnBattlefield(2, "Hill Giant")
+                .build()
+
+            board().advanceToPriority(1, Step.PRECOMBAT_MAIN).uprising() shouldNotBe TimingVerdict.NoWindow
+            board().advanceToPriority(1, Step.POSTCOMBAT_MAIN).uprising() shouldBe TimingVerdict.NoWindow
+        }
+
+        // ── Fractalize: `Until end of turn, target creature becomes a green and blue Fractal with
+        //    base power and toughness each equal to X plus 1.` ──
+
+        test("an animation aimed at an opposing attacker reshapes their fight: the leaf's call") {
+            val game = scenario().withPlayers()
+                .withActivePlayer(2)
+                .withCardInHand(1, "Fractalize")
+                .withLandsOnBattlefield(1, "Island", 3)
+                .withCardOnBattlefield(2, "Hill Giant")
+                .build()
+                .advanceToDeclaration(2, Step.DECLARE_ATTACKERS)
+                .also { it.declareAttackers(mapOf("Hill Giant" to 1)) }
+                .advanceToPriority(1, Step.DECLARE_BLOCKERS)
+
+            val verdict = wasted.verdictFor(
+                game.state, game.player1Id, "Fractalize",
+                cast = CastSpell(
+                    game.player1Id,
+                    game.state.getZone(game.player1Id, Zone.HAND)
+                        .first { game.state.getEntity(it)?.get<CardComponent>()?.name == "Fractalize" },
+                    targets = listOf(ChosenTarget.Permanent(game.findPermanent("Hill Giant")!!)),
+                    xValue = 0,
+                ),
+            )
+            verdict shouldNotBe TimingVerdict.NoWindow
         }
 
         // ── Dream Thrush: `{T}: Target land becomes the basic land type of your choice until EOT` ──

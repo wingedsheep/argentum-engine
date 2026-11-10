@@ -363,6 +363,112 @@
     ]
 }
 
+// Baloth Null
+{
+    "name": "Baloth Null",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Creature — Zombie Beast",
+    "oracleText": "When this creature enters, return up to two target creature cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Baloth Null:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, return up to two target creature cards from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"Humans use pigs to hunt for mushrooms, don't they? It's like that.\"\n—Harak, Malakir bloodwitch",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/8811d210-23e2-4318-9730-7ee3b2021c68.jpg?1783937897"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Baloth Pup
+{
+    "name": "Baloth Pup",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "This creature has trample as long as it has a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "A young baloth channels its energy into playful destructiveness. Over time, it becomes less playful but no less destructive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f9c87f4-4fa5-4c97-9654-c4acd250f850.jpg?1783937902"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bearer of Silence
 {
     "name": "Bearer of Silence",
@@ -419,6 +525,88 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Birthing Hulk
+{
+    "name": "Birthing Hulk",
+    "manaCost": "{6}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, create two 1/1 colorless Eldrazi Scion creature tokens. They have \"Sacrifice this token: Add {C}.\" ({C} represents colorless mana.)\n{1}{C}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Birthing Hulk:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/0/a03edf14-3495-4f61-ad73-f16e9456472c.jpg?1783937863",
+                    "activatedAbilities": [
+                        {
+                            "id": "Birthing Hulk:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Birthing Hulk:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1a644e0-96e5-4b73-873f-1132948cb21f.jpg?1783937904"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -479,6 +667,99 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Bonds of Mortality
+{
+    "name": "Bonds of Mortality",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw a card.\n{G}: Creatures your opponents control lose hexproof and indestructible until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bonds of Mortality:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When this enchantment enters, draw a card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bonds of Mortality:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "RemoveKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "RemoveKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{G}: Creatures your opponents control lose hexproof and indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "Jace discovered the leyline pattern needed to anchor Ulamog and Kozilek to reality, but it was Nissa who could trace it on her world.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff50de00-115f-41ed-892b-aac9bd13b9b9.jpg?1783937902",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The last ability causes creatures your opponents control to lose hexproof and indestructible as it resolves. Effects that cause those creatures to gain those abilities after that point will work normally."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Damage dealt to a creature with indestructible is still marked on that creature. If that creature loses indestructible, and the marked damage is lethal, it will be destroyed. However, if a creature with indestructible is dealt damage by a source with deathtouch and then later loses indestructible, that creature won't be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1923,6 +2204,78 @@
     ]
 }
 
+// Elemental Uprising
+{
+    "name": "Elemental Uprising",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target land you control becomes a 4/4 Elemental creature with haste until end of turn. It's still a land. It must be blocked this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"My heart and Zendikar's beat as one. Together we will endure.\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e194b283-a7d2-4c0a-9ee2-8689a8e911b9.jpg?1783937902",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If the resulting creature attacks, the defending player must assign at least one blocker to it during the declare blockers step if that player controls any creatures that could block it."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You may target a land that's already a creature. For example, if you target a land that's also a 0/0 creature and has three +1/+1 counters on it, the resulting land creature will be 7/7."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Embodiment of Fury
 {
     "name": "Embodiment of Fury",
@@ -2532,6 +2885,113 @@
     ]
 }
 
+// Gladehart Cavalry
+{
+    "name": "Gladehart Cavalry",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Elf Knight",
+    "oracleText": "When this creature enters, support 6. (Put a +1/+1 counter on each of up to six other target creatures.)\nWhenever a creature you control with a +1/+1 counter on it dies, you gain 2 life.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gladehart Cavalry:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 6,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, support 6 — put a +1/+1 counter on each of up to six other target creatures."
+            },
+            {
+                "id": "Gladehart Cavalry:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control with a +1/+1 counter on it dies, you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28ffd3f4-a034-4cb2-9270-bdb5197f1bef.jpg?1783937902",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If Gladehart Cavalry dies at the same time as a creature you control with a +1/+1 counter on it, its ability will trigger."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If Gladehart Cavalry somehow gets a +1/+1 counter, it dying will cause its own ability to trigger."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You gain 2 life per creature, not per +1/+1 counter."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Goblin Dark-Dwellers
 {
     "name": "Goblin Dark-Dwellers",
@@ -2779,6 +3239,67 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Harvester Troll
+{
+    "name": "Harvester Troll",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "When this creature enters, you may sacrifice a creature or land. If you do, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harvester Troll:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Sacrifice",
+                                "filter": "creature|land"
+                            },
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": "Self"
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice a creature or land. If you do, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "Having no interest in the greater conflict, the trolls continue to prey upon whatever wanders into their domain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bf92744-0acc-4c7e-819c-51b0696facad.jpg?1783937901",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Players can respond to the enters-the-battlefield ability (notably, while Harvester Troll is still 2/3), but once that ability starts resolving, it's too late for any player to respond. You don't choose which creature or land you're sacrificing, if any, until the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3174,6 +3695,83 @@
     ]
 }
 
+// Joraga Auxiliary
+{
+    "name": "Joraga Auxiliary",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Elf Soldier Ally",
+    "oracleText": "{4}{G}{W}: Support 2. (Put a +1/+1 counter on each of up to two other target creatures.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Joraga Auxiliary:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Support 2 — put a +1/+1 counter on each of up to two other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "\"Before the battle, I heard them take an oath near the ruins of Sea Gate. I hope they inspire others to keep watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65d920b4-81ab-45be-b763-b6114b879357.jpg?1783937896",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Jori En, Ruin Diver
 {
     "name": "Jori En, Ruin Diver",
@@ -3563,6 +4161,63 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Lead by Example
+{
+    "name": "Lead by Example",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Support 2. (Put a +1/+1 counter on each of up to two target creatures.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Johannes Voss",
+        "flavorText": "Gideon and Nissa carved a path through the Eldrazi swarm, and their Zendikari allies charged into the fray behind them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cdcb985-b0bb-4921-a7e4-3ee6e8f8992b.jpg?1783937901",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Loam Larva
@@ -4241,6 +4896,117 @@
     ]
 }
 
+// Nissa's Judgment
+{
+    "name": "Nissa's Judgment",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Support 2. (Put a +1/+1 counter on each of up to two target creatures.)\nChoose up to one target creature an opponent controls. Each creature you control with a +1/+1 counter on it deals damage equal to its power to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.TargetsOf",
+                        "group": "t0"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "damageSource": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96b263fb-00b5-4050-85e1-cfc4018bb75d.jpg?1783937901",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You finish the support action before any creatures deal damage. Creatures that get a +1/+1 counter will deal damage to the creature an opponent controls, if applicable."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "As Nissa's Judgment resolves, if at least one of its targets is still legal, it will resolve, affecting only targets that are still legal at that time. If none of its targets are still legal at that time, it won't resolve and none of its effects will happen."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Null Caller
 {
     "name": "Null Caller",
@@ -4525,6 +5291,111 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Press into Service
+{
+    "name": "Press into Service",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Support 2. (Put a +1/+1 counter on each of up to two target creatures.)\nGain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.TargetsOf",
+                        "group": "t0"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69b9eb4b-3ab8-4506-baa4-3a818e7677a3.jpg?1783937905",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The last target of Press into Service can be any creature, even one that's untapped, one you already control, or one targeted by the support part of the spell."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "As Press into Service resolves, if at least one of its targets is still legal, it will resolve, affecting only targets that are still legal at that time. If none of its targets are still legal at that time, it won't resolve and none of its effects will happen."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5296,6 +6167,76 @@
     ]
 }
 
+// Saddleback Lagac
+{
+    "name": "Saddleback Lagac",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "When this creature enters, support 2. (Put a +1/+1 counter on each of up to two other target creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saddleback Lagac:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, support 2 — put a +1/+1 counter on each of up to two other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Jason Kang",
+        "flavorText": "\"A good lagac will carry you through thick and thin. A bad one . . . well, it's a tasty dinner.\"\n—Raff Slugeater, goblin shortcutter",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33df4803-b32d-43ae-ac68-b72e45e10b0c.jpg?1783937899",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scion Summoner
 {
     "name": "Scion Summoner",
@@ -5408,6 +6349,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Seed Guardian
+{
+    "name": "Seed Guardian",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Reach\nWhen this creature dies, create an X/X green Elemental creature token, where X is the number of creature cards in your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seed Guardian:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/b/db67bc06-b6c9-49a0-beef-4d35842497cb.jpg?1783937859",
+                    "dynamicPower": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "dynamicToughness": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, create an X/X green Elemental creature token, where X is the number of creature cards in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "It is a reminder that spring will always follow winter.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba4736b3-d6ce-4a16-bcb7-67780caeb78c.jpg?1783937899",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Use the number of creature cards in your graveyard as the ability resolves to determine the value of X. Seed Guardian will count toward this number as long as it's still in your graveyard at that time."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Once the Elemental is created, the number of creature cards in your graveyard changing won't cause the Elemental's power or toughness to change."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6255,6 +7268,91 @@
     ]
 }
 
+// Sylvan Advocate
+{
+    "name": "Sylvan Advocate",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid Ally",
+    "oracleText": "Vigilance\nAs long as you control six or more lands, this creature and land creatures you control get +2/+2.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "creature land ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"The land gives of itself. Its abundance provides, even in times of chaos.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4ad1ff9b-306d-47c3-9334-371e4482370b.jpg?1783937899",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Damage remains marked on creatures until the turn ends. If Sylvan Advocate's ability stops applying (because Sylvan Advocate leaves the battlefield or you no longer control six or more lands), then any land creatures that needed the toughness bonus to stay alive will be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tajuru Pathwarden
 {
     "name": "Tajuru Pathwarden",
@@ -6714,6 +7812,94 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Unity of Purpose
+{
+    "name": "Unity of Purpose",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Support 2. (Put a +1/+1 counter on each of up to two target creatures.)\nUntap each creature you control with a +1/+1 counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "Faced with the novel problem of inspiring an army, Jace asked himself: \"What would Gideon say?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f87292c-0140-44d7-881e-2e8c9ff737a1.jpg?1783937916",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You can't put more than one +1/+1 counter on any one target using the support action."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Support can target a creature you don't control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a spell with support has other abilities that target creatures, those abilities and the support ability can target the same creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
