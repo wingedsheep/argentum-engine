@@ -62,8 +62,18 @@ class GroupCantBlockWindowTest : ScenarioTestBase() {
             position(activePlayer = 1, opposing = "Reaper from the Abyss").verdict() shouldBe TimingVerdict.NoWindow
         }
 
-        test("a creature of ours in the group hands the decision back to the leaf") {
+        test("on our turn, a creature of ours in the group buys nothing: we never block on our own turn") {
+            position(activePlayer = 1, opposing = "Reaper from the Abyss", ours = "Ondu Giant")
+                .verdict() shouldBe TimingVerdict.NoWindow
+        }
+
+        test("on their turn, a creature of ours in the group is only a blocker we lose") {
             position(activePlayer = 2, opposing = "Reaper from the Abyss", ours = "Ondu Giant")
+                .verdict() shouldBe TimingVerdict.NoWindow
+        }
+
+        test("a creature of ours in the group doesn't hide an opposing one it keeps out of a block") {
+            position(activePlayer = 1, opposing = "Ondu Giant", ours = "Ondu Giant")
                 .verdict() shouldNotBe TimingVerdict.NoWindow
         }
     }

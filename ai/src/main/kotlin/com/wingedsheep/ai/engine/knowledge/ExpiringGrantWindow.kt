@@ -578,13 +578,14 @@ internal object ExpiringGrantWindow {
             }
         }
         // "Each creature with toughness greater than its power can't block this turn" (Immobilizer
-        // Eldrazi): judged on the creatures the group holds now. One of ours in it, or an opposing
-        // one it can still keep out of a block, is the leaf's call; a group that holds nothing
-        // blockable buys nothing in this window.
+        // Eldrazi): judged on the creatures the group holds now. A group sweeps ours in whether we
+        // want them or not, and keeping our own creature from blocking buys us nothing on any
+        // turn — on ours we never block, on theirs it only costs us a blocker. An opposing one it
+        // can still keep out of a block is the leaf's call; nothing else is a window.
         for (group in groupCantBlocks) {
             val members = groupMembers(state, projected, playerId, group, activation.sourceId, intents) ?: return false
             for (creature in members) {
-                if (projected.getController(creature) == playerId) return false
+                if (projected.getController(creature) == playerId) continue
                 if (ourTurn && opposingCanStillBeBlockedOut(state, creature)) return false
             }
         }

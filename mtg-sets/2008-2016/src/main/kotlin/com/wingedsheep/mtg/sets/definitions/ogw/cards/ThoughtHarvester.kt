@@ -46,6 +46,7 @@ val ThoughtHarvester = card("Thought Harvester") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "48"
         artist = "Winona Nelson"
+        flavorText = "\"I never thought I'd miss the gomazoa.\"\n—Trinda, Hada spy patrol"
         imageUri = "https://cards.scryfall.io/normal/front/4/6/46f9eeb2-22f6-4bdb-bbf8-f53774cc6226.jpg?1783937920"
         ruling("2016-01-22", "The card is exiled face up.")
         ruling("2016-01-22", "The triggered ability will resolve before the colorless spell that caused it to trigger.")

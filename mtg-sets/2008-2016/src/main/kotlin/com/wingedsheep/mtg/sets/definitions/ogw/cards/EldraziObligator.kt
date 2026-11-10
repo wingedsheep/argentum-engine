@@ -53,5 +53,6 @@ val EldraziObligator = card("Eldrazi Obligator") {
         collectorNumber = "96"
         artist = "Jason Felix"
         imageUri = "https://cards.scryfall.io/normal/front/d/f/dfaa8b16-7c12-44e2-8ddb-17608d491c41.jpg?1783937909"
+        ruling("2016-01-22", "You may choose any creature as the target of Eldrazi Obligator’s triggered ability, including one that’s untapped or one you already control.")
     }
 }

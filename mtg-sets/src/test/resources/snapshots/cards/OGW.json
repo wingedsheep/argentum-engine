@@ -1910,7 +1910,13 @@
         "collectorNumber": "96",
         "rarity": "RARE",
         "artist": "Jason Felix",
-        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfaa8b16-7c12-44e2-8ddb-17608d491c41.jpg?1783937909"
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfaa8b16-7c12-44e2-8ddb-17608d491c41.jpg?1783937909",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You may choose any creature as the target of Eldrazi Obligator’s triggered ability, including one that’s untapped or one you already control."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -6429,6 +6435,7 @@
         "collectorNumber": "48",
         "rarity": "UNCOMMON",
         "artist": "Winona Nelson",
+        "flavorText": "\"I never thought I'd miss the gomazoa.\"\n—Trinda, Hada spy patrol",
         "imageUri": "https://cards.scryfall.io/normal/front/4/6/46f9eeb2-22f6-4bdb-bbf8-f53774cc6226.jpg?1783937920",
         "rulings": [
             {

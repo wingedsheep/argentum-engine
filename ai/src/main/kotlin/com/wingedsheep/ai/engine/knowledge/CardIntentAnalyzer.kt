@@ -280,7 +280,7 @@ object CardIntentAnalyzer {
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
-        val refunds = handRefundDraws(effect) + refundSearches(effect)
+        val refunds = refundsOf(effect)
         for (leaf in readingLeaves(effect, requirements)) {
             tags += refundedTagsOf(leaf, refunds)
             // "Target creature becomes a Coward" beside "Cowards can't block Warriors" is the
@@ -368,7 +368,7 @@ object CardIntentAnalyzer {
         // hand, it gains none. Its draw reads as the card selection it is.
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
             .flatMap { readingLeaves(it.effect, it.targetRequirements) }
-        val refunds = roots.flatMapTo(HashSet<Effect>()) { handRefundDraws(it) + refundSearches(it) }
+        val refunds = roots.flatMapTo(HashSet<Effect>()) { refundsOf(it) }
         for (effect in leaves) {
             tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -1091,9 +1091,16 @@ object CardIntentAnalyzer {
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
     ): Set<IntentTag> =
-        (handRefundDraws(root) + refundSearches(root)).let { refunds ->
+        refundsOf(root).let { refunds ->
             readingLeaves(root, requirements).flatMapTo(HashSet()) { refundedTagsOf(it, refunds) }
         } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
+
+    /**
+     * The draws and library gathers in [root] that are not the card's own card draw or tutor:
+     * [handRefundDraws], [refundSearches] and [binnedLibraryGathers].
+     */
+    private fun refundsOf(root: Effect): List<Effect> =
+        handRefundDraws(root) + refundSearches(root) + binnedLibraryGathers(root)
 
     /**
      * [tagsOf], except that a draw or search in [refunds] ([handRefundDraws], [refundSearches]) is
@@ -1103,6 +1110,27 @@ object CardIntentAnalyzer {
         leaf is DrawCardsEffect && leaf in refunds -> tagsOf(leaf) - IntentTag.DRAW
         leaf is GatherCardsEffect && leaf in refunds -> tagsOf(leaf) - IntentTag.TUTOR
         else -> tagsOf(leaf)
+    }
+
+    /**
+     * "Exile all cards from your library face down" (Inverter of Truth): our own library gathered
+     * only to be exiled or binned, with nothing picked out of it and nothing played from where it
+     * went, finds no card we need — not a tutor.
+     */
+    internal fun binnedLibraryGathers(root: Effect): List<GatherCardsEffect> = binnedLibraryGathersOf(readingLeaves(root))
+
+    /** [binnedLibraryGathers] over a pipeline's own [leaves]. */
+    internal fun binnedLibraryGathersOf(leaves: List<Effect>): List<GatherCardsEffect> {
+        if (usesTheExiledCard(leaves)) return emptyList()
+        return leaves.filterIsInstance<GatherCardsEffect>().filter { gather ->
+            val source = gather.source as? CardSource.FromZone
+            if (source == null || source.zone != Zone.LIBRARY || !searchesOwnZones(gather, source.player)) return@filter false
+            val sources = setOf(gather.storeAs)
+            val moves = leaves.filterIsInstance<MoveCollectionEffect>().filter { it.from == gather.storeAs }
+            moves.isNotEmpty() &&
+                moves.all { (it.destination as? CardDestination.ToZone)?.zone.let { z -> z == Zone.EXILE || z == Zone.GRAVEYARD } } &&
+                leaves.none { it !is MoveCollectionEffect && derivedCollections(it, sources).isNotEmpty() }
+        }
     }
 
     /**

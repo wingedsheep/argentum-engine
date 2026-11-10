@@ -108,9 +108,11 @@ internal enum class CombatReach {
                 // Damage aimed only at a player is a clock, not a combat answer.
                 is DealDamageEffect -> if (leaf.target !is EffectTarget.PlayerRef) reach += FIGHT
                 is AnimateLandEffect, is BecomeCreatureEffect, is MassAnimateEffect -> reach += BLOCKER
-                // "Can't block this creature" restricts one pairing, which the crack-back's blocker
-                // count does not see; only a creature kept out of every block is a denial.
-                is CantBlockEffect -> if (leaf.target != EffectTarget.Self && leaf.attacker == null) reach += BLOCK_DENIAL
+                // "Target creature can't block this turn" keeps it out of every block; "target
+                // creature can't block this creature this turn" (Screeching Griffin, Kozilek's
+                // Pathfinder) keeps it off one attacker, a pairing CombatMath.canBeBlockedBy reads
+                // off the floating effect — both are a blocker denied once played out.
+                is CantBlockEffect -> if (leaf.target != EffectTarget.Self) reach += BLOCK_DENIAL
                 // "Each creature with toughness greater than its power can't block this turn"
                 // (Immobilizer Eldrazi): every creature the group holds is kept out of every block.
                 is CantBlockGroupEffect -> reach += BLOCK_DENIAL
