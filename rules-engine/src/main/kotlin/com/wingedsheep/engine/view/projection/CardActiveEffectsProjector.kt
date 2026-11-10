@@ -290,12 +290,13 @@ internal class CardActiveEffectsProjector(
         return summedPump + (others + whileTrue).distinct()
     }
 
-    /** Whether a modification already has a badge that [lasting] can date: its own, or a damage shield's. */
+    /** Whether a modification already has a badge that [lasting] can date: its own, or a damage or source shield's. */
     private fun hasOwnBadge(state: GameState, modification: SerializableModification): Boolean =
         modificationBadge(state, modification) != null ||
             modification is SerializableModification.PreventNextDamage ||
             modification is SerializableModification.RegenerationShield ||
-            modification is SerializableModification.RemoveDamageShield
+            modification is SerializableModification.RemoveDamageShield ||
+            modification is SerializableModification.PreventNextDamageFromSourceShield
 
     /** A short account of a stat or keyword change, or null for one the card's own display covers. */
     private fun modificationSummary(modification: SerializableModification): String? = when (modification) {
