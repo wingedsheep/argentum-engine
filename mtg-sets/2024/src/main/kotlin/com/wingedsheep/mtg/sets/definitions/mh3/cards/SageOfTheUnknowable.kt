@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaRestriction
  *
  * {T}: Add {C}. Spend this mana only to cast a colorless spell or to activate an ability.
  *
- * `AnyOf(ColorlessSpellsOnly, AbilityActivationOnly)` — the ability half is any activated ability of
+ * `AnyOf(ColorlessSpellsOrAbilitiesOnly(), AbilityActivationOnly)` — the ability half is any activated ability of
  * any source, per the ruling, not only abilities of colorless sources.
  */
 val SageOfTheUnknowable = card("Sage of the Unknowable") {
@@ -29,7 +29,7 @@ val SageOfTheUnknowable = card("Sage of the Unknowable") {
         effect = Effects.AddColorlessMana(
             1,
             restriction = ManaRestriction.AnyOf(
-                listOf(ManaRestriction.ColorlessSpellsOnly, ManaRestriction.AbilityActivationOnly)
+                listOf(ManaRestriction.ColorlessSpellsOrAbilitiesOnly(), ManaRestriction.AbilityActivationOnly)
             )
         )
         manaAbility = true

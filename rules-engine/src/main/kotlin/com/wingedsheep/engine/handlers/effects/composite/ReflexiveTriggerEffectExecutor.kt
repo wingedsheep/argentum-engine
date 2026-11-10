@@ -277,7 +277,10 @@ class ReflexiveTriggerEffectExecutor(
         // that can't be made can't be performed, so the may-question must be absent. Mirrors
         // GatedEffectExecutor.canAfford for the same shape in a Gate.MayPay cost slot.
         is com.wingedsheep.sdk.scripting.effects.PayManaCostEffect ->
-            action.waterbend || manaSolver.canPay(state, context.controllerId, action.cost)
+            action.waterbend || manaSolver.canPay(
+                state, context.controllerId, action.cost,
+                spellContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext.forResolutionCost(action.cost),
+            )
         // "You may pay {E}{E}{E}" (Guide of Souls) — an all-or-nothing player-counter payment
         // is only feasible if the payer already has at least that many. Mirrors the SacrificeEffect
         // case: without this, the "may pay" prompt would be offered even at 0 energy, and

@@ -84,21 +84,47 @@ sealed interface ManaRestriction {
     }
 
     /**
-     * "Spend this mana only to cast colorless spells." A spell is colorless when its colors are
-     * empty (CR 105.2c) — a devoid spell, an artifact with no colored symbols, and a face-down
-     * spell (CR 708.2) all qualify. Ability activations never do; compose with
-     * [AbilityActivationOnly] for Sage of the Unknowable's "to cast a colorless spell or to
-     * activate an ability".
+     * "Spend this mana only to cast colorless spells [or activate abilities of colorless sources]."
+     * The colorless counterpart of [CardTypeSpellsOrAbilitiesOnly], with the same three axes:
+     *   - [allowSpells] — a spell cast whose colors are empty (CR 105.2c): a devoid spell, an
+     *     artifact with no colored symbols, and a face-down spell (CR 708.2) all qualify;
+     *   - [allowAbilities] — an activated ability whose source is colorless, read off the source's
+     *     projected colors at payment time (so a permanent made colorless by Mycosynth Lattice counts);
+     *   - [permanentSourcesOnly] — narrows the abilities half to sources on the battlefield
+     *     ("an ability of a colorless permanent", Cultivator Drone), where the default also admits a
+     *     colorless card's ability from another zone ("abilities of colorless Eldrazi", Eldrazi Temple).
+     *
+     * `ColorlessSpellsOrAbilitiesOnly()` is the plain "cast colorless spells" (Sage of the
+     * Unknowable composes it with [AbilityActivationOnly] for "or to activate an ability"). It is
+     * not [CardTypeSpellsOrAbilitiesOnly] because colorless is a color fact, not a card type, and
+     * not [AbilityActivationOnly], which admits every source.
      */
-    @SerialName("ColorlessSpellsOnly")
+    @SerialName("ColorlessSpellsOrAbilitiesOnly")
     @Serializable
-    data object ColorlessSpellsOnly : ManaRestriction {
-        override val description: String = "Spend this mana only to cast colorless spells"
+    data class ColorlessSpellsOrAbilitiesOnly(
+        val allowSpells: Boolean = true,
+        val allowAbilities: Boolean = false,
+        val permanentSourcesOnly: Boolean = false,
+    ) : ManaRestriction {
+        init {
+            require(allowSpells || allowAbilities) {
+                "ColorlessSpellsOrAbilitiesOnly must allow at least one of spells or abilities"
+            }
+        }
+
+        override val description: String = buildString {
+            append("Spend this mana only to ")
+            val clauses = buildList {
+                if (allowSpells) add("cast colorless spells")
+                if (allowAbilities) add(if (permanentSourcesOnly) "activate abilities of colorless permanents" else "activate abilities of colorless sources")
+            }
+            append(clauses.joinToString(" or "))
+        }
     }
 
     /**
      * "Spend this mana only to cast a spell that's one or more colors" — the complement of
-     * [ColorlessSpellsOnly]: a spell with at least one color (CR 105.2), read off the spell being
+     * [ColorlessSpellsOrAbilitiesOnly]: a spell with at least one color (CR 105.2), read off the spell being
      * cast, so a hybrid or devoid spell is judged by its actual colors. [withoutXInCost] adds the
      * "without {X} in its mana cost" clause Titans' Nest prints. Ability activations never
      * satisfy it, and a context that doesn't set `colorCount` refuses it.
@@ -112,25 +138,31 @@ sealed interface ManaRestriction {
     }
 
     /**
-     * "Spend this mana only on costs that contain {X}." Satisfied by casting a spell whose mana
-     * cost contains {X}, and by activating an ability whose mana cost contains {X} — both are
-     * costs, so unlike [SpellsWithManaValueAtLeast]'s `orXInCost` this one is not spell-only.
-     * Only the {X} mana symbol counts: a loyalty "−X" or "remove X counters" cost has no {X} in it.
-     * The engine reads the spell's printed mana cost (or a cleave cost), not an alternative or
-     * additional cost the ruling also counts (a flashback or kicker cost with {X}), and special
-     * actions never qualify. Rosheen, Roaring Prophet.
+     * "Spend this mana only on costs that contain [symbol]" — {X} (Rosheen, Roaring Prophet) or
+     * {C} (Cultivator Drone's "pay a cost that contains {C}"). Satisfied by any cost being paid
+     * whose mana symbols include [symbol]: a spell's mana cost, an activated ability's mana cost,
+     * and a cost an effect asks for as it resolves ("you may pay {1}{C}" — Bearer of Silence's
+     * ruling). The mana may pay any part of that cost, not just the [symbol] itself. Read off
+     * `SpellPaymentContext.costSymbols`, which the engine fills from the spell's printed mana cost
+     * (or a cleave cost), the ability's mana cost, or the resolving effect's cost; an
+     * alternative or additional cost the spell is cast with is not read, and special actions
+     * never qualify. Only the mana symbol counts: a loyalty "−X" or "remove X counters" cost has
+     * no {X} in it.
+     *
+     * The symbol is a parameter rather than one object per symbol, so a future "costs that contain
+     * {S}" reads the same way. Not [SpellsWithManaValueAtLeast]'s `orXInCost`, which is spell-only.
      */
-    @SerialName("CostsContainingXOnly")
+    @SerialName("CostsContainingSymbolOnly")
     @Serializable
-    data object CostsContainingXOnly : ManaRestriction {
-        override val description: String = "Spend this mana only on costs that contain {X}"
+    data class CostsContainingSymbolOnly(val symbol: com.wingedsheep.sdk.core.ManaSymbol) : ManaRestriction {
+        override val description: String = "Spend this mana only to pay costs that contain $symbol"
     }
 
     /**
      * "Spend this mana only to cast spells with exactly [count] colors." Matches a spell whose
      * colors (CR 105.2) number exactly [count], read off the spell being cast — a hybrid pip
      * counts both its colors. Meeting of the Five (`count = 3`). A colorless spell has zero
-     * colors, but "spend this mana only to cast colorless spells" is [ColorlessSpellsOnly].
+     * colors, but "spend this mana only to cast colorless spells" is [ColorlessSpellsOrAbilitiesOnly].
      *
      * [includingColor] adds the axis "… and one of them is that color": `SpellsWithExactColorCount(1,
      * Color.RED)` is "monocolored red spells" (a spell that is red and nothing else), and a
@@ -146,7 +178,7 @@ sealed interface ManaRestriction {
         val includingColor: com.wingedsheep.sdk.core.Color? = null,
     ) : ManaRestriction {
         init {
-            require(count in 1..5) { "a spell has 1 to 5 colors; use ColorlessSpellsOnly for none" }
+            require(count in 1..5) { "a spell has 1 to 5 colors; use ColorlessSpellsOrAbilitiesOnly for none" }
         }
         override val description: String = run {
             val colors = if (count == 1) "color" else "colors"

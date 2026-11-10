@@ -318,7 +318,7 @@ object ManaSpending {
         ),
         atom(
             "cast colorless spells",
-            ManaRestriction.ColorlessSpellsOnly,
+            ManaRestriction.ColorlessSpellsOrAbilitiesOnly(),
             "cast a colorless spell",
         ),
         atom(

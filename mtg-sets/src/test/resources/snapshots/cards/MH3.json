@@ -16292,7 +16292,10 @@
                                 },
                                 "multiplier": 2
                             },
-                            "restriction": "CostsContainingXOnly"
+                            "restriction": {
+                                "type": "CostsContainingSymbolOnly",
+                                "symbol": "com.wingedsheep.sdk.core.ManaSymbol.X"
+                            }
                         }
                     ]
                 },
@@ -16482,7 +16485,7 @@
                     "restriction": {
                         "type": "AnyOf",
                         "restrictions": [
-                            "ColorlessSpellsOnly",
+                            "ColorlessSpellsOrAbilitiesOnly",
                             "AbilityActivationOnly"
                         ]
                     }

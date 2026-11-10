@@ -18700,18 +18700,27 @@ restriction matches the spell context.
   `SpellsWithManaValueAtLeast(4)` — Ashling, Rimebound;
   `SpellsWithManaValueAtLeast(4, orXInCost = true, creatureOnly = true)` — Helga, Skittish Seer;
   `SpellsWithManaValueAtLeast(5, orXInCost = true)` — Troyan, Gutsy Explorer.
-- `ManaRestriction.ColorlessSpellsOnly` — only colorless spells (CR 105.2c: devoid, colorless artifacts,
-  face-down spells). Ability activations never satisfy it. Sage of the Unknowable:
-  `AnyOf(ColorlessSpellsOnly, AbilityActivationOnly)` ("to cast a colorless spell or to activate an ability").
+- `ManaRestriction.ColorlessSpellsOrAbilitiesOnly(allowSpells = true, allowAbilities = false, permanentSourcesOnly = false)` —
+  the colorless counterpart of `CardTypeSpellsOrAbilitiesOnly`. The spell half admits colorless spells (CR 105.2c:
+  devoid, colorless artifacts, face-down spells); the abilities half admits an activated ability whose source is
+  colorless (projected colors, any zone — `SpellPaymentContext.isAbilitySourceColorless`), narrowed to battlefield
+  sources by `permanentSourcesOnly`. Sage of the Unknowable: `AnyOf(ColorlessSpellsOrAbilitiesOnly(),
+  AbilityActivationOnly)` ("to cast a colorless spell or to activate an ability"). Cultivator Drone:
+  `AnyOf(ColorlessSpellsOrAbilitiesOnly(allowAbilities = true, permanentSourcesOnly = true),
+  CostsContainingSymbolOnly(ManaSymbol.Colorless))`.
 - `ManaRestriction.ColoredSpellsOnly(withoutXInCost = false)` — only spells with one or more colors (the
-  complement of `ColorlessSpellsOnly`, read off `SpellPaymentContext.colorCount`; a context that doesn't set it
+  complement of `ColorlessSpellsOrAbilitiesOnly()`, read off `SpellPaymentContext.colorCount`; a context that doesn't set it
   refuses the mana). `withoutXInCost = true` adds "without {X} in its mana cost". Ability activations never
   satisfy it. Titans' Nest (`AddColorlessMana(1, restriction = ColoredSpellsOnly(withoutXInCost = true))`).
-- `ManaRestriction.CostsContainingXOnly` — "Spend this mana only on costs that contain {X}": a spell
-  whose mana cost has {X}, **or** an activated ability whose mana cost has {X} (read off the ability by
-  `buildAbilityPaymentContext`). Not `SpellsWithManaValueAtLeast(orXInCost = true)`, which is spell-only
-  and also admits high-MV spells without X. Only the {X} mana symbol counts — a loyalty −X or "remove X
-  counters" cost doesn't. Rosheen, Roaring Prophet.
+- `ManaRestriction.CostsContainingSymbolOnly(symbol: ManaSymbol)` — "Spend this mana only on costs that contain
+  {X}" / "pay a cost that contains {C}": any cost being paid whose mana symbols include `symbol`
+  (`SpellPaymentContext.costSymbols`) — a spell's mana cost, an activated ability's mana cost (read off the ability
+  by `buildAbilityPaymentContext`), or a mana cost an effect asks for as it resolves
+  (`SpellPaymentContext.forResolutionCost`, used by the auto-pay and "you may pay" paths — Bearer of Silence's
+  "you may pay {1}{C}"). The mana may pay any part of that cost. Not `SpellsWithManaValueAtLeast(orXInCost = true)`,
+  which is spell-only and also admits high-MV spells without X. Only the mana symbol counts — a loyalty −X or
+  "remove X counters" cost doesn't; special actions never qualify. Rosheen, Roaring Prophet
+  (`CostsContainingSymbolOnly(ManaSymbol.X)`), Cultivator Drone (`ManaSymbol.Colorless`).
 - `ManaRestriction.LegendarySpellsOnly(creatureOnly = false)` — only legendary spells (matches `SpellPaymentContext.isLegendary`,
   populated from the cast card's `typeLine.isLegendary`). Great Hall of the Citadel
   (`AddManaInAnyCombination(2, restriction = LegendarySpellsOnly())`); Delighted Halfling pairs it with

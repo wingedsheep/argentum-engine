@@ -2712,7 +2712,7 @@ class CastSpellEnumerator(
             // unchanged, so the resolving effect's `DynamicAmount.XValue` reads the chosen X.
             val variantHasX = altCost.hasX
             val variantMaxAffordableX: Int? = if (variantHasX) {
-                val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId)).copy(hasXInCost = altCost.hasX)
+                val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId)).copy(hasXInCost = altCost.hasX, costSymbols = altCost.symbols.toSet())
                 val availableSources = context.manaSolver.getAvailableManaCount(
                     state, playerId, precomputedSources = context.availableManaSources, spellContext = spellContext
                 )

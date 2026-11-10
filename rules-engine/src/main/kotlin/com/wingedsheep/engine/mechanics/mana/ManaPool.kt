@@ -34,12 +34,19 @@ data class SpellPaymentContext(
      * True when the cost being paid contains the {X} mana symbol: the spell's mana cost for a
      * cast, the ability's mana cost for an activation (set by [buildAbilityPaymentContext]).
      * Restrictions that are spell-only ([ManaRestriction.SpellsWithManaValueAtLeast]) also require
-     * `!isAbilityActivation`; [ManaRestriction.CostsContainingXOnly] reads it for both.
+     * `!isAbilityActivation`; [ManaRestriction.CostsContainingSymbolOnly] reads [costSymbols].
      */
     val hasXInCost: Boolean = false,
     /**
+     * The mana symbols of the cost being paid — the spell's mana cost for a cast, the ability's mana
+     * cost for an activation, the effect's cost for a payment asked for at resolution
+     * ([forResolutionCost]). Read by [ManaRestriction.CostsContainingSymbolOnly] ("costs that contain
+     * {X}" / "{C}"). Empty by default, so a path that doesn't know its cost refuses that mana.
+     */
+    val costSymbols: Set<ManaSymbol> = emptySet(),
+    /**
      * True when the spell being cast is colorless (CR 105.2c). Defaults to false so a cast path
-     * that forgets to set it refuses [ManaRestriction.ColorlessSpellsOnly] mana rather than
+     * that forgets to set it refuses [ManaRestriction.ColorlessSpellsOrAbilitiesOnly] mana rather than
      * letting it pay for a colored spell.
      */
     val isColorless: Boolean = false,
@@ -68,6 +75,12 @@ data class SpellPaymentContext(
     val abilitySourceCardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     /** True when the source whose ability is being activated is a permanent on the battlefield. */
     val isAbilitySourceOnBattlefield: Boolean = false,
+    /**
+     * True when the source whose ability is being activated is colorless (CR 105.2c), read off its
+     * projected colors. Defaults to false, so a path that doesn't set it refuses the abilities half
+     * of [ManaRestriction.ColorlessSpellsOrAbilitiesOnly].
+     */
+    val isAbilitySourceColorless: Boolean = false,
     /**
      * True when the spell is being cast from the caster's hand. Defaults to `true` because most
      * spell casts originate from hand and the standard [CastSpellEnumerator] path is hand-only;
@@ -183,6 +196,23 @@ data class SpellPaymentContext(
             isFromHand = isFromHand,
             isFaceDownCast = true,
         )
+
+        /**
+         * The payment context for a mana cost an effect asks for as it resolves ("you may pay
+         * {1}{C}", "pay {X}"): neither a spell cast nor an ability activation, so only mana that
+         * admits any payment (and negative restrictions, which only a cast can violate) passes —
+         * plus [ManaRestriction.CostsContainingSymbolOnly] mana when [cost] carries its symbol,
+         * which Cultivator Drone's ruling spells out for Bearer of Silence's cast trigger.
+         */
+        fun forResolutionCost(cost: ManaCost): SpellPaymentContext =
+            SpellPaymentContext(costSymbols = cost.symbols.toSet())
+
+        /**
+         * [forResolutionCost] for "you may pay {X}[additionalManaCost]": the payment is generic
+         * mana once X is chosen, but the cost being paid contains {X}.
+         */
+        fun forResolutionXCost(additionalManaCost: ManaCost): SpellPaymentContext =
+            SpellPaymentContext(costSymbols = additionalManaCost.symbols.toSet() + ManaSymbol.X)
     }
 
     /**
@@ -230,12 +260,15 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CreatureSpellsOnly -> !context.isAbilityActivation && context.isCreature
     is ManaRestriction.LegendarySpellsOnly ->
         !context.isAbilityActivation && context.isLegendary && (!creatureOnly || context.isCreature)
-    is ManaRestriction.ColorlessSpellsOnly -> context.isSpellCast && context.isColorless
+    is ManaRestriction.ColorlessSpellsOrAbilitiesOnly ->
+        if (context.isAbilityActivation) allowAbilities && context.isAbilitySourceColorless &&
+            (!permanentSourcesOnly || context.isAbilitySourceOnBattlefield)
+        else allowSpells && context.isSpellCast && context.isColorless
     is ManaRestriction.ColoredSpellsOnly ->
         context.isSpellCast && (context.colorCount ?: 0) >= 1 && !(withoutXInCost && context.hasXInCost)
     is ManaRestriction.SpellsWithExactColorCount ->
         context.isSpellCast && context.colorCount == count && (includingColor == null || includingColor in context.colors)
-    is ManaRestriction.CostsContainingXOnly -> (context.isSpellCast || context.isAbilityActivation) && context.hasXInCost
+    is ManaRestriction.CostsContainingSymbolOnly -> symbol in context.costSymbols
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
             context.subtypes.any { it.equals(subtype, ignoreCase = true) }
