@@ -89,7 +89,7 @@ sealed interface ManaRestriction {
      *   - [allowSpells] — a spell cast whose colors are empty (CR 105.2c): a devoid spell, an
      *     artifact with no colored symbols, and a face-down spell (CR 708.2) all qualify;
      *   - [allowAbilities] — an activated ability whose source is colorless, read off the source's
-     *     projected colors at payment time (so a permanent Mycosynth Lattice makes colorless counts);
+     *     projected colors at payment time (so a permanent made colorless by Mycosynth Lattice counts);
      *   - [permanentSourcesOnly] — narrows the abilities half to sources on the battlefield
      *     ("an ability of a colorless permanent", Cultivator Drone), where the default also admits a
      *     colorless card's ability from another zone ("abilities of colorless Eldrazi", Eldrazi Temple).

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
+import com.wingedsheep.engine.mechanics.mana.isSatisfiedBy
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.core.*
@@ -480,7 +481,9 @@ class GatedEffectExecutor(
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
-        val sources = manaSolver.findAvailableManaSources(state, playerId)
+        val paymentContext = SpellPaymentContext.forResolutionCost(manaCost)
+        val sources = manaSolver.findAvailableManaSources(state, playerId, paymentContext)
+            .filter { it.restriction?.isSatisfiedBy(paymentContext) != false }
         val sourceOptions = sources.map { source ->
             ManaSourceOption(
                 entityId = source.entityId,
@@ -492,7 +495,7 @@ class GatedEffectExecutor(
                 requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null
             )
         }
-        val solution = manaSolver.solve(state, playerId, manaCost)
+        val solution = manaSolver.solve(state, playerId, manaCost, spellContext = paymentContext)
         val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
         val waterbendOptions = waterbendPermanents.map {
             WaterbendPermanentChoice(it.entityId, it.name, it.isCreature)
@@ -607,7 +610,10 @@ class GatedEffectExecutor(
             ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
             ?: context.controllerId
 
-        if (!gate.additionalManaCost.isEmpty() && !manaSolver.canPay(state, playerId, gate.additionalManaCost, allowPhyrexianLife = false)) {
+        if (!gate.additionalManaCost.isEmpty() && !manaSolver.canPay(
+                state, playerId, gate.additionalManaCost, allowPhyrexianLife = false,
+                spellContext = SpellPaymentContext.forResolutionXCost(gate.additionalManaCost),
+            )) {
             return effect.otherwise
                 ?.let { effectExecutor(state, it, context) }
                 ?: EffectResult.success(state)

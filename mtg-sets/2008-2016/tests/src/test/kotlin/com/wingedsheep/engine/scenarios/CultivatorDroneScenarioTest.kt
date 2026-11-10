@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.ogw.cards.BearerOfSilence
 import com.wingedsheep.mtg.sets.definitions.ogw.cards.CultivatorDrone
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
@@ -73,7 +74,7 @@ class CultivatorDroneScenarioTest : FunSpec({
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(CultivatorDrone, colorlessTrinket, coloredOneDrop, coloredCSpell, colorlessEngine, coloredEngine)
+            TestCards.all + listOf(CultivatorDrone, BearerOfSilence, colorlessTrinket, coloredOneDrop, coloredCSpell, colorlessEngine, coloredEngine)
         )
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -99,6 +100,18 @@ class CultivatorDroneScenarioTest : FunSpec({
 
         val result = driver.submit(CastSpell(me, trinket, paymentStrategy = PaymentStrategy.FromPool))
         withClue("error=${result.error}") { result.outcome shouldBe Outcome.Done }
+        driver.restrictedCount(me) shouldBe 0
+    }
+
+    test("the mana pays the generic part of a devoid spell, which is colorless") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val bearer = driver.putCardInHand(me, "Bearer of Silence")
+        driver.giveMana(me, Color.BLACK, 1)
+        driver.tapDrone(me)
+
+        val result = driver.submit(CastSpell(me, bearer, paymentStrategy = PaymentStrategy.FromPool))
+        withClue("error=${result.error}") { result.error shouldBe null }
         driver.restrictedCount(me) shouldBe 0
     }
 

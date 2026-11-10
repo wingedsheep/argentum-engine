@@ -81,6 +81,8 @@ class ColorlessAndXCostManaRestrictionTest : FunSpec({
         c.isSatisfiedBy(cAbilityOfColoredPermanent) shouldBe true
         c.isSatisfiedBy(SpellPaymentContext.forResolutionCost(ManaCost.parse("{1}{C}"))) shouldBe true
         c.isSatisfiedBy(SpellPaymentContext.forResolutionCost(ManaCost.parse("{2}"))) shouldBe false
+        ManaRestriction.CostsContainingSymbolOnly(ManaSymbol.X)
+            .isSatisfiedBy(SpellPaymentContext.forResolutionXCost(ManaCost.parse("{R}"))) shouldBe true
         c.isSatisfiedBy(xSpell) shouldBe false
         c.isSatisfiedBy(faceUp) shouldBe false
     }
@@ -106,12 +108,16 @@ class ColorlessAndXCostManaRestrictionTest : FunSpec({
         val resolution = SpellPaymentContext.forResolutionCost(ManaCost.parse("{1}"))
         ManaRestriction.AnySpend.isSatisfiedBy(resolution) shouldBe true
         ManaRestriction.CannotCastSpellsFromHand.isSatisfiedBy(resolution) shouldBe true
+        // Powerstone's "can't be spent to cast a nonartifact spell" only restricts casting.
+        ManaRestriction.CannotCastSpellsOtherThan(setOf(CardType.ARTIFACT)).isSatisfiedBy(resolution) shouldBe true
         ManaRestriction.SpellsOnly.isSatisfiedBy(resolution) shouldBe false
         ManaRestriction.AbilityActivationOnly.isSatisfiedBy(resolution) shouldBe false
         ManaRestriction.ColorlessSpellsOrAbilitiesOnly(allowAbilities = true).isSatisfiedBy(resolution) shouldBe false
     }
 
-    test("an {X} ability doesn't satisfy the spell-only mana-value gate") {
+    test("an {X} ability or resolution cost doesn't satisfy the spell-only mana-value gate") {
         ManaRestriction.SpellsWithManaValueAtLeast(4, orXInCost = true).isSatisfiedBy(xAbility) shouldBe false
+        ManaRestriction.SpellsWithManaValueAtLeast(4, orXInCost = true)
+            .isSatisfiedBy(SpellPaymentContext.forResolutionXCost(ManaCost.parse("{R}"))) shouldBe false
     }
 })

@@ -475,13 +475,15 @@ object ManaPaymentWindow {
     fun floatingManaCovers(
         state: GameState,
         playerId: EntityId,
-        cost: com.wingedsheep.sdk.core.ManaCost
+        cost: com.wingedsheep.sdk.core.ManaCost,
+        /** The payment being made; restricted floating mana counts only where it admits it. */
+        spellContext: SpellPaymentContext? = null,
     ): Boolean {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return false
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, manaUnits = pool.manaUnits, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
-            .payPartial(cost)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana, snowMana = pool.snowMana, manaUnits = pool.manaUnits, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
+            .payPartial(cost, spellContext)
             .remainingCost
             .isEmpty()
     }

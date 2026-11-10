@@ -204,10 +204,15 @@ data class SpellPaymentContext(
          * plus [ManaRestriction.CostsContainingSymbolOnly] mana when [cost] carries its symbol,
          * which Cultivator Drone's ruling spells out for Bearer of Silence's cast trigger.
          */
-        fun forResolutionCost(cost: ManaCost): SpellPaymentContext = SpellPaymentContext(
-            hasXInCost = cost.hasX,
-            costSymbols = cost.symbols.toSet(),
-        )
+        fun forResolutionCost(cost: ManaCost): SpellPaymentContext =
+            SpellPaymentContext(costSymbols = cost.symbols.toSet())
+
+        /**
+         * [forResolutionCost] for "you may pay {X}[additionalManaCost]": the payment is generic
+         * mana once X is chosen, but the cost being paid contains {X}.
+         */
+        fun forResolutionXCost(additionalManaCost: ManaCost): SpellPaymentContext =
+            SpellPaymentContext(costSymbols = additionalManaCost.symbols.toSet() + ManaSymbol.X)
     }
 
     /**
