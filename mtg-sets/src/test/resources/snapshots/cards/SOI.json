@@ -2138,6 +2138,39 @@
     ]
 }
 
+// Clip Wings
+{
+    "name": "Clip Wings",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Each opponent sacrifices a creature of their choice with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature kw:flying",
+            "target": {
+                "type": "PlayerRef",
+                "player": "EachOpponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "artist": "Howard Lyon",
+        "flavorText": "It is a grim duty to save the world from those created to protect it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2835993-6c71-4a63-bad5-cb25aedc4a15.jpg?1783937734",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can cast Clip Wings even if some (or all) of your opponents don't control a creature with flying. Those who do must each choose a flying creature to sacrifice, and those who don't are unaffected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Confirm Suspicions
 {
     "name": "Confirm Suspicions",
@@ -2184,6 +2217,73 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Confront the Unknown
+{
+    "name": "Confront the Unknown",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Investigate, then target creature gets +1/+1 until end of turn for each Clue you control. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Investigate",
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "artifact Clue"
+                    },
+                    "toughnessModifier": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "artifact Clue"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Kev Walker",
+        "flavorText": "\"Never flinch from the truth.\"\n—Thalia, Guardian of Thraben",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c59557c3-aba2-4f80-8f37-accb7b991cb9.jpg?1783937733",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "No player may take any action in between the two steps of Confront the Unknown, so the target creature will get at least +1/+1."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2529,6 +2629,70 @@
         "artist": "Zack Stella",
         "flavorText": "The chant was incomprehensible, but its power was unmistakable.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/9/2910adcd-882a-46af-8236-ca1a9e2c19ab.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Cult of the Waxing Moon
+{
+    "name": "Cult of the Waxing Moon",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Whenever a permanent you control transforms into a non-Human creature, create a 2/2 green Wolf creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cult of the Waxing Moon:1",
+                "trigger": {
+                    "type": "TransformEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "In times of madness, people cling to the familiar, monstrous though it may be.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2a13669-4656-476a-8984-ec3d47960907.jpg?1783937733",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "A permanent transforms into a non-Human creature if it transforms and is a creature without the creature type Human after transforming, regardless of whether it was a Human creature (or a creature at all) before it transformed. For example, Westvale Abbey and Thraben Gargoyle will both cause Cult of the Waxing Moon's ability to trigger when they transform."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "A non-Human creature that's put onto the battlefield transformed, such as Skin Shedder, will not cause Cult of the Waxing Moon's ability to trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -4099,6 +4263,49 @@
     "colorIdentityOverride": []
 }
 
+// Equestrian Skill
+{
+    "name": "Equestrian Skill",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+3.\nAs long as enchanted creature is a Human, it has trample.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE"
+                },
+                "condition": {
+                    "type": "EnchantedCreatureHasSubtype",
+                    "subtype": "Human"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Zoltan Boros",
+        "flavorText": "From the jagged peaks of Stensia, to the tangled woods of Kessig, to the bogs of Nephalia, the Gavony Riders prepare for all terrain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9af14d1-a304-4744-9d6f-9ff5fcd92ad3.jpg?1783937731"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Erdwal Illuminator
 {
     "name": "Erdwal Illuminator",
@@ -4840,6 +5047,88 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Fork in the Road
+{
+    "name": "Fork in the Road",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two basic land cards and reveal them. Put one into your hand and the other into your graveyard. Then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for up to two basic land cards"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Choose which basic land goes to your hand; the other goes to your graveyard.",
+                    "selectedLabel": "Into your hand",
+                    "remainderLabel": "Into your graveyard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "artist": "Jung Park",
+        "flavorText": "\"This is as far as I go.\"\n—Beckram, Skiltfolk escort",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a7ad701-65c3-494a-8986-b4ea1bab46bc.jpg?1783937731"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5620,6 +5909,49 @@
     ]
 }
 
+// Graf Mole
+{
+    "name": "Graf Mole",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Mole Beast",
+    "oracleText": "Whenever you sacrifice a Clue, you gain 3 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Graf Mole:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Whenever you sacrifice a Clue, you gain 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "flavorText": "\"Their keen sense of smell draws them to the unnatural. To find one is a boon.\"\n—Veka, hinterland inspector",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25a40334-65d8-46d2-9c56-389e9b32107c.jpg?1783937731"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Grotesque Mutation
 {
     "name": "Grotesque Mutation",
@@ -6103,6 +6435,136 @@
         "flavorText": "Among vampires, there has long been the belief that the urge to feed must be balanced by the poise of nobility.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf2ad186-4d85-4628-ae84-3c58c88d34cb.jpg?1783937783"
     }
+}
+
+// Hermit of the Natterknolls
+{
+    "name": "Hermit of the Natterknolls",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Whenever an opponent casts a spell during your turn, draw a card.\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hermit of the Natterknolls:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "triggerRestriction": "IsYourTurn"
+            },
+            {
+                "id": "Hermit of the Natterknolls:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lone Wolf of the Natterknolls",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever an opponent casts a spell during your turn, draw two cards.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 5
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Lone Wolf of the Natterknolls:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "player": "EachOpponent"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "triggerRestriction": "IsYourTurn"
+                },
+                {
+                    "id": "Lone Wolf of the Natterknolls:2",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "209",
+            "rarity": "UNCOMMON",
+            "artist": "Dan Murayama Scott",
+            "flavorText": ". . . but he'll have you for lunch.",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/5/d5e84d80-b5a6-4cd1-9f31-f6ca46bf2c0c.jpg?1783937736"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "He hates company . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5e84d80-b5a6-4cd1-9f31-f6ca46bf2c0c.jpg?1783937736"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Highland Lake
@@ -7433,6 +7895,120 @@
     ]
 }
 
+// Lambholt Pacifist
+{
+    "name": "Lambholt Pacifist",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Shaman Werewolf",
+    "oracleText": "This creature can't attack unless you control a creature with power 4 or greater.\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lambholt Pacifist:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lambholt Butcher",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "At the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Lambholt Butcher:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "215",
+            "rarity": "UNCOMMON",
+            "artist": "Ryan Pancoast",
+            "flavorText": "True peace can't be achieved until everyone else is dead.",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/3/23f3fa96-6276-463e-8033-a64c8f06c933.jpg?1783937732"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23f3fa96-6276-463e-8033-a64c8f06c933.jpg?1783937732",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Lambholt Pacifist's power becomes 4 or greater, it fulfills its own restriction and can attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Lamplighter of Selhoff
 {
     "name": "Lamplighter of Selhoff",
@@ -7918,6 +8494,77 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Might Beyond Reason
+{
+    "name": "Might Beyond Reason",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put two +1/+1 counters on target creature.\nDelirium — Put three +1/+1 counters on that creature instead if there are four or more card types among cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            "then": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 3,
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 2,
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a274689-82f1-488a-baf8-cd8ef3477b72.jpg?1783937725",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Some delirium abilities that appear on instants and sorceries use the word \"instead.\" These spells have an upgraded effect when they resolve if there are four or more card types among cards in your graveyard. They check that number only while they're resolving and don't count themselves, since they aren't in your graveyard yet. You only get the upgraded effect, not both effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10658,6 +11305,54 @@
     ]
 }
 
+// Root Out
+{
+    "name": "Root Out",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact or enchantment.\nInvestigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "Investigate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffb04258-d6ab-440c-85d2-05a995aeba2c.jpg?1783937722",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "You can't cast a spell without choosing legal targets. If all of those targets become illegal, the spell doesn't resolve and you won't investigate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rottenheart Ghoul
 {
     "name": "Rottenheart Ghoul",
@@ -11405,6 +12100,56 @@
     ]
 }
 
+// Silverfur Partisan
+{
+    "name": "Silverfur Partisan",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Wolf Warrior",
+    "oracleText": "Trample\nWhenever a Wolf or Werewolf you control becomes the target of an instant or sorcery spell, create a 2/2 green Wolf creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverfur Partisan:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "permanent Wolf|Werewolf ctrl:you",
+                    "spellsOnly": true,
+                    "sourceFilter": "instant|sorcery"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "Silverfurs are the last remaining wolfir.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a20f5392-5cde-4326-a322-7463ec4b0515.jpg?1783937721"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Silverstrike
 {
     "name": "Silverstrike",
@@ -11685,6 +12430,102 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Solitary Hunter
+{
+    "name": "Solitary Hunter",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Warrior Werewolf",
+    "oracleText": "At the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Solitary Hunter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "One of the Pack",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "At the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 6
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "One of the Pack:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "229",
+            "artist": "Craig J Spearing",
+            "flavorText": "When the howl beckons, he cannot resist the urge to join the others.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/c/6c200ef1-ea08-48d4-ab50-77940a0e08c3.jpg?1783937726"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"Making a living in Kessig is hard, but I've learned some tricks of the trade.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c200ef1-ea08-48d4-ab50-77940a0e08c3.jpg?1783937726"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -14246,6 +15087,91 @@
     ]
 }
 
+// Vessel of Nascency
+{
+    "name": "Vessel of Nascency",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{G}, Sacrifice this enchantment: Reveal the top four cards of your library. You may put an artifact, creature, enchantment, land, or planeswalker card from among them into your hand. Put the rest into your graveyard.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vessel of Nascency:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "artifact|creature|enchantment|land|planeswalker",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may put an artifact, creature, enchantment, land, or planeswalker card from among them into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89533790-38c2-4b53-90fa-8abf8c1a6abb.jpg?1783937718"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vessel of Paramnesia
 {
     "name": "Vessel of Paramnesia",
@@ -14669,6 +15595,95 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16793435-8eb3-4d57-8683-de1120eb46b6.jpg?1783937697"
     },
     "colorIdentityOverride": []
+}
+
+// Watcher in the Web
+{
+    "name": "Watcher in the Web",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nThis creature can block an additional seven creatures each combat.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "count": 7,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "artist": "Vincent Proce",
+        "flavorText": "\"Lost in the woods\" is an optimistic way to describe a villager's disappearance. \"Found in the woods\" is frequently more appropriate.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be1ee2d4-5992-4081-9907-4bc26750aff0.jpg?1783937715"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Weirding Wood
+{
+    "name": "Weirding Wood",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nEnchanted land has \"{T}: Add two mana of any one color.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Weirding Wood:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Investigate"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Weirding Wood:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8033b16-7a48-4455-9b1b-f62ceb7b9b61.jpg?1783937715"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Welcome to the Fold
