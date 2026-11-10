@@ -436,7 +436,7 @@ Alms of the Vein
 Aloe Alchemist
 Along the Crooked Way
 Alpha Deathclaw	intent: BecomeMonstrousEffect
-Alpha Kavu	polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Alpha Kavu	timing: ModifyStatsEffect
 Alpha Myr
 Alpha Status
 Alpha Tyrranax
@@ -975,7 +975,7 @@ Ashling's Prerogative
 Ashling, Flame Dancer
 Ashling, Rekindled
 Ashnod's Altar
-Ashnod's Battle Gear	polarity: ModifyStatsEffect
+Ashnod's Battle Gear
 Ashnod's Harvester
 Ashnod's Intervention
 Ashnod's Transmogrant
@@ -1056,7 +1056,7 @@ Audacious Infiltrator
 Audacious Thief
 Audacity
 Audience with Trostani
-Auger Spree	polarity: ModifyStatsEffect
+Auger Spree
 Augmenter Pugilist
 Augmenting Automaton
 Augur of Autumn
@@ -1491,7 +1491,7 @@ Bebop, Warthog Warrior
 Beckett Mariner, Impetuous Ensign
 Become Brutes
 Become Immense
-Bedeck // Bedazzle	polarity: ModifyStatsEffect
+Bedeck // Bedazzle
 Bedevil
 Bedhead Beastie
 Bedlam Reveler
@@ -4284,7 +4284,7 @@ Defiler of Faith
 Defiler of Flesh
 Defiler of Instinct
 Defiler of Vigor
-Defiling Tears	polarity: ChangeColorEffect; polarity: ModifyStatsEffect
+Defiling Tears
 Deflecting Palm
 Deflecting Swat
 Defossilize
@@ -4408,7 +4408,7 @@ Desperate Charge
 Desperate Farmer
 Desperate Futurescribe
 Desperate Lunge
-Desperate Measures	polarity: CreateDelayedTriggerEffect; polarity: ModifyStatsEffect
+Desperate Measures
 Desperate Ravings
 Desperate Research
 Desperate Ritual
@@ -6465,16 +6465,16 @@ Flow of Knowledge
 Flower // Flourish
 Flowerfoot Swordmaster
 Flowering of the White Tree
-Flowstone Armor	polarity: ModifyStatsEffect
-Flowstone Channeler	polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Flowstone Armor
+Flowstone Channeler	timing: ModifyStatsEffect
 Flowstone Charger
 Flowstone Crusher
 Flowstone Giant
-Flowstone Infusion	polarity: ModifyStatsEffect
+Flowstone Infusion
 Flowstone Kavu
-Flowstone Overseer	polarity: ModifyStatsEffect; timing: ModifyStatsEffect
+Flowstone Overseer	timing: ModifyStatsEffect
 Flowstone Slide
-Flowstone Strike	polarity: ModifyStatsEffect
+Flowstone Strike
 Flowstone Surge
 Flowstone Thopter
 Flowstone Wall
@@ -8444,7 +8444,7 @@ Homarid Explorer
 Homarid Shaman
 Homarid Spawning Bed
 Homarid Warrior
-Homesickness	polarity: DrawCardsEffect; polarity: ForEachEffect
+Homesickness
 Homestead Courage
 Homicide Investigator
 Homunculus Horde
@@ -9627,7 +9627,7 @@ Kaya, Bane of the Dead
 Kaya, Geist Hunter	intent: GrantReplacementEffectEffect
 Kaya, Intangible Slayer
 Kaya, Orzhov Usurper	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
-Kaya, Spirits' Justice	polarity: ForEachEffect
+Kaya, Spirits' Justice
 Kayla's Command
 Kayla's Reconstruction
 Kaza, Roil Chaser	intent: ModifySpellCostsEffect; timing: ModifySpellCostsEffect
@@ -10104,7 +10104,7 @@ Large Bear
 Larger Than Life
 Larval Scoutlander
 Lash Out
-Lash of Malice	polarity: ModifyStatsEffect
+Lash of Malice
 Lash of Thorns
 Lash of the Balrog
 Lash of the Whip
@@ -11897,7 +11897,7 @@ Naiad of Hidden Coves
 Najal, the Storm Runner
 Najeela, the Blade-Blossom	timing: ForEach>GrantKeywordEffect
 Namazu Trader
-Nameless Inversion	polarity: ModifyStatsEffect
+Nameless Inversion
 Nameless One
 Nameless Race
 Namor the Sub-Mariner
@@ -12358,6 +12358,7 @@ Obliterate
 Obliterating Bolt
 Oblivion Ring
 Oblivion Stone	intent: AddCountersEffect; polarity: AddCountersEffect
+Oblivion Strike
 Oblivion's Hunger
 Oblivious Bookworm
 Obosh, the Preypiercer
@@ -12504,6 +12505,7 @@ Ondu Giant
 Ondu Greathorn
 Ondu Inversion
 Ondu Knotmaster
+Ondu War Cleric
 One Dozen Eyes
 One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
 One Ring to Rule Them All
@@ -13128,7 +13130,7 @@ Piper of the Swarm
 Pippin's Bravery
 Pippin, Guard of the Citadel	combat: GrantProtectionFromChosenCardTypeEffect; intent: GrantProtectionFromChosenCardTypeEffect; polarity: GrantProtectionFromChosenCardTypeEffect; timing: GrantProtectionFromChosenCardTypeEffect
 Piracy	intent: TapForManaPermanentsYouDontControlEffect
-Piracy Charm	polarity: ModifyStatsEffect
+Piracy Charm
 Piranha Fly
 Piranha Marsh
 Pirate Hat
@@ -13484,6 +13486,7 @@ Propaganda
 Propagator Drone
 Propeller Pioneer
 Prophesied End
+Prophet of Distortion
 Prophet of the Peak
 Prophetic Bolt
 Prophetic Prism
@@ -13631,6 +13634,7 @@ Pyroclasm
 Pyroclastic Elemental
 Pyroclastic Hellion
 Pyroconvergence
+Pyromancer's Assault
 Pyromancer's Goggles
 Pyromania
 Pyrophobia
@@ -14043,6 +14047,7 @@ Read the Runes
 Read the Tides
 Ready to Rumble
 Reality Heist
+Reality Hemorrhage
 Reality Shift
 Realm Seekers
 Realm of Koh
@@ -14204,6 +14209,7 @@ Relentless Advance
 Relentless Assault	intent: AddCombatPhaseEffect; intent: AddMainPhaseEffect; intent: ForEach>TapUntapEffect
 Relentless Dead
 Relentless Drednok
+Relentless Hunter
 Relentless Pursuit
 Relentless Raptor
 Relentless Rohirrim
@@ -14680,6 +14686,7 @@ Roiling Canopy
 Roiling Dragonstorm
 Roiling Regrowth
 Roiling Vortex	intent: LockLifeGainEffect; timing: LockLifeGainEffect
+Roiling Waters
 Rok-Tahk, Budding Scientist
 Role Reversal
 Roll-Roll-Roll-Roll
@@ -15416,6 +15423,7 @@ Searchlight Geist
 Searing Barb
 Searing Barrage
 Searing Flesh
+Searing Light
 Searing Meditation
 Searing Rays	intent: ChooseColorThenEffect
 Searing Spear
@@ -15497,6 +15505,7 @@ Seeker's Folly
 Seekers' Squire
 Seer of Stolen Sight
 Seer of the Last Tomorrow
+Seer's Lantern
 Seer's Sundial
 Seer's Vision
 Seething Landscape
@@ -15508,7 +15517,7 @@ Seismic Mage
 Seismic Monstrosaur
 Seismic Rupture
 Seismic Sense
-Seismic Shift	polarity: ForEachEffect; polarity: MoveToZoneEffect
+Seismic Shift
 Seismic Shudder
 Seismic Spike
 Seismic Strike
@@ -16285,6 +16294,7 @@ Slash, Reptile Rampager
 Slashing Tiger
 Slate of Ancestry
 Slaughter Cry
+Slaughter Drone
 Slaughter Singer
 Slaughter Specialist
 Slaughter the Strong
@@ -16618,8 +16628,10 @@ Sparring Golem
 Sparring Mummy
 Sparring Regimen
 Spatial Anomaly
+Spatial Contortion
 Spawn of Mayhem
 Spawn-Gang Commander
+Spawnbinder Mage
 Spawnbroker
 Spawning Pit
 Speakeasy Server
@@ -17059,6 +17071,7 @@ Stensia Innkeeper
 Stensia Masquerade
 Stensia Uprising
 Step Between Worlds
+Steppe Glider
 Steppe Lynx
 Sterling Grove
 Sterling Hound
@@ -17151,6 +17164,7 @@ Stonebinder's Familiar
 Stonebound Mentor
 Stonecoil Serpent
 Stonefare Crocodile
+Stoneforge Acolyte
 Stonefury
 Stonehorn Chanter
 Stonerise Spirit
@@ -17800,6 +17814,7 @@ Taoist Mystic
 Tapestry Warden
 Tapping at the Window
 Tar Pitcher
+Tar Snare
 Taranika, Akroan Veteran
 Tarfire
 Targ Nar, Demon-Fang Gnoll
@@ -17858,6 +17873,7 @@ Team Pennant
 Team Tactics
 Teapot Slinger
 Tear Asunder
+Tears of Valakut
 Technodrome
 Tectonic Giant
 Tectonic Hazard
@@ -18415,7 +18431,7 @@ Thornplate Intimidator
 Thornscape Apprentice
 Thornscape Master	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Thornspire Verge
-Thorntooth Witch	polarity: ModifyStatsEffect
+Thorntooth Witch
 Thornvault Forager
 Thornwatch Scarecrow
 Thornweald Archer
@@ -19353,6 +19369,7 @@ Unlucky Drop
 Unlucky Witness
 Unmoored Ego
 Unnatural Aggression
+Unnatural Endurance
 Unnatural Growth
 Unnatural Moonrise
 Unnatural Restoration
@@ -19799,6 +19816,7 @@ Vineglimmer Snarl
 Vinelasher Adept
 Vinelasher Kudzu
 Vinereap Mentor
+Vines of the Recluse
 Vineshaper Mystic
 Vineshaper Prodigy
 Vineweft
@@ -19915,6 +19933,7 @@ Voiceless Spirit
 Void	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
 Void Beckoner
 Void Extrapolator
+Void Grafter
 Void Rend
 Void Snare
 Void Squall
@@ -20919,6 +20938,7 @@ Yuriko, the Tiger's Shadow
 Yuyan Archers
 Zacama, Primal Calamity
 Zack Fair
+Zada's Commando
 Zada, Hedron Grinder
 Zaffai and the Tempests
 Zagoth Crystal
@@ -21034,6 +21054,7 @@ Zuko, Conflicted
 Zuko, Exiled Prince
 Zuko, Firebending Master
 Zul Ashur, Lich Lord	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Zulaport Chainmage
 Zulaport Cutthroat
 Zulaport Duelist
 Zuo Ci, the Mocking Sage
