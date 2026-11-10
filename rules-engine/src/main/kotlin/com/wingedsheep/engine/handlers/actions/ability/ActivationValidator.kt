@@ -620,7 +620,10 @@ internal class ActivationValidator(
         val effectiveXValue = if (variablePermanentsCost != null && chosenForCost != null) {
             VariablePermanentsCost.measure(state, variablePermanentsCost.xMeasure, chosenForCost)
         } else {
-            action.xValue
+            // "Discard a card with mana value X" pre-filled with its discard: the pick announces X.
+            action.xValue ?: com.wingedsheep.engine.mechanics.cost.CostDefinedX.announcedByDiscard(
+                state, effectiveCost.extractDiscardXCost(), action.costPayment?.discardedCards, action.xValue
+            )
         }
         if (controllerTargetReqs.isNotEmpty() && action.targets.isNotEmpty()) {
             return targetValidator.validateTargets(
@@ -642,11 +645,12 @@ internal class ActivationValidator(
             // An empty target list is only illegal when at least one controller-chosen
             // requirement is mandatory. For an ability whose controller targets are all
             // optional ("up to one target …", e.g. Boom Box), choosing no targets is a
-            // legal activation, so don't reject it here. An VariablePermanents cost drives the
-            // target choice *after* the exile selection (X isn't known until then), so the
-            // bare initial submission legitimately arrives with no target — the engine pauses
-            // for it during execute(); don't reject that here either.
-            if (variablePermanentsCost == null && controllerTargetReqs.any { it.effectiveMinCount > 0 }) {
+            // legal activation, so don't reject it here. A cost whose pick announces X (a
+            // VariablePermanents cost, a "discard a card with mana value X") drives the target
+            // choice *after* that pick (X isn't known until then), so the bare initial submission
+            // legitimately arrives with no target — the engine pauses for it during execute();
+            // don't reject that here either.
+            if (!effectiveCost.targetsFollowCostChoice() && controllerTargetReqs.any { it.effectiveMinCount > 0 }) {
                 return "This ability requires a target"
             }
         }

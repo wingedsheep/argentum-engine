@@ -88,7 +88,7 @@ Families:
 - `AbilityCost.DiscardHand` — Discard your entire hand
 - `AbilityCost.DiscardLastDrawnThisTurn` — Discard the specific card the controller drew most recently this turn (CR 121 "draws").
 - `AbilityCost.DiscardSelf` — Discard self (the card with this ability) - used for cycling
-- `AbilityCost.DiscardX(filter: GameObjectFilter)` — Discard X cards, where X is the ability's X value — "{4}{B}{B}{B}, Discard X cards: …" (Gix, Yawgmoth Praetor).
+- `AbilityCost.DiscardX(filter: GameObjectFilter, xMeasure: VariableCostMeasure, count: Int?)` — Discard X cards, where X is the ability's X value — "{4}{B}{B}{B}, Discard X cards: …" (Gix, Yawgmoth Praetor).
 - `AbilityCost.Exert` — Exert this permanent (CR 701.43a) — choose to have it not untap during your next untap step.
 - `AbilityCost.ExileGrantingPermanent` — Exile the permanent that granted this activated ability to the source.
 - `AbilityCost.ExileSelf` — Exile self (the permanent with this ability)

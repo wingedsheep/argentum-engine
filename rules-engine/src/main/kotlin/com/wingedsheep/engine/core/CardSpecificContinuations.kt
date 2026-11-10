@@ -788,14 +788,20 @@ data class ActivateAbilityExileXFromGraveyardContinuation(
  *
  * @property action The original [ActivateAbility] (`costPayment.discardedCards` still empty).
  * @property discardCandidates The hand cards matching the cost's filter, offered as options.
- * @property fixedCount Non-null when a `{X}` mana symbol already fixed X; the selection must then
- *   be exactly this many. Null when X is defined by the discard alone (Gix, Yawgmoth Praetor).
+ * @property fixedCount Non-null when the selection must be exactly this many: a `{X}` mana symbol
+ *   fixed X, or the cost prints its count ("discard a card with mana value X"). Null when X is
+ *   defined by the number discarded (Gix, Yawgmoth Praetor).
+ * @property xMeasure How X is read off the selection — COUNT, or the cards' total mana value for a
+ *   measured discard (Kozilek, the Great Distortion), where an X already announced on the action
+ *   wins over the measure.
  */
 @Serializable
 data class ActivateAbilityDiscardXContinuation(
     val action: ActivateAbility,
     val discardCandidates: List<EntityId>,
-    val fixedCount: Int? = null
+    val fixedCount: Int? = null,
+    val xMeasure: com.wingedsheep.sdk.scripting.costs.VariableCostMeasure =
+        com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.COUNT,
 ) : AnswerContinuation
 
 /**

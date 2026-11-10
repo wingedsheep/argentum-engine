@@ -282,6 +282,7 @@ internal class ActivationChoicePauses(
         val action = activation.action
         val sourceName = activation.sourceName
         val discardXCost = activation.effectiveCost.extractDiscardXCost() ?: return null
+        if (discardXCost.count != null) return measuredDiscardChoice(state, activation, discardXCost)
         val settled = (action.costPayment?.discardedCards?.isNotEmpty() == true) || action.xValue == 0
         if (settled) return null
         val candidates = costHandler.discardXCandidates(state, action.playerId, action.sourceId, discardXCost)
@@ -311,6 +312,59 @@ internal class ActivationChoicePauses(
                     options = candidates,
                     minSelections = minSelections,
                     maxSelections = maxSelections
+                )
+            },
+            answer = continuation
+        )
+    }
+
+    // -------------------------------------------------------------------
+    // Measured DiscardX pause — "Discard a card with mana value X" (Kozilek, the Great
+    // Distortion; Knollspine Invocation with `{X}` mana). The pick is always asked for, even with
+    // one eligible card, since skipping it would reveal the rest of the hand doesn't fit. Without
+    // `{X}` mana the pick announces X, so only cards that leave every mandatory target a legal
+    // choice are offered and the targets are asked for next; with `{X}` mana only cards of exactly
+    // that mana value are offered.
+    // -------------------------------------------------------------------
+    private fun measuredDiscardChoice(
+        state: GameState,
+        activation: Activation,
+        cost: AbilityCost.DiscardX,
+    ): ExecutionResult? {
+        val action = activation.action
+        if (action.costPayment?.discardedCards?.isNotEmpty() == true) return null
+        val count = cost.count ?: return null
+        val fixedX = action.xValue
+        val candidates = com.wingedsheep.engine.mechanics.cost.CostDefinedX.viableDiscards(
+            state, cost, costHandler.discardXCandidates(state, action.playerId, action.sourceId, cost),
+            fixedX, activation.targetRequirements, action.playerId, action.sourceId, targetFinder
+        )
+        if (candidates.size < count) {
+            return ExecutionResult.error(
+                state,
+                if (fixedX != null) "No card with mana value $fixedX in hand to discard for ${activation.sourceName}"
+                else "No card to discard leaves a legal target for ${activation.sourceName}"
+            )
+        }
+        val noun = if (count == 1) "a card" else "$count cards"
+        val prompt = if (fixedX != null) "Discard $noun with mana value $fixedX for ${activation.sourceName}"
+            else "Discard $noun for ${activation.sourceName} (X is its mana value)"
+        val continuation = ActivateAbilityDiscardXContinuation(
+            action = action,
+            discardCandidates = candidates,
+            fixedCount = count,
+            xMeasure = cost.xMeasure,
+        )
+        return state.suspendForDecision(
+            question = { decisionId ->
+                SelectCardsDecision(
+                    id = decisionId,
+                    playerId = action.playerId,
+                    prompt = prompt,
+                    context = castingContext(action, activation.sourceName),
+                    options = candidates,
+                    minSelections = count,
+                    maxSelections = count
                 )
             },
             answer = continuation
@@ -671,7 +725,8 @@ internal class ActivationChoicePauses(
     }
 
     // -------------------------------------------------------------------
-    // Target pause for a VariablePermanents ability (Fabrication Foundry, Radiant Lotus).
+    // Target pause for an ability whose cost pick announces X — a VariablePermanents cost
+    // (Fabrication Foundry, Radiant Lotus) or a measured discard (Kozilek, the Great Distortion).
     //
     // The enumerator deliberately surfaces these abilities with no target gathered up front,
     // because a target may be bounded by X ("mana value X or less") and X isn't known until the
@@ -684,7 +739,7 @@ internal class ActivationChoicePauses(
     private fun variablePermanentsTargetChoice(state: GameState, activation: Activation): ExecutionResult? {
         val action = activation.action
         val sourceName = activation.sourceName
-        if (activation.variablePermanentsCost == null || !activation.variableCostChosen || action.targets.isNotEmpty()) {
+        if (!activation.targetsFollowCostChoice || !activation.xDefiningCostChosen || action.targets.isNotEmpty()) {
             return null
         }
         val controllerTargetReqsExec = activation.targetRequirements.filter { it.chooser == TargetChooser.Controller }

@@ -409,6 +409,15 @@ object Costs {
         AbilityCost.DiscardX(filter)
 
     /**
+     * Discard a card with mana value X — "Discard a card with mana value X: Counter target spell
+     * with mana value X." (Kozilek, the Great Distortion). The discarded card's mana value is X:
+     * without `{X}` mana the pick announces it (and any X-bounded target is chosen after); with
+     * `{X}` mana (Knollspine Invocation) only a card of exactly that mana value may be discarded.
+     */
+    fun DiscardCardWithManaValueX(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
+        AbilityCost.DiscardX(filter, com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.TOTAL_MANA_VALUE, count = 1)
+
+    /**
      * Collect evidence [amount] (CR 701.59) — exile any number of cards from your graveyard with
      * total mana value [amount] or greater. Unlike [ExileFromGraveyard] the constraint is a floor on
      * the exiled cards' **total mana value**, not on their count. Per CR 701.59b the ability is not

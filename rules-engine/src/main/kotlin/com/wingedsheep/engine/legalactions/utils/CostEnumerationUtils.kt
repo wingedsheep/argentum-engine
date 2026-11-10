@@ -785,12 +785,14 @@ class CostEnumerationUtils(
         }
 
         // Cap by the hand cards a DiscardX cost could discard (honouring its filter), for the
-        // case where a `{X}` mana symbol makes this an X-picker ability.
+        // case where a `{X}` mana symbol makes this an X-picker ability. A measured discard
+        // ("discard a card with mana value X") bounds X by the cards' mana values, not their
+        // number, so it doesn't cap here; the selection pause offers only cards measuring X.
         val discardXCosts = when (abilityCost) {
             is AbilityCost.Composite -> abilityCost.costs.filterIsInstance<AbilityCost.DiscardX>()
             is AbilityCost.DiscardX -> listOf(abilityCost)
             else -> emptyList()
-        }
+        }.filter { it.count == null }
         if (discardXCosts.isNotEmpty()) {
             val hand = state.getZone(ZoneKey(playerId, Zone.HAND)).filter { it != sourceId }
             val projected = state.projectedState

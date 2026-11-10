@@ -725,6 +725,16 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   validates a client-supplied `costPayment.discardedCards` (exactly X distinct matching hand cards)
   and is a real discard, so discard triggers fire. **Gix, Yawgmoth Praetor**: `Costs.Composite(
   Costs.Mana("{4}{B}{B}{B}"), Costs.DiscardX())` → exile the top X cards of target opponent's library.
+- `Costs.DiscardCardWithManaValueX(filter = Any)` — **measured** "discard a card with mana value X"
+  (`AbilityCost.DiscardX(filter, xMeasure = TOTAL_MANA_VALUE, count = 1)`): the card count is
+  printed and X is the discarded card's mana value (a `{X}` in its cost is 0). With no `{X}` mana the
+  pick announces X (CR 601.2b), so the ability is surfaced with no targets, the discard is asked first
+  — offering only cards whose mana value leaves every mandatory target legal, and asked even with one
+  candidate so the rest of the hand stays hidden — and the X-bounded target after it; the ability is
+  not offered when no card fits. With `{X}` mana the mana fixes X and only cards of exactly that mana
+  value may be discarded. **Kozilek, the Great Distortion**: `cost = Costs.DiscardCardWithManaValueX()`,
+  `target(TargetFilter.SpellOnStack.manaValueEqualsX())`, `Effects.CounterSpell()`. The hand-side twin
+  of the single-permanent `CostAtom.VariablePermanents` (Scrap Welder).
 - `Costs.ExilePermanentsFixed(count = 1, filter = Any, excludeSelf = false, distinctNames = false)` — **fixed-count** "exile N permanents you
   control matching `filter`" activated-ability cost (City of Shadows: "{T}, Exile a creature you
   control:"). `distinctNames = true` (the `Costs.Sacrifice` twin) requires the N objects to have different

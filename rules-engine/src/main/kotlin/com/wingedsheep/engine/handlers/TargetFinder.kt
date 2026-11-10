@@ -558,10 +558,14 @@ class TargetFinder(
     private fun findSpellTargets(
         state: GameState,
         requirement: TargetObject,
-        controllerId: EntityId
+        controllerId: EntityId,
+        pipelineContext: PredicateContext? = null
     ): List<EntityId> {
         val filter = requirement.filter
-        val predicateContext = PredicateContext(controllerId = controllerId)
+        // Keep a pipeline-derived X: "counter target spell with mana value X" is offered against the
+        // X a cost pick announced (Kozilek, the Great Distortion's discard), not every spell.
+        val predicateContext = (pipelineContext ?: PredicateContext(controllerId = controllerId))
+            .copy(controllerId = controllerId)
         // Whether this requirement is allowed to target *abilities* on the stack, not just spells.
         // "Target spell" (the common case, base filter `Any`) must never reach an ability — a spell
         // is a card on the stack (CR 112.1) while an ability on the stack is a separate object kind
@@ -603,7 +607,7 @@ class TargetFinder(
         return when (filter.zone) {
             Zone.BATTLEFIELD -> findPermanentTargets(state, requirement, controllerId, sourceId, ignoreTargetingRestrictions, targetingSourceType, triggeringEntityId, pipelineContext)
             Zone.GRAVEYARD -> findGraveyardTargets(state, filter, controllerId, sourceId, pipelineContext)
-            Zone.STACK -> findSpellTargets(state, requirement, controllerId)
+            Zone.STACK -> findSpellTargets(state, requirement, controllerId, pipelineContext)
             else -> findCardTargetsInZone(state, filter, controllerId)
         }
     }

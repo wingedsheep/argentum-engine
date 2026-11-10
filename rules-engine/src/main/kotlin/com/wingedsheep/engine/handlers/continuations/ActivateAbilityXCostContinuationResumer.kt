@@ -232,8 +232,14 @@ class ActivateAbilityXCostContinuationResumer(
             return ExecutionResult.error(state, "Expected $fixedCount cards to discard, got ${selected.size}")
         }
         val action = continuation.action
+        val x = when (continuation.xMeasure) {
+            com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.COUNT -> fixedCount ?: selected.size
+            // A measured discard: the pick announces X unless `{X}` mana already fixed it.
+            else -> action.xValue
+                ?: com.wingedsheep.engine.mechanics.cost.CostDefinedX.measureCards(state, continuation.xMeasure, selected)
+        }
         val replay = action.copy(
-            xValue = fixedCount ?: selected.size,
+            xValue = x,
             costPayment = (action.costPayment ?: AdditionalCostPayment())
                 .copy(discardedCards = selected)
         )

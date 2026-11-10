@@ -615,14 +615,43 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
      * alongside it, the mana X fixes the count and the selection must be exactly that many.
      * The discard fires discard triggers (it is a discard, CR 701.9).
      *
+     * With a [count] the number of cards is printed and X is *measured* off them instead —
+     * "Discard a card with mana value X" (Kozilek, the Great Distortion) is `count = 1` with
+     * [VariableCostMeasure.TOTAL_MANA_VALUE]. Without `{X}` mana the pick announces X, so an
+     * X-bounded target ("counter target spell with mana value X") is chosen after it and only picks
+     * that leave a legal target are offered; with `{X}` mana alongside (Knollspine Invocation) the
+     * mana fixes X and only cards measuring exactly X may be discarded. The hand-side twin of a
+     * single-permanent [CostAtom.VariablePermanents] ("sacrifice an artifact with mana value X").
+     *
      * @property filter Which cards in hand may be discarded.
+     * @property xMeasure How X is read off the discarded cards: [VariableCostMeasure.COUNT] (the
+     *   default — X is how many) or [VariableCostMeasure.TOTAL_MANA_VALUE].
+     * @property count Exactly how many cards are discarded, when the text prints it; null when the
+     *   count *is* X. Requires a measure other than COUNT.
      */
     @SerialName("CostDiscardX")
     @Serializable
     data class DiscardX(
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val xMeasure: com.wingedsheep.sdk.scripting.costs.VariableCostMeasure =
+            com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.COUNT,
+        val count: Int? = null,
     ) : AbilityCost {
-        override val description: String = "Discard X ${filter.description}s"
+        init {
+            require(xMeasure != com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.TOTAL_POWER) {
+                "DiscardX measures cards in hand; TOTAL_POWER reads permanents"
+            }
+            require((count == null) == (xMeasure == com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.COUNT)) {
+                "DiscardX: a printed count measures X some other way; X cards has no printed count"
+            }
+            require(count == null || count >= 1) { "DiscardX count must be at least 1" }
+        }
+
+        override val description: String = when {
+            count == null -> "Discard X ${filter.description}s"
+            count == 1 -> "Discard a ${filter.description} with mana value X"
+            else -> "Discard $count ${filter.description}s with total mana value X"
+        }
 
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
             val newFilter = filter.applyTextReplacement(replacer)

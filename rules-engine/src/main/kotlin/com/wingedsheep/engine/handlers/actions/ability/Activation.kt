@@ -62,4 +62,18 @@ internal data class Activation(
     /** Whether the payer has answered the variable-permanents choice — possibly with none. */
     val variableCostChosen: Boolean
         get() = action.costPayment?.variableCostPermanents != null
+
+    /**
+     * Whether the controller's targets are chosen *after* a cost pick that announces X
+     * (CR 601.2b) — a variable-permanents cost, or a measured discard with no `{X}` mana to fix X
+     * first. The enumerator surfaces such an ability with no targets and the handler pauses for
+     * them once the pick is in ([xDefiningCostChosen]).
+     */
+    val targetsFollowCostChoice: Boolean
+        get() = effectiveCost.targetsFollowCostChoice()
+
+    /** Whether the X-announcing cost pick behind [targetsFollowCostChoice] has been made. */
+    val xDefiningCostChosen: Boolean
+        get() = if (variablePermanentsCost != null) variableCostChosen
+            else action.costPayment?.discardedCards?.isNotEmpty() == true
 }

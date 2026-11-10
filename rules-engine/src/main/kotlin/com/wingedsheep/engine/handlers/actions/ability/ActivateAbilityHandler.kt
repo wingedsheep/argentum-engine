@@ -340,7 +340,9 @@ class ActivateAbilityHandler(
         val effectiveXValue: Int? = definedXValue
             ?: if (variablePermanentsCost != null && chosenForCost != null)
                 variableCostX(state, variablePermanentsCost, chosenForCost)
-            else action.xValue
+            else action.xValue ?: com.wingedsheep.engine.mechanics.cost.CostDefinedX.announcedByDiscard(
+                state, effectiveCost.extractDiscardXCost(), action.costPayment?.discardedCards, action.xValue
+            )
 
         return Announcement.Announced(
             Activation(
