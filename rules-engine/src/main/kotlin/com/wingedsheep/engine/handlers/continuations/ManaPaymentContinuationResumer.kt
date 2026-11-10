@@ -1,4 +1,5 @@
 package com.wingedsheep.engine.handlers.continuations
+import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.ManaAbilityLifeCost
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
@@ -1066,11 +1067,14 @@ class ManaPaymentContinuationResumer(
             manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
-        val partialResult = manaPool.payPartial(continuation.manaCost)
+        // A cost asked for at resolution: restricted mana pays it only when its restriction
+        // admits a cost of these symbols (Cultivator Drone's "a cost that contains {C}").
+        val paymentContext = SpellPaymentContext.forResolutionCost(continuation.manaCost)
+        val partialResult = manaPool.payPartial(continuation.manaCost, paymentContext)
 
         if (partialResult.remainingCost.isEmpty()) {
             // Floating mana covers the cost — pay immediately and execute inner effect
-            val newPool = manaPool.pay(continuation.manaCost)
+            val newPool = manaPool.pay(continuation.manaCost, paymentContext)
                 ?: return ExecutionResult.error(state, "Cannot pay mana cost from floating mana")
             var currentState = state.updateEntity(playerId) { container ->
                 container.with(
@@ -1093,7 +1097,8 @@ class ManaPaymentContinuationResumer(
 
         // Need to tap sources — show mana source selection UI
         val manaSolver = services.manaSolver
-        val sources = manaSolver.findAvailableManaSources(state, playerId)
+        val sources = manaSolver.findAvailableManaSources(state, playerId, paymentContext)
+            .filter { it.restriction?.isSatisfiedBy(paymentContext) != false }
         val sourceOptions = sources.map { source ->
             ManaSourceOption(
                 entityId = source.entityId,
@@ -1106,7 +1111,7 @@ class ManaPaymentContinuationResumer(
             )
         }
 
-        val solution = manaSolver.solve(state, playerId, partialResult.remainingCost)
+        val solution = manaSolver.solve(state, playerId, partialResult.remainingCost, spellContext = paymentContext)
         val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
 
         val question = { decisionId: String -> SelectManaSourcesDecision(
@@ -1206,14 +1211,15 @@ class ManaPaymentContinuationResumer(
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
 
-        val partialResult = manaPool.payPartial(effectiveCost)
+        val paymentContext = SpellPaymentContext.forResolutionCost(effectiveCost)
+        val partialResult = manaPool.payPartial(effectiveCost, paymentContext)
         val remainingCost = partialResult.remainingCost
         var currentPool = manaPool
 
         if (!remainingCost.isEmpty()) {
             if (response.autoPay) {
                 val manaSolver = services.manaSolver
-                val solution = manaSolver.solve(currentState, playerId, remainingCost)
+                val solution = manaSolver.solve(currentState, playerId, remainingCost, spellContext = paymentContext)
                     ?: return ExecutionResult.error(state, "Cannot pay mana cost with auto-pay")
 
                 for (source in solution.sources) {
@@ -1245,7 +1251,7 @@ class ManaPaymentContinuationResumer(
             }
         }
 
-        val newPool = currentPool.pay(effectiveCost)
+        val newPool = currentPool.pay(effectiveCost, paymentContext)
             ?: return ExecutionResult.error(state, "Cannot pay mana cost after tapping sources")
 
         currentState = currentState.updateEntity(playerId) { container ->

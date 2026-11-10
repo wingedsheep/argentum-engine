@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.model.EntityId
  * the *ability* rather than its source — "is this an equip ability" (CR 702.6, for
  * [com.wingedsheep.sdk.scripting.effects.ManaRestriction.EquipAbilityActivationOnly]), "is this a Class
  * level-up" (CR 716.2c, for [com.wingedsheep.sdk.scripting.effects.ManaRestriction.ClassLevelUpOnly]) and "does its
- * cost contain {X}" (for [com.wingedsheep.sdk.scripting.effects.ManaRestriction.CostsContainingXOnly])
+ * cost contain {X} / {C}" (for [com.wingedsheep.sdk.scripting.effects.ManaRestriction.CostsContainingSymbolOnly])
  * — can't be recovered from [cardComponent]. Pass null only where the ability genuinely isn't resolvable
  * (a granted ability the caller can't look up); each fact then reads false, i.e. the
  * restriction refuses, which is the safe direction.
@@ -39,13 +39,17 @@ internal fun buildAbilityPaymentContext(
         .toSet()
     val cardTypes = cardComponent.typeLine.cardTypes + projectedTypes
     val subtypes = paymentSubtypesOf(cardComponent) + projected.getSubtypes(sourceId)
+    val manaCost = ability?.cost?.extractManaCost()
     return SpellPaymentContext(
         isAbilityActivation = true,
         abilitySourceCardTypes = cardTypes,
         isAbilitySourceOnBattlefield = sourceId in projected.getBaseState().getBattlefield(),
+        // Projected colors in any zone (ProjectedState.colorsOf): Mycosynth Lattice, devoid, printed.
+        isAbilitySourceColorless = projected.colorsOf(sourceId).isEmpty(),
         subtypes = subtypes,
         isEquipAbilityActivation = ability?.isEquipAbility == true,
         isClassLevelUpActivation = ability?.effect is com.wingedsheep.sdk.scripting.effects.LevelUpClassEffect,
-        hasXInCost = ability?.cost?.extractManaCost()?.hasX == true,
+        hasXInCost = manaCost?.hasX == true,
+        costSymbols = manaCost?.symbols?.toSet().orEmpty(),
     )
 }

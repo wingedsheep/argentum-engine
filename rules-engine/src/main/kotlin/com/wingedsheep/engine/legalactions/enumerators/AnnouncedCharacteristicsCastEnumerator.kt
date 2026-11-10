@@ -109,6 +109,7 @@ class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAn
                 val paymentContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(
                     isCreature = card.typeLine.isCreature, isLegendary = card.typeLine.isLegendary,
                     manaValue = card.manaCost.cmc, hasXInCost = card.manaCost.hasX,
+                    costSymbols = card.manaCost.symbols.toSet(),
                     isColorless = state.projectedState.colorSetOf(id).isEmpty(),
                     colorCount = state.projectedState.colorSetOf(id).size,
                     colors = state.projectedState.colorSetOf(id),

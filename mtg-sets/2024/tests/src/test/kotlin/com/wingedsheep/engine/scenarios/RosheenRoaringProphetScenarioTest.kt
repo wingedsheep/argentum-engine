@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
@@ -115,7 +116,7 @@ class RosheenRoaringProphetScenarioTest : FunSpec({
 
         val pool = driver.pool(me)
         pool.restrictedMana.size shouldBe 4
-        pool.restrictedMana.all { it.restriction == ManaRestriction.CostsContainingXOnly } shouldBe true
+        pool.restrictedMana.all { it.restriction == ManaRestriction.CostsContainingSymbolOnly(ManaSymbol.X) } shouldBe true
     }
 
     test("the mana pays for a spell with {X} in its mana cost but not for one without") {

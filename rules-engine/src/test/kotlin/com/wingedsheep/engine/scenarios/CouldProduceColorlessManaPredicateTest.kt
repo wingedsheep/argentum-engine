@@ -36,7 +36,7 @@ class CouldProduceColorlessManaPredicateTest : ScenarioTestBase() {
         activatedAbility {
             cost = Costs.Tap
             manaAbility = true
-            effect = Effects.AddColorlessMana(2, ManaRestriction.ColorlessSpellsOnly)
+            effect = Effects.AddColorlessMana(2, ManaRestriction.ColorlessSpellsOrAbilitiesOnly())
         }
     }
 

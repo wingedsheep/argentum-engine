@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * {T}: Reveal any number of cards with {X} in their mana cost in your hand. Add {C}{C} for each card
  * revealed this way. Spend this mana only on costs that contain {X}.
  *
- * The mana is [ManaRestriction.CostsContainingXOnly]: a spell or an activated ability whose mana cost
+ * The mana is [ManaRestriction.CostsContainingSymbolOnly] for {X}: a spell or an activated ability whose mana cost
  * contains {X}. The reveal is a choose-any-number over the hand's X cards (zero allowed), and the
  * amount is twice the chosen count.
  */
@@ -69,7 +70,7 @@ val RosheenRoaringProphet = card("Rosheen, Roaring Prophet") {
             run(
                 Effects.AddColorlessMana(
                     revealed.count * 2,
-                    ManaRestriction.CostsContainingXOnly
+                    ManaRestriction.CostsContainingSymbolOnly(ManaSymbol.X)
                 )
             )
         }

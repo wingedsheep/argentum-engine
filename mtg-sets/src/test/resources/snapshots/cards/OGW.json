@@ -204,6 +204,65 @@
     ]
 }
 
+// Bearer of Silence
+{
+    "name": "Bearer of Silence",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, you may pay {1}{C}. If you do, target opponent sacrifices a creature. ({C} represents colorless mana.)\nFlying\nThis creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bearer of Silence:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{C}"
+                        }
+                    },
+                    "then": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, you may pay {1}{C}. If you do, target opponent sacrifices a creature."
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50460cce-ee1c-4384-bb0c-d90616e0d2e9.jpg?1783937916"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blinding Drone
 {
     "name": "Blinding Drone",
@@ -795,6 +854,61 @@
         "rarity": "MYTHIC",
         "artist": "Jama Jurabaev",
         "imageUri": "https://cards.scryfall.io/normal/front/b/e/be1434e1-a0d6-4028-918b-1e2d17d3a227.jpg?1783937919"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cultivator Drone
+{
+    "name": "Cultivator Drone",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{T}: Add {C}. Spend this mana only to cast a colorless spell, activate an ability of a colorless permanent, or pay a cost that contains {C}. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cultivator Drone:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            {
+                                "type": "ColorlessSpellsOrAbilitiesOnly",
+                                "allowAbilities": true,
+                                "permanentSourcesOnly": true
+                            },
+                            {
+                                "type": "CostsContainingSymbolOnly",
+                                "symbol": "com.wingedsheep.sdk.core.ManaSymbol.Colorless"
+                            }
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. Spend this mana only to cast a colorless spell, activate an ability of a colorless permanent, or pay a cost that contains {C}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbe4bb6f-bec6-49d2-99d7-e3750a0ea03f.jpg?1783937921"
     },
     "colorIdentityOverride": [
         "BLUE"

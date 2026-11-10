@@ -49,6 +49,7 @@ internal fun spellPaymentContextFor(
     isLegendary = cardComponent.typeLine.isLegendary,
     manaValue = cardComponent.manaCost.cmc,
     hasXInCost = cardComponent.manaCost.hasX,
+    costSymbols = cardComponent.manaCost.symbols.toSet(),
     isColorless = colors.isEmpty(),
     colorCount = colors.size,
     colors = colors,

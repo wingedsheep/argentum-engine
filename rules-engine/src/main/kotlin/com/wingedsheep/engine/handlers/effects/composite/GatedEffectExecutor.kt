@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
+import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.core.*
@@ -470,7 +471,7 @@ class GatedEffectExecutor(
             manaSolver, CostCalculator(cardRegistry, predicateEvaluator), predicateEvaluator, cardRegistry
         )
         val waterbendPermanents = costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND)
-        val affordable = manaSolver.canPay(state, playerId, manaCost) ||
+        val affordable = manaSolver.canPay(state, playerId, manaCost, spellContext = SpellPaymentContext.forResolutionCost(manaCost)) ||
             costUtils.canAffordWithTapForGeneric(state, playerId, manaCost, waterbendPermanents)
         if (!affordable) {
             // Can't pay → the "unless" fires (e.g. discard a card).
@@ -777,7 +778,7 @@ class GatedEffectExecutor(
      */
     private fun canAfford(state: GameState, playerId: EntityId, cost: Effect, context: EffectContext): Boolean =
         when (cost) {
-            is PayManaCostEffect -> manaSolver.canPay(state, playerId, cost.cost)
+            is PayManaCostEffect -> manaSolver.canPay(state, playerId, cost.cost, spellContext = SpellPaymentContext.forResolutionCost(cost.cost))
             is PayDynamicManaCostEffect -> {
                 // Affordability must target whoever actually foots the bill — resolve the cost's own
                 // `payer` rather than trusting the gate's decisionMaker to match it. A computed
@@ -786,9 +787,9 @@ class GatedEffectExecutor(
                 val payerId = TargetResolutionUtils
                     .resolvePlayerTarget(EffectTarget.PlayerRef(cost.payer), context, state)
                     ?: playerId
-                amount <= 0 || manaSolver.canPay(
-                    state, payerId, PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)
-                )
+                amount <= 0 || PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color).let { dynamicCost ->
+                    manaSolver.canPay(state, payerId, dynamicCost, spellContext = SpellPaymentContext.forResolutionCost(dynamicCost))
+                }
             }
             is PayExactCountersEffect -> {
                 val payer = TargetResolutionUtils.resolvePlayerRef(cost.player, context, state)
