@@ -497,7 +497,7 @@ Amrou Kithkin
 Amrou Scout
 Amugaba
 Amulet of Kroog
-Amulet of Safekeeping	intent: WardCounterEffect
+Amulet of Safekeeping
 Amulet of Vigor	intent: TapUntapEffect
 An Offer You Can't Refuse
 An Unexpected Party
@@ -970,7 +970,7 @@ Ashiok's Skulker
 Ashiok, Dream Render
 Ashiok, Nightmare Muse	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(exile→?)
 Ashiok, Sculptor of Fears
-Ashiok, Wicked Manipulator	intent: Pipeline(TopOfLibrary→exile)
+Ashiok, Wicked Manipulator
 Ashling the Pilgrim
 Ashling's Command
 Ashling's Prerogative
@@ -3074,7 +3074,7 @@ Circle of Protection: Red
 Circle of Protection: White
 Circle of Solace
 Circle of the Moon Druid
-Circu, Dimir Lobotomist	intent: Pipeline(TopOfLibrary→exile)
+Circu, Dimir Lobotomist
 Circuit Mender
 Circuitous Route
 Cirith Ungol Patrol
@@ -4204,6 +4204,7 @@ Decanter of Endless Water
 Deceit
 Deceive the Messenger
 Deceiver Exarch
+Deceiver of Form
 Deception
 Deceptive Frostkite
 Deceptive Landscape
@@ -4504,6 +4505,7 @@ Diligent Zookeeper
 Dimension X
 Dimensional Breach
 Dimensional Exile
+Dimensional Infiltrator
 Diminisher Witch
 Dimir Aqueduct
 Dimir Cutpurse
@@ -4514,7 +4516,7 @@ Dimir House Guard
 Dimir Infiltrator
 Dimir Informant
 Dimir Locket
-Dimir Machinations	intent: Pipeline(TopOfLibrary→exile|library)
+Dimir Machinations
 Dimir Signet
 Dimir Spybug
 Dina's Guidance
@@ -5270,8 +5272,12 @@ Elderfang Disciple
 Elderfang Ritualist
 Elderfang Venom
 Elderleaf Mentor
+Eldrazi Aggressor
 Eldrazi Devastator
+Eldrazi Displacer
 Eldrazi Linebreaker
+Eldrazi Mimic
+Eldrazi Obligator
 Eldrazi Ravager
 Eldrazi Repurposer
 Eldritch Evolution
@@ -6408,6 +6414,7 @@ Flatten
 Flawless Maneuver
 Flaxen Intruder
 Flayed Nim
+Flayer Drone
 Fledgling Dragon
 Fledgling Imp
 Fledgling Mawcor
@@ -8804,6 +8811,7 @@ Immersturm Predator
 Immersturm Raider
 Immersturm Skullcairn
 Imminent Doom
+Immobilizer Eldrazi
 Immolating Glare
 Immolation
 Immolation Shaman
@@ -9136,6 +9144,7 @@ Inventory Management	intent: ForEach>AttachToChosenHostEffect
 Invert // Invent	intent: ForEach>SwitchPowerToughnessEffect; polarity: ForEachEffect; timing: ForEach>SwitchPowerToughnessEffect
 Invert Polarity	intent: FlipCoinEffect; polarity: FlipCoinEffect
 Inverted Iceberg
+Inverter of Truth
 Investigator's Journal
 Invigorate
 Invigorated Rampage
@@ -9950,6 +9959,7 @@ Kotose, the Silent Spider
 Koya, Death from Above
 Kozilek's Channeler
 Kozilek's Command
+Kozilek's Pathfinder
 Kozilek's Shrieker
 Kozilek's Translator
 Kozilek's Unsealing
@@ -11064,6 +11074,7 @@ Matca Rioters
 Mathemagics
 Matoya, Archon Elder
 Matsu-Tribe Decoy
+Matter Reshaper
 Matterbending Mage
 Matzalantli, the Great Door
 Mauhúr, Uruk-hai Captain
@@ -12118,7 +12129,7 @@ Nicol Bolas
 Nicol Bolas, Dragon-God
 Nicol Bolas, God-Pharaoh
 Nicol Bolas, the Deceiver
-Nicol Bolas, the Ravager	intent: Pipeline(TopOfLibrary→exile)
+Nicol Bolas, the Ravager
 Night Clubber
 Night Dealings
 Night Market
@@ -14066,6 +14077,7 @@ Ready to Rumble
 Reality Heist
 Reality Hemorrhage
 Reality Shift
+Reality Smasher
 Realm Seekers
 Realm of Koh
 Realm-Cloaked Giant
@@ -14087,6 +14099,7 @@ Reasonable Doubt	polarity: CounterEffect; polarity: SuspectEffect
 Reassembling Skeleton
 Reave Soul
 Reaver Ambush
+Reaver Drone
 Rebel Salvo	timing: RemoveKeywordEffect
 Rebellion of the Flamekin
 Rebellious Captives
@@ -14204,7 +14217,7 @@ Regisaur Alpha
 Regress
 Regrowth
 Rehearsed Debater
-Reidane, God of the Worthy	intent: WardCounterEffect
+Reidane, God of the Worthy
 Reigning Victor
 Reincarnation	intent: Pipeline(graveyard→battlefield); polarity: CreateDelayedTriggerEffect
 Reinforced Bulwark
@@ -15354,7 +15367,7 @@ Screaming Swarm
 Screamreach Brawler
 Screeching Buzzard
 Screeching Drake
-Screeching Griffin	combat: CantBlockEffect
+Screeching Griffin
 Screeching Harpy
 Screeching Scorchbeast
 Screeching Skaab
@@ -18464,6 +18477,7 @@ Thought Collapse
 Thought Courier
 Thought Distortion
 Thought Erasure
+Thought Harvester
 Thought Monitor
 Thought Prison
 Thought Shucker
@@ -18476,7 +18490,7 @@ Thoughtbound Primoc	intent: GainControlByRankEffect
 Thoughtcast
 Thoughtflare
 Thoughtlace	intent: ChangeColorEffect; polarity: ChangeColorEffect
-Thoughtpicker Witch	intent: Pipeline(TopOfLibrary→exile|library)
+Thoughtpicker Witch
 Thoughtseize
 Thoughtweft Charge
 Thoughtweft Imbuer
@@ -19232,7 +19246,7 @@ Uktabi Faerie
 Uktabi Orangutan
 Ukud Cobra
 Ulamog, the Ceaseless Hunger	intent: Pipeline(TopOfLibrary→exile)
-Ulamog, the Defiler	intent: Pipeline(TopOfLibrary→exile)
+Ulamog, the Defiler
 Ulamog, the Infinite Gyre	intent: Pipeline(graveyard→library)
 Ulcerate
 Uldaros Theorix
@@ -20094,6 +20108,7 @@ Walk the Plank
 Walk with the Ancestors
 Walk-In Closet // Forgotten Cellar	intent: GrantReplacementEffectEffect; intent: GrantStaticAbilityEffect
 Walker of the Grove
+Walker of the Wastes
 Walking Ballista
 Walking Bulwark
 Walking Corpse
