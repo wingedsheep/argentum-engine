@@ -2153,6 +2153,7 @@ Braids, Cabal Minion
 Braidwood Cup
 Braidwood Sextant
 Brain Freeze
+Brain in a Jar
 Braingeyser
 Brainspoil
 Brainstorm
@@ -2658,7 +2659,7 @@ Cartouche of Strength
 Cartouche of Zeal
 Carven Caryatid
 Cascade Bluffs
-Cascade Seer	intent: EmitScriedEventEffect
+Cascade Seer
 Cascading Cataracts
 Case File Auditor
 Case of the Burning Masks	intent: BecomeSolvedEffect
@@ -3530,6 +3531,7 @@ Corrupt
 Corrupt Court Official
 Corrupt Eunuchs
 Corrupted Conviction
+Corrupted Grafstone
 Corrupted Harvester
 Corrupted Shapeshifter
 Corruption of Towashi
@@ -6590,6 +6592,7 @@ Forth Eorlingas!
 Fortified Area
 Fortified Beachhead
 Fortified Rampart
+Fortified Village
 Fortify
 Fortifying Draught
 Fortifying Provisions
@@ -6940,6 +6943,7 @@ Geist of the Archives
 Geist of the Lonely Vigil
 Geist of the Moors
 Geist-Fueled Scarecrow
+Geistblast
 Geistcatcher's Rig
 Geistflame
 Geistflame Reservoir
@@ -10728,6 +10732,7 @@ Magmablood Archaic
 Magmakin Artillerist
 Magmaroth
 Magmatic Channeler
+Magmatic Chasm
 Magmatic Galleon
 Magmatic Hellkite
 Magmatic Insight
@@ -11743,6 +11748,7 @@ Murasa Rootgrazer
 Murasa Sproutling
 Murder
 Murder Investigation
+Murderer's Axe
 Murderous Compulsion
 Murderous Cut
 Murderous Rider
@@ -13039,6 +13045,7 @@ Pick the Brain
 Picklock Prankster
 Picnic Ruiner
 Pictures of Spider-Man
+Pieces of the Puzzle
 Pierce Strider
 Pierce the Sky
 Piercing Exhale
@@ -13920,6 +13927,7 @@ Rathi Intimidator
 Rathi Trapper
 Rattleback Apothecary
 Rattleblaze Scarecrow
+Rattlechains
 Rattleclaw Mystic
 Raubahn, Bull of Ala Mhigo
 Raucous Audience
@@ -15955,6 +15963,7 @@ Signature Slam	polarity: ForEachEffect
 Signpost Scarecrow
 Sigrid, God-Favored
 Sigurd, Jarl of Ravensthorpe	intent: AddCountersEffect; intent: RemoveCountersEffect; polarity: AddCountersEffect; polarity: RemoveCountersEffect
+Silburlind Snapper
 Silence
 Silence the Echo
 Silent Artisan
@@ -16091,6 +16100,7 @@ Skeletal Snake
 Skeletal Swarming
 Skeletal Wurm
 Skeleton Archer
+Skeleton Key
 Skeleton Shard
 Skemfar Avenger
 Skemfar Elderhall
@@ -16247,6 +16257,7 @@ Slavering Branchsnapper
 Slay
 Slayer of the Wicked
 Slayer's Cleaver
+Slayer's Plate
 Slayers' Stronghold
 Slaying Fire
 Sledge-Class Seedship
@@ -16798,7 +16809,7 @@ Sporeweb Weaver
 Sporogenic Infection
 Spotcycle Scouter
 Spotted Griffin
-Spotter Thopter	intent: EmitScriedEventEffect
+Spotter Thopter
 Spreading Flames
 Spreading Plague
 Spreading Rot
@@ -16944,6 +16955,7 @@ Start from Scratch
 Starting Column
 Starting Town
 Startle
+Startled Awake
 Startled Relic Sloth
 Startling Development	polarity: BecomeCreatureEffect; timing: BecomeCreatureEffect
 Starving Revenant
@@ -17230,6 +17242,7 @@ Stronghold Machinist
 Stronghold Overseer
 Stronghold Zeppelin
 Structural Assault
+Structural Distortion
 Struggle // Survive
 Struggle for Project Purity
 Struggle for Sanity
@@ -18406,6 +18419,7 @@ Thousand-legged Kami
 Thraben Charm
 Thraben Exorcism
 Thraben Foulbloods
+Thraben Gargoyle
 Thraben Heretic
 Thraben Inspector
 Thraben Purebloods
@@ -19282,6 +19296,7 @@ Unholy Officiant
 Unholy Strength
 Unidentified Hovership	intent: ForEach>EmitManifestedDreadEventEffect; intent: ForEach>Pipeline(TopOfLibrary→battlefield|graveyard)
 Unified Strike
+Uninvited Geist
 Union of the Third Path
 United Battlefront
 United Front
