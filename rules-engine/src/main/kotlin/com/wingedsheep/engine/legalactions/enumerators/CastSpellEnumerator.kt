@@ -376,8 +376,9 @@ class CastSpellEnumerator(
                 )
             } else null
 
-            // "You can spend mana of any type to cast [these] spells" (Vizier of the Menagerie):
-            // relax the colored requirements for *payment* only. `effectiveCost` stays the printed
+            // "You can spend mana of any type to cast [these] spells" (Vizier of the Menagerie), or
+            // "as though it were mana of any color" (Oath of Nissa — a {C} pip stays colorless):
+            // relax the requirements for *payment* only. `effectiveCost` stays the printed
             // cost so the client keeps showing {2}{G} rather than a misleading {3}.
             val payableCost = context.castPermissionUtils
                 .relaxSpellCostColorsIfAny(state, playerId, cardId, effectiveCost)

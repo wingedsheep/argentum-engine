@@ -2135,24 +2135,26 @@ class CastPermissionUtils(
     }
 
     /**
-     * True when a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells] static controlled by
-     * [playerId] matches the card [cardId] they are casting — i.e. mana of any type may be spent on
-     * that spell's mana cost (Vizier of the Menagerie: "You can spend mana of any type to cast
-     * creature spells"). Callers relax the cost via
-     * [com.wingedsheep.sdk.core.ManaCost.relaxColors] when this returns true (CR 118.14 / 609.4b).
+     * How far the mana cost of the card [cardId] that [playerId] is casting may be relaxed by a
+     * [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells] static they control or a waiting
+     * one-spell rider: [SpellManaRelaxation.ANY_TYPE] for "you can spend mana of any type to cast
+     * creature spells" (Vizier of the Menagerie, CR 118.14) or the North Star rider,
+     * [SpellManaRelaxation.ANY_COLOR] for "you may spend mana as though it were mana of any color
+     * to cast planeswalker spells" (Oath of Nissa — a `{C}` pip still needs colorless), null when
+     * neither applies. The stronger relaxation wins when several apply.
      *
-     * Zone-agnostic by design: the printed wording covers every creature spell you cast, so this is
+     * Zone-agnostic by design: the printed wording covers every matching spell you cast, so this is
      * consulted for hand casts, top-of-library casts and may-play casts alike. The card is matched
      * against the filter in projected state, so a permanent that is only a creature *because* of a
      * continuous effect still counts.
      *
-     * Also true while a matching one-spell rider ([oneSpellAnyManaTypeRider], North Star) waits:
-     * the enumerators ask whether the spell is affordable at all, and the rider may pay for it.
-     * Payment itself spends the rider only when it's needed (`CastCostPayer.relaxForCastPermission`),
-     * so the payment side reads [hasSpendAnyManaTypeStatic] instead.
+     * The rider counts here because the enumerators ask whether the spell is affordable at all, and
+     * the rider may pay for it. Payment itself spends the rider only when it's needed
+     * (`CastCostPayer.relaxForCastPermission`), so the payment side reads [staticSpellManaRelaxation].
      */
-    fun canSpendAnyManaTypeForSpell(state: GameState, playerId: EntityId, cardId: EntityId): Boolean =
-        hasSpendAnyManaTypeStatic(state, playerId, cardId) || oneSpellAnyManaTypeRider(state, playerId, cardId) != null
+    fun spellManaRelaxation(state: GameState, playerId: EntityId, cardId: EntityId): SpellManaRelaxation? =
+        if (oneSpellAnyManaTypeRider(state, playerId, cardId) != null) SpellManaRelaxation.ANY_TYPE
+        else staticSpellManaRelaxation(state, playerId, cardId)
 
     /**
      * The first pending "for one spell this turn, you may spend mana as though it were mana of any
@@ -2168,11 +2170,13 @@ class CastPermissionUtils(
         }
 
     /**
-     * The battlefield half of [canSpendAnyManaTypeForSpell]: a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells]
-     * static controlled by [playerId] matches [cardId].
+     * The battlefield half of [spellManaRelaxation]: the strongest relaxation granted by a
+     * [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells] static controlled by [playerId]
+     * whose filter matches [cardId], or null.
      */
-    fun hasSpendAnyManaTypeStatic(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {
+    fun staticSpellManaRelaxation(state: GameState, playerId: EntityId, cardId: EntityId): SpellManaRelaxation? {
         val projected = state.projectedState
+        var best: SpellManaRelaxation? = null
         for (granterId in state.getBattlefield()) {
             val granter = state.getEntity(granterId) ?: continue
             if (granter.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) continue
@@ -2182,19 +2186,23 @@ class CastPermissionUtils(
             val classLevel = granter.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
             for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 val any = ability as? com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells ?: continue
+                val granted = if (any.asThoughAnyColor) SpellManaRelaxation.ANY_COLOR else SpellManaRelaxation.ANY_TYPE
+                if (best != null && best >= granted) continue
                 val matches = predicateEvaluator.matches(
                     state, projected, cardId, any.filter,
                     PredicateContext(controllerId = playerId, sourceId = granterId)
                 )
-                if (matches) return true
+                if (matches) {
+                    if (granted == SpellManaRelaxation.ANY_TYPE) return granted
+                    best = granted
+                }
             }
         }
-        return false
+        return best
     }
 
     /**
-     * [cost] with its colored/hybrid/Phyrexian/colorless requirements relaxed to generic when
-     * [canSpendAnyManaTypeForSpell] holds for this cast, otherwise [cost] unchanged. Use for
+     * [cost] relaxed by [spellManaRelaxation] for this cast, otherwise [cost] unchanged. Use for
      * affordability checks, the auto-tap solver and payment — **not** for the cost string shown to
      * the client, which must stay the printed cost.
      */
@@ -2203,8 +2211,7 @@ class CastPermissionUtils(
         playerId: EntityId,
         cardId: EntityId,
         cost: ManaCost
-    ): ManaCost =
-        if (canSpendAnyManaTypeForSpell(state, playerId, cardId)) cost.relaxColors() else cost
+    ): ManaCost = spellManaRelaxation(state, playerId, cardId)?.relax(cost) ?: cost
 
     /**
      * Get activated abilities granted to an entity by static abilities on battlefield permanents.
@@ -2429,3 +2436,19 @@ private const val PROHIBITED = "An effect prevents you from casting that spell r
 
 /** Stands in for "some large X" when an enumerated X spell's offer is checked against a mana-value ban. */
 private const val UNBOUNDED_X = 1_000
+
+/**
+ * How much of a spell's mana cost a "spend mana as though …" grant waives, weakest first so the
+ * stronger of two grants is the larger value. [ANY_COLOR] — "as though it were mana of any color"
+ * (CR 609.4b): colored, hybrid and Phyrexian pips turn generic, a `{C}` pip still needs colorless.
+ * [ANY_TYPE] — "mana of any type can be spent" (CR 118.14): `{C}` relaxes too.
+ */
+enum class SpellManaRelaxation {
+    ANY_COLOR,
+    ANY_TYPE;
+
+    fun relax(cost: ManaCost): ManaCost = when (this) {
+        ANY_COLOR -> cost.relaxColoredRequirements()
+        ANY_TYPE -> cost.relaxColors()
+    }
+}

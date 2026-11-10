@@ -12872,7 +12872,7 @@ staticAbility {
   don't collapse into one (and a once-per-turn ability gained twice gets two budgets, per the ruling).
   (Quicksilver Elemental — "{U}: This creature gains all activated abilities of target creature until
   end of turn" → `Effects.GainAllActivatedAbilitiesOf(donor)`.)
-- `SpendAnyManaTypeForSpells(filter)` — the **spell-side sibling** of the above: the controller may
+- `SpendAnyManaTypeForSpells(filter, asThoughAnyColor = false)` — the **spell-side sibling** of the above: the controller may
   spend mana of any type on the mana cost of spells matching `filter` (a `GameObjectFilter`), relaxing
   colored/hybrid/Phyrexian/colorless pips to generic per CR 118.14 / 609.4b. Scoped to spells cast by
   *this permanent's controller* (the printed wording is always "**you** can spend …") and
@@ -12884,6 +12884,13 @@ staticAbility {
   payment validation, but deliberately **not** to the mana cost string sent to the client, so a
   creature card still shows its printed `{2}{G}` instead of a misleading `{3}`. (Vizier of the
   Menagerie — "You can spend mana of any type to cast creature spells" → `GameObjectFilter.Creature`.)
+  `asThoughAnyColor = true` is the narrower printed **"you may spend mana as though it were mana of any
+  color to cast [these] spells"**: colored, hybrid and Phyrexian pips relax, but a `{C}` pip still
+  demands colorless mana (colorless is a type, not a color — `ManaCost.relaxColoredRequirements`), the
+  same axis `SpendAnyManaTypeForActivatedAbilities.asThoughAnyColor` carries. When an any-type and an
+  any-color static both match, the any-type one wins. (Oath of Nissa — "You may spend mana as though it
+  were mana of any color to cast planeswalker spells" →
+  `SpendAnyManaTypeForSpells(GameObjectFilter.Planeswalker, asThoughAnyColor = true)`.)
   For a one-shot "for one spell this turn" grant that is spent by the spell that needs it, see
   `GrantOneSpellAnyManaTypeEffect` (North Star).
 - `PayLifeForColoredMana(color)` — "For each {B} in a cost, you may pay 2 life rather than pay that

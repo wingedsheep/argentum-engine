@@ -2633,6 +2633,108 @@
     ]
 }
 
+// Oath of Nissa
+{
+    "name": "Oath of Nissa",
+    "manaCost": "{G}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Nissa enters, look at the top three cards of your library. You may reveal a creature, land, or planeswalker card from among them and put it into your hand. Put the rest on the bottom of your library in any order.\nYou may spend mana as though it were mana of any color to cast planeswalker spells.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Nissa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature|land|planeswalker",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal a creature, land, or planeswalker card to put into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SpendAnyManaTypeForSpells",
+                "filter": "planeswalker",
+                "asThoughAnyColor": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/613513ea-55dd-4ae8-93b2-247e468112a6.jpg?1783937900",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The “legend rule” checks the full names of legendary permanents. You can control Oath of Gideon and Oath of Chandra at the same time, for example."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Even if you control a particular Oath, you can cast another of that Oath to take advantage of its enters-the-battlefield ability. It will enter the battlefield, causing its first ability to trigger. You will then choose one to keep, as detailed above, and then its enters-the-battlefield ability will resolve."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Each of the Oaths is legendary: if you control more than one of any particular Oath, you choose one to remain on the battlefield and the others are put into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Oblivion Strike
 {
     "name": "Oblivion Strike",
