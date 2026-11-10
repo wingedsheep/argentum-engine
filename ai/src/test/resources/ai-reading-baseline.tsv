@@ -104,7 +104,7 @@ Accursed Spirit
 Accursed Witch
 Acererak the Archlich	intent: ForEach>PayOrSufferEffect
 Acid Rain
-Aclazotz, Deepest Betrayal	intent: ReturnSelfFromZoneTransformedEffect
+Aclazotz, Deepest Betrayal
 Acolyte of Aclazotz
 Acolyte of Affliction
 Acquired Mutation
@@ -1618,7 +1618,7 @@ Bioengineered Future
 Bioessence Hydra
 Biogenic Ooze
 Biogenic Upgrade
-Biolume Egg	intent: ReturnSelfFromZoneTransformedEffect
+Biolume Egg
 Biomancer's Familiar	intent: AdaptAsThoughNoCountersEffect
 Biomass Mutation	timing: ForEach>SetBaseStatsEffect
 Biomathematician
@@ -2220,9 +2220,10 @@ Breaker of Creation
 Breaking Wave
 Breaking of the Fellowship
 Breakneck Berserker
+Breakneck Rider
 Breath Weapon
 Breath of Darigaaz
-Breath of Fury	polarity: Aura>ConditionalOnCollectionEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>SacrificeTargetEffect; polarity: Aura>SelectFromCollectionEffect
+Breath of Fury
 Breath of Life
 Breathe Your Last
 Breathstealer
@@ -2390,6 +2391,7 @@ Burn Away
 Burn Bright
 Burn Down the House
 Burn Trail
+Burn from Within
 Burn the Accursed
 Burn, Burn, Tree and Fern
 Burner Rocket
@@ -2874,12 +2876,12 @@ Chandra's Regulator
 Chandra's Revolution
 Chandra's Spitfire
 Chandra's Triumph
-Chandra, Acolyte of Flame	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
+Chandra, Acolyte of Flame
 Chandra, Awakened Inferno
 Chandra, Chill of Compliance
 Chandra, Dressed to Kill
 Chandra, Fire Artisan
-Chandra, Flame's Catalyst	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
+Chandra, Flame's Catalyst
 Chandra, Flame's Fury
 Chandra, Flameshaper
 Chandra, Heart of Fire
@@ -3008,7 +3010,7 @@ Choking Tethers
 Chomping Changeling
 Chomping Kavu
 Choose Your Weapon
-Chorale of the Void	polarity: Aura>MoveToZoneEffect; polarity: Aura>SacrificeSelfEffect
+Chorale of the Void
 Chord of Calling
 Choreographed Sparks
 Chorus of Woe
@@ -3390,7 +3392,7 @@ Conductor of Cacophony
 Conduit Goblin
 Conduit Pylons
 Conduit of Storms
-Conduit of Worlds	intent: Pipeline(ChosenTargets→?)
+Conduit of Worlds
 Cone of Flame
 Confirm Suspicions
 Confiscate
@@ -3474,6 +3476,7 @@ Convalescent Care
 Convenient Target	intent: SuspectEffect
 Conversion
 Converter Beast
+Convicted Killer
 Conviction
 Convolute
 Cool but Rude
@@ -4419,6 +4422,7 @@ Devastating Onslaught
 Devastation
 Deviant Glee
 Devilish Valet
+Devils' Playground
 Devilthorn Fox
 Devious Cover-Up	polarity: CounterEffect; polarity: MoveToZoneEffect; polarity: Pipeline(?→?)
 Devkarin Dissident
@@ -4478,7 +4482,7 @@ Diligent Excavator
 Diligent Zookeeper
 Dimension X
 Dimensional Breach
-Dimensional Exile	polarity: Aura>ExileUntilLeavesEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
+Dimensional Exile
 Diminisher Witch
 Dimir Aqueduct
 Dimir Cutpurse
@@ -4588,6 +4592,7 @@ Disruptor Wanderglyph
 Disruptor of Currents
 Dissection Practice
 Dissection Tools	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Dissension in the Ranks
 Dissenter's Deliverance
 Dissipate
 Dissolve
@@ -5184,7 +5189,7 @@ Eden, Seat of the Sanctum
 Edgar Markov
 Edgar's Awakening
 Edgar, Ancient Bloodlord
-Edgar, Charmed Groom	intent: ReturnSelfFromZoneTransformedEffect
+Edgar, Charmed Groom
 Edgar, King of Figaro
 Edgar, Moonlit Sovereign
 Edge Rover
@@ -5427,7 +5432,7 @@ Emeritus of Conflict
 Emeritus of Ideation
 Emeritus of Truce
 Emeritus of Woe
-Emet-Selch of the Third Seat	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(ChosenTargets→?)
+Emet-Selch of the Third Seat
 Emet-Selch, Unsundered
 Emiel the Blessed
 Emil, Vastlands Roamer
@@ -6338,6 +6343,7 @@ Flame-Blessed Bolt
 Flame-Chain Mauler
 Flame-Kin Zealot
 Flameblade Adept
+Flameblade Angel
 Flameborn Viron
 Flamebraider
 Flamecache Gecko
@@ -6860,7 +6866,7 @@ Gargadon
 Gargantuan Leech
 Gargos, Vicious Watcher
 Gargoyle Sentinel	combat: RemoveKeywordEffect; timing: RemoveKeywordEffect
-Garland, Knight of Cornelia	intent: ReturnSelfFromZoneTransformedEffect
+Garland, Knight of Cornelia
 Garna, Bloodfist of Keld
 Garna, the Bloodflame	intent: ReturnCreaturesPutInGraveyardThisTurnEffect
 Garnet, Princess of Alexandria	intent: ForEach>RemoveCountersEffect; intent: Pipeline(ControlledPermanents→?)
@@ -6909,6 +6915,7 @@ Gathering Place
 Gathering Stone
 Gathering Throng
 Gathering of Darkness
+Gatstaf Arsonists
 Gauntlet of Might
 Gauntlets of Chaos	intent: Pipeline(AttachedTo→graveyard); polarity: Pipeline(AttachedTo→graveyard)
 Gauntlets of Light
@@ -7088,7 +7095,7 @@ Giant Turtle
 Giant Warthog
 Giant's Amulet
 Giant's Boulder
-Giant's Grasp	polarity: Aura>GainControlEffect
+Giant's Grasp
 Giant's Ire
 Giant's Skewer
 Giant-Sized Flying Ant
@@ -7502,6 +7509,7 @@ Goldmeadow Harrier
 Goldmeadow Nomad
 Goldmeadow Stalwart
 Goldmire Bridge
+Goldnight Castigator
 Goldnight Commander
 Goldnight Redeemer
 Goldspan Dragon
@@ -8023,6 +8031,7 @@ Harmonized Crescendo
 Harmonized Trio
 Harmony of Nature
 Harness Infinity
+Harness the Storm
 Harnessed Lightning
 Harnessed Snubhorn
 Harnesser of Storms
@@ -8042,7 +8051,7 @@ Harsh Mentor
 Harsh Mercy
 Harsh Scrutiny
 Haru, Hidden Talent
-Harvest Hand	intent: ReturnSelfFromZoneTransformedEffect
+Harvest Hand
 Harvest Season
 Harvester of Misery
 Harvester of Souls
@@ -8542,6 +8551,7 @@ Howling Mine
 Howling Moon
 Howlpack Piper
 Howlpack Resurgence
+Howlpack Wolf
 Howlsquad Heavy
 Howltooth Hollow	intent: Pipeline(TopOfLibrary→exile|library)
 Hua Tuo, Honored Physician
@@ -8934,6 +8944,7 @@ Inkshield
 Inkwell Leviathan
 Inner Demon
 Inner Demons Gangsters
+Inner Struggle
 Inner-Flame Acolyte
 Inner-Flame Igniter
 Innkeeper's Talent
@@ -9392,7 +9403,7 @@ Jorubai Murk Lurker
 Joshua, Phoenix's Dominant
 Josu Vess, Lich Knight
 Journey of Discovery
-Journey to Eternity	polarity: Aura>MoveToZoneEffect; polarity: Aura>ReturnSelfFromZoneTransformedEffect
+Journey to Eternity
 Journey to Oblivion
 Journeyer's Kite
 Joust
@@ -9583,7 +9594,7 @@ Kavu Runner
 Kavu Scout
 Kavu Titan
 Kaya the Inexorable	polarity: AddCountersEffect
-Kaya's Ghostform	intent: MoveToZoneEffect; polarity: Aura>MoveToZoneEffect
+Kaya's Ghostform	intent: MoveToZoneEffect
 Kaya's Guile
 Kaya's Onslaught
 Kaya's Wrath
@@ -9659,6 +9670,7 @@ Keruga, the Macrosage
 Kessig Cagebreakers
 Kessig Dire Swine
 Kessig Flamebreather
+Kessig Forgemaster
 Kessig Malcontents
 Kessig Naturalist
 Kessig Prowler
@@ -10786,6 +10798,7 @@ Malevolent Chandelier
 Malevolent Hermit
 Malevolent Noble
 Malevolent Rumble
+Malevolent Whispers
 Malevolent Witchkite
 Malfunction
 Malfunctioning Holodeck
@@ -11729,7 +11742,7 @@ Murasa Ranger
 Murasa Rootgrazer
 Murasa Sproutling
 Murder
-Murder Investigation	polarity: Aura>CreateTokenEffect
+Murder Investigation
 Murderous Compulsion
 Murderous Cut
 Murderous Rider
@@ -11920,7 +11933,7 @@ Necroblossom Snarl
 Necrodominance
 Necroduality
 Necrogen Censer
-Necrogen Communion	polarity: Aura>GrantKeyword; polarity: Aura>MoveToZoneEffect
+Necrogen Communion
 Necrogen Mists
 Necrogen Rotpriest
 Necrogen Scudder
@@ -12360,10 +12373,10 @@ Ogre's Cleaver
 Ogre-Head Helm	intent: UnattachEquipmentEffect
 Oil-Gorger Troll
 Oildeep Gearhulk	polarity: Pipeline(hand→graveyard)
-Ojer Axonil, Deepest Might	intent: ReturnSelfFromZoneTransformedEffect
-Ojer Kaslem, Deepest Growth	intent: ReturnSelfFromZoneTransformedEffect
-Ojer Pakpatiq, Deepest Epoch	intent: GrantKeywordToSpellEffect; intent: ReturnSelfFromZoneTransformedEffect
-Ojer Taq, Deepest Foundation	intent: ReturnSelfFromZoneTransformedEffect
+Ojer Axonil, Deepest Might
+Ojer Kaslem, Deepest Growth
+Ojer Pakpatiq, Deepest Epoch	intent: GrantKeywordToSpellEffect
+Ojer Taq, Deepest Foundation
 Ojutai Exemplars
 Ojutai's Breath
 Ojutai's Command
@@ -12588,7 +12601,7 @@ Oscorp Industries
 Oscorp Research Team
 Osseous Exhale
 Osseous Sticktwister
-Ossification	polarity: Aura>MoveUntilSourceLeavesEffect
+Ossification
 Ossuary Rats
 Osteomancer Adept	intent: GrantCastCreaturesFromGraveyardWithForageEffect; timing: GrantCastCreaturesFromGraveyardWithForageEffect
 Ostiary Thrull
@@ -12704,7 +12717,7 @@ Pah-Wraith
 Pain // Suffering
 Pain 101
 Pain Kami
-Pain for All	polarity: Aura>DealDamageEffect
+Pain for All
 Painful Lesson
 Painful Quandary
 Painted Bluffs
@@ -16086,6 +16099,7 @@ Skewer Slinger
 Skewer the Critics
 Skilled Animator	polarity: BecomeCreatureEffect
 Skilled Battlecarver
+Skin Invasion
 Skinrender
 Skinthinner
 Skirge Familiar
@@ -18738,7 +18752,7 @@ Touch of Invisibility
 Touch the Spirit Realm
 Tough Cookie	polarity: BecomeCreatureEffect
 Tourach's Chant
-Tourach's Gate	polarity: Aura>AddCountersEffect; polarity: Aura>ForEachEffect; polarity: Aura>RemoveCountersEffect; polarity: Aura>SacrificeSelfEffect; timing: ForEach>ModifyStatsEffect
+Tourach's Gate	timing: ForEach>ModifyStatsEffect
 Tournament Grounds
 Tovolar's Huntmaster
 Tovolar, Dire Overlord	intent: ForEach>TransformEffect; intent: Pipeline(ControlledPermanents→?); intent: SetDayNightEffect
@@ -20623,6 +20637,7 @@ Wojek Investigator
 Wojek Siren
 Wolf Pack
 Wolf Strike
+Wolf of Devil's Breach
 Wolf's Quarry
 Wolf-Skull Shaman
 Wolfbat
