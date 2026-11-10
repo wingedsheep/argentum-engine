@@ -46,6 +46,8 @@ import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
@@ -327,7 +329,7 @@ internal object ExpiringGrantWindow {
         // Drag to the Bottom) is a sweeper: [affectedBy] reads the iteration entity as our own
         // creatures, which would call a wipe of their board wasted whenever ours is empty. When to
         // sweep is the removal's question, so the leaf keeps it.
-        if (payoffs.any { it.kind in SHRINK_KINDS && it.target == EffectTarget.IterationEntity }) return false
+        if (payoffs.any { it.kind in SHRINK_KINDS && it.kind != PayoffKind.STRIP && it.target == EffectTarget.IterationEntity }) return false
         val projected = state.projectedState
         val shrinkLoss = shrinkLosses(state, playerId, payoffs, sourceId, targets, xValue, intents) ?: return false
         return payoffs.none { payoff ->
@@ -342,6 +344,15 @@ internal object ExpiringGrantWindow {
             if (payoff.kind == PayoffKind.CONNECT) {
                 return@none connectorCanStillHit(state, projected, playerId, payoff, sourceId, sourceTaps, intents)
                     ?: return false
+            }
+            if (payoff.kind == PayoffKind.STRIP) {
+                val keyword = payoff.keyword ?: return false
+                val stripped = (if (payoff.group != null) {
+                    groupMembers(state, projected, playerId, payoff.group, sourceId, intents, creaturesOnly = false)
+                } else {
+                    affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
+                }) ?: return false
+                return@none stripped.any { projected.hasKeyword(it, keyword) }
             }
             val affected = affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
                 ?: return false
@@ -364,7 +375,7 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
-                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT -> true // answered above
+                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -397,16 +408,21 @@ internal object ExpiringGrantWindow {
      * Hill Giant at the opponent's end step). [castBuysNothing] reads it under
      * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants].
      *
-     * Left out: a stat pump, which is [HoldPolicy]'s combat trick; a keyword-less evasion grant or an
-     * animation, whose fight [canStillFight] reads only for a creature already in play; and haste,
-     * whose payoff is lifting the summoning sickness [canStillFight] would count against it.
+     * So does an **animation** until end of turn — "target land you control becomes a 4/4 Elemental
+     * creature with haste until end of turn" (Elemental Uprising): a body for this turn's fight,
+     * which [canStillFight] judges as the untapped creature it is about to be — before attackers on
+     * our turn, with their attack still to block on theirs. Cast in our second main phase or their
+     * end step, the land is a creature until cleanup and nothing else.
+     *
+     * Left out: a stat pump, which is [HoldPolicy]'s combat trick; a keyword-less evasion grant;
+     * and haste, whose payoff is lifting the summoning sickness [canStillFight] would count against it.
      *
      * Public for the AI card-reading audit, which asks it of the whole spell.
      */
     fun readsSpellKeywordGrant(effect: Effect): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks = true) ?: return false
         val grants = payoffs.filter { it.kind == PayoffKind.CREATURE }
-        return grants.isNotEmpty() && grants.all { it.keyword != null && it.keyword != HASTE && !it.animates }
+        return grants.isNotEmpty() && grants.all { it.animates || (it.keyword != null && it.keyword != HASTE) }
     }
 
     private val HASTE = Keyword.HASTE.name
@@ -609,11 +625,13 @@ internal object ExpiringGrantWindow {
         group: GroupFilter,
         sourceId: EntityId?,
         intents: IntentCatalog,
+        /** Only the creatures — false for a strip that may reach any permanent ([PayoffKind.STRIP]). */
+        creaturesOnly: Boolean = true,
     ): List<EntityId>? {
         val predicates = intents.predicates ?: return null
         val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return state.getBattlefield().filter { id ->
-            projected.isCreature(id) && !(group.excludeSelf && id == sourceId) &&
+            (!creaturesOnly || projected.isCreature(id)) && !(group.excludeSelf && id == sourceId) &&
                 predicates.matches(state, projected, id, group.baseFilter, context)
         }
     }
@@ -1151,6 +1169,19 @@ internal object ExpiringGrantWindow {
         RETYPE,
 
         /**
+         * A keyword taken away until end of turn from permanents that are not the source —
+         * "creatures your opponents control lose hexproof and indestructible until end of turn"
+         * (Bonds of Mortality), "target creature loses flying until end of turn". Read with the
+         * shrinks, as the other opponent-side debuff, under
+         * [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs]. What it buys is the removal or
+         * the fight that now lands, which only the leaf's simulation of the turn's plays can price,
+         * so the one window this calls structurally empty is a strip of a keyword nothing it reaches
+         * has: it changes nothing at all. Over a group it carries the group's filter
+         * ([Payoff.group]), judged on the permanents that filter holds now.
+         */
+        STRIP,
+
+        /**
          * Control of a creature until end of turn — "gain control of target creature until end of
          * turn" (Threaten, Involuntary Employment, Sibling Rivalry). It goes home at cleanup, so it
          * buys only what the creature does before then: an attack or a block on our side, or a fight
@@ -1213,8 +1244,8 @@ internal object ExpiringGrantWindow {
     private fun shieldFacesTheStack(state: GameState, payoffs: List<Payoff>): Boolean =
         state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD || it.kind == PayoffKind.SILENCE }
 
-    /** The stat-change payoffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
-    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE)
+    /** The opponent-side debuffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
+    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE, PayoffKind.STRIP)
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
     private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT)
@@ -1238,6 +1269,8 @@ internal object ExpiringGrantWindow {
         val animates: Boolean = false,
         /** For a [PayoffKind.CONNECT]: the creatures of ours whose combat damage fires the trigger. */
         val matching: GameObjectFilter? = null,
+        /** For a [PayoffKind.STRIP] over a group: the group it strips — `IterationEntity` is its members. */
+        val group: GroupFilter? = null,
     )
 
     /**
@@ -1291,10 +1324,15 @@ internal object ExpiringGrantWindow {
                 leaf is CreateDelayedTriggerEffect && leaf.trigger != null &&
                     leaf.expiry == DelayedTriggerExpiry.EndOfTurn && leaf.watchedTarget != null ->
                     watchRiders += checkNotNull(leaf.watchedTarget)
+                // "It must be blocked this turn if able" (Elemental Uprising) beside the animation or
+                // pump it rides on: spent only in that creature's attack this turn, so it watches the
+                // same payoff target a death rider does.
+                leaf is MustBeBlockedEffect -> watchRiders += leaf.target
                 leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
                     val body = expiringPayoffs(leaf.body, readShrinks, source = source) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
-                    payoffs += body
+                    val group = (leaf.space as IterationSpace.Group).filter
+                    payoffs += body.map { if (it.kind == PayoffKind.STRIP) it.copy(group = group) else it }
                 }
                 leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.LAND, leaf.target)
@@ -1351,6 +1389,9 @@ internal object ExpiringGrantWindow {
                     if (leaf.power != null && leaf.power !is DynamicAmount.Fixed) return null
                     payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount)
                 }
+                readShrinks && leaf is RemoveKeywordEffect && leaf.duration == Duration.EndOfTurn &&
+                    leaf.target != EffectTarget.Self ->
+                    payoffs += Payoff(PayoffKind.STRIP, leaf.target, leaf.keyword)
                 readShrinks && leaf is SetCreatureSubtypesEffect && leaf.duration == Duration.EndOfTurn &&
                     leaf.target != EffectTarget.Self && TypeEvasion.of(source, leaf) != null ->
                     payoffs += Payoff(PayoffKind.RETYPE, leaf.target)

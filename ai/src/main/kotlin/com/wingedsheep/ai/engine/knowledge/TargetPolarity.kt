@@ -627,8 +627,11 @@ object TargetPolarityAnalyzer {
             // target player controls" (the Lorwyn Eclipsed Commands): the group is that player's
             // creatures, so whatever the body does to each of them it does to the player's side.
             // The pump wants us, the sweep wants them. The body's other references keep their slots.
-            val groupOwner = (space as? IterationSpace.Group)?.let { groupOwnerSlot(it, requirements) }
-            if (groupOwner != null) {
+            // A group no target player owns ("each creature you control with a +1/+1 counter on it
+            // deals damage equal to its power to that creature", Nissa's Judgment) names no slot
+            // for `IterationEntity`, but the victim its body bites is still the slot it names.
+            if (space is IterationSpace.Group) {
+                val groupOwner = groupOwnerSlot(space, requirements)
                 for (inner in EffectWalker.payoffLeaves(leaf.body)) {
                     for ((target, polarity) in classify(inner, definitions, source)) {
                         val slot = if (target == EffectTarget.IterationEntity) groupOwner else slotOf(target, requirements)

@@ -433,7 +433,9 @@ enum class IntentTag {
      * double strike, deathtouch, lifelink, vigilance or haste, a
      * "must be blocked" that drags a blocker in, a base power and toughness it takes from
      * something bigger (Exuberant Wolfbear), or a cut to an opposing creature's power alone
-     * (Ominous Sphinx's "-2/-0 until end of turn") that blunts it in the fight without killing it. Not a [PUMP]: nothing here is a +N/+N a simulation
+     * (Ominous Sphinx's "-2/-0 until end of turn") that blunts it in the fight without killing it, or
+     * a keyword stripped from one (Bonds of Mortality's hexproof and indestructible) that opens it to
+     * the fight or the removal it shrugged off. Not a [PUMP]: nothing here is a +N/+N a simulation
      * or a precombat plan may add to the creature's stats.
      */
     COMBAT_ENHANCEMENT,

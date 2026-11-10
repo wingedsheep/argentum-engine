@@ -26,6 +26,7 @@ import com.wingedsheep.mtg.sets.definitions.lrw.cards.Lignify
 import com.wingedsheep.mtg.sets.definitions.sth.cards.Overgrowth
 import com.wingedsheep.mtg.sets.definitions.lea.cards.Unsummon
 import com.wingedsheep.mtg.sets.definitions.mir.cards.Pacifism
+import com.wingedsheep.mtg.sets.definitions.ogw.cards.NissasJudgment
 import com.wingedsheep.mtg.sets.definitions.ons.cards.BlatantThievery
 import com.wingedsheep.mtg.sets.definitions.ons.cards.DaruHealer
 import com.wingedsheep.mtg.sets.definitions.ons.cards.GustcloakHarrier
@@ -94,6 +95,11 @@ class TargetPolarityAiTest : FunSpec({
         test("a damage shield on any target is for our side") {
             val ability = DaruHealer.script.activatedAbilities.single()
             TargetPolarityAnalyzer.forAbility(DaruHealer, ability) shouldBe listOf(TargetPolarity.BENEFICIAL)
+        }
+        test("a victim bitten by each creature of a group is a removal slot") {
+            // Nissa's Judgment: support on up to two creatures, then "each creature you control
+            // with a +1/+1 counter on it deals damage equal to its power to" the second target.
+            TargetPolarityAnalyzer.forSpell(NissasJudgment)[1] shouldBe TargetPolarity.HARMFUL
         }
         test("a counterspell behind a mana-value gate is still aimed at their spell") {
             TargetPolarityAnalyzer.forSpell(Prohibit) shouldBe listOf(TargetPolarity.HARMFUL)

@@ -1963,6 +1963,20 @@ object CardIntentAnalyzer {
         TargetPolarityAnalyzer.counterPolarity(type) == TargetPolarity.HARMFUL &&
             TargetPolarityAnalyzer.targetsOwnSide(target, requirements)
 
+    /**
+     * Whether every removal step of a group loop's [body] lands on a declared target — "each
+     * creature you control with a +1/+1 counter on it deals damage equal to its power to that
+     * creature" (Nissa's Judgment): the group is the biters, not the victims, so it is one-target
+     * removal rather than a wrath.
+     */
+    private fun bitesOnlyAChosenTarget(body: Effect): Boolean {
+        val removal = EffectWalker.payoffLeaves(body).filter { IntentTag.REMOVAL in effectTags(it) }
+        return removal.isNotEmpty() && removal.all {
+            val target = groupTargetOf(it)
+            target is EffectTarget.ContextTarget || target is EffectTarget.BoundVariable
+        }
+    }
+
     /** The target of the leaf shapes [removalTags] reads a group off. */
     private fun groupTargetOf(effect: Effect): EffectTarget? = when (effect) {
         is MoveToZoneEffect -> effect.target
@@ -2320,6 +2334,12 @@ object CardIntentAnalyzer {
         // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
         // the battlefield, shut off — the Pacifism reading without the static.
         is RemoveAllAbilitiesEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.NEUTRALIZE) else emptySet()
+        // "Creatures your opponents control lose hexproof and indestructible until end of turn"
+        // (Bonds of Mortality), "target creature loses flying until end of turn": one keyword taken
+        // off another permanent opens it to the fight or the removal it shrugged off — a combat
+        // enhancement for our side, as a cut to its power alone is. The source losing its own
+        // ("this creature loses defender") is a body, not a plan.
+        is RemoveKeywordEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
 
         // "Untap target attacking creature an opponent controls and remove it from combat" (Spires
         // of Orazca, Labyrinth of Skophos): the attacker deals no damage and the blocker blocks
@@ -2566,7 +2586,7 @@ object CardIntentAnalyzer {
             val inner = effectTags(effect.body)
             val space = effect.space
             when {
-                space is IterationSpace.Group && IntentTag.REMOVAL in inner -> inner + IntentTag.SWEEPER
+                space is IterationSpace.Group && IntentTag.REMOVAL in inner && !bitesOnlyAChosenTarget(effect.body) -> inner + IntentTag.SWEEPER
                 // "For each player, destroy the creatures they control (but one)": the pipeline
                 // gathers `You` — the iterated player — so it only reads as a wrath in the
                 // iteration's frame. See [destroyAll].
