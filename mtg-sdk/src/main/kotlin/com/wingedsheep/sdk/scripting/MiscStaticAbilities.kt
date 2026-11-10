@@ -1390,14 +1390,22 @@ data class SpendAnyManaTypeForActivatedAbilities(
  * misleading `{3}`.
  *
  * @property filter Which spells the caster may pay for with mana of any type.
+ * @property asThoughAnyColor True is the printed **"you may spend mana as though it were mana of
+ *   any color to cast [these] spells"** (Oath of Nissa, planeswalker spells): any mana pays a
+ *   colored, hybrid or Phyrexian requirement, but colorless is a type rather than a color, so a
+ *   `{C}` pip still demands colorless mana ([com.wingedsheep.sdk.core.ManaCost.relaxColoredRequirements]).
+ *   False (the default) is "mana of any type can be spent" (CR 118.14), which relaxes `{C}` too —
+ *   the same axis as [SpendAnyManaTypeForActivatedAbilities.asThoughAnyColor].
  */
 @SerialName("SpendAnyManaTypeForSpells")
 @Serializable
 data class SpendAnyManaTypeForSpells(
-    val filter: GameObjectFilter
+    val filter: GameObjectFilter,
+    val asThoughAnyColor: Boolean = false
 ) : StaticAbility {
     override val description: String =
-        "You can spend mana of any type to cast ${filter.description} spells"
+        if (asThoughAnyColor) "You may spend mana as though it were mana of any color to cast ${filter.description} spells"
+        else "You can spend mana of any type to cast ${filter.description} spells"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

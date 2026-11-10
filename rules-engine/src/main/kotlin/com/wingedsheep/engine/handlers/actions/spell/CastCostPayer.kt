@@ -533,7 +533,9 @@ internal class CastCostPayer(
      *    gate open, and the `withAnyManaType` flag must be set on at least one of them.
      */
     fun isCastWithAnyManaType(state: GameState, action: CastSpell): Boolean {
-        if (castPermissionUtils.hasSpendAnyManaTypeStatic(state, action.playerId, action.cardId)) {
+        if (castPermissionUtils.staticSpellManaRelaxation(state, action.playerId, action.cardId) ==
+            com.wingedsheep.engine.legalactions.utils.SpellManaRelaxation.ANY_TYPE
+        ) {
             return true
         }
         val inGrantableZone = isCastFrom(state, action.cardId, Zone.EXILE) || isCastFrom(state, action.cardId, Zone.GRAVEYARD)
@@ -552,11 +554,19 @@ internal class CastCostPayer(
 
     /**
      * True if mana may be spent **as though it were mana of any color** on this spell (CR 609.4b):
-     * the may-play permission authorising the cast carries the rider (Stolen Strategy), or the
-     * library-top permission does (Xanathar, Guild Kingpin). Narrower
+     * a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells] static with `asThoughAnyColor`
+     * matches it (Oath of Nissa), the may-play permission authorising the cast carries the rider
+     * (Stolen Strategy), or the library-top permission does (Xanathar, Guild Kingpin). Narrower
      * than [isCastWithAnyManaType] — a `{C}` pip still needs colorless mana.
      */
     fun isCastWithAnyManaColor(state: GameState, action: CastSpell): Boolean {
+        // A blanket static (Oath of Nissa: "you may spend mana as though it were mana of any color
+        // to cast planeswalker spells") — zone-agnostic, like the any-type one.
+        if (castPermissionUtils.staticSpellManaRelaxation(state, action.playerId, action.cardId) ==
+            com.wingedsheep.engine.legalactions.utils.SpellManaRelaxation.ANY_COLOR
+        ) {
+            return true
+        }
         // A library-top permission carrying the rider (Xanathar, Guild Kingpin: "you may spend mana
         // as though it were mana of any color to cast spells this way").
         if (zoneResolver.topOfLibraryAlternativeGrant(state, action.playerId, action.cardId)?.withAnyManaColor == true) {

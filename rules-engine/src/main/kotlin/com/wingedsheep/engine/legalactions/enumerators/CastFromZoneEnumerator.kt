@@ -702,11 +702,14 @@ class CastFromZoneEnumerator(
                         } else {
                             baseEffectiveCost
                         }
-                        // Mana of any type: either the may-play permission itself carries the rider
-                        // (Taster of Wares, Tinybones) or a blanket static covers this spell wherever
-                        // it is cast from (Vizier of the Menagerie).
+                        // Mana of any type / color: either the may-play permission itself carries the
+                        // rider (Taster of Wares, Tinybones; Stolen Strategy) or a blanket static covers
+                        // this spell wherever it is cast from (Vizier of the Menagerie; Oath of Nissa).
+                        val blanketRelaxation = context.castPermissionUtils.spellManaRelaxation(state, playerId, cardId)
                         val anyManaType = permissions.any { it.withAnyManaType } ||
-                            context.castPermissionUtils.canSpendAnyManaTypeForSpell(state, playerId, cardId)
+                            blanketRelaxation == com.wingedsheep.engine.legalactions.utils.SpellManaRelaxation.ANY_TYPE
+                        val anyManaColor = permissions.any { it.withAnyManaColor } ||
+                            blanketRelaxation == com.wingedsheep.engine.legalactions.utils.SpellManaRelaxation.ANY_COLOR
                         // "Unless it targets a creature you control" (Mavinda): targets aren't chosen
                         // yet, so price the cheapest cast — waived when one of the spell's legal targets
                         // (any mode's, for a modal spell) matches; CastCostTotaller charges it against
@@ -721,7 +724,7 @@ class CastFromZoneEnumerator(
                         fun permitted(cost: ManaCost): ManaCost {
                             val relaxed = when {
                                 anyManaType -> cost.relaxColors()
-                                permissions.any { it.withAnyManaColor } -> cost.relaxColoredRequirements()
+                                anyManaColor -> cost.relaxColoredRequirements()
                                 else -> cost
                             }
                             return if (offeredCostIncrease != null) relaxed + offeredCostIncrease.cost else relaxed
@@ -1113,9 +1116,9 @@ class CastFromZoneEnumerator(
                         )
                     // "…and mana of any type can be spent to cast that spell" (Null Summoner,
                     // CR 609.4b) — the same relaxation CastCostPayer applies at payment.
-                    val anyManaType = grantAbility.withAnyManaType ||
-                        context.castPermissionUtils.canSpendAnyManaTypeForSpell(state, playerId, exiledId)
-                    fun permitted(cost: ManaCost): ManaCost = if (anyManaType) cost.relaxColors() else cost
+                    val relaxation = if (grantAbility.withAnyManaType) com.wingedsheep.engine.legalactions.utils.SpellManaRelaxation.ANY_TYPE
+                        else context.castPermissionUtils.spellManaRelaxation(state, playerId, exiledId)
+                    fun permitted(cost: ManaCost): ManaCost = relaxation?.relax(cost) ?: cost
                     val effectiveCost = if (freeCastFromGranter) null else permitted(pricing?.min ?: exiledCard.manaCost)
                     val costString = effectiveCost?.toString() ?: "0"
                     val costByTargetCount = pricing?.byCount?.mapValues { permitted(it.value).toString() }
