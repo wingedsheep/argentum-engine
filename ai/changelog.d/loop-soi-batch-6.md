@@ -1,0 +1,1 @@
+- #4617 The AI now reads a dynamic "scry X" (Brain in a Jar, Cascade Seer, Spotter Thopter) as card selection instead of an unknown effect.

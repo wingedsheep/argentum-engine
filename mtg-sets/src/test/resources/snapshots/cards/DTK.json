@@ -2426,6 +2426,45 @@
     ]
 }
 
+// Magmatic Chasm
+{
+    "name": "Magmatic Chasm",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures without flying can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "CantBlockGroup",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Our shamans assert their mastery over the land, thwarting the lesser clans' attempts to stand in the way of our dragonlord.\"\n—Allek, Atarka hunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e62a56c4-a3d9-43ab-83a8-6333578bcbc8.jpg?1783938587",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Because Magmatic Chasm's effect doesn't change the characteristics of any permanents, the set of creatures affected by Magmatic Chasm is constantly updated. Creatures without flying that enter the battlefield later in the turn won't be able to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Necromaster Dragon
 {
     "name": "Necromaster Dragon",
