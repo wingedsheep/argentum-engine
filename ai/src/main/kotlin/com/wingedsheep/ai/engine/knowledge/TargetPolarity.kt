@@ -536,13 +536,24 @@ object TargetPolarityAnalyzer {
             // "Destroy up to two target artifacts and/or enchantments" (Force of Vigor) runs its
             // body once per target, each seeing its target as `ContextTarget(0)`. With one slot
             // that is every target of that slot, so the body reads as the slot's; with several,
-            // `ContextTarget(0)` walks all of them and names no one slot.
+            // `ContextTarget(0)` walks every target of every slot in turn, so each slot reads as the
+            // body reads on that slot alone. "Return up to two target creatures your opponents
+            // control … Target player draws two cards" (Roiling Waters) bounces each creature and
+            // can't move the player: a body of object effects says nothing about a player slot
+            // (Homesickness guards its tap with "if it's a creature"), so only object slots take its
+            // reading and the rest are left to their other steps.
             if (leaf is ForEachEffect && leaf.space == IterationSpace.Targets) {
                 if (requirements.size == 1) {
                     // A bounce can save our creature from removal even when the spell can
                     // choose several targets. Preserve the body's either-way reading so target
                     // simulation can compare rescue against offensive tempo.
                     perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
+                } else {
+                    for ((slot, requirement) in requirements.withIndex()) {
+                        if (objectFilter(requirement) == null) continue
+                        val reading = forRequirements(leaf.body, listOf(requirement), definitions, source).single()
+                        if (reading != TargetPolarity.UNKNOWN) perSlot[slot] += reading
+                    }
                 }
                 continue
             }
@@ -1928,12 +1939,17 @@ object TargetPolarityAnalyzer {
      * A one-shot "+X/-X" whose toughness loss is a count that grows with the board — "where X is the
      * number of artifacts you control" (Tezzeret the Schemer), "sacrifice X Squirrels" (Chatterfang)
      * — is removal: X is sized to kill, and whatever the power side adds dies with the creature. A
-     * fixed "+2/-1" stays unread by [statsPolarity]: that small a loss is a trick for a sturdy
-     * creature of ours as often as a kill.
+     * fixed trade — "+3/-3 until end of turn" (Spatial Contortion), "+2/-1" — kills a small creature
+     * of theirs as often as it turns a sturdy one of ours into a bigger attacker, so like the lasting
+     * form ([lastingTradePolarity]) it reads [TargetPolarity.FLEXIBLE] and the simulation compares
+     * the candidates.
      */
     private fun oneShotStatsPolarity(power: DynamicAmount, toughness: DynamicAmount): TargetPolarity? =
         statsPolarity(power, toughness)
             ?: TargetPolarity.HARMFUL.takeIf { toughness !is DynamicAmount.Fixed && AmountSign.of(toughness) == AmountSign.LOSS }
+            ?: if (power is DynamicAmount.Fixed && toughness is DynamicAmount.Fixed) {
+                lastingTradePolarity(power.amount, toughness.amount)
+            } else null
 
     /**
      * A lasting "+N/-M" or "-N/+M" on the host (Boon of Emrakul's "+3/-3", Maggot Therapy's "+2/-2",

@@ -1,0 +1,1 @@
+- #PR The AI weighs a fixed one-shot "+N/-M" (Spatial Contortion) and a per-target bounce beside a player slot (Roiling Waters) by simulating both sides instead of guessing, and reads "whenever you cast your second spell each turn" as a spells payoff when deckbuilding.
