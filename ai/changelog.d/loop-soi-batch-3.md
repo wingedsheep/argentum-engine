@@ -1,0 +1,1 @@
+- #TBD The AI aims "return this card to the battlefield attached to target …" (Accursed Witch, Radiant Grace, Vengeful Strangler, Gryff's Boon) by what the returned Aura does to its host and counts it as recursion, and reads an each-player discard whose picks are collected and discarded together (Creeping Dread, Liliana, Waker of the Dead, Kroxa) as hand disruption

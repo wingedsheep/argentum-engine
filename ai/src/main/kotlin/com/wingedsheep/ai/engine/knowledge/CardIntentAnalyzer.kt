@@ -1587,16 +1587,18 @@ object CardIntentAnalyzer {
         // price, not the loot that would make a target player's hand our own.
         val refunds = handRefundDraws(root)
         val draws = leaves.any { (it is DrawCardsEffect && it !in refunds) || it is DrawUpToEffect }
-        val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
-            // "Search target player's graveyard, hand, and library for all cards with that name"
-            // (Cranial Extraction, Dispossess, Necromentia): a several-zone search that reaches the
-            // hand strips it the same way.
-            val (zones, player) = when (val source = (leaf as? GatherCardsEffect)?.source) {
-                is CardSource.FromZone -> listOf(source.zone) to source.player
-                is CardSource.FromMultipleZones -> source.zones to source.player
-                else -> return@mapNotNullTo null
-            }
-            leaf.storeAs.takeIf { Zone.HAND in zones && isAnotherPlayersHand(player, eachPlayer, draws, symmetric) }
+        val theirHand = handCollections(leaves, eachPlayer, draws, symmetric)
+        // "Each player discards a card" written as a loop that has each player pick their card, in
+        // turn order, and hands the picks out to discard all at once after it (Creeping Dread,
+        // Liliana, Waker of the Dead, Kroxa's "each opponent discards a card"): the loop's hand
+        // collections, read in its frame, become the aggregates it collects them into — as
+        // [boardGroups] follows a collecting loop's permanents. Over every player, `you` in the
+        // body is an opponent in turn only once [symmetricDiscardTags] has ruled out a wheel.
+        for (loop in leaves.filterIsInstance<ForEachEffect>()) {
+            val players = (loop.space as? IterationSpace.Players)?.players ?: continue
+            if (loop.collectCollections.isEmpty()) continue
+            val inner = handCollections(readingLeaves(loop.body), players, draws, symmetric && players in SYMMETRIC_PLAYERS)
+            for ((each, all) in loop.collectCollections) if (each in inner) theirHand += all
         }
         if (theirHand.isEmpty()) return emptySet()
         do {
@@ -1608,6 +1610,29 @@ object CardIntentAnalyzer {
                 (it.destination as? CardDestination.ToZone)?.zone in HAND_DISRUPTION_DESTINATIONS
         }
         return if (takesThem) setOf(IntentTag.DISCARD) else emptySet()
+    }
+
+    /**
+     * The collections of [leaves] gathered from another player's hand ([isAnotherPlayersHand]),
+     * with every collection split or narrowed out of them — [handDisruptionTags]'s seed.
+     */
+    private fun handCollections(leaves: List<Effect>, eachPlayer: Player?, draws: Boolean, symmetric: Boolean): HashSet<String> {
+        val theirHand = leaves.mapNotNullTo(HashSet()) { leaf ->
+            // "Search target player's graveyard, hand, and library for all cards with that name"
+            // (Cranial Extraction, Dispossess, Necromentia): a several-zone search that reaches the
+            // hand strips it the same way.
+            val (zones, player) = when (val source = (leaf as? GatherCardsEffect)?.source) {
+                is CardSource.FromZone -> listOf(source.zone) to source.player
+                is CardSource.FromMultipleZones -> source.zones to source.player
+                else -> return@mapNotNullTo null
+            }
+            leaf.storeAs.takeIf { Zone.HAND in zones && isAnotherPlayersHand(player, eachPlayer, draws, symmetric) }
+        }
+        do {
+            val before = theirHand.size
+            for (leaf in leaves) theirHand += derivedCollections(leaf, theirHand)
+        } while (theirHand.size != before)
+        return theirHand
     }
 
     /**
@@ -1678,7 +1703,11 @@ object CardIntentAnalyzer {
         if (draws) return emptySet()
         val discards = symmetric.any {
             IntentTag.DISCARD in handDisruptionTags(it.body, (it.space as IterationSpace.Players).players, symmetric = true)
-        }
+        } ||
+            // The picks collected out of the loop and discarded together after it (Creeping Dread):
+            // the move is outside the body, so the whole effect is read, the loop in its own frame.
+            (symmetric.any { it.collectCollections.isNotEmpty() } &&
+                IntentTag.DISCARD in handDisruptionTags(root, eachPlayer = null, symmetric = true))
         return if (discards) setOf(IntentTag.DISCARD) else emptySet()
     }
 
@@ -2461,6 +2490,11 @@ object CardIntentAnalyzer {
 
         is EachPlayerDiscardsOrLoseLifeEffect -> setOf(IntentTag.DISCARD)
         is ReturnSameNamedFromGraveyardEffect -> setOf(IntentTag.RECURSION)
+        // "Return this card to the battlefield (transformed) attached to target opponent" (Accursed
+        // Witch, Radiant Grace, Gryff's Boon, Dragon Wings): our own card back out of the graveyard
+        // as an Aura — the single-card return a graveyard-to-battlefield [MoveToZoneEffect] reads
+        // as. Whom it lands on is the polarity reader's question, read off what the Aura does.
+        is ReturnSelfToBattlefieldAttachedEffect -> setOf(IntentTag.RECURSION)
 
         // A wrath is "for each creature: destroy it" — an iteration, not a group-targeted move, so
         // the shape only shows up here. [EffectWalker] deliberately treats a ForEach as a leaf (see
