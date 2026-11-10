@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.CostZone
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
@@ -46,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap
  *    `player = You` (`DynamicAmount.Count(You, GRAVEYARD)` for threshold-style counts, the
  *    distinct-type aggregation behind delirium, a gather from your graveyard). A "search your
  *    library and/or graveyard" choice is a tutor, not a payoff;
+ *  - exiles cards from **your** graveyard as a cost (`CostAtom.ExileFrom(GRAVEYARD)`);
  *  - targets a card only **your** graveyard holds (a `TargetFilter` in the graveyard owned or
  *    controlled by you), however the effect then moves it.
  *
@@ -117,6 +119,10 @@ object GraveyardSynergy {
             // "Whenever you activate an ability of a card in your graveyard" (Neerdiv) does the same
             // for embalm, unearth and the other graveyard abilities.
             if (node is EventPattern.AbilityActivatedEvent && node.sourceFilter?.namesGraveyard() == true) return true
+            // "Exile a creature card from your graveyard" as an activation or additional cost (Null
+            // Caller, Scarred Vinebreeder): the atom's `zone` is the payer's own, with no `player` beside it.
+            // A cost that may take any player's graveyard (Night Soil) is graveyard hate, not a payoff.
+            if (node is CostAtom.ExileFrom) return node.zone == Zone.GRAVEYARD && !node.anyPlayersZone
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false

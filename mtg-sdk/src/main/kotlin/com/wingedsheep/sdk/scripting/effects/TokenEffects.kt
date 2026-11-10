@@ -248,14 +248,16 @@ data class CreateTokenEffect(
         // intentionally not rendered here to keep existing artifact-token descriptions stable.)
         val cardTypeWord = if (enchantmentToken) "enchantment creature" else "creature"
         append("Create ")
+        // "Create a tapped 2/2 black Zombie creature token" (Drana's Chosen, Null Caller).
+        val tappedWord = if (tapped) "tapped " else ""
         when (val c = count) {
             is DynamicAmount.Fixed -> {
                 append(if (c.amount == 1) "a" else "${c.amount}")
-                append(" $pt $colorWord $typeWord $cardTypeWord token")
+                append(" $tappedWord$pt $colorWord $typeWord $cardTypeWord token")
                 if (c.amount != 1) append("s")
             }
             else -> {
-                append("${c.description} $pt $colorWord $typeWord $cardTypeWord tokens")
+                append("${c.description} $tappedWord$pt $colorWord $typeWord $cardTypeWord tokens")
             }
         }
         val keywordWords = keywords.map { it.name.lowercase() } +

@@ -1,0 +1,122 @@
+{
+  "Bearer of Silence": [
+    "removal",
+    "creature-removal"
+  ],
+  "Boulder Salvo": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra, Flamecaller": [
+    "removal",
+    "creature-removal"
+  ],
+  "Consuming Sinkhole": [
+    "removal",
+    "planeswalker-removal"
+  ],
+  "Containment Membrane": [
+    "removal",
+    "creature-removal"
+  ],
+  "Devour in Flames": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fall of the Titans": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flaying Tendrils": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grasp of Darkness": [
+    "removal",
+    "creature-removal"
+  ],
+  "Immolating Glare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Isolation Zone": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Kozilek's Return": [
+    "removal",
+    "creature-removal"
+  ],
+  "Natural State": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Nissa's Judgment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Oath of Chandra": [
+    "removal",
+    "creature-removal"
+  ],
+  "Oblivion Strike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reality Hemorrhage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Reflector Mage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Remorseless Punishment": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Roiling Waters": [
+    "removal",
+    "creature-removal"
+  ],
+  "Searing Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spatial Contortion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sweep Away": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tar Snare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tears of Valakut": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tyrant of Valakut": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Warping Wail": [
+    "removal",
+    "creature-removal"
+  ],
+  "World Breaker": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ]
+}

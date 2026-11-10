@@ -617,7 +617,9 @@ class ActivatedAbilityEnumerator(
                                             state, atom,
                                             context.costUtils.findTapCostTargets(
                                                 state, playerId, atom,
-                                                if (atom.excludeSelf) entityId else null
+                                                // Paying {T} taps the source, so it can't also be one
+                                                // of the "untapped" permanents (cohort, Loam Dryad).
+                                                if (atom.excludeSelf || hasTapCost) entityId else null
                                             )
                                         )
                                         if (tapTargets.size < atom.count) {

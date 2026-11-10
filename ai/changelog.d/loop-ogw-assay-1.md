@@ -1,0 +1,1 @@
+- #4620 Reads "exile a card from your graveyard" activation and additional costs (Null Caller, Scarred Vinebreeder) as graveyard payoffs, so a deck running them values filling its own graveyard
