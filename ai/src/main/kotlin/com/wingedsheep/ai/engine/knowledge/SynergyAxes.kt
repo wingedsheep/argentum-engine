@@ -291,6 +291,13 @@ object SynergyAxes {
                 (rewardsSpells(pattern.spellFilter) || pattern.requires.any(::requiresTargeting))
             ) setOf(SynergyAxis.SPELLS)
             else emptySet()
+        // "Whenever you cast your second spell each turn" (Pyromancer's Assault) pays off a turn of
+        // two spells, which the deck's cheap instants and sorceries are what make possible.
+        is EventPattern.NthSpellCastEvent ->
+            if (pattern.player == Player.You && pattern.nthSpell >= 2 &&
+                pattern.spellFilter.let { it == null || rewardsSpells(it) }
+            ) setOf(SynergyAxis.SPELLS)
+            else emptySet()
         // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
         // counterspells — instants, which is what feeds the spells axis.
         is EventPattern.CounterSpellEvent ->
