@@ -3982,6 +3982,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   A chosen card name (`Any.namedFromVariable(slot)`, i.e. `NameEqualsChosen`) is frozen the same way into a
   literal `NameEquals` — **Academic Probation**: `chooseCardName(pool = CardNamePool.NONLAND)` →
   `CantCastSpells(PlayerRef(EachOpponent), UntilYourNextTurn, Any.namedFromVariable(name))`.
+  An entity's name (`Any.sharingNameWith(entity)`, i.e. `SharesNameWith`) is frozen too, read from the projection
+  (a copy or a transformed face is named as it is on the battlefield); a face-down or unresolvable reference has no
+  name, so that ban matches nothing. Sequence the ban *before* a move that would make the reference a new object —
+  **Reflector Mage**: `CantCastSpells(PlayerRef(OwnerOf("target creature an opponent controls")), UntilYourNextTurn,
+  Any.sharingNameWith(creature)) then ReturnToHand(creature)` (the rulings name the creature as it was on the battlefield).
   A mana-value ban reads the X chosen for an `{X}` spell (CR 202.3e): the offer stays up unless the ban holds at
   every X, and validation rejects a banned X.
   Use characteristic filters independent of the casting process, such as type, subtype, color or mana value.

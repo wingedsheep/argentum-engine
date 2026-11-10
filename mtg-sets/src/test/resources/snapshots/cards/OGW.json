@@ -3085,6 +3085,82 @@
     ]
 }
 
+// Reflector Mage
+{
+    "name": "Reflector Mage",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, return target creature an opponent controls to its owner's hand. That creature's owner can't cast spells with the same name as that creature until your next turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reflector Mage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantCastSpells",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": {
+                                    "type": "OwnerOf",
+                                    "targetDescription": "target creature an opponent controls"
+                                }
+                            },
+                            "duration": "UntilYourNextTurn",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesNameWith",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, return target creature an opponent controls to its owner's hand. That creature's owner can't cast spells with the same name as that creature until your next turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/9473fe01-83f6-4432-ab01-f7953d2ca904.jpg?1783937896"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Relentless Hunter
 {
     "name": "Relentless Hunter",
