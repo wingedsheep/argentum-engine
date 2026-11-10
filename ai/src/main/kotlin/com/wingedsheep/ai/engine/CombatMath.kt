@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.core.doesntUntapDuringUntapStep
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
@@ -84,6 +85,15 @@ object CombatMath {
             val sharesColor = aColors.any { it in bColors }
             if (!sharesColor && "ARTIFACT" !in bTypes) return false
         }
+
+        // "Target creature can't block this creature this turn" (Screeching Griffin, Kozilek's
+        // Pathfinder): a pairwise floating restriction, the engine's CantBlockSpecificAttackerRule.
+        if (state.floatingEffects.any { floating ->
+                val modification = floating.effect.modification
+                modification is SerializableModification.CantBlockSpecificAttacker &&
+                    modification.attackerId == attacker && blocker in floating.effect.affectedEntities
+            }
+        ) return false
 
         // Protection (CR 702.16f — attacking creatures with protection can't be blocked by creatures
         // that have the stated quality).

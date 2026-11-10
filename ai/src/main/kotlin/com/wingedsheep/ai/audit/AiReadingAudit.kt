@@ -1330,6 +1330,17 @@ object AiReadingAudit {
             val sources = stages.filterIsInstance<GatherCardsEffect>().map { it.source }
             return sources.isNotEmpty() && sources.all { it is CardSource.FromZone && it.zone == Zone.GRAVEYARD && it.player == Player.You }
         }
+        // Our own library exiled whole (Leveler, Inverter of Truth: "exile all cards from your
+        // library") is the card's drawback, never a search ([CardIntentAnalyzer.binnedLibraryGathers]);
+        // Inverter's "then shuffle your graveyard into your library" only refills what it emptied.
+        if (label.startsWith("Pipeline(library→exile") || label.startsWith("Pipeline(graveyard|library→exile")) {
+            val gathers = stages.filterIsInstance<GatherCardsEffect>()
+            val binned = CardIntentAnalyzer.binnedLibraryGathersOf(stages)
+            return gathers.any { it in binned } && gathers.all { gather ->
+                val source = gather.source as? CardSource.FromZone
+                gather in binned || (source != null && source.zone == Zone.GRAVEYARD && source.player == Player.You)
+            }
+        }
         // A discard out of our own hand — Pale Rider of Trostad's and Bloodrage Brawler's "when this
         // enters, discard a card", Rotting Regisaur's upkeep, Song of Creation's "discard your hand" —
         // is the card's drawback or graveyard fuel, as a self-mill is: never the disruption

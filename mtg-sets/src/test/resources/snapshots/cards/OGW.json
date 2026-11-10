@@ -1207,6 +1207,137 @@
     ]
 }
 
+// Deceiver of Form
+{
+    "name": "Deceiver of Form",
+    "manaCost": "{6}{C}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "({C} represents colorless mana.)\nAt the beginning of combat on your turn, reveal the top card of your library. If a creature card is revealed this way, you may have creatures you control other than this creature become copies of that card until end of turn. You may put that card on the bottom of your library.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deceiver of Form:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "matching2",
+                                    "filter": "creature"
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayDecide",
+                                    "prompt": "Have creatures you control other than Deceiver of Form become copies of the revealed card until end of turn?"
+                                },
+                                "then": {
+                                    "type": "EachPermanentBecomesCopyOfTarget",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "matching2"
+                                    },
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    },
+                                    "duration": "EndOfTurn",
+                                    "sourceFromAnyZone": true
+                                }
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected4",
+                            "prompt": "You may put the revealed card on the bottom of your library",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Leave on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, reveal the top card of your library. If a creature card is revealed this way, you may have creatures you control other than this creature become copies of that card until end of turn. You may put that card on the bottom of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a416d54b-ac84-48ac-92f8-eeb348f26016.jpg?1783937931",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You may put the card on the bottom of your library in any of the possible scenarios that could occur with this card. It doesn't matter whether the card is a creature card or not. If it is a creature card, it doesn't matter whether you chose to have the copy effect apply."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If applicable, creatures you control copy the printed values of the revealed creature card. They will retain any counters they had on them. Any Auras and/or Equipment that were attached with them will remain so."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Any noncopy effects that affected a creature you control, including ones that modified its power and/or toughness, will continue to apply."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a creature you control becomes a copy of the revealed creature card, it's neither entering nor leaving the battlefield. Any enters-the-battlefield or leaves-the-battlefield abilities won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Deepfathom Skulker
 {
     "name": "Deepfathom Skulker",
@@ -1334,6 +1465,116 @@
     ]
 }
 
+// Dimensional Infiltrator
+{
+    "name": "Dimensional Infiltrator",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nFlash\nFlying\n{1}{C}: Target opponent exiles the top card of their library. If it's a land card, you may return this creature to its owner's hand. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dimensional Infiltrator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "moved1",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayDecide",
+                                    "prompt": "Return Dimensional Infiltrator to its owner's hand?",
+                                    "sourceRequiredZone": "Battlefield"
+                                },
+                                "then": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Hand"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{C}: Target opponent exiles the top card of their library. If it's a land card, you may return this creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ea28dd5-57b0-4255-a3d9-1c190c446f20.jpg?1783937921",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You choose whether to return Dimensional Infiltrator to its owner's hand as its ability resolves. If the exiled card is a land card, you can't wait and return Dimensional Infiltrator at a later time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drana's Chosen
 {
     "name": "Drana's Chosen",
@@ -1385,6 +1626,300 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Eldrazi Aggressor
+{
+    "name": "Eldrazi Aggressor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nThis creature has haste as long as you control another colorless creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"They employ a foul sort of teamwork.\"\n—General Tazri, allied commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62f3ec85-552d-4e28-939e-ab2c39e3e9c5.jpg?1783937909",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If it's the turn Eldrazi Aggressor comes under your control, and it loses haste after being declared as an attacker, it will continue to attack. It won't be removed from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Eldrazi Displacer
+{
+    "name": "Eldrazi Displacer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\n{2}{C}: Exile another target creature, then return it to the battlefield tapped under its owner's control. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Eldrazi Displacer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "placement": "Tapped"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0bb1a5c-0f59-4951-827f-fe9df968232d.jpg?1783937928",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If a creature token is exiled this way, it will cease to exist and will not return to the battlefield."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "After the creature returns to the battlefield, it will be a new object with no connection to the creature that was exiled. It won't be in combat or have any additional abilities it may have had when it was exiled. Any +1/+1 counters on it or Auras attached to it are removed, and any Equipment will no longer be attached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Eldrazi Mimic
+{
+    "name": "Eldrazi Mimic",
+    "manaCost": "{2}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Whenever another colorless creature you control enters, you may have this creature's base power and toughness become equal to that creature's power and toughness until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eldrazi Mimic:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "SetBaseStats",
+                        "target": "Self",
+                        "power": {
+                            "type": "EntityProperty",
+                            "entity": "TriggeringEntity",
+                            "numericProperty": "Power"
+                        },
+                        "toughness": {
+                            "type": "EntityProperty",
+                            "entity": "TriggeringEntity",
+                            "numericProperty": "Toughness"
+                        },
+                        "duration": "EndOfTurn"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "flavorText": "It is consistently inconsistent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/311a05b1-042d-47e7-9fd7-6e8abe8fc578.jpg?1783937930",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Use the new creature's power and toughness at the time the ability resolves to determine the base power and toughness of Eldrazi Mimic. If that creature is no longer on the battlefield at that time, use its power and toughness when it left the battlefield. (Keep in mind that those values may be negative, for example if a spell like Spatial Contortion giving it +3/-3 is what caused it to leave the battlefield.)"
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Eldrazi Mimic's ability will overwrite any other effect setting its base power and toughness. Such effects that begin to apply after that ability resolves will similarly overwrite the ability. Effects that modify Eldrazi Mimic's power and/or toughness but don't set its base power and/or toughness to specific values will apply no matter when they started to apply. The same is true for any +1/+1 counters it may have."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Eldrazi Obligator
+{
+    "name": "Eldrazi Obligator",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhen you cast this spell, you may pay {1}{C}. If you do, gain control of target creature until end of turn, untap that creature, and it gains haste until end of turn. ({C} represents colorless mana.)\nHaste",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eldrazi Obligator:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{C}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, you may pay {1}{C}. If you do, gain control of target creature until end of turn, untap that creature, and it gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfaa8b16-7c12-44e2-8ddb-17608d491c41.jpg?1783937909",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You may choose any creature as the target of Eldrazi Obligator’s triggered ability, including one that’s untapped or one you already control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1934,6 +2469,69 @@
     ]
 }
 
+// Flayer Drone
+{
+    "name": "Flayer Drone",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFirst strike\nWhenever another colorless creature you control enters, target opponent loses 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flayer Drone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3931db42-3773-4aae-b6eb-2209e7312f8c.jpg?1783937897"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Goblin Dark-Dwellers
 {
     "name": "Goblin Dark-Dwellers",
@@ -2322,6 +2920,66 @@
     "colorIdentityOverride": []
 }
 
+// Immobilizer Eldrazi
+{
+    "name": "Immobilizer Eldrazi",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{2}{C}: Each creature with toughness greater than its power can't block this turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Immobilizer Eldrazi:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{C}"
+                    }
+                },
+                "effect": {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "ToughnessGreaterThanPower"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "It denied the Zendikari the chance to stand and die fighting.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95d9c92d-8b1b-4adc-8015-d50e673b6321.jpg?1783937910",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You compare the power and toughness as you declare blockers, not as Immobilizer Eldrazi's ability resolves. For example, if you control a 3/3 creature as the ability resolves, then later that turn it gets +0/+1 such that it's 3/4 as blockers are declared, it won't be able to block."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a creature has already been legally declared as a blocker, Immobilizer Eldrazi's ability won't change or undo that block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Immolating Glare
 {
     "name": "Immolating Glare",
@@ -2357,6 +3015,94 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Inverter of Truth
+{
+    "name": "Inverter of Truth",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhen this creature enters, exile all cards from your library face down, then shuffle all cards from your graveyard into your library.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inverter of Truth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "gathered0",
+                            "lookAudience": "None"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, exile all cards from your library face down, then shuffle all cards from your graveyard into your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "flavorText": "In its shadow, everything changed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88c9d8c5-333b-4281-b923-b4a060927bbc.jpg?1783937915",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "No player can look at the cards once they're exiled."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If your opponent puts one of the face-down exiled cards into your graveyard (for example, to activate an ability of an Eldrazi Processor), choose one of the cards at random. The card is revealed only after the cost is fully paid. That is, your opponent can't learn what card was chosen and decide to back up (not cast the spell, activate the ability, or so on, as applicable)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2539,6 +3285,62 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Kozilek's Pathfinder
+{
+    "name": "Kozilek's Pathfinder",
+    "manaCost": "{6}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "{C}: Target creature can't block this creature this turn. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kozilek's Pathfinder:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{C}"
+                    }
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "attacker": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "James Zapata",
+        "flavorText": "\"We didn't know where it came from or where it was going. All we knew was that we did not matter.\"\n—Akiri, kor line-slinger",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b75585bd-fdd8-44d1-8c7c-b96df5fc473e.jpg?1783937930",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Activating the ability once Kozilek's Pathfinder has been legally blocked won't change or undo that block."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Kozilek's Shrieker
@@ -2975,6 +3777,110 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Matter Reshaper
+{
+    "name": "Matter Reshaper",
+    "manaCost": "{2}{C}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "({C} represents colorless mana.)\nWhen this creature dies, reveal the top card of your library. You may put that card onto the battlefield if it's a permanent card with mana value 3 or less. Otherwise, put that card into your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Matter Reshaper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "permanent mv<=3",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Put the revealed card onto the battlefield? Otherwise it goes to your hand.",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3906b61a-3865-4dfd-ae06-a7d2a608851a.jpg?1783937929",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If you put an Aura card onto the battlefield this way, you choose what it enchants as it enters the battlefield. You must be able to choose a legal player or permanent or you can't put the Aura onto the battlefield."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If you don't put the card onto the battlefield for any reason, you put the card into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Maw of Kozilek
@@ -3805,6 +4711,122 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Reality Smasher
+{
+    "name": "Reality Smasher",
+    "manaCost": "{4}{C}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "({C} represents colorless mana.)\nTrample, haste\nWhenever this creature becomes the target of a spell an opponent controls, counter that spell unless its controller discards a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reality Smasher:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "byOpponent": true,
+                    "spellsOnly": true
+                },
+                "effect": {
+                    "type": "WardCounter",
+                    "cost": "WardCost.Discard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "As easy to stop as it is to comprehend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52d4b652-a830-4fd4-94bb-c17c227f2928.jpg?1783937929",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The last ability will trigger due to any spell controlled by an opponent (including an Aura spell) that targets Reality Smasher."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Reaver Drone
+{
+    "name": "Reaver Drone",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nAt the beginning of your upkeep, you lose 1 life unless you control another colorless creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reaver Drone:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ]
+                            },
+                            "negate": true,
+                            "excludeSelf": true
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "Kozilek's brood infiltrates and deceives. The spawn of Ulamog mindlessly consume.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/162f3fb8-75b7-4cd7-9d6c-27dd76197aa5.jpg?1783937914",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Whether you control another colorless creature is checked as the ability resolves. This check will happen even if Reaver Drone leaves the battlefield in response to the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5342,6 +6364,99 @@
     ]
 }
 
+// Thought Harvester
+{
+    "name": "Thought Harvester",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhenever you cast a colorless spell, target opponent exiles the top card of their library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thought Harvester:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "exiled_top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled_top",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a colorless spell, target opponent exiles the top card of their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "\"I never thought I'd miss the gomazoa.\"\n—Trinda, Hada spy patrol",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46f9eeb2-22f6-4bdb-bbf8-f53774cc6226.jpg?1783937920",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The card is exiled face up."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The triggered ability will resolve before the colorless spell that caused it to trigger."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The Battle for Zendikar colorless creature cards Blight Herder and Ruin Processor each have an ability that triggers when you cast it that allows you to put a card owned by an opponent from exile into that player’s graveyard. Both that ability and Thought Harvester’s ability trigger at the same time, so you can put them on the stack in any order. If Thought Harvester’s ability resolves first (meaning it went on the stack last), the card exiled by that ability can be “processed” by the other ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thought-Knot Seer
 {
     "name": "Thought-Knot Seer",
@@ -5850,6 +6965,56 @@
         "GREEN",
         "BLUE"
     ]
+}
+
+// Walker of the Wastes
+{
+    "name": "Walker of the Wastes",
+    "manaCost": "{4}{C}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "({C} represents colorless mana.)\nTrample\nThis creature gets +1/+1 for each land you control named Wastes.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land name:Wastes"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land name:Wastes"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "In the absence of life, something yet grows.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34f635ac-ad6d-4a13-a08e-64c8e2b9779c.jpg?1783937928",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The last ability applies only if Walker of the Wastes is on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Warden of Geometries

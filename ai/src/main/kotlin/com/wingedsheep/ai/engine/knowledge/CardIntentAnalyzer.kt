@@ -67,6 +67,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.WardCounterEffect
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.*
@@ -279,7 +280,7 @@ object CardIntentAnalyzer {
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
-        val refunds = handRefundDraws(effect) + refundSearches(effect)
+        val refunds = refundsOf(effect)
         for (leaf in readingLeaves(effect, requirements)) {
             tags += refundedTagsOf(leaf, refunds)
             // "Target creature becomes a Coward" beside "Cowards can't block Warriors" is the
@@ -367,7 +368,7 @@ object CardIntentAnalyzer {
         // hand, it gains none. Its draw reads as the card selection it is.
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
             .flatMap { readingLeaves(it.effect, it.targetRequirements) }
-        val refunds = roots.flatMapTo(HashSet<Effect>()) { handRefundDraws(it) + refundSearches(it) }
+        val refunds = roots.flatMapTo(HashSet<Effect>()) { refundsOf(it) }
         for (effect in leaves) {
             tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -1090,18 +1091,49 @@ object CardIntentAnalyzer {
         ownPile: Boolean = false,
         pileCast: Set<IntentTag> = emptySet(),
     ): Set<IntentTag> =
-        (handRefundDraws(root) + refundSearches(root)).let { refunds ->
+        refundsOf(root).let { refunds ->
             readingLeaves(root, requirements).flatMapTo(HashSet()) { refundedTagsOf(it, refunds) }
         } + pipelineTags(root, ownPile = ownPile, pileCast = pileCast)
 
     /**
-     * [tagsOf], except that a draw or search in [refunds] ([handRefundDraws], [refundSearches]) is
+     * The draws and library gathers in [root] that are not the card's own card draw or tutor:
+     * [handRefundDraws], [refundSearches] and [binnedLibraryGathers].
+     */
+    private fun refundsOf(root: Effect): List<Effect> =
+        handRefundDraws(root) + refundSearches(root) + binnedLibraryGathers(root)
+
+    /**
+     * [tagsOf], except that a draw or search in [refunds] ([refundsOf]) is
      * not the card's own card draw or tutor.
      */
     private fun refundedTagsOf(leaf: Effect, refunds: Collection<Effect>): Set<IntentTag> = when {
         leaf is DrawCardsEffect && leaf in refunds -> tagsOf(leaf) - IntentTag.DRAW
         leaf is GatherCardsEffect && leaf in refunds -> tagsOf(leaf) - IntentTag.TUTOR
         else -> tagsOf(leaf)
+    }
+
+    /**
+     * "Exile all cards from your library face down" (Inverter of Truth, Leveler): our own library
+     * gathered only to be exiled, with nothing picked out of it and nothing played or moved on from
+     * where it went, finds no card we need — not a tutor. A self-mill into the graveyard is fuel,
+     * not this.
+     */
+    internal fun binnedLibraryGathers(root: Effect): List<GatherCardsEffect> = binnedLibraryGathersOf(readingLeaves(root))
+
+    /** [binnedLibraryGathers] over a pipeline's own [leaves]. */
+    internal fun binnedLibraryGathersOf(leaves: List<Effect>): List<GatherCardsEffect> {
+        if (usesTheExiledCard(leaves)) return emptyList()
+        return leaves.filterIsInstance<GatherCardsEffect>().filter { gather ->
+            val source = gather.source as? CardSource.FromZone
+            if (source == null || source.zone != Zone.LIBRARY || !searchesOwnZones(gather, source.player)) return@filter false
+            val sources = setOf(gather.storeAs)
+            val moves = leaves.filterIsInstance<MoveCollectionEffect>().filter { it.from == gather.storeAs }
+            val movedOn = moves.mapNotNullTo(HashSet()) { it.storeMovedAs }
+            moves.isNotEmpty() &&
+                moves.all { (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE } &&
+                leaves.none { it !is MoveCollectionEffect && derivedCollections(it, sources).isNotEmpty() } &&
+                leaves.none { derivedCollections(it, movedOn).isNotEmpty() || (it is MoveCollectionEffect && it.from in movedOn) }
+        }
     }
 
     /**
@@ -1518,7 +1550,8 @@ object CardIntentAnalyzer {
     /**
      * "Search target player's library for up to five cards and exile them" (Supreme Inquisitor):
      * cards taken out of another player's library for good, by us — the exile form of milling them
-     * toward an empty library, [IntentTag.MILL]. Not our tutor ([searchesOwnZones]); a search we
+     * toward an empty library, [IntentTag.MILL] — and so is "target opponent exiles the top card
+     * of their library" (Thought Harvester), the top-of-library form. Not our tutor ([searchesOwnZones]); a search we
      * hand to its owner (Settle the Wreckage), or cards exiled to be played (a theft, see
      * [usesTheExiledCard]), are not this.
      */
@@ -1527,10 +1560,15 @@ object CardIntentAnalyzer {
         if (usesTheExiledCard(leaves)) return emptySet()
         val seed = leaves.mapNotNullTo(HashSet()) { leaf ->
             val gather = leaf as? GatherCardsEffect ?: return@mapNotNullTo null
-            val source = gather.source as? CardSource.FromZone ?: return@mapNotNullTo null
-            gather.storeAs.takeIf {
-                source.zone == Zone.LIBRARY && gather.searcher == Player.You && canMillOpponent(source.player)
+            val fromOpponentsLibrary = when (val source = gather.source) {
+                is CardSource.FromZone -> source.zone == Zone.LIBRARY && canMillOpponent(source.player)
+                // "Target opponent exiles the top card of their library" (Thought Harvester,
+                // Dimensional Infiltrator): the same depletion, one card off the top.
+                is CardSource.TopOfLibrary -> !source.isScry && !source.isSurveil &&
+                    canMillOpponent(source.player) && ((source.count as? DynamicAmount.Fixed)?.amount ?: 1) > 0
+                else -> false
             }
+            gather.storeAs.takeIf { fromOpponentsLibrary && gather.searcher == Player.You }
         }
         if (seed.isEmpty()) return emptySet()
         do {
@@ -2453,6 +2491,10 @@ object CardIntentAnalyzer {
         // taken out of the opponent's defence — the single-creature form of the team-wide evasion
         // above. "This creature can't block" on its own source is a drawback, not a payoff.
         is CantBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.EVASION_GRANT) else emptySet()
+        // "Whenever this becomes the target of a spell an opponent controls, counter that spell
+        // unless its controller discards a card" (Reality Smasher; Amulet of Safekeeping): Ward's
+        // tax on answering our permanent, the same [IntentTag.PROTECTION] the keyword reads as.
+        is WardCounterEffect -> setOf(IntentTag.PROTECTION)
         // "You may cast an instant or sorcery spell from your hand without paying its mana cost"
         // (Wildfire Eternal, Omnispell Adept), "… cast it without paying its mana cost" off the top
         // of a library or out of exile: a spell for free, see [IntentTag.FREE_SPELL]. A cast that

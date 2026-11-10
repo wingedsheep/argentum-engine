@@ -30,6 +30,9 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -537,8 +540,9 @@ internal object ExpiringGrantWindow {
      *    can't-block, or a can't-attack after their attack, gets the source back before its next
      *    window, so the counter there is free and stays the leaf's call.
      *
-     * Any other leaf, a restriction on a creature of ours, a target that cannot be resolved, or a
-     * stack object that threatens us hands the decision back to the leaf score.
+     * Any other leaf, a targeted restriction on a creature of ours, a target that cannot be
+     * resolved, or a stack object that threatens us hands the decision back to the leaf score. A
+     * group can't-block sweeps ours in unasked, so our own members of it are skipped instead.
      */
     private fun restrictionHasNoWindow(
         state: GameState,
@@ -547,7 +551,7 @@ internal object ExpiringGrantWindow {
         activation: ActivateAbility,
         intents: IntentCatalog,
     ): Boolean {
-        val (restrictions, sideBenefit) = restrictionShape(ability.effect) ?: return false
+        val (restrictions, groupCantBlocks, sideBenefit) = restrictionShape(ability.effect) ?: return false
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
 
         val projected = state.projectedState
@@ -574,11 +578,44 @@ internal object ExpiringGrantWindow {
                 if (cantAttack || cantBlock) return false
             }
         }
+        // "Each creature with toughness greater than its power can't block this turn" (Immobilizer
+        // Eldrazi): judged on the creatures the group holds now. A group sweeps ours in whether we
+        // want them or not, and keeping our own creature from blocking buys us nothing on any
+        // turn — on ours we never block, on theirs it only costs us a blocker. An opposing one it
+        // can still keep out of a block is the leaf's call; nothing else is a window.
+        for (group in groupCantBlocks) {
+            val members = groupMembers(state, projected, playerId, group, activation.sourceId, intents) ?: return false
+            for (creature in members) {
+                if (projected.getController(creature) == playerId) continue
+                if (ourTurn && opposingCanStillBeBlockedOut(state, creature)) return false
+            }
+        }
         if (!sideBenefit) return true
 
         // The side benefit is bought again in the restriction's own window, unless activating now
         // keeps the source tapped through it.
-        return tapsItsSource(ability) && ourTurn && restrictions.all { (kind, _) -> kind == Restriction.CANT_ATTACK }
+        return tapsItsSource(ability) && ourTurn && groupCantBlocks.isEmpty() &&
+            restrictions.all { (kind, _) -> kind == Restriction.CANT_ATTACK }
+    }
+
+    /**
+     * The creatures on the battlefield [group] holds right now, or null when the catalog cannot
+     * evaluate its filter, which keeps the leaf in charge.
+     */
+    private fun groupMembers(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        group: GroupFilter,
+        sourceId: EntityId?,
+        intents: IntentCatalog,
+    ): List<EntityId>? {
+        val predicates = intents.predicates ?: return null
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        return state.getBattlefield().filter { id ->
+            projected.isCreature(id) && !(group.excludeSelf && id == sourceId) &&
+                predicates.matches(state, projected, id, group.baseFilter, context)
+        }
     }
 
     /** What one restriction of [restrictionShape] keeps the permanent from doing this turn. */
@@ -607,8 +644,9 @@ internal object ExpiringGrantWindow {
 
     /**
      * Whether [effect] is the shape [restrictionHasNoWindow] judges: until-end-of-turn can't-attack
-     * and can't-block restrictions, or a tap of a target whose activated abilities are locked until
-     * end of turn, with at most a counter on or a tap of the source beside them.
+     * and can't-block restrictions (on a target, or on a plain battlefield group), or a tap of a
+     * target whose activated abilities are locked until end of turn, with at most a counter on or
+     * a tap of the source beside them.
      * The AI reading audit asks it to know which activations have a window reading.
      */
     fun readsRestriction(effect: Effect): Boolean = restrictionShape(effect) != null
@@ -619,14 +657,17 @@ internal object ExpiringGrantWindow {
      * target is read only beside the lock on that same target ([locksActivatedAbilities]): a bare
      * tapper buys a tap ability's use too, which this does not judge.
      */
-    private fun restrictionShape(effect: Effect): Pair<List<Pair<Restriction, EffectTarget>>, Boolean>? {
+    private fun restrictionShape(effect: Effect): RestrictionShape? {
         val restrictions = mutableListOf<Pair<Restriction, EffectTarget>>()
+        val groupCantBlocks = mutableListOf<GroupFilter>()
         val tapped = mutableListOf<EffectTarget>()
         var sideBenefit = false
         for (leaf in EffectWalker.leaves(effect)) {
             when {
                 leaf is CantAttackEffect && leaf.duration == Duration.EndOfTurn -> restrictions += Restriction.CANT_ATTACK to leaf.target
                 leaf is CantBlockEffect && leaf.duration == Duration.EndOfTurn -> restrictions += Restriction.CANT_BLOCK to leaf.target
+                leaf is CantBlockGroupEffect && leaf.duration == Duration.EndOfTurn && isPlainBattlefieldGroup(leaf.filter) ->
+                    groupCantBlocks += leaf.filter
                 locksActivatedAbilities(leaf) -> restrictions += Restriction.TAPPED_AND_LOCKED to (leaf as GrantStaticAbilityEffect).target
                 leaf is AddCountersEffect && leaf.target == EffectTarget.Self -> sideBenefit = true
                 leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
@@ -636,8 +677,21 @@ internal object ExpiringGrantWindow {
         }
         val locked = restrictions.filter { it.first == Restriction.TAPPED_AND_LOCKED }.map { it.second }
         if (locked.toSet() != tapped.toSet()) return null
-        return if (restrictions.isEmpty()) null else restrictions to sideBenefit
+        return if (restrictions.isEmpty() && groupCantBlocks.isEmpty()) null
+        else RestrictionShape(restrictions, groupCantBlocks, sideBenefit)
     }
+
+    /** A group [groupMembers] can enumerate: battlefield-wide, with no resolution-time binding. */
+    private fun isPlainBattlefieldGroup(group: GroupFilter): Boolean =
+        group.scope is Scope.Battlefield && group.chosenSubtypeKey == null &&
+            !group.excludeTarget && !group.excludeTriggeringEntity
+
+    /** What [restrictionShape] found: targeted restrictions, group can't-blocks, and a source counter. */
+    private data class RestrictionShape(
+        val restrictions: List<Pair<Restriction, EffectTarget>>,
+        val groupCantBlocks: List<GroupFilter>,
+        val sideBenefit: Boolean,
+    )
 
     /** "Its activated abilities can't be activated this turn", granted to the permanent it names. */
     private fun locksActivatedAbilities(leaf: Effect): Boolean =
