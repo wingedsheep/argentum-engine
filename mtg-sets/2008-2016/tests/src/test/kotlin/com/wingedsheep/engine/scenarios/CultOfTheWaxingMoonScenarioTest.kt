@@ -16,9 +16,10 @@ import io.kotest.matchers.shouldBe
  * "Whenever a permanent you control transforms into a non-Human creature, create a 2/2 green Wolf
  * creature token."
  *
- * The filter reads the face that's up *after* the transform (ruling 2016-04-08): Heir of Falkenrath
- * becoming the Vampire Heir to the Night triggers it; Daring Sleuth becoming the still-Human Bearer of
- * Overwhelming Truths doesn't; an opponent's permanent transforming doesn't either.
+ * The non-Human filter applies to the resulting creature: Heir of Falkenrath becoming the Vampire Heir
+ * to the Night triggers it; Daring Sleuth becoming the still-Human Bearer of Overwhelming Truths
+ * doesn't; an opponent's permanent transforming doesn't either. (That the filter reads the face up
+ * *after* the transform, ruling 2016-04-08, is TriggerMatcher behaviour covered by Norn's Inquisitor.)
  */
 class CultOfTheWaxingMoonScenarioTest : ScenarioTestBase() {
 
