@@ -926,6 +926,10 @@ object CardLinter {
         // Madness (CR 702.35): a spell cast from exile for its madness cost is stamped "madness
         // cost was paid" (see CastSpellHandler.madnessChoice), read by Conditions.MadnessCostWasPaid.
         "Madness" to listOf("MADNESS_CAST"),
+        // Surge (CR 702.117a): a spell cast for its surge cost answers "surge cost was paid" from
+        // its alternative cost and stamps the slot on the permanent it becomes (see PermanentEntry),
+        // read by Conditions.SurgeCostWasPaid.
+        "Surge" to listOf("SURGE_CAST"),
         "BlightVariable" to listOf("BLIGHT_AMOUNT"),
         "BlightOrPay" to listOf("BLIGHT_AMOUNT"),
         // Resolution-time color choices: ChooseColorThen sets EffectContext.chosenColor for its

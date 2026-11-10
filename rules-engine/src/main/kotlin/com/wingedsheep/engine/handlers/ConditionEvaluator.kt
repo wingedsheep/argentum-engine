@@ -218,6 +218,16 @@ internal fun compareAmounts(left: Int, operator: ComparisonOperator, right: Int)
  * aggregate `Compare` (e.g. "while you control N+ creatures") re-enters the lazy `projectedState`
  * initializer and recurses until the stack overflows.
  */
+/**
+ * The cast-choice slots a spell still on the stack answers from the alternative cost it was cast
+ * for (`SpellOnStackComponent.alternativeCost`) — its own resolving rider reads them before any
+ * permanent carries the stamped bag. A copy inherits the original's alternative cost (CR 707.10).
+ */
+private val ALTERNATIVE_COST_SLOTS: Map<ChoiceSlot, AlternativeCostType> = mapOf(
+    ChoiceSlot.SELF_ALTERNATIVE_COST_PAID to AlternativeCostType.SELF_ALTERNATIVE,
+    ChoiceSlot.SURGE_CAST to AlternativeCostType.SURGE,
+)
+
 class ConditionEvaluator(
     /** The predicate evaluator this one is built over — see [PredicateEvaluator.conditions]. */
     val predicates: PredicateEvaluator,
@@ -904,9 +914,10 @@ class ConditionEvaluator(
                 } else if (sourceId?.let { state.getEntity(it) }?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
                     ?.additionalCostChoices?.containsKey(condition.slot) == true) {
                     true
-                } else if (condition.slot == ChoiceSlot.SELF_ALTERNATIVE_COST_PAID &&
-                    sourceId?.let { state.getEntity(it) }?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
-                        ?.alternativeCost == AlternativeCostType.SELF_ALTERNATIVE) {
+                } else if (ALTERNATIVE_COST_SLOTS[condition.slot]?.let { paid ->
+                        sourceId?.let { state.getEntity(it) }?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                            ?.alternativeCost == paid
+                    } == true) {
                     // A spell still on the stack (its own resolving rider) answers from the
                     // alternative cost it was cast for; a copy inherited it (CR 707.10).
                     true

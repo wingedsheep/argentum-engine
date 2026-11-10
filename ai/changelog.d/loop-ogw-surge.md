@@ -1,0 +1,1 @@
+- #4622 The AI casts surge spells (Oath of the Gatewatch) for their surge cost once a spell has been cast this turn, choosing between the surge and the normal cast by simulation, and its playouts score a surge cast as a cast.

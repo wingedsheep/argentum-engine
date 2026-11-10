@@ -449,6 +449,15 @@ internal class PermanentEntry(
                 com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
             )
         }
+        // Surge (CR 702.117a): durably mark a permanent cast for its surge cost so
+        // Conditions.SurgeCostWasPaid reads it for the permanent's whole life (Reckless
+        // Bushwhacker's "when this creature enters, if its surge cost was paid").
+        if (spellComponent.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.SURGE) {
+            bag = bag.withChoice(
+                com.wingedsheep.sdk.scripting.ChoiceSlot.SURGE_CAST,
+                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+            )
+        }
         // A card's own alternative cost (CR 118.9): durably mark the permanent so
         // Conditions.SelfAlternativeCostWasPaid reads it for the permanent's whole life.
         if (spellComponent.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.SELF_ALTERNATIVE) {

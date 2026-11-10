@@ -1198,6 +1198,19 @@ object Conditions {
         CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.MADNESS_CAST)
 
     /**
+     * "If its surge cost was paid" (CR 702.117, Oath of the Gatewatch) — the spell was cast for its
+     * [Surge][com.wingedsheep.sdk.scripting.KeywordAbility.Surge] cost rather than its mana cost.
+     * False for any other cast of the same card.
+     *
+     * A facade over the durable choice-slot read ([com.wingedsheep.sdk.scripting.ChoiceSlot.SURGE_CAST]),
+     * stamped by the engine as the spell is cast: read from the spell while it resolves (Crush of
+     * Tentacles' Octopus) and from the permanent a permanent spell becomes (Reckless Bushwhacker's
+     * enters trigger).
+     */
+    val SurgeCostWasPaid: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.SURGE_CAST)
+
+    /**
      * If **evidence was collected** for this spell (CR 701.59c, Murders at Karlov Manor) — its
      * optional "you may collect evidence N" additional cost was declared as it was cast.
      *

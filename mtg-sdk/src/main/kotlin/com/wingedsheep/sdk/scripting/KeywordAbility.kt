@@ -928,6 +928,27 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Surge
+    // =========================================================================
+
+    /**
+     * Surge with a mana cost (CR 702.117, Oath of the Gatewatch).
+     * "Surge [cost]" — you may pay [cost] rather than this spell's mana cost as you cast it if you
+     * or one of your teammates has cast another spell this turn (CR 702.117a). It follows the
+     * ordinary alternative-cost rules (601.2b, 601.2f–h): normal timing, one alternative cost per
+     * cast, and `{X}` in the surge cost is announced as usual (Fall of the Titans).
+     *
+     * The linked "if its surge cost was paid" riders read `Conditions.SurgeCostWasPaid`, stamped
+     * by the engine on the spell and the permanent it becomes. Unlike [Dash] it leaves no marker
+     * behind on its own — the rider is the card's own ability.
+     */
+    @SerialName("Surge")
+    @Serializable
+    data class Surge(val cost: ManaCost) : KeywordAbility {
+        override val description: String = "Surge $cost"
+    }
+
+    // =========================================================================
     // Blitz
     // =========================================================================
 
@@ -1889,6 +1910,12 @@ sealed interface KeywordAbility {
          * "Dash {1}{R}".
          */
         fun dash(cost: String): KeywordAbility = Dash(ManaCost.parse(cost))
+
+        /**
+         * Create Surge with a mana cost from a string (CR 702.117). E.g. `surge("{1}{R}")` for
+         * "Surge {1}{R}".
+         */
+        fun surge(cost: String): KeywordAbility = Surge(ManaCost.parse(cost))
 
         /**
          * Create Blitz from a mana cost string and an optional bundled non-mana cost (CR 702.152).

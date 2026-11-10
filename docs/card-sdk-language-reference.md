@@ -1095,6 +1095,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `dash` — cast from hand for the dash cost (CR 702.109); gains haste, returned to owner's hand at
   the beginning of the next end step (not exiled — unlike warp, dash has no later recast).
 - `keywordAbility(KeywordAbility.blitz("{2}{R}"))` — blitz (CR 702.152); see **Blitz** below.
+- `keywordAbility(KeywordAbility.surge("{1}{R}"))` — surge (CR 702.117); see **Surge** below.
 - `conditionalFlash` — flash while condition holds (may read the announced X — Silver Scrutiny).
 - `cantBeCountered` — spell is uncounterable.
 - `cantBeCounteredIf = condition` — uncounterable only while `condition` holds for the spell on the stack (Banefire).
@@ -16894,6 +16895,7 @@ answer it and would silently return `false`.
 - `WasKicked` — cast with kicker / multikicker / offspring (i.e. an `OptionalAdditionalCost` with `branchesEffect = true` whose extra cost was paid). FlashKicker payments are intentionally invisible to this condition.
 - `Conditions.WasKickedWithFirstKicker` / `Conditions.WasKickedWithSecondKicker` — "if it was kicked with its [A] / [B] kicker" on a card with two kicker costs (CR 702.33f). Facades over `CastChoiceMade(ChoiceSlot.FIRST_KICKER)` / `CastChoiceMade(ChoiceSlot.SECOND_KICKER)`; paying only the other kicker leaves it false even though the spell is kicked. Readable from a self-cast trigger, the spell's own effect, and the resulting permanent (see Kicker [A] and/or [B] under `OptionalAdditionalCost`).
 - `Conditions.WasForetold` — "if this spell was foretold" (CR 702.143c): the spell was a foretold card in exile before it was cast, even if it was cast for a cost other than its foretell cost. Facade over `CastChoiceMade(ChoiceSlot.FORETOLD)`, which the engine stamps as the spell is cast; readable from the spell's own effect and from the resulting permanent (Poison the Cup, Starnheim Unleashed).
+- `Conditions.SurgeCostWasPaid` — "if its surge cost was paid" / "if this spell's surge cost was paid" (CR 702.117a): the spell was cast for its `KeywordAbility.Surge` cost. Facade over `CastChoiceMade(ChoiceSlot.SURGE_CAST)`; the resolving spell answers from the alternative cost it was cast for (a copy keeps it, CR 707.10) and the engine stamps the slot on the permanent it becomes — Crush of Tentacles' Octopus, Reckless Bushwhacker's enters trigger (`interveningIf`).
 - `Conditions.MadnessCostWasPaid` — "if this spell's madness cost was paid" (CR 702.35): the spell was cast from exile by its madness trigger for its madness cost. Facade over `CastChoiceMade(ChoiceSlot.MADNESS_CAST)`, which the engine stamps as the spell is cast; readable from the spell's own effect and from the resulting permanent (From Under the Floorboards, Welcome to the Fold).
 - `WasBargained` — the spell's **bargain** additional cost was declared as it was cast (CR 702.166b, Wilds of Eldraine). A facade over `CastChoiceMade(ChoiceSlot.BARGAINED)`, so bargain needs no condition type of its own. Reads the durable flag on a resolved permanent (an "if it was bargained" enters trigger) *and* the declaration carried on a still-on-the-stack spell (an "if this spell was bargained" rider), and is also the condition a `CostGating.OnlyIf` cost reduction gates on. Never true for a merely kicked spell.
 - `WasEntwined` — the spell's **entwine** cost was declared as it was cast (CR 702.42a, Mirrodin), so it takes all of its modes. A facade over `CastChoiceMade(ChoiceSlot.ENTWINED)`, so entwine needs no condition type of its own. `entwineModal { }` gates both ends of the mode count on it at cast time (the declaration this very cast made is in context, CR 601.2b); usable as a plain rider too. Never true for a merely kicked or bargained spell.
@@ -21569,6 +21571,14 @@ Card authors rarely reference these directly; they are created/updated by the ma
   the permanent's battlefield-entry timestamp (`enteredBattlefieldTimestamp`); at resolution it only
   exiles the *same object* — a warped permanent that left the battlefield and returned before the
   end step (blink, e.g. Daydream) is a new object (CR 603.7c / 400.7) and stays permanently.
+- **Surge** — `keywordAbility(KeywordAbility.surge("{1}{R}"))`; hand alt-cost (CR 702.117a) offered
+  as its own `CastWithSurge` action (`AlternativeCostType.SURGE`) only once the caster or a teammate
+  (`GameState.teamOf`) has cast another spell this turn — read from `playerSpellsCastThisTurn` before
+  the spell is counted, so a countered or still-on-the-stack spell enables it and an opponent's
+  doesn't. Normal timing (flash, printed or granted, lets it be cast at instant speed); `{X}` in the
+  surge cost is announced as usual (Fall of the Titans). It leaves no marker of its own: the linked
+  riders read `Conditions.SurgeCostWasPaid` (Crush of Tentacles, Reckless Bushwhacker, Tyrant of
+  Valakut). Like dash, the zone-cast permissions (exile, library top) don't offer it.
 - **Dash** — `dash = "{1}{R}"`; hand-only alt-cost (CR 702.109). Mirrors warp's cast-window and
   timestamp-guarded delayed-trigger shape, but simpler: no graveyard variant, no recast-from-exile
   permission. The cast is tracked with a `DashedComponent` marker (not a floating continuous

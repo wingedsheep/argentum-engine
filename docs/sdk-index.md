@@ -1389,6 +1389,7 @@ Families:
 - `KeywordAbility.Simple(keyword: Keyword)` — Simple keyword with no parameters.
 - `KeywordAbility.Sneak(cost: ManaCost)` — Sneak cost (CR 702.190, Teenage Mutant Ninja Turtles).
 - `KeywordAbility.Splice(cost: ManaCost, onto: Subtype)` — Splice onto onto cost (CR 702.47, Champions of Kamigawa).
+- `KeywordAbility.Surge(cost: ManaCost)` — Surge with a mana cost (CR 702.117, Oath of the Gatewatch).
 - `KeywordAbility.Suspend(cost: ManaCost, timeCounters: Int)` — Printed Suspend (CR 702.62, Time Spiral).
 - `KeywordAbility.Variable(keyword: Keyword, label: String)` — A numeric keyword whose count is determined dynamically rather than by a fixed integer — e.g. "Mobilize X, where X is the number of creature cards in your graveyard" (Avenger of the Fallen).
 - `KeywordAbility.Ward(cost: WardCost)` — Ward with a configurable cost.
