@@ -52,14 +52,16 @@ class TearsOfValakutScenarioTest : ScenarioTestBase() {
 
             game.castSpell(1, "Tears of Valakut", angel).error shouldBe null
             game.passPriority().error shouldBe null
-            // Whether the engine refuses the counter outright or lets it fizzle, Tears still resolves.
-            game.castSpellTargetingStackSpell(2, "Counterspell", "Tears of Valakut")
+            withClue("Counterspell can still be cast at it") {
+                game.castSpellTargetingStackSpell(2, "Counterspell", "Tears of Valakut").error shouldBe null
+            }
             game.resolveStack()
 
             withClue("the uncounterable spell still kills the Angel") {
                 game.isOnBattlefield("Serra Angel") shouldBe false
             }
             game.isInGraveyard(1, "Tears of Valakut") shouldBe true
+            game.isInGraveyard(2, "Counterspell") shouldBe true
         }
     }
 }

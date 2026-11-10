@@ -59,6 +59,35 @@ class RoilingWatersScenarioTest : ScenarioTestBase() {
             game.isOnBattlefield("Serra Angel") shouldBe true
         }
 
+        test("up to two: a single creature, or none, still lets the player draw") {
+            val game = board()
+            val giant = game.findPermanent("Hill Giant")!!
+            val spell = game.findCardsInHand(1, "Roiling Waters").single()
+
+            val result = game.execute(
+                CastSpell(game.player1Id, spell, listOf(ChosenTarget.Permanent(giant), ChosenTarget.Player(game.player1Id)))
+            )
+            withClue("one creature plus the player is a legal cast: ${result.error}") { result.error shouldBe null }
+            game.resolveStack()
+
+            game.isInHand(2, "Hill Giant") shouldBe true
+            game.isOnBattlefield("Grizzly Bears") shouldBe true
+            game.handSize(1) shouldBe 2
+        }
+
+        test("no creature targets: only the player draws") {
+            val game = board()
+            val spell = game.findCardsInHand(1, "Roiling Waters").single()
+
+            val result = game.execute(CastSpell(game.player1Id, spell, listOf(ChosenTarget.Player(game.player1Id))))
+            withClue("the player alone is a legal cast: ${result.error}") { result.error shouldBe null }
+            game.resolveStack()
+
+            game.isOnBattlefield("Hill Giant") shouldBe true
+            game.isOnBattlefield("Grizzly Bears") shouldBe true
+            game.handSize(1) shouldBe 2
+        }
+
         test("a creature you control can't be targeted") {
             val game = board()
             val angel = game.findPermanent("Serra Angel")!!

@@ -549,9 +549,8 @@ object TargetPolarityAnalyzer {
                     // simulation can compare rescue against offensive tempo.
                     perSlot[0] += forRequirements(leaf.body, requirements, definitions, source)
                 } else {
-                    for ((slot, requirement) in requirements.withIndex()) {
-                        if (objectFilter(requirement) == null) continue
-                        val reading = forRequirements(leaf.body, listOf(requirement), definitions, source).single()
+                    for (slot in objectSlots(requirements)) {
+                        val reading = forRequirements(leaf.body, listOf(requirements[slot]), definitions, source).single()
                         if (reading != TargetPolarity.UNKNOWN) perSlot[slot] += reading
                     }
                 }

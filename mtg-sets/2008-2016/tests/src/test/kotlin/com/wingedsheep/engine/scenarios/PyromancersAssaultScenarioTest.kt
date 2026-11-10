@@ -43,6 +43,33 @@ class PyromancersAssaultScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 20
         }
 
+        test("a third spell doesn't trigger it again") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Pyromancer's Assault")
+                .withCardsInHand(1, "Grizzly Bears", 3)
+                .withLandsOnBattlefield(1, "Forest", 6)
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            repeat(2) {
+                game.castSpell(1, "Grizzly Bears").error shouldBe null
+                game.resolveStack()
+            }
+            game.selectTargets(listOf(game.player2Id)).error shouldBe null
+            game.resolveStack()
+            game.getLifeTotal(2) shouldBe 18
+
+            game.castSpell(1, "Grizzly Bears").error shouldBe null
+            game.resolveStack()
+            withClue("only the second spell each turn triggers") {
+                game.hasPendingDecision() shouldBe false
+                game.getLifeTotal(2) shouldBe 18
+            }
+        }
+
         test("the second spell's trigger can hit a creature") {
             val game = board()
             val giant = game.findPermanent("Hill Giant")!!

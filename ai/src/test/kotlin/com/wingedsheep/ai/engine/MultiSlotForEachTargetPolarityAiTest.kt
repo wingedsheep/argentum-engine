@@ -15,7 +15,8 @@ import io.kotest.matchers.shouldBe
  * "Return up to two target creatures your opponents control to their owners' hands. Target player
  * draws two cards." (Roiling Waters) runs its bounce once per target of every slot. Each slot reads
  * as the body reads on it alone — the creatures as a bounce, the player (whom a bounce can't move)
- * from the draw — where before a second slot left the creature slot unread.
+ * from the draw — where before a second slot left the creature slot unread. The puzzle pins the
+ * play the reading must keep: their creature bounced, our own player drawing.
  */
 class MultiSlotForEachTargetPolarityAiTest : ScenarioTestBase() {
     private val runner by lazy { PuzzleRunner(cardRegistry) { scenario() } }

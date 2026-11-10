@@ -16,8 +16,8 @@ import io.kotest.matchers.shouldBe
 /**
  * A fixed one-shot stat trade — Spatial Contortion's "target creature gets +3/-3 until end of turn" —
  * kills a small creature of theirs as often as it turns a sturdy one of ours into a bigger attacker.
- * Like the lasting trade on an Aura it reads flexible, so the simulation picks the side; unread, the
- * slot fell back to a ranking that knew nothing of the -3.
+ * Like the lasting trade on an Aura it reads flexible — a known two-sided operation, so the card
+ * reads fully — and the simulation picks the side, as it did for the unread slot before.
  */
 class OneShotStatTradePolarityAiTest : ScenarioTestBase() {
     private val runner by lazy { PuzzleRunner(cardRegistry) { scenario() } }
