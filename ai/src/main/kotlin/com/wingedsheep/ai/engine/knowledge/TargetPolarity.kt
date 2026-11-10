@@ -786,7 +786,7 @@ object TargetPolarityAnalyzer {
         for (slot in animateSlots(leaves, requirements)) {
             val alone = perSlot[slot].isEmpty() &&
                 leaves.none { it !is BecomeCreatureEffect && touchesOtherwise(it, requirements[slot], slot, definitions, source) }
-            if (alone) perSlot[slot] += TargetPolarity.BENEFICIAL
+            if (alone) perSlot[slot] += if (animatesNoncreature(requirements[slot])) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
         }
         for (slot in biteSources) {
             val untouched = perSlot[slot].isEmpty() &&
@@ -1922,10 +1922,23 @@ object TargetPolarityAnalyzer {
 
     /**
      * The slots a body-sized "becomes an N/N creature" names (Embodiment of Fury's landfall
-     * animate). Animating a land or artifact hands its controller an attacker or blocker for the
-     * duration, so on its own the slot is a gift; beside an effect that reads it one way, that
-     * effect decides, which is why [classify] leaves the leaf unattributed and this is applied last.
+     * animate). Animating a land or noncreature artifact hands its controller an attacker or
+     * blocker for the duration, so on its own that slot is a gift ([animatesNoncreature]); on a
+     * slot that can already hold a creature (Suit Up, Startling Development) it is a base-P/T set
+     * like [largeBaseSlots], growing a small creature and shrinking a big one, so it reads either
+     * way. Beside an effect that reads the slot one way, that effect decides, which is why
+     * [classify] leaves the leaf unattributed and this is applied last.
      */
+    /** Whether [requirement] only reaches permanents that aren't creatures yet: "target land", "target noncreature artifact". */
+    private fun animatesNoncreature(requirement: TargetRequirement): Boolean {
+        val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+            ?: return false
+        if (filter.alternatives.isNotEmpty()) return false
+        val predicates = filter.baseFilter.cardPredicates
+        return CardPredicate.IsCreature !in predicates &&
+            (CardPredicate.IsNoncreature in predicates || CardPredicate.IsLand in predicates)
+    }
+
     private fun animateSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> =
         leaves.filterIsInstance<BecomeCreatureEffect>()
             .filter { baseStatsPolarity(it.power, it.toughness) == null }

@@ -25,18 +25,18 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * A targeted "becomes an N/N creature" (Embodiment of Fury's landfall animate) hands the target's
  * controller a body for the turn, so the AI reads it as a gift and aims a sizeable one at its own
- * side. A tiny animate stays open to both sides: it is as often the setup for killing a land.
+ * side. A tiny animate, or one on a slot that can already hold a creature, stays open to both sides.
  */
 class BecomeCreaturePolarityAiTest : FunSpec({
 
-    fun animator(power: Int) = card("Any-land animator fixture $power") {
+    fun animator(power: Int, filter: TargetFilter = TargetFilter.Land) = card("Animator fixture $power ${filter.description}") {
         manaCost = "{2}{G}"
         typeLine = "Creature — Elemental"
         this.power = 2
         toughness = 2
         triggeredAbility {
             trigger = Triggers.a(GameObjectFilter.Land.youControl()).enters()
-            val land = target(TargetFilter.Land)
+            val land = target(filter)
             effect = Effects.BecomeCreature(
                 target = land,
                 power = power,
@@ -49,15 +49,18 @@ class BecomeCreaturePolarityAiTest : FunSpec({
 
     val big = animator(3)
     val small = animator(1)
+    val onCreature = animator(4, TargetFilter.Creature)
     val registry = CardRegistry().apply { register(TestCards.all + listOf(big, small, EmbodimentOfFury, EmbodimentOfInsight)) }
 
-    test("a sizeable animate is a gift and a tiny one stays flexible") {
+    test("a sizeable land animate is a gift; a tiny one, or one on a creature, stays flexible") {
         fun read(card: com.wingedsheep.sdk.model.CardDefinition): List<TargetPolarity> {
             val trigger = card.script.triggeredAbilities.single()
             return TargetPolarityAnalyzer.forRequirements(trigger.effect, trigger.allTargetRequirements, source = card)
         }
         read(big) shouldBe listOf(TargetPolarity.BENEFICIAL)
         read(small) shouldBe listOf(TargetPolarity.FLEXIBLE)
+        // On a creature it is a base-P/T set: it shrinks a big one as readily as it grows a small one.
+        read(onCreature) shouldBe listOf(TargetPolarity.FLEXIBLE)
         AiReadingAudit.read(EmbodimentOfFury).readFully shouldBe true
         AiReadingAudit.read(EmbodimentOfInsight).readFully shouldBe true
     }

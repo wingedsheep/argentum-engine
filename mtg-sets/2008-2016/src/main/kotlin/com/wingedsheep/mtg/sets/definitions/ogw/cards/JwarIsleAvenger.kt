@@ -29,6 +29,7 @@ val JwarIsleAvenger = card("Jwar Isle Avenger") {
         rarity = Rarity.COMMON
         collectorNumber = "58"
         artist = "Ryan Pancoast"
+        flavorText = "Though solitary by nature, the sphinxes did not hesitate to join in the fight against the Eldrazi."
         imageUri = "https://cards.scryfall.io/normal/front/0/a/0a5b059f-2fa3-474f-9c74-6d4021703add.jpg?1783937918"
     }
 }

@@ -29,6 +29,7 @@ val GoblinFreerunner = card("Goblin Freerunner") {
         rarity = Rarity.COMMON
         collectorNumber = "111"
         artist = "Wayne Reynolds"
+        flavorText = "There are old goblins and ambitious goblins, but very few old, ambitious goblins."
         imageUri = "https://cards.scryfall.io/normal/front/5/0/5082e0a1-5c3e-4b8c-ba88-290151564133.jpg?1783937906"
     }
 }

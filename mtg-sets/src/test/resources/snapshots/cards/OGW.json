@@ -2046,6 +2046,7 @@
     "metadata": {
         "collectorNumber": "111",
         "artist": "Wayne Reynolds",
+        "flavorText": "There are old goblins and ambitious goblins, but very few old, ambitious goblins.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/0/5082e0a1-5c3e-4b8c-ba88-290151564133.jpg?1783937906"
     },
     "colorIdentityOverride": [
@@ -2492,6 +2493,7 @@
     "metadata": {
         "collectorNumber": "58",
         "artist": "Ryan Pancoast",
+        "flavorText": "Though solitary by nature, the sphinxes did not hesitate to join in the fight against the Eldrazi.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a5b059f-2fa3-474f-9c74-6d4021703add.jpg?1783937918"
     },
     "colorIdentityOverride": [
