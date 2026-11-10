@@ -622,8 +622,17 @@ internal class ActivationValidator(
         } else {
             // "Discard a card with mana value X" pre-filled with its discard: the pick announces X.
             action.xValue ?: com.wingedsheep.engine.mechanics.cost.CostDefinedX.announcedByDiscard(
-                state, effectiveCost.extractDiscardXCost(), action.costPayment?.discardedCards, action.xValue
+                state, effectiveCost.extractDiscardXCost(), action.costPayment?.discardedCards
             )
+        }
+        // "Discard a card with mana value X" announces X with its pick, and the targets are asked
+        // for after it. Targets sent before any pick or X would validate against an unbound X —
+        // which matches anything — and the pick could then announce a different X, discarding for
+        // an ability that can only fizzle. Refuse them: the pick (or X) has to come first.
+        if (action.targets.isNotEmpty() && effectiveXValue == null &&
+            effectiveCost.extractDiscardXCost()?.count != null && effectiveCost.targetsFollowCostChoice()
+        ) {
+            return "Choose the card to discard before the targets: its mana value is X"
         }
         if (controllerTargetReqs.isNotEmpty() && action.targets.isNotEmpty()) {
             return targetValidator.validateTargets(

@@ -1169,8 +1169,9 @@ class ActivatedAbilityEnumerator(
                         // Scrap Welder) is unpayable when no pick leaves its X-bounded target a
                         // legal choice; the selection pause offers the same viable picks.
                         val single = effectiveCost.extractVariablePermanentsCost()?.takeIf { it.maxCount == 1 }
-                        val measuredDiscard = effectiveCost.extractDiscardXCost()?.takeIf { it.count != null }
-                        if (measuredDiscard != null) {
+                        val measuredDiscard = effectiveCost.extractDiscardXCost()
+                        val measuredCount = measuredDiscard?.count
+                        if (measuredDiscard != null && measuredCount != null) {
                             val viable = com.wingedsheep.engine.mechanics.cost.CostDefinedX.viableDiscards(
                                 state, measuredDiscard,
                                 com.wingedsheep.engine.mechanics.cost.CostDefinedX.discardCandidates(
@@ -1179,7 +1180,7 @@ class ActivatedAbilityEnumerator(
                                 null, targetReqs, playerId, entityId,
                                 com.wingedsheep.engine.handlers.TargetFinder(context.predicateEvaluator)
                             )
-                            if (viable.size < measuredDiscard.count!!) continue
+                            if (viable.size < measuredCount) continue
                         }
                         if (single != null) {
                             val eligible = context.costUtils.findVariablePermanentCostTargets(

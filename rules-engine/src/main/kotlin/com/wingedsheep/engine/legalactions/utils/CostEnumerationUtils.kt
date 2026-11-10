@@ -786,13 +786,21 @@ class CostEnumerationUtils(
 
         // Cap by the hand cards a DiscardX cost could discard (honouring its filter), for the
         // case where a `{X}` mana symbol makes this an X-picker ability. A measured discard
-        // ("discard a card with mana value X") bounds X by the cards' mana values, not their
-        // number, so it doesn't cap here; the selection pause offers only cards measuring X.
-        val discardXCosts = when (abilityCost) {
+        // ("discard a card with mana value X") bounds X by the cards' mana values instead: X can't
+        // exceed the highest mana value among the matching hand cards (Knollspine Invocation's
+        // `{X}` picker), and the selection pause offers only cards measuring exactly X.
+        val allDiscardXCosts = when (abilityCost) {
             is AbilityCost.Composite -> abilityCost.costs.filterIsInstance<AbilityCost.DiscardX>()
             is AbilityCost.DiscardX -> listOf(abilityCost)
             else -> emptyList()
-        }.filter { it.count == null }
+        }
+        allDiscardXCosts.filter { it.count != null }.forEach { cost ->
+            val fitting = com.wingedsheep.engine.mechanics.cost.CostDefinedX.discardCandidates(
+                state, playerId, sourceId, cost, predicateEvaluator
+            )
+            maxX = minOf(maxX, fitting.maxOfOrNull { com.wingedsheep.engine.mechanics.ManaValues.of(state, it) } ?: 0)
+        }
+        val discardXCosts = allDiscardXCosts.filter { it.count == null }
         if (discardXCosts.isNotEmpty()) {
             val hand = state.getZone(ZoneKey(playerId, Zone.HAND)).filter { it != sourceId }
             val projected = state.projectedState

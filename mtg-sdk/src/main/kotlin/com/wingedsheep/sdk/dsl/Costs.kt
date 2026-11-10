@@ -415,7 +415,7 @@ object Costs {
      * `{X}` mana (Knollspine Invocation) only a card of exactly that mana value may be discarded.
      */
     fun DiscardCardWithManaValueX(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
-        AbilityCost.DiscardX(filter, com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.TOTAL_MANA_VALUE, count = 1)
+        AbilityCost.DiscardX(filter, VariableCostMeasure.TOTAL_MANA_VALUE, count = 1)
 
     /**
      * Collect evidence [amount] (CR 701.59) — exile any number of cards from your graveyard with

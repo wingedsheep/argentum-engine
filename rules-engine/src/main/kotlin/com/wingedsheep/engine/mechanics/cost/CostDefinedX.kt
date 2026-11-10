@@ -70,7 +70,7 @@ object CostDefinedX {
     fun discardCandidates(
         state: GameState,
         playerId: EntityId,
-        sourceId: EntityId,
+        sourceId: EntityId?,
         cost: AbilityCost.DiscardX,
         predicateEvaluator: PredicateEvaluator,
     ): List<EntityId> {
@@ -83,17 +83,11 @@ object CostDefinedX {
 
     /**
      * The X a measured discard announces when an activation arrives with its discard already
-     * chosen and no X ([discarded] non-empty, [announcedX] null) — the engine-direct path, where
-     * the pick *is* the announcement. Null for any other cost, so the caller keeps its own X.
+     * chosen and no X — the engine-direct path, where the pick *is* the announcement. Null for any
+     * other cost (or no discard yet), so the caller keeps its own X.
      */
-    fun announcedByDiscard(
-        state: GameState,
-        cost: AbilityCost.DiscardX?,
-        discarded: List<EntityId>?,
-        announcedX: Int?,
-    ): Int? =
-        if (announcedX == null && cost?.count != null && !discarded.isNullOrEmpty()) discardX(state, cost, discarded)
-        else null
+    fun announcedByDiscard(state: GameState, cost: AbilityCost.DiscardX?, discarded: List<EntityId>?): Int? =
+        if (cost?.count != null && !discarded.isNullOrEmpty()) discardX(state, cost, discarded) else null
 
     /** X as [cost] reads it off [discarded] hand cards — how many, or their total mana value. */
     fun discardX(state: GameState, cost: AbilityCost.DiscardX, discarded: List<EntityId>): Int =
@@ -111,8 +105,7 @@ object CostDefinedX {
     /**
      * The hand cards a measured [cost] may really be paid with. A `{X}` mana symbol that already
      * fixed X ([fixedX]) admits only single cards measuring exactly X; otherwise the pick announces
-     * X, so only cards leaving the ability a legal target are offered. A multi-card measured
-     * discard is offered unfiltered (no printed card has one) and checked at payment.
+     * X, so only cards leaving the ability a legal target are offered.
      */
     fun viableDiscards(
         state: GameState,
@@ -124,7 +117,7 @@ object CostDefinedX {
         sourceId: EntityId,
         targetFinder: TargetFinder,
     ): List<EntityId> {
-        if (cost.count != 1) return candidates
+        if (cost.count == null) return candidates
         val xOf = { id: EntityId -> discardX(state, cost, listOf(id)) }
         return if (fixedX != null) candidates.filter { xOf(it) == fixedX }
         else picksLeavingTargets(state, candidates, xOf, targetRequirements, playerId, sourceId, targetFinder)

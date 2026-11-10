@@ -984,7 +984,10 @@ enum class PermanentCostAction {
 
 /**
  * How a [CostAtom.VariablePermanents] choice is measured — both as the ability's X (CR 601.2b) and
- * as the quantity a [CostAtom.VariablePermanents.minMeasure] floor is compared against.
+ * as the quantity a [CostAtom.VariablePermanents.minMeasure] floor is compared against — and how an
+ * [com.wingedsheep.sdk.scripting.AbilityCost.DiscardX] reads X off its discards: COUNT for "discard X
+ * cards", TOTAL_MANA_VALUE for "discard a card with mana value X" (Kozilek, the Great Distortion).
+ * TOTAL_POWER measures permanents only.
  */
 @Serializable
 enum class VariableCostMeasure {

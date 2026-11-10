@@ -156,8 +156,10 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // in calculateMaxAffordableX and in the selection pause. A printed count ("discard a
             // card with mana value X") needs that many matching cards; which of them leave a
             // target is the enumerator's and the selection pause's question.
-            is AbilityCost.DiscardX ->
-                cost.count == null || discardXCandidates(state, controllerId, sourceId, cost).size >= cost.count!!
+            is AbilityCost.DiscardX -> {
+                val printedCount = cost.count
+                printedCount == null || discardXCandidates(state, controllerId, sourceId, cost).size >= printedCount
+            }
             is AbilityCost.ExileXFromGraveyard -> {
                 // X can be 0, so this is always payable as long as graveyard exists
                 // maxAffordableX is capped by graveyard size in LegalActionsCalculator
@@ -389,18 +391,13 @@ class CostHandler(private val zones: ZoneTransitionService) {
             is AbilityCost.DiscardX -> {
                 val printedCount = cost.count
                 if (printedCount != null) {
-                    // "Discard a card with mana value X": exactly the printed number of distinct
-                    // matching hand cards, measuring exactly the activation's X (announced by this
-                    // very pick, or fixed by `{X}` mana). A GameAction is client-supplied, so both
-                    // are re-checked here. Engine-direct with no pick takes the lone fitting card.
+                    // "Discard a card with mana value X": exactly one matching hand card, measuring
+                    // exactly the activation's X (announced by this very pick, or fixed by `{X}`
+                    // mana). A GameAction is client-supplied, so both are re-checked here; the
+                    // selection pause always supplies the pick.
                     val x = choices.xValue
                     val candidates = discardXCandidates(state, controllerId, sourceId, cost)
-                    val fitting = if (printedCount == 1) {
-                        candidates.filter { com.wingedsheep.engine.mechanics.cost.CostDefinedX.discardX(state, cost, listOf(it)) == x }
-                    } else candidates
-                    val toDiscard = choices.discardChoices.ifEmpty {
-                        if (fitting.size == printedCount) fitting else emptyList()
-                    }
+                    val toDiscard = choices.discardChoices
                     if (toDiscard.size != printedCount || toDiscard.distinct().size != printedCount ||
                         toDiscard.any { it !in candidates } ||
                         com.wingedsheep.engine.mechanics.cost.CostDefinedX.discardX(state, cost, toDiscard) != x

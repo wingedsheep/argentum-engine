@@ -731,8 +731,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   pick announces X (CR 601.2b), so the ability is surfaced with no targets, the discard is asked first
   — offering only cards whose mana value leaves every mandatory target legal, and asked even with one
   candidate so the rest of the hand stays hidden — and the X-bounded target after it; the ability is
-  not offered when no card fits. With `{X}` mana the mana fixes X and only cards of exactly that mana
-  value may be discarded. **Kozilek, the Great Distortion**: `cost = Costs.DiscardCardWithManaValueX()`,
+  not offered when no card fits, and targets sent before the pick are refused. With `{X}` mana the
+  mana fixes X (its picker is capped at the highest mana value among the fitting hand cards) and only
+  a card of exactly that mana value may be discarded. Only `count = 1` exists — no printed card
+  measures several discards together. **Kozilek, the Great Distortion**: `cost = Costs.DiscardCardWithManaValueX()`,
   `target(TargetFilter.SpellOnStack.manaValueEqualsX())`, `Effects.CounterSpell()`. The hand-side twin
   of the single-permanent `CostAtom.VariablePermanents` (Scrap Welder).
 - `Costs.ExilePermanentsFixed(count = 1, filter = Any, excludeSelf = false, distinctNames = false)` — **fixed-count** "exile N permanents you

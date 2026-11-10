@@ -615,19 +615,21 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
      * alongside it, the mana X fixes the count and the selection must be exactly that many.
      * The discard fires discard triggers (it is a discard, CR 701.9).
      *
-     * With a [count] the number of cards is printed and X is *measured* off them instead —
-     * "Discard a card with mana value X" (Kozilek, the Great Distortion) is `count = 1` with
-     * [VariableCostMeasure.TOTAL_MANA_VALUE]. Without `{X}` mana the pick announces X, so an
-     * X-bounded target ("counter target spell with mana value X") is chosen after it and only picks
-     * that leave a legal target are offered; with `{X}` mana alongside (Knollspine Invocation) the
-     * mana fixes X and only cards measuring exactly X may be discarded. The hand-side twin of a
-     * single-permanent [CostAtom.VariablePermanents] ("sacrifice an artifact with mana value X").
+     * With `count = 1` a single card is discarded and X is *measured* off it instead — "Discard a
+     * card with mana value X" (Kozilek, the Great Distortion) is `count = 1` with
+     * [com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.TOTAL_MANA_VALUE]. Without `{X}` mana
+     * the pick announces X, so an X-bounded target ("counter target spell with mana value X") is
+     * chosen after it and only picks that leave a legal target are offered; with `{X}` mana alongside
+     * (Knollspine Invocation) the mana fixes X and only a card of exactly that mana value may be
+     * discarded. The hand-side twin of a single-permanent [CostAtom.VariablePermanents] ("sacrifice an
+     * artifact with mana value X").
      *
      * @property filter Which cards in hand may be discarded.
      * @property xMeasure How X is read off the discarded cards: [VariableCostMeasure.COUNT] (the
      *   default — X is how many) or [VariableCostMeasure.TOTAL_MANA_VALUE].
-     * @property count Exactly how many cards are discarded, when the text prints it; null when the
-     *   count *is* X. Requires a measure other than COUNT.
+     * @property count `1` when the text prints "a card" and X is measured off it; null when the
+     *   count *is* X. Requires a measure other than COUNT. No printed card discards several cards
+     *   measured together, so larger counts are rejected rather than half-supported.
      */
     @SerialName("CostDiscardX")
     @Serializable
@@ -644,14 +646,12 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
             require((count == null) == (xMeasure == com.wingedsheep.sdk.scripting.costs.VariableCostMeasure.COUNT)) {
                 "DiscardX: a printed count measures X some other way; X cards has no printed count"
             }
-            require(count == null || count >= 1) { "DiscardX count must be at least 1" }
+            require(count == null || count == 1) { "DiscardX measures X off a single discarded card" }
         }
 
-        override val description: String = when {
-            count == null -> "Discard X ${filter.description}s"
-            count == 1 -> "Discard a ${filter.description} with mana value X"
-            else -> "Discard $count ${filter.description}s with total mana value X"
-        }
+        override val description: String =
+            if (count == null) "Discard X ${filter.description}s"
+            else "Discard ${com.wingedsheep.sdk.scripting.util.quantify(1, filter.description)} with mana value X"
 
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
             val newFilter = filter.applyTextReplacement(replacer)

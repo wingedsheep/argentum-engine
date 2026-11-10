@@ -26,7 +26,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -62,17 +61,17 @@ class MeasuredDiscardCostTest : FunSpec({
     }
     val two = card("Test Two Drop") {
         manaCost = "{1}{R}"
-        typeLine = "Sorcery"
+        typeLine = "Instant"
         spell { effect = Effects.DrawCards(1) }
     }
     val three = card("Test Three Drop") {
         manaCost = "{2}{R}"
-        typeLine = "Sorcery"
+        typeLine = "Instant"
         spell { effect = Effects.DrawCards(1) }
     }
     val xDrop = card("Test X Drop") {
         manaCost = "{X}{R}{R}"
-        typeLine = "Sorcery"
+        typeLine = "Instant"
         spell { effect = Effects.DrawCards(DynamicAmounts.xValue()) }
     }
 
@@ -134,6 +133,49 @@ class MeasuredDiscardCostTest : FunSpec({
         d.state.stack.isEmpty() shouldBe true
     }
 
+    test("with two spells on the stack the discard covers both mana values and the target narrows to X") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val source = d.putPermanentOnBattlefield(you, "Test Distortion")
+        val twoSpell = d.castFromHand(you, "Test Two Drop")
+        val threeSpell = d.castFromHand(you, "Test Three Drop")
+        val twoCard = d.putCardInHand(you, "Test Two Drop")
+        val threeCard = d.putCardInHand(you, "Test Three Drop")
+
+        d.submit(ActivateAbility(playerId = you, sourceId = source, abilityId = distortionAbility))
+        val discard = d.pendingDecision
+        discard.shouldBeInstanceOf<SelectCardsDecision>()
+        // Lands in hand (mana value 0) match no spell; both spells' mana values are covered.
+        discard.options.toSet() shouldBe setOf(twoCard, threeCard)
+        d.submitDecision(you, CardsSelectedResponse(discard.id, listOf(twoCard)))
+
+        val target = d.pendingDecision
+        target.shouldBeInstanceOf<ChooseTargetsDecision>()
+        target.legalTargets[0] shouldBe listOf(twoSpell)
+        d.submitDecision(you, TargetsResponse(target.id, mapOf(0 to listOf(twoSpell))))
+        d.bothPass()
+        d.graveyard(you).contains(twoSpell) shouldBe true
+        d.state.stack.contains(threeSpell) shouldBe true
+    }
+
+    test("targets sent before the discard are refused: the pick announces X first") {
+        val d = setup()
+        val you = d.activePlayer!!
+        val source = d.putPermanentOnBattlefield(you, "Test Distortion")
+        val bigSpell = d.castFromHand(you, "Test X Drop", xValue = 3) // mana value 5
+        d.castFromHand(you, "Test Three Drop")
+        val three = d.putCardInHand(you, "Test Three Drop")
+
+        d.submit(
+            ActivateAbility(
+                playerId = you, sourceId = source, abilityId = distortionAbility,
+                targets = listOf(ChosenTarget.Spell(bigSpell)),
+            )
+        ).error!! shouldContain "before the targets"
+        d.hand(you).contains(three) shouldBe true
+        d.pendingDecision shouldBe null
+    }
+
     test("a spell's X counts at the value it was cast for; a card in hand counts its X as 0") {
         val d = setup()
         val you = d.activePlayer!!
@@ -182,7 +224,7 @@ class MeasuredDiscardCostTest : FunSpec({
                 targets = spellTarget,
                 costPayment = AdditionalCostPayment(discardedCards = listOf(two)),
             )
-        ).error shouldNotBe null
+        ).error!! shouldContain "mana value exactly X"
         d.hand(you).contains(two) shouldBe true
 
         // A claimed X that the discarded card doesn't measure is refused at payment.
@@ -235,13 +277,16 @@ class MeasuredDiscardCostTest : FunSpec({
         d.getLifeTotal(opponent) shouldBe life - 2
     }
 
-    test("the measured discard is a printed count; X cards has none") {
+    test("the measured discard is exactly one card; X cards has no printed count") {
         shouldThrow<IllegalArgumentException> { AbilityCost.DiscardX(count = 1) }
         shouldThrow<IllegalArgumentException> {
             AbilityCost.DiscardX(xMeasure = VariableCostMeasure.TOTAL_MANA_VALUE)
         }
         shouldThrow<IllegalArgumentException> {
             AbilityCost.DiscardX(xMeasure = VariableCostMeasure.TOTAL_POWER, count = 1)
+        }
+        shouldThrow<IllegalArgumentException> {
+            AbilityCost.DiscardX(xMeasure = VariableCostMeasure.TOTAL_MANA_VALUE, count = 2)
         }
         AbilityCost.DiscardX(xMeasure = VariableCostMeasure.TOTAL_MANA_VALUE, count = 1).description shouldBe
             "Discard a card with mana value X"
