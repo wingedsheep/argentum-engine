@@ -1,0 +1,1 @@
+- #TBD Reads a group can't-block (Immobilizer Eldrazi) as a block denial with a restriction window, an opponent exiling their library's top card as mill, and a ward-style counter-on-target trigger as protection

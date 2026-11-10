@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.effects.AmassEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -110,6 +111,9 @@ internal enum class CombatReach {
                 // "Can't block this creature" restricts one pairing, which the crack-back's blocker
                 // count does not see; only a creature kept out of every block is a denial.
                 is CantBlockEffect -> if (leaf.target != EffectTarget.Self && leaf.attacker == null) reach += BLOCK_DENIAL
+                // "Each creature with toughness greater than its power can't block this turn"
+                // (Immobilizer Eldrazi): every creature the group holds is kept out of every block.
+                is CantBlockGroupEffect -> reach += BLOCK_DENIAL
                 else -> Unit
             }
         }

@@ -67,6 +67,7 @@ import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.effects.WardCounterEffect
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.*
@@ -1518,7 +1519,8 @@ object CardIntentAnalyzer {
     /**
      * "Search target player's library for up to five cards and exile them" (Supreme Inquisitor):
      * cards taken out of another player's library for good, by us — the exile form of milling them
-     * toward an empty library, [IntentTag.MILL]. Not our tutor ([searchesOwnZones]); a search we
+     * toward an empty library, [IntentTag.MILL] — and so is "target opponent exiles the top card
+     * of their library" (Thought Harvester), the top-of-library form. Not our tutor ([searchesOwnZones]); a search we
      * hand to its owner (Settle the Wreckage), or cards exiled to be played (a theft, see
      * [usesTheExiledCard]), are not this.
      */
@@ -1527,10 +1529,15 @@ object CardIntentAnalyzer {
         if (usesTheExiledCard(leaves)) return emptySet()
         val seed = leaves.mapNotNullTo(HashSet()) { leaf ->
             val gather = leaf as? GatherCardsEffect ?: return@mapNotNullTo null
-            val source = gather.source as? CardSource.FromZone ?: return@mapNotNullTo null
-            gather.storeAs.takeIf {
-                source.zone == Zone.LIBRARY && gather.searcher == Player.You && canMillOpponent(source.player)
+            val fromOpponentsLibrary = when (val source = gather.source) {
+                is CardSource.FromZone -> source.zone == Zone.LIBRARY && canMillOpponent(source.player)
+                // "Target opponent exiles the top card of their library" (Thought Harvester,
+                // Dimensional Infiltrator): the same depletion, one card off the top.
+                is CardSource.TopOfLibrary -> !source.isScry && !source.isSurveil &&
+                    canMillOpponent(source.player) && ((source.count as? DynamicAmount.Fixed)?.amount ?: 1) > 0
+                else -> false
             }
+            gather.storeAs.takeIf { fromOpponentsLibrary && gather.searcher == Player.You }
         }
         if (seed.isEmpty()) return emptySet()
         do {
@@ -2453,6 +2460,10 @@ object CardIntentAnalyzer {
         // taken out of the opponent's defence — the single-creature form of the team-wide evasion
         // above. "This creature can't block" on its own source is a drawback, not a payoff.
         is CantBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.EVASION_GRANT) else emptySet()
+        // "Whenever this becomes the target of a spell an opponent controls, counter that spell
+        // unless its controller discards a card" (Reality Smasher; Amulet of Safekeeping): Ward's
+        // tax on answering our permanent, the same [IntentTag.PROTECTION] the keyword reads as.
+        is WardCounterEffect -> setOf(IntentTag.PROTECTION)
         // "You may cast an instant or sorcery spell from your hand without paying its mana cost"
         // (Wildfire Eternal, Omnispell Adept), "… cast it without paying its mana cost" off the top
         // of a library or out of exile: a spell for free, see [IntentTag.FREE_SPELL]. A cast that
