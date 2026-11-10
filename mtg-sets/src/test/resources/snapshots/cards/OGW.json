@@ -1,3 +1,79 @@
+// Abstruse Interference
+{
+    "name": "Abstruse Interference",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nCounter target spell unless its controller pays {1}. You create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\" ({C} represents colorless mana.)",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{1}"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/0/a03edf14-3495-4f61-ad73-f16e9456472c.jpg?1783937863",
+                    "activatedAbilities": [
+                        {
+                            "id": "Abstruse Interference:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/249a7be3-311e-4ce6-97dc-97242463ae23.jpg?1783937922",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "You get the Eldrazi Scion even if the controller of the spell pays {1}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Affa Protector
 {
     "name": "Affa Protector",
@@ -19,6 +95,89 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Akoum Flameseeker
+{
+    "name": "Akoum Flameseeker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman Ally",
+    "oracleText": "Cohort — {T}, Tap an untapped Ally you control: Discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Akoum Flameseeker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "permanent Ally"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose a card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "discarded_count"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Willian Murai",
+        "flavorText": "In the face of extinction, the most perilous endeavors can be cause for hope.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ef4e1e2-7961-47d2-bb55-9168ea201214.jpg?1783937908"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -320,6 +479,51 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Boulder Salvo
+{
+    "name": "Boulder Salvo",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Surge {1}{R} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nBoulder Salvo deals 4 damage to target creature.",
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Vincent Proce",
+        "flavorText": "\"If someone claims the sky is falling, I listen.\"\n—Yon Basrel, Oran-Rief survivalist",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e269989-bb22-4da4-a374-434a572e8e8f.jpg?1783937908"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -658,6 +862,94 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Comparative Analysis
+{
+    "name": "Comparative Analysis",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Surge {2}{U} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nTarget player draws two cards.",
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Willian Murai",
+        "flavorText": "\"Our time grows short. If we wish to vanquish the Eldrazi, we must unlock the hedrons' secrets.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd83129b-7e8c-4cc5-a7b3-e0ae221d7ad4.jpg?1783937919"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Containment Membrane
+{
+    "name": "Containment Membrane",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Surge {U} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nEnchant creature\nEnchanted creature doesn't untap during its controller's untap step.",
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49dd3963-a4d7-4992-b6f8-753996390bbf.jpg?1783937919",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Containment Membrane can target and be attached to an untapped creature. It just won't have any effect until that creature becomes tapped."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The enchanted creature can still be untapped by other spells and abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1096,6 +1388,184 @@
     ]
 }
 
+// Embodiment of Fury
+{
+    "name": "Embodiment of Fury",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample\nLand creatures you control have trample.\nLandfall — Whenever a land you control enters, you may have target land you control become a 3/3 Elemental creature with haste until end of turn. It's still a land.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Embodiment of Fury:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "BecomeCreature",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you may have target land you control become a 3/3 Elemental creature with haste until end of turn. It's still a land."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature land ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92f385d1-a6c5-40b7-bc90-6f71b6f815e7.jpg?1783937907",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "A “land creature” is a permanent that’s both a land and a creature."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You may target a land that’s already a creature. For example, if you target a land that’s also a 0/0 creature and has three +1/+1 counters on it, the resulting land creature will be 6/6."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Embodiment of Insight
+{
+    "name": "Embodiment of Insight",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Vigilance\nLand creatures you control have vigilance.\nLandfall — Whenever a land you control enters, you may have target land you control become a 3/3 Elemental creature with haste until end of turn. It's still a land.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Embodiment of Insight:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "BecomeCreature",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you may have target land you control become a 3/3 Elemental creature with haste until end of turn. It's still a land."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature land ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b034a95d-4f51-4f04-94c2-dad073ea0f35.jpg?1783937902",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "A “land creature” is a permanent that’s both a land and a creature."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You may target a land that’s already a creature. For example, if you target a land that’s also a 0/0 creature and has three +1/+1 counters on it, the resulting land creature will be 6/6."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Endbringer
 {
     "name": "Endbringer",
@@ -1412,6 +1882,58 @@
     ]
 }
 
+// Fall of the Titans
+{
+    "name": "Fall of the Titans",
+    "manaCost": "{X}{X}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Surge {X}{R} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nFall of the Titans deals X damage to each of up to two targets.",
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{X}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": "XValue",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 2,
+                "minCount": 0,
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "As Gideon kept the brood lineages at bay, Chandra incinerated the bound Eldrazi titans.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c21da73-0dad-4b2b-8cc6-61861bed9410.jpg?1783937906",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Fall of the Titan's mana value is based on its mana cost of {X}{X}{R}, even if you're casting it for its surge cost. For example, if you cast Fall of the Titans for its surge cost and choose 4 for X, its mana value will be 9."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Goblin Dark-Dwellers
 {
     "name": "Goblin Dark-Dwellers",
@@ -1502,6 +2024,36 @@
     ]
 }
 
+// Goblin Freerunner
+{
+    "name": "Goblin Freerunner",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin Warrior Ally",
+    "oracleText": "Surge {1}{R} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nMenace (This creature can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{1}{R}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Wayne Reynolds",
+        "flavorText": "There are old goblins and ambitious goblins, but very few old, ambitious goblins.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5082e0a1-5c3e-4b8c-ba88-290151564133.jpg?1783937906"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gravity Negator
 {
     "name": "Gravity Negator",
@@ -1554,6 +2106,78 @@
         "collectorNumber": "45",
         "artist": "Chase Stone",
         "imageUri": "https://cards.scryfall.io/normal/front/8/5/85f9b63e-6ecc-4d85-9724-87b8176ae6a6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Grip of the Roil
+{
+    "name": "Grip of the Roil",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Surge {1}{U} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nTap target creature. It doesn't untap during its controller's next untap step.\nDraw a card.",
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cf33069-013f-43ab-9a31-e67bb6dc996d.jpg?1783937918",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Grip of the Roil can target a creature that's already tapped. It still won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Grip of the Roil tracks the creature, but not its controller. If the creature changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -1843,6 +2467,36 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "BLUE"
+    ]
+}
+
+// Jwar Isle Avenger
+{
+    "name": "Jwar Isle Avenger",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Surge {2}{U} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{2}{U}"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Though solitary by nature, the sphinxes did not hesitate to join in the fight against the Eldrazi.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a5b059f-2fa3-474f-9c74-6d4021703add.jpg?1783937918"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -2928,6 +3582,43 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Overwhelming Denial
+{
+    "name": "Overwhelming Denial",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Surge {U}{U} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nThis spell can't be countered.\nCounter target spell.",
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Jama Jurabaev",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33ff1000-1a4e-43f6-aa02-1dbe9fac6901.jpg?1783937918"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4366,6 +5057,62 @@
     ]
 }
 
+// Stormchaser Mage
+{
+    "name": "Stormchaser Mage",
+    "manaCost": "{U}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flying, haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stormchaser Mage:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "Roilmages' tactics are as chaotic as the energies they channel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bba1b45-d8ae-42fd-b30f-c904640ab173.jpg?1783937896"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Submerged Boneyard
 {
     "name": "Submerged Boneyard",
@@ -4408,6 +5155,80 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "BLUE"
+    ]
+}
+
+// Sweep Away
+{
+    "name": "Sweep Away",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand. If that creature is attacking, you may put it on top of its owner's library instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "creature attacking"
+                }
+            },
+            "then": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.MayDecide",
+                    "prompt": "Put that creature on top of its owner's library instead of returning it to hand?"
+                },
+                "then": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "otherwise": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                }
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Winona Nelson",
+        "flavorText": "The Roil takes many forms. It also takes many victims.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75234f6d-a2da-42dd-a668-8db8f341e7f0.jpg?1783937916"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -4718,6 +5539,66 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Tyrant of Valakut
+{
+    "name": "Tyrant of Valakut",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Surge {3}{R}{R} (You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.)\nFlying\nWhen this creature enters, if its surge cost was paid, it deals 3 damage to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Surge",
+            "cost": "{3}{R}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tyrant of Valakut:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "CastChoiceMade",
+                    "slot": "SURGE_CAST"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f388be9e-332e-4199-9f30-862d631fa26b.jpg?1783937905"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

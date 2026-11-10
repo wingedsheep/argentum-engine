@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeTriggeringObjectTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
@@ -781,6 +782,11 @@ object TargetPolarityAnalyzer {
             val alone = perSlot[slot].isEmpty() &&
                 leaves.none { it !is SetBaseStatsEffect && touchesOtherwise(it, requirements[slot], slot, definitions, source) }
             if (alone) perSlot[slot] += TargetPolarity.FLEXIBLE
+        }
+        for (slot in animateSlots(leaves, requirements)) {
+            val alone = perSlot[slot].isEmpty() &&
+                leaves.none { it !is BecomeCreatureEffect && touchesOtherwise(it, requirements[slot], slot, definitions, source) }
+            if (alone) perSlot[slot] += if (animatesNoncreature(requirements[slot])) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
         }
         for (slot in biteSources) {
             val untouched = perSlot[slot].isEmpty() &&
@@ -1662,6 +1668,13 @@ object TargetPolarityAnalyzer {
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
             is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Target land becomes a 3/3 Elemental creature with haste until end of turn" (Embodiment
+            // of Fury): a body-sized animate names nothing here, like a large base above, and alone it
+            // reads as a gift ([animateSlots]). Beside an effect that reads the slot one way (Lizard,
+            // Connors's Curse strips abilities as it rebases to 4/4) that effect decides. A body too
+            // small to fight with (a 0/1 or 1/1) is as often the setup for killing it: either side.
+            is BecomeCreatureEffect -> if (baseStatsPolarity(leaf.power, leaf.toughness) != null)
+                leaf.target to TargetPolarity.FLEXIBLE else return emptyList()
             // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher):
             // takes the block choice away from its controller, dragging the creature into a block
             // it would not have made — the opponent's creature, like "can't block" above.
@@ -1905,6 +1918,30 @@ object TargetPolarityAnalyzer {
                 val set = listOfNotNull(leaf.power, leaf.toughness)
                 set.isNotEmpty() && set.all { it is DynamicAmount.Fixed } && baseStatsPolarity(leaf.power, leaf.toughness) == null
             }
+            .mapNotNullTo(HashSet()) { slotOf(it.target, requirements) }
+
+    /**
+     * The slots a body-sized "becomes an N/N creature" names (Embodiment of Fury's landfall
+     * animate). Animating a land or noncreature artifact hands its controller an attacker or
+     * blocker for the duration, so on its own that slot is a gift ([animatesNoncreature]); on a
+     * slot that can already hold a creature (Suit Up, Startling Development) it is a base-P/T set
+     * like [largeBaseSlots], growing a small creature and shrinking a big one, so it reads either
+     * way. Beside an effect that reads the slot one way, that effect decides, which is why
+     * [classify] leaves the leaf unattributed and this is applied last.
+     */
+    /** Whether [requirement] only reaches permanents that aren't creatures yet: "target land", "target noncreature artifact". */
+    private fun animatesNoncreature(requirement: TargetRequirement): Boolean {
+        val filter = (((requirement as? TargetOther)?.baseRequirement ?: requirement) as? TargetObject)?.filter
+            ?: return false
+        if (filter.alternatives.isNotEmpty()) return false
+        val predicates = filter.baseFilter.cardPredicates
+        return CardPredicate.IsCreature !in predicates &&
+            (CardPredicate.IsNoncreature in predicates || CardPredicate.IsLand in predicates)
+    }
+
+    private fun animateSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> =
+        leaves.filterIsInstance<BecomeCreatureEffect>()
+            .filter { baseStatsPolarity(it.power, it.toughness) == null }
             .mapNotNullTo(HashSet()) { slotOf(it.target, requirements) }
 
     /**
