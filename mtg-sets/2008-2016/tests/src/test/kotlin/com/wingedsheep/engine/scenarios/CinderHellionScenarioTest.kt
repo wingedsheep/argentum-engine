@@ -31,8 +31,13 @@ class CinderHellionScenarioTest : ScenarioTestBase() {
             while (guard++ < 30) {
                 val pd = game.state.pendingDecision
                 when {
-                    pd is ChooseTargetsDecision ->
+                    pd is ChooseTargetsDecision -> {
+                        withClue("only an opponent or a planeswalker can be targeted") {
+                            pd.legalTargets[0].orEmpty().contains(game.player1Id) shouldBe false
+                            pd.legalTargets[0].orEmpty().contains(game.player2Id) shouldBe true
+                        }
                         game.submitDecision(TargetsResponse(pd.id, mapOf(0 to listOf(game.player2Id)))).error shouldBe null
+                    }
                     pd != null -> error("unexpected decision $pd")
                     game.state.stack.isNotEmpty() -> game.resolveStack()
                     else -> break

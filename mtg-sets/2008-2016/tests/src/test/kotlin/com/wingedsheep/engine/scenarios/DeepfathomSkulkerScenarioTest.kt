@@ -45,6 +45,31 @@ class DeepfathomSkulkerScenarioTest : ScenarioTestBase() {
             game.handSize(1) shouldBe handBefore + 1
         }
 
+        test("an opponent's creature connecting doesn't trigger it") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Deepfathom Skulker", tapped = true)
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val handBefore = game.handSize(1)
+
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Grizzly Bears" to 1)).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            game.declareNoBlockers()
+            game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
+
+            game.getLifeTotal(1) shouldBe 18
+            withClue("only creatures Skulker's controller controls make it trigger") {
+                (game.state.pendingDecision is YesNoDecision) shouldBe false
+                game.handSize(1) shouldBe handBefore
+            }
+        }
+
         test("{3}{C}: target creature can't be blocked this turn") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

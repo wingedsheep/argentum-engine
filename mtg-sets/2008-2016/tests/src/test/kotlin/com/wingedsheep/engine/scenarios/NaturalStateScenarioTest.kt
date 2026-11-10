@@ -35,6 +35,24 @@ class NaturalStateScenarioTest : ScenarioTestBase() {
             game.isInGraveyard(2, "Ornithopter") shouldBe true
         }
 
+        test("destroys an enchantment with mana value 3 or less") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Natural State")
+                .withLandsOnBattlefield(1, "Forest", 1)
+                .withCardOnBattlefield(2, "Glorious Anthem")
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val anthem = game.findPermanent("Glorious Anthem")!!
+
+            game.castSpell(1, "Natural State", anthem).error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(2, "Glorious Anthem") shouldBe true
+        }
+
         test("an artifact with mana value 4 isn't a legal target") {
             val game = board()
             val juggernaut = game.findPermanent("Juggernaut")!!

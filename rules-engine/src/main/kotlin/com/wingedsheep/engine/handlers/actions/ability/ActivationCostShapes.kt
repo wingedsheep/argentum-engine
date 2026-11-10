@@ -71,6 +71,16 @@ internal fun AbilityCost.tapXExcludedSource(sourceId: com.wingedsheep.sdk.model.
     sourceId?.takeIf { hasTapCost() }
 
 /**
+ * This sub-cost of a cost that also has {T}, with a "tap N untapped …" pool that leaves the source
+ * out: the source is tapped paying {T}, so it can't also be one of the N (cohort — "{T}, Tap an
+ * untapped Ally you control"). Any other sub-cost is returned unchanged.
+ */
+internal fun AbilityCost.excludingSourceFromTapPool(): AbilityCost {
+    val atom = (this as? AbilityCost.Atom)?.atom as? CostAtom.TapPermanents ?: return this
+    return if (atom.excludeSelf) this else AbilityCost.Atom(atom.copy(excludeSelf = true))
+}
+
+/**
  * Whether this cost includes the tap symbol **or the untap symbol** — the CR 302.6
  * summoning-sickness gate for a creature's activated ability.
  */

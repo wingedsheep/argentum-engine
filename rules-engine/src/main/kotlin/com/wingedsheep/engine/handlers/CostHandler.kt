@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.handlers.actions.ability.extractTapXPermanentsCost
+import com.wingedsheep.engine.handlers.actions.ability.excludingSourceFromTapPool
+import com.wingedsheep.engine.handlers.actions.ability.hasTapCost
 import com.wingedsheep.engine.handlers.actions.ability.tapXExcludedSource
 import com.wingedsheep.engine.handlers.effects.LibraryPlacement
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
@@ -262,7 +264,10 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 true
             }
             is AbilityCost.Composite -> {
-                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext, granterId, lifePurpose) } &&
+                // "{T}, Tap an untapped Ally you control" (cohort): paying {T} taps the source, so it
+                // can't also be one of the permanents the tap atom taps — read it as excludeSelf.
+                val parts = if (cost.hasTapCost()) cost.costs.map { it.excludingSourceFromTapPool() } else cost.costs
+                parts.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext, granterId, lifePurpose) } &&
                     canPaySacrificeAtomsJointly(state, cost, sourceId, controllerId)
             }
             AbilityCost.LoyaltyX -> true // X = 0 is always payable; the chosen X is checked at payment.

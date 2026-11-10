@@ -60,6 +60,28 @@ class IsolationZoneScenarioTest : ScenarioTestBase() {
             game.state.projectedState.getController(returned!!) shouldBe game.player2Id
         }
 
+        test("your own creature isn't a legal target") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Isolation Zone")
+                .withLandsOnBattlefield(1, "Plains", 4)
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(2, "Hill Giant")
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val mine = game.findPermanent("Grizzly Bears")!!
+            val theirs = game.findPermanent("Hill Giant")!!
+
+            game.castSpell(1, "Isolation Zone").error shouldBe null
+            var guard = 0
+            while (game.getPendingDecision() !is ChooseTargetsDecision && guard++ < 10) game.resolveStack()
+            val decision = game.getPendingDecision() as ChooseTargetsDecision
+            decision.legalTargets[0].orEmpty().contains(mine) shouldBe false
+            decision.legalTargets[0].orEmpty().contains(theirs) shouldBe true
+        }
+
         test("an opponent's enchantment is a legal target too") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

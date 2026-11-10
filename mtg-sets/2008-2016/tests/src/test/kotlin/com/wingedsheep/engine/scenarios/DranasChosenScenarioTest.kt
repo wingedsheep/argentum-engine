@@ -58,6 +58,24 @@ class DranasChosenScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("a lone Ally can't pay cohort with itself, so the ability isn't offered") {
+            val game = board("Grizzly Bears")
+            val chosen = game.findPermanent("Drana's Chosen")!!
+
+            withClue("paying {T} taps Drana's Chosen, so it can't also be the untapped Ally") {
+                game.getLegalActions(1).none {
+                    (it.action as? ActivateAbility)?.sourceId == chosen && it.isAffordable
+                } shouldBe true
+            }
+            game.execute(
+                ActivateAbility(
+                    game.player1Id, chosen, cohortId,
+                    costPayment = AdditionalCostPayment(tappedPermanents = listOf(chosen)),
+                )
+            ).error shouldNotBe null
+            game.findPermanents("Zombie Token") shouldHaveSize 0
+        }
+
         test("a non-Ally creature can't pay the cohort cost") {
             val game = board("Grizzly Bears")
             val chosen = game.findPermanent("Drana's Chosen")!!
