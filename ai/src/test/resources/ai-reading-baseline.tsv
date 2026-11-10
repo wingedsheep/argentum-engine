@@ -1275,7 +1275,9 @@ Ballyrush Banneret
 Balm of Restoration
 Balmor, Battlemage Captain
 Baloth Gorger
+Baloth Null
 Baloth Prime
+Baloth Pup
 Baloth Woodcrasher
 Balshan Collaborator
 Balshan Griffin
@@ -1375,7 +1377,7 @@ Barter in Blood
 Bartered Cow
 Bartizan Bats
 Bartolomé del Presidio
-Bartz and Boko	polarity: ForEachEffect
+Bartz and Boko
 Basal Sliver
 Basal Thrull
 Basalt Monolith
@@ -1508,7 +1510,7 @@ Befriending the Moths
 Befuddle
 Behemoth Sledge
 Behemoth of Vault 0	polarity: ReflexiveTriggerEffect
-Behind the Mask	timing: BecomeCreatureEffect
+Behind the Mask
 Behind the Scenes
 Behold the Beyond
 Behold the Multiverse
@@ -1642,6 +1644,7 @@ Birnin Zana Plaza
 Birth of the Imperium
 Birthday Escape
 Birthing Boughs
+Birthing Hulk
 Birthing Ritual
 Bishop of Binding
 Bishop of Rebirth
@@ -2033,6 +2036,7 @@ Bonded Herdbeast
 Bonded Horncrest
 Bonders' Enclave
 Bonds of Faith
+Bonds of Mortality
 Bone Dragon
 Bone Flute
 Bone Miser
@@ -2674,7 +2678,7 @@ Case File Auditor
 Case of the Burning Masks	intent: BecomeSolvedEffect
 Case of the Crimson Pulse	intent: BecomeSolvedEffect
 Case of the Filched Falcon	intent: BecomeSolvedEffect
-Case of the Gateway Express	intent: BecomeSolvedEffect; polarity: ForEachEffect
+Case of the Gateway Express	intent: BecomeSolvedEffect
 Case of the Gorgon's Kiss	intent: BecomeSolvedEffect
 Case of the Locked Hothouse	intent: BecomeSolvedEffect
 Case of the Pilfered Proof	intent: BecomeSolvedEffect
@@ -4629,7 +4633,7 @@ Distracting Geist
 Distress
 District Guide
 District Mascot
-Disturbed Slumber	timing: BecomeCreatureEffect
+Disturbed Slumber
 Disturbing Conversion
 Disturbing Mirth	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
 Dive Bomber
@@ -5307,6 +5311,7 @@ Elemental Mascot
 Elemental Masterpiece
 Elemental Summoning
 Elemental Teachings
+Elemental Uprising
 Elementalist Adept
 Elenda's Hierophant
 Elenda, Saint of Dusk
@@ -6661,7 +6666,7 @@ Fractal Anomaly
 Fractal Mascot
 Fractal Summoning
 Fractal Tender
-Fractalize	timing: BecomeCreatureEffect
+Fractalize
 Fracture
 Fractured Loyalty	intent: GiveControlToTargetPlayerEffect; polarity: Aura>GiveControlToTargetPlayerEffect
 Fractured Sanity
@@ -7227,6 +7232,7 @@ Glacial Wall
 Glacier Godmaw
 Glacierwood Siege
 Gladecover Scout
+Gladehart Cavalry
 Gladewalker Ritualist
 Gladiolus Amicitia
 Glaive of the Guildpact
@@ -8011,7 +8017,7 @@ Hammer of Ruin
 Hammerfist Giant
 Hammerhand
 Hammerhead Tyrant
-Hammerheim	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
+Hammerheim	polarity: RemoveKeywordEffect
 Hampering Snare
 Hana Kami
 Hanabi Blast
@@ -8091,6 +8097,7 @@ Harsh Scrutiny
 Haru, Hidden Talent
 Harvest Hand
 Harvest Season
+Harvester Troll
 Harvester of Misery
 Harvester of Souls
 Harvestrite Host
@@ -9442,6 +9449,7 @@ Jolrael, Voice of Zhalfir
 Jolted Awake
 Joo Dee, One of Many
 Jor Kadeen, First Goldwarden
+Joraga Auxiliary
 Joraga Invocation
 Joraga Visionary
 Jori En, Ruin Diver
@@ -10189,6 +10197,7 @@ Lazotep Plating	timing: GrantEvasionKeywordEffect
 Lazotep Reaver
 Lead Astray
 Lead Pipe
+Lead by Example
 Lead the Stampede
 Leaden Myr
 Leader's Talent
@@ -11654,7 +11663,7 @@ Moonglove Extractor
 Moonglove Winnower
 Moonlight Bargain
 Moonlight Geist	timing: PreventDamageEffect
-Moonlight Hunt	polarity: ForEachEffect
+Moonlight Hunt
 Moonlit Lamenter
 Moonlit Meditation	polarity: Aura>(nothing on the host)
 Moonlit Scavengers
@@ -11773,7 +11782,7 @@ Ms. Bumbleflower
 Ms. Marvel, Kamala Khan
 Mtenda Herder
 Mu Yanling, Celestial Wind
-Mu Yanling, Sky Dancer	combat: RemoveKeywordEffect; intent: CreatePermanentEmblemEffect
+Mu Yanling, Sky Dancer	intent: CreatePermanentEmblemEffect
 Mu Yanling, Wind Rider
 Muck Rats
 Mudbrawler Raiders
@@ -12210,6 +12219,7 @@ Nishoba Brawler
 Nissa of Shadowed Boughs	intent: AddCountersToCollectionEffect; intent: Pipeline(FromMultipleZones→battlefield)
 Nissa's Defeat
 Nissa's Encouragement
+Nissa's Judgment
 Nissa's Triumph
 Nissa's Zendikon
 Nissa, Ascended Animist
@@ -13388,6 +13398,7 @@ Prescient Chimera
 Presence of Gond
 Presence of the Master
 Press for Answers
+Press into Service
 Press the Advantage
 Press the Enemy
 Pressure Point
@@ -13789,7 +13800,7 @@ Radiant's Judgment
 Radiating Lightning
 Radical Idea
 Radioactive Spider
-Radjan Spirit	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
+Radjan Spirit	polarity: RemoveKeywordEffect
 Radstorm
 Raff Capashen, Ship's Mage
 Raff, Weatherlight Stalwart
@@ -14100,7 +14111,7 @@ Reassembling Skeleton
 Reave Soul
 Reaver Ambush
 Reaver Drone
-Rebel Salvo	timing: RemoveKeywordEffect
+Rebel Salvo
 Rebellion of the Flamekin
 Rebellious Captives
 Rebellious Strike
@@ -14973,6 +14984,7 @@ Sacred Peaks
 Sacred Prey
 Sacred Wolf
 Sacrifice
+Saddleback Lagac
 Sadistic Augermage
 Sadistic Hypnotist
 Sadistic Shell Game
@@ -15253,7 +15265,7 @@ Scarred Puma
 Scarred Vinebreeder
 Scarwood Bandits	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
 Scarwood Goblins
-Scarwood Hag	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
+Scarwood Hag	polarity: RemoveKeywordEffect
 Scarwood Treefolk
 Scathe Zombies
 Scathing Shadelock
@@ -15514,6 +15526,7 @@ See Double
 See Red
 See the Truth
 See the Unwritten
+Seed Guardian
 Seed Spark
 Seed of Hope
 Seedborn Muse
@@ -15649,7 +15662,7 @@ Serpent of Yawning Depths
 Serpent of the Pass
 Serpent's Pass
 Serpent-Blade Assailant
-Serpentine Ambush	timing: BecomeCreatureEffect
+Serpentine Ambush
 Serpentine Basilisk
 Serpentine Curve
 Serpentine Kavu
@@ -15735,7 +15748,7 @@ Shadowfax, Lord of Horses
 Shadowfeed
 Shadowmage Infiltrator
 Shadows' Verdict
-Shadowspear	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
+Shadowspear
 Shadowstorm
 Shadowstorm Vizier
 Shadowy Backstreet
@@ -15819,7 +15832,7 @@ Shed Weakness
 Shefet Archfiend
 Shefet Dunes
 Shefet Monitor
-Shelkin Brownie	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
+Shelkin Brownie	polarity: RemoveKeywordEffect
 Shell Shield
 Shell of the Last Kappa	intent: ExileTargetSpellEffect
 Shelldock Isle	intent: Pipeline(TopOfLibrary→exile|library)
@@ -16036,7 +16049,7 @@ Sigiled Sentinel
 Sigiled Starfish
 Sigiled Sword of Valeron
 Sign in Blood
-Signature Slam	polarity: ForEachEffect
+Signature Slam
 Signpost Scarecrow
 Sigrid, God-Favored
 Sigurd, Jarl of Ravensthorpe	intent: AddCountersEffect; intent: RemoveCountersEffect; polarity: AddCountersEffect; polarity: RemoveCountersEffect
@@ -16412,7 +16425,7 @@ Smelt-Ward Minotaur
 Smelted Chargebug
 Smile at Death
 Smite
-Smite the Deathless	timing: RemoveKeywordEffect
+Smite the Deathless
 Smite the Monstrous
 Smiting Helix
 Smitten Swordmaster
@@ -16583,7 +16596,7 @@ Soul Nova
 Soul Partition	intent: ExileAndGrantOwnerPlayPermissionEffect; polarity: ExileAndGrantOwnerPlayPermissionEffect
 Soul Read
 Soul Salvage
-Soul Sear	timing: RemoveKeywordEffect
+Soul Sear
 Soul Search
 Soul Separator
 Soul Shatter
@@ -17038,7 +17051,7 @@ Starting Town
 Startle
 Startled Awake
 Startled Relic Sloth
-Startling Development	timing: BecomeCreatureEffect
+Startling Development
 Starving Revenant
 Starwinder
 Stasis
@@ -17655,6 +17668,7 @@ Sworn Guardian
 Sygg's Command
 Sygg, River Guide	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
 Sygg, Wanderwine Wisdom
+Sylvan Advocate
 Sylvan Anthem
 Sylvan Awakening
 Sylvan Basilisk
@@ -18171,7 +18185,7 @@ The Balrog, Durin's Bane
 The Balrog, Flame of Udûn
 The Bath Song
 The Battle of Bywater
-The Bears of Littjara	polarity: ForEachEffect
+The Bears of Littjara
 The Belligerent
 The Biblioplex
 The Binding of the Titans	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→exile)
@@ -18232,7 +18246,7 @@ The Fallen
 The Filigree Sylex
 The Final Days
 The Fire Crystal
-The Fire Nation Drill	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
+The Fire Nation Drill
 The First Eruption
 The First Iroan Games
 The Flame of Keld	intent: GrantDamageBonusEffect
@@ -18601,7 +18615,7 @@ Thunderbolt
 Thunderbolts Conspiracy	intent: AddCreatureTypeEffect; intent: MoveToZoneEffect
 Thunderbreak Regent
 Thunderclap Wyvern
-Thundercloud Elemental	combat: ForEach>RemoveKeywordEffect; intent: ForEach>RemoveKeywordEffect; timing: ForEach>RemoveKeywordEffect
+Thundercloud Elemental
 Thundercloud Shaman
 Thunderdrum Soloist
 Thunderhead Gunner
@@ -18752,7 +18766,7 @@ Tocasia, Dig Site Mentor
 Tocatli Honor Guard
 Together as One
 Tokka & Rahzar, Terrible Twos
-Tolaria	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect; timing: RemoveKeywordEffect
+Tolaria	polarity: RemoveKeywordEffect
 Tolarian Academy
 Tolarian Contempt	intent: ForEach>AddCountersEffect
 Tolarian Emissary
@@ -19389,6 +19403,7 @@ Uninvited Geist
 Union of the Third Path
 United Battlefront
 United Front
+Unity of Purpose
 Universal Automaton
 Universal Solvent
 University Campus
@@ -19470,7 +19485,7 @@ Urabrask's Forge
 Urabrask, Heretic Praetor	intent: ReplaceNextDrawWithEffect
 Urban Retreat
 Urban Utopia
-Urborg	intent: RemoveKeywordEffect; polarity: RemoveKeywordEffect
+Urborg	polarity: RemoveKeywordEffect
 Urborg Drake
 Urborg Emissary
 Urborg Lhurgoyf
