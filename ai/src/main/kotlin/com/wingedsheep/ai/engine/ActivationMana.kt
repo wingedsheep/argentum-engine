@@ -19,8 +19,9 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
  *
  * Read off the card's structure: the mana atoms in each ability's [AbilityCost] on either face. A
  * plain colored pip needs its colour; a hybrid needs either half; a Phyrexian pip (2 life) and a
- * `{2/C}` pip (two generic) are always payable. Only colours are judged — generic, `{X}` and `{C}`
- * pips are left to the cast-cost check, which already owns the colourless-source rule.
+ * `{2/C}` pip (two generic) are always payable. A `{C}` pip needs a colorless source (CR 107.4c) —
+ * Eldrazi Displacer's `{2}{C}` blink is dead in a deck without Wastes — so it is payable only when
+ * the caller says the deck has them. Generic and `{X}` pips are left to the cast-cost check.
  */
 object ActivationMana {
 
@@ -37,13 +38,18 @@ object ActivationMana {
             .flatMap { manaIn(it.cost) }
             .filter { it.symbols.isNotEmpty() }
 
-    /** Whether a deck making [colors] can pay every activated ability's colored mana on [card]. */
-    fun payable(card: CardDefinition, colors: Set<Color>): Boolean = costs(card).all { payable(it, colors) }
+    /**
+     * Whether a deck making [colors] — and, with [colorless], colorless mana from its pool's
+     * colorless lands — can pay every activated ability's colored and `{C}` mana on [card].
+     */
+    fun payable(card: CardDefinition, colors: Set<Color>, colorless: Boolean = false): Boolean =
+        costs(card).all { payable(it, colors, colorless) }
 
-    /** Whether [colors] can pay the colored pips of one activation [cost]. */
-    fun payable(cost: ManaCost, colors: Set<Color>): Boolean = cost.symbols.all { symbol ->
+    /** Whether [colors] (and [colorless] sources) can pay the colored and `{C}` pips of one activation [cost]. */
+    fun payable(cost: ManaCost, colors: Set<Color>, colorless: Boolean = false): Boolean = cost.symbols.all { symbol ->
         when (symbol) {
             is ManaSymbol.Phyrexian, is ManaSymbol.HybridPhyrexian, is ManaSymbol.MonocolorHybrid -> true
+            is ManaSymbol.Colorless -> colorless
             else -> symbol.colors.isEmpty() || symbol.colors.any { it in colors }
         }
     }

@@ -160,6 +160,8 @@ class DraftsimDeckBuilder(
     /**
      * [card] is playable in [colors]: its cast cost fits them, and so does every activated ability's
      * mana — off [colors] or the colours the pool's fixing lands bring ([fixed], [activationFixing]).
+     * A `{C}` pip, cast or activated, needs [DraftsimMana.COLORLESS] in [fixed]: the pool's own
+     * colorless lands, which no basic stands in for.
      * The Wandering Minstrel casts for {G}{U}, but a G/U deck never pays its {3}{W}{U}{B}{R}{G} pump,
      * and that pump is most of what the card is rated for.
      */
@@ -169,7 +171,8 @@ class DraftsimDeckBuilder(
             card.activationCosts.all { DraftsimMana.activationPayable(it, colors + fixed) }
 
     /**
-     * Colours the pool's lands fix for an activation whatever the build's colours:
+     * Mana the pool's lands supply whatever the build's colours — for an activation's colours, and
+     * for any `{C}` pip:
      * [ActivationMana.FIXING_SOURCES] or more lands that each fix four or more colours — the lands
      * [buildManabase] always takes. A dual in the build's own pair adds nothing an activation needs.
      * Holds [DraftsimMana.COLORLESS] when the pool has [PipDemand.MIN_COLORLESS_SOURCES] colorless

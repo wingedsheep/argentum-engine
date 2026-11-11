@@ -676,7 +676,7 @@ internal fun fitsDeckColors(
     colorless: Boolean = false,
 ): Boolean =
     castableWithColors(card, deckColors, colorless) && !offColorManaRock(card, deckColors) &&
-        ActivationMana.payable(card, deckColors + fixed)
+        ActivationMana.payable(card, deckColors + fixed, colorless)
 
 /** Colours at least [ActivationMana.FIXING_SOURCES] of [lands] (one entry per copy) produce. */
 internal fun fixingColors(lands: List<CardDefinition>): Set<Color> =
@@ -764,8 +764,9 @@ private fun addColorlessSources(
     }
 }
 
-/** The `{C}` pips in [card]'s mana cost. */
-private fun colorlessPips(card: CardDefinition): Int = card.manaCost.symbols.count { it is ManaSymbol.Colorless }
+/** The most `{C}` pips [card] asks at once: in its mana cost or one activated ability's (Eldrazi Displacer's `{2}{C}`). */
+private fun colorlessPips(card: CardDefinition): Int =
+    (listOf(card.manaCost) + ActivationMana.costs(card)).maxOf { cost -> cost.symbols.count { it is ManaSymbol.Colorless } }
 
 /** Creatures with a prepare spell a deck needs before a land that prepares them is worth its slot. */
 private const val MIN_PREPARE_CREATURES = 3

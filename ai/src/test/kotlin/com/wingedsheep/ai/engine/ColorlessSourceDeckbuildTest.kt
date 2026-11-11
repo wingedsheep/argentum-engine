@@ -33,10 +33,12 @@ class ColorlessSourceDeckbuildTest : FunSpec({
     fun ogw(name: String) = ogw[name] ?: error("$name is not an OGW card")
     val wastes by lazy { ogw("Wastes") }
     val seer by lazy { ogw("Thought-Knot Seer") }
+    val displacer by lazy { ogw("Eldrazi Displacer") }
 
     fun basic(name: String) = MtgSetCatalog.all.flatMap { it.basicLands }.first { it.name == name }
 
-    fun colorlessPips(card: CardDefinition) = card.manaCost.symbols.count { it is ManaSymbol.Colorless }
+    fun colorlessPips(card: CardDefinition) =
+        (listOf(card.manaCost) + ActivationMana.costs(card)).sumOf { cost -> cost.symbols.count { it is ManaSymbol.Colorless } }
 
     // Twenty G/W spells: too few to fill 23 slots, so a castable Thought-Knot Seer always makes the cut.
     val gwSpells by lazy {
@@ -71,6 +73,27 @@ class ColorlessSourceDeckbuildTest : FunSpec({
         deck.values.sum() shouldBe 40
         deck shouldNotContainKey "Thought-Knot Seer"
         deck shouldNotContainKey "Wastes"
+    }
+
+    test("two Wastes are too few: the Draftsim builder leaves Thought-Knot Seer and them out") {
+        val deck = draftsimDeck(gwSpells + seer + List(2) { wastes })
+        deck.values.sum() shouldBe 40
+        deck shouldNotContainKey "Thought-Knot Seer"
+        deck shouldNotContainKey "Wastes"
+    }
+
+    test("a {C} activation needs colorless sources too: Eldrazi Displacer's {2}{C} blink") {
+        displacer.manaCost.symbols.none { it is ManaSymbol.Colorless } shouldBe true
+        val without = draftsimDeck(gwSpells + displacer)
+        without shouldNotContainKey "Eldrazi Displacer"
+        buildHeuristicSealedDeck(gwSpells + displacer) shouldNotContainKey "Eldrazi Displacer"
+
+        val with = draftsimDeck(gwSpells + displacer + List(5) { wastes })
+        with shouldContainKey "Eldrazi Displacer"
+        with.getValue("Wastes") shouldBe 4
+        val heuristic = buildHeuristicSealedDeck(gwSpells + displacer + List(5) { wastes })
+        heuristic shouldContainKey "Eldrazi Displacer"
+        heuristic.getValue("Wastes") shouldBe 4
     }
 
     test("no {C} spell, no Wastes: the Draftsim builder plays basics of its colours instead") {

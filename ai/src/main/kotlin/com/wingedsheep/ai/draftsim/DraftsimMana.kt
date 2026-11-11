@@ -31,9 +31,14 @@ internal object DraftsimMana {
     fun colorlessPips(cost: String): Int =
         faces(cost).minOf { face -> SYMBOL.findAll(face).count { it.groupValues[1].equals(COLORLESS, ignoreCase = true) } }
 
-    /** The colorless sources a deck holding [cards] wants ([PipDemand.colorlessSourcesWanted]). */
+    /**
+     * The colorless sources a deck holding [cards] wants ([PipDemand.colorlessSourcesWanted]), from
+     * the most `{C}` pips any of them asks at once — to cast, or to activate (Eldrazi Displacer's `{2}{C}`).
+     */
     fun colorlessSourcesWanted(cards: Collection<ScorerCard>): Int =
-        PipDemand.colorlessSourcesWanted(cards.maxOfOrNull { colorlessPips(it.manaCost) } ?: 0)
+        PipDemand.colorlessSourcesWanted(
+            cards.maxOfOrNull { card -> (listOf(card.manaCost) + card.activationCosts).maxOf(::colorlessPips) } ?: 0,
+        )
 
     private val SYMBOL = Regex("\\{([^}]+)}")
 
@@ -97,11 +102,13 @@ internal object DraftsimMana {
     /**
      * Whether a deck making [allowed] can pay the colored pips of an activated ability's [cost]: a
      * plain pip needs its colour, a hybrid either half; a Phyrexian pip (2 life) and a `{2/C}` pip
-     * (two generic) always can. Mirrors [com.wingedsheep.ai.engine.ActivationMana.payable].
+     * (two generic) always can; a `{C}` pip only when [allowed] holds [COLORLESS]. Mirrors
+     * [com.wingedsheep.ai.engine.ActivationMana.payable].
      */
     fun activationPayable(cost: String, allowed: Collection<String>): Boolean =
         SYMBOL.findAll(cost).all { m ->
             val sym = m.groupValues[1].uppercase()
+            if (sym == COLORLESS) return@all COLORLESS in allowed
             val colors = COLORS.filter { sym.contains(it) }
             colors.isEmpty() || sym.contains('P') || sym.any { it.isDigit() } || colors.any { it in allowed }
         }

@@ -240,7 +240,8 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
 - **Colorless mana.** A `{C}` pip (Thought-Knot Seer's `{3}{C}`) is paid only with colorless mana,
   and no basic a Limited deck adds makes any: Wastes is played only as opened or drafted. So a
   `{C}` spell is castable only off a pool holding three colorless lands (Wastes, or any land that
-  taps for unrestricted `{C}`, `ManaFixing.makesColorless`); a deck playing one runs its hungriest
+  taps for unrestricted `{C}`, `ManaFixing.makesColorless`) — and so is a card whose activated
+  ability asks `{C}` (Eldrazi Displacer's `{2}{C}` blink). A deck playing one runs its hungriest
   `{C}` card's pips plus three of them, the sources a splash gets, and a deck with no `{C}` spell
   runs none. In the castability sources `{C}` is a colour of its own, so the Seer off four Wastes
   keeps about three quarters of its value. The heuristic fallback builder follows the same rules.
