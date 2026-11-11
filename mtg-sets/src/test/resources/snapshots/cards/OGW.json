@@ -1033,6 +1033,135 @@
     "colorIdentityOverride": []
 }
 
+// Chandra, Flamecaller
+{
+    "name": "Chandra, Flamecaller",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Create two 3/1 red Elemental creature tokens with haste. Exile them at the beginning of the next end step.\n0: Discard all the cards in your hand, then draw that many cards plus one.\n−X: Chandra deals X damage to each creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Flamecaller:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 3,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc6f27f7-0248-4c04-8022-41073966e4d8.jpg?1783937859",
+                    "exileAtStep": "END"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create two 3/1 red Elemental creature tokens with haste. Exile them at the beginning of the next end step."
+            },
+            {
+                "id": "Chandra, Flamecaller:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "VariableReference",
+                                    "variableName": "gathered0_count"
+                                },
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Discard all the cards in your hand, then draw that many cards plus one."
+            },
+            {
+                "id": "Chandra, Flamecaller:3",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals X damage to each creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "MYTHIC",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49fdd0d3-7140-4c12-a41c-37eedd986d9e.jpg?1783937909",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "For Chandra's second ability, it doesn't matter if the cards don't go to your graveyard because of a replacement effect. For example, cards with madness discarded this way will still count toward the number of cards you discarded."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You can activate Chandra's second ability while you have an empty hand. If you do, you'll draw one card."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chitinous Cloak
 {
     "name": "Chitinous Cloak",
@@ -1274,6 +1403,79 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Consuming Sinkhole
+{
+    "name": "Consuming Sinkhole",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nChoose one —\n• Exile target land creature.\n• Consuming Sinkhole deals 4 damage to target player or planeswalker.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature land"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Exile target land creature"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayerOrPlaneswalker",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Deal 4 damage to target player or planeswalker"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"What will not yield will be consumed.\"\n—Ayli, high priest of the Eternal Pilgrims",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82a42b28-3d1b-4432-b8c9-2d42e4d0e1c5.jpg?1783937909",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "A “land creature” is a permanent that’s both a land and a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4857,6 +5059,55 @@
     }
 }
 
+// Kazuul's Toll Collector
+{
+    "name": "Kazuul's Toll Collector",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "{0}: Attach target Equipment you control to this creature. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kazuul's Toll Collector:1",
+                "cost": "CostFree",
+                "effect": {
+                    "type": "AttachTargetEquipmentToCreature",
+                    "equipmentTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "creatureTarget": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact Equipment ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Attach target Equipment you control to this creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "Travelers are advised to bring extra swords, preferably shiny ones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/6824f48d-6808-4458-a2fd-1ffd0a10d72a.jpg?1783937905"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kor Scythemaster
 {
     "name": "Kor Scythemaster",
@@ -4992,6 +5243,114 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Kozilek's Return
+{
+    "name": "Kozilek's Return",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nKozilek's Return deals 2 damage to each creature.\nWhenever you cast an Eldrazi creature spell with mana value 7 or greater, you may exile this card from your graveyard. If you do, this card deals 5 damage to each creature.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "IterationEntity"
+            }
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Kozilek's Return:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Eldrazi"
+                            },
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 7
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            }
+                        },
+                        "then": {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever you cast an Eldrazi creature spell with mana value 7 or greater, you may exile this card from your graveyard. If you do, this card deals 5 damage to each creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72765559-0a78-4aa3-827e-cb4612720991.jpg?1783937909",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The last ability triggers only if Kozilek's Return is in your graveyard as you cast the Eldrazi creature spell. That ability will resolve before the Eldrazi creature spell does. In other words, that Eldrazi won't be on the battlefield yet and won't be dealt damage by Kozilek's Return."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Exiling Kozilek's Return due to the last ability isn't the same as casting it as a spell. Cards that say \"Counter target spell\" won't work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Kozilek's Shrieker
@@ -6377,6 +6736,106 @@
     ]
 }
 
+// Nissa, Voice of Zendikar
+{
+    "name": "Nissa, Voice of Zendikar",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "+1: Create a 0/1 green Plant creature token.\n−2: Put a +1/+1 counter on each creature you control.\n−7: You gain X life and draw X cards, where X is the number of lands you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Voice of Zendikar:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Plant"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/5/8501a910-e181-4f85-ad34-d2a099257148.jpg?1783937858"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 0/1 green Plant creature token."
+            },
+            {
+                "id": "Nissa, Voice of Zendikar:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put a +1/+1 counter on each creature you control."
+            },
+            {
+                "id": "Nissa, Voice of Zendikar:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You gain X life and draw X cards, where X is the number of lands you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a600b97b-1851-4b1b-a2af-f80e0307c02c.jpg?1783937901"
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Null Caller
 {
     "name": "Null Caller",
@@ -6435,6 +6894,99 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Oath of Chandra
+{
+    "name": "Oath of Chandra",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Chandra enters, it deals 3 damage to target creature an opponent controls.\nAt the beginning of each end step, if a planeswalker entered the battlefield under your control this turn, Oath of Chandra deals 2 damage to each opponent.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Chandra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Oath of Chandra:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "interveningIf": {
+                    "type": "PermanentTypeEnteredBattlefieldThisTurn",
+                    "cardType": "PLANESWALKER"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"If it means that people can live in freedom, yeah, I'll keep watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f570b0cb-2f38-422d-89d6-22c85e085328.jpg?1783937906",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Oath of Chandra's last ability will trigger even if the planeswalker that entered the battlefield under your control is no longer on the battlefield, no longer under your control, or no longer a planeswalker. This is also true if Oath of Chandra wasn't on the battlefield when the planeswalker entered."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The last ability triggers only once per turn, even if more than one planeswalker entered the battlefield under your control."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Each of the Oaths is legendary: if you control more than one of any particular Oath, you choose one to remain on the battlefield and the others are put into your graveyard."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The “legend rule” checks the full names of legendary permanents. You can control Oath of Gideon and Oath of Chandra at the same time, for example."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Even if you control a particular Oath, you can cast another of that Oath to take advantage of its enters-the-battlefield ability. It will enter the battlefield, causing its first ability to trigger. You will then choose one to keep, as detailed above, and then its enters-the-battlefield ability will resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8586,6 +9138,77 @@
     ]
 }
 
+// Sparkmage's Gambit
+{
+    "name": "Sparkmage's Gambit",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sparkmage's Gambit deals 1 damage to each of up to two target creatures. Those creatures can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"A touch of lightning, and anyone can be taught to dance.\"\n—Tobin, sparkmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/736ad6c8-e275-4644-9d1e-d2d380149839.jpg?1783937905",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If Sparkmage's Gambit has two targets, and one of them is illegal as Sparkmage's Gambit resolves, only the remaining legal target will be affected. The illegal target won't be dealt damage and will be able to block that turn. If both targets are illegal as Sparkmage's Gambit tries to resolve, it won't resolve and none of its effects will happen."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If Sparkmage's Gambit resolves, but the damage is prevented or redirected, the target creatures still won't be able to block that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Spatial Contortion
 {
     "name": "Spatial Contortion",
@@ -10117,6 +10740,82 @@
     ]
 }
 
+// Vile Redeemer
+{
+    "name": "Vile Redeemer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nFlash\nWhen you cast this spell, you may pay {C}. If you do, create a 1/1 colorless Eldrazi Scion creature token for each nontoken creature that died under your control this turn. Those tokens have \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vile Redeemer:2",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{C}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "NONTOKEN_CREATURES_DIED"
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Eldrazi",
+                            "Scion"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a03edf14-3495-4f61-ad73-f16e9456472c.jpg?1783937863",
+                        "activatedAbilities": [
+                            {
+                                "id": "Vile Redeemer:1",
+                                "cost": "CostSacrificeSelf",
+                                "effect": {
+                                    "type": "AddColorlessMana",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true,
+                                "descriptionOverride": "Sacrifice this token: Add {C}."
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, you may pay {C}. If you do, create a 1/1 colorless Eldrazi Scion creature token for each nontoken creature that died under your control this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f48b0613-127a-4338-aea4-ad0b8aa96d77.jpg?1783937903"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vines of the Recluse
 {
     "name": "Vines of the Recluse",
@@ -11001,6 +11700,62 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Zendikar Resurgent
+{
+    "name": "Zendikar Resurgent",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you tap a land for mana, add one mana of any type that land produced. (The types of mana are white, blue, black, red, green, and colorless.)\nWhenever you cast a creature spell, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zendikar Resurgent:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land ctrl:you"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67f02bc3-b565-4a38-8313-eb47ff31db8d.jpg?1783937898",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If the land's mana ability produces more than one type of mana, choose one of those types to determine what mana Zendikar Resurgent produces."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The last ability will resolve before the creature spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

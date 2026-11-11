@@ -8,8 +8,8 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Oath of the Gatewatch (2016)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card of the set is implemented: canonicals for the cards first printed here, and
+ * `Printing` rows for the reprints.
  *
  * Set Code: OGW
  * Release Date: 2016-01-22
@@ -21,7 +21,6 @@ object OathOfTheGatewatchSet : MtgSet {
     override val releaseDate = "2016-01-22"
     override val block = "Battle for Zendikar"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

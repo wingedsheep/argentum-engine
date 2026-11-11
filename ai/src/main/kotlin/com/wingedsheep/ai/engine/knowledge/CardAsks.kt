@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.conditions.PermanentTypeEnteredBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -191,12 +192,14 @@ internal object CardAsks {
         CardType.ENCHANTMENT -> GameObjectFilter.Enchantment
         CardType.CREATURE -> GameObjectFilter.Creature
         CardType.LAND -> GameObjectFilter.Land
+        CardType.PLANESWALKER -> GameObjectFilter.Planeswalker
         else -> null
     }
 
     /**
      * The kinds of permanent [scripts] count among yours — a [DynamicAmount.AggregateBattlefield]
-     * count or a battlefield [DynamicAmount.Count] over [Player.You], each as "<filter> you
+     * count or a battlefield [DynamicAmount.Count] over [Player.You], or a
+     * [PermanentTypeEnteredBattlefieldThisTurn] check on your own — each as "<filter> you
      * control". Walked reflectively, like [GraveyardSynergy], so an amount is found wherever an
      * effect, cost, condition or static holds it.
      */
@@ -215,6 +218,10 @@ internal object CardAsks {
                     if (node.player == Player.You && node.zone == Zone.BATTLEFIELD) {
                         node.filter.takeIf { it.controllerPredicate == null }?.let { found += it.youControl() }
                     }
+                // "If a planeswalker entered the battlefield under your control this turn" (Oath of
+                // Chandra, Oath of Liliana): paid off only by the deck's own permanents of that type.
+                is PermanentTypeEnteredBattlefieldThisTurn ->
+                    if (node.player == Player.You) ofType(node.cardType)?.let { found += it.youControl() }
                 else -> Unit
             }
             when (node) {
