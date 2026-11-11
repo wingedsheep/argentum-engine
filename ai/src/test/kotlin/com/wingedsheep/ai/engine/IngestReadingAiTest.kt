@@ -29,6 +29,8 @@ class IngestReadingAiTest : ScenarioTestBase() {
             val unblockable = body(1, 4, AbilityFlag.CANT_BE_BLOCKED.name)
             unblockable shouldBeGreaterThan body(1, 4)
             unblockable shouldBeGreaterThanOrEqual body(1, 4, Keyword.FLYING.name)
+            // Unblockable subsumes flying: the evasion is paid once.
+            body(1, 4, AbilityFlag.CANT_BE_BLOCKED.name, Keyword.FLYING.name) shouldBe unblockable
         }
 
         test("the draft heuristic carries an Ingest term") {

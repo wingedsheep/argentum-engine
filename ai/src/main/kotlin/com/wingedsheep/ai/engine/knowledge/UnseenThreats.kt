@@ -57,7 +57,7 @@ class UnseenThreats(
             BodyReading(null, null)
         } else {
             BodyReading(
-                BoardPresence.creatureBodyValue(power, toughness, definition.keywords.mapTo(HashSet()) { it.name }),
+                BoardPresence.creatureBodyValue(power, toughness, (definition.keywords.map { it.name } + definition.flags.map { it.name }).toHashSet()),
                 toughness,
             )
         }
