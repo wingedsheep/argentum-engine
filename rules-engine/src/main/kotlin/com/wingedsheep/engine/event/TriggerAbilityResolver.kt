@@ -153,6 +153,10 @@ class TriggerAbilityResolver(
         // Myriad (CR 702.116) — one "copy attacking each other opponent" trigger per instance.
         val myriadAbilities = getMyriadTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Ingest (CR 702.115) — one "that player exiles the top card of their library" combat
+        // damage trigger per instance.
+        val ingestAbilities = getIngestTriggeredAbilities(entityId, cardDefinitionId, state)
+
         // Granted offspring (CR 702.175a) — a spell that gained offspring as it was cast and had the
         // cost paid becomes a permanent with the token-copy trigger no card prints.
         val grantedOffspringAbilities = getGrantedOffspringAbilities(entityId, state)
@@ -177,6 +181,7 @@ class TriggerAbilityResolver(
             addAll(bushidoAbilities)
             addAll(exaltedAbilities)
             addAll(myriadAbilities)
+            addAll(ingestAbilities)
             addAll(grantedOffspringAbilities)
             addAll(blitzAbilities)
         }
@@ -371,6 +376,10 @@ class TriggerAbilityResolver(
         // Myriad (CR 702.116) — one "copy attacking each other opponent" trigger per instance.
         val myriadAbilities = getMyriadTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Ingest (CR 702.115) — one "that player exiles the top card of their library" combat
+        // damage trigger per instance.
+        val ingestAbilities = getIngestTriggeredAbilities(entityId, cardDefinitionId, state)
+
         // Granted offspring (CR 702.175a) — a spell that gained offspring as it was cast and had the
         // cost paid becomes a permanent with the token-copy trigger no card prints.
         val grantedOffspringAbilities = getGrantedOffspringAbilities(entityId, state)
@@ -395,6 +404,7 @@ class TriggerAbilityResolver(
             addAll(bushidoAbilities)
             addAll(exaltedAbilities)
             addAll(myriadAbilities)
+            addAll(ingestAbilities)
             addAll(grantedOffspringAbilities)
             addAll(blitzAbilities)
         }
@@ -1021,6 +1031,24 @@ class TriggerAbilityResolver(
         val printed = if (projected.hasLostAllAbilities(entityId)) 0 else
             cardRegistry.getCard(cardDefinitionId)?.let { com.wingedsheep.sdk.scripting.Myriad.printedCount(it) } ?: 0
         return List(maxOf(printed, 1)) { com.wingedsheep.sdk.scripting.Myriad.trigger(it) }
+    }
+
+    /**
+     * Ingest (CR 702.115) as the keyword-derived triggered ability it is — see
+     * [com.wingedsheep.sdk.scripting.Ingest]. The same shape as myriad: gated on the projected
+     * keyword; one trigger per printed instance (CR 702.115b) unless all abilities are lost, and
+     * exactly one when the keyword is present only through a static grant.
+     */
+    private fun getIngestTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+    ): List<TriggeredAbility> {
+        val projected = state.projectedState
+        if (!projected.hasKeyword(entityId, com.wingedsheep.sdk.core.Keyword.INGEST)) return emptyList()
+        val printed = if (projected.hasLostAllAbilities(entityId)) 0 else
+            cardRegistry.getCard(cardDefinitionId)?.let { com.wingedsheep.sdk.scripting.Ingest.printedCount(it) } ?: 0
+        return List(maxOf(printed, 1)) { com.wingedsheep.sdk.scripting.Ingest.trigger(it) }
     }
 
     private fun createWardTriggeredAbility(cost: WardCost, source: String): TriggeredAbility {

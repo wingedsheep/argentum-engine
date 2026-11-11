@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -750,7 +751,8 @@ object BoardPresence : BoardFeature {
         if (card.isCreature) {
             val power = card.baseStats?.basePower ?: return null
             val toughness = card.baseStats?.baseToughness ?: return null
-            val keywords = card.baseKeywords.mapTo(mutableSetOf()) { it.name }
+            // Printed flags ride along, as projection carries them on the battlefield ("can't be blocked").
+            val keywords = card.baseKeywords.mapTo(mutableSetOf()) { it.name } + card.baseFlags.map { it.name }
             return creatureBodyValue(power, toughness, keywords).coerceAtLeast(0.1)
         }
 
@@ -769,7 +771,7 @@ object BoardPresence : BoardFeature {
         val vehicle = vehicleBodyValue(
             projected, null, card, intents, casterId,
             crew = intents.definition(card.name)?.let(VehicleBody::printedCrew),
-            keywords = card.baseKeywords.mapTo(mutableSetOf()) { it.name },
+            keywords = card.baseKeywords.mapTo(mutableSetOf()) { it.name } + card.baseFlags.map { it.name },
         )
         if (vehicle != null) return maxOf(0.5, vehicle + abilityOverBaseline(prior))
         return maxOf(0.5, prior)
@@ -829,7 +831,10 @@ object BoardPresence : BoardFeature {
         var value = settledPower * 1.0 + settledToughness * 0.4
 
         // ── Evasion (the most important combat keyword category) ──
-        if (Keyword.FLYING.name in keywords) value += 1.5 + power * 0.3
+        // "Can't be blocked" is evasion no blocker answers, so it is worth at least flying — and it
+        // subsumes flying, so an unblockable flier is paid for evasion once.
+        if (AbilityFlag.CANT_BE_BLOCKED.name in keywords) value += 1.5 + power * 0.3
+        else if (Keyword.FLYING.name in keywords) value += 1.5 + power * 0.3
         if (Keyword.MENACE.name in keywords) value += 0.8
         if (Keyword.FEAR.name in keywords) value += 0.8
         if (Keyword.INTIMIDATE.name in keywords) value += 0.8
@@ -852,6 +857,9 @@ object BoardPresence : BoardFeature {
         if (Keyword.PROVOKE.name in keywords) value += 0.5
         // Afflict: every block costs the defender life (CR 702.130a), a tax on blocking it.
         if (Keyword.AFFLICT.name in keywords) value += 0.6
+        // Ingest: every hit exiles the damaged player's top card (CR 702.115a) — a little mill,
+        // and the fuel a processor spends.
+        if (Keyword.INGEST.name in keywords) value += 0.3
 
         // ── Survivability ──
         if (Keyword.INDESTRUCTIBLE.name in keywords) value += 3.0

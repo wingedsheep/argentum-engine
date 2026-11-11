@@ -308,6 +308,43 @@
     ]
 }
 
+// Benthic Infiltrator
+{
+    "name": "Benthic Infiltrator",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\nThis creature can't be blocked.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID",
+        "INGEST"
+    ],
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f380ae58-08cc-42df-ac74-3c6890a62463.jpg?1783938214",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Blighted Cataract
 {
     "name": "Blighted Cataract",
@@ -2983,6 +3020,42 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mist Intruder
+{
+    "name": "Mist Intruder",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING",
+        "INGEST"
+    ],
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Jason Rainville",
+        "flavorText": "The wastes spread as quickly as the wind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8c2e662-d8c3-44d4-b666-fe0d4a046271.jpg?1783938212",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

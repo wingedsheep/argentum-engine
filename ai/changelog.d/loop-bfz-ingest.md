@@ -1,0 +1,1 @@
+- #4641 The AI now values ingest creatures (a card exiled per hit) and creatures that can't be blocked (evasion priced at least like flying) on the board, and rates ingest in the draft heuristic.
